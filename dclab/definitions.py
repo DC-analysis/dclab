@@ -8,9 +8,7 @@ from __future__ import division, print_function
 
 import copy
 import numpy as np
-import os
-import warnings
-
+from pkg_resources import resource_filename  # @UnresolvedImport
 
 __all__ = ["GetKnownIdentifiers", "LoadConfiguration", 
            "LoadDefaultConfiguration", "cfg",
@@ -109,9 +107,7 @@ def LoadConfiguration(cfgfilename, cfg=None):
         if len(line) != 0:
             if line.startswith("[") and line.endswith("]"):
                 section = line[1:-1]
-                if cfg.has_key(section):
-                    curdict = cfg[section]
-                else:
+                if not cfg.has_key(section):
                     cfg[section] = dict()
                 continue
             var, val = line.split("=")
@@ -131,7 +127,7 @@ def LoadConfiguration(cfgfilename, cfg=None):
 
 
 def LoadDefaultConfiguration():
-    return LoadConfiguration(os.path.join(thispath, cfgfile))
+    return LoadConfiguration(cfgfile)
 
 
 
@@ -309,11 +305,7 @@ for _u,_a,_r in zip(uid, axl, rdv):
 
 
 ### Load standard configuration
-
-cfgfile = "tdmslab.cfg"
-thispath = os.path.dirname(os.path.realpath(__file__))
+cfgfile = resource_filename(__name__, 'dclab.cfg')
 cfg = LoadDefaultConfiguration()
-
-
 cfg_init = copy.deepcopy(cfg)
 

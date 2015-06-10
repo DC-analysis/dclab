@@ -19,7 +19,7 @@ import time
 import warnings
 
 # Definitions
-from . import definitions as dfn
+from . import definitions as dfn  # @UnresolvedImport
 
 
 class Fake_RTDC_DataSet(object):
@@ -539,8 +539,8 @@ class RTDC_DataSet(object):
         
         a=time.time()
         # set values in mask to false as we iterate over x and y
-        R = markersize/2
-        Rsq = R**2
+        #R = markersize/2
+        #Rsq = R**2
         D = markersize
         
         pointmask = mask.copy()
@@ -757,13 +757,11 @@ class RTDC_DataSet(object):
                 estimator = gaussian_kde(input_positions)
                 if positions is None:
                     positions = input_positions
-                import time
                 a = time.time()
                 density = estimator(positions)
                 print("gaussian estimation scatter time: ", time.time()-a)
                 
             elif kde_type == "multivariate":
-                import time
                 a = time.time()
                 estimator_ly = KDEMultivariate(data=[x,y],var_type='cc',
                                                bw=[bwx, bwy])
@@ -1088,7 +1086,7 @@ def GetTDMSFiles(directory):
     """
     directory = os.path.realpath(directory)
     tdmslist = list()
-    for root, dirs, files in os.walk(directory):
+    for root, _dirs, files in os.walk(directory):
         for f in files:
             # Philipp:
             # Exclude traces files of fRT-DC setup
@@ -1124,7 +1122,7 @@ def GetProjectNameFromPath(path):
     # check if the directory contains data or is online
     root1, trail1 = os.path.split(dirn)
     root2, trail2 = os.path.split(root1)
-    root3, trail3 = os.path.split(root2)
+    _root3, trail3 = os.path.split(root2)
     
     if trail1.lower() in ["online", "offline"]:
         # /home/peter/hans/HLC12398/online/

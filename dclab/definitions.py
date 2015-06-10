@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-This file contains definitions and basic convenience methods for
+This file contains basic definitions and associated methods for
 dclab.
 """
 from __future__ import division, print_function
@@ -14,7 +14,7 @@ import warnings
 
 __all__ = ["GetKnownIdentifiers", "LoadConfiguration", 
            "LoadDefaultConfiguration", "cfg",
-           "LoadIsoelastics", "MapParameterStr2Type", "isoelastics",
+           "MapParameterStr2Type",
            "MapParameterType2Str", "GetParameterChoices",
            "GetParameterDtype"]
 
@@ -133,80 +133,6 @@ def LoadConfiguration(cfgfilename, cfg=None):
 def LoadDefaultConfiguration():
     return LoadConfiguration(os.path.join(thispath, cfgfile))
 
-
-def LoadIsoelastics(isoeldir, isoels={}):
-    """ Load isoelastics from directories.
-    
-    
-    Parameters
-    ----------
-    isoeldir : absolute path
-        Directory containing isoelastics.
-    isoels : dict
-        Dictionary to update with isoelastics. If not given, a new
-        isoelastics dictionary in librtdc format will be created.
-
-
-    Returns
-    -------
-    isoels : dict
-        New isoelastics dictionary.
-    """
-    newcurves = dict()
-    # First get a list of all possible files
-    for root, dirs, files in os.walk(isoeldir):
-        for d in dirs:
-            if d.startswith("isoel") or d.startswith("isomech"):
-                txtfiles = list()
-                curdir = os.path.join(root,d)
-                filed = os.listdir(curdir)
-                for f in filed:
-                    if f.endswith(".txt"):
-                        txtfiles.append(os.path.join(curdir, f))
-                key = (d.replace("isoelastics","").replace("isoel","")
-                        .replace("isomechanics","")
-                        .replace("isomech","").replace("_"," ").strip())
-                counter = 1
-                key2 = key
-                while True:
-                    if isoels.has_key(key2):
-                        key2 = key + " "+str(counter)
-                        counter += 1
-                    else:
-                        break
-                newcurves[key2] = txtfiles
-    
-    # Iterate through the files and import curves
-    for key in list(newcurves.keys()):
-        files = newcurves[key]
-        if os.path.split(files[0])[1].startswith("Defo-Area"):
-            # Load Matplab-generated AreaVsCircularity Plot
-            # It is actually Deformation vs. Area
-            isoels[key] = curvedict = dict()
-            Plot1 = "Defo Area"
-            Plot2 = "Circ Area"
-            Plot3 = "Area Defo"
-            Plot4 = "Area Circ"
-            list1 = list()
-            list2 = list()
-            list3 = list()
-            list4 = list()
-            for f in files:
-                xy1 = np.loadtxt(f)
-                xy2 = 1*xy1
-                xy2[:,0] = 1 - xy1[:,0]
-                list1.append(xy1)
-                list2.append(xy2)
-                list3.append(xy1[:,::-1])
-                list4.append(xy2[:,::-1])
-            curvedict[Plot1] = list1
-            curvedict[Plot2] = list2
-            curvedict[Plot3] = list3
-            curvedict[Plot4] = list4
-        else:
-            warnings.warn("Unknown isoelastics: {}".format(files[0]))
-    
-    return isoels
 
 
 def MapParameterStr2Type(var,val):
@@ -383,11 +309,11 @@ for _u,_a,_r in zip(uid, axl, rdv):
 
 
 ### Load standard configuration
-isoeldir = "isoelastics"
+
 cfgfile = "tdmslab.cfg"
 thispath = os.path.dirname(os.path.realpath(__file__))
 cfg = LoadDefaultConfiguration()
-isoelastics = LoadIsoelastics(os.path.join(thispath, isoeldir))
+
 
 cfg_init = copy.deepcopy(cfg)
 

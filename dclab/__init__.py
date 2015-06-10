@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-This library contains contains classes and methods for the analysis
+This library contains classes and methods for the analysis
 of real-time deformability cytometry (RT-DC) data sets.
 """
 from __future__ import division, print_function

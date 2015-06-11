@@ -19,7 +19,7 @@ import time
 import warnings
 
 # Definitions
-from . import definitions as dfn  # @UnresolvedImport
+from . import definitions as dfn
 
 
 class Fake_RTDC_DataSet(object):

@@ -659,8 +659,8 @@ class RTDC_DataSet(object):
         if not self._KDE_Contour.has_key(key):
             # setup
             if self.Configuration["Filtering"]["Enable Filters"]:
-                x = getattr(self, dfn.cfgmaprev[xax])[np.where(self._filter)]
-                y = getattr(self, dfn.cfgmaprev[yax])[np.where(self._filter)]
+                x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
+                y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
             else:
                 x = getattr(self, dfn.cfgmaprev[xax])
                 y = getattr(self, dfn.cfgmaprev[yax])

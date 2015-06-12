@@ -20,7 +20,7 @@ import warnings
 
 # Definitions
 from . import definitions as dfn
-
+from ._version import version as __version__
 
 class Fake_RTDC_DataSet(object):
     """ Provides methods and attributes like RTDC_DataSet, but without

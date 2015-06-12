@@ -22,6 +22,7 @@ try:
 except:
     version = "unknown"
 
+
 class PyTest(Command):
     """ Perform pytests
     """

@@ -3,11 +3,9 @@
 # To create a distribution package for pip or easy-install:
 # python setup.py sdist
 from os.path import join, dirname, realpath
-from setuptools import setup, find_packages, Command
+from setuptools import setup, Command
 import subprocess as sp
 import sys
-from warnings import warn
-
 
 author = u"Paul Müller"
 authors = [author]

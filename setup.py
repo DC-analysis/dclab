@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# To create a distribution package for pip or easy-install:
-# python setup.py sdist
 from os.path import join, dirname, realpath
 from setuptools import setup, Command
 import subprocess as sp
@@ -58,6 +56,7 @@ if __name__ == "__main__":
         extras_require={
                         'doc': ['sphinx']
                        },
+        data_files=[('dclab', ['dclab/dclab.cfg'])],
         classifiers= [
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 2.7',

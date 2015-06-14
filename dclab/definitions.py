@@ -42,7 +42,7 @@ def GetParameterChoices(key, subkey, ignore_axes=[]):
 
 
 def GetParameterDtype(key, subkey, cfg=None):
-    """ Returns dtype of the parameter as defined in tdmslab.cfg
+    """ Returns dtype of the parameter as defined in dclab.cfg
     """
     #default
     dtype = str

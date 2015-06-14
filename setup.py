@@ -56,7 +56,8 @@ if __name__ == "__main__":
         extras_require={
                         'doc': ['sphinx']
                        },
-        data_files=[('dclab', ['dclab/dclab.cfg'])],
+        #data_files=[('dclab', ['dclab/dclab.cfg'])],
+        include_package_data=True,
         classifiers= [
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 2.7',

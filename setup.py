@@ -14,7 +14,7 @@ year = "2015"
 
 sys.path.insert(0, realpath(dirname(__file__))+"/"+name)
 try:
-    from _version import version
+    from _version import version  # @UnresolvedImport
 except:
     version = "unknown"
 
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         package_dir={name: name},
         license="GPL v2",
         description=description,
-        long_description=open(join(dirname(__file__), 'README.md')).read(),
+        #long_description=open(join(dirname(__file__), 'README.md')).read(),
         install_requires=[
                           "nptdms",
                           "NumPy >= 1.5.1",

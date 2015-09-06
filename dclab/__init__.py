@@ -928,7 +928,11 @@ class RTDC_DataSet(object):
                     datax = getattr(self, dfn.cfgmaprev[p.axes[0]])
                     datay = getattr(self, dfn.cfgmaprev[p.axes[1]])
                     self._filter_polygon *= p.filter(datax, datay)
-
+        
+        ## TODO
+        # - filter with configuration keyword argument "Datapoint Limit" 
+        
+        
         # now update the entire object filter
         # get a list of all filters
         self._filter[:] = True

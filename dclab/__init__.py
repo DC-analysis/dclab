@@ -399,6 +399,8 @@ class RTDC_DataSet(object):
         # Set array filters:
         # This is the filter that will be used for plotting:
         self._filter = np.ones_like(self.time, dtype=bool)
+        # The filtering array for a general data point limit:
+        self._filter_limit = np.ones_like(self._filter)
         attrlist = dir(self)
         # Find attributes to be filtered
         # These are the filters from which self._filter is computed
@@ -459,7 +461,7 @@ class RTDC_DataSet(object):
     def GetDownSampledScatter(self, c=None, axsize=(300,300),
                               markersize=1,
                               downsample_points=None):
-        """ Filters a set of data from overlayed points
+        """ Filters a set of data from overlayed points for plottinǵ
         
         Parameters
         ----------
@@ -543,6 +545,7 @@ class RTDC_DataSet(object):
         #Rsq = R**2
         D = markersize
         
+        # Begin Downsampling
         pointmask = mask.copy()
         
         for i in range(len(x)):
@@ -580,7 +583,8 @@ class RTDC_DataSet(object):
                 there = np.where(incl)[0]
                 incl[there[:remove]] = 0
             else:
-                # Add equally distributed points
+                # Add equally distributed points in the case
+                # where we have previously downsampled with a grid.
                 # We have not enough points
                 add = downsample_points - numpoints
                 while add > 10:
@@ -829,7 +833,7 @@ class RTDC_DataSet(object):
 
 
     def ApplyFilter(self, force=[]):
-        """ Computes the filters for data plotting
+        """ Computes the filters for the data set
         
         Uses `self._old_filters` to determine new filters.
 
@@ -929,9 +933,10 @@ class RTDC_DataSet(object):
                     datay = getattr(self, dfn.cfgmaprev[p.axes[1]])
                     self._filter_polygon *= p.filter(datax, datay)
         
-        ## TODO
-        # - filter with configuration keyword argument "Datapoint Limit" 
-        
+        # Reset limit filters before
+        # This is important. If we do not do this the we have
+        # a pre-filter that does not make sense.
+        self._filter_limit = np.ones_like(self._filter)
         
         # now update the entire object filter
         # get a list of all filters
@@ -939,6 +944,43 @@ class RTDC_DataSet(object):
         for attr in dir(self):
             if attr.startswith("_filter_"):
                 self._filter[:] *= getattr(self, attr)
+
+        # Filter with configuration keyword argument "Limit Points"
+        if FIL["Limit Points"] > 0:
+            limit = FIL["Limit Points"]
+            incl = 1*self._filter
+            numpoints = np.sum(incl)
+            if limit <= numpoints:
+                # Perform equally distributed removal of points
+                # We have too many points
+                remove = numpoints - limit
+                while remove > 10:
+                    there = np.where(incl)[0]
+                    # first remove evenly distributed points
+                    dist = int(np.ceil(there.shape[0]/remove))
+                    incl[there[::dist]] = 0
+                    numpoints = np.sum(incl)
+                    remove = numpoints - limit
+                there = np.where(incl)[0]
+                incl[there[:remove]] = 0
+                self._filter_limit = incl
+            elif limit == numpoints:
+                # everything is ok
+                self._filter_limit = np.ones_like(self._filter)
+                pass
+            elif limit <= self._filter.shape[0]:
+                self._filter_limit = np.ones_like(self._filter)
+                raise ValueError("'Limit Points' must not be larger than length of filtered data set!")
+            else:
+                self._filter_limit = np.ones_like(self._filter)
+                raise ValueError("'Limit Points' must not be larger than length of data set!")
+        else:
+            # revert everything back to how it was
+            self._filter_limit = np.ones_like(self._filter)
+        
+        # Update filter again
+        self._filter *= self._filter_limit 
+        
         # Actual filtering is then done during plotting            
         
         self._old_filters = self.Configuration["Filtering"].copy()

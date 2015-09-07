@@ -399,7 +399,7 @@ class RTDC_DataSet(object):
         # Set array filters:
         # This is the filter that will be used for plotting:
         self._filter = np.ones_like(self.time, dtype=bool)
-        # The filtering array for a general data point limit:
+        # The filtering array for a general data event limit:
         self._filter_limit = np.ones_like(self._filter)
         attrlist = dir(self)
         # Find attributes to be filtered
@@ -460,8 +460,8 @@ class RTDC_DataSet(object):
 
     def GetDownSampledScatter(self, c=None, axsize=(300,300),
                               markersize=1,
-                              downsample_points=None):
-        """ Filters a set of data from overlayed points for plottinǵ
+                              downsample_events=None):
+        """ Filters a set of data from overlayed events for plottinǵ
         
         Parameters
         ----------
@@ -471,13 +471,13 @@ class RTDC_DataSet(object):
             Size of the axis.
         markersize : float
             Size of the marker (in dots), including edge.
-        downsample_points : int or None
+        downsample_events : int or None
             Number of points to draw in the down-sampled plot.
             This number is either 
-            - >=1: limit total number of points drawn
+            - >=1: limit total number of events drawn
             - <1: only perform 1st downsampling step with grid
             If set to None, then
-            self.Configuration["Plotting"]["Downsample Points"]
+            self.Configuration["Plotting"]["Downsample Events"]
             will be used.
         
         Returns
@@ -485,11 +485,11 @@ class RTDC_DataSet(object):
         xnew, xnew : filtered x and y
         """
         plotfilters = self.Configuration["Plotting"]
-        if downsample_points is None:
-            downsample_points = plotfilters["Downsample Points"]
+        if downsample_events is None:
+            downsample_events = plotfilters["Downsample Events"]
 
-        if downsample_points < 1:
-            downsample_points = 0
+        if downsample_events < 1:
+            downsample_events = 0
 
         xax, yax = self.GetPlotAxes()
 
@@ -505,7 +505,7 @@ class RTDC_DataSet(object):
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
 
-        identifier += str(downsample_points)
+        identifier += str(downsample_events)
             
         hasher = hashlib.sha256()
         hasher.update(str(x) + str(y))
@@ -514,7 +514,7 @@ class RTDC_DataSet(object):
         if self._Downsampled_Scatter.has_key(identifier):
             return self._Downsampled_Scatter[identifier]
 
-        if downsample_points > 0 and downsample_points > x.shape[0]:
+        if downsample_events > 0 and downsample_events > x.shape[0]:
             # nothing to do
             self._plot_filter = np.ones_like(x, dtype=bool)
             if c is None:
@@ -546,15 +546,15 @@ class RTDC_DataSet(object):
         D = markersize
         
         # Begin Downsampling
-        pointmask = mask.copy()
+        eventmask = mask.copy()
         
         for i in range(len(x)):
             xi = xpx[i]
             yi = ypx[i]
-            ## first filter for exactly overlapping points
-            if not pointmask[int(xi-1), int(yi-1)]:
+            ## first filter for exactly overlapping events
+            if not eventmask[int(xi-1), int(yi-1)]:
                 continue
-            pointmask[int(xi-1), int(yi-1)] = False
+            eventmask[int(xi-1), int(yi-1)] = False
             #boolvals = (xi-gridx)**2 + (yi-gridy)**2 < Rsq
             ## second filter for multiple overlay
             boolvals = (np.abs(xi-gridx) < D) * (np.abs(yi-gridy) < D)
@@ -566,34 +566,34 @@ class RTDC_DataSet(object):
         print("downsample time:", time.time()-a)
 
 
-        # Perform upsampling: include points to match downsample_points
-        if downsample_points > 0:
-            numpoints = np.sum(incl)
-            if downsample_points < numpoints:
-                # Perform equally distributed removal of points
-                # We have too many points
-                remove = numpoints - downsample_points
+        # Perform upsampling: include events to match downsample_events
+        if downsample_events > 0:
+            numevents = np.sum(incl)
+            if downsample_events < numevents:
+                # Perform equally distributed removal of events
+                # We have too many events
+                remove = numevents - downsample_events
                 while remove > 10:
                     there = np.where(incl)[0]
-                    # first remove evenly distributed points
+                    # first remove evenly distributed events
                     dist = int(np.ceil(there.shape[0]/remove))
                     incl[there[::dist]] = 0
-                    numpoints = np.sum(incl)
-                    remove = numpoints - downsample_points
+                    numevents = np.sum(incl)
+                    remove = numevents - downsample_events
                 there = np.where(incl)[0]
                 incl[there[:remove]] = 0
             else:
-                # Add equally distributed points in the case
+                # Add equally distributed events in the case
                 # where we have previously downsampled with a grid.
-                # We have not enough points
-                add = downsample_points - numpoints
+                # We have not enough events
+                add = downsample_events - numevents
                 while add > 10:
                     away = np.where(~incl)[0]
-                    # first remove evenly distributed points
+                    # first remove evenly distributed events
                     dist = int(np.ceil(away.shape[0]/add))
                     incl[away[::dist]] = 1
-                    numpoints = np.sum(incl)
-                    add = downsample_points - numpoints
+                    numevents = np.sum(incl)
+                    add = downsample_events - numevents
                 away = np.where(~incl)[0]
                 incl[away[:add]] = 1
 
@@ -945,35 +945,42 @@ class RTDC_DataSet(object):
             if attr.startswith("_filter_"):
                 self._filter[:] *= getattr(self, attr)
 
-        # Filter with configuration keyword argument "Limit Points"
-        if FIL["Limit Points"] > 0:
-            limit = FIL["Limit Points"]
+        # Filter with configuration keyword argument "Limit Events"
+        if FIL["Limit Events"] > 0:
+            limit = FIL["Limit Events"]
             incl = 1*self._filter
-            numpoints = np.sum(incl)
-            if limit <= numpoints:
-                # Perform equally distributed removal of points
-                # We have too many points
-                remove = numpoints - limit
+            numevents = np.sum(incl)
+            if limit <= numevents:
+                # Perform equally distributed removal of events
+                # We have too many events
+                remove = numevents - limit
                 while remove > 10:
                     there = np.where(incl)[0]
-                    # first remove evenly distributed points
+                    # first remove evenly distributed events
                     dist = int(np.ceil(there.shape[0]/remove))
                     incl[there[::dist]] = 0
-                    numpoints = np.sum(incl)
-                    remove = numpoints - limit
+                    numevents = np.sum(incl)
+                    remove = numevents - limit
                 there = np.where(incl)[0]
                 incl[there[:remove]] = 0
                 self._filter_limit = incl
-            elif limit == numpoints:
+                print("'Limit Events' set to", np.sum(incl))
+            elif limit == numevents:
                 # everything is ok
                 self._filter_limit = np.ones_like(self._filter)
-                pass
+                print("'Limit Events' is size of filtered data.")
             elif limit <= self._filter.shape[0]:
                 self._filter_limit = np.ones_like(self._filter)
-                raise ValueError("'Limit Points' must not be larger than length of filtered data set!")
+                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
+                              "be larger than length of filtered data set! "+
+                              "Resetting 'Limit Events'!")
+                FIL["Limit Events"] = 0
             else:
                 self._filter_limit = np.ones_like(self._filter)
-                raise ValueError("'Limit Points' must not be larger than length of data set!")
+                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
+                              "be larger than length of data set! "+
+                              "Resetting 'Limit Events'!")
+                FIL["Limit Events"] = 0
         else:
             # revert everything back to how it was
             self._filter_limit = np.ones_like(self._filter)

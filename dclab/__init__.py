@@ -964,7 +964,7 @@ class RTDC_DataSet(object):
                 there = np.where(incl)[0]
                 incl[there[:remove]] = 0
                 self._filter_limit = incl
-                print("'Limit Events' set to", np.sum(incl))
+                print("'Limit Events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
             elif limit == numevents:
                 # everything is ok
                 self._filter_limit = np.ones_like(self._filter)

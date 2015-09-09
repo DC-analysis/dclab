@@ -68,7 +68,7 @@ def GetKnownIdentifiers():
     return uid
     
     
-def LoadConfiguration(cfgfilename, cfg=None):
+def LoadConfiguration(cfgfilename, cfg=None, capitalize=True):
     """ Load a configuration file
     
     
@@ -79,6 +79,12 @@ def LoadConfiguration(cfgfilename, cfg=None):
     cfg : dict
         Dictionary to update/overwrite. If `cfg` is not set, a new
         dicitonary will be created.
+    capitalize : bool
+        Capitalize dictionary entries. This is useful to
+        prevent duplicate entries in configurations dictionaries
+        like "Flow Rate" and "flow rate". It is not useful when
+        dictionary entries are not capitalized, e.g. for other
+        configuration files like index files of ShapeOut sessions.
         
     
     Returns
@@ -111,7 +117,7 @@ def LoadConfiguration(cfgfilename, cfg=None):
                     cfg[section] = dict()
                 continue
             var, val = line.split("=")
-            var,val = MapParameterStr2Type(var,val)
+            var,val = MapParameterStr2Type(var, val, capitalize=capitalize)
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val
     f.close()
@@ -131,25 +137,30 @@ def LoadDefaultConfiguration():
 
 
 
-def MapParameterStr2Type(var,val):
+def MapParameterStr2Type(var, val, capitalize=True):
     if not ( isinstance(val, str) or isinstance(val, unicode) ):
         # already a type:
         return var.strip(), val
     var = var.strip()
     val = val.strip()
-    # capitalize var
-    if len(var) != 0:
-        varsubs = var.split()
-        newvar = u""
-        for vs in varsubs:
-            newvar += vs[0].capitalize()+vs[1:]+" "
-        var = newvar.strip()
+    if capitalize:
+        # capitalize var
+        if len(var) != 0:
+            varsubs = var.split()
+            newvar = u""
+            for vs in varsubs:
+                newvar += vs[0].capitalize()+vs[1:]+" "
+            var = newvar.strip()
     # Find values
     if len(var) != 0 and len(val) != 0:
         # check for float
         if val.startswith("[") and val.endswith("]"):
-            values = val.strip("[],").split(",")
-            values = [float(v) for v in values]
+            if len(val.strip("[],")) == 0:
+                # empty list
+                values = []
+            else:
+                values = val.strip("[],").split(",")
+                values = [float(v) for v in values]
             return var, values
         elif val.lower() in ["true", "y"]:
             return var, True

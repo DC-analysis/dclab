@@ -755,16 +755,15 @@ class RTDC_DataSet(object):
             else:
                 x = getattr(self, dfn.cfgmaprev[xax])
                 y = getattr(self, dfn.cfgmaprev[yax])
-            
+            input_positions = np.vstack([x.ravel(), y.ravel()])
+            # Kernel Density estimation
             if kde_type == "gauss":
-                input_positions = np.vstack([x.ravel(), y.ravel()])
+                a = time.time()
                 estimator = gaussian_kde(input_positions)
                 if positions is None:
                     positions = input_positions
-                a = time.time()
                 density = estimator(positions)
                 print("gaussian estimation scatter time: ", time.time()-a)
-                
             elif kde_type == "multivariate":
                 a = time.time()
                 estimator_ly = KDEMultivariate(data=[x,y],var_type='cc',

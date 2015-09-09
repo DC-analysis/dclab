@@ -9,18 +9,18 @@ from __future__ import division, print_function
 import codecs
 import copy
 import hashlib
-from nptdms import TdmsFile  # @UnresolvedImport
+from nptdms import TdmsFile
 import numpy as np
 import os
 from scipy.stats import norm, gaussian_kde
-from statsmodels.nonparametric.kernel_density import KDEMultivariate  # @UnresolvedImport
+from statsmodels.nonparametric.kernel_density import KDEMultivariate
 import time
     
 import warnings
 
 # Definitions
-from . import definitions as dfn  # @UnresolvedImport
-from ._version import version as __version__  # @UnresolvedImport
+from . import definitions as dfn
+from ._version import version as __version__
 
 class Fake_RTDC_DataSet(object):
     """ Provides methods and attributes like RTDC_DataSet, but without

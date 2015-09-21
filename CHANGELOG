@@ -1,0 +1,5 @@
+0.1.2
+- add support for limiting amount of data points analyzed
+  with the configuration keyword "Limit Events"
+- Comments refer to "events" instead of "points" from now on
+

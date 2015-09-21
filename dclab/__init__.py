@@ -55,6 +55,8 @@ class Fake_RTDC_DataSet(object):
     def UpdateConfiguration(self, newcfg):
         UpdateConfiguration(self.Configuration, newcfg)
 
+    def GetPlotAxes(self):
+        return ["Defo", "Area"]
         
 class PolygonFilter(object):
     """ An object for filtering RTDC data based on a polygonial area

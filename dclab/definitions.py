@@ -102,8 +102,8 @@ def LoadConfiguration(cfgfilename, cfg=None, capitalize=True):
     if cfg is None:
         cfg = dict()
     
-    f = open(cfgfilename, 'r')
-    code = f.readlines()
+    with open(cfgfilename, 'r') as f:
+        code = f.readlines()
     
     for line in code:
         # We deal with comments and empty lines
@@ -116,11 +116,10 @@ def LoadConfiguration(cfgfilename, cfg=None, capitalize=True):
                 if not cfg.has_key(section):
                     cfg[section] = dict()
                 continue
-            var, val = line.split("=")
+            var, val = line.split("=", 1)
             var,val = MapParameterStr2Type(var, val, capitalize=capitalize)
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val
-    f.close()
     
     # 30µm channel?
     if ( cfg.has_key("General") and

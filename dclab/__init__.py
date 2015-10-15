@@ -787,12 +787,14 @@ class RTDC_DataSet(object):
         filt can either be an integer or an instance of PolygonFilter
         """
         if isinstance(filt, PolygonFilter):
-            self._polygon_filter_ids.append(filt.unique_id)
+            uid=filt.unique_id
         elif isinstance(filt, (int, float)):
-            self._polygon_filter_ids.append(int(filt))
+            uid=int(filt)
         else:
             raise ValueError(
                   "filt must be a number or instance of PolygonFilter.")
+        # append item
+        self.Configuration["Filtering"]["Polygon Filters"].append(uid)
 
 
     def PolygonFilterRemove(self, filt):
@@ -804,9 +806,9 @@ class RTDC_DataSet(object):
         else:
             raise ValueError(
                   "filt must be a number or instance of PolygonFilter.")
-        # remove from list
-        self._polygon_filter_ids.remove(uid)
-        
+        # remove item
+        self.Configuration["Filtering"]["Polygon Filters"].remove(uid)
+
 
     def GetPlotAxes(self):
         #return 
@@ -921,7 +923,8 @@ class RTDC_DataSet(object):
         # Filter Polygons
         # check if something has changed
         pf_id = "Polygon Filters"
-        if ((FIL.has_key(pf_id) and not OLD.has_key(pf_id)) or
+        if (
+            (FIL.has_key(pf_id) and not OLD.has_key(pf_id)) or
             (FIL.has_key(pf_id) and OLD.has_key(pf_id) and
              FIL[pf_id] != OLD[pf_id])):
             self._filter_polygon[:] = True
@@ -991,7 +994,7 @@ class RTDC_DataSet(object):
         
         # Actual filtering is then done during plotting            
         
-        self._old_filters = self.Configuration["Filtering"].copy()
+        self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
 
 
     def UpdateConfiguration(self, newcfg):

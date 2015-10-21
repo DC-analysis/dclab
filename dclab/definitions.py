@@ -217,7 +217,7 @@ axl = [
         u"Cell Size [px²]",
         u"Cell Size [µm²]",
         u"Convex to Measured Area Ratio",
-        u"Aspect Ratioo of Bounding Box",
+        u"Aspect Ratio of Bounding Box",
         u"Circularity",
         u"Deformation",
         u"Frame Number",

@@ -33,7 +33,7 @@ def GetParameterChoices(key, subkey, ignore_axes=[]):
             for choice in ignore_axes:
                 if choice in choices:
                     choices.remove(choice)
-    
+   
         elif subkey in ["Rows", "Columns"]:
             choices = [ unicode(i) for i in range(1,6) ]
         elif subkey in ["Scatter Marker Size"]:
@@ -307,11 +307,13 @@ tfd = [
 cfgmap = dict()        # area_um -> Area
 cfgmaprev = dict()     # Area -> area_um
 axlabels = dict()      # Area -> Cell Size [µm²]
+axlabelsrev = dict()   # Cell Size [µm²] -> Area 
 # here the name maps are defined
 for _u,_a,_r in zip(uid, axl, rdv):
     cfgmap[_r] = _u
     cfgmaprev[_u] = _r
     axlabels[_u] = _a
+    axlabelsrev[_a] = _u
 
 
 ### Load standard configuration

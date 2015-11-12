@@ -282,7 +282,7 @@ tfd = [
         ],
         # pos_lat
         ["Cell Track",
-         "x",
+         "y",
          lambda x: x
          ],
         # time (set by RTDC_DataSet)

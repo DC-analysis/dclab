@@ -1,5 +1,12 @@
+0.1.3
+- Fixed minor polygon filter problems.
+- Fix a couple of ShapeOut-related issues:
+  - https://github.com/ZellMechanik-Dresden/ShapeOut/issues/17 
+  - https://github.com/ZellMechanik-Dresden/ShapeOut/issues/20
+  - https://github.com/ZellMechanik-Dresden/ShapeOut/issues/37
+  - https://github.com/ZellMechanik-Dresden/ShapeOut/issues/38
 0.1.2
-- add support for limiting amount of data points analyzed
+- Add support for limiting amount of data points analyzed
   with the configuration keyword "Limit Events"
 - Comments refer to "events" instead of "points" from now on
 

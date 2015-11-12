@@ -262,8 +262,8 @@ tfd = [
          ],
         # aspect
         ["Cell Track",
-         ["ax1", "ax2"], #(lateral, axial)
-         lambda ax1, ax2: ax1 / ax2
+         ["ax1", "ax2"], #(perpendicular to flow, parallel to flow)
+         lambda ax1, ax2: ax2 / ax1
          ],
         # circ
         ["Cell Track",

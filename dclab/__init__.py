@@ -377,22 +377,32 @@ class RTDC_DataSet(object):
         ## -> uid, axl, rdv, tfd
         # time is always there
         datalen = len(tdms_file.object("Cell Track", "time").data)
-        for i, group in enumerate(dfn.tfd):
+        for ii, group in enumerate(dfn.tfd):
+            # ii iterates through the data that we could possibly extract
+            # from a the tdms file.
+            # The `group` contains all information necessary to extract
+            # the data: table name, used column names, method to compute
+            # the desired data from the columns.
             table = group[0]
             if not isinstance(group[1], list):
+                # just for standards
                 group[1] = [group[1]]
             func = group[2]
             args = []
             try:
                 for arg in group[1]:
                     data = tdms_file.object(table, arg).data
+                    if data is None:
+                        # Sometimes the column is empty. Fill it
+                        # with zeros:
+                        data = np.zeros(datalen)
                     args.append(data)
             except KeyError:
                 # set it to zero
                 func = lambda x: x
                 args = [np.zeros(datalen)]
             finally:
-                setattr(self, dfn.rdv[i], func(*args))
+                setattr(self, dfn.rdv[ii], func(*args))
 
         # Plotting filters, set by "GetDownSampledScatter".
         # This is a nested filter which is applied after self._filter
@@ -406,7 +416,7 @@ class RTDC_DataSet(object):
         attrlist = dir(self)
         # Find attributes to be filtered
         # These are the filters from which self._filter is computed
-        inifilter = np.ones(data.shape, dtype=bool)
+        inifilter = np.ones(datalen, dtype=bool)
         for attr in attrlist:
             # only allow filterable attributes from global dfn.cfgmap
             if not dfn.cfgmap.has_key(attr):

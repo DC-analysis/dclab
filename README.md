@@ -68,5 +68,3 @@ version of dclab to PyPI in order to get your new code into ShapeOut.
 
 
 
-
-

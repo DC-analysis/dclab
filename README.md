@@ -26,7 +26,8 @@ e.g. `my_new_feature_dev`, and create a pull-request
 once you are done making your changes.
 **Please make sure to edit the 
 [Changelog](https://github.com/ZellMechanik-Dresden/dclab/blob/master/CHANGELOG)**. 
-**Very important:** Please always try use 
+
+**Very important:** Please always try to use 
 
 	git pull --rebase
 

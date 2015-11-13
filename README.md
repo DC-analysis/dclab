@@ -1,5 +1,4 @@
-dclab
-=====
+# dclab
 [![PyPI](http://img.shields.io/pypi/v/dclab.svg)](https://pypi.python.org/pypi/dclab)
 
 This is a Python library for the post-measurement
@@ -8,18 +7,16 @@ data sets; an essential part of
 [ShapeOut](https://github.com/ZellMechanik-Dresden/ShapeOut).
 
 
-Installation
-------------
+# Installation
 To install the latest release, simply run `pip install dclab`.
 If you want to get the bleeding edge from GitHub, run
 `pip install git+git://github.com/ZellMechanik-Dresden/dclab.git`.
 
 
-Information for developers
---------------------------
+# Information for developers
 
-Contributing
-~~~~~~~~~~~~
+
+## Contributing
 The main branch for developing dclab is master.
 If you want to make small changes like one-liners,
 documentation, or default values in the configuration,
@@ -27,11 +24,20 @@ you may work on the master branch. If you want to change
 more, please (fork dclab and) create a separate branch,
 e.g. `my_new_feature_dev`, and create a pull-request
 once you are done making your changes.
-_Please make sure to edit the 
-[Changelog](https://github.com/ZellMechanik-Dresden/dclab/blob/master/CHANGELOG). 
+**Please make sure to edit the 
+[Changelog](https://github.com/ZellMechanik-Dresden/dclab/blob/master/CHANGELOG)**. 
+**Very important:** Please always try use 
 
-Incrementing version
-~~~~~~~~~~~~~~~~~~~~
+	git pull --rebase
+
+instead of
+
+	git pull
+	
+to prevent confusions in the commit history.
+
+
+## Incrementing version
 dclab currently gets its version from 
 [dclab._version](https://github.com/ZellMechanik-Dresden/dclab/blob/master/dclab/_version.py).
 If you think that a new version should be published,
@@ -43,7 +49,6 @@ permissions to do so):
 	git push --tags origin
 
 
-Uploading to PyPI
-~~~~~~~~~~~~~~~~~
+## Uploading to PyPI
 If this is not automated yet, only @paulmueller can upload
 a new version of dclab to the Python Package Index.

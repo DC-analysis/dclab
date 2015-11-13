@@ -36,6 +36,10 @@ instead of
 	
 to prevent confusions in the commit history.
 
+#### Tests
+dclab is tested using pytest. If you have the time, please write test
+methods for your code and put them in the `tests` directory.
+
 
 #### Incrementing version
 dclab currently gets its version from 

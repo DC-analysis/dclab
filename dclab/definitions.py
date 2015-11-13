@@ -321,32 +321,32 @@ tfd = [
         # For 3-channel setup use FL-1 .. FL-3 annotation
         # FL-1 maximum of peak (green channel)
         ["Cell Track",
-         "FL-1max",
+         "FL1max",
          lambda x: x
         ],
         # FL-1 width channel
         ["Cell Track",
-         "FL-1width",
+         "FL1width",
          lambda x: x
         ],
         # FL-2 maximum of peak (orange channel)
         ["Cell Track",
-         "FL-2max",
+         "FL2max",
          lambda x: x
         ],
         # FL-2 width channel
         ["Cell Track",
-         "FL-2width",
+         "FL2width",
          lambda x: x
         ],
         # FL-3 maximum of peak (red channel)
         ["Cell Track",
-         "FL-3max",
+         "FL3max",
          lambda x: x
         ],
         # FL-3 width channel
         ["Cell Track",
-         "FL-3width",
+         "FL3width",
          lambda x: x
         ],
         ]

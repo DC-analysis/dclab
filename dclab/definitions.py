@@ -211,6 +211,12 @@ uid = [
         "Time",
         "FC0max",
         "FC0width",
+        "FL-1max",
+        "FL-1width",
+        "FL-2max",
+        "FL-2width",
+        "FL-3max",
+        "FL-3width",
        ]
 # Axes label (same order as UID)
 axl = [
@@ -225,6 +231,12 @@ axl = [
         u"Frame Time [s]",
         u"Fluorescence Intensity Maximum [ADC] (Ch.0)",
         u"Fluorescence Peak Width [µs]",
+        u"FL-1 (green) Maximum [ADC]",
+        u"FL-1 (green) width [us]",
+        u"FL-2 (orange) Maximum [ADC]",
+        u"FL-2 (orange) width [us]",
+        u"FL-3 (red) Maximum [ADC]",
+        u"FL-3 (red) width [us]",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -239,6 +251,12 @@ rdv = [
         "time",
         "fc0m",
         "fc0w",
+        "fl1m",
+        "fl1w",
+        "fl2m",
+        "fl2w",
+        "fl3m",
+        "fl3w",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -298,6 +316,37 @@ tfd = [
         # FC0 width channel
         ["Cell Track",
          "FC0_width",
+         lambda x: x
+        ],
+        # For 3-channel setup use FL-1 .. FL-3 annotation
+        # FL-1 maximum of peak (green channel)
+        ["Cell Track",
+         "FL-1max",
+         lambda x: x
+        ],
+        # FL-1 width channel
+        ["Cell Track",
+         "FL-1width",
+         lambda x: x
+        ],
+        # FL-2 maximum of peak (orange channel)
+        ["Cell Track",
+         "FL-2max",
+         lambda x: x
+        ],
+        # FL-2 width channel
+        ["Cell Track",
+         "FL-2width",
+         lambda x: x
+        ],
+        # FL-3 maximum of peak (red channel)
+        ["Cell Track",
+         "FL-3max",
+         lambda x: x
+        ],
+        # FL-3 width channel
+        ["Cell Track",
+         "FL-3width",
          lambda x: x
         ],
         ]

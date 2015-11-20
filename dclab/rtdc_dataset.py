@@ -20,6 +20,7 @@ import warnings
 # Definitions
 from . import definitions as dfn
 from .polygon_filter import PolygonFilter
+from . import kde_methods
 
 class RTDC_DataSet(object):
     """ An RTDC measurement object.
@@ -29,7 +30,6 @@ class RTDC_DataSet(object):
     def __init__(self, tdms_filename):
         """ Load tdms file and set all variables """
         # Kernel density estimator dictionaries
-        self._KDE_Scatter = {}
         self._KDE_Contour = {}
         self._old_filters = {} # for comparison to new filters
         self._Downsampled_Scatter = {}
@@ -339,56 +339,41 @@ class RTDC_DataSet(object):
         # dummy area-circ
         deltaarea = self.Configuration["Plotting"]["Contour Accuracy "+xax]
         deltacirc = self.Configuration["Plotting"]["Contour Accuracy "+yax]
-
-        # kernel density estimator
-        # Ask Christoph H. about kernel density estimator, he has an other library
-        # which allows for manual setting of the bandwidth parameter
-        key = yax+"+"+xax+"_"+kde_type+str(deltaarea)+str(deltacirc)
         
         if kde_type == "multivariate":
             bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
             bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
-            key += "_bw{}+{}_".format(bwx,bwy)
 
-        # make sure the density is only used for the same set of
-        # filters.
+        # setup
         if self.Configuration["Filtering"]["Enable Filters"]:
-            key += str(self.Configuration["Filtering"]).strip("{}")
+            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
+            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
+        else:
+            x = getattr(self, dfn.cfgmaprev[xax])
+            y = getattr(self, dfn.cfgmaprev[yax])
+        # evaluation
+        xlin = np.arange(x.min(), x.max(), deltaarea)
+        ylin = np.arange(y.min(), y.max(), deltacirc)
+        xmesh, ymesh = np.meshgrid(xlin,ylin)
 
-        if not self._KDE_Contour.has_key(key):
-            # setup
-            if self.Configuration["Filtering"]["Enable Filters"]:
-                x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
-                y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-            else:
-                x = getattr(self, dfn.cfgmaprev[xax])
-                y = getattr(self, dfn.cfgmaprev[yax])
-            # evaluation
-            xlin = np.arange(x.min(), x.max(), deltaarea)
-            ylin = np.arange(y.min(), y.max(), deltacirc)
-            Xmesh,Ymesh = np.meshgrid(xlin,ylin)
-            X = Xmesh.ravel()
-            Y = Ymesh.ravel()
-            if kde_type == "gauss":
-                estimator = gaussian_kde([x,y])
-                Z = estimator.evaluate([X,Y]).reshape(len(ylin),len(xlin))
-            elif kde_type == "multivariate":
-                estimator_ly = KDEMultivariate(data=[x,y],var_type='cc',
-                                               bw=[bwx, bwy])
-                Z = estimator_ly.pdf([X,Y]).reshape(len(ylin),len(xlin))
-            else:
-                raise ValueError("Unknown KDE estimator {}".format(
-                                                              kde_type))                
-            self._KDE_Contour[key] = (Xmesh,Ymesh,Z)
-        return self._KDE_Contour[key]
-
+        a = time.time()
+        if kde_type == "gauss":
+            density = kde_methods.kde_gauss(x, y, xmesh, ymesh)
+        elif kde_type == "multivariate":
+            bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
+            bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
+            density = kde_methods.kde_multivariate(x, y, [bwx, bwy], xmesh, ymesh)
+        else:
+            raise ValueError("Unknown KDE estimator {}".format(kde_type))
+        
+        print("KDE contour {} time: ".format(kde_type), time.time()-a)
+        return xmesh, ymesh, density
 
 
     def GetKDE_Scatter(self, yax="Defo", xax="Area", positions=None):
         """ The evaluated Gaussian Kernel Density Estimate
         
         -> for scatter plots
-        
         
         Parameters
         ----------
@@ -413,65 +398,29 @@ class RTDC_DataSet(object):
         `scipy.stats.gaussian_kde`
         `statsmodels.nonparametric.kernel_density.KDEMultivariate`
         
-        TODO
-        ----
-        Do not use positions for the hasher. If the plot is filtered
-        with marker size, we might end up computing the same KDE for
-        the same points over and over again.
         """
-        # Dictionary for KDE
-        # kernel density estimator
-        # Ask Christoph H. about kernel density estimator, he has an other library
-        # which allows for manual setting of the bandwidth parameter
-        
+        if self.Configuration["Filtering"]["Enable Filters"]:
+            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
+            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
+        else:
+            x = getattr(self, dfn.cfgmaprev[xax])
+            y = getattr(self, dfn.cfgmaprev[yax])
+
         kde_type = self.Configuration["Plotting"]["KDE"].lower()
         
-        # make sure the density is used for only this set of variables
-        key = yax+"+"+xax+"_"+kde_type
-        if kde_type == "multivariate":
+        a = time.time()
+        
+        if kde_type == "gauss":
+            density = kde_methods.kde_gauss(x, y)
+        elif kde_type == "multivariate":
             bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
             bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
-            key += "_bw{}+{}_".format(bwx,bwy)
-        # make sure the density is only used for the same set of
-        # filters.
-        if self.Configuration["Filtering"]["Enable Filters"]:
-            key += str(self.Configuration["Filtering"]).strip("{}")
-
-        if positions is not None:
-            # compute hash of positions
-            hasher = hashlib.sha256()
-            hasher.update(positions)
-            key += hasher.hexdigest()
+            density = kde_methods.kde_multivariate(x, y, bw=[bwx, bwy])
+        else:
+            raise ValueError("Unknown KDE estimator {}".format(kde_type))
         
-        if not self._KDE_Scatter.has_key(key):
-            if self.Configuration["Filtering"]["Enable Filters"]:
-                x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
-                y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-            else:
-                x = getattr(self, dfn.cfgmaprev[xax])
-                y = getattr(self, dfn.cfgmaprev[yax])
-            input_positions = np.vstack([x.ravel(), y.ravel()])
-            # Kernel Density estimation
-            if kde_type == "gauss":
-                a = time.time()
-                estimator = gaussian_kde(input_positions)
-                if positions is None:
-                    positions = input_positions
-                density = estimator(positions)
-                print("gaussian estimation scatter time: ", time.time()-a)
-            elif kde_type == "multivariate":
-                a = time.time()
-                estimator_ly = KDEMultivariate(data=[x,y],var_type='cc',
-                                               bw=[bwx, bwy])
-                if positions is None:
-                    positions = input_positions
-                density = estimator_ly.pdf(positions)
-                print("multivariate estimation scatter time: ", time.time()-a)
-            else:
-                raise ValueError("Unknown KDE estimator {}".format(
-                                                              kde_type))
-            self._KDE_Scatter[key] = density
-        return self._KDE_Scatter[key]
+        print("KDE scatter {} time: ".format(kde_type), time.time()-a)
+        return density
 
 
     def PolygonFilterAppend(self, filt):

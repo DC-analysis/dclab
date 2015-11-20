@@ -11,8 +11,6 @@ import hashlib
 from nptdms import TdmsFile
 import numpy as np
 import os
-from scipy.stats import gaussian_kde
-from statsmodels.nonparametric.kernel_density import KDEMultivariate
 import time
     
 import warnings

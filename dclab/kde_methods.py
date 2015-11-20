@@ -5,7 +5,6 @@ Kernel Density Estimation methods
 """
 from __future__ import division, print_function
 
-from functools import partial
 import numpy as np
 from scipy.stats import gaussian_kde
 from statsmodels.nonparametric.kernel_density import KDEMultivariate

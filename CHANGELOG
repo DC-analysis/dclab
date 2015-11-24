@@ -1,4 +1,6 @@
 0.1.5
+- Fix regressions with filtering.
+  https://github.com/ZellMechanik-Dresden/ShapeOut/issues/43 
 - Ignore empty columns in .tdms files (#1)
 - Moved RTDC_DataSet and PolygonFilter classes to separate files
 - Introduce more transparent caching - improves speed in some cases

@@ -408,12 +408,21 @@ class RTDC_DataSet(object):
         
         a = time.time()
         
+        if positions is None:
+            posx = None
+            posy = None
+        else:
+            posx = positions[0]
+            posy = positions[1]
+        
         if kde_type == "gauss":
-            density = kde_methods.kde_gauss(x, y)
+            density = kde_methods.kde_gauss(x, y,
+                                            xout=posx, yout=posy)
         elif kde_type == "multivariate":
             bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
             bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
-            density = kde_methods.kde_multivariate(x, y, bw=[bwx, bwy])
+            density = kde_methods.kde_multivariate(x, y, bw=[bwx, bwy],
+                                                   xout=posx, yout=posy)
         else:
             raise ValueError("Unknown KDE estimator {}".format(kde_type))
         

@@ -28,7 +28,6 @@ class RTDC_DataSet(object):
     def __init__(self, tdms_filename):
         """ Load tdms file and set all variables """
         # Kernel density estimator dictionaries
-        self._KDE_Contour = {}
         self._old_filters = {} # for comparison to new filters
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []

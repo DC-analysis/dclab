@@ -14,6 +14,7 @@ Installation
 To install the latest release, simply run
 
 ::
+
 	pip install dclab
 	
 
@@ -35,7 +36,7 @@ If you want to make small changes like one-liners,
 documentation, or default values in the configuration,
 you may work on the master branch. If you want to change
 more, please (fork dclab and) create a separate branch,
-e.g. `my_new_feature_dev`, and create a pull-request
+e.g. ``my_new_feature_dev``, and create a pull-request
 once you are done making your changes.
 Please make sure to edit the 
 `Changelog <https://github.com/ZellMechanik-Dresden/dclab/blob/master/CHANGELOG>`__. 
@@ -57,7 +58,7 @@ to prevent confusions in the commit history.
 Tests
 ~~~~~
 dclab is tested using pytest. If you have the time, please write test
-methods for your code and put them in the `tests` directory.
+methods for your code and put them in the ``tests`` directory.
 
 
 Incrementing version

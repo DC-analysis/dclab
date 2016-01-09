@@ -53,5 +53,11 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-# PyBuilder
-target/
+*.md~
+*.txt~
+*.py~
+*.in~
+*.yml~
+*.rst~
+
+_version_save.py

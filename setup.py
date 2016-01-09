@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from os.path import join, dirname, realpath
-from setuptools import setup, Command
-import subprocess as sp
+from os.path import exists, dirname, realpath
+from setuptools import setup
 import sys
 
 author = u"Paul Müller"
@@ -19,21 +18,6 @@ except:
     version = "unknown"
 
 
-class PyTest(Command):
-    """ Perform pytests
-    """
-    user_options = []
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        errno = sp.call([sys.executable, 'tests/runtests.py'])
-        raise SystemExit(errno)
-
-
 if __name__ == "__main__":
     setup(
         name=name,
@@ -45,7 +29,7 @@ if __name__ == "__main__":
         package_dir={name: name},
         license="GPL v2",
         description=description,
-        #long_description=open(join(dirname(__file__), 'README.md')).read(),
+        long_description=open('README.rst').read() if exists('README.rst') else '',
         install_requires=[
                           "nptdms",
                           "NumPy >= 1.5.1",
@@ -53,9 +37,8 @@ if __name__ == "__main__":
                           "statsmodels"
                           ],
         keywords=["RTDC", "deformation", "cytometry", "zellmechanik"],
-        extras_require={
-                        'doc': ['sphinx']
-                       },
+        setup_requires=['pytest-runner'],
+        tests_require=["pytest"],
         #data_files=[('dclab', ['dclab/dclab.cfg'])],
         include_package_data=True,
         classifiers= [
@@ -67,7 +50,5 @@ if __name__ == "__main__":
             'Intended Audience :: Science/Research'
                      ],
         platforms=['ALL'],
-        cmdclass = {'test': PyTest,
-                    },
         )
 

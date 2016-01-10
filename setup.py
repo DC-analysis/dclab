@@ -34,12 +34,12 @@ if __name__ == "__main__":
                           "nptdms",
                           "NumPy >= 1.5.1",
                           "scipy",
-                          "statsmodels"
+                          "statsmodels >= 0.5.0"
                           ],
         keywords=["RTDC", "deformation", "cytometry", "zellmechanik"],
         setup_requires=['pytest-runner'],
         tests_require=["pytest"],
-        #data_files=[('dclab', ['dclab/dclab.cfg'])],
+        package_data={'dclab': ['dclab/dclab.cfg']},
         include_package_data=True,
         classifiers= [
             'Operating System :: OS Independent',

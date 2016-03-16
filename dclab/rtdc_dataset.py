@@ -150,6 +150,200 @@ class RTDC_DataSet(object):
                     self.contours[frame] = cont
 
 
+    def ApplyFilter(self, force=[]):
+        """ Computes the filters for the data set
+        
+        Uses `self._old_filters` to determine new filters.
+
+        Parameters
+        ----------
+        force : list()
+            A list of parameters that must be refiltered.
+
+
+        Notes
+        -----
+        Updates `self.Configuration["Filtering"].
+        
+        The data is filtered according to filterable attributes in
+        the global variable `dfn.cfgmap`.
+        """
+
+        # These lists may help us become very fast in the future
+        newkeys = list()
+        oldvals = list()
+        newvals = list()
+        
+        if not self.Configuration.has_key("Filtering"):
+            self.Configuration["Filtering"] = dict()
+
+        ## Determine which data was updated
+        FIL = self.Configuration["Filtering"]
+        OLD = self._old_filters
+        
+        for skey in list(FIL.keys()):
+            if not OLD.has_key(skey):
+                OLD[skey] = None
+            if OLD[skey] != FIL[skey]:
+                newkeys.append(skey)
+                oldvals.append(OLD[skey])
+                newvals.append(FIL[skey])
+
+        # A simple filtering technique just updates the _filter_*
+        # variables using the global dfn.cfgmap dictionary.
+        
+        # This line gets the attribute names of self that need updates.
+        attr2update = list()
+        for k in newkeys:
+            # k[:-4] because we want to crop " Min" and " Max"
+            # "Polygon Filters" is not processed here.
+            if k[:-4] in dfn.uid:
+                attr2update.append(dfn.cfgmaprev[k[:-4]])
+
+
+        if "deform" in attr2update:
+            attr2update.append("circ")
+        elif "circ" in attr2update:
+            attr2update.append("deform")
+
+        for f in force:
+            # Check if a correct variable is forced
+            if f in list(dfn.cfgmaprev.keys()):
+                attr2update.append(dfn.cfgmaprev[f])
+            else:
+                warnings.warn(
+                    "Unknown variable not force-filtered: {}".format(f))
+        
+        attr2update = np.unique(attr2update)
+
+        for attr in attr2update:
+            data = getattr(self, attr)
+            if isinstance(data, np.ndarray):
+                fstart = dfn.cfgmap[attr]+" Min"
+                fend = dfn.cfgmap[attr]+" Max"
+                # If min and max exist and if they are not identical:
+                indices = getattr(self, "_filter_"+attr)
+                if (FIL.has_key(fstart) and FIL.has_key(fend) and
+                                         FIL[fstart] != FIL[fend]):
+                    # TODO: speedup
+                    # Here one could check for smaller values in the
+                    # lists oldvals/newvals that we defined above.
+                    # Be sure to check agains force in that case!
+                    ivalstart = FIL[fstart]
+                    ivalend = FIL[fend]
+                    indices[:] = (ivalstart <= data)*(data <= ivalend)
+                else:
+                    indices[:] = True
+        
+        # Filter Polygons
+        # check if something has changed
+        pf_id = "Polygon Filters"
+        if (
+            (FIL.has_key(pf_id) and not OLD.has_key(pf_id)) or
+            (FIL.has_key(pf_id) and OLD.has_key(pf_id) and
+             FIL[pf_id] != OLD[pf_id])):
+            self._filter_polygon[:] = True
+            # perform polygon filtering
+            for p in PolygonFilter.instances:
+                if p.unique_id in FIL["Polygon Filters"]:
+                    # update self._filter_polygon
+                    # iterate through axes
+                    datax = getattr(self, dfn.cfgmaprev[p.axes[0]])
+                    datay = getattr(self, dfn.cfgmaprev[p.axes[1]])
+                    self._filter_polygon *= p.filter(datax, datay)
+        
+        # Reset limit filters before
+        # This is important. If we do not do this the we have
+        # a pre-filter that does not make sense.
+        self._filter_limit = np.ones_like(self._filter)
+        
+        # now update the entire object filter
+        # get a list of all filters
+        self._filter[:] = True
+        for attr in dir(self):
+            if attr.startswith("_filter_"):
+                self._filter[:] *= getattr(self, attr)
+
+        # Filter with configuration keyword argument "Limit Events"
+        if FIL["Limit Events"] > 0:
+            limit = FIL["Limit Events"]
+            incl = 1*self._filter
+            numevents = np.sum(incl)
+            if limit <= numevents:
+                # Perform equally distributed removal of events
+                # We have too many events
+                remove = numevents - limit
+                while remove > 10:
+                    there = np.where(incl)[0]
+                    # first remove evenly distributed events
+                    dist = int(np.ceil(there.shape[0]/remove))
+                    incl[there[::dist]] = 0
+                    numevents = np.sum(incl)
+                    remove = numevents - limit
+                there = np.where(incl)[0]
+                incl[there[:remove]] = 0
+                self._filter_limit = incl
+                print("'Limit Events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
+            elif limit == numevents:
+                # everything is ok
+                self._filter_limit = np.ones_like(self._filter)
+                print("'Limit Events' is size of filtered data.")
+            elif limit <= self._filter.shape[0]:
+                self._filter_limit = np.ones_like(self._filter)
+                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
+                              "be larger than length of filtered data set! "+
+                              "Resetting 'Limit Events'!")
+                FIL["Limit Events"] = 0
+            else:
+                self._filter_limit = np.ones_like(self._filter)
+                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
+                              "be larger than length of data set! "+
+                              "Resetting 'Limit Events'!")
+                FIL["Limit Events"] = 0
+        else:
+            # revert everything back to how it was
+            self._filter_limit = np.ones_like(self._filter)
+        
+        # Update filter again
+        self._filter *= self._filter_limit 
+        
+        # Actual filtering is then done during plotting            
+        self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
+
+
+    def ExportTSV(self, path, columns, filtered=True, override=False):
+        """ Export the data of the current instance to a .tsv file
+        
+        Parameters
+        ----------
+        path : str
+            Path to a .tsv file. The ending .tsv is added automatically.
+        columns : list of str
+            The columns in the resulting .tsv file. These are strings
+            that are defined in `dclab.definitions.rdv`, e.g.
+            "area", "area_um", "area_ratio", "aspect", "circ", "fl1w".
+        filtered : bool
+            If set to ``True``, only the filtered data (index in self._filter)
+            are used.
+        override : bool
+            If set to ``True``, an existing file ``path`` will be overridden.
+            If set to ``False``, an ``OSError`` will be raised.
+        """
+        # Make sure that path ends with .tsv
+        if not path.endswith(".tsv"):
+            path += ".tsv"
+        # Check if file already exist
+        if not override and os.path.exists(path):
+            raise OSError("File already exists: {}\n".format(
+                                    path.encode("ascii", "ignore"))+
+                          "Please use the `override=True` option.")
+        # Check that columns is in dfn.rdv
+        for c in columns:
+            assert c in dfn.rdv, "Unknown column name {}".format(c)
+        
+        raise NotImplementedError("This method is not yet implemented!")
+
+
     def GetDownSampledScatter(self, c=None, axsize=(300,300),
                               markersize=1,
                               downsample_events=None):
@@ -429,6 +623,12 @@ class RTDC_DataSet(object):
         return density
 
 
+    def GetPlotAxes(self):
+        #return 
+        p = self.Configuration["Plotting"]
+        return [p["Axis X"], p["Axis Y"]]
+
+
     def PolygonFilterAppend(self, filt):
         """ Associates a Polygon Filter to the RTDC_DataSet
         
@@ -458,12 +658,6 @@ class RTDC_DataSet(object):
         self.Configuration["Filtering"]["Polygon Filters"].remove(uid)
 
 
-    def GetPlotAxes(self):
-        #return 
-        p = self.Configuration["Plotting"]
-        return [p["Axis X"], p["Axis Y"]]
-
-
     def SetConfiguration(self):
         """ Import configuration of measurement
         
@@ -481,168 +675,6 @@ class RTDC_DataSet(object):
         self.UpdateConfiguration(camcfg)
         parcfg = dfn.LoadConfiguration(os.path.join(self.fdir, mx+"_para.ini"))
         self.UpdateConfiguration(parcfg)
-
-
-    def ApplyFilter(self, force=[]):
-        """ Computes the filters for the data set
-        
-        Uses `self._old_filters` to determine new filters.
-
-        Parameters
-        ----------
-        force : list()
-            A list of parameters that must be refiltered.
-
-
-        Notes
-        -----
-        Updates `self.Configuration["Filtering"].
-        
-        The data is filtered according to filterable attributes in
-        the global variable `dfn.cfgmap`.
-        """
-
-        # These lists may help us become very fast in the future
-        newkeys = list()
-        oldvals = list()
-        newvals = list()
-        
-        if not self.Configuration.has_key("Filtering"):
-            self.Configuration["Filtering"] = dict()
-
-        ## Determine which data was updated
-        FIL = self.Configuration["Filtering"]
-        OLD = self._old_filters
-        
-        for skey in list(FIL.keys()):
-            if not OLD.has_key(skey):
-                OLD[skey] = None
-            if OLD[skey] != FIL[skey]:
-                newkeys.append(skey)
-                oldvals.append(OLD[skey])
-                newvals.append(FIL[skey])
-
-        # A simple filtering technique just updates the _filter_*
-        # variables using the global dfn.cfgmap dictionary.
-        
-        # This line gets the attribute names of self that need updates.
-        attr2update = list()
-        for k in newkeys:
-            # k[:-4] because we want to crop " Min" and " Max"
-            # "Polygon Filters" is not processed here.
-            if k[:-4] in dfn.uid:
-                attr2update.append(dfn.cfgmaprev[k[:-4]])
-
-
-        if "deform" in attr2update:
-            attr2update.append("circ")
-        elif "circ" in attr2update:
-            attr2update.append("deform")
-
-        for f in force:
-            # Check if a correct variable is forced
-            if f in list(dfn.cfgmaprev.keys()):
-                attr2update.append(dfn.cfgmaprev[f])
-            else:
-                warnings.warn(
-                    "Unknown variable not force-filtered: {}".format(f))
-        
-        attr2update = np.unique(attr2update)
-
-        for attr in attr2update:
-            data = getattr(self, attr)
-            if isinstance(data, np.ndarray):
-                fstart = dfn.cfgmap[attr]+" Min"
-                fend = dfn.cfgmap[attr]+" Max"
-                # If min and max exist and if they are not identical:
-                indices = getattr(self, "_filter_"+attr)
-                if (FIL.has_key(fstart) and FIL.has_key(fend) and
-                                         FIL[fstart] != FIL[fend]):
-                    # TODO: speedup
-                    # Here one could check for smaller values in the
-                    # lists oldvals/newvals that we defined above.
-                    # Be sure to check agains force in that case!
-                    ivalstart = FIL[fstart]
-                    ivalend = FIL[fend]
-                    indices[:] = (ivalstart <= data)*(data <= ivalend)
-                else:
-                    indices[:] = True
-        
-        # Filter Polygons
-        # check if something has changed
-        pf_id = "Polygon Filters"
-        if (
-            (FIL.has_key(pf_id) and not OLD.has_key(pf_id)) or
-            (FIL.has_key(pf_id) and OLD.has_key(pf_id) and
-             FIL[pf_id] != OLD[pf_id])):
-            self._filter_polygon[:] = True
-            # perform polygon filtering
-            for p in PolygonFilter.instances:
-                if p.unique_id in FIL["Polygon Filters"]:
-                    # update self._filter_polygon
-                    # iterate through axes
-                    datax = getattr(self, dfn.cfgmaprev[p.axes[0]])
-                    datay = getattr(self, dfn.cfgmaprev[p.axes[1]])
-                    self._filter_polygon *= p.filter(datax, datay)
-        
-        # Reset limit filters before
-        # This is important. If we do not do this the we have
-        # a pre-filter that does not make sense.
-        self._filter_limit = np.ones_like(self._filter)
-        
-        # now update the entire object filter
-        # get a list of all filters
-        self._filter[:] = True
-        for attr in dir(self):
-            if attr.startswith("_filter_"):
-                self._filter[:] *= getattr(self, attr)
-
-        # Filter with configuration keyword argument "Limit Events"
-        if FIL["Limit Events"] > 0:
-            limit = FIL["Limit Events"]
-            incl = 1*self._filter
-            numevents = np.sum(incl)
-            if limit <= numevents:
-                # Perform equally distributed removal of events
-                # We have too many events
-                remove = numevents - limit
-                while remove > 10:
-                    there = np.where(incl)[0]
-                    # first remove evenly distributed events
-                    dist = int(np.ceil(there.shape[0]/remove))
-                    incl[there[::dist]] = 0
-                    numevents = np.sum(incl)
-                    remove = numevents - limit
-                there = np.where(incl)[0]
-                incl[there[:remove]] = 0
-                self._filter_limit = incl
-                print("'Limit Events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
-            elif limit == numevents:
-                # everything is ok
-                self._filter_limit = np.ones_like(self._filter)
-                print("'Limit Events' is size of filtered data.")
-            elif limit <= self._filter.shape[0]:
-                self._filter_limit = np.ones_like(self._filter)
-                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
-                              "be larger than length of filtered data set! "+
-                              "Resetting 'Limit Events'!")
-                FIL["Limit Events"] = 0
-            else:
-                self._filter_limit = np.ones_like(self._filter)
-                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
-                              "be larger than length of data set! "+
-                              "Resetting 'Limit Events'!")
-                FIL["Limit Events"] = 0
-        else:
-            # revert everything back to how it was
-            self._filter_limit = np.ones_like(self._filter)
-        
-        # Update filter again
-        self._filter *= self._filter_limit 
-        
-        # Actual filtering is then done during plotting            
-        
-        self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
 
 
     def UpdateConfiguration(self, newcfg):

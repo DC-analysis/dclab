@@ -1,3 +1,5 @@
+0.1.6
+- Added `RTDC_DataSet.ExportTSV` for data export
 0.1.5
 - Fix regressions with filtering.
   https://github.com/ZellMechanik-Dresden/ShapeOut/issues/43 

@@ -356,7 +356,8 @@ tfd = [
 cfgmap = dict()        # area_um -> Area
 cfgmaprev = dict()     # Area -> area_um
 axlabels = dict()      # Area -> Cell Size [µm²]
-axlabelsrev = dict()   # Cell Size [µm²] -> Area 
+axlabelsrev = dict()   # Cell Size [µm²] -> Area
+
 # here the name maps are defined
 for _u,_a,_r in zip(uid, axl, rdv):
     cfgmap[_r] = _u

@@ -337,11 +337,26 @@ class RTDC_DataSet(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that columns is in dfn.rdv
+        # Check that columns are in dfn.rdv
         for c in columns:
             assert c in dfn.rdv, "Unknown column name {}".format(c)
         
-        raise NotImplementedError("This method is not yet implemented!")
+        # Open file
+        with codecs.open(path, "w", encoding="utf-8") as fd:
+            # write header
+            header = "\t".join([ dfn.axlabels[dfn.cfgmap[c]] for c in columns ])
+            fd.write("# "+header+"\n")
+            
+            # write data
+            if filtered:
+                data = [ getattr(self, c)[self._filter] for c in columns ]
+            else:
+                data = [ getattr(self, c) for c in columns ]
+            
+            np.savetxt(fd,
+                       np.array(data).transpose(),
+                       fmt="%.10e",
+                       delimiter="\t")
 
 
     def GetDownSampledScatter(self, c=None, axsize=(300,300),

@@ -320,8 +320,8 @@ class RTDC_DataSet(object):
             Path to a .tsv file. The ending .tsv is added automatically.
         columns : list of str
             The columns in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.rdv`, e.g.
-            "area", "area_um", "area_ratio", "aspect", "circ", "fl1w".
+            that are defined in `dclab.definitions.uid`, e.g.
+            "Area", "Defo", "Frame", "FL-1max", "Area Ratio".
         filtered : bool
             If set to ``True``, only the filtered data (index in self._filter)
             are used.
@@ -337,21 +337,23 @@ class RTDC_DataSet(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that columns are in dfn.rdv
+        # Check that columns are in dfn.uid
         for c in columns:
-            assert c in dfn.rdv, "Unknown column name {}".format(c)
+            assert c in dfn.uid, "Unknown column name {}".format(c)
         
         # Open file
         with codecs.open(path, "w", encoding="utf-8") as fd:
             # write header
-            header = "\t".join([ dfn.axlabels[dfn.cfgmap[c]] for c in columns ])
-            fd.write("# "+header+"\n")
+            header1 = "\t".join([ c for c in columns ])
+            fd.write("# "+header1+"\n")
+            header2 = "\t".join([ dfn.axlabels[c] for c in columns ])
+            fd.write("# "+header2+"\n")
             
             # write data
             if filtered:
-                data = [ getattr(self, c)[self._filter] for c in columns ]
+                data = [ getattr(self, dfn.cfgmaprev[c])[self._filter] for c in columns ]
             else:
-                data = [ getattr(self, c) for c in columns ]
+                data = [ getattr(self, dfn.cfgmaprev[c]) for c in columns ]
             
             np.savetxt(fd,
                        np.array(data).transpose(),

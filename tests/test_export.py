@@ -54,7 +54,7 @@ def test_export():
     tdmsfile = join(edest, "Online/M1_2us_70A_0.120000ul_s.tdms")
     ds = dclab.RTDC_DataSet(tdmsfile)
     
-    ds.ExportTSV(join(edest, "test"), ["area", "deform", "time", "fl1m", "frame"], override=True)
+    ds.ExportTSV(join(edest, "test"), ["Area", "Defo", "Time", "Frame", "FL-3width"], override=True)
 
 
 if __name__ == "__main__":

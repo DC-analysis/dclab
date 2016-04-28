@@ -110,10 +110,11 @@ class RTDC_DataSet(object):
         self.SetConfiguration()
 
         # Get video file name
-        videos = []
-        for f in os.listdir(self.fdir):
-            if f.endswith(".avi") and f.startswith(self.name[:2]):
-                videos.append(f)
+        videos = [v for v in os.listdir(self.fdir) if v.endswith(".avi")]
+        # Filter videos according to measurement number
+        meas_id = self.name.split("_")[0]
+        videos = [v for v in videos if v.split("_")[0] == meas_id] 
+
         videos.sort()
         if len(videos) == 0:
             self.video = None

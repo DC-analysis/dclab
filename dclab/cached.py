@@ -28,32 +28,28 @@ class Cache(object):
     _keys = []
     def __init__(self, func):
         self.func = func
+
+    
     def __call__(self, *args, **kwargs):
-        ahash = hashlib.md5()
+        self.ahash = hashlib.md5()
 
         # hash arguments
         for arg in args:
-            if isinstance(arg, np.ndarray):
-                ahash.update(arg.view(np.uint8))
-            else:
-                ahash.update(arg)
+            self._update_hash(arg)
         
         # hash keyword arguments
         kwds = list(kwargs.keys())
         kwds.sort()
         for k in kwds:
-            ahash.update(k)
-            arg = kwargs[k]
-            if isinstance(arg, np.ndarray):
-                ahash.update(arg.view(np.uint8))
-            else:
-                ahash.update(arg)            
-        
+            self.ahash.update(k)
+            self._update_hash(kwargs[k])
+
+
         # make sure we are caching for the correct method
-        ahash.update(self.func.func_name)   
-        ahash.update(self.func.func_code.co_filename)
+        self._update_hash(self.func.func_name)   
+        self._update_hash(self.func.func_code.co_filename)
         
-        ref = ahash.hexdigest()
+        ref = self.ahash.hexdigest()
 
         if ref in Cache._cache:
             return Cache._cache[ref]
@@ -65,4 +61,15 @@ class Cache(object):
                 delref = Cache._keys.pop(0)
                 Cache._cache.pop(delref)
             return data
-            
+    
+    def _update_hash(self, arg):
+        """ Takes an argument and updates the hash.
+        The argument can be an np.array, string, or list
+        of things that are convertable to strings.
+        """
+        if isinstance(arg, np.ndarray):
+            self.ahash.update(arg.view(np.uint8))
+        elif isinstance(arg, list):
+            [ self.ahash.update(str(a)) for a in arg ]
+        else:
+            self.ahash.update(arg)

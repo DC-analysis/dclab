@@ -75,9 +75,11 @@ def kde_multivariate(events_x, events_y, bw, xout=None, yout=None):
         xout = events_x
         yout = events_y
     
-    positions = np.vstack([xout.ravel(), yout.ravel()])
-    estimator_ly = KDEMultivariate(data=[xout,yout],var_type='cc',
-                                   bw=bw)
+    positions = np.vstack([xout.flatten(), yout.flatten()])
+    estimator_ly = KDEMultivariate(data=[events_x.flatten(),
+                                         events_y.flatten()],
+                                   var_type='cc', bw=bw)
+
     density = estimator_ly.pdf(positions)
     return density.reshape(xout.shape)
     

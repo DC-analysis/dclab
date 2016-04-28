@@ -1,6 +1,8 @@
 0.1.6
 - Added `RTDC_DataSet.ExportTSV` for data export
-- Bugfix in RTDCDataSet: Correct determination of video file
+- Bugfixes:
+  - RTDCDataSet: Correct determination of video file
+  - KDE estimation: Fix multivariate KDE computation
 0.1.5
 - Fix regressions with filtering.
   https://github.com/ZellMechanik-Dresden/ShapeOut/issues/43 

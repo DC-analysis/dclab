@@ -6,6 +6,7 @@ dclab.
 """
 from __future__ import division, print_function
 
+import codecs
 import copy
 import numpy as np
 from pkg_resources import resource_filename  # @UnresolvedImport
@@ -102,7 +103,7 @@ def LoadConfiguration(cfgfilename, cfg=None, capitalize=True):
     if cfg is None:
         cfg = dict()
     
-    with open(cfgfilename, 'r') as f:
+    with codecs.open(cfgfilename, 'r', 'utf-8') as f:
         code = f.readlines()
     
     for line in code:
@@ -118,7 +119,7 @@ def LoadConfiguration(cfgfilename, cfg=None, capitalize=True):
                 continue
             var, val = line.split("=", 1)
             var,val = MapParameterStr2Type(var, val, capitalize=capitalize)
-            if len(var) != 0 and len(str(val)) != 0:
+            if len(var) != 0 and len(unicode(val)) != 0:
                 cfg[section][var] = val
     
     # 30µm channel?

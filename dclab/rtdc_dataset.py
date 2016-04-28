@@ -560,6 +560,7 @@ class RTDC_DataSet(object):
         else:
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
+
         # evaluation
         xlin = np.arange(x.min(), x.max(), deltaarea)
         ylin = np.arange(y.min(), y.max(), deltacirc)
@@ -576,6 +577,7 @@ class RTDC_DataSet(object):
             raise ValueError("Unknown KDE estimator {}".format(kde_type))
         
         print("KDE contour {} time: ".format(kde_type), time.time()-a)
+
         return xmesh, ymesh, density
 
 
@@ -625,7 +627,7 @@ class RTDC_DataSet(object):
         else:
             posx = positions[0]
             posy = positions[1]
-        
+
         if kde_type == "gauss":
             density = kde_methods.kde_gauss(x, y,
                                             xout=posx, yout=posy)

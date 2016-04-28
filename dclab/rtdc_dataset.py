@@ -846,9 +846,10 @@ def UpdateConfiguration(oldcfg, newcfg):
 
     ## Contour
     if (newcfg.has_key("Plotting") and
-       newcfg["Plotting"].has_key("Contour Accuracy Circ")):
+        newcfg["Plotting"].has_key("Contour Accuracy Circ") and
+        not newcfg["Plotting"].has_key("Contour Accuracy Defo")):
+        # If not contour accuracy for Defo is given, use that from Circ.
         newcfg["Plotting"]["Contour Accuracy Defo"] = newcfg["Plotting"]["Contour Accuracy Circ"]
-    
 
     for key in list(newcfg.keys()):
         if not oldcfg.has_key(key):

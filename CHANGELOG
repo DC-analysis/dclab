@@ -1,3 +1,5 @@
+0.1.7
+- Allow to disable KDE computation
 0.1.6
 - Added `RTDC_DataSet.ExportTSV` for data export
 - Bugfixes:

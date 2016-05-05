@@ -549,10 +549,6 @@ class RTDC_DataSet(object):
         deltaarea = self.Configuration["Plotting"]["Contour Accuracy "+xax]
         deltacirc = self.Configuration["Plotting"]["Contour Accuracy "+yax]
         
-        if kde_type == "multivariate":
-            bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
-            bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
-
         # setup
         if self.Configuration["Filtering"]["Enable Filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
@@ -567,15 +563,24 @@ class RTDC_DataSet(object):
         xmesh, ymesh = np.meshgrid(xlin,ylin)
 
         a = time.time()
-        if kde_type == "gauss":
-            density = kde_methods.kde_gauss(x, y, xmesh, ymesh)
-        elif kde_type == "multivariate":
+        
+        # Keyword arguments for kernel density estimation
+        kde_kwargs = {
+                      "events_x": x,
+                      "events_y": y,
+                      "xout": xmesh,
+                      "yout": ymesh,
+                      }
+        
+        if kde_type == "multivariate":
             bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
             bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
-            density = kde_methods.kde_multivariate(x, y, [bwx, bwy], xmesh, ymesh)
-        else:
-            raise ValueError("Unknown KDE estimator {}".format(kde_type))
+            kde_kwargs["bw"] = [bwx, bwy]
         
+        kde_fct = getattr(kde_methods, "kde_"+kde_type)
+
+        density = kde_fct(**kde_kwargs)
+
         print("KDE contour {} time: ".format(kde_type), time.time()-a)
 
         return xmesh, ymesh, density
@@ -628,16 +633,22 @@ class RTDC_DataSet(object):
             posx = positions[0]
             posy = positions[1]
 
-        if kde_type == "gauss":
-            density = kde_methods.kde_gauss(x, y,
-                                            xout=posx, yout=posy)
-        elif kde_type == "multivariate":
+        # Keyword arguments for kernel density estimation
+        kde_kwargs = {
+                      "events_x": x,
+                      "events_y": y,
+                      "xout": posx,
+                      "yout": posy,
+                      }
+        
+        if kde_type == "multivariate":
             bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
             bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
-            density = kde_methods.kde_multivariate(x, y, bw=[bwx, bwy],
-                                                   xout=posx, yout=posy)
-        else:
-            raise ValueError("Unknown KDE estimator {}".format(kde_type))
+            kde_kwargs["bw"] = [bwx, bwy]
+        
+        kde_fct = getattr(kde_methods, "kde_"+kde_type)
+
+        density = kde_fct(**kde_kwargs)
         
         print("KDE scatter {} time: ".format(kde_type), time.time()-a)
         return density

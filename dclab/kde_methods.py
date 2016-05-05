@@ -13,7 +13,7 @@ from .cached import Cache
 
 
 @Cache
-def kde_gauss(events_x, events_y, xout=None, yout=None):
+def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
     """ Gaussian Kernel Density Estimation
     
     Parameters
@@ -46,8 +46,38 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
     return density.reshape(xout.shape)
 
 
+def kde_none(events_x, events_y, xout=None, yout=None, **kwargs):
+    """ No Kernel Density Estimation
+    
+    Parameters
+    ----------
+    events_x, events_y : 1D ndarray
+        The input points for kernel density estimation. Input
+        is flattened automatically.
+    xout, yout : ndarray
+        The coordinates at which the KDE should be computed.
+        If set to none, input coordinates are used.
+    
+    Returns
+    -------
+    density : ndarray, same shape as `xout`
+        The KDE for the points in (xout, yout)
+
+    Notes
+    -----
+    This method is a convenience method that always returns ones in the shape
+    that the other methods in this module produce.
+    """
+    assert (xout is None and yout is None) or (xout is not None and yout is not None)
+    if yout is None and yout is None:
+        xout = events_x
+        yout = events_y
+    
+    return np.ones(xout.shape)
+
+
 @Cache
-def kde_multivariate(events_x, events_y, bw, xout=None, yout=None):
+def kde_multivariate(events_x, events_y, bw, xout=None, yout=None, **kwargs):
     """ Multivariate Kernel Density Estimation
     
     Parameters

@@ -26,7 +26,7 @@ def GetParameterChoices(key, subkey, ignore_axes=[]):
     
     if key == "Plotting":
         if subkey == "KDE":
-            choices = ["Gauss", "None", "Multivariate"]
+            choices = ["None", "Gauss", "Multivariate"]
 
         elif subkey in ["Axis X", "Axis Y"]:
             choices = copy.copy(uid)

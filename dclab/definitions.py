@@ -218,7 +218,17 @@ uid = [
         "FL-2width",
         "FL-3max",
         "FL-3width",
-       ]
+        "FL-1area",
+        "FL-2area",
+        "FL-3area",
+        "FL-1pos",
+        "FL-2pos",
+        "FL-3pos",
+        "FL-1npeaks",
+        "FL-2npeaks",
+        "FL-3npeaks",
+        "NrOfCells",
+        ]
 # Axes label (same order as UID)
 axl = [
         u"Cell Size [px²]",
@@ -238,6 +248,16 @@ axl = [
         u"FL-2 (orange) width [us]",
         u"FL-3 (red) Maximum [ADC]",
         u"FL-3 (red) width [us]",
+        u"FL-1 area of peak",
+        u"FL-2 area of peak",
+        u"FL-3 area of peak",
+        u"FL-1 position of peak",
+        u"FL-2 position of peak",
+        u"FL-3 position of peak",
+        u"FL-1 number of peaks",
+        u"FL-2 number of peaks",
+        u"FL-3 number of peaks",
+        u"Number of cells in image",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -258,6 +278,17 @@ rdv = [
         "fl2w",
         "fl3m",
         "fl3w",
+        "fl1a",
+        "fl2a",
+        "fl3a",
+        "fl1p",
+        "fl2p",
+        "fl3p",
+        "fl1n",
+        "fl2n",
+        "fl3n",
+        "ncells",
+        
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -350,6 +381,67 @@ tfd = [
          "FL3width",
          lambda x: x
         ],
+        
+        # FL-1 area channel
+        ["Cell Track",
+         "FL1area",
+         lambda x: x
+        ],
+        
+        # FL-2 area channel
+        ["Cell Track",
+         "FL2area",
+         lambda x: x
+        ],
+        
+        # FL-3 area channel
+        ["Cell Track",
+         "FL3area",
+         lambda x: x
+        ],
+        
+        # FL-1 position channel
+        ["Cell Track",
+         "FL1pos",
+         lambda x: x
+        ],
+        
+        # FL-2 position channel
+        ["Cell Track",
+         "FL2pos",
+         lambda x: x
+        ],
+        
+        # FL-3 position channel
+        ["Cell Track",
+         "FL3pos",
+         lambda x: x
+        ],
+        
+        # FL-1 number of peaks
+        ["Cell Track",
+         "FL1npeaks",
+         lambda x: x
+        ],
+        
+        # FL-2 number of peaks
+        ["Cell Track",
+         "FL2npeaks",
+         lambda x: x
+        ],
+        
+        # FL-3 number of peaks
+        ["Cell Track",
+         "FL3npeaks",
+         lambda x: x
+        ],
+        
+        # Number of cells in image
+        ["Cell Track",
+         "NrOfCells",
+         lambda x: x
+        ],
+        
         ]
 
 

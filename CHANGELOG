@@ -1,3 +1,5 @@
+0.1.8
+- Added fluorescence channels: peak position, peak area, number of peaks
 0.1.7
 - Allow to disable KDE computation
 0.1.6

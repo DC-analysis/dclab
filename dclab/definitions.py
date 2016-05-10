@@ -209,6 +209,7 @@ uid = [
         "Defo",
         "Frame",
         "Pos Lat",
+        "Pos x",
         "Time",
         "FC0max",
         "FC0width",
@@ -239,6 +240,7 @@ axl = [
         u"Deformation",
         u"Frame Number",
         u"Lateral Position in Channel [px]",
+        u"Position along Channel axis [px]",
         u"Frame Time [s]",
         u"Fluorescence Intensity Maximum [ADC] (Ch.0)",
         u"Fluorescence Peak Width [µs]",
@@ -269,6 +271,7 @@ rdv = [
         "deform",
         "frame",
         "pos_lat",
+        "pos_x",
         "time",
         "fc0m",
         "fc0w",
@@ -335,6 +338,12 @@ tfd = [
          "y",
          lambda x: x
          ],
+        # pos_x
+        ["Cell Track",
+         "x",
+         lambda x: x
+         ],
+         
         # time (set by RTDC_DataSet)
         ["Cell Track",
          "time",

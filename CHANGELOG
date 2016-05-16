@@ -1,6 +1,7 @@
 0.1.7
 - Added fluorescence channels: peak position, peak area, number of peaks
 - Allow to disable KDE computation
+- Add filter array for manual (user-defined) filtering
 - Bugfixes:
   - cached.py did not handle `None`
   - Limiting number of events caused integer/bool error

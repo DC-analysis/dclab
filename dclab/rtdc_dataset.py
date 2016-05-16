@@ -24,6 +24,14 @@ class RTDC_DataSet(object):
     """ An RTDC measurement object.
     
     The object must be initiated with a '.tdms' filename.
+    
+    Notes
+    -----
+    Besides the filter arrays for each data column, there is a manual
+    boolean filter array ``RTDC_DataSet._filter_manual`` that can be edited
+    by the user - a boolean value of ``False`` means that the event is 
+    excluded from all computations.
+    
     """
     def __init__(self, tdms_filename):
         """ Load tdms file and set all variables """
@@ -91,6 +99,8 @@ class RTDC_DataSet(object):
         # Set array filters:
         # This is the filter that will be used for plotting:
         self._filter = np.ones_like(self.time, dtype=bool)
+        # Manual filters, additionally defined by the user
+        self._filter_manual = np.zeros_like(self._filter)
         # The filtering array for a general data event limit:
         self._filter_limit = np.ones_like(self._filter)
         attrlist = dir(self)

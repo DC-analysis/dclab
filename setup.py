@@ -38,7 +38,7 @@ if __name__ == "__main__":
                           ],
         keywords=["RTDC", "deformation", "cytometry", "zellmechanik"],
         setup_requires=['pytest-runner'],
-        tests_require=["pytest"],
+        tests_require=["pytest", "urllib3"],
         package_data={'dclab': ['dclab/dclab.cfg']},
         include_package_data=True,
         classifiers= [

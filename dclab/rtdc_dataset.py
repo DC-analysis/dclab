@@ -100,7 +100,7 @@ class RTDC_DataSet(object):
         # This is the filter that will be used for plotting:
         self._filter = np.ones_like(self.time, dtype=bool)
         # Manual filters, additionally defined by the user
-        self._filter_manual = np.zeros_like(self._filter)
+        self._filter_manual = np.ones_like(self._filter)
         # The filtering array for a general data event limit:
         self._filter_limit = np.ones_like(self._filter)
         attrlist = dir(self)

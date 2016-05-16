@@ -4,18 +4,24 @@
 This file contains basic definitions and associated methods for
 dclab.
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
 import codecs
 import copy
 import numpy as np
 from pkg_resources import resource_filename  # @UnresolvedImport
+import sys
 
 __all__ = ["GetKnownIdentifiers", "LoadConfiguration", 
            "LoadDefaultConfiguration", "cfg",
            "MapParameterStr2Type",
            "MapParameterType2Str", "GetParameterChoices",
            "GetParameterDtype"]
+
+if sys.version_info[0] == 2:
+    string_classes = (str, unicode)
+else:
+    string_classes = str
 
 
 def GetParameterChoices(key, subkey, ignore_axes=[]):
@@ -36,9 +42,9 @@ def GetParameterChoices(key, subkey, ignore_axes=[]):
                     choices.remove(choice)
    
         elif subkey in ["Rows", "Columns"]:
-            choices = [ unicode(i) for i in range(1,6) ]
+            choices = [ str(i) for i in range(1,6) ]
         elif subkey in ["Scatter Marker Size"]:
-            choices = [ unicode(i) for i in range(1,5) ]
+            choices = [ str(i) for i in range(1,5) ]
     return choices
 
 
@@ -54,7 +60,7 @@ def GetParameterDtype(key, subkey, cfg=None):
     if cfg is None:
         cfg = cfg_init
     
-    if cfg_init.has_key(key) and cfg_init[key].has_key(subkey):
+    if key in cfg_init and subkey in cfg_init[key]:
         dtype = cfg_init[key][subkey].__class__
     else:
         try:
@@ -114,18 +120,18 @@ def LoadConfiguration(cfgfilename, cfg=None, capitalize=True):
         if len(line) != 0:
             if line.startswith("[") and line.endswith("]"):
                 section = line[1:-1]
-                if not cfg.has_key(section):
+                if not section in cfg:
                     cfg[section] = dict()
                 continue
             var, val = line.split("=", 1)
             var,val = MapParameterStr2Type(var, val, capitalize=capitalize)
-            if len(var) != 0 and len(unicode(val)) != 0:
+            if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val
     
     # 30µm channel?
-    if ( cfg.has_key("General") and
-         not cfg["General"].has_key("Channel Width") and
-         cfg["General"].has_key("Flow Rate [ul/s]") and
+    if ( "General" in cfg and
+         not "Channel Width" in cfg["General"] and
+         "Flow Rate [ul/s]" in cfg["General"] and
          cfg["General"]["Flow Rate [ul/s]"] >= 0.16     ):
         cfg["General"]["Channel Width"] = 30
     
@@ -138,7 +144,7 @@ def LoadDefaultConfiguration():
 
 
 def MapParameterStr2Type(var, val, capitalize=True):
-    if not ( isinstance(val, str) or isinstance(val, unicode) ):
+    if not ( isinstance(val, string_classes) ):
         # already a type:
         return var.strip(), val
     var = var.strip()

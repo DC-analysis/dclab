@@ -3,7 +3,7 @@
 """
 RTDC_DataSet classes and methods
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
 import codecs
 import copy
@@ -109,7 +109,7 @@ class RTDC_DataSet(object):
         inifilter = np.ones(datalen, dtype=bool)
         for attr in attrlist:
             # only allow filterable attributes from global dfn.cfgmap
-            if not dfn.cfgmap.has_key(attr):
+            if not attr in dfn.cfgmap:
                 continue
             data = getattr(self, attr)
             if isinstance(data, np.ndarray):
@@ -185,7 +185,7 @@ class RTDC_DataSet(object):
         oldvals = list()
         newvals = list()
         
-        if not self.Configuration.has_key("Filtering"):
+        if not "Filtering" in self.Configuration:
             self.Configuration["Filtering"] = dict()
 
         ## Determine which data was updated
@@ -193,7 +193,7 @@ class RTDC_DataSet(object):
         OLD = self._old_filters
         
         for skey in list(FIL.keys()):
-            if not OLD.has_key(skey):
+            if not skey in OLD:
                 OLD[skey] = None
             if OLD[skey] != FIL[skey]:
                 newkeys.append(skey)
@@ -234,8 +234,9 @@ class RTDC_DataSet(object):
                 fend = dfn.cfgmap[attr]+" Max"
                 # If min and max exist and if they are not identical:
                 indices = getattr(self, "_filter_"+attr)
-                if (FIL.has_key(fstart) and FIL.has_key(fend) and
-                                         FIL[fstart] != FIL[fend]):
+                if (fstart in FIL and
+                    fend in FIL and
+                    FIL[fstart] != FIL[fend]):
                     # TODO: speedup
                     # Here one could check for smaller values in the
                     # lists oldvals/newvals that we defined above.
@@ -250,8 +251,8 @@ class RTDC_DataSet(object):
         # check if something has changed
         pf_id = "Polygon Filters"
         if (
-            (FIL.has_key(pf_id) and not OLD.has_key(pf_id)) or
-            (FIL.has_key(pf_id) and OLD.has_key(pf_id) and
+            (pf_id in FIL and not pf_id in OLD) or
+            (pf_id in FIL and pf_id in OLD and
              FIL[pf_id] != OLD[pf_id])):
             self._filter_polygon[:] = True
             # perform polygon filtering
@@ -363,7 +364,8 @@ class RTDC_DataSet(object):
             fd.write("# "+header1+"\n")
             header2 = "\t".join([ dfn.axlabels[c] for c in columns ])
             fd.write("# "+header2+"\n")
-            
+
+        with open(path, "ab") as fd:
             # write data
             if filtered:
                 data = [ getattr(self, dfn.cfgmaprev[c])[self._filter] for c in columns ]
@@ -372,7 +374,7 @@ class RTDC_DataSet(object):
             
             np.savetxt(fd,
                        np.array(data).transpose(),
-                       fmt="%.10e",
+                       fmt=str("%.10e"),
                        delimiter="\t")
 
 
@@ -429,7 +431,7 @@ class RTDC_DataSet(object):
         hasher.update(str(x) + str(y))
         identifier += hasher.hexdigest()
 
-        if self._Downsampled_Scatter.has_key(identifier):
+        if identifier in self._Downsampled_Scatter:
             return self._Downsampled_Scatter[identifier]
 
         if downsample_events > 0 and downsample_events > x.shape[0]:
@@ -743,14 +745,14 @@ class RTDC_DataSet(object):
         """
         force = []
         # look for pixel size update first
-        if (newcfg.has_key("Image") and
-           newcfg["Image"].has_key("Pix Size")):
+        if ("Image" in newcfg and
+            "Pix Size" in newcfg["Image"]):
             PIX = newcfg["Image"]["Pix Size"]
             self.area_um[:] = self.area * PIX**2
             force.append("Area")
         # look for frame rate update
-        elif (newcfg.has_key("Framerate") and
-           newcfg["Framerate"].has_key("Frame Rate")):
+        elif ("Framerate" in newcfg and
+            "Frame Rate" in newcfg["Framerate"]):
             FR = newcfg["Framerate"]["Frame Rate"]
             # FR is in Hz
             self.time[:] = (self.frame - self.frame[0]) / FR
@@ -758,7 +760,7 @@ class RTDC_DataSet(object):
 
         UpdateConfiguration(self.Configuration, newcfg)
 
-        if newcfg.has_key("Filtering"):
+        if "Filtering" in newcfg:
             # Only writing the new Mins and Maxs is not enough
             # We need to also set the _filter_* attributes.
             self.ApplyFilter(force=force)
@@ -836,28 +838,28 @@ def UpdateConfiguration(oldcfg, newcfg):
     cmax = None
     dmin = None
     dmax = None
-    if newcfg.has_key("Filtering"):
-        if newcfg["Filtering"].has_key("Defo Max"):
+    if "Filtering" in newcfg:
+        if "Defo Max" in newcfg["Filtering"]:
             dmax = newcfg["Filtering"]["Defo Max"]
-        if newcfg["Filtering"].has_key("Defo Min"):
+        if "Defo Min" in newcfg["Filtering"]:
             dmin = newcfg["Filtering"]["Defo Min"]
-        if newcfg["Filtering"].has_key("Circ Max"):
+        if "Circ Max" in newcfg["Filtering"]:
             cmax = newcfg["Filtering"]["Circ Max"]
-        if newcfg["Filtering"].has_key("Circ Min"):
+        if "Circ Min" in newcfg["Filtering"]:
             cmin = newcfg["Filtering"]["Circ Min"]
     # old
     cmino = None
     cmaxo = None
     dmino = None
     dmaxo = None
-    if oldcfg.has_key("Filtering"):
-        if oldcfg["Filtering"].has_key("Defo Max"):
+    if "Filtering" in oldcfg:
+        if "Defo Max" in oldcfg["Filtering"]:
             dmaxo = oldcfg["Filtering"]["Defo Max"]
-        if oldcfg["Filtering"].has_key("Defo Min"):
+        if "Defo Min" in oldcfg["Filtering"]:
             dmino = oldcfg["Filtering"]["Defo Min"]
-        if oldcfg["Filtering"].has_key("Circ Max"):
+        if "Circ Max" in oldcfg["Filtering"]:
             cmaxo = oldcfg["Filtering"]["Circ Max"]
-        if oldcfg["Filtering"].has_key("Circ Min"):
+        if "Circ Min" in oldcfg["Filtering"]:
             cmino = oldcfg["Filtering"]["Circ Min"]
     # translation to new
     if cmin != cmino and cmin is not None:
@@ -870,27 +872,27 @@ def UpdateConfiguration(oldcfg, newcfg):
         newcfg["Filtering"]["Circ Min"] = 1 - dmax
 
     ## Contour
-    if (newcfg.has_key("Plotting") and
-        newcfg["Plotting"].has_key("Contour Accuracy Circ") and
-        not newcfg["Plotting"].has_key("Contour Accuracy Defo")):
+    if ("Plotting" in newcfg and
+        "Contour Accuracy Circ" in newcfg["Plotting"] and
+        not "Contour Accuracy Defo" in newcfg["Plotting"]):
         # If not contour accuracy for Defo is given, use that from Circ.
         newcfg["Plotting"]["Contour Accuracy Defo"] = newcfg["Plotting"]["Contour Accuracy Circ"]
 
     for key in list(newcfg.keys()):
-        if not oldcfg.has_key(key):
+        if not key in oldcfg:
             oldcfg[key] = dict()
         for skey in list(newcfg[key].keys()):
             oldcfg[key][skey] = newcfg[key][skey]
 
     ## Check missing values and set them to zero
     for item in dfn.uid:
-        if not oldcfg["Plotting"].has_key("Contour Accuracy "+item):
+        if not "Contour Accuracy "+item in oldcfg["Plotting"]:
             oldcfg["Plotting"]["Contour Accuracy "+item] = 1
         appends = [" Min", " Max"]
         for a in appends:
-            if not oldcfg["Plotting"].has_key(item+a):
+            if not item+a in oldcfg["Plotting"]:
                 oldcfg["Plotting"][item+a] = 0
-            if not oldcfg["Filtering"].has_key(item+a):
+            if not item+a in oldcfg["Filtering"]:
                     oldcfg["Filtering"][item+a] = 0
 
     return oldcfg

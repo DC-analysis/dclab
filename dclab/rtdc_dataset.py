@@ -268,7 +268,7 @@ class RTDC_DataSet(object):
         # Filter with configuration keyword argument "Limit Events"
         if FIL["Limit Events"] > 0:
             limit = FIL["Limit Events"]
-            incl = 1*self._filter
+            incl = self._filter.copy()
             numevents = np.sum(incl)
             if limit <= numevents:
                 # Perform equally distributed removal of events
@@ -306,7 +306,11 @@ class RTDC_DataSet(object):
             self._filter_limit = np.ones_like(self._filter)
         
         # Update filter again
-        self._filter *= self._filter_limit 
+        try:
+            self._filter *= self._filter_limit
+        except:
+            import IPython
+            IPython.embed() 
         
         # Actual filtering is then done during plotting            
         self._old_filters = copy.deepcopy(self.Configuration["Filtering"])

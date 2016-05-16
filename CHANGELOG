@@ -1,7 +1,9 @@
 0.1.7
 - Added fluorescence channels: peak position, peak area, number of peaks
 - Allow to disable KDE computation
-- Bugfix: cached.py did not handle `None`
+- Bugfixes:
+  - cached.py did not handle `None`
+  - Limiting number of events cause integer/bool error
 0.1.6
 - Added `RTDC_DataSet.ExportTSV` for data export
 - Bugfixes:

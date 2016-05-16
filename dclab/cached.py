@@ -72,4 +72,4 @@ class Cache(object):
         elif isinstance(arg, list):
             [ self.ahash.update(str(a)) for a in arg ]
         else:
-            self.ahash.update(arg)
+            self.ahash.update(str(arg))

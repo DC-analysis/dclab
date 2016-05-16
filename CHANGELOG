@@ -3,7 +3,7 @@
 - Allow to disable KDE computation
 - Bugfixes:
   - cached.py did not handle `None`
-  - Limiting number of events cause integer/bool error
+  - Limiting number of events caused integer/bool error
 0.1.6
 - Added `RTDC_DataSet.ExportTSV` for data export
 - Bugfixes:

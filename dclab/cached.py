@@ -3,7 +3,7 @@
 """
 Cache for fast "recomputation"
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
 import hashlib
 import numpy as np
@@ -41,13 +41,13 @@ class Cache(object):
         kwds = list(kwargs.keys())
         kwds.sort()
         for k in kwds:
-            self.ahash.update(k)
+            self._update_hash(k)
             self._update_hash(kwargs[k])
 
 
         # make sure we are caching for the correct method
-        self._update_hash(self.func.func_name)   
-        self._update_hash(self.func.func_code.co_filename)
+        self._update_hash(self.func.__name__)
+        self._update_hash(self.func.__code__.co_filename)
         
         ref = self.ahash.hexdigest()
 
@@ -70,6 +70,6 @@ class Cache(object):
         if isinstance(arg, np.ndarray):
             self.ahash.update(arg.view(np.uint8))
         elif isinstance(arg, list):
-            [ self.ahash.update(str(a)) for a in arg ]
+            [ self._update_hash(a) for a in arg ]
         else:
-            self.ahash.update(str(arg))
+            self.ahash.update(str(arg).encode('utf-8'))

@@ -3,10 +3,18 @@
 """
 PolygonFilter classes and methods
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
+import codecs
 import numpy as np
 import os
+import sys
+
+
+if sys.version_info[0] == 2:
+    string_classes = (str, unicode)
+else:
+    string_classes = str
 
 
 class PolygonFilter(object):
@@ -158,7 +166,7 @@ class PolygonFilter(object):
         """ Imports all data from a text file.
         
         """
-        fobj = open(filename, "r")
+        fobj = codecs.open(filename, "r", "utf-8")
         data = fobj.readlines()
         fobj.close()
 
@@ -180,7 +188,7 @@ class PolygonFilter(object):
         # separate all elements and strip them
         subdata = [ [ it.strip() for it in l.split("=") ] for l in subdata ]
 
-        points = list()
+        points = []
         
         for var, val in subdata:
             if var.lower() == "x axis":
@@ -195,6 +203,8 @@ class PolygonFilter(object):
                 val = np.array(val.strip("[]").split(), dtype=float)
                 points.append([int(var[5:]), val])
             else:
+                import IPython
+                IPython.embed()
                 raise NotImplementedError("Unknown variable: {} = {}".
                                           format(var, val))
         self.axes = (xaxis, yaxis)
@@ -245,8 +255,8 @@ class PolygonFilter(object):
         If `ret_fobj` is `True`, then the file object will not be
         closed and returned. 
         """
-        if polyfile.__class__ in [str, unicode]:
-            fobj = open(polyfile, "a")
+        if isinstance(polyfile, string_classes):
+            fobj = codecs.open(polyfile, "a", "utf-8")
         else:
             # file or tempfile._TemporaryFileWrapper
             fobj = polyfile
@@ -284,7 +294,6 @@ class PolygonFilter(object):
             # close the file multiple times.
             polyfile = p.save(polyfile, ret_fobj=True)
         polyfile.close()
-
 
 
 def GetPolygonFilterNames():

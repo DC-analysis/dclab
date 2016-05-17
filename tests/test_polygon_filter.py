@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import numpy as np
 import os
@@ -33,7 +33,7 @@ def test_polygon_import():
     dclab.PolygonFilter.clear_all_filters()
     
     # save polygon data
-    with tempfile.NamedTemporaryFile() as temp:
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
         temp.write(filter_data)
         temp.flush()
         
@@ -53,14 +53,14 @@ def test_polygon_import():
 def test_polygon_save():
     dclab.PolygonFilter.clear_all_filters()
     
-    with tempfile.NamedTemporaryFile() as temp:
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
         temp.write(filter_data)
         temp.flush()
         
         # Add polygon filter
         pf = dclab.PolygonFilter(filename=temp.name)
         
-        with tempfile.NamedTemporaryFile() as temp2:
+        with tempfile.NamedTemporaryFile(mode="w") as temp2:
             pf.save(temp2, ret_fobj=True)
             temp2.flush()
             
@@ -68,7 +68,7 @@ def test_polygon_save():
             
             assert np.allclose(pf.points, pf2.points)
 
-    with tempfile.NamedTemporaryFile() as temp3:
+    with tempfile.NamedTemporaryFile(mode="w") as temp3:
         dclab.PolygonFilter.save_all(temp3)
 
     # ensure backwards compatibility: the names of the three filters should be the same
@@ -80,7 +80,7 @@ def test_polygon_save():
 def test_polygon_remove():
     dclab.PolygonFilter.clear_all_filters()
     
-    with tempfile.NamedTemporaryFile() as temp:
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
         temp.write(filter_data)
         temp.flush()
         

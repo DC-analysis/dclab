@@ -245,14 +245,11 @@ class PolygonFilter(object):
         If `ret_fobj` is `True`, then the file object will not be
         closed and returned. 
         """
-        if polyfile.__class__ in [file]:
-            fobj = polyfile
-        elif polyfile.__class__ in [str, unicode]:
+        if polyfile.__class__ in [str, unicode]:
             fobj = open(polyfile, "a")
         else:
-            raise ValueError("Argument {} must be a file object or "+\
-                             "a path to a file.")
-        
+            # file or tempfile._TemporaryFileWrapper
+            fobj = polyfile
         # Who the hell would use more then 10 million polygons or
         # polygon points? -> 08d (easier if other people want to import)
         data2write = []

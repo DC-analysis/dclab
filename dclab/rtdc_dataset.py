@@ -160,7 +160,6 @@ class RTDC_DataSet(object):
                     cont = np.array(cont, dtype=np.uint8)
                     self.contours[frame] = cont
 
-
         # Get traces
         self.traces = {}
         traces_filename = tdms_filename[:-5]+"_traces.tdms"
@@ -179,7 +178,7 @@ class RTDC_DataSet(object):
                         # Split only needs the the position of the sections,
                         # so we remove the first (0) index.
                         self.traces[ch] = np.split(trdat, sampleids[1:])
-        
+
 
     def ApplyFilter(self, force=[]):
         """ Computes the filters for the data set

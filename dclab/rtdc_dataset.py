@@ -165,7 +165,7 @@ class RTDC_DataSet(object):
         self.traces = {}
         traces_filename = tdms_filename[:-5]+"_traces.tdms"
         if os.path.exists(traces_filename):
-            # Determine chunk size of traces from parameters.txt
+            # Determine chunk size of traces from the FL1index column
             sampleids = tdms_file.object("Cell Track", "FL1index").data
             traces_file = TdmsFile(traces_filename)
             for group, ch in dfn.tr_data:

@@ -166,15 +166,7 @@ class RTDC_DataSet(object):
         traces_filename = tdms_filename[:-5]+"_traces.tdms"
         if os.path.exists(traces_filename):
             # Determine chunk size of traces from parameters.txt
-            samplesperframe = None
-            with open(os.path.join(os.path.dirname(traces_filename),
-                                   "parameters.txt")) as fd:
-                _lines = fd.readlines()
-                for l in _lines:
-                    if l.startswith("samplesperframe"):
-                        samplesperframe = int(l.split()[1])
-            assert samplesperframe is not None, "traces chunk size unknown!"
-            
+            sampleids = tdms_file.object("Cell Track", "FL1index").data
             traces_file = TdmsFile(traces_filename)
             for group, ch in dfn.tr_data:
                 try:
@@ -183,8 +175,10 @@ class RTDC_DataSet(object):
                     pass
                 else:
                     if trdat is not None:
-                        # only add trace if there is actual data
-                        self.traces[ch] = np.split(trdat, samplesperframe)
+                        # Only add trace if there is actual data.
+                        # Split only needs the the position of the sections,
+                        # so we remove the first (0) index.
+                        self.traces[ch] = np.split(trdat, sampleids[1:])
         
 
     def ApplyFilter(self, force=[]):

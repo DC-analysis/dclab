@@ -297,7 +297,6 @@ rdv = [
         "fl2n",
         "fl3n",
         "ncells",
-        
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -459,6 +458,16 @@ tfd = [
         
         ]
 
+# traces_tdms file definitions
+# The second column should not contain duplicates! - even if the 
+# entries in the first columns are different.
+tr_data = [["fluorescence traces", "FL1raw"],
+           ["fluorescence traces", "FL2raw"],
+           ["fluorescence traces", "FL3raw"],
+           ["fluorescence traces", "FL1med"],
+           ["fluorescence traces", "FL2med"],
+           ["fluorescence traces", "FL3med"],
+        ]
 
 # mapping `Measuement` class attributes to configuration file names
 cfgmap = dict()        # area_um -> Area

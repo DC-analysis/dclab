@@ -161,6 +161,32 @@ class RTDC_DataSet(object):
                     self.contours[frame] = cont
 
 
+        # Get traces
+        self.traces = {}
+        traces_filename = tdms_filename[:-5]+"_traces.tdms"
+        if os.path.exists(traces_filename):
+            # Determine chunk size of traces from parameters.txt
+            samplesperframe = None
+            with open(os.path.join(os.path.dirname(traces_filename),
+                                   "parameters.txt")) as fd:
+                _lines = fd.readlines()
+                for l in _lines:
+                    if l.startswith("samplesperframe"):
+                        samplesperframe = int(l.split()[1])
+            assert samplesperframe is not None, "traces chunk size unknown!"
+            
+            traces_file = TdmsFile(traces_filename)
+            for group, ch in dfn.tr_data:
+                try:
+                    trdat = traces_file.object(group, ch).data
+                except KeyError:
+                    pass
+                else:
+                    if trdat is not None:
+                        # only add trace if there is actual data
+                        self.traces[ch] = np.split(trdat, samplesperframe)
+        
+
     def ApplyFilter(self, force=[]):
         """ Computes the filters for the data set
         
@@ -814,7 +840,7 @@ def GetProjectNameFromPath(path):
         # /home/peter/hans/HLC12398/online/data/
         project = trail3
     else:
-        warnings.warn("Unknown folder structure: {}".format(path))
+        warnings.warn("Non-standard directory naming scheme: {}".format(path))
         project = trail1
     return project
 

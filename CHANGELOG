@@ -1,3 +1,5 @@
+0.1.8
+- Added channel: distance between to first fl. peaks
 0.1.7
 - Added fluorescence channels: peak position, peak area, number of peaks
 - Allow to disable KDE computation

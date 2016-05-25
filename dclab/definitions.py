@@ -234,6 +234,9 @@ uid = [
         "FL-1npeaks",
         "FL-2npeaks",
         "FL-3npeaks",
+        "FL-1dpeaks",
+        "FL-2dpeaks",
+        "FL-3dpeaks",
         "NrOfCells",
         ]
 # Axes label (same order as UID)
@@ -265,6 +268,9 @@ axl = [
         u"FL-1 number of peaks",
         u"FL-2 number of peaks",
         u"FL-3 number of peaks",
+        u"FL-1 distance between two first peaks [us]",
+        u"FL-2 distance between two first peaks [us]",
+        u"FL-3 distance between two first peaks [us]",
         u"Number of cells in image",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
@@ -296,6 +302,9 @@ rdv = [
         "fl1n",
         "fl2n",
         "fl3n",
+        "fl1d",
+        "fl2d",
+        "fl3d",
         "ncells",
        ]
 # tdms file definitions (same order as UID)
@@ -447,6 +456,24 @@ tfd = [
         # FL-3 number of peaks
         ["Cell Track",
          "FL3npeaks",
+         lambda x: x
+        ],
+        
+        # FL-1 distance two first peaks
+        ["Cell Track",
+         "FL1dpeaks",
+         lambda x: x
+        ],
+        
+        # FL-2 distance two first peaks
+        ["Cell Track",
+         "FL2dpeaks",
+         lambda x: x
+        ],
+        
+        # FL-3 distance two first peaks
+        ["Cell Track",
+         "FL3dpeaks",
          lambda x: x
         ],
         

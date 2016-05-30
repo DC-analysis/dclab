@@ -45,6 +45,8 @@ def GetParameterChoices(key, subkey, ignore_axes=[]):
             choices = [ str(i) for i in range(1,6) ]
         elif subkey in ["Scatter Marker Size"]:
             choices = [ str(i) for i in range(1,5) ]
+        elif subkey.count("Scale "):
+            choices = ["Linear", "Log"]
     return choices
 
 

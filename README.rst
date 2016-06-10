@@ -6,7 +6,7 @@ dclab
 
 This is a Python library for the post-measurement analysis of
 real-time deformability cytometry (RT-DC) data sets; an essential part of
-`ShapeOut <https://github.com/ZellMechanik-Dresden/ShapeOut>`__.
+`ShapeOut <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut>`__.
 
 
 Installation
@@ -22,7 +22,7 @@ If you want to get the bleeding edge from GitHub, run
 
 ::
 
-	pip install git+git://github.com/ZellMechanik-Dresden/dclab.git
+	pip install git+git://github.com/ZELLMECHANIK-DRESDEN/dclab.git
 
 
 Information for developers
@@ -39,7 +39,7 @@ more, please (fork dclab and) create a separate branch,
 e.g. ``my_new_feature_dev``, and create a pull-request
 once you are done making your changes.
 Please make sure to edit the 
-`Changelog <https://github.com/ZellMechanik-Dresden/dclab/blob/master/CHANGELOG>`__. 
+`Changelog <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/CHANGELOG>`__. 
 
 **Very important:** Please always try to use 
 
@@ -80,7 +80,7 @@ If this is not automated yet, only @paulmueller can upload
 a new version of dclab to the Python Package Index.
 
 
-Notes on `ShapeOut <https://github.com/ZellMechanik-Dresden/ShapeOut/>`__
+Notes on `ShapeOut <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/>`__
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The `appveyor ShapeOut build <https://ci.appveyor.com/project/paulmueller/ShapeOut>`__
 is automatically triggered after each commit to the ShapeOut repository. At each build,
@@ -91,8 +91,8 @@ version of dclab to PyPI in order to get your new code into ShapeOut.
 
 .. |PyPI Version| image:: http://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
-.. |Build Status| image:: http://img.shields.io/travis/ZellMechanik-Dresden/dclab.svg
-   :target: https://travis-ci.org/ZellMechanik-Dresden/dclab
-.. |Coverage Status| image:: https://img.shields.io/coveralls/ZellMechanik-Dresden/dclab.svg
-   :target: https://coveralls.io/r/ZellMechanik-Dresden/dclab
+.. |Build Status| image:: http://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg
+   :target: https://travis-ci.org/ZELLMECHANIK-DRESDEN/dclab
+.. |Coverage Status| image:: https://img.shields.io/coveralls/ZELLMECHANIK-DRESDEN/dclab.svg
+   :target: https://coveralls.io/r/ZELLMECHANIK-DRESDEN/dclab
 

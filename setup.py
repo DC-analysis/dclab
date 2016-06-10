@@ -23,7 +23,7 @@ if __name__ == "__main__":
         name=name,
         author=author,
         author_email='paul.mueller@biotec.tu-dresden.de',
-        url='https://github.com/ZellMechanik-Dresden/dclab',
+        url='https://github.com/ZELLMECHANIK-DRESDEN/dclab',
         version=version,
         packages=[name],
         package_dir={name: name},

@@ -1,4 +1,4 @@
-webloc = "https://github.com/ZellMechanik-Dresden/RTDCdata/raw/master/"
+webloc = "https://github.com/ZELLMECHANIK-DRESDEN/RTDCdata/raw/master/"
 
 from os.path import join, exists, basename, dirname, abspath
 import tempfile

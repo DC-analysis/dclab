@@ -240,6 +240,8 @@ uid = [
         "FL-2dpeaks",
         "FL-3dpeaks",
         "NrOfCells",
+        "x-size",
+        "y-size",
         ]
 # Axes label (same order as UID)
 axl = [
@@ -274,6 +276,8 @@ axl = [
         u"FL-2 distance between two first peaks [us]",
         u"FL-3 distance between two first peaks [us]",
         u"Number of cells in image",
+        u"Bounding box x-size",
+        u"Bounding box y-size",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -308,6 +312,8 @@ rdv = [
         "fl2d",
         "fl3d",
         "ncells",
+        "size_x",
+        "size_y",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -484,7 +490,16 @@ tfd = [
          "NrOfCells",
          lambda x: x
         ],
-        
+        # Bounding box x-size
+        ["Cell Track",
+         "ax2", # parallel to flow
+         lambda x:x
+         ],
+        # Bounding box y-size
+        ["Cell Track",
+         "ax1", # perpendicular to flow
+         lambda x:x
+         ],
         ]
 
 # traces_tdms file definitions

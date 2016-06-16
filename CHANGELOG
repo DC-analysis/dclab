@@ -7,6 +7,7 @@
 - Bugfixes:
   - cached.py did not handle `None`
   - Limiting number of events caused integer/bool error
+- Add channels: bounding box x- and y-size
 0.1.6
 - Added `RTDC_DataSet.ExportTSV` for data export
 - Bugfixes:

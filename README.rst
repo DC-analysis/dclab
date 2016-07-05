@@ -93,6 +93,6 @@ version of dclab to PyPI in order to get your new code into ShapeOut.
    :target: https://pypi.python.org/pypi/dclab
 .. |Build Status| image:: http://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg
    :target: https://travis-ci.org/ZELLMECHANIK-DRESDEN/dclab
-.. |Coverage Status| image:: https://img.shields.io/coveralls/ZELLMECHANIK-DRESDEN/dclab.svg
-   :target: https://coveralls.io/r/ZELLMECHANIK-DRESDEN/dclab
+.. |Coverage Status| image:: https://img.shields.io/coveralls/ZellMechanik-Dresden/dclab.svg
+   :target: https://coveralls.io/github/ZellMechanik-Dresden/dclab
 

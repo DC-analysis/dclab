@@ -109,7 +109,7 @@ def LoadConfiguration(cfgfilename, cfg=None, capitalize=True):
     set the Channel Width to 30 µm.
     """
     if cfg is None:
-        cfg = dict()
+        cfg = {}
     
     with codecs.open(cfgfilename, 'r', 'utf-8') as f:
         code = f.readlines()

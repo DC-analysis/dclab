@@ -52,7 +52,7 @@ class RTDC_DataSet(object):
         
         f2hash = [ tdms_filename, mx+"_camera.ini", mx+"_para.ini" ]
         
-        self.file_hashes = [(fname, _hashfile(fname)) for fname in f2hash]
+        self.file_hashes = [(fname, hashfile(fname)) for fname in f2hash]
 
         self.identifier = self.file_hashes[0][1]
 
@@ -795,7 +795,7 @@ class RTDC_DataSet(object):
             return False
 
 
-def _hashfile(fname, blocksize=65536):
+def hashfile(fname, blocksize=65536):
     afile = open(fname, 'rb')
     hasher = hashlib.sha256()
     buf = afile.read(blocksize)

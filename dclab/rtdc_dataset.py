@@ -291,57 +291,57 @@ class RTDC_DataSet(object):
         # now update the entire object filter
         # get a list of all filters
         self._filter[:] = True
-        for attr in dir(self):
-            if attr.startswith("_filter_"):
-                self._filter[:] *= getattr(self, attr)
-
-        # Filter with configuration keyword argument "Limit Events"
-        if FIL["Limit Events"] > 0:
-            limit = FIL["Limit Events"]
-            incl = self._filter.copy()
-            numevents = np.sum(incl)
-            if limit <= numevents:
-                # Perform equally distributed removal of events
-                # We have too many events
-                remove = numevents - limit
-                while remove > 10:
-                    there = np.where(incl)[0]
-                    # first remove evenly distributed events
-                    dist = int(np.ceil(there.shape[0]/remove))
-                    incl[there[::dist]] = 0
-                    numevents = np.sum(incl)
+        if FIL["Enable Filters"]:
+            for attr in dir(self):
+                if attr.startswith("_filter_"):
+                    self._filter[:] *= getattr(self, attr)
+    
+            # Filter with configuration keyword argument "Limit Events"
+            if FIL["Limit Events"] > 0:
+                limit = FIL["Limit Events"]
+                incl = self._filter.copy()
+                numevents = np.sum(incl)
+                if limit <= numevents:
+                    # Perform equally distributed removal of events
+                    # We have too many events
                     remove = numevents - limit
-                there = np.where(incl)[0]
-                incl[there[:remove]] = 0
-                self._filter_limit = incl
-                print("'Limit Events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
-            elif limit == numevents:
-                # everything is ok
-                self._filter_limit = np.ones_like(self._filter)
-                print("'Limit Events' is size of filtered data.")
-            elif limit <= self._filter.shape[0]:
-                self._filter_limit = np.ones_like(self._filter)
-                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
-                              "be larger than length of filtered data set! "+
-                              "Resetting 'Limit Events'!")
-                FIL["Limit Events"] = 0
+                    while remove > 10:
+                        there = np.where(incl)[0]
+                        # first remove evenly distributed events
+                        dist = int(np.ceil(there.shape[0]/remove))
+                        incl[there[::dist]] = 0
+                        numevents = np.sum(incl)
+                        remove = numevents - limit
+                    there = np.where(incl)[0]
+                    incl[there[:remove]] = 0
+                    self._filter_limit = incl
+                    print("'Limit Events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
+                elif limit == numevents:
+                    # everything is ok
+                    self._filter_limit = np.ones_like(self._filter)
+                    print("'Limit Events' is size of filtered data.")
+                elif limit <= self._filter.shape[0]:
+                    self._filter_limit = np.ones_like(self._filter)
+                    warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
+                                  "be larger than length of filtered data set! "+
+                                  "Resetting 'Limit Events'!")
+                    FIL["Limit Events"] = 0
+                else:
+                    self._filter_limit = np.ones_like(self._filter)
+                    warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
+                                  "be larger than length of data set! "+
+                                  "Resetting 'Limit Events'!")
+                    FIL["Limit Events"] = 0
             else:
+                # revert everything back to how it was
                 self._filter_limit = np.ones_like(self._filter)
-                warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
-                              "be larger than length of data set! "+
-                              "Resetting 'Limit Events'!")
-                FIL["Limit Events"] = 0
-        else:
-            # revert everything back to how it was
-            self._filter_limit = np.ones_like(self._filter)
-        
-        # Update filter again
-        try:
-            self._filter *= self._filter_limit
-        except:
-            import IPython
-            IPython.embed() 
-        
+            
+            # Update filter again
+            try:
+                self._filter *= self._filter_limit
+            except:
+                raise
+
         # Actual filtering is then done during plotting            
         self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
 
@@ -400,7 +400,7 @@ class RTDC_DataSet(object):
     def GetDownSampledScatter(self, c=None, axsize=(300,300),
                               markersize=1,
                               downsample_events=None):
-        """ Filters a set of data from overlayed events for plottinǵ
+        """ Filters a set of data from overlayed events for plotting
         
         Parameters
         ----------
@@ -423,6 +423,7 @@ class RTDC_DataSet(object):
         -------
         xnew, xnew : filtered x and y
         """
+        self.ApplyFilter()
         plotfilters = self.Configuration["Plotting"]
         if downsample_events is None:
             downsample_events = plotfilters["Downsample Events"]
@@ -430,30 +431,34 @@ class RTDC_DataSet(object):
         if downsample_events < 1:
             downsample_events = 0
 
+        downsampling = plotfilters["Downsampling"]            
+
         xax, yax = self.GetPlotAxes()
 
         # identifier for this setup
-        identifier = str(axsize)+str(markersize)+str(c)
+        hasher = hashlib.sha256()
+        hasher.update(str(axsize)+str(markersize)+str(c))
         # Get axes
         if self.Configuration["Filtering"]["Enable Filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-            identifier += str(self.Configuration["Filtering"])
+            hasher.update(np.array(self.Configuration["Filtering"].items()).tostring())
         else:
             # filtering disabled
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
 
-        identifier += str(downsample_events)
-            
-        hasher = hashlib.sha256()
-        hasher.update(str(x) + str(y))
-        identifier += hasher.hexdigest()
+        hasher.update(str(downsample_events))
+        hasher.update(x.tostring() + y.tostring())
+        hasher.update(str(downsampling))
+        identifier = hasher.hexdigest()
 
         if identifier in self._Downsampled_Scatter:
-            return self._Downsampled_Scatter[identifier]
+            result, self._plot_filter = self._Downsampled_Scatter[identifier]
+            return result
 
-        if downsample_events > 0 and downsample_events > x.shape[0]:
+        if (not downsampling or
+           (downsample_events > 0 and downsample_events > x.shape[0])):
             # nothing to do
             self._plot_filter = np.ones_like(x, dtype=bool)
             if c is None:
@@ -536,18 +541,17 @@ class RTDC_DataSet(object):
                 away = np.where(~incl)[0]
                 incl[away[:add]] = 1
 
-        self._plot_filter = incl
-
-        xincl = x[np.where(incl)]
-        yincl = y[np.where(incl)]
+        xincl = x[incl]
+        yincl = y[incl]
 
         if c is None:
-            result = xincl, yincl
+            result = [xincl, yincl]
         else: 
             dens = c[np.where(incl)]
-            result = xincl, yincl, dens
+            result = [xincl, yincl, dens]
         
-        self._Downsampled_Scatter[identifier] = result
+        self._Downsampled_Scatter[identifier] = result, incl
+        self._plot_filter = incl
 
         return result
 
@@ -682,8 +686,11 @@ class RTDC_DataSet(object):
             kde_kwargs["bw"] = [bwx, bwy]
         
         kde_fct = getattr(kde_methods, "kde_"+kde_type)
-
-        density = kde_fct(**kde_kwargs)
+        
+        if len(x) != 0:
+            density = kde_fct(**kde_kwargs)
+        else:
+            density = []
         
         print("KDE scatter {} time: ".format(kde_type), time.time()-a)
         return density

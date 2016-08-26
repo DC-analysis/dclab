@@ -437,20 +437,23 @@ class RTDC_DataSet(object):
 
         # identifier for this setup
         hasher = hashlib.sha256()
-        hasher.update(str(axsize)+str(markersize)+str(c))
+        hasher.update(obj2str(axsize))
+        hasher.update(obj2str(markersize))
+        hasher.update(obj2str(c))
         # Get axes
         if self.Configuration["Filtering"]["Enable Filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-            hasher.update(np.array(self.Configuration["Filtering"].items()).tostring())
+            hasher.update(obj2str(self.Configuration["Filtering"]))
         else:
             # filtering disabled
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
 
-        hasher.update(str(downsample_events))
-        hasher.update(x.tostring() + y.tostring())
-        hasher.update(str(downsampling))
+        hasher.update(obj2str(downsample_events))
+        hasher.update(obj2str(x))
+        hasher.update(obj2str(y))
+        hasher.update(obj2str(downsampling))
         identifier = hasher.hexdigest()
 
         if identifier in self._Downsampled_Scatter:
@@ -843,6 +846,27 @@ def GetProjectNameFromPath(path):
         warnings.warn("Non-standard directory naming scheme: {}".format(path))
         project = trail1
     return project
+
+
+def obj2str(obj):
+    """Full string representation of an object for hashing"""
+    if isinstance(obj, (str, unicode)):
+        return obj
+    elif isinstance(obj, (bool, int, float)):
+        return str(obj)
+    elif obj is None:
+        return "none"
+    elif isinstance(obj, np.ndarray):
+        return obj.tostring()
+    elif isinstance(obj, tuple):
+        return obj2str(list(obj))
+    elif isinstance(obj, list):
+        return "".join(obj2str(o) for o in obj)
+    elif isinstance(obj, dict):
+        return obj2str(obj.items())
+    else:
+        raise ValueError("No rule to convert object '{}' to string.".
+                         format(obj.__class__))
 
 
 def UpdateConfiguration(oldcfg, newcfg):

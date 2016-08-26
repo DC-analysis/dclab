@@ -1,3 +1,6 @@
+0.1.8
+- Bugfixes:
+  - Faulty hashing strategy in `RTDC_DataSet.GetDownSampledScatter`
 0.1.7
 - Added channel: distance between to first fl. peaks
 - Added fluorescence channels: peak position, peak area, number of peaks

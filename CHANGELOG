@@ -1,4 +1,5 @@
 0.1.8
+- Add statistics submodule
 - Bugfixes:
   - Faulty hashing strategy in `RTDC_DataSet.GetDownSampledScatter`
 0.1.7

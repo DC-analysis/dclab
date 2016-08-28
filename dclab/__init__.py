@@ -23,6 +23,7 @@ from . import definitions as dfn
 from ._version import version as __version__
 from .rtdc_dataset import RTDC_DataSet, GetProjectNameFromPath
 from .polygon_filter import PolygonFilter
+from . import statistics
 
  
 def GetTDMSFiles(directory):

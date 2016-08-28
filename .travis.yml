@@ -6,6 +6,8 @@ python:
 notifications:
   email: false
 env:
+  global:
+  - GH_REF: github.com/ZELLMECHANIK-DRESDEN/dclab.git
   matrix:
   - NUMPY_VERSION_MAX="1.7.9"
   - NUMPY_VERSION_MAX="1.8.9"

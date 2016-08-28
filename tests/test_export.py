@@ -29,6 +29,7 @@ def test_export():
     edest = dirname(dirname(tdmsfile))
     
     ds.ExportTSV(join(edest, "test"), ["Area", "Defo", "Time", "Frame", "FL-3width"], override=True)
+    ds.ExportTSV(join(edest, "test_unicode"), [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
 
 
 if __name__ == "__main__":

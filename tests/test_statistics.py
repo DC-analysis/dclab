@@ -59,15 +59,19 @@ def test_stat_occur():
     head2, vals2 = dclab.statistics.get_statistics(ds, columns=["Events", "Mean"])
     headf, valsf = dclab.statistics.get_statistics(ds)
     
-    for h in head1:
-        assert h in headf
-    for v in vals1:
-        assert v in valsf
+    # disable filtering (there are none anyway) to cover a couple more lines:
+    ds.Configuration["Filtering"]["Enable Filters"] = False
+    headn, valsn = dclab.statistics.get_statistics(ds)
+    
+    
+    for item in zip(head1, vals1):
+        assert item in zip(headf, valsf)
 
-    for h in head2:
-        assert h in headf
-    for v in vals2:
-        assert v in valsf
+    for item in zip(head2, vals2):
+        assert item in zip(headf, valsf)
+
+    for item in zip(headn, valsn):
+        assert item in zip(headf, valsf)
 
     # cleanup
     edest = dirname(dirname(tdmsfile))

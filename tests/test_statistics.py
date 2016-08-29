@@ -36,13 +36,13 @@ def test_stat_defo():
         elif h.lower() == "%-gated":
             assert v==100
         elif h.lower().startswith("sd "):
-            assert v==0.04143419489264488
+            assert np.allclose(v,0.04143419489264488)
         elif h.lower().startswith("median "):
-            assert v==0.11600667238235474
+            assert np.allclose(v,0.11600667238235474)
         elif h.lower().startswith("mode "):
-            assert v==0.11187175661325455
+            assert np.allclose(v,0.11187175661325455)
         elif h.lower().startswith("mean "):
-            assert v==0.12089553475379944
+            assert np.allclose(v,0.12089553475379944)
        
     # cleanup
     edest = dirname(dirname(tdmsfile))

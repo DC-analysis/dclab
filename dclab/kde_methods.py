@@ -41,8 +41,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
     
     estimator = gaussian_kde([events_x.flatten(), events_y.flatten()])
     density = estimator.evaluate([xout.flatten(), yout.flatten()])
-
-        
+    
     return density.reshape(xout.shape)
 
 

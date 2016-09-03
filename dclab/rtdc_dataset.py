@@ -20,10 +20,19 @@ from . import definitions as dfn
 from .polygon_filter import PolygonFilter
 from . import kde_methods
 
+
 class RTDC_DataSet(object):
     """ An RTDC measurement object.
     
-    The object must be initiated with a '.tdms' filename.
+    Parameters
+    ----------
+    tdms_path: str
+        Path to a '.tdms' file. Only one of `tdms_path and `ddict` can
+        be specified.
+    ddict: dict
+        Dictionary with keys from `dclab.definitions.uid` (e.g. "Area", "Defo")
+        with which the class will be instantiated. Not '.tdms' file is required.
+        The configuration is set to the default configuration fo dclab.
     
     Notes
     -----
@@ -33,29 +42,68 @@ class RTDC_DataSet(object):
     excluded from all computations.
     
     """
-    def __init__(self, tdms_filename):
+    def __init__(self, tdms_path=None, ddict=None):
         """ Load tdms file and set all variables """
+        assert [tdms_path, ddict].count(None)==1, "Specify tdms_path OR ddict"
+
         # Kernel density estimator dictionaries
         self._old_filters = {} # for comparison to new filters
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
         
-        self.tdms_filename = tdms_filename
-        self.name = os.path.split(tdms_filename)[1].split(".tdms")[0]
-        self.fdir = os.path.dirname(tdms_filename)
+        if ddict is not None:
+            # We are given a dictionary with data values.
+            # - create a unique fake title
+            t = time.localtime()
+            rand = "".join([ hex(r)[2:] for r in np.random.randint(
+                                                        10000,
+                                                        size=3,
+                                                        dtype=np.int32)])
+            tdms_path = "{}_{:02d}_{:02d}/{}.tdms".format(t[0],t[1],t[2],rand)
+            self.Configuration = dfn.LoadDefaultConfiguration()
 
+        # Initialize variables and generate hashes
+        self.tdms_filename = tdms_path
+        self.name = os.path.split(tdms_path)[1].split(".tdms")[0]
+        self.fdir = os.path.dirname(tdms_path)
         mx = os.path.join(self.fdir, self.name.split("_")[0])
-        
         self.title = u"{} - {}".format(
-                      GetProjectNameFromPath(tdms_filename),
-                      os.path.split(mx)[1])
-        
-        f2hash = [ tdms_filename, mx+"_camera.ini", mx+"_para.ini" ]
-        
-        self.file_hashes = [(fname, hashfile(fname)) for fname in f2hash]
+                                       GetProjectNameFromPath(tdms_path),
+                                       os.path.split(mx)[1])
+        fsh = [ tdms_path, mx+"_camera.ini", mx+"_para.ini" ]
+        self.file_hashes = [(f, hashfile(f)) for f in fsh if os.path.exists(f)]
+        ihasher = hashlib.md5()
+        ihasher.update(tdms_path)
+        ihasher.update(obj2str(self.file_hashes))
+        self.identifier = ihasher.hexdigest()
 
-        self.identifier = self.file_hashes[0][1]
+        if ddict is not None:
+            # We are given a dictionary with data values.
+            self._init_data_with_dict(ddict)
+        else:
+            # We were given a tdms file.
+            self._init_data_with_tdms(tdms_path)
 
+        # Set up filtering
+        self._init_filters()
+
+
+    def _init_data_with_dict(self, ddict):
+        for key in ddict:
+            setattr(self, dfn.cfgmaprev[key], np.array(ddict[key]))
+        fill0 = np.zeros(len(ddict[key]))
+        for key in dfn.rdv:
+            if not hasattr(self, key):
+                setattr(self, key, fill0)
+
+
+    def _init_data_with_tdms(self, tdms_filename):
+        """ Initializes the current RTDC_DataSet with a tdms file.
+        
+        This method will automatically load contours, video files,
+        and fluorescence traces that are present in the directory
+        of `tmds_filename`.
+        """
         tdms_file = TdmsFile(tdms_filename)
         
         ## Set all necessary internal parameters as defined in
@@ -92,6 +140,69 @@ class RTDC_DataSet(object):
             finally:
                 setattr(self, dfn.rdv[ii], func(*args))
 
+        # Fluorescence traces
+        self.traces = {}
+        traces_filename = tdms_filename[:-5]+"_traces.tdms"
+        if os.path.exists(traces_filename):
+            # Determine chunk size of traces from the FL1index column
+            sampleids = tdms_file.object("Cell Track", "FL1index").data
+            traces_file = TdmsFile(traces_filename)
+            for group, ch in dfn.tr_data:
+                try:
+                    trdat = traces_file.object(group, ch).data
+                except KeyError:
+                    pass
+                else:
+                    if trdat is not None:
+                        # Only add trace if there is actual data.
+                        # Split only needs the the position of the sections,
+                        # so we remove the first (0) index.
+                        self.traces[ch] = np.split(trdat, sampleids[1:])
+
+        # Cell images (video)
+        videos = [v for v in os.listdir(self.fdir) if v.endswith(".avi")]
+        # Filter videos according to measurement number
+        meas_id = self.name.split("_")[0]
+        videos = [v for v in videos if v.split("_")[0] == meas_id] 
+
+        videos.sort()
+        if len(videos) == 0:
+            self.video = None
+        else:
+            # Defaults to first avi file
+            self.video = videos[0]
+            # g/q video file names. q comes first.
+            for v in videos:
+                if v.endswith("imag.avi"):
+                    self.video = v
+                    break
+                # add this here, because fRT-DC measurements also contain
+                # videos ..._proc.avi
+                elif v.endswith("imaq.avi"):
+                    self.video = v
+                    break
+        
+        # Cell contours
+        self.contours = {}
+        for f in os.listdir(self.fdir):
+            if f.endswith("_contours.txt") and f.startswith(self.name[:2]):
+                with open(os.path.join(self.fdir, f), "r") as c:
+                    # read entire file
+                    cdat = c.read(-1)
+                for cont in cdat.split("Contour in frame"):
+                    cont = cont.strip()
+                    if len(cont) == 0:
+                        continue
+                    cont = cont.splitlines()
+                    # the frame is the first number
+                    frame = int(cont.pop(0))
+                    cont = [ np.fromstring(c.strip("()"), sep=",") for c in cont ]
+                    cont = np.array(cont, dtype=np.uint8)
+                    self.contours[frame] = cont
+
+
+    def _init_filters(self):
+        datalen = self.time.shape[0]
         # Plotting filters, set by "GetDownSampledScatter".
         # This is a nested filter which is applied after self._filter
         self._plot_filter = np.ones_like(self.time, dtype=bool)
@@ -118,66 +229,6 @@ class RTDC_DataSet(object):
         self._filter_polygon = inifilter.copy()
 
         self.SetConfiguration()
-
-        # Get video file name
-        videos = [v for v in os.listdir(self.fdir) if v.endswith(".avi")]
-        # Filter videos according to measurement number
-        meas_id = self.name.split("_")[0]
-        videos = [v for v in videos if v.split("_")[0] == meas_id] 
-
-        videos.sort()
-        if len(videos) == 0:
-            self.video = None
-        else:
-            # Defaults to first avi file
-            self.video = videos[0]
-            # g/q video file names. q comes first.
-            for v in videos:
-                if v.endswith("imag.avi"):
-                    self.video = v
-                    break
-                # add this here, because fRT-DC measurements also contain
-                # videos ..._proc.avi
-                elif v.endswith("imaq.avi"):
-                    self.video = v
-                    break
-        
-        # Get contours
-        self.contours = {}
-        for f in os.listdir(self.fdir):
-            if f.endswith("_contours.txt") and f.startswith(self.name[:2]):
-                with open(os.path.join(self.fdir, f), "r") as c:
-                    # read entire file
-                    cdat = c.read(-1)
-                for cont in cdat.split("Contour in frame"):
-                    cont = cont.strip()
-                    if len(cont) == 0:
-                        continue
-                    cont = cont.splitlines()
-                    # the frame is the first number
-                    frame = int(cont.pop(0))
-                    cont = [ np.fromstring(c.strip("()"), sep=",") for c in cont ]
-                    cont = np.array(cont, dtype=np.uint8)
-                    self.contours[frame] = cont
-
-        # Get traces
-        self.traces = {}
-        traces_filename = tdms_filename[:-5]+"_traces.tdms"
-        if os.path.exists(traces_filename):
-            # Determine chunk size of traces from the FL1index column
-            sampleids = tdms_file.object("Cell Track", "FL1index").data
-            traces_file = TdmsFile(traces_filename)
-            for group, ch in dfn.tr_data:
-                try:
-                    trdat = traces_file.object(group, ch).data
-                except KeyError:
-                    pass
-                else:
-                    if trdat is not None:
-                        # Only add trace if there is actual data.
-                        # Split only needs the the position of the sections,
-                        # so we remove the first (0) index.
-                        self.traces[ch] = np.split(trdat, sampleids[1:])
 
 
     def ApplyFilter(self, force=[]):
@@ -746,11 +797,10 @@ class RTDC_DataSet(object):
         """
         self.Configuration = dict()
         self.UpdateConfiguration(dfn.cfg)
-        mx = self.name.split("_")[0]
-        camcfg = dfn.LoadConfiguration(os.path.join(self.fdir, mx+"_camera.ini"))
-        self.UpdateConfiguration(camcfg)
-        parcfg = dfn.LoadConfiguration(os.path.join(self.fdir, mx+"_para.ini"))
-        self.UpdateConfiguration(parcfg)
+        for name, _hash in self.file_hashes:
+            if name.endswith(".ini") and os.path.exists(name):
+                newdict = dfn.LoadConfiguration(name)
+                self.UpdateConfiguration(newdict)
 
 
     def UpdateConfiguration(self, newcfg):
@@ -777,8 +827,9 @@ class RTDC_DataSet(object):
         if ("Image" in newcfg and
             "Pix Size" in newcfg["Image"]):
             PIX = newcfg["Image"]["Pix Size"]
-            self.area_um[:] = self.area * PIX**2
-            force.append("Area")
+            if not np.allclose(self.area, 0):
+                self.area_um[:] = self.area * PIX**2
+                force.append("Area")
         # look for frame rate update
         elif ("Framerate" in newcfg and
             "Frame Rate" in newcfg["Framerate"]):

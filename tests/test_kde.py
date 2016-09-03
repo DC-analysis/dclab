@@ -18,13 +18,12 @@ import os
 import warnings
 import zipfile
 
-from helper_methods import retreive_tdms, example_data_sets
+from helper_methods import example_data_dict
 
 def test_kde_general():
     ## Download and extract data
-    tdmsfile = retreive_tdms(example_data_sets[0])
-
-    ds = dclab.RTDC_DataSet(tdmsfile)
+    ddict = example_data_dict()
+    ds = dclab.RTDC_DataSet(ddict=ddict)
     
     kdes = dclab.dfn.GetParameterChoices("Plotting", "KDE")
     
@@ -35,9 +34,9 @@ def test_kde_general():
 
 
 def test_kde_none():
-    tdmsfile = retreive_tdms(example_data_sets[0])
-
-    ds = dclab.RTDC_DataSet(tdmsfile)
+    ddict = example_data_dict()
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
     ds.Configuration["Plotting"]["KDE"] = "None"
     sc = ds.GetKDE_Scatter()
     assert np.sum(sc) == sc.shape[0]

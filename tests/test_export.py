@@ -8,6 +8,7 @@ import os
 from os.path import abspath, dirname, join
 import shutil
 import sys
+import tempfile
 import warnings
 import zipfile
 
@@ -16,22 +17,19 @@ import zipfile
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab
 
-from helper_methods import retreive_tdms, example_data_sets
-
+from helper_methods import example_data_dict
 
 
 def test_export():    
-    ## Download and extract data
-    tdmsfile = retreive_tdms(example_data_sets[0])
-
-    ds = dclab.RTDC_DataSet(tdmsfile)
+    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    ddict = example_data_dict(size=222, keys=keys)
+    ds = dclab.RTDC_DataSet(ddict=ddict)
     
-    edest = dirname(dirname(tdmsfile))
-    
+    edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
     f2 = join(edest, "test_unicode.tsv")
     
-    ds.ExportTSV(f1, ["Area", "Defo", "Time", "Frame", "FL-3width"], override=True)
+    ds.ExportTSV(f1, keys, override=True)
     ds.ExportTSV(f2, [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
     
     with codecs.open(f1) as fd:
@@ -45,6 +43,7 @@ def test_export():
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)
+
 
 
 if __name__ == "__main__":

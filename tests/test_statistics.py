@@ -16,44 +16,37 @@ import zipfile
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab
 
-from helper_methods import retreive_tdms, example_data_sets
+from helper_methods import example_data_dict
 
 
 
 def test_stat_defo():
-    ## Download and extract data
-    tdmsfile = retreive_tdms(example_data_sets[0])
-
-    ds = dclab.RTDC_DataSet(tdmsfile)
+    ddict = example_data_dict(size=5085, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
     
     head, vals = dclab.statistics.get_statistics(ds, axes=["Defo"])
     
     for h, v in zip(head,vals):
+        print(v)
         if h.lower() == "flow rate":
-            assert v==0.12
+            assert np.isnan(v) #backwards compatibility!
         elif h.lower() == "events":
             assert v==5085
         elif h.lower() == "%-gated":
             assert v==100
         elif h.lower().startswith("sd "):
-            assert np.allclose(v,0.04143419489264488)
+            assert np.allclose(v,0.288990352083)
         elif h.lower().startswith("median "):
-            assert np.allclose(v,0.11600667238235474)
+            assert np.allclose(v,0.494188566376)
         elif h.lower().startswith("mode "):
-            assert np.allclose(v,0.11187175661325455)
+            assert np.allclose(v,0.260923009639)
         elif h.lower().startswith("mean "):
-            assert np.allclose(v,0.12089553475379944)
+            assert np.allclose(v,0.497743857424)
        
-    # cleanup
-    edest = dirname(dirname(tdmsfile))
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_stat_occur():
-    ## Download and extract data
-    tdmsfile = retreive_tdms(example_data_sets[0])
-
-    ds = dclab.RTDC_DataSet(tdmsfile)
+    ddict = example_data_dict(size=5085, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
     
     head1, vals1 = dclab.statistics.get_statistics(ds, axes=["Defo"])
     head2, vals2 = dclab.statistics.get_statistics(ds, columns=["Events", "Mean"])
@@ -72,10 +65,6 @@ def test_stat_occur():
 
     for item in zip(headn, valsn):
         assert item in zip(headf, valsf)
-
-    # cleanup
-    edest = dirname(dirname(tdmsfile))
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 

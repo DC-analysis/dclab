@@ -1,6 +1,7 @@
 webloc = "https://github.com/ZELLMECHANIK-DRESDEN/RTDCdata/raw/master/"
 
 from os.path import join, exists, basename, dirname, abspath
+import numpy as np
 import tempfile
 import sys
 import zipfile
@@ -8,6 +9,7 @@ import zipfile
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 import dclab
+
 
 def dl_file(url, dest, chunk_size=6553):
     """
@@ -24,7 +26,22 @@ def dl_file(url, dest, chunk_size=6553):
             out.write(data)
     r.release_conn()
     
+
+def example_data_dict(size=100, keys=["Area", "Defo"]):
+    """ Example dict with which an RTDC_DataSet can be instantiated.
+    """
+    ddict = {}
+    for ii, key in enumerate(keys):
+        if key in ["Time", "Frame"]:
+            val = np.arange(size)
+        else:
+            state = np.random.RandomState(size+ii)
+            val = state.random_sample(size)
+        ddict[key] = val
     
+    return ddict
+
+
 def retreive_tdms(zip_file):
     """ Retrieve a zip file that is reachable via the location
     `webloc`, extract it, and return the paths to extracted

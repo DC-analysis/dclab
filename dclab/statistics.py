@@ -56,6 +56,14 @@ class Statistics(object):
         return result
 
 
+def flow_rate(mm):
+    conf = mm.Configuration["General"]
+    if "Flow Rate [ul/s]" in conf:
+        return conf["Flow Rate [ul/s]"]
+    else:
+        return np.nan
+
+    
 def get_statistics(rtdc_ds, columns=None, axes=None):
     """
     Parameters
@@ -159,4 +167,4 @@ Statistics(name="Events",
 Statistics(name="%-gated",
            method=lambda mm: np.average(mm._filter)*100)
 Statistics(name="Flow rate",
-           method=lambda mm: mm.Configuration["General"]["Flow Rate [ul/s]"])
+           method=lambda mm: flow_rate(mm))

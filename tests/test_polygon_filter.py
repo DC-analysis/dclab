@@ -14,24 +14,23 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab
 
 
-from helper_methods import retreive_tdms, example_data_sets
+from helper_methods import example_data_dict
 
 filter_data="""[Polygon 00000000]
 X Axis = Area
 Y Axis = Defo
 Name = polygon filter 0
-point00000000 = 6.344607717656481e+01 1.703315881326352e-01
-point00000001 = 3.771010748302133e+02 1.452006980802792e-01
-point00000002 = 3.025596093384512e+02 6.806282722513089e-02
-point00000003 = 6.150993521573982e+01 1.015706806282723e-01
+point00000000 = 6.344607717656481e-03 7.703315881326352e-01
+point00000001 = 7.771010748302133e-01 7.452006980802792e-01
+point00000002 = 8.025596093384512e-01 6.806282722513089e-03
+point00000003 = 6.150993521573982e-01 1.015706806282723e-03
 """
 
 def test_polygon_import():
-    tdmsfile = retreive_tdms(example_data_sets[0])
-    ds = dclab.RTDC_DataSet(tdmsfile)
-
     dclab.PolygonFilter.clear_all_filters()
-    
+    ddict = example_data_dict(size=1000, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+
     # save polygon data
     with tempfile.NamedTemporaryFile(mode="w") as temp:
         temp.write(filter_data)
@@ -42,11 +41,11 @@ def test_polygon_import():
         ds.PolygonFilterAppend(pf)
         
         ds.ApplyFilter()
-        
-        assert np.sum(ds._filter) == 3315
+
+        assert np.sum(ds._filter) == 330
 
         dclab.PolygonFilter.import_all(temp.name)
-        
+
         assert len(dclab.PolygonFilter.instances) == 2
 
 

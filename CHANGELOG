@@ -1,4 +1,5 @@
 0.1.8
+- Allow to instantiate RTDC_DataSet without a tdms file
 - Add statistics submodule
 - Bugfixes:
   - Faulty hashing strategy in `RTDC_DataSet.GetDownSampledScatter`

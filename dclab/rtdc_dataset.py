@@ -894,7 +894,8 @@ def GetProjectNameFromPath(path):
         # /home/peter/hans/HLC12398/online/data/
         project = trail3
     else:
-        warnings.warn("Non-standard directory naming scheme: {}".format(path))
+        if os.path.exists(path):
+            warnings.warn("Non-standard directory naming scheme: {}".format(path))
         project = trail1
     return project
 

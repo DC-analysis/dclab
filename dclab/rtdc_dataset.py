@@ -479,10 +479,10 @@ class RTDC_DataSet(object):
         if downsample_events is None:
             downsample_events = plotfilters["Downsample Events"]
 
-        if downsample_events < 1:
-            downsample_events = 0
-
         downsampling = plotfilters["Downsampling"]            
+
+        assert downsample_events > 0
+        assert downsampling in [True, False]
 
         xax, yax = self.GetPlotAxes()
 

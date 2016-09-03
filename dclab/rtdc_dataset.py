@@ -352,7 +352,7 @@ class RTDC_DataSet(object):
                 limit = FIL["Limit Events"]
                 incl = self._filter.copy()
                 numevents = np.sum(incl)
-                if limit <= numevents:
+                if limit < numevents:
                     # Perform equally distributed removal of events
                     # We have too many events
                     remove = numevents - limit
@@ -371,12 +371,6 @@ class RTDC_DataSet(object):
                     # everything is ok
                     self._filter_limit = np.ones_like(self._filter)
                     print("'Limit Events' is size of filtered data.")
-                elif limit <= self._filter.shape[0]:
-                    self._filter_limit = np.ones_like(self._filter)
-                    warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
-                                  "be larger than length of filtered data set! "+
-                                  "Resetting 'Limit Events'!")
-                    FIL["Limit Events"] = 0
                 else:
                     self._filter_limit = np.ones_like(self._filter)
                     warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
@@ -388,10 +382,7 @@ class RTDC_DataSet(object):
                 self._filter_limit = np.ones_like(self._filter)
             
             # Update filter again
-            try:
-                self._filter *= self._filter_limit
-            except:
-                raise
+            self._filter *= self._filter_limit
 
         # Actual filtering is then done during plotting            
         self._old_filters = copy.deepcopy(self.Configuration["Filtering"])

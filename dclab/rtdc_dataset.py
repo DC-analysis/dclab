@@ -11,6 +11,7 @@ import hashlib
 from nptdms import TdmsFile
 import numpy as np
 import os
+import sys
 import time
     
 import warnings
@@ -19,6 +20,13 @@ import warnings
 from . import definitions as dfn
 from .polygon_filter import PolygonFilter
 from . import kde_methods
+
+
+if sys.version_info[0] == 2:
+    str_classes = (str, unicode)
+else:
+    str_classes = str
+
 
 
 class RTDC_DataSet(object):
@@ -892,7 +900,7 @@ def GetProjectNameFromPath(path):
 
 def obj2str(obj):
     """Full string representation of an object for hashing"""
-    if isinstance(obj, (str, unicode)):
+    if isinstance(obj, str_classes):
         return obj.encode("utf-8")
     elif isinstance(obj, (bool, int, float)):
         return str(obj).encode("utf-8")

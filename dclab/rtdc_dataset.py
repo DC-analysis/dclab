@@ -55,10 +55,9 @@ class RTDC_DataSet(object):
             # We are given a dictionary with data values.
             # - create a unique fake title
             t = time.localtime()
-            rand = "".join([ hex(r)[2:] for r in np.random.randint(
-                                                        10000,
-                                                        size=3,
-                                                        dtype=np.int32)])
+            rand = "".join([ hex(r)[2:-1] for r in np.random.randint(
+                                                                     10000,
+                                                                     size=3)])
             tdms_path = "{}_{:02d}_{:02d}/{}.tdms".format(t[0],t[1],t[2],rand)
             self.Configuration = dfn.LoadDefaultConfiguration()
 

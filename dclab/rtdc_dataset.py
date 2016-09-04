@@ -72,7 +72,7 @@ class RTDC_DataSet(object):
         fsh = [ tdms_path, mx+"_camera.ini", mx+"_para.ini" ]
         self.file_hashes = [(f, hashfile(f)) for f in fsh if os.path.exists(f)]
         ihasher = hashlib.md5()
-        ihasher.update(tdms_path)
+        ihasher.update(obj2str(tdms_path))
         ihasher.update(obj2str(self.file_hashes))
         self.identifier = ihasher.hexdigest()
 
@@ -893,9 +893,9 @@ def GetProjectNameFromPath(path):
 def obj2str(obj):
     """Full string representation of an object for hashing"""
     if isinstance(obj, (str, unicode)):
-        return obj
+        return obj.encode("utf-8")
     elif isinstance(obj, (bool, int, float)):
-        return str(obj)
+        return str(obj).encode("utf-8")
     elif obj is None:
         return "none"
     elif isinstance(obj, np.ndarray):

@@ -905,15 +905,15 @@ def obj2str(obj):
     elif isinstance(obj, (bool, int, float)):
         return str(obj).encode("utf-8")
     elif obj is None:
-        return "none"
+        return b"none"
     elif isinstance(obj, np.ndarray):
         return obj.tostring()
     elif isinstance(obj, tuple):
         return obj2str(list(obj))
     elif isinstance(obj, list):
-        return "".join(obj2str(o) for o in obj)
+        return b"".join(obj2str(o) for o in obj)
     elif isinstance(obj, dict):
-        return obj2str(obj.items())
+        return obj2str(list(obj.items()))
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))

@@ -47,5 +47,6 @@ def retreive_tdms(zip_file):
 
     return tdmsfiles
     
-    
-example_data_sets = ["rtdc_data_minimal.zip"]
+# Do not change order:    
+example_data_sets = ["rtdc_data_minimal.zip",
+                     "rtdc_data_traces_video.zip"]

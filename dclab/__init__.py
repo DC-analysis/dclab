@@ -15,7 +15,7 @@ import os
 from scipy.stats import norm, gaussian_kde
 from statsmodels.nonparametric.kernel_density import KDEMultivariate
 import time
-    
+
 import warnings
 
 # Definitions

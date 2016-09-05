@@ -25,7 +25,7 @@ def test_kde_general():
     ddict = example_data_dict()
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
-    kdes = dclab.dfn.GetParameterChoices("Plotting", "KDE")
+    kdes = dclab.config.get_config_entry_choices("Plotting", "KDE")
     
     for kde in kdes:
         ds.Configuration["Plotting"]["KDE"] = kde

@@ -1,4 +1,4 @@
-from os.path import join, exists, basename, dirname, abspath
+from os.path import join, basename, dirname, abspath
 import numpy as np
 import tempfile
 import sys

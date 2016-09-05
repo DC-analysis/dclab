@@ -16,7 +16,7 @@ import time
     
 import warnings
 
-# Definitions
+from . import config
 from . import definitions as dfn
 from .polygon_filter import PolygonFilter
 from . import kde_methods
@@ -67,7 +67,7 @@ class RTDC_DataSet(object):
                                                                      10000,
                                                                      size=3)])
             tdms_path = "{}_{:02d}_{:02d}/{}.tdms".format(t[0],t[1],t[2],rand)
-            self.Configuration = dfn.LoadDefaultConfiguration()
+            self.Configuration = config.load_default_config()
 
         # Initialize variables and generate hashes
         self.tdms_filename = tdms_path
@@ -794,10 +794,10 @@ class RTDC_DataSet(object):
         necessary to run it twice.
         """
         self.Configuration = dict()
-        self.UpdateConfiguration(dfn.cfg)
+        self.UpdateConfiguration(config.cfg)
         for name, _hash in self.file_hashes:
             if name.endswith(".ini") and os.path.exists(name):
-                newdict = dfn.LoadConfiguration(name)
+                newdict = config.load_config_file(name)
                 self.UpdateConfiguration(newdict)
 
 
@@ -836,7 +836,7 @@ class RTDC_DataSet(object):
             self.time[:] = (self.frame - self.frame[0]) / FR
             force.append("Time")
 
-        UpdateConfiguration(self.Configuration, newcfg)
+        config.update_config_dict(self.Configuration, newcfg)
 
         if "Filtering" in newcfg:
             # Only writing the new Mins and Maxs is not enough
@@ -917,116 +917,3 @@ def obj2str(obj):
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))
-
-
-def UpdateConfiguration(oldcfg, newcfg):
-    """ Update a configuration in librtdc format.
-    
-        
-    Returns
-    -------
-    The new configuration, but it is also updated in-place.
-    
-    
-    Notes
-    -----
-    Also converts from circularity to deformation in `newcfg`.
-    """
-    ## Defo to Circ conversion
-    # new
-    cmin = None
-    cmax = None
-    dmin = None
-    dmax = None
-    if "Filtering" in newcfg:
-        if "Defo Max" in newcfg["Filtering"]:
-            dmax = newcfg["Filtering"]["Defo Max"]
-        if "Defo Min" in newcfg["Filtering"]:
-            dmin = newcfg["Filtering"]["Defo Min"]
-        if "Circ Max" in newcfg["Filtering"]:
-            cmax = newcfg["Filtering"]["Circ Max"]
-        if "Circ Min" in newcfg["Filtering"]:
-            cmin = newcfg["Filtering"]["Circ Min"]
-    # old
-    cmino = None
-    cmaxo = None
-    dmino = None
-    dmaxo = None
-    if "Filtering" in oldcfg:
-        if "Defo Max" in oldcfg["Filtering"]:
-            dmaxo = oldcfg["Filtering"]["Defo Max"]
-        if "Defo Min" in oldcfg["Filtering"]:
-            dmino = oldcfg["Filtering"]["Defo Min"]
-        if "Circ Max" in oldcfg["Filtering"]:
-            cmaxo = oldcfg["Filtering"]["Circ Max"]
-        if "Circ Min" in oldcfg["Filtering"]:
-            cmino = oldcfg["Filtering"]["Circ Min"]
-    # translation to new
-    if cmin != cmino and cmin is not None:
-        newcfg["Filtering"]["Defo Max"] = 1 - cmin
-    if cmax != cmaxo and cmax is not None:
-        newcfg["Filtering"]["Defo Min"] = 1 - cmax
-    if dmin != dmino and dmin is not None:
-        newcfg["Filtering"]["Circ Max"] = 1 - dmin
-    if dmax != dmaxo and dmax is not None:
-        newcfg["Filtering"]["Circ Min"] = 1 - dmax
-
-    ## Contour
-    if ("Plotting" in newcfg and
-        "Contour Accuracy Circ" in newcfg["Plotting"] and
-        not "Contour Accuracy Defo" in newcfg["Plotting"]):
-        # If not contour accuracy for Defo is given, use that from Circ.
-        newcfg["Plotting"]["Contour Accuracy Defo"] = newcfg["Plotting"]["Contour Accuracy Circ"]
-
-    for key in list(newcfg.keys()):
-        if not key in oldcfg:
-            oldcfg[key] = dict()
-        for skey in list(newcfg[key].keys()):
-            oldcfg[key][skey] = newcfg[key][skey]
-
-    ## Check missing values and set them to zero
-    for item in dfn.uid:
-        if not "Contour Accuracy "+item in oldcfg["Plotting"]:
-            oldcfg["Plotting"]["Contour Accuracy "+item] = 1
-        appends = [" Min", " Max"]
-        for a in appends:
-            if not item+a in oldcfg["Plotting"]:
-                oldcfg["Plotting"][item+a] = 0
-            if not item+a in oldcfg["Filtering"]:
-                    oldcfg["Filtering"][item+a] = 0
-
-    return oldcfg
-
-
-def SaveConfiguration(cfgfilename, cfg):
-    """ Save configuration to text file
-
-
-    Parameters
-    ----------
-    cfgfilename : absolute path
-        Filename of the configuration
-    cfg : dict
-        Dictionary containing configuration.
-
-    """
-    out = []
-    keys = list(cfg.keys())
-    keys.sort()
-    for key in keys:
-        out.append("[{}]".format(key))
-        section = cfg[key]
-        ikeys = list(section.keys())
-        ikeys.sort()
-        for ikey in ikeys:
-            var, val = dfn.MapParameterType2Str(ikey, section[ikey])
-            out.append("{} = {}".format(var,val))
-        out.append("")
-    
-    f = codecs.open(cfgfilename, "wb", "utf-8")
-    for i in range(len(out)):
-        out[i] = out[i]+"\r\n"
-    f.writelines(out)
-    f.close()
-
-

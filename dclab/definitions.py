@@ -49,6 +49,8 @@ uid = [
         "NrOfCells",
         "x-size",
         "y-size",
+        "Brightness",
+        "BrightnessSD",
         ]
 # Axes label (same order as UID)
 axl = [
@@ -59,8 +61,8 @@ axl = [
         u"Circularity",
         u"Deformation",
         u"Frame Number",
-        u"Lateral Position in Channel [px]",
-        u"Position along Channel axis [px]",
+        u"Lateral Position in Channel [µm]",
+        u"Position along Channel axis [µm]",
         u"Frame Time [s]",
         u"Fluorescence Intensity Maximum [ADC] (Ch.0)",
         u"Fluorescence Peak Width [µs]",
@@ -73,18 +75,20 @@ axl = [
         u"FL-1 area of peak",
         u"FL-2 area of peak",
         u"FL-3 area of peak",
-        u"FL-1 position of peak",
-        u"FL-2 position of peak",
-        u"FL-3 position of peak",
+        u"FL-1 position of peak [µs]",
+        u"FL-2 position of peak [µs]",
+        u"FL-3 position of peak [µs]",
         u"FL-1 number of peaks",
         u"FL-2 number of peaks",
         u"FL-3 number of peaks",
-        u"FL-1 distance between two first peaks [us]",
-        u"FL-2 distance between two first peaks [us]",
-        u"FL-3 distance between two first peaks [us]",
+        u"FL-1 distance between two first peaks [µs]",
+        u"FL-2 distance between two first peaks [µs]",
+        u"FL-3 distance between two first peaks [µs]",
         u"Number of cells in image",
-        u"Bounding box x-size",
-        u"Bounding box y-size",
+        u"Bounding box x-size [pix]",
+        u"Bounding box y-size [pix]",
+        u"Brightness in Contour",
+        u"Brightness SD",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -121,6 +125,8 @@ rdv = [
         "ncells",
         "size_x",
         "size_y",
+        "br",
+        "brSD",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -307,6 +313,17 @@ tfd = [
          "ax1", # perpendicular to flow
          lambda x:x
          ],
+        # Brightness value determined by fRT-DC setup
+        ["Cell Track",
+         "Brightness",
+         lambda x:x
+        ],
+        # Brightness SD value determined by fRT-DC setup
+        ["Cell Track",
+         "BrightnessSD",
+         lambda x:x
+        ],
+    
         ]
 
 # traces_tdms file definitions

@@ -4,6 +4,7 @@
 - Bugfixes:
   - Faulty hashing strategy in `RTDC_DataSet.GetDownSampledScatter`
 - Code cleanup (renamed methods, cleaned structure)
+- Corrections/additions in definitions (fRT-DC)
 0.1.7
 - Added channel: distance between to first fl. peaks
 - Added fluorescence channels: peak position, peak area, number of peaks

@@ -152,8 +152,8 @@ class PolygonFilter(object):
             newid = max(PolygonFilter._instance_counter, unique_id+1)
             msg = "PolygonFilter with unique_id '{}' exists.".format(unique_id)
             msg += " Using new unique id '{}'.".format(newid)
+            warnings.warn(msg)
             unique_id = newid
-        
         
         ic = max(PolygonFilter._instance_counter, unique_id+1)
         PolygonFilter._instance_counter = ic

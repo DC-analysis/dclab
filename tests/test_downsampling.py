@@ -38,6 +38,10 @@ def test_downsample_none():
     ds.GetDownSampledScatter()
     assert np.sum(ds._plot_filter) == 8472
 
+    # Do it again with kde vals
+    ds.GetDownSampledScatter(c=np.arange(8472))
+    
+
 
 def test_downsample_none2():
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
@@ -68,6 +72,7 @@ def test_downsample_none2():
     assert np.sum(ds._filter) == 8472
 
 
+
 def test_downsample_yes():
     """ Simple downsampling test.
     """
@@ -87,7 +92,10 @@ def test_downsample_yes():
     assert np.sum(ds._plot_filter) == 100
     ds.GetDownSampledScatter()
     
-
+    # Do it again with kde vals
+    ds.GetDownSampledScatter(c=np.arange(8472))
+    
+    
 
 def test_downsample_up():
     """
@@ -109,6 +117,10 @@ def test_downsample_up():
     ds.GetDownSampledScatter()
     assert np.sum(ds._plot_filter) == 9999
     ds.GetDownSampledScatter()
+
+
+
+
 
 if __name__ == "__main__":
     # Run all tests

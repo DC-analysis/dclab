@@ -17,14 +17,12 @@ from helper_methods import retreive_tdms, example_data_sets
 
 
 
-
-
 def test_cache():
     "Test if caching happens"
-    
+    wait = .05    
     @cached.Cache
     def func1(x):
-        time.sleep(.5)
+        time.sleep(wait)
         return 2*x
 
     a = func1(4)
@@ -32,14 +30,14 @@ def test_cache():
     t1 = time.time()
     b = func1(4)
     t2 = time.time()
-    assert t2-t1 < 0.5
+    assert t2-t1 < wait
     assert b == a
 
 
 def test_cache_size():
     "Create more caches than cached.MAX_SIZE"
     ss = 10
-    wait = .1
+    wait = .01
     cached.MAX_SIZE = ss
     
     @cached.Cache

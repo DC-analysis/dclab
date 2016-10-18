@@ -631,9 +631,6 @@ class RTDC_DataSet(object):
         `scipy.stats.gaussian_kde`
         `statsmodels.nonparametric.kernel_density.KDEMultivariate`
         """
-        if xax is None or yax is None:
-            xax, yax = self.GetPlotAxes()
-            
         kde_type = self.Configuration["Plotting"]["KDE"].lower()
         # dummy area-circ
         deltaarea = self.Configuration["Plotting"]["Contour Accuracy "+xax]
@@ -845,12 +842,6 @@ class RTDC_DataSet(object):
         # Reset additional information
         self.Configuration["General"]["Cell Number"] =self.time.shape[0]
 
-
-    def __eq__(self, mm):
-        if self.file_hashes == mm.file_hashes:
-            return True
-        else:
-            return False
 
 
 def hashfile(fname, blocksize=65536):

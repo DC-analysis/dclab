@@ -41,6 +41,36 @@ def test_kde_none():
     sc = ds.GetKDE_Scatter()
     assert np.sum(sc) == sc.shape[0]
 
+    ds.GetKDE_Contour()
+
+
+def test_kde_nofilt():
+    ddict = example_data_dict()
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    ds.Configuration["Filtering"]["Enable Filters"] = False
+    sc = ds.GetKDE_Scatter()
+    cc = ds.GetKDE_Contour()
+    assert sc.shape[0] == sc.shape[0]
+
+
+def test_kde_positions():
+    ddict = example_data_dict()
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    ds.Configuration["Filtering"]["Enable Filters"] = False
+    sc = ds.GetKDE_Scatter(yax="Defo", xax="Area")
+    sc2 = ds.GetKDE_Scatter(yax="Defo", xax="Area",
+                            positions=(ds.area_um, ds.deform))
+    assert np.all(sc==sc2)
+    
+
+def test_empty_kde():
+    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds._filter[:] = 0
+    a = ds.GetKDE_Scatter()
+    assert len(a) == 0
 
 
 if __name__ == "__main__":

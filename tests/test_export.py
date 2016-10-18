@@ -45,6 +45,37 @@ def test_export():
     shutil.rmtree(edest, ignore_errors=True)
 
 
+def test_override():
+    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    ddict = example_data_dict(size=212, keys=keys)
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.tsv")
+    ds.ExportTSV(f1, keys, override=True)
+    try:
+        ds.ExportTSV(f1[:-4], keys, override=False)
+    except:
+        pass
+    else:
+        raise ValueError("Should append .tsv and not override!")
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_not_filtered():
+    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    ddict = example_data_dict(size=127, keys=keys)
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.tsv")
+    ds.ExportTSV(f1, keys, filtered=False)
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
 
 if __name__ == "__main__":
     # Run all tests

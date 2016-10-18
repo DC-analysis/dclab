@@ -27,7 +27,6 @@ def test_stat_defo():
     head, vals = dclab.statistics.get_statistics(ds, axes=["Defo"])
     
     for h, v in zip(head,vals):
-        print(v)
         if h.lower() == "flow rate":
             assert np.isnan(v) #backwards compatibility!
         elif h.lower() == "events":
@@ -67,6 +66,47 @@ def test_stat_occur():
         assert item in zip(headf, valsf)
 
 
+def test_flow_rate():
+    ddict = example_data_dict(size=77, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds.Configuration["General"]["Flow Rate [ul/s]"] = 0.172
+    
+    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["Defo"])
+    head2, vals2 = dclab.statistics.get_statistics(ds, columns=["Events", "Mean"])
+    headf, valsf = dclab.statistics.get_statistics(ds)
+    
+    # disable filtering (there are none anyway) to cover a couple more lines:
+    ds.Configuration["Filtering"]["Enable Filters"] = False
+    headn, valsn = dclab.statistics.get_statistics(ds)
+    
+    for item in zip(head1, vals1):
+        assert item in zip(headf, valsf)
+
+    for item in zip(head2, vals2):
+        assert item in zip(headf, valsf)
+
+    for item in zip(headn, valsn):
+        assert item in zip(headf, valsf)    
+
+
+def test_false_method():
+    dclab.statistics.Statistics(name="bad",
+                                method=lambda mm: unknown_method())  # @UndefinedVariable
+    ddict = example_data_dict(size=77, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["Defo"])
+    out = {}
+    for h,v in zip(head1, vals1):
+        out[h] = v
+    assert np.isnan(out["bad"])
+    
+    # clean up
+    mth = dclab.statistics.Statistics.available_methods
+    for k in mth:
+        if k=="bad":
+            mth.pop(k)
+            break
+
 
 if __name__ == "__main__":
     # Run all tests
@@ -74,4 +114,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

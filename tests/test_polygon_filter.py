@@ -105,6 +105,7 @@ def test_polygon_remove():
     dclab.PolygonFilter.remove(pf.unique_id)
     assert len(dclab.PolygonFilter.instances) == 0
 
+    dclab.PolygonFilter.clear_all_filters()
 
 def test_unique_id():
     dclab.PolygonFilter.clear_all_filters() 
@@ -116,12 +117,15 @@ def test_unique_id():
         pf = dclab.PolygonFilter(filename=temp.name, unique_id=2)
         pf2 = dclab.PolygonFilter(filename=temp.name, unique_id=2)
         assert pf.unique_id != pf2.unique_id
+    dclab.PolygonFilter.clear_all_filters()
 
 
 def test_polygon_nofile_copy():
+    dclab.PolygonFilter.clear_all_filters()
     a = dclab.PolygonFilter(axes=("Defo", "Area"),
                         points=[[0,1],[1,1]])
     b = a.copy()
+    dclab.PolygonFilter.clear_all_filters()
 
     
 def test_wrong_load_key():
@@ -141,6 +145,27 @@ def test_wrong_load_key():
             pass
         else:
             raise ValueError("_load should not accept unknown key!")
+    dclab.PolygonFilter.clear_all_filters()
+
+def test_with_rtdc_data_set():
+    dclab.PolygonFilter.clear_all_filters()
+    ddict = example_data_dict(size=821, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+
+    # save polygon data
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
+        temp.write(filter_data)
+        temp.flush()
+        pf = dclab.PolygonFilter(filename=temp.name)
+        pf2 = dclab.PolygonFilter(filename=temp.name)
+
+    ds.PolygonFilterAppend(pf)
+    ds.PolygonFilterAppend(1)
+
+    ds.PolygonFilterRemove(0)
+    ds.PolygonFilterRemove(pf2)
+    
+    dclab.PolygonFilter.clear_all_filters()
 
 if __name__ == "__main__":
     # Run all tests

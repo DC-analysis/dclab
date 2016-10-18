@@ -90,8 +90,10 @@ def test_flow_rate():
 
 
 def test_false_method():
+    def bad_method(x):
+        return x+1
     dclab.statistics.Statistics(name="bad",
-                                method=lambda mm: unknown_method())  # @UndefinedVariable
+                                method=bad_method)
     ddict = example_data_dict(size=77, keys=["Area", "Defo"])
     ds = dclab.RTDC_DataSet(ddict=ddict)
     head1, vals1 = dclab.statistics.get_statistics(ds, axes=["Defo"])

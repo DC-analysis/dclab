@@ -755,26 +755,26 @@ class RTDC_DataSet(object):
         
         filt can either be an integer or an instance of PolygonFilter
         """
+        msg = "`filt` must be a number or instance of PolygonFilter."
+        assert isinstance(filt, (PolygonFilter, int, float)), msg
+        
         if isinstance(filt, PolygonFilter):
             uid=filt.unique_id
-        elif isinstance(filt, (int, float)):
-            uid=int(filt)
         else:
-            raise ValueError(
-                  "filt must be a number or instance of PolygonFilter.")
+            uid=int(filt)
         # append item
         self.Configuration["Filtering"]["Polygon Filters"].append(uid)
 
 
     def PolygonFilterRemove(self, filt):
         """ Opposite of PolygonFilterAppend """
+        msg = "`filt` must be a number or instance of PolygonFilter."
+        assert isinstance(filt, (PolygonFilter, int, float)), msg
+        
         if isinstance(filt, PolygonFilter):
             uid = filt.unique_id
-        elif isinstance(filt, (int, float)):
-            uid = int(filt)
         else:
-            raise ValueError(
-                  "filt must be a number or instance of PolygonFilter.")
+            uid = int(filt)
         # remove item
         self.Configuration["Filtering"]["Polygon Filters"].remove(uid)
 

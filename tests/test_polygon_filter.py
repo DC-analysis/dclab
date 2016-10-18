@@ -84,10 +84,22 @@ def test_polygon_remove():
         temp.flush()
         
         # Add polygon filter
-        pf = dclab.PolygonFilter(filename=temp.name)    
+        pf = dclab.PolygonFilter(filename=temp.name)
     
     dclab.PolygonFilter.remove(pf.unique_id)
     assert len(dclab.PolygonFilter.instances) == 0
+
+
+def test_unique_id():
+    dclab.PolygonFilter.clear_all_filters() 
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
+        temp.write(filter_data)
+        temp.flush()
+        
+        # Add polygon filter
+        pf = dclab.PolygonFilter(filename=temp.name, unique_id=2)
+        pf2 = dclab.PolygonFilter(filename=temp.name, unique_id=2)
+        assert pf.unique_id != pf2.unique_id
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ import codecs
 import numpy as np
 import os
 import sys
+import warnings
 
 
 if sys.version_info[0] == 2:
@@ -23,7 +24,7 @@ class PolygonFilter(object):
     # Stuff that is done upon creation (not instantiation) of this class
     instances = []
     _instance_counter = 0
-        
+
     def __init__(self, axes=None, points=None, name=None,
                  filename=None, fileid=0, unique_id=None):
         """ Instantiates PolygonFilter
@@ -54,19 +55,6 @@ class PolygonFilter(object):
         (`axes`, `points`). If `filename` is set, all parameters are
         taken from the given .poly file.
         """
-        # set our id and increment the _instance_counter
-        if (unique_id is not None):
-            if PolygonFilter.instace_exists(unique_id):
-                raise ValueError("Instance with id {} already exists".
-                                 format(unique_id))
-            else:
-                self.unique_id = unique_id
-                PolygonFilter._instance_counter = max(
-                           PolygonFilter._instance_counter, unique_id+1)
-        else:
-            self.unique_id = PolygonFilter._instance_counter
-            PolygonFilter._instance_counter += 1
-
         # check if a filename was given
         if filename is not None:
             assert isinstance(fileid, int)
@@ -84,6 +72,10 @@ class PolygonFilter(object):
         self._check_data()
         # if everything worked out, add to instances
         PolygonFilter.instances.append(self)
+        
+        # Set unique id if requested by user
+        if unique_id is not None:
+            self._set_unique_id(unique_id)
     
     
     def _check_data(self):
@@ -96,72 +88,8 @@ class PolygonFilter(object):
                "Error, data points must be have two coordinates."
         if self.name is None:
             self.name = "polygon filter {}".format(self.unique_id)
-    
-    @staticmethod
-    def clear_all_filters():
-        """ Removes all filters and resets instance counter.
-        """
-        PolygonFilter.instances = []
-        PolygonFilter._instance_counter = 0
-        
-    
-    def copy(self):
-        """ Returns a copy of the current instance.
-        """
-        return PolygonFilter(axes=self.axes,
-                             points=self.points,
-                             name=self.name)
-    
-    
-    def filter(self, datax, datay):
-        """ Filters a set of datax and datay according to self.points.
-        """
-        f = np.ones(datax.shape, dtype=bool)
-        for i, (x,y) in enumerate(zip(datax, datay)):
-            f[i] = PolygonFilter.point_in_poly(x, y, self.points)
-        return f
-    
-    
-    @staticmethod
-    def get_instance_from_id(unique_id):
-        """ Returns the instance of the PolygonFilter with this
-        unique_id.
-        """
-        for instance in PolygonFilter.instances:
-            if instance.unique_id == unique_id:
-                return instance
-        # if this does not work:
-        raise ValueError("PolygonFilter with unique_id {} not found.".
-                         format(unique_id))
-    
-    @staticmethod
-    def import_all(path):
-        """ Imports all polygons from a .poly file.
-        
-        Returns a list of the imported polygon filters
-        """
-        plist = []
-        fid = 0
-        while True:
-            try:
-                p = PolygonFilter(filename=path, fileid=fid)
-                plist.append(p)
-                fid += 1
-            except IndexError:
-                break
-        return plist
-    
-    @staticmethod
-    def instace_exists(unique_id):
-        """ Returns True if an instance with this id exists
-        """
-        try:
-            PolygonFilter.get_instance_from_id(unique_id)
-        except ValueError:
-            return True
-        else:
-            return False
-    
+
+
     def _load(self, filename):
         """ Imports all data from a text file.
         
@@ -203,8 +131,6 @@ class PolygonFilter(object):
                 val = np.array(val.strip("[]").split(), dtype=float)
                 points.append([int(var[5:]), val])
             else:
-                import IPython
-                IPython.embed()
                 raise NotImplementedError("Unknown variable: {} = {}".
                                           format(var, val))
         self.axes = (xaxis, yaxis)
@@ -214,7 +140,93 @@ class PolygonFilter(object):
         self.points = np.array([ p[1] for p in points ])
         
         # overwrite unique id
-        self.unique_id = int(data[start-1].strip().strip("Polygon []"))
+        unique_id = int(data[start-1].strip().strip("Polygon []"))
+        self._set_unique_id(unique_id)
+
+
+    def _set_unique_id(self, unique_id):
+        """ Give our instance a unique id """
+        assert isinstance(unique_id, int), "unique_id must be an integer"
+
+        if PolygonFilter.instace_exists(unique_id):
+            newid = max(PolygonFilter._instance_counter, unique_id+1)
+            msg = "PolygonFilter with unique_id '{}' exists.".format(unique_id)
+            msg += " Using new unique id '{}'.".format(newid)
+            unique_id = newid
+        
+        
+        ic = max(PolygonFilter._instance_counter, unique_id+1)
+        PolygonFilter._instance_counter = ic
+        self.unique_id = unique_id
+        
+
+    @staticmethod
+    def clear_all_filters():
+        """ Removes all filters and resets instance counter.
+        """
+        PolygonFilter.instances = []
+        PolygonFilter._instance_counter = 0
+        
+    
+    def copy(self):
+        """ Returns a copy of the current instance.
+        """
+        return PolygonFilter(axes=self.axes,
+                             points=self.points,
+                             name=self.name)
+    
+    
+    def filter(self, datax, datay):
+        """ Filters a set of datax and datay according to self.points.
+        """
+        f = np.ones(datax.shape, dtype=bool)
+        for i, (x,y) in enumerate(zip(datax, datay)):
+            f[i] = PolygonFilter.point_in_poly(x, y, self.points)
+        return f
+    
+    
+    @staticmethod
+    def get_instance_from_id(unique_id):
+        """ Returns the instance of the PolygonFilter with this
+        unique_id.
+        """
+        for instance in PolygonFilter.instances:
+            if instance.unique_id == unique_id:
+                return instance
+        # if this does not work:
+        raise KeyError("PolygonFilter with unique_id {} not found.".
+                       format(unique_id))
+
+
+    @staticmethod
+    def import_all(path):
+        """ Imports all polygons from a .poly file.
+        
+        Returns a list of the imported polygon filters
+        """
+        plist = []
+        fid = 0
+        while True:
+            try:
+                p = PolygonFilter(filename=path, fileid=fid)
+                plist.append(p)
+                fid += 1
+            except IndexError:
+                break
+        return plist
+
+
+    @staticmethod
+    def instace_exists(unique_id):
+        """ Returns True if an instance with this id exists
+        """
+        try:
+            PolygonFilter.get_instance_from_id(unique_id)
+        except KeyError:
+            return False
+        else:
+            return True
+    
 
     @staticmethod
     def point_in_poly(x, y, poly):

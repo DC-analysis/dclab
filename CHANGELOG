@@ -1,5 +1,5 @@
 0.1.9
-- Bugfix: Prevent instances of PolygonFilter to have same id
+- Bugfix: Prevent instances of PolygonFilter that have same id
 0.1.8
 - Allow to instantiate RTDC_DataSet without a tdms file
 - Add statistics submodule

@@ -61,21 +61,24 @@ class PolygonFilter(object):
             assert os.path.exists(filename),\
                    "Error, no such file: {}".format(filename)
             self.fileid = fileid
+            # This also sets a unique id
             self._load(filename)
-
-            # we are done here
         else:
             self.axes = axes
             self.points = np.array(points, dtype=float)
             self.name = name
+            if unique_id is None:
+                # Force giving away a unique id
+                unique_id = self._instance_counter
+
+        # Set unique id
+        if unique_id is not None:
+            self._set_unique_id(unique_id)
         
         self._check_data()
         # if everything worked out, add to instances
         PolygonFilter.instances.append(self)
         
-        # Set unique id if requested by user
-        if unique_id is not None:
-            self._set_unique_id(unique_id)
     
     
     def _check_data(self):
@@ -125,8 +128,6 @@ class PolygonFilter(object):
                 yaxis = val
             elif var.lower() == "name":
                 self.name = val
-            elif len(var) == 0:
-                pass
             elif var.lower().startswith("point"):
                 val = np.array(val.strip("[]").split(), dtype=float)
                 points.append([int(var[5:]), val])
@@ -299,8 +300,8 @@ class PolygonFilter(object):
     def save_all(polyfile):
         """ Save all polygon filters
         """
-        if len(PolygonFilter.instances) == 0:
-            raise IndexError("There are not polygon filters to save.")
+        nump = len(PolygonFilter.instances)
+        assert nump != 0, "There are not polygon filters to save."
         for p in PolygonFilter.instances:
             # we return the ret_obj, so we don't need to open and
             # close the file multiple times.

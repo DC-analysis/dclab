@@ -43,11 +43,24 @@ def test_polygon_import():
         ds.ApplyFilter()
 
         assert np.sum(ds._filter) == 330
-
+        
         dclab.PolygonFilter.import_all(temp.name)
 
         assert len(dclab.PolygonFilter.instances) == 2
 
+        # Import multiples
+        b = filter_data
+        b=b.replace("Polygon 00000000", "Polygon 00000001")
+        temp.write(b)
+        temp.flush()
+        dclab.PolygonFilter.import_all(temp.name)
+
+        # Import previously saved
+        dclab.PolygonFilter.save_all(temp.name)
+        dclab.PolygonFilter.import_all(temp.name)
+
+        assert len(dclab.PolygonFilter.instances) == 10
+        
 
 def test_polygon_save():
     dclab.PolygonFilter.clear_all_filters()
@@ -68,12 +81,15 @@ def test_polygon_save():
             assert np.allclose(pf.points, pf2.points)
 
     with tempfile.NamedTemporaryFile(mode="w") as temp3:
-        dclab.PolygonFilter.save_all(temp3)
+        dclab.PolygonFilter.save_all(temp3.name)
+        pf.save(temp3, ret_fobj=False)
 
     # ensure backwards compatibility: the names of the three filters should be the same
     names = dclab.polygon_filter.GetPolygonFilterNames()
     assert len(names) == 2
     assert names.count(names[0]) == 2
+
+
 
 
 def test_polygon_remove():
@@ -101,6 +117,30 @@ def test_unique_id():
         pf2 = dclab.PolygonFilter(filename=temp.name, unique_id=2)
         assert pf.unique_id != pf2.unique_id
 
+
+def test_polygon_nofile_copy():
+    a = dclab.PolygonFilter(axes=("Defo", "Area"),
+                        points=[[0,1],[1,1]])
+    b = a.copy()
+
+    
+def test_wrong_load_key():
+    dclab.PolygonFilter.clear_all_filters()
+    ddict = example_data_dict(size=1000, keys=["Area", "Defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+
+    # save polygon data
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
+        data = filter_data + "peter=4\n"
+        temp.write(data)
+        temp.flush()
+        
+        try:
+            pf = dclab.PolygonFilter(filename=temp.name)
+        except:
+            pass
+        else:
+            raise ValueError("_load should not accept unknown key!")
 
 if __name__ == "__main__":
     # Run all tests

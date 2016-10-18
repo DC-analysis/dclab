@@ -42,8 +42,3 @@ def GetTDMSFiles(directory):
                 tdmslist.append(os.path.realpath(os.path.join(root,f)))
     tdmslist.sort()
     return tdmslist
-
-
-def _get_data_path():
-    return os.path.realpath(os.path.dirname(__file__))
-

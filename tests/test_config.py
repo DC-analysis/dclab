@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import copy
 import sys
 from os.path import abspath, dirname, join
 
@@ -24,7 +25,61 @@ def test_config_save_load():
     config.save_config_file(cfg_file, ds.Configuration)
     loaded = config.load_config_file(cfg_file, capitalize=False)
     assert loaded == ds.Configuration
+
+
+def test_config_dtype():
+    a = config.get_config_entry_dtype("Filtering", "Enable Filters")
+    assert a == bool
+
+    a = config.get_config_entry_dtype("General", "Channel Width")
+    assert a == float
+
+    a = config.get_config_entry_dtype("General", "Unknown Variable")
+    assert a == float
+
+
+def test_config_choices():
+    c1 = config.get_config_entry_choices("Plotting", "KDE")
+    for c2 in ["None", "Gauss", "Multivariate"]:
+        assert c2 in c1
     
+    c3 = config.get_config_entry_choices("Plotting", "Axis X")
+    assert len(c3) != 0
+    assert "Defo" in c3
+
+    c3 = config.get_config_entry_choices("Plotting", "Axis Y", ignore_axes=["Defo"])
+    assert len(c3) != 0
+    assert not "Defo" in c3
+    
+    c4 = config.get_config_entry_choices("Plotting", "Rows")
+    assert "1" in c4
+    
+    c5 = config.get_config_entry_choices("Plotting", "Scatter Marker Size")
+    assert "1" in c5
+    
+    c6 = config.get_config_entry_choices("Plotting", "Scale Axis")
+    assert "Linear" in c6    
+    
+    
+def test_backwards_compatible_channel_width():
+    cfg = copy.deepcopy(config.cfg)
+    fd, fname = tempfile.mkstemp()
+    cfg["General"].pop("Channel Width")
+    cfg["General"]["Flow Rate [ul/s]"] = 0.16
+    config.save_config_file(fname, cfg)
+    cfg2 = config.load_config_file(fname)
+    assert cfg2["General"]["Channel Width"] == 30
+    
+
+def test_backwards_compatible_circularity():
+    cfg = copy.deepcopy(config.cfg)
+    a = cfg["Plotting"]["Contour Accuracy Defo"]
+    plotd = {"Contour Accuracy Circ":a*2}
+    newcfg = {"Plotting":plotd}
+    
+    config.update_config_dict(cfg, newcfg)
+    assert cfg["Plotting"]["Contour Accuracy Defo"] == a*2
+    assert cfg["Plotting"]["Contour Accuracy Defo"] != a
 
 if __name__ == "__main__":
     # Run all tests

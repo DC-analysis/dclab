@@ -162,7 +162,7 @@ class RTDC_DataSet(object):
                 else:
                     if trdat is not None:
                         # Only add trace if there is actual data.
-                        # Split only needs the the position of the sections,
+                        # Split only needs the position of the sections,
                         # so we remove the first (0) index.
                         self.traces[ch] = np.split(trdat, sampleids[1:])
 
@@ -258,12 +258,12 @@ class RTDC_DataSet(object):
         """
 
         # These lists may help us become very fast in the future
-        newkeys = list()
-        oldvals = list()
-        newvals = list()
+        newkeys = []
+        oldvals = []
+        newvals = []
         
         if not "Filtering" in self.Configuration:
-            self.Configuration["Filtering"] = dict()
+            self.Configuration["Filtering"] = {"Enable Filters":False}
 
         ## Determine which data was updated
         FIL = self.Configuration["Filtering"]
@@ -281,18 +281,12 @@ class RTDC_DataSet(object):
         # variables using the global dfn.cfgmap dictionary.
         
         # This line gets the attribute names of self that need updates.
-        attr2update = list()
+        attr2update = []
         for k in newkeys:
             # k[:-4] because we want to crop " Min" and " Max"
             # "Polygon Filters" is not processed here.
             if k[:-4] in dfn.uid:
                 attr2update.append(dfn.cfgmaprev[k[:-4]])
-
-
-        if "deform" in attr2update:
-            attr2update.append("circ")
-        elif "circ" in attr2update:
-            attr2update.append("deform")
 
         for f in force:
             # Check if a correct variable is forced
@@ -301,6 +295,11 @@ class RTDC_DataSet(object):
             else:
                 warnings.warn(
                     "Unknown variable not force-filtered: {}".format(f))
+
+        if "deform" in attr2update:
+            attr2update.append("circ")
+        elif "circ" in attr2update:
+            attr2update.append("deform")
         
         attr2update = np.unique(attr2update)
 

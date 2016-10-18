@@ -17,7 +17,7 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab import RTDC_DataSet
+from dclab import RTDC_DataSet, dfn
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
@@ -53,7 +53,15 @@ def test_load_tdms_avi_files():
     # use available video if ima* not there
     assert ds4.video == "M1_test.avi"
 
-            
+
+def test_trace_import_fail():
+    tdms_path = retreive_tdms(example_data_sets[1])
+    edest = dirname(tdms_path)
+    dfn.tr_data.append([u'fluorescence traces', u'peter'])
+    ds1 = RTDC_DataSet(tdms_path)
+    # clean up
+    dfn.tr_data.pop(-1)
+
 
 if __name__ == "__main__":
     # Run all tests

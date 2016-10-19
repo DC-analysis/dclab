@@ -50,16 +50,17 @@ class RTDC_DataSet(object):
     excluded from all computations.
     
     """
-    def __init__(self, tdms_path=None, ddict=None):
+    def __init__(self, tdms_path=None, ddict=None, hparent=None):
         """ Load tdms file and set all variables """
-        assert [tdms_path, ddict].count(None)==1, "Specify tdms_path OR ddict"
+        kwinput = [tdms_path, ddict, hparent].count(None)
+        assert kwinput==2, "Specify tdms_path OR ddict OR hparent"
 
         # Kernel density estimator dictionaries
         self._old_filters = {} # for comparison to new filters
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
         
-        if ddict is not None:
+        if tdms_path is None:
             # We are given a dictionary with data values.
             # - create a unique fake title
             t = time.localtime()
@@ -87,12 +88,13 @@ class RTDC_DataSet(object):
         if ddict is not None:
             # We are given a dictionary with data values.
             self._init_data_with_dict(ddict)
+        elif hparent is not None:
+            # We were given a hierarchy parent
+            self._init_data_with_hierarchy(hparent)
         else:
             # We were given a tdms file.
             self._init_data_with_tdms(tdms_path)
 
-        # Set up filtering
-        self._init_filters()
 
 
     def _init_data_with_dict(self, ddict):
@@ -102,6 +104,53 @@ class RTDC_DataSet(object):
         for key in dfn.rdv:
             if not hasattr(self, key):
                 setattr(self, key, fill0)
+
+        # Set up filtering
+        self._init_filters()
+        self.SetConfiguration()
+
+
+    def _init_data_with_hierarchy(self, hparent):
+        """ Initializes the current RTDC_DataSet with another RTDC_Data set.
+        
+        A few words on hierarchies:
+        The idea is that an RTDC_DataSet can use the filtered data of another
+        RTDC_DataSet and interpret these data as unfiltered events. This comes
+        in handy e.g. when the percentage of different subpopulations need to
+        be distinguished without the noise in the original data.
+        
+        Children in hierarchies always update their data according to the
+        filtered event data from their parent when `ApplyFilter` is called.
+        This makes it easier to save and load hierarchy children with e.g.
+        ShapeOut and it makes the handling of hierarchies more intuitive
+        (when the parent changes, the child changes as well).
+        
+        Parameters
+        ----------
+        hparent : instance of RTDC_DataSet
+            The hierarchy parent.
+            
+        Attributes
+        ----------
+        hparent : instance of RTDC_DataSet
+            Only hierarchy children have this attribute
+        """
+        self.hparent = hparent
+        
+        ## Copy configuration
+        cfg = copy.deepcopy(hparent.Configuration)
+        # Remove previously applied filters
+        cfg.pop("Filtering")
+        # Add parent information in dictionary
+        cfg["Filtering"]={"Hierarchy Parent":hparent.identifier}
+        self.Configuration = config.load_default_config()
+        config.update_config_dict(self.Configuration, cfg)
+        myhash = hashlib.md5(str(time.time())).hexdigest()
+        self.identifier = hparent.identifier+"_child-"+myhash
+        self.title = hparent.title + "_child-"+myhash[-4:]
+        # Apply the filter
+        # This will also populate all event attributes
+        self.ApplyFilter()
 
 
     def _init_data_with_tdms(self, tdms_filename):
@@ -207,6 +256,10 @@ class RTDC_DataSet(object):
                     cont = np.array(cont, dtype=np.uint8)
                     self.contours[frame] = cont
 
+        # Set up filtering
+        self._init_filters()
+        self.SetConfiguration()
+
 
     def _init_filters(self):
         datalen = self.time.shape[0]
@@ -234,8 +287,6 @@ class RTDC_DataSet(object):
                 # great, we are dealing with an array
                 setattr(self, "_filter_"+attr, inifilter.copy())
         self._filter_polygon = inifilter.copy()
-
-        self.SetConfiguration()
 
 
     def ApplyFilter(self, force=[]):
@@ -265,8 +316,28 @@ class RTDC_DataSet(object):
         if not "Filtering" in self.Configuration:
             self.Configuration["Filtering"] = {"Enable Filters":False}
 
-        ## Determine which data was updated
         FIL = self.Configuration["Filtering"]
+
+        # Check if we are a hierarchy child and if yes, update the
+        # filtered events from the hierarchy parent.
+        if ("Hierarchy Parent" in FIL and
+            FIL["Hierarchy Parent"] != "None"):
+            # Copy event data from hierarchy parent
+            self.hparent.ApplyFilter()
+            # TODO:
+            # - somehow copy manually filtered events
+            if (hasattr(self, "_filter_manual") 
+                and np.sum(1-self._filter_manual) != 0):
+                msg = "filter_manual not supported in hierarchy!"
+                raise NotImplementedError(msg)
+
+            for attr in dfn.rdv:
+                filtevents = getattr(self.hparent, attr)[self.hparent._filter]
+                setattr(self, attr, filtevents)
+            self._init_filters()
+            self._old_filters = {}
+
+        ## Determine which data was updated
         OLD = self._old_filters
         
         for skey in list(FIL.keys()):

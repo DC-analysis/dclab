@@ -145,7 +145,7 @@ class RTDC_DataSet(object):
         cfg["Filtering"]={"Hierarchy Parent":hparent.identifier}
         self.Configuration = config.load_default_config()
         config.update_config_dict(self.Configuration, cfg)
-        myhash = hashlib.md5(str(time.time())).hexdigest()
+        myhash = hashlib.md5(obj2str(time.time())).hexdigest()
         self.identifier = hparent.identifier+"_child-"+myhash
         self.title = hparent.title + "_child-"+myhash[-4:]
         # Apply the filter

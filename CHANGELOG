@@ -1,4 +1,5 @@
 0.1.9
+- Implement hierarchical instantiation of RTDC_DataSet
 - Bugfix: Prevent instances of PolygonFilter that have same id
 0.1.8
 - Allow to instantiate RTDC_DataSet without a tdms file

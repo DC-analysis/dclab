@@ -74,6 +74,7 @@ class RTDC_DataSet(object):
         self.tdms_filename = tdms_path
         self.name = os.path.split(tdms_path)[1].split(".tdms")[0]
         self.fdir = os.path.dirname(tdms_path)
+        self.video = ""
         mx = os.path.join(self.fdir, self.name.split("_")[0])
         self.title = u"{} - {}".format(
                                        GetProjectNameFromPath(tdms_path),
@@ -140,9 +141,15 @@ class RTDC_DataSet(object):
         ## Copy configuration
         cfg = copy.deepcopy(hparent.Configuration)
         # Remove previously applied filters
-        cfg.pop("Filtering")
+        pops = []
+        for key in cfg["Filtering"]:
+            if (key.endswith("Min") or
+                key.endswith("Max") or
+                key == "Polygon Filters"):
+                pops.append(key)
+        [ cfg["Filtering"].pop(key) for key in pops ]
         # Add parent information in dictionary
-        cfg["Filtering"]={"Hierarchy Parent":hparent.identifier}
+        cfg["Filtering"]["Hierarchy Parent"]=hparent.identifier
         self.Configuration = config.load_default_config()
         config.update_config_dict(self.Configuration, cfg)
         myhash = hashlib.md5(obj2str(time.time())).hexdigest()

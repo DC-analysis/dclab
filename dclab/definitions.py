@@ -331,12 +331,12 @@ tfd = [
         ],
         # Inertia Ratio sqrt(mu20 / mu02)
         ["Cell Track",
-         "IntertiaRatio",
+         "InertiaRatio",
          lambda x:x
         ],
         # Inertia Ratio sqrt(mu20 / mu02)
         ["Cell Track",
-         "IntertiaRatioRaw",
+         "InertiaRatioRaw",
          lambda x:x
         ],
         ]

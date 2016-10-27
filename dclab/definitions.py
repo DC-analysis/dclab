@@ -51,6 +51,7 @@ uid = [
         "y-size",
         "Brightness",
         "BrightnessSD",
+        "Inertia Ratio",
         ]
 # Axes label (same order as UID)
 axl = [
@@ -89,6 +90,7 @@ axl = [
         u"Bounding box y-size [pix]",
         u"Brightness in Contour",
         u"Brightness SD",
+        u"Inertia Ratio sqrt(m20/m20)",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -127,6 +129,7 @@ rdv = [
         "size_y",
         "br",
         "brSD",
+        "inRatio",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -323,7 +326,11 @@ tfd = [
          "BrightnessSD",
          lambda x:x
         ],
-    
+        # Inertia Ratio sqrt(mu20 / mu02)
+        ["Cell Track",
+         "IntertiaRatio",
+         lambda x:x
+        ],
         ]
 
 # traces_tdms file definitions

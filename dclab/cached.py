@@ -5,11 +5,13 @@ Cache for fast "recomputation"
 """
 from __future__ import division, print_function, unicode_literals
 
+import gc
 import hashlib
 import numpy as np
 
 
 MAX_SIZE = 100
+
 
 class Cache(object):
     """
@@ -61,7 +63,8 @@ class Cache(object):
                 delref = Cache._keys.pop(0)
                 Cache._cache.pop(delref)
             return data
-    
+
+
     def _update_hash(self, arg):
         """ Takes an argument and updates the hash.
         The argument can be an np.array, string, or list
@@ -73,3 +76,16 @@ class Cache(object):
             [ self._update_hash(a) for a in arg ]
         else:
             self.ahash.update(str(arg).encode('utf-8'))
+
+
+    @staticmethod
+    def clear_cache():
+        """Remove all cached objects"""
+        del Cache._keys
+        for k in list(Cache._cache.keys()):
+            it = Cache._cache.pop(k)
+            del it
+        del Cache._cache
+        Cache._keys=[]
+        Cache._cache={}
+        gc.collect()

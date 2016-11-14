@@ -24,7 +24,6 @@ class Statistics(object):
         self.method=method
         self.name=name
         self.req_axis=req_axis
-        self.rtdc_ds=None
         Statistics.available_methods[name]=self
 
     def get_column(self, rtdc_ds, axis):
@@ -37,7 +36,6 @@ class Statistics(object):
     def get_data(self, kwargs):
         assert "rtdc_ds" in kwargs, "Keyword argument 'rtdc_ds' missing."
         rtdc_ds = kwargs["rtdc_ds"]
-        self.rtdc_ds = rtdc_ds
 
         if self.req_axis:
             assert "axis" in kwargs, "Keyword argument 'axis' missing."
@@ -51,7 +49,7 @@ class Statistics(object):
             result = self.method(data)
         except:
             warnings.warn("Failed to compute {} for {}: {}".format(
-                          self.name, self.rtdc_ds.title, tb.format_exc()))
+                          self.name, kwargs["rtdc_ds"].title, tb.format_exc()))
             result = np.nan
         return result
 

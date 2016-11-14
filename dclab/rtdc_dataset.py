@@ -59,6 +59,7 @@ class RTDC_DataSet(object):
         self._old_filters = {} # for comparison to new filters
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
+        self.traces={}
         
         if tdms_path is None:
             # We are given a dictionary with data values.
@@ -168,7 +169,6 @@ class RTDC_DataSet(object):
         of `tmds_filename`.
         """
         tdms_file = TdmsFile(tdms_filename)
-        
         ## Set all necessary internal parameters as defined in
         ## definitions.py
         ## Note that this is meta-programming. If you want to add a

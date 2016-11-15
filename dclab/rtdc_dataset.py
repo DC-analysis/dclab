@@ -98,7 +98,6 @@ class RTDC_DataSet(object):
             self._init_data_with_tdms(tdms_path)
 
 
-
     def _init_data_with_dict(self, ddict):
         for key in ddict:
             setattr(self, dfn.cfgmaprev[key], np.array(ddict[key]))

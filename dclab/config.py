@@ -221,12 +221,11 @@ def save_config_file(cfgfilename, cfg):
             out.append("{} = {}".format(var,val))
         out.append("")
     
-    f = codecs.open(cfgfilename, "wb", "utf-8")
-    for i in range(len(out)):
-        out[i] = out[i]+"\r\n"
-    f.writelines(out)
-    f.close()
-
+    with codecs.open(cfgfilename, "wb", "utf-8") as f:
+        for i in range(len(out)):
+            out[i] = out[i]+"\r\n"
+        f.writelines(out)
+    
 
 def update_config_dict(oldcfg, newcfg):
     """ Update a configuration in librtdc format.

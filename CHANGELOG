@@ -1,7 +1,7 @@
 0.1.9
 - Implement hierarchical instantiation of RTDC_DataSet
 - Bugfix: Prevent instances of PolygonFilter that have same id
-- Add InertiaRatio and InertiaRatioRaw to tdms files
+- Load InertiaRatio and InertiaRatioRaw from tdms files
 0.1.8
 - Allow to instantiate RTDC_DataSet without a tdms file
 - Add statistics submodule

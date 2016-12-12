@@ -96,6 +96,33 @@ class RTDC_DataSet(object):
         else:
             # We were given a tdms file.
             self._init_data_with_tdms(tdms_path)
+        
+        self._complete_configuration_defaults()
+
+
+    def _complete_configuration_defaults(self):
+        """Add missing values to self.Configuation
+        
+        This includes values for:
+        - Plotting | Contour Accuracy
+        - Plotting | KDE Multivariate
+        """
+        keys = []
+        for prop in dfn.rdv:
+            if np.alltrue(getattr(self, prop)):
+                # There are values for this uid
+                keys.append(prop)
+        
+        # Plotting defaults
+        defs = [["Contour Accuracy {}", lambda a: (a.max()-a.min())/20],
+                ["KDE Multivariate {}", lambda a: (a.max()-a.min())/10],
+               ]
+        pltng = self.Configuration["Plotting"]
+        for k in keys:
+            for d, l in defs:
+                var = d.format(dfn.cfgmap[k])
+                if not var in pltng:
+                    pltng[var] = l(getattr(self, k))
 
 
     def _init_data_with_dict(self, ddict):

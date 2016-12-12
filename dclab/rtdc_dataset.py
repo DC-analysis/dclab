@@ -109,7 +109,7 @@ class RTDC_DataSet(object):
         """
         keys = []
         for prop in dfn.rdv:
-            if np.alltrue(getattr(self, prop)):
+            if not np.allclose(getattr(self, prop), 0):
                 # There are values for this uid
                 keys.append(prop)
         

@@ -17,6 +17,19 @@ import tempfile
 from helper_methods import retreive_tdms, example_data_sets
 
 
+def equals(a, b):
+    """Compare objects with allclose"""
+    if isinstance(a, dict):
+        for key in a:
+            assert key in b, "key not in b"
+            assert equals(a[key], b[key])
+    elif isinstance(a, (float, int)):
+        assert np.allclose(a,b)
+    else:
+        assert a==b
+    return True
+    
+
 def test_config_save_load():
     ## Download and extract data
     tdms_path = retreive_tdms(example_data_sets[0])
@@ -24,7 +37,7 @@ def test_config_save_load():
     _fd, cfg_file = tempfile.mkstemp()
     config.save_config_file(cfg_file, ds.Configuration)
     loaded = config.load_config_file(cfg_file, capitalize=False)
-    assert loaded == ds.Configuration
+    assert equals(loaded, ds.Configuration)
 
 
 def test_config_dtype():

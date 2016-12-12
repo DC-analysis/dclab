@@ -294,8 +294,6 @@ def update_config_dict(oldcfg, newcfg):
 
     ## Check missing values and set them to zero
     for item in dfn.uid:
-        if not "Contour Accuracy "+item in oldcfg["Plotting"]:
-            oldcfg["Plotting"]["Contour Accuracy "+item] = 1
         appends = [" Min", " Max"]
         for a in appends:
             if not item+a in oldcfg["Plotting"]:

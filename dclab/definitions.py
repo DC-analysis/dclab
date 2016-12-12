@@ -53,6 +53,8 @@ uid = [
         "BrightnessSD",
         "Inertia Ratio",
         "Inertia Ratio Raw",
+        "UserDef1",
+        "UserDef2",
         ]
 # Axes label (same order as UID)
 axl = [
@@ -93,6 +95,8 @@ axl = [
         u"Brightness SD",
         u"Inertia Ratio sqrt(m20/m20)",
         u"Raw Inertia Ratio sqrt(m20/m20)",
+        u"UserDef1",
+        u"UserDef2",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -133,6 +137,8 @@ rdv = [
         "brSD",
         "inRatio",
         "inRatioRaw",
+        "userDef1",
+        "userDef2",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -337,6 +343,17 @@ tfd = [
         # Inertia Ratio sqrt(mu20 / mu02)
         ["Cell Track",
          "InertiaRatioRaw",
+         lambda x:x
+        ],
+        # User Defined Values
+        # e.g. Compensated Data
+        ["Cell Track",
+         "UserDef1",
+         lambda x:x
+        ],
+        # -
+        ["Cell Track",
+         "UserDef2",
          lambda x:x
         ],
         ]

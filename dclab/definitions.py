@@ -59,7 +59,7 @@ uid = [
 # Axes label (same order as UID)
 axl = [
         u"Cell size [px²]",
-        u"Cell cize [µm²]",
+        u"Cell size [µm²]",
         u"Convex to measured area ratio",
         u"Aspect ratio of bounding box",
         u"Circularity",

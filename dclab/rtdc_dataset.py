@@ -20,6 +20,7 @@ from . import config
 from . import definitions as dfn
 from .polygon_filter import PolygonFilter
 from . import kde_methods
+from .contour_image import ContourImage
 
 
 if sys.version_info[0] == 2:
@@ -60,6 +61,7 @@ class RTDC_DataSet(object):
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
         self.traces={}
+        self.contours={}
         
         if tdms_path is None:
             # We are given a dictionary with data values.
@@ -253,7 +255,6 @@ class RTDC_DataSet(object):
         # Filter videos according to measurement number
         meas_id = self.name.split("_")[0]
         videos = [v for v in videos if v.split("_")[0] == meas_id] 
-
         videos.sort()
         if len(videos) == 0:
             self.video = None
@@ -270,24 +271,12 @@ class RTDC_DataSet(object):
                 elif v.endswith("imaq.avi"):
                     self.video = v
                     break
-        
+
         # Cell contours
-        self.contours = {}
         for f in os.listdir(self.fdir):
             if f.endswith("_contours.txt") and f.startswith(self.name[:2]):
-                with open(os.path.join(self.fdir, f), "r") as c:
-                    # read entire file
-                    cdat = c.read(-1)
-                for cont in cdat.split("Contour in frame"):
-                    cont = cont.strip()
-                    if len(cont) == 0:
-                        continue
-                    cont = cont.splitlines()
-                    # the frame is the first number
-                    frame = int(cont.pop(0))
-                    cont = [ np.fromstring(c.strip("()"), sep=",") for c in cont ]
-                    cont = np.array(cont, dtype=np.uint8)
-                    self.contours[frame] = cont
+                self.contours = ContourImage(os.path.join(self.fdir, f))
+                break
 
         # Set up filtering
         self._init_filters()

@@ -1,6 +1,7 @@
 0.2.0
 - Compute sensible default configuration parameters for
   KDE estimation and contour plotting
+- Speed-up handling of contour text files
 - Add support for "User Defined" column in tdms files
 0.1.9
 - Implement hierarchical instantiation of RTDC_DataSet

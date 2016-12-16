@@ -116,9 +116,11 @@ class RTDC_DataSet(object):
                 keys.append(prop)
         
         # Plotting defaults
-        defs = [["Contour Accuracy {}", lambda a: (a.max()-a.min())/10],
-                ["KDE Multivariate {}", lambda a: (a.max()-a.min())/10],
+        accl = lambda a: (np.nanmax(a)-np.nanmin(a))/10
+        defs = [["Contour Accuracy {}", accl],
+                ["KDE Multivariate {}", accl],
                ]
+
         pltng = self.Configuration["Plotting"]
         for k in keys:
             for d, l in defs:

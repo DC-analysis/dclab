@@ -86,7 +86,8 @@ def test_backwards_compatible_channel_width():
 
 def test_backwards_compatible_circularity():
     cfg = copy.deepcopy(config.cfg)
-    a = cfg["Plotting"]["Contour Accuracy Defo"]
+    a = .01
+    cfg["Plotting"]["Contour Accuracy Defo"] = a
     plotd = {"Contour Accuracy Circ":a*2}
     newcfg = {"Plotting":plotd}
     

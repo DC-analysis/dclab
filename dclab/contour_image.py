@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Class for efficiently handling the contour data
+Class for efficiently handling contour data
 """
 from __future__ import division, print_function, unicode_literals
 
@@ -11,7 +11,9 @@ class ContourImage(object):
     def __init__(self, fname):
         """Access an MX_contour.txt like a dictionary
         
-        The frame is the key
+        Initialize this class with a *_contour.txt file.
+        The individual contours can be accessed like a
+        list (enumerated from 0 on).
         """
         self._initialized = False
         self.filename=fname
@@ -33,9 +35,10 @@ class ContourImage(object):
     
 
     def _index_file(self):
-        """Initially index the contour file
+        """Open and index the contour file
         
-        This function populates the internal frame dictionary.
+        This function populates the internal list of contours
+        as strings which will be available as `self.data`.
         """
         with open(self.filename) as fd:
             data = fd.read()
@@ -47,6 +50,10 @@ class ContourImage(object):
 
     @property
     def data(self):
+        """Access self.data
+        If `self._index_file` has not been computed before, this
+        property will cause it to do so.
+        """
         if not self._initialized:
             self._index_file()
         return self._data

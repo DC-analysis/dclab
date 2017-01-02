@@ -222,8 +222,9 @@ class RTDC_DataSet(object):
                 for arg in group[1]:
                     data = tdms_file.object(table, arg).data
                     if data is None or len(data)==0:
-                        # Fill empty columns with zeros.
-                        # - in nptdms 0.8.2, `data` is `None` if a column is empty
+                        # Fill empty columns with zeros. npTDMS treats empty
+                        # columns in the following way:
+                        # - in nptdms 0.8.2, `data` is `None`
                         # - in nptdms 0.9.0, `data` is an array of length 0
                         data = np.zeros(datalen)
                     args.append(data)

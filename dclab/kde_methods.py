@@ -3,7 +3,7 @@
 """
 Kernel Density Estimation methods
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 from scipy.stats import gaussian_kde
@@ -39,9 +39,13 @@ def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
         xout = events_x
         yout = events_y
     
-    estimator = gaussian_kde([events_x.flatten(), events_y.flatten()])
-    density = estimator.evaluate([xout.flatten(), yout.flatten()])
-    
+    try:
+        estimator = gaussian_kde([events_x.flatten(), events_y.flatten()])
+        density = estimator.evaluate([xout.flatten(), yout.flatten()])
+    except np.linalg.LinAlgError:
+        # LinAlgError occurs when matrix to solve is singular (issue #117)
+        density = np.zeros(xout.shape)*np.nan
+       
     return density.reshape(xout.shape)
 
 
@@ -111,4 +115,3 @@ def kde_multivariate(events_x, events_y, bw, xout=None, yout=None, **kwargs):
 
     density = estimator_ly.pdf(positions)
     return density.reshape(xout.shape)
-    

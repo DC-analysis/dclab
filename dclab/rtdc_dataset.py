@@ -491,7 +491,7 @@ class RTDC_DataSet(object):
         self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
 
 
-    def ExportTSV(self, path, columns, filtered=True, override=False):
+    def ExportTSV(self, path, columns, filtered=True, override=False, writeAvi=False):
         """ Export the data of the current instance to a .tsv file
         
         Parameters
@@ -540,7 +540,39 @@ class RTDC_DataSet(object):
                        np.array(data).transpose(),
                        fmt=str("%.10e"),
                        delimiter="\t")
-
+            
+            """
+            # TODO: Get this value of writeAvi from GUI somehow
+            if writeAvi and self.video != None:
+                # write the (filtered) images to an avi file
+                # check for offset defined in para    
+                # open source avifile self.video
+                vReader = cv2.VideoCapture(self.video)
+                if cv_version3:
+                    totframes = video.get(cv_const.CAP_PROP_FRAME_COUNT)
+                else:
+                    totframes = video.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
+                # determine video file offset. Some RTDC setups
+                # do not record the first image of a video.
+                frames_skipped = mm.Configuration["General"]["Video Frame Offset"]
+                # filename for avi output
+                aviPath = path + ".avi"
+                if vReader.isOpen():
+                    vWriter = cv2.VideoWriter(aviPath, cv2.cv.FOURCC(0), 25, (), isColor=False)
+                if vWriter.isOpen():
+                    # write the filtered frames to avi file
+                    for evId in self.[_filter]:
+                        # look for this frame in source video
+                        fId = evId - frames_skipped
+                        if fId < 0:
+                            # get placeholder
+                        else:
+                            # get this frame
+                                
+                    
+                    # and close it
+                    vWriter.release()
+            """
 
     def GetDownSampledScatter(self, c=None, axsize=(300,300),
                               markersize=1,

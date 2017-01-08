@@ -32,7 +32,7 @@ else:
     str_classes = str
 
 # Constants in OpenCV moved from "cv2.cv" to "cv2"
-if LooseVersion(cv2.__version__) < "3.0.0":
+if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
     cv_const = cv2.cv
     cv_version3 = False
 else:

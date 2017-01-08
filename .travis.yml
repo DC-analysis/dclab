@@ -8,22 +8,6 @@ notifications:
 env:
   global:
   - GH_REF: github.com/ZELLMECHANIK-DRESDEN/dclab.git
-  matrix:
-  - NUMPY_VERSION_MAX="1.7.9"
-  - NUMPY_VERSION_MAX="1.8.9"
-  - NUMPY_VERSION_MAX="1.9.9"
-  - NUMPY_VERSION_MAX="1.10.9"
-matrix:
-  exclude:
-    # These things won't install with anaconda:
-    - python: "3.5"
-      env: NUMPY_VERSION_MAX="1.7.9"
-    - python: "3.5"
-      env: NUMPY_VERSION_MAX="1.8.9"
-    - python: "3.4"
-      env: NUMPY_VERSION_MAX="1.7.9"
-    - python: "3.4"
-      env: NUMPY_VERSION_MAX="1.8.9"
 
 before_install:
 - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -32,7 +16,7 @@ before_install:
 - ./miniconda.sh -b -p ${INSTALL_DIR}/miniconda
 - export PATH=${INSTALL_DIR}/miniconda/bin:$PATH
 - conda config --set always_yes yes --set changeps1 no
-- travis_retry conda install -c "https://conda.binstar.org/menpo" python=$TRAVIS_PYTHON_VERSION pip "numpy<=$NUMPY_VERSION_MAX" scipy cffi statsmodels opencv3
+- travis_retry conda install -c "https://conda.binstar.org/menpo" python=$TRAVIS_PYTHON_VERSION pip numpy scipy cffi statsmodels opencv3
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 - travis_retry pip install .
 install:

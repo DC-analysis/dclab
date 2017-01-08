@@ -506,7 +506,7 @@ class RTDC_DataSet(object):
         self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
 
 
-    def ExportAvi(self, path, override=False):
+    def ExportAVI(self, path, override=False):
         """Exports filtered event images to an avi file
 
         Parameters

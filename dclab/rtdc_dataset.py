@@ -5,7 +5,6 @@ RTDC_DataSet classes and methods
 """
 from __future__ import division, print_function, unicode_literals
 
-import cv2
 import codecs
 import copy
 from distutils.version import LooseVersion
@@ -16,7 +15,6 @@ import numpy as np
 import os
 import sys
 import time
-    
 import warnings
 
 from . import config
@@ -31,13 +29,19 @@ if sys.version_info[0] == 2:
 else:
     str_classes = str
 
-# Constants in OpenCV moved from "cv2.cv" to "cv2"
-if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
-    cv_const = cv2.cv
-    cv_version3 = False
+
+try:
+    import cv2
+except:
+    warnings.warn("Could not import opencv, video-related functions will not work!")
 else:
-    cv_const = cv2
-    cv_version3 = True
+    # Constants in OpenCV moved from "cv2.cv" to "cv2"
+    if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
+        cv_const = cv2.cv
+        cv_version3 = False
+    else:
+        cv_const = cv2
+        cv_version3 = True
 
 
 

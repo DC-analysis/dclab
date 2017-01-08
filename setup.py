@@ -33,7 +33,8 @@ if __name__ == "__main__":
         install_requires=["fcswrite",
                           "nptdms",
                           "NumPy >= 1.5.1",
-                          "opencv",
+                          # Disable opencv, because is not on PyPI
+                          #"opencv",
                           "scipy",
                           "statsmodels >= 0.5.0"
                           ],

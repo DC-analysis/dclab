@@ -77,7 +77,7 @@ class RTDC_DataSet(object):
         self.tdms_filename = tdms_path
         self.name = os.path.split(tdms_path)[1].split(".tdms")[0]
         self.fdir = os.path.dirname(tdms_path)
-        self.video = ""
+        self.video = None
         mx = os.path.join(self.fdir, self.name.split("_")[0])
         self.title = u"{} - {}".format(
                                        GetProjectNameFromPath(tdms_path),
@@ -540,16 +540,30 @@ class RTDC_DataSet(object):
                        np.array(data).transpose(),
                        fmt=str("%.10e"),
                        delimiter="\t")
-"""            
-            
-    def ExportAvi(self, path):
-        """ #Exports the image data of the current data set to
-        #a avi file with the specified path
-        #only the events that match the filters are exported.
+
+
+    def ExportAvi(self, path, override=False):
+        """Exports filtered event images to an avi file
+
+        Parameters
+        ----------
+        path : str
+            Path to a .tsv file. The ending .tsv is added automatically.
+        filtered : bool
+            If set to ``True``, only the filtered data (index in self._filter)
+            are used.
+        override : bool
+            If set to ``True``, an existing file ``path`` will be overridden.
+            If set to ``False``, an ``OSError`` will be raised.
         
+        Notes
+        -----
+        Raises OSError if current data set does not contain image data
         """
-        # TODO: Get this value of writeAvi from GUI somehow
-        if self.video != None:
+        # TODO:
+        # - Get this value of writeAvi from GUI somehow
+        # - Write tests for this method to keep dclab coverage close to 100%
+        if self.video is not None:
             # write the (filtered) images to an avi file
             # check for offset defined in para    
             # open source avifile self.video
@@ -574,12 +588,12 @@ class RTDC_DataSet(object):
                 vWriter = cv2.VideoWriter(aviPath, cv2.cv.FOURCC(0), 25, videoSize, isColor=True)
             if vWriter.isOpened():
                 # write the filtered frames to avi file
-                for evId in self.[_filter]:
+                for evId in self._filter:
                     # look for this frame in source video
                     fId = evId - frames_skipped
                     if fId < 0:
                         # get placeholder
-                        i = numpy.zeros(videoShape)
+                        i = np.zeros(videoShape)
                     else:
                         # get this frame
                         if cv_version3:
@@ -588,14 +602,15 @@ class RTDC_DataSet(object):
                             vReader.set(cv_const.CV_CAP_PROP_POS_FRAMES, fId)
                         flag, i = vReader.read()
                         if not flag:
-                            i = numpy.zeros(videoShape)
+                            i = np.zeros(videoShape)
                     vWriter.write(i)
                 # and close it
                 vWriter.release()
         else:
-            print("Dataset {} does not contain video file! Won't export avi".format())
-"""
-                
+            msg="No video data to export from dataset {} !".format(self.title)
+            raise OSError(msg)
+
+
     def GetDownSampledScatter(self, c=None, axsize=(300,300),
                               markersize=1,
                               downsample_events=None):

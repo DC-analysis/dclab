@@ -595,6 +595,9 @@ class RTDC_DataSet(object):
             If set to ``True``, an existing file ``path`` will be overridden.
             If set to ``False``, an ``OSError`` will be raised.
         """
+        # TODO:
+        # - Write tests for this method to keep dclab coverage close to 100%
+        
         # Make sure that path ends with .fcs
         if not path.endswith(".fcs"):
             path += ".fcs"

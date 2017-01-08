@@ -5,8 +5,11 @@ RTDC_DataSet classes and methods
 """
 from __future__ import division, print_function, unicode_literals
 
+import cv2
 import codecs
 import copy
+from distutils.version import LooseVersion
+import fcswrite
 import hashlib
 from nptdms import TdmsFile
 import numpy as np
@@ -27,6 +30,14 @@ if sys.version_info[0] == 2:
     str_classes = (str, unicode)
 else:
     str_classes = str
+
+# Constants in OpenCV moved from "cv2.cv" to "cv2"
+if LooseVersion(cv2.__version__) < "3.0.0":
+    cv_const = cv2.cv
+    cv_version3 = False
+else:
+    cv_const = cv2
+    cv_version3 = True
 
 
 
@@ -491,6 +502,122 @@ class RTDC_DataSet(object):
         self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
 
 
+    def ExportAvi(self, path, override=False):
+        """Exports filtered event images to an avi file
+
+        Parameters
+        ----------
+        path : str
+            Path to a .tsv file. The ending .tsv is added automatically.
+        filtered : bool
+            If set to ``True``, only the filtered data (index in self._filter)
+            are used.
+        override : bool
+            If set to ``True``, an existing file ``path`` will be overridden.
+            If set to ``False``, an ``OSError`` will be raised.
+        
+        Notes
+        -----
+        Raises OSError if current data set does not contain image data
+        """
+        # TODO:
+        # - Get this value of writeAvi from GUI somehow
+        # - Write tests for this method to keep dclab coverage close to 100%
+        if self.video is not None:
+            # write the (filtered) images to an avi file
+            # check for offset defined in para    
+            # open source avifile self.video
+            vReader = cv2.VideoCapture(self.video)
+            if cv_version3:
+                totframes = vReader.get(cv_const.CAP_PROP_FRAME_COUNT)
+            else:
+                totframes = vReader.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
+            # deterimine size of video
+            f, i = vReader.read()
+            videoSize = (i.shape[0], i.shape[1])
+            videoShape= i.shape
+            # determine video file offset. Some RTDC setups
+            # do not record the first image of a video.
+            frames_skipped = self.Configuration["General"]["Video Frame Offset"]
+            # filename for avi output
+            # Make sure that path ends with .tsv
+            if not path.endswith(".tsv"):
+                path += ".avi"
+            # Open destination video
+            if vReader.isOpened():
+                vWriter = cv2.VideoWriter(path, cv2.cv.FOURCC(0), 25, videoSize, isColor=True)
+            if vWriter.isOpened():
+                # write the filtered frames to avi file
+                for evId in self._filter:
+                    # look for this frame in source video
+                    fId = evId - frames_skipped
+                    if fId < 0:
+                        # get placeholder
+                        i = np.zeros(videoShape)
+                    else:
+                        # get this frame
+                        if cv_version3:
+                            vReader.set(cv_const.CAP_PROP_POS_FRAMES, fId)
+                        else:
+                            vReader.set(cv_const.CV_CAP_PROP_POS_FRAMES, fId)
+                        flag, i = vReader.read()
+                        if not flag:
+                            i = np.zeros(videoShape)
+                    vWriter.write(i)
+                # and close it
+                vWriter.release()
+        else:
+            msg="No video data to export from dataset {} !".format(self.title)
+            raise OSError(msg)
+
+
+    def ExportFCS(self, path, columns, filtered=True, override=False):
+        """ Export the data of an RTDC_DataSet to an .fcs file
+        
+        Parameters
+        ----------
+        mm: instance of dclab.RTDC_DataSet
+            The data set that will be exported.
+        path : str
+            Path to a .tsv file. The ending .tsv is added automatically.
+        columns : list of str
+            The columns in the resulting .tsv file. These are strings
+            that are defined in `dclab.definitions.uid`, e.g.
+            "Area", "Defo", "Frame", "FL-1max", "Area Ratio".
+        filtered : bool
+            If set to ``True``, only the filtered data (index in self._filter)
+            are used.
+        override : bool
+            If set to ``True``, an existing file ``path`` will be overridden.
+            If set to ``False``, an ``OSError`` will be raised.
+        """
+        # Make sure that path ends with .fcs
+        if not path.endswith(".fcs"):
+            path += ".fcs"
+        # Check if file already exist
+        if not override and os.path.exists(path):
+            raise OSError("File already exists: {}\n".format(
+                                    path.encode("ascii", "ignore"))+
+                          "Please use the `override=True` option.")
+        # Check that columns are in dfn.uid
+        for c in columns:
+            assert c in dfn.uid, "Unknown column name {}".format(c)
+        
+        # Collect the header
+        chn_names = [ dfn.axlabels[c] for c in columns ]
+    
+        # Collect the data
+        if filtered:
+            data = [ getattr(self, dfn.cfgmaprev[c])[self._filter] for c in columns ]
+        else:
+            data = [ getattr(self, dfn.cfgmaprev[c]) for c in columns ]
+        
+        data = np.array(data).transpose()
+        fcswrite.write_fcs(filename=path,
+                           chn_names=chn_names,
+                           data=data)
+
+
     def ExportTSV(self, path, columns, filtered=True, override=False):
         """ Export the data of the current instance to a .tsv file
         
@@ -540,75 +667,6 @@ class RTDC_DataSet(object):
                        np.array(data).transpose(),
                        fmt=str("%.10e"),
                        delimiter="\t")
-
-
-    def ExportAvi(self, path, override=False):
-        """Exports filtered event images to an avi file
-
-        Parameters
-        ----------
-        path : str
-            Path to a .tsv file. The ending .tsv is added automatically.
-        filtered : bool
-            If set to ``True``, only the filtered data (index in self._filter)
-            are used.
-        override : bool
-            If set to ``True``, an existing file ``path`` will be overridden.
-            If set to ``False``, an ``OSError`` will be raised.
-        
-        Notes
-        -----
-        Raises OSError if current data set does not contain image data
-        """
-        # TODO:
-        # - Get this value of writeAvi from GUI somehow
-        # - Write tests for this method to keep dclab coverage close to 100%
-        if self.video is not None:
-            # write the (filtered) images to an avi file
-            # check for offset defined in para    
-            # open source avifile self.video
-            vReader = cv2.VideoCapture(self.video)
-            if cv_version3:
-                totframes = vReader.get(cv_const.CAP_PROP_FRAME_COUNT)
-            else:
-                totframes = vReader.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
-            # deterimine size of video
-            f, i = vReader.read()
-            videoSize = (i.shape[0], i.shape[1])
-            videoShape= i.shape
-            # determine video file offset. Some RTDC setups
-            # do not record the first image of a video.
-            frames_skipped = mm.Configuration["General"]["Video Frame Offset"]
-            # filename for avi output
-            # Make sure that path ends with .tsv
-            if not path.endswith(".tsv"):
-                path += ".avi"
-            # Open destination video
-            if vReader.isOpened():
-                vWriter = cv2.VideoWriter(aviPath, cv2.cv.FOURCC(0), 25, videoSize, isColor=True)
-            if vWriter.isOpened():
-                # write the filtered frames to avi file
-                for evId in self._filter:
-                    # look for this frame in source video
-                    fId = evId - frames_skipped
-                    if fId < 0:
-                        # get placeholder
-                        i = np.zeros(videoShape)
-                    else:
-                        # get this frame
-                        if cv_version3:
-                            vReader.set(cv_const.CAP_PROP_POS_FRAMES, fId)
-                        else:
-                            vReader.set(cv_const.CV_CAP_PROP_POS_FRAMES, fId)
-                        flag, i = vReader.read()
-                        if not flag:
-                            i = np.zeros(videoShape)
-                    vWriter.write(i)
-                # and close it
-                vWriter.release()
-        else:
-            msg="No video data to export from dataset {} !".format(self.title)
-            raise OSError(msg)
 
 
     def GetDownSampledScatter(self, c=None, axsize=(300,300),

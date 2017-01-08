@@ -30,9 +30,10 @@ if __name__ == "__main__":
         license="GPL v2",
         description=description,
         long_description=open('README.rst').read() if exists('README.rst') else '',
-        install_requires=[
+        install_requires=["fcswrite",
                           "nptdms",
                           "NumPy >= 1.5.1",
+                          "opencv",
                           "scipy",
                           "statsmodels >= 0.5.0"
                           ],

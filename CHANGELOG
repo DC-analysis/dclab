@@ -1,5 +1,6 @@
 0.2.1
 - Support npTDMS 0.9.0
+- Add AVI-Export function
 0.2.0
 - Compute sensible default configuration parameters for
   KDE estimation and contour plotting

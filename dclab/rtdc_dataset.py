@@ -531,33 +531,52 @@ class RTDC_DataSet(object):
             # write the (filtered) images to an avi file
             # check for offset defined in para    
             # open source avifile self.video
-            vReader = cv2.VideoCapture(self.video)
+            vReader = cv2.VideoCapture(os.path.join(self.fdir,self.video))
             if cv_version3:
                 totframes = vReader.get(cv_const.CAP_PROP_FRAME_COUNT)
             else:
                 totframes = vReader.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
             # deterimine size of video
             f, i = vReader.read()
-            videoSize = (i.shape[0], i.shape[1])
+            print("self.video: ", self.video)
+            print("Open: ", vReader.isOpened())
+            print(vReader)
+            #print("reading frame", f, i)
+            if (f==False):
+                print("Could not read AVI, abort.")
+                return -1
+            videoSize = (i.shape[1], i.shape[0])
             videoShape= i.shape
             # determine video file offset. Some RTDC setups
             # do not record the first image of a video.
             frames_skipped = self.Configuration["General"]["Video Frame Offset"]
             # filename for avi output
             # Make sure that path ends with .tsv
-            if not path.endswith(".tsv"):
+            if not path.endswith(".avi"):
                 path += ".avi"
             # Open destination video
+            # use i420 code, as it is working on MacOS
+            # fourcc = cv2.VideoWriter_fourcc('I','4','2','0')
+            # error when running on mac... so give fourcc manually as number
+            fourcc = 808596553
             if vReader.isOpened():
-                vWriter = cv2.VideoWriter(path, cv2.cv.FOURCC(0), 25, videoSize, isColor=True)
+                vWriter = cv2.VideoWriter(path, fourcc, 25, videoSize, isColor=True)
             if vWriter.isOpened():
+                # print(self._filter)
                 # write the filtered frames to avi file
-                for evId in self._filter:
+                for evId in np.arange(len(self._filter)):
+                    # skip frames that were filtered out
+                    if self._filter[evId] == False:
+                        continue
                     # look for this frame in source video
                     fId = evId - frames_skipped
                     if fId < 0:
                         # get placeholder
-                        i = np.zeros(videoShape)
+                        print("fId < 0: get placeholder image")
+                        i = np.zeros(videoShape, dtype=np.uint8)
+                    elif fId >= totframes:
+                        print("fId > total frames")
+                        continue
                     else:
                         # get this frame
                         if cv_version3:
@@ -566,7 +585,12 @@ class RTDC_DataSet(object):
                             vReader.set(cv_const.CV_CAP_PROP_POS_FRAMES, fId)
                         flag, i = vReader.read()
                         if not flag:
-                            i = np.zeros(videoShape)
+                            i = np.zeros(videoShape, dtype=np.uint8)
+                            print("Could not read event/frame", evId, "/", fId)
+                    # print("Write image ", evId,"/", totframes)
+                    # for monochrome
+                    # vWriter.write(i[:,:,0])
+                    # for color images
                     vWriter.write(i)
                 # and close it
                 vWriter.release()

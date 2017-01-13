@@ -55,11 +55,21 @@ uid = [
         "Inertia Ratio Raw",
         "UserDef1",
         "UserDef2",
+        "UserDef3",
+        "UserDef4",
+        "UserDef5",
+        "UserDef6",
+        "UserDef7",
+        "UserDef8",
+        "UserDef9",
+        "UserDef0",
+        "PC1",
+        "PC2",
         ]
 # Axes label (same order as UID)
 axl = [
-        u"Cell size [px²]",
-        u"Cell size [µm²]",
+        u"Area [px²]",
+        u"Area [µm²]",
         u"Convex to measured area ratio",
         u"Aspect ratio of bounding box",
         u"Circularity",
@@ -97,6 +107,16 @@ axl = [
         u"Raw inertia ratio sqrt(m20/m20)",
         u"User defined 1",
         u"User defined 2",
+        u"User defined 3",
+        u"User defined 4",
+        u"User defined 5",
+        u"User defined 6",
+        u"User defined 7",
+        u"User defined 8",
+        u"User defined 9",
+        u"User defined 0",
+        u"Principal component 1",
+        u"Principal component 2",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -139,6 +159,16 @@ rdv = [
         "inRatioRaw",
         "userDef1",
         "userDef2",
+        "userDef3",
+        "userDef4",
+        "userDef5",
+        "userDef6",
+        "userDef7",
+        "userDef8",
+        "userDef9",
+        "userDef0",
+        "pc1",
+        "pc2",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -354,6 +384,51 @@ tfd = [
         # -
         ["Cell Track",
          "UserDef2",
+         lambda x:x
+        ],
+        ["Cell Track",
+         "UserDef3",
+         lambda x:x
+        ],
+        # -
+        ["Cell Track",
+         "UserDef4",
+         lambda x:x
+        ],
+        ["Cell Track",
+         "UserDef5",
+         lambda x:x
+        ],
+        # -
+        ["Cell Track",
+         "UserDef6",
+         lambda x:x
+        ],
+        ["Cell Track",
+         "UserDef7",
+         lambda x:x
+        ],
+        # -
+        ["Cell Track",
+         "UserDef8",
+         lambda x:x
+        ],
+        ["Cell Track",
+         "UserDef9",
+         lambda x:x
+        ],
+        # -
+        ["Cell Track",
+         "UserDef0",
+         lambda x:x
+        ],
+        ["Cell Track",
+         "PC1",
+         lambda x:x
+        ],
+        # -
+        ["Cell Track",
+         "PC2",
          lambda x:x
         ],
         ]

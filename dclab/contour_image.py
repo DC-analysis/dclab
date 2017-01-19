@@ -46,7 +46,7 @@ class ContourImage(object):
         ident = "Contour in frame"
         self._data = data.split(ident)[1:]
         self._initialized = True
-
+        
 
     @property
     def data(self):
@@ -57,3 +57,13 @@ class ContourImage(object):
         if not self._initialized:
             self._index_file()
         return self._data
+
+
+    def get_frame(self, idx):
+        """Return the frame number of a contour"""
+        cont = self.data[idx]
+        frame = int(cont.strip().split(" ", 1)[0])
+        return frame
+        
+        
+        

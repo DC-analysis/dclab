@@ -22,6 +22,7 @@ from .. import definitions as dfn
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 from .object_contour import ContourColumn
+from .object_image import ImageColumn
 
 
 if sys.version_info[0] == 2:
@@ -92,7 +93,6 @@ class RTDC_DataSet(object):
         self.tdms_filename = tdms_path
         self.name = os.path.split(tdms_path)[1].split(".tdms")[0]
         self.fdir = os.path.dirname(tdms_path)
-        self.video = None
         mx = os.path.join(self.fdir, self.name.split("_")[0])
         self.title = u"{} - {}".format(
                                        GetProjectNameFromPath(tdms_path),
@@ -269,34 +269,15 @@ class RTDC_DataSet(object):
                         # so we remove the first (0) index.
                         self.traces[ch] = np.split(trdat, sampleids[1:])
 
-        # Cell images (video)
-        videos = [v for v in os.listdir(self.fdir) if v.endswith(".avi")]
-        # Filter videos according to measurement number
-        meas_id = self.name.split("_")[0]
-        videos = [v for v in videos if v.split("_")[0] == meas_id] 
-        videos.sort()
-        if len(videos) == 0:
-            self.video = None
-        else:
-            # Defaults to first avi file
-            self.video = videos[0]
-            # g/q video file names. q comes first.
-            for v in videos:
-                if v.endswith("imag.avi"):
-                    self.video = v
-                    break
-                # add this here, because fRT-DC measurements also contain
-                # videos ..._proc.avi
-                elif v.endswith("imaq.avi"):
-                    self.video = v
-                    break
-
-        # Cell contours
-        self.contour = ContourColumn(self)
-        
         # Set up filtering
         self._init_filters()
         self.SetConfiguration()
+
+        # Cell images
+        self.image = ImageColumn(self)
+
+        # Cell contours
+        self.contour = ContourColumn(self)
 
 
     def _init_filters(self):
@@ -522,20 +503,22 @@ class RTDC_DataSet(object):
         Raises OSError if current data set does not contain image data
         """
         # TODO:
-        # - Get this value of writeAvi from GUI somehow
         # - Write tests for this method to keep dclab coverage close to 100%
-        if self.video is not None:
+        # - Use the image data from self.image instead of the video file from 
+        #   `self.image.video_file`. Then we also don't need to
+        #   handle the `frames_skipped` and `fId < 0:` case.
+        if len(self.image):
             # write the (filtered) images to an avi file
             # check for offset defined in para    
-            # open source avifile self.video
-            vReader = cv2.VideoCapture(os.path.join(self.fdir,self.video))
+            video_file = self.image.video_file
+            vReader = cv2.VideoCapture(video_file)
             if cv_version3:
                 totframes = vReader.get(cv_const.CAP_PROP_FRAME_COUNT)
             else:
                 totframes = vReader.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
             # deterimine size of video
             f, i = vReader.read()
-            print("self.video: ", self.video)
+            print("video_file: ", video_file)
             print("Open: ", vReader.isOpened())
             print(vReader)
             #print("reading frame", f, i)

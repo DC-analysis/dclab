@@ -34,7 +34,7 @@ class ContourColumn(object):
             self.determine_offset()
         idnew = idx-self.event_offset
         if idnew < 0:
-            cdata = np.zeros((2,2))
+            cdata = np.zeros((2,2), dtype=int)
         else:
             cdata = self._contour_data[idnew]
         return cdata

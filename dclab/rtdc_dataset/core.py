@@ -504,9 +504,6 @@ class RTDC_DataSet(object):
         """
         # TODO:
         # - Write tests for this method to keep dclab coverage close to 100%
-        # - Use the image data from self.image instead of the video file from 
-        #   `self.image.video_file`. Then we also don't need to
-        #   handle the `frames_skipped` and `fId < 0:` case.
         if len(self.image):
             # write the (filtered) images to an avi file
             # check for offset defined in para    
@@ -516,7 +513,7 @@ class RTDC_DataSet(object):
                 totframes = vReader.get(cv_const.CAP_PROP_FRAME_COUNT)
             else:
                 totframes = vReader.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
-            # deterimine size of video
+            # determine size of video
             f, i = vReader.read()
             print("video_file: ", video_file)
             print("Open: ", vReader.isOpened())
@@ -529,7 +526,7 @@ class RTDC_DataSet(object):
             videoShape= i.shape
             # determine video file offset. Some RTDC setups
             # do not record the first image of a video.
-            frames_skipped = self.Configuration["General"]["Video Frame Offset"]
+            frames_skipped = self.image.event_offset
             # filename for avi output
             # Make sure that path ends with .tsv
             if not path.endswith(".avi"):

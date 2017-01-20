@@ -51,7 +51,7 @@ class ImageColumn(object):
 
 
     def __len__(self):
-        return len(self._image_data)
+        return len(self._image_data)+self.event_offset
 
 
     @staticmethod
@@ -130,6 +130,7 @@ class ImageMap(object):
                 self._length = video.get(cv_const.CAP_PROP_FRAME_COUNT)
             else:
                 self._length = video.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
+            video.release()
         return self._length
     
     
@@ -140,3 +141,4 @@ class ImageMap(object):
         video = cv2.VideoCapture(vfile)
         os.chdir(old_dir)
         return video
+

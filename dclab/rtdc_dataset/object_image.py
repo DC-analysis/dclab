@@ -51,7 +51,10 @@ class ImageColumn(object):
 
 
     def __len__(self):
-        return len(self._image_data)+self.event_offset
+        length = len(self._image_data)
+        if length:
+            length += self.event_offset
+        return length
 
 
     @staticmethod

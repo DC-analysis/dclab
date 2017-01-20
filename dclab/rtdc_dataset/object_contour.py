@@ -41,7 +41,10 @@ class ContourColumn(object):
 
 
     def __len__(self):
-        return len(self._contour_data)+self.event_offset
+        length = len(self._contour_data)
+        if length:
+            length += self.event_offset 
+        return length
 
 
     def determine_offset(self):

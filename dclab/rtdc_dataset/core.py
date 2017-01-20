@@ -17,11 +17,11 @@ import sys
 import time
 import warnings
 
-from . import config
-from . import definitions as dfn
-from .polygon_filter import PolygonFilter
-from . import kde_methods
-from .contour_image import ContourImage
+from .. import config
+from .. import definitions as dfn
+from ..polygon_filter import PolygonFilter
+from .. import kde_methods
+from .object_contour import ContourColumn
 
 
 if sys.version_info[0] == 2:
@@ -76,7 +76,7 @@ class RTDC_DataSet(object):
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
         self.traces={}
-        self.contours={}
+        self.contour=[]
         
         if tdms_path is None:
             # We are given a dictionary with data values.
@@ -292,11 +292,8 @@ class RTDC_DataSet(object):
                     break
 
         # Cell contours
-        for f in os.listdir(self.fdir):
-            if f.endswith("_contours.txt") and f.startswith(self.name[:2]):
-                self.contours = ContourImage(os.path.join(self.fdir, f))
-                break
-
+        self.contour = ContourColumn(self)
+        
         # Set up filtering
         self._init_filters()
         self.SetConfiguration()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from os.path import exists, dirname, realpath
-from setuptools import setup
+from setuptools import setup, find_packages
 import sys
 
 author = u"Paul Müller"
@@ -25,7 +25,7 @@ if __name__ == "__main__":
         author_email='paul.mueller@biotec.tu-dresden.de',
         url='https://github.com/ZELLMECHANIK-DRESDEN/dclab',
         version=version,
-        packages=[name],
+        packages=find_packages(),
         package_dir={name: name},
         license="GPL v2",
         description=description,

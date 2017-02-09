@@ -21,8 +21,8 @@ from .. import config
 from .. import definitions as dfn
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
-from .object_contour import ContourColumn
-from .object_image import ImageColumn
+from .event_contour import ContourColumn
+from .event_image import ImageColumn
 
 
 if sys.version_info[0] == 2:
@@ -77,7 +77,6 @@ class RTDC_DataSet(object):
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
         self.traces={}
-        self.contour=[]
         
         if tdms_path is None:
             # We are given a dictionary with data values.
@@ -113,7 +112,12 @@ class RTDC_DataSet(object):
         else:
             # We were given a tdms file.
             self._init_data_with_tdms(tdms_path)
-        
+
+        # Cell images
+        self.image = ImageColumn(self)
+        # Cell contours
+        self.contour = ContourColumn(self)
+
         self._complete_configuration_defaults()
 
 
@@ -272,12 +276,6 @@ class RTDC_DataSet(object):
         # Set up filtering
         self._init_filters()
         self.SetConfiguration()
-
-        # Cell images
-        self.image = ImageColumn(self)
-
-        # Cell contours
-        self.contour = ContourColumn(self)
 
 
     def _init_filters(self):

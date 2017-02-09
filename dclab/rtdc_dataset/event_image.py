@@ -63,29 +63,28 @@ class ImageColumn(object):
         
         Returns None if no video file is found.
         """
-        # Cell images (video)
+        video = None
         fdir = rtdc_dataset.fdir
-        videos = [v for v in os.listdir(fdir) if v.endswith(".avi")]
-        # Filter videos according to measurement number
-        meas_id = rtdc_dataset.name.split("_")[0]
-        videos = [v for v in videos if v.split("_")[0] == meas_id] 
-        videos.sort()
-        if len(videos) == 0:
-            video = None
-        else:
-            # Defaults to first avi file
-            video = videos[0]
-            # g/q video file names. q comes first.
-            for v in videos:
-                if v.endswith("imag.avi"):
-                    video = v
-                    break
-                # add this here, because fRT-DC measurements also contain
-                # videos ..._proc.avi
-                elif v.endswith("imaq.avi"):
-                    video = v
-                    break
-        
+        if os.path.exists(fdir):
+            # Cell images (video)
+            videos = [v for v in os.listdir(fdir) if v.endswith(".avi")]
+            # Filter videos according to measurement number
+            meas_id = rtdc_dataset.name.split("_")[0]
+            videos = [v for v in videos if v.split("_")[0] == meas_id] 
+            videos.sort()
+            if len(videos) != 0:
+                # Defaults to first avi file
+                video = videos[0]
+                # g/q video file names. q comes first.
+                for v in videos:
+                    if v.endswith("imag.avi"):
+                        video = v
+                        break
+                    # add this here, because fRT-DC measurements also contain
+                    # videos ..._proc.avi
+                    elif v.endswith("imaq.avi"):
+                        video = v
+                        break
         if video is None:
             return None
         else:

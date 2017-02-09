@@ -82,13 +82,13 @@ class ContourColumn(object):
         
         Returns None if no contour file is found.
         """
-        for f in os.listdir(rtdc_dataset.fdir):
-            if (f.endswith("_contours.txt") and
-                f.startswith(rtdc_dataset.name[:2])):
-                cfile = os.path.join(rtdc_dataset.fdir, f)
-                break
-        else:
-            cfile = None
+        cfile = None
+        if os.path.exists(rtdc_dataset.fdir):
+            for f in os.listdir(rtdc_dataset.fdir):
+                if (f.endswith("_contours.txt") and
+                    f.startswith(rtdc_dataset.name[:2])):
+                    cfile = os.path.join(rtdc_dataset.fdir, f)
+                    break
         return cfile
 
 

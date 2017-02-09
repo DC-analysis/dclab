@@ -95,7 +95,7 @@ class ContourColumn(object):
 
 class ContourData(object):
     def __init__(self, fname):
-        """Access an MX_contour.txt like a dictionary
+        """Access an MX_contour.txt as a dictionary
         
         Initialize this class with a *_contour.txt file.
         The individual contours can be accessed like a

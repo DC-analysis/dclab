@@ -113,9 +113,9 @@ class RTDC_DataSet(object):
             # We were given a tdms file.
             self._init_data_with_tdms(tdms_path)
 
-        # Cell images
+        # event images
         self.image = ImageColumn(self)
-        # Cell contours
+        # event contours
         self.contour = ContourColumn(self)
 
         self._complete_configuration_defaults()

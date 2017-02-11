@@ -23,6 +23,7 @@ from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
+from .event_trace import TraceColumn
 
 
 if sys.version_info[0] == 2:
@@ -76,7 +77,6 @@ class RTDC_DataSet(object):
         self._old_filters = {} # for comparison to new filters
         self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
-        self.traces={}
         
         if tdms_path is None:
             # We are given a dictionary with data values.
@@ -117,6 +117,8 @@ class RTDC_DataSet(object):
         self.image = ImageColumn(self)
         # event contours
         self.contour = ContourColumn(self)
+        # event traces
+        self.trace = TraceColumn(self)
 
         self._complete_configuration_defaults()
 
@@ -212,10 +214,6 @@ class RTDC_DataSet(object):
 
     def _init_data_with_tdms(self, tdms_filename):
         """ Initializes the current RTDC_DataSet with a tdms file.
-        
-        This method will automatically load contours, video files,
-        and fluorescence traces that are present in the directory
-        of `tmds_filename`.
         """
         tdms_file = TdmsFile(tdms_filename)
         ## Set all necessary internal parameters as defined in
@@ -253,25 +251,6 @@ class RTDC_DataSet(object):
                 args = [np.zeros(datalen)]
             finally:
                 setattr(self, dfn.rdv[ii], func(*args))
-
-        # Fluorescence traces
-        self.traces = {}
-        traces_filename = tdms_filename[:-5]+"_traces.tdms"
-        if os.path.exists(traces_filename):
-            # Determine chunk size of traces from the FL1index column
-            sampleids = tdms_file.object("Cell Track", "FL1index").data
-            traces_file = TdmsFile(traces_filename)
-            for group, ch in dfn.tr_data:
-                try:
-                    trdat = traces_file.object(group, ch).data
-                except KeyError:
-                    pass
-                else:
-                    if trdat is not None:
-                        # Only add trace if there is actual data.
-                        # Split only needs the position of the sections,
-                        # so we remove the first (0) index.
-                        self.traces[ch] = np.split(trdat, sampleids[1:])
 
         # Set up filtering
         self._init_filters()

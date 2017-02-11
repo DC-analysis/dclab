@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-This file contains basic definitions and associated methods for
-dclab.
+This file contains basic definitions and naming conventions.
 """
 from __future__ import division, print_function, unicode_literals
 

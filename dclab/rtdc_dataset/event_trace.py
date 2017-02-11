@@ -1,68 +1,109 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Class for efficiently handling fluorescence trace data
+Class for handling fluorescence trace data
 """
 from __future__ import division, print_function, unicode_literals
 
+import nptdms
 import numpy as np
 import os
 
-# TODO:
-# - make this work
-# - make traces available as dictionaries
-# - replace rtdc_dataset.traces with rtdc_dataset.trace
+from .. import definitions as dfn
 
 
-class TraceColumn(dict):
+class TraceColumn(object):
     def __init__(self, rtdc_dataset):
-        """Indexes the fluorescence traces.
+        """Prepares everything but does not load the trace data yet
+        
+        The trace data is loaded when __getitem__, __len__, or __iter__
+        are called. This saves time and memory when the trace data is
+        not needed at all, e.g. for batch processing with ShapeOut. 
         """
-        fname = self.find_traces_file(rtdc_dataset)
-        if fname is not None:
-            self._trace_data = TraceData(fname)
-        else:
-            self._trace_data = {}
+        self._trace = None
+        self.mname = rtdc_dataset.tdms_filename
         
 
     def __getitem__(self, ch):
-        """Get a trace channel"""
-        if ch in self._trace_data:
-            chan = self._trace_data[ch]
-        return chan
+        return self.trace.__getitem__(ch)
 
 
     def __len__(self):
-        length = len(self._image_data)
-        if length:
-            length += self.event_offset
-        return length
+        return self.trace.__len__()
+
+
+    def __iter__(self):
+        return self.trace.__iter__()
+
+
+    def __repr__(self):
+        tname = TraceColumn.find_trace_file(self.mname)
+        if self._trace is None:
+            addstr = "not loaded into memory"
+        else:
+            addstr = "loaded into memory"
+        return ("Fluorescence trace data from file {}, <{}>".format(tname,
+                                                                    addstr))
+
+
+    @property
+    def trace(self):
+        """Initializes the trace data"""
+        if self._trace is None:
+            self._trace = self.load_trace(self.mname)
+        return self._trace
 
 
     @staticmethod
-    def find_traces_file(rtdc_dataset):
+    def load_trace(mname):
+        """Loads the traces and returns them as a dictionary
+        
+        Currently, only loading traces from tdms files is supported.
+        This forces us to load the full tdms file into memory which
+        takes some time.
+        """
+        tname = TraceColumn.find_trace_file(mname)
+        
+        # Initialize empty trace dictionary
+        trace = {}
+
+        if tname is None:
+            pass
+        elif tname.endswith(".tdms"):
+            # Again load the measurement tdms file.
+            # This might increase memory usage, but it is cleaner
+            # when looking at code structure.
+            mdata = nptdms.TdmsFile(mname)
+            sampleids = mdata.object("Cell Track", "FL1index").data
+            
+            # Load the trace data. The traces file is usually larger than the
+            # measurement file.
+            tdata = nptdms.TdmsFile(tname)
+            for group, ch in dfn.tr_data:
+                try:
+                    trdat = tdata.object(group, ch).data
+                except KeyError:
+                    pass
+                else:
+                    if trdat is not None:
+                        # Only add trace if there is actual data.
+                        # Split only needs the position of the sections,
+                        # so we remove the first (0) index.
+                        trace[ch] = np.split(trdat, sampleids[1:])
+        return trace
+        
+
+    @staticmethod
+    def find_trace_file(mname):
         """Tries to find the traces tdms file name
         
-        Returns None if no video file is found.
+        Returns None if no trace file is found.
         """
-        tmds = rtdc_dataset.tdms_filename
-        if os.path.exists(tmds):
-            traces_filename = tmds[:-5]+"_traces.tdms"
-        else:
-            traces_filename = None
+        tname = None
         
-        return traces_filename
-
-
-
-class TraceData(object):
-    def __init__(self, fname):
-        """Access a _traces.tdms file as a dictionary
-        
-        Initialize this class with a *_traces.tdms file.
-        The individual traces can be accessed like a
-        list (enumerated from 0 on).
-        """
-        self._initialized = False
-        self.filename=fname
-
+        if os.path.exists(mname):
+            cand = mname[:-5]+"_traces.tdms"
+            if os.path.exists(cand):
+                tname = cand
+            
+        return tname

@@ -3,6 +3,7 @@
 - Add AVI-Export function
 - Add lazy submodule for event trace data and rename `RTDC_DataSet.traces`
   to `RTDC_DataSet.trace`
+- Add "Event index" column
 0.2.0
 - Compute sensible default configuration parameters for
   KDE estimation and contour plotting

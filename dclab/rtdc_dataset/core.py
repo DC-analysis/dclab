@@ -684,6 +684,7 @@ class RTDC_DataSet(object):
         plotfilters = self.Configuration["Plotting"]
         if downsample_events is None:
             downsample_events = plotfilters["Downsample Events"]
+        downsample_events = int(downsample_events)
 
         downsampling = plotfilters["Downsampling"]            
 

@@ -1026,6 +1026,9 @@ class RTDC_DataSet(object):
         changes can be made.
         """
         force = []
+        # TODO:
+        # - if this only applies to tmds files, put it in the corresponding init file
+        #   "Pix Size" and "Framerate" should not be changed by the user. 
         # look for pixel size update first
         if ("Image" in newcfg and
             "Pix Size" in newcfg["Image"]):
@@ -1034,7 +1037,7 @@ class RTDC_DataSet(object):
                 self.area_um[:] = self.area * PIX**2
                 force.append("Area")
         # look for frame rate update
-        elif ("Framerate" in newcfg and
+        if ("Framerate" in newcfg and
             "Frame Rate" in newcfg["Framerate"]):
             FR = newcfg["Framerate"]["Frame Rate"]
             # FR is in Hz
@@ -1049,7 +1052,7 @@ class RTDC_DataSet(object):
             self.ApplyFilter(force=force)
         
         # Reset additional information
-        self.Configuration["General"]["Cell Number"] =self.time.shape[0]
+        self.Configuration["General"]["Cell Number"] = self.time.shape[0]
 
 
 

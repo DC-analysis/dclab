@@ -64,6 +64,7 @@ uid = [
         "UserDef0",
         "PC1",
         "PC2",
+        "Index",
         ]
 # Axes label (same order as UID)
 axl = [
@@ -116,6 +117,7 @@ axl = [
         u"User defined 0",
         u"Principal component 1",
         u"Principal component 2",
+        u"Event index"
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -168,6 +170,7 @@ rdv = [
         "userDef0",
         "pc1",
         "pc2",
+        "index"
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -204,7 +207,7 @@ tfd = [
          "circularity",
          lambda x: 1-x
          ],
-        # frame
+        # frame (the time column is actually the image frame number)
         ["Cell Track",
          "time",
          lambda x: x
@@ -219,11 +222,10 @@ tfd = [
          "x",
          lambda x: x
          ],
-         
-        # time (set by RTDC_DataSet)
+        # time: set to zero, is computed later using config key "Frame Rate"
         ["Cell Track",
          "time",
-         lambda x: np.zeros(x.shape) # time in seconds
+         lambda x: np.zeros(x.shape) # sic
          ],
         # FC0 maxiumum channel
         ["Cell Track",
@@ -430,6 +432,11 @@ tfd = [
          "PC2",
          lambda x:x
         ],
+        # Add event index, use length of frame index
+        ["Cell Track",
+         "time",
+         lambda x: np.arange(1,x.shape[0]+1)
+         ],
         ]
 
 # traces_tdms file definitions

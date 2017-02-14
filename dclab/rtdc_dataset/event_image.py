@@ -52,10 +52,8 @@ class ImageColumn(object):
 
     def __len__(self):
         length = len(self._image_data)
-        if length is True:
-            pass
-        elif length:
-            length += self.event_offset
+        if length:
+            length = length+self.event_offset
         return length
 
 
@@ -131,8 +129,6 @@ class ImageMap(object):
             cap = self._get_video_handler()
             length = int(cap.get(CV_CAP_PROP_FRAME_COUNT))
             cap.release()
-        if length == 0:
-            length = True
         self._length = length
         return self._length
     

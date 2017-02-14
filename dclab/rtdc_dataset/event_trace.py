@@ -42,8 +42,17 @@ class TraceColumn(object):
             addstr = "not loaded into memory"
         else:
             addstr = "loaded into memory"
-        return ("Fluorescence trace data from file {}, <{}>".format(tname,
-                                                                    addstr))
+        
+        if tname is None:
+            rep = "No trace data available!"
+        else:
+            rep = "Fluorescence trace data from file {}, <{}>".format(tname,
+                                                                       addstr)
+        return rep
+
+
+    def keys(self):
+        return self.trace.keys()
 
 
     @property

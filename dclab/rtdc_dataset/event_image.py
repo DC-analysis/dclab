@@ -100,16 +100,17 @@ class ImageMap(object):
         
         Initialize this class with a video file.
         """
+        assert os.path.exists(fname)
         self.filename = fname
         self._length = None
 
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in RGB"""
-        video = self._get_video_handler()
-        video.set(CV_CAP_PROP_POS_FRAMES, idx)
-        flag, cellimg = video.read()
-        video.release()
+        cap = self._get_video_handler()
+        cap.set(CV_CAP_PROP_POS_FRAMES, idx)
+        flag, cellimg = cap.read()
+        cap.release()
         
         if flag:
             if len(cellimg.shape) == 2:
@@ -127,9 +128,9 @@ class ImageMap(object):
         determined.
         """
         if self._length is None:
-            video = self._get_video_handler()
-            length = int(video.get(CV_CAP_PROP_FRAME_COUNT))
-            video.release()
+            cap = self._get_video_handler()
+            length = int(cap.get(CV_CAP_PROP_FRAME_COUNT))
+            cap.release()
         if length == 0:
             length = True
         self._length = length
@@ -140,7 +141,9 @@ class ImageMap(object):
         old_dir = os.getcwd()
         fdir, vfile = os.path.split(self.filename)
         os.chdir(fdir)
-        video = cv2.VideoCapture(vfile)
+        cap = cv2.VideoCapture(vfile)
+        if not cap.isOpened():
+            cap.open()
         os.chdir(old_dir)
-        return video
+        return cap
 

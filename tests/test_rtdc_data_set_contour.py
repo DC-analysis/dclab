@@ -27,6 +27,7 @@ def test_contour_basic():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
     assert len(ds.contour) == 12
     assert np.allclose(np.average(ds.contour[0]), 38.488764044943821)
+    assert ds.contour._initialized
 
 
 def test_contour_negative_offset():
@@ -34,6 +35,11 @@ def test_contour_negative_offset():
     _a = ds.contour[0]
     ds.contour.event_offset = 1
     assert np.all(ds.contour[0] == np.zeros((2,2), dtype=int))
+
+
+def test_contour_not_initialized():
+    ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    assert ds.contour._initialized == False
 
 
 def test_contour_not_available():

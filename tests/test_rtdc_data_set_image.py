@@ -6,9 +6,12 @@ from __future__ import print_function, unicode_literals
 
 import codecs
 import copy
+import cv2
+from distutils.version import LooseVersion
 import numpy as np
 import os
 from os.path import abspath, dirname, join
+import pytest
 import shutil
 import sys
 import tempfile
@@ -23,12 +26,19 @@ from dclab import RTDC_DataSet
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
+
 def test_image_basic():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
-    assert len(ds.image) == 3
     # Transition image
     assert np.allclose(np.average(ds.image[0]), 127.03125)
     assert np.allclose(np.average(ds.image[1]), 45.512017144097221)
+
+
+@pytest.mark.skipif(LooseVersion(cv2.__version__) > LooseVersion("3.0.0"),
+                    reason="Does not work with CV3.")
+def test_image_column_length():
+    ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    assert len(ds.image) == 3
 
 
 def test_image_negative_offset():

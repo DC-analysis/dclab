@@ -124,7 +124,7 @@ class ImageMap(object):
     def __len__(self):
         if self._length is None:
             video = self._get_video_handler()
-            self._length = video.get(CV_CAP_PROP_FRAME_COUNT)
+            self._length = int(video.get(CV_CAP_PROP_FRAME_COUNT))
             video.release()
         return self._length
     

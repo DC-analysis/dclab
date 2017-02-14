@@ -143,7 +143,7 @@ class ImageMap(object):
         os.chdir(fdir)
         cap = cv2.VideoCapture(vfile)
         if not cap.isOpened():
-            cap.open()
+            cap.open(vfile)
         os.chdir(old_dir)
         return cap
 

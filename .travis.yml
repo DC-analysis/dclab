@@ -16,7 +16,7 @@ before_install:
 - ./miniconda.sh -b -p ${INSTALL_DIR}/miniconda
 - export PATH=${INSTALL_DIR}/miniconda/bin:$PATH
 - conda config --set always_yes yes --set changeps1 no
-- travis_retry conda install -c "https://conda.binstar.org/menpo" python=$TRAVIS_PYTHON_VERSION pip numpy scipy cffi statsmodels opencv3
+- travis_retry conda install -c "https://conda.binstar.org/menpo" python=$TRAVIS_PYTHON_VERSION pip numpy scipy cffi statsmodels opencv
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 - travis_retry pip install .
 install:

@@ -52,7 +52,9 @@ class ImageColumn(object):
 
     def __len__(self):
         length = len(self._image_data)
-        if length:
+        if length is True:
+            pass
+        elif length:
             length += self.event_offset
         return length
 
@@ -106,7 +108,6 @@ class ImageMap(object):
         """Returns the requested frame from the video in RGB"""
         video = self._get_video_handler()
         video.set(CV_CAP_PROP_POS_FRAMES, idx)
-        
         flag, cellimg = video.read()
         video.release()
         
@@ -122,10 +123,16 @@ class ImageMap(object):
 
 
     def __len__(self):
+        """Returns the length of the video or `True` if the length cannot be
+        determined.
+        """
         if self._length is None:
             video = self._get_video_handler()
-            self._length = int(video.get(CV_CAP_PROP_FRAME_COUNT))
+            length = int(video.get(CV_CAP_PROP_FRAME_COUNT))
             video.release()
+        if length == 0:
+            length = True
+        self._length = length
         return self._length
     
     

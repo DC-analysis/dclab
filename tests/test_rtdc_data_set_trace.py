@@ -32,12 +32,12 @@ def test_trace_basic():
 
 def test_trace_methods():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
-    assert ds.trace.keys() == [u'FL1med', u'FL2raw', u'FL2med', u'FL3med', u'FL1raw', u'FL3raw']
+    assert list(ds.trace.keys()) == [u'FL1med', u'FL2raw', u'FL2med', u'FL3med', u'FL1raw', u'FL3raw']
     assert ds.trace.__repr__().count("<loaded into memory>")
     keys = []
     for k in ds.trace:
         keys.append(k)
-    assert keys == ds.trace.keys()
+    assert keys == list(ds.trace.keys())
 
 
 def test_trace_not_available():
@@ -45,6 +45,8 @@ def test_trace_not_available():
     ds = RTDC_DataSet(ddict=ddict)    
     assert ds.trace.__repr__() == "No trace data available!"
     assert len(ds.trace) == 0
+
+
 
 if __name__ == "__main__":
     # Run all tests

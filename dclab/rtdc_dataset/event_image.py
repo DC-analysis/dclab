@@ -12,11 +12,11 @@ import os
 
 # Constants in OpenCV moved from "cv2.cv" to "cv2"
 if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
-    cv_const = cv2.cv
-    cv_version3 = False
+    CV_CAP_PROP_POS_FRAMES = cv2.cv.CV_CAP_PROP_POS_FRAMES
+    CV_CAP_PROP_FRAME_COUNT = cv2.cv.CV_CAP_PROP_FRAME_COUNT
 else:
-    cv_const = cv2
-    cv_version3 = True
+    CV_CAP_PROP_POS_FRAMES = cv2.CAP_PROP_POS_FRAMES
+    CV_CAP_PROP_FRAME_COUNT = cv2.CAP_PROP_FRAME_COUNT
 
 
 
@@ -105,16 +105,12 @@ class ImageMap(object):
     def __getitem__(self, idx):
         """Returns the requested frame from the video in RGB"""
         video = self._get_video_handler()
-        if cv_version3:
-            video.set(cv_const.CAP_PROP_POS_FRAMES, idx)
-        else:
-            video.set(cv_const.CV_CAP_PROP_POS_FRAMES, idx)
+        video.set(CV_CAP_PROP_POS_FRAMES, idx)
         
         flag, cellimg = video.read()
         video.release()
         
         if flag:
-            # add contour in red
             if len(cellimg.shape) == 2:
                 # convert grayscale to color
                 cellimg = np.tile(cellimg, [3,1,1]).transpose(1,2,0)
@@ -128,10 +124,7 @@ class ImageMap(object):
     def __len__(self):
         if self._length is None:
             video = self._get_video_handler()
-            if cv_version3:
-                self._length = video.get(cv_const.CAP_PROP_FRAME_COUNT)
-            else:
-                self._length = video.get(cv_const.CV_CAP_PROP_FRAME_COUNT)
+            self._length = video.get(CV_CAP_PROP_FRAME_COUNT)
             video.release()
         return self._length
     

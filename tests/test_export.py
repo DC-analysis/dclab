@@ -16,9 +16,50 @@ import zipfile
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab
+from dclab import RTDC_DataSet
 
-from helper_methods import example_data_dict
 
+from helper_methods import example_data_dict, retreive_tdms, example_data_sets
+
+
+def test_avi_export():
+    ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.avi")
+    ds.export.avi(path=f1)
+    assert os.stat(f1)[6] > 1e4, "Resulting file to small, Something went wrong!"
+
+
+def test_avi_override():
+    ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.fcs")
+    ds.export.avi(f1, override=True)
+    try:
+        ds.export.avi(f1[:-4], override=False)
+    except OSError:
+        pass
+    else:
+        raise ValueError("Should append .avi and not override!")
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_avi_no_images():
+    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    ddict = example_data_dict(size=127, keys=keys)
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.avi")
+    try:
+        ds.export.avi(f1)
+    except OSError:
+        pass
+    else:
+        raise ValueError("There should be no image data to write!")
 
 
 def test_fcs_export():    

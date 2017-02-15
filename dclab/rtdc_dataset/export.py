@@ -7,9 +7,10 @@ from __future__ import division, print_function, unicode_literals
 
 import codecs
 from distutils.version import LooseVersion
-import os
-import numpy as np
 import fcswrite
+import numpy as np
+import os
+import platform
 import warnings
 
 from .. import definitions as dfn
@@ -24,10 +25,11 @@ else:
     if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
         CV_CAP_PROP_POS_FRAMES = cv2.cv.CV_CAP_PROP_POS_FRAMES
         CV_CAP_PROP_FRAME_COUNT = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+        CV_FOURCC = cv2.cv.CV_FOURCC
     else:
         CV_CAP_PROP_POS_FRAMES = cv2.CAP_PROP_POS_FRAMES
         CV_CAP_PROP_FRAME_COUNT = cv2.CAP_PROP_FRAME_COUNT
-
+        CV_FOURCC = cv2.VideoWriter_fourcc
 
 
 class Export(object):
@@ -70,13 +72,22 @@ class Export(object):
         # Start exporting
         if len(ds.image):
             v_size = (ds.image[0].shape[1], ds.image[0].shape[0])
-
-            # Open destination video
-            # use i420 code, as it is working on MacOS
-            # fourcc = cv2.VideoWriter_fourcc('I','4','2','0')
-            # error when running on mac... so give fourcc manually as number
-            fourcc = 808596553
-            vout = cv2.VideoWriter(path, fourcc, 25, v_size, isColor=True)
+            # FourCC code will not work for all systems
+            if platform.system() == "Darwin":
+                fourcc = b"I420"
+                # What about "AVC1"?
+            elif platform.system() == "Windows":
+                fourcc = b"DIB "
+                #HFYU?
+            else:
+                # probably linux
+                fourcc = b"HFYU"
+            # Open video for writing
+            vout = cv2.VideoWriter(path,
+                                   fourcc=CV_FOURCC(*fourcc),
+                                   fps=25,
+                                   frameSize=v_size,
+                                   isColor=True)
             if vout.isOpened():
                 # write the filtered frames to avi file
                 for evid in np.arange(len(ds._filter)):
@@ -90,8 +101,10 @@ class Export(object):
                         continue
                     vout.write(image)
                 vout.release()
+            else:
+                raise OSError("Could not write Video.")
         else:
-            msg="No video data to export from dataset {} !".format(ds.title)
+            msg="No image data to export: dataset {} !".format(ds.title)
             raise OSError(msg)
 
 

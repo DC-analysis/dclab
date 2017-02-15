@@ -134,9 +134,7 @@ class ImageMap(object):
             cap = self._get_video_handler()
             length = int(cap.get(CV_CAP_PROP_FRAME_COUNT))
             cap.release()
-        else:
-            length = 0
-        self._length = length
+            self._length = length
         return self._length
     
     

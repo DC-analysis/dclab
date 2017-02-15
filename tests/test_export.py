@@ -79,10 +79,10 @@ def test_fcs_export():
     ds.export.fcs(f1, keys, override=True)
     ds.export.fcs(f2, [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
     
-    with codecs.open(f1) as fd:
+    with codecs.open(f1, mode="rb") as fd:
         a1 = fd.read()
     
-    with codecs.open(f2) as fd:
+    with codecs.open(f2, mode="rb") as fd:
         a2 = fd.read()
 
     assert a1 == a2

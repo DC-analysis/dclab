@@ -115,7 +115,6 @@ class ImageMap(object):
         cap.set(CV_CAP_PROP_POS_FRAMES, idx)
         flag, cellimg = cap.read()
         cap.release()
-        
         if flag:
             if len(cellimg.shape) == 2:
                 # convert grayscale to color

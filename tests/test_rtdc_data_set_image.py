@@ -27,7 +27,7 @@ from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 TRAVIS = "TRAVIS" in os.environ and os.environ["TRAVIS"].lower() == "true"
 
 
-@pytest.mark.skipif(TRAVIS, reason="OpenCV install problems")
+@pytest.mark.xfail(TRAVIS, reason="OpenCV install problems")
 def test_image_basic():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
     # Transition image
@@ -35,7 +35,7 @@ def test_image_basic():
     assert np.allclose(np.average(ds.image[1]), 45.512017144097221)
 
 
-@pytest.mark.skipif(TRAVIS, reason="OpenCV install problems")
+@pytest.mark.xfail(TRAVIS, reason="OpenCV install problems")
 def test_image_column_length():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
     assert len(ds.image) == 3

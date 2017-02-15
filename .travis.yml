@@ -3,7 +3,6 @@ python:
 - '2.7'
 - '3.4'
 - '3.5'
-sudo: required
 notifications:
   email: false
 env:
@@ -11,8 +10,6 @@ env:
   - GH_REF: github.com/ZELLMECHANIK-DRESDEN/dclab.git
 
 before_install:
-- sudo apt-get update
-- sudo apt-get -y install python-opencv
 - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
 - chmod +x miniconda.sh
 - INSTALL_DIR=${HOME}

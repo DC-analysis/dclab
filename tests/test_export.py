@@ -6,6 +6,7 @@ import codecs
 import numpy as np
 import os
 from os.path import abspath, dirname, join
+import pytest
 import shutil
 import sys
 import tempfile
@@ -21,7 +22,10 @@ from dclab import RTDC_DataSet
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
+TRAVIS = "TRAVIS" in os.environ and os.environ["TRAVIS"].lower() == "true"
 
+
+@pytest.mark.xfail(TRAVIS, reason="OpenCV install problems")
 def test_avi_export():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
     edest = tempfile.mkdtemp()
@@ -30,6 +34,7 @@ def test_avi_export():
     assert os.stat(f1)[6] > 1e4, "Resulting file to small, Something went wrong!"
 
 
+@pytest.mark.xfail(TRAVIS, reason="OpenCV install problems")
 def test_avi_override():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
     

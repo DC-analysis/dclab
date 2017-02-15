@@ -20,17 +20,18 @@ import dclab
 from helper_methods import example_data_dict
 
 
-def test_export():    
+
+def test_fcs_export():    
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=222, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
     edest = tempfile.mkdtemp()
-    f1 = join(edest, "test.tsv")
-    f2 = join(edest, "test_unicode.tsv")
+    f1 = join(edest, "test.fcs")
+    f2 = join(edest, "test_unicode.fcs")
     
-    ds.ExportTSV(f1, keys, override=True)
-    ds.ExportTSV(f2, [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
+    ds.export.fcs(f1, keys, override=True)
+    ds.export.fcs(f2, [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
     
     with codecs.open(f1) as fd:
         a1 = fd.read()
@@ -45,17 +46,74 @@ def test_export():
     shutil.rmtree(edest, ignore_errors=True)
 
 
-def test_override():
+def test_fcs_override():
+    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    ddict = example_data_dict(size=212, keys=keys)
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.fcs")
+    ds.export.fcs(f1, keys, override=True)
+    try:
+        ds.export.fcs(f1[:-4], keys, override=False)
+    except OSError:
+        pass
+    else:
+        raise ValueError("Should append .fcs and not override!")
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_fcs_not_filtered():
+    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    ddict = example_data_dict(size=127, keys=keys)
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.tsv")
+    ds.export.fcs(f1, keys, filtered=False)
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_tsv_export():    
+    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    ddict = example_data_dict(size=222, keys=keys)
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.tsv")
+    f2 = join(edest, "test_unicode.tsv")
+    
+    ds.export.tsv(f1, keys, override=True)
+    ds.export.tsv(f2, [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
+    
+    with codecs.open(f1) as fd:
+        a1 = fd.read()
+    
+    with codecs.open(f2) as fd:
+        a2 = fd.read()
+
+    assert a1 == a2
+    assert len(a1) != 0
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_tsv_override():
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=212, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
-    ds.ExportTSV(f1, keys, override=True)
+    ds.export.tsv(f1, keys, override=True)
     try:
-        ds.ExportTSV(f1[:-4], keys, override=False)
-    except:
+        ds.export.tsv(f1[:-4], keys, override=False)
+    except OSError:
         pass
     else:
         raise ValueError("Should append .tsv and not override!")
@@ -64,14 +122,14 @@ def test_override():
     shutil.rmtree(edest, ignore_errors=True)
 
 
-def test_not_filtered():
+def test_tsv_not_filtered():
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=127, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
-    ds.ExportTSV(f1, keys, filtered=False)
+    ds.export.tsv(f1, keys, filtered=False)
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)

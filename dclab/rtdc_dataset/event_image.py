@@ -5,18 +5,24 @@ Class for efficiently handling image/video data
 """
 from __future__ import division, print_function, unicode_literals
 
-import cv2
 from distutils.version import LooseVersion
 import numpy as np
 import os
+import warnings
 
-# Constants in OpenCV moved from "cv2.cv" to "cv2"
-if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
-    CV_CAP_PROP_POS_FRAMES = cv2.cv.CV_CAP_PROP_POS_FRAMES
-    CV_CAP_PROP_FRAME_COUNT = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+
+try:
+    import cv2
+except ImportError:
+    warnings.warn("OpenCV not available!")
 else:
-    CV_CAP_PROP_POS_FRAMES = cv2.CAP_PROP_POS_FRAMES
-    CV_CAP_PROP_FRAME_COUNT = cv2.CAP_PROP_FRAME_COUNT
+    # Constants in OpenCV moved from "cv2.cv" to "cv2"
+    if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
+        CV_CAP_PROP_POS_FRAMES = cv2.cv.CV_CAP_PROP_POS_FRAMES
+        CV_CAP_PROP_FRAME_COUNT = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+    else:
+        CV_CAP_PROP_POS_FRAMES = cv2.CAP_PROP_POS_FRAMES
+        CV_CAP_PROP_FRAME_COUNT = cv2.CAP_PROP_FRAME_COUNT
 
 
 

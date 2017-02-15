@@ -18,6 +18,7 @@ from .. import config
 from .. import definitions as dfn
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
+from .config import Configuration
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
 from .event_trace import TraceColumn
@@ -73,6 +74,7 @@ class RTDC_DataSet(object):
 
         # Initialize variables and generate hashes
         self.tdms_filename = tdms_path
+        self.filename = tdms_path
         self.name = os.path.split(tdms_path)[1].split(".tdms")[0]
         self.fdir = os.path.dirname(tdms_path)
         mx = os.path.join(self.fdir, self.name.split("_")[0])
@@ -89,12 +91,15 @@ class RTDC_DataSet(object):
         if ddict is not None:
             # We are given a dictionary with data values.
             self._init_data_with_dict(ddict)
+            self.config = Configuration()
         elif hparent is not None:
             # We were given a hierarchy parent
             self._init_data_with_hierarchy(hparent)
+            self.config = Configuration(cfg=hparent.config)
         else:
             # We were given a tdms file.
             self._init_data_with_tdms(tdms_path)
+            self.config = Configuration(files=fsh[1:])
 
         # event images
         self.image = ImageColumn(self)
@@ -106,7 +111,9 @@ class RTDC_DataSet(object):
         # export functionalities
         self.export = Export(self)
 
+
         self._complete_configuration_defaults()
+        self._set_config_accuracies()
 
 
     def _complete_configuration_defaults(self):
@@ -129,6 +136,26 @@ class RTDC_DataSet(object):
                ]
 
         pltng = self.Configuration["Plotting"]
+        for k in keys:
+            for d, l in defs:
+                var = d.format(dfn.cfgmap[k])
+                if not var in pltng:
+                    pltng[var] = l(getattr(self, k))
+
+
+    def _set_config_accuracies(self):
+        ## Sensible values for default contour accuracies
+        keys = []
+        for prop in dfn.rdv:
+            if not np.allclose(getattr(self, prop), 0):
+                # There are values for this uid
+                keys.append(prop)
+        # This lambda function seems to do a good job
+        accl = lambda a: (np.nanmax(a)-np.nanmin(a))/10
+        defs = [["contour accuracy {}", accl],
+                ["kde multivariate {}", accl],
+               ]
+        pltng = self.config["plotting"]
         for k in keys:
             for d, l in defs:
                 var = d.format(dfn.cfgmap[k])

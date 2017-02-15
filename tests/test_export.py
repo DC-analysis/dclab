@@ -39,7 +39,7 @@ def test_avi_override():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
     
     edest = tempfile.mkdtemp()
-    f1 = join(edest, "test.fcs")
+    f1 = join(edest, "test.avi")
     ds.export.avi(f1, override=True)
     try:
         ds.export.avi(f1[:-4], override=False)

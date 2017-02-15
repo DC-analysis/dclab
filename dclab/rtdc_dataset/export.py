@@ -54,70 +54,42 @@ class Export(object):
         -----
         Raises OSError if current data set does not contain image data
         """
-        ds = self.rtdc_ds
         # TODO:
-        # - Write tests for this method to keep dclab coverage close to 100%
+        # - Write tests for this method
+        # - Make video export work with mac, windows, and linux
+
+        ds = self.rtdc_ds
+        # Make sure that path ends with .avi
+        if not path.endswith(".avi"):
+            path += ".avi"
+        # Check if file already exist
+        if not override and os.path.exists(path):
+            raise OSError("File already exists: {}\n".format(
+                                    path.encode("ascii", "ignore"))+
+                          "Please use the `override=True` option.")
+        # Start exporting
         if len(ds.image):
-            # write the (filtered) images to an avi file
-            # check for offset defined in para    
-            video_file = ds.image.video_file
-            vReader = cv2.VideoCapture(video_file)
-            totframes = vReader.get(CV_CAP_PROP_FRAME_COUNT)
-            # determine size of video
-            f, i = vReader.read()
-            print("video_file: ", video_file)
-            print("Open: ", vReader.isOpened())
-            print(vReader)
-            #print("reading frame", f, i)
-            if (f==False):
-                print("Could not read AVI, abort.")
-                return -1
-            videoSize = (i.shape[1], i.shape[0])
-            videoShape= i.shape
-            # determine video file offset. Some RTDC setups
-            # do not record the first image of a video.
-            frames_skipped = ds.image.event_offset
-            # filename for avi output
-            # Make sure that path ends with .tsv
-            if not path.endswith(".avi"):
-                path += ".avi"
+            v_size = (ds.image[0].shape[1], ds.image[0].shape[0])
+
             # Open destination video
             # use i420 code, as it is working on MacOS
             # fourcc = cv2.VideoWriter_fourcc('I','4','2','0')
             # error when running on mac... so give fourcc manually as number
             fourcc = 808596553
-            if vReader.isOpened():
-                vWriter = cv2.VideoWriter(path, fourcc, 25, videoSize, isColor=True)
-            if vWriter.isOpened():
-                # print(ds._filter)
+            vout = cv2.VideoWriter(path, fourcc, 25, v_size, isColor=True)
+            if vout.isOpened():
                 # write the filtered frames to avi file
-                for evId in np.arange(len(ds._filter)):
+                for evid in np.arange(len(ds._filter)):
                     # skip frames that were filtered out
-                    if ds._filter[evId] == False:
+                    if not ds._filter[evid]:
                         continue
-                    # look for this frame in source video
-                    fId = evId - frames_skipped
-                    if fId < 0:
-                        # get placeholder
-                        print("fId < 0: get placeholder image")
-                        i = np.zeros(videoShape, dtype=np.uint8)
-                    elif fId >= totframes:
-                        print("fId > total frames")
+                    try:
+                        image = ds.image[evid]
+                    except:
+                        warnings.warn("Could not read image {}!".format(evid))
                         continue
-                    else:
-                        # get this frame
-                        vReader.set(CV_CAP_PROP_POS_FRAMES, fId)
-                        flag, i = vReader.read()
-                        if not flag:
-                            i = np.zeros(videoShape, dtype=np.uint8)
-                            print("Could not read event/frame", evId, "/", fId)
-                    # print("Write image ", evId,"/", totframes)
-                    # for monochrome
-                    # vWriter.write(i[:,:,0])
-                    # for color images
-                    vWriter.write(i)
-                # and close it
-                vWriter.release()
+                    vout.write(image)
+                vout.release()
         else:
             msg="No video data to export from dataset {} !".format(ds.title)
             raise OSError(msg)

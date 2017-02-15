@@ -23,7 +23,7 @@ else:
 class CaseInsensitiveDict(dict):
     @classmethod
     def _k(cls, key):
-        return key.lower() if isinstance(key, basestring) else key
+        return key.lower() if isinstance(key, string_classes) else key
     def __init__(self, *args, **kwargs):
         super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
         self._convert_keys()

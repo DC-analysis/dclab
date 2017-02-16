@@ -399,22 +399,22 @@ class RTDC_DataSet(object):
                 if limit < numevents:
                     # Perform equally distributed removal of events
                     # We have too many events
-                    remove = numevents - limit
+                    remove = int(numevents - limit)
                     while remove > 10:
                         there = np.where(incl)[0]
                         # first remove evenly distributed events
                         dist = int(np.ceil(there.shape[0]/remove))
                         incl[there[::dist]] = 0
                         numevents = np.sum(incl)
-                        remove = numevents - limit
+                        remove = int(numevents - limit)
                     there = np.where(incl)[0]
                     incl[there[:remove]] = 0
                     self._filter_limit = incl
-                    print("'Limit Events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
+                    print("'limit events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
                 elif limit == numevents:
                     # everything is ok
                     self._filter_limit = np.ones_like(self._filter)
-                    print("'Limit Events' is size of filtered data.")
+                    print("'limit events' is size of filtered data.")
                 else:
                     self._filter_limit = np.ones_like(self._filter)
                     warnings.warn("{}: 'Limit Events' must not ".format(self.name)+

@@ -776,7 +776,7 @@ class RTDC_DataSet(object):
         if not "axis y" in p:
             p["axis y"] = "defo"
         
-        return [p["Axis X"], p["Axis Y"]]
+        return [p["Axis X"].lower(), p["Axis Y"].lower()]
 
 
     def PolygonFilterAppend(self, filt):

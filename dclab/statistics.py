@@ -27,6 +27,7 @@ class Statistics(object):
         Statistics.available_methods[name]=self
 
     def get_column(self, rtdc_ds, axis):
+        axis = axis.lower()
         if rtdc_ds.Configuration["Filtering"]["Enable Filters"]:
             x = getattr(rtdc_ds, dfn.cfgmaprev[axis])[rtdc_ds._filter]
         else:
@@ -94,6 +95,8 @@ def get_statistics(rtdc_ds, columns=None, axes=None):
 
     if axes is None:
         axes = dfn.uid
+    else:
+        axes = [a.lower() for a in axes]
     
     header = []
     values = []

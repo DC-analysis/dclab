@@ -6,6 +6,8 @@ RTDC_DataSet configuration
 from __future__ import division, print_function, unicode_literals
 
 import codecs
+import copy
+import numpy as np
 from pkg_resources import resource_filename
 import sys
 
@@ -54,7 +56,7 @@ class CaseInsensitiveDict(dict):
 
 
 class Configuration(object):
-    def __init__(self, files=[], cfg={}):
+    def __init__(self, files=[], cfg={}, rtdc_ds=None):
         """Configuration of an RTDC_DataSet
         
         Parameters
@@ -75,11 +77,21 @@ class Configuration(object):
         self.update(cfg)
 
         self._fix_config()
+        if rtdc_ds is not None:
+            self._complete_config_from_rtdc_ds(rtdc_ds)
+
+
+    def __contains__(self, key):
+        return self._cfg.__contains__(key)
 
 
     def __getitem__(self, idx):
-        return self._cfg[idx]
-        
+        return self._cfg.__getitem__(idx)
+
+
+    def __setitem__(self, *args):
+        self._cfg.__setitem__(*args)
+
 
     def _fix_config(self):
         """Fix missing config keys using default values
@@ -90,7 +102,7 @@ class Configuration(object):
         ## Old RTDC data files did not mention channel width for high flow rates
         assert "general" in self._cfg, "Configuration not properly initialized!"
         if not "flow Rate [ul/s]" in self._cfg["general"]:
-            self._cfg["general"]["flow Rate [ul/s]"] = 0.04
+            self._cfg["general"]["flow Rate [ul/s]"] = np.nan
         if not "channel width" in self._cfg["general"]:
             if self._cfg["general"]["flow Rate [ul/s]"] < 0.16:
                 self._cfg["general"]["channel width"] = 20
@@ -105,6 +117,37 @@ class Configuration(object):
                 if not item+a in self._cfg["filtering"]:
                     self._cfg["filtering"][item+a] = 0
 
+
+    def _complete_config_from_rtdc_ds(self, rtdc_ds):
+        """Complete configuration using data columns from RTDC_DataSet"""
+        ## Sensible values for default contour accuracies
+        keys = []
+        for prop in dfn.rdv:
+            if not np.allclose(getattr(rtdc_ds, prop), 0):
+                # There are values for this uid
+                keys.append(prop)
+        # This lambda function seems to do a good job
+        accl = lambda a: (np.nanmax(a)-np.nanmin(a))/10
+        defs = [["contour accuracy {}", accl],
+                ["kde multivariate {}", accl],
+               ]
+        pltng = self._cfg["plotting"]
+        for k in keys:
+            for d, l in defs:
+                var = d.format(dfn.cfgmap[k])
+                if not var in pltng:
+                    pltng[var] = l(getattr(rtdc_ds, k))
+        # Update data size
+        self._cfg["general"]["cell number"] = rtdc_ds.time.shape[0]
+
+
+    def copy(self):
+        """Return copy of current configuration"""
+        return Configuration(cfg=copy.deepcopy(self._cfg))
+
+
+    def keys(self):
+        return self._cfg.keys()
 
 
     def update(self, newcfg):

@@ -35,9 +35,9 @@ def test_config_save_load():
     tdms_path = retreive_tdms(example_data_sets[0])
     ds = RTDC_DataSet(tdms_path)
     _fd, cfg_file = tempfile.mkstemp()
-    config.save_config_file(cfg_file, ds.Configuration)
+    config.save_config_file(cfg_file, ds.config)
     loaded = config.load_config_file(cfg_file, capitalize=False)
-    assert equals(loaded, ds.Configuration)
+    assert equals(loaded, ds.config)
 
 
 def test_config_dtype():

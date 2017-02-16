@@ -23,6 +23,20 @@ from dclab import RTDC_DataSet
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
+def equals(a, b):
+    """Compare objects with allclose"""
+    if isinstance(a, dict):
+        for key in a:
+            assert key in b, "key not in b"
+            assert equals(a[key], b[key])
+    elif isinstance(a, (float, int)):
+        assert np.allclose(a,b)
+    else:
+        assert a==b
+    return True
+
+
+
 def test_config_basic():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
 

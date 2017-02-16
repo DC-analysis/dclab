@@ -29,14 +29,14 @@ def test_missing_things():
     cfg = copy.deepcopy(ds.Configuration)
     
     # Force creation of Filtering subdict
-    ds.Configuration.pop("Filtering")
+    ds.config._cfg.pop("Filtering")
     ds.ApplyFilter()
     assert "Filtering" in ds.Configuration
     
     # Force updating circularity
     cfg["Filtering"].pop("Defo Min")
     cfg["Filtering"].pop("Defo Max")
-    ds.UpdateConfiguration(cfg)
+    ds.config.update(cfg)
     ds.ApplyFilter(force=["Circ"])
     
     # Check unknown variable (warning will be displayed

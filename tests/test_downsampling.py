@@ -112,13 +112,11 @@ def test_downsample_up():
                "Downsampling": True}
     
     cfg = {"Plotting": pltfilt}
-    ds.UpdateConfiguration(cfg)
+    ds.config.update(cfg)
     ds.ApplyFilter()
     ds.GetDownSampledScatter()
     assert np.sum(ds._plot_filter) == 9999
     ds.GetDownSampledScatter()
-
-
 
 
 

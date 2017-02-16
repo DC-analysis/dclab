@@ -31,6 +31,12 @@ else:
     str_classes = str
 
 
+def DeprecationWarning(func, replacement=""):
+    warnings.warn("{} IS DEPRECATED AND WILL BE REMOVED!".format(func.__name__))
+    return func
+
+
+
 class RTDC_DataSet(object):
     """ An RTDC measurement object.
     
@@ -70,7 +76,6 @@ class RTDC_DataSet(object):
                                                                      10000,
                                                                      size=3)])
             tdms_path = "{}_{:02d}_{:02d}/{}.tdms".format(t[0],t[1],t[2],rand)
-            self.Configuration = config.load_default_config()
 
         # Initialize variables and generate hashes
         self.tdms_filename = tdms_path
@@ -91,15 +96,12 @@ class RTDC_DataSet(object):
         if ddict is not None:
             # We are given a dictionary with data values.
             self._init_data_with_dict(ddict)
-            self.config = Configuration()
         elif hparent is not None:
             # We were given a hierarchy parent
             self._init_data_with_hierarchy(hparent)
-            self.config = Configuration(cfg=hparent.config)
         else:
             # We were given a tdms file.
             self._init_data_with_tdms(tdms_path)
-            self.config = Configuration(files=fsh[1:])
 
         # event images
         self.image = ImageColumn(self)
@@ -107,60 +109,11 @@ class RTDC_DataSet(object):
         self.contour = ContourColumn(self)
         # event traces
         self.trace = TraceColumn(self)
+        # compute other columns
+        self.compute_columns()
 
         # export functionalities
         self.export = Export(self)
-
-
-        self._complete_configuration_defaults()
-        self._set_config_accuracies()
-
-
-    def _complete_configuration_defaults(self):
-        """Add missing values to self.Configuation
-        
-        This includes values for:
-        - Plotting | Contour Accuracy
-        - Plotting | KDE Multivariate
-        """
-        keys = []
-        for prop in dfn.rdv:
-            if not np.allclose(getattr(self, prop), 0):
-                # There are values for this uid
-                keys.append(prop)
-        
-        # Plotting defaults
-        accl = lambda a: (np.nanmax(a)-np.nanmin(a))/10
-        defs = [["Contour Accuracy {}", accl],
-                ["KDE Multivariate {}", accl],
-               ]
-
-        pltng = self.Configuration["Plotting"]
-        for k in keys:
-            for d, l in defs:
-                var = d.format(dfn.cfgmap[k])
-                if not var in pltng:
-                    pltng[var] = l(getattr(self, k))
-
-
-    def _set_config_accuracies(self):
-        ## Sensible values for default contour accuracies
-        keys = []
-        for prop in dfn.rdv:
-            if not np.allclose(getattr(self, prop), 0):
-                # There are values for this uid
-                keys.append(prop)
-        # This lambda function seems to do a good job
-        accl = lambda a: (np.nanmax(a)-np.nanmin(a))/10
-        defs = [["contour accuracy {}", accl],
-                ["kde multivariate {}", accl],
-               ]
-        pltng = self.config["plotting"]
-        for k in keys:
-            for d, l in defs:
-                var = d.format(dfn.cfgmap[k])
-                if not var in pltng:
-                    pltng[var] = l(getattr(self, k))
 
 
     def _init_data_with_dict(self, ddict):
@@ -173,7 +126,7 @@ class RTDC_DataSet(object):
 
         # Set up filtering
         self._init_filters()
-        self.SetConfiguration()
+        self.config = Configuration(rtdc_ds=self)
 
 
     def _init_data_with_hierarchy(self, hparent):
@@ -204,7 +157,8 @@ class RTDC_DataSet(object):
         self.hparent = hparent
         
         ## Copy configuration
-        cfg = copy.deepcopy(hparent.Configuration)
+        cfg = hparent.config.copy()
+
         # Remove previously applied filters
         pops = []
         for key in cfg["Filtering"]:
@@ -215,8 +169,9 @@ class RTDC_DataSet(object):
         [ cfg["Filtering"].pop(key) for key in pops ]
         # Add parent information in dictionary
         cfg["Filtering"]["Hierarchy Parent"]=hparent.identifier
-        self.Configuration = config.load_default_config()
-        config.update_config_dict(self.Configuration, cfg)
+
+        self.config = Configuration(cfg=cfg)
+
         myhash = hashlib.md5(obj2str(time.time())).hexdigest()
         self.identifier = hparent.identifier+"_child-"+myhash
         self.title = hparent.title + "_child-"+myhash[-4:]
@@ -265,8 +220,12 @@ class RTDC_DataSet(object):
             finally:
                 setattr(self, dfn.rdv[ii], func(*args))
 
+
         # Set up filtering
         self._init_filters()
+        mx = os.path.join(self.fdir, self.name.split("_")[0])
+        self.config = Configuration(files=[mx+"_para.ini", mx+"_camera.ini"],
+                                    rtdc_ds=self)
         self.SetConfiguration()
 
 
@@ -322,15 +281,15 @@ class RTDC_DataSet(object):
         oldvals = []
         newvals = []
         
-        if not "Filtering" in self.Configuration:
-            self.Configuration["Filtering"] = {"Enable Filters":False}
+        if not "Filtering" in self.config:
+            self.config["Filtering"] = {"Enable Filters":False}
 
-        FIL = self.Configuration["Filtering"]
+        FIL = self.config["Filtering"]
 
         # Check if we are a hierarchy child and if yes, update the
         # filtered events from the hierarchy parent.
         if ("Hierarchy Parent" in FIL and
-            FIL["Hierarchy Parent"] != "None"):
+            FIL["Hierarchy Parent"].lower() != "none"):
             # Copy event data from hierarchy parent
             self.hparent.ApplyFilter()
             # TODO:
@@ -474,6 +433,34 @@ class RTDC_DataSet(object):
         self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
 
 
+    def compute_columns(self):
+        """Compute columns that require information from self.config"""
+        # TODO:
+        # - create a list of definitions and compute the data later on
+        if ("image" in self.config and
+            "pix size" in self.config["image"]):
+            PIX = self.config["image"]["pix size"]
+            if not np.allclose(self.area, 0):
+                self.area_um[:] = self.area * PIX**2
+        # look for frame rate update
+        if ("framerate" in self.config and
+            "frame rate" in self.config["Framerate"]):
+            FR = self.config["framerate"]["frame rate"]
+            # FR is in Hz
+            self.time[:] = (self.frame - self.frame[0]) / FR
+
+
+    @property
+    def Configuration(self):
+        warnings.warn("PLEASE USE RTDC_DataSet.config instead of RTDC_DataSet.Configuration!")
+        return self.config
+
+
+    @Configuration.setter
+    def Configuration(self, k):
+        warnings.warn("PLEASE DO NOT SET RTDC_DataSet.Configuration!")
+        self.config = Configuration()
+        self.config.update(k)
 
 
     def GetDownSampledScatter(self, c=None, axsize=(300,300),
@@ -776,9 +763,15 @@ class RTDC_DataSet(object):
         return density
 
 
+    @DeprecationWarning
     def GetPlotAxes(self):
         #return 
-        p = self.Configuration["Plotting"]
+        p = self.config["Plotting"]
+        if not "axis x" in p:
+            p["axis x"] = "Area"
+        if not "axis y" in p:
+            p["axis y"] = "Defo"
+        
         return [p["Axis X"], p["Axis Y"]]
 
 
@@ -796,6 +789,7 @@ class RTDC_DataSet(object):
             uid=int(filt)
         # append item
         self.Configuration["Filtering"]["Polygon Filters"].append(uid)
+        self.config["filtering"]["polygon filters"].append(uid)
 
 
     def PolygonFilterRemove(self, filt):
@@ -809,8 +803,10 @@ class RTDC_DataSet(object):
             uid = int(filt)
         # remove item
         self.Configuration["Filtering"]["Polygon Filters"].remove(uid)
+        self.config["filtering"]["polygon filters"].remove(uid)
 
 
+    @DeprecationWarning
     def SetConfiguration(self):
         """ Import configuration of measurement
         
@@ -821,14 +817,14 @@ class RTDC_DataSet(object):
         This function is called during `__init__` and it is not
         necessary to run it twice.
         """
-        self.Configuration = dict()
-        self.UpdateConfiguration(config.cfg)
+        self.config.update(config.cfg)
         for name, _hash in self.file_hashes:
             if name.endswith(".ini") and os.path.exists(name):
                 newdict = config.load_config_file(name)
-                self.UpdateConfiguration(newdict)
+                self.config.update(newdict)
 
 
+    @DeprecationWarning
     def UpdateConfiguration(self, newcfg):
         """ Update current configuration `self.Configuration`.
         
@@ -867,7 +863,7 @@ class RTDC_DataSet(object):
             self.time[:] = (self.frame - self.frame[0]) / FR
             force.append("Time")
 
-        config.update_config_dict(self.Configuration, newcfg)
+        config.update_config_dict(self.config, newcfg)
 
         if "Filtering" in newcfg:
             # Only writing the new Mins and Maxs is not enough
@@ -875,7 +871,7 @@ class RTDC_DataSet(object):
             self.ApplyFilter(force=force)
         
         # Reset additional information
-        self.Configuration["General"]["Cell Number"] = self.time.shape[0]
+        self.config["General"]["Cell Number"] = self.time.shape[0]
 
 
 

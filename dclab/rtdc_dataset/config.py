@@ -39,6 +39,11 @@ class CaseInsensitiveDict(dict):
         return super(CaseInsensitiveDict, self).__contains__(self.__class__._k(key))
     def has_key(self, key):
         return super(CaseInsensitiveDict, self).has_key(self.__class__._k(key))
+    def items(self):
+        keys = list(self.keys())
+        keys.sort()
+        out = [(k,self[k]) for k in keys]
+        return out
     def pop(self, key, *args, **kwargs):
         return super(CaseInsensitiveDict, self).pop(self.__class__._k(key), *args, **kwargs)
     def get(self, key, *args, **kwargs):

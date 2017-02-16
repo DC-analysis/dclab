@@ -128,6 +128,7 @@ class Export(object):
             If set to ``True``, an existing file ``path`` will be overridden.
             If set to ``False``, an ``OSError`` will be raised.
         """
+        columns = [ c.lower() for c in columns ]
         ds = self.rtdc_ds
         # TODO:
         # - Write tests for this method to keep dclab coverage close to 100%
@@ -177,6 +178,7 @@ class Export(object):
             If set to ``True``, an existing file ``path`` will be overridden.
             If set to ``False``, an ``OSError`` will be raised.
         """
+        columns = [ c.lower() for c in columns ]
         ds = self.rtdc_ds
         # Make sure that path ends with .tsv
         if not path.endswith(".tsv"):

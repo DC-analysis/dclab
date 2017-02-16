@@ -53,7 +53,7 @@ def test_avi_override():
 
 
 def test_avi_no_images():
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=127, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
     

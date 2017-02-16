@@ -46,7 +46,7 @@ class RTDC_DataSet(object):
         Path to a '.tdms' file. Only one of `tdms_path and `ddict` can
         be specified.
     ddict: dict
-        Dictionary with keys from `dclab.definitions.uid` (e.g. "Area", "Defo")
+        Dictionary with keys from `dclab.definitions.uid` (e.g. "area", "defo")
         with which the class will be instantiated. Not '.tdms' file is required.
         The configuration is set to the default configuration fo dclab.
     
@@ -118,7 +118,7 @@ class RTDC_DataSet(object):
 
     def _init_data_with_dict(self, ddict):
         for key in ddict:
-            setattr(self, dfn.cfgmaprev[key], np.array(ddict[key]))
+            setattr(self, dfn.cfgmaprev[key.lower()], np.array(ddict[key]))
         fill0 = np.zeros(len(ddict[key]))
         for key in dfn.rdv:
             if not hasattr(self, key):
@@ -345,8 +345,8 @@ class RTDC_DataSet(object):
         for attr in attr2update:
             data = getattr(self, attr)
             if isinstance(data, np.ndarray):
-                fstart = dfn.cfgmap[attr]+" Min"
-                fend = dfn.cfgmap[attr]+" Max"
+                fstart = dfn.cfgmap[attr]+" min"
+                fend = dfn.cfgmap[attr]+" max"
                 # If min and max exist and if they are not identical:
                 indices = getattr(self, "_filter_"+attr)
                 if (fstart in FIL and
@@ -626,7 +626,7 @@ class RTDC_DataSet(object):
         return result
 
 
-    def GetKDE_Contour(self, yax="Defo", xax="Area"):
+    def GetKDE_Contour(self, yax="defo", xax="area"):
         """ The evaluated Gaussian Kernel Density Estimate
         
         -> for contours
@@ -650,6 +650,8 @@ class RTDC_DataSet(object):
         `scipy.stats.gaussian_kde`
         `statsmodels.nonparametric.kernel_density.KDEMultivariate`
         """
+        xax = xax.lower()
+        yax = yax.lower()
         kde_type = self.Configuration["Plotting"]["KDE"].lower()
         # dummy area-circ
         deltaarea = self.Configuration["Plotting"]["Contour Accuracy "+xax]
@@ -692,7 +694,7 @@ class RTDC_DataSet(object):
         return xmesh, ymesh, density
 
 
-    def GetKDE_Scatter(self, yax="Defo", xax="Area", positions=None):
+    def GetKDE_Scatter(self, yax="defo", xax="area", positions=None):
         """ The evaluated Gaussian Kernel Density Estimate
         
         -> for scatter plots
@@ -721,6 +723,8 @@ class RTDC_DataSet(object):
         `statsmodels.nonparametric.kernel_density.KDEMultivariate`
         
         """
+        xax = xax.lower()
+        yax = yax.lower()
         if self.Configuration["Filtering"]["Enable Filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
@@ -768,9 +772,9 @@ class RTDC_DataSet(object):
         #return 
         p = self.config["Plotting"]
         if not "axis x" in p:
-            p["axis x"] = "Area"
+            p["axis x"] = "area"
         if not "axis y" in p:
-            p["axis y"] = "Defo"
+            p["axis y"] = "defo"
         
         return [p["Axis X"], p["Axis Y"]]
 

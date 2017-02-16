@@ -17,8 +17,8 @@ import dclab
 from helper_methods import example_data_dict
 
 filter_data="""[Polygon 00000000]
-X Axis = Area
-Y Axis = Defo
+X Axis = area
+Y Axis = defo
 Name = polygon filter 0
 point00000000 = 6.344607717656481e-03 7.703315881326352e-01
 point00000001 = 7.771010748302133e-01 7.452006980802792e-01

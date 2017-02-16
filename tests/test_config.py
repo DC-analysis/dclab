@@ -52,17 +52,17 @@ def test_config_dtype():
 
 
 def test_config_choices():
-    c1 = config.get_config_entry_choices("Plotting", "KDE")
-    for c2 in ["None", "Gauss", "Multivariate"]:
+    c1 = config.get_config_entry_choices("plotting", "kde")
+    for c2 in ["none", "gauss", "multivariate"]:
         assert c2 in c1
     
     c3 = config.get_config_entry_choices("Plotting", "Axis X")
     assert len(c3) != 0
-    assert "Defo" in c3
+    assert "defo" in c3
 
     c3 = config.get_config_entry_choices("Plotting", "Axis Y", ignore_axes=["Defo"])
     assert len(c3) != 0
-    assert not "Defo" in c3
+    assert not "defo" in c3
     
     c4 = config.get_config_entry_choices("Plotting", "Rows")
     assert "1" in c4
@@ -71,7 +71,7 @@ def test_config_choices():
     assert "1" in c5
     
     c6 = config.get_config_entry_choices("Plotting", "Scale Axis")
-    assert "Linear" in c6    
+    assert "linear" in c6    
     
     
 def test_backwards_compatible_channel_width():

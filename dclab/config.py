@@ -11,6 +11,7 @@ from pkg_resources import resource_filename  # @UnresolvedImport
 import sys
 
 from . import definitions as dfn
+from .rtdc_dataset.config import CaseInsensitiveDict
 
 if sys.version_info[0] == 2:
     string_classes = (str, unicode)
@@ -21,32 +22,37 @@ else:
 def get_config_entry_choices(key, subkey, ignore_axes=[]):
     """ Returns the choices for a parameter, if any
     """
+    key = key.lower()
+    subkey = subkey.lower()
+    ignore_axes = [a.lower() for a in ignore_axes]
     ## Manually defined types:
     choices = []
     
-    if key == "Plotting":
-        if subkey == "KDE":
-            choices = ["None", "Gauss", "Multivariate"]
+    if key == "plotting":
+        if subkey == "kde":
+            choices = ["none", "gauss", "multivariate"]
 
-        elif subkey in ["Axis X", "Axis Y"]:
+        elif subkey in ["axis x", "axis y"]:
             choices = copy.copy(dfn.uid)
             # remove unwanted axes
             for choice in ignore_axes:
                 if choice in choices:
                     choices.remove(choice)
    
-        elif subkey in ["Rows", "Columns"]:
+        elif subkey in ["rows", "columns"]:
             choices = [ str(i) for i in range(1,6) ]
-        elif subkey in ["Scatter Marker Size"]:
+        elif subkey in ["scatter marker size"]:
             choices = [ str(i) for i in range(1,5) ]
-        elif subkey.count("Scale "):
-            choices = ["Linear", "Log"]
+        elif subkey.count("scale "):
+            choices = ["linear", "log"]
     return choices
 
 
 def get_config_entry_dtype(key, subkey, cfg=None):
     """ Returns dtype of the parameter as defined in dclab.cfg
     """
+    key = key.lower()
+    subkey = subkey.lower()
     #default
     dtype = str
 
@@ -54,8 +60,9 @@ def get_config_entry_dtype(key, subkey, cfg=None):
     # Iterate through cfg to determine standard dtypes
     # (also use cfg_init).    
     if cfg is None:
-        cfg = cfg_init
-    
+        cfg = cfg_init.copy()
+
+   
     if key in cfg_init and subkey in cfg_init[key]:
         dtype = cfg_init[key][subkey].__class__
     else:
@@ -99,8 +106,8 @@ def load_config_file(cfgfilename, cfg=None, capitalize=True):
     set the Channel Width to 30 µm.
     """
     if cfg is None:
-        cfg = {}
-    
+        cfg = CaseInsensitiveDict()
+
     with codecs.open(cfgfilename, 'r', 'utf-8') as f:
         code = f.readlines()
     
@@ -113,7 +120,7 @@ def load_config_file(cfgfilename, cfg=None, capitalize=True):
             if line.startswith("[") and line.endswith("]"):
                 section = line[1:-1]
                 if not section in cfg:
-                    cfg[section] = dict()
+                    cfg[section] = CaseInsensitiveDict()
                 continue
             var, val = line.split("=", 1)
             var,val = map_config_value_str2type(var, val, capitalize=capitalize)
@@ -126,7 +133,7 @@ def load_config_file(cfgfilename, cfg=None, capitalize=True):
          "Flow Rate [ul/s]" in cfg["General"] and
          cfg["General"]["Flow Rate [ul/s]"] >= 0.16     ):
         cfg["General"]["Channel Width"] = 30
-    
+
     return cfg
 
 
@@ -307,5 +314,6 @@ def update_config_dict(oldcfg, newcfg):
 ### Load default configuration
 cfgfile = resource_filename(__name__, 'dclab.cfg')
 cfg = load_default_config()
-cfg_init = copy.deepcopy(cfg)
+cfg_init = CaseInsensitiveDict()
+cfg_init.update(cfg)
 

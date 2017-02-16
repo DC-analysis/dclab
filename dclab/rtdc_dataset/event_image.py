@@ -39,8 +39,8 @@ class ImageColumn(object):
             self._image_data = ImageMap(fname)
         else:
             self._image_data = []
-        conf = rtdc_dataset.Configuration
-        self.event_offset = conf["General"]["Video Frame Offset"]
+        conf = rtdc_dataset.config
+        self.event_offset = conf["general"]["video frame offset"]
         self.video_file = fname
         
 

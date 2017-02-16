@@ -28,7 +28,7 @@ def test_kde_general():
     kdes = dclab.config.get_config_entry_choices("Plotting", "KDE")
     
     for kde in kdes:
-        ds.Configuration["Plotting"]["KDE"] = kde
+        ds.config["plotting"]["kde"] = kde
         ds.GetKDE_Contour()
         ds.GetKDE_Scatter()
 
@@ -37,7 +37,7 @@ def test_kde_none():
     ddict = example_data_dict()
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
-    ds.Configuration["Plotting"]["KDE"] = "None"
+    ds.config["plotting"]["kde"] = "none"
     sc = ds.GetKDE_Scatter()
     assert np.sum(sc) == sc.shape[0]
 
@@ -48,7 +48,7 @@ def test_kde_nofilt():
     ddict = example_data_dict()
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
-    ds.Configuration["Filtering"]["Enable Filters"] = False
+    ds.config["filtering"]["enable filters"] = False
     sc = ds.GetKDE_Scatter()
     cc = ds.GetKDE_Contour()
     assert sc.shape[0] == sc.shape[0]
@@ -58,15 +58,15 @@ def test_kde_positions():
     ddict = example_data_dict()
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
-    ds.Configuration["Filtering"]["Enable Filters"] = False
-    sc = ds.GetKDE_Scatter(yax="Defo", xax="Area")
-    sc2 = ds.GetKDE_Scatter(yax="Defo", xax="Area",
+    ds.config["filtering"]["enable filters"] = False
+    sc = ds.GetKDE_Scatter(yax="defo", xax="area")
+    sc2 = ds.GetKDE_Scatter(yax="defo", xax="area",
                             positions=(ds.area_um, ds.deform))
     assert np.all(sc==sc2)
     
 
 def test_empty_kde():
-    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=67, keys=["area", "defo"])
     ds = dclab.RTDC_DataSet(ddict=ddict)
     ds._filter[:] = 0
     a = ds.GetKDE_Scatter()

@@ -3,7 +3,7 @@
 """
 Statistics computation for RTDC_DataSet instances
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 import traceback as tb
@@ -28,7 +28,7 @@ class Statistics(object):
 
     def get_column(self, rtdc_ds, axis):
         axis = axis.lower()
-        if rtdc_ds.Configuration["Filtering"]["Enable Filters"]:
+        if rtdc_ds.config["filtering"]["enable filters"]:
             x = getattr(rtdc_ds, dfn.cfgmaprev[axis])[rtdc_ds._filter]
         else:
             x = getattr(rtdc_ds, dfn.cfgmaprev[axis])
@@ -56,9 +56,9 @@ class Statistics(object):
 
 
 def flow_rate(mm):
-    conf = mm.Configuration["General"]
-    if "Flow Rate [ul/s]" in conf:
-        return conf["Flow Rate [ul/s]"]
+    conf = mm.config["general"]
+    if "flow rate [ul/s]" in conf:
+        return conf["flow rate [ul/s]"]
     else:
         return np.nan
 

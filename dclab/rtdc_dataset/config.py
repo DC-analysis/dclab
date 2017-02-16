@@ -91,7 +91,10 @@ class Configuration(object):
 
 
     def __getitem__(self, idx):
-        return self._cfg.__getitem__(idx)
+        item = self._cfg.__getitem__(idx)
+        if isinstance(item, string_classes):
+            item = item.lower()
+        return item
 
 
     def __setitem__(self, *args):
@@ -105,22 +108,22 @@ class Configuration(object):
         static values in `config_default.cfg`.
         """
         ## Old RTDC data files did not mention channel width for high flow rates
-        assert "general" in self._cfg, "Configuration not properly initialized!"
-        if not "flow Rate [ul/s]" in self._cfg["general"]:
+        assert "general" in self, "Configuration not properly initialized!"
+        if not "flow Rate [ul/s]" in self["general"]:
             self._cfg["general"]["flow Rate [ul/s]"] = np.nan
-        if not "channel width" in self._cfg["general"]:
-            if self._cfg["general"]["flow Rate [ul/s]"] < 0.16:
-                self._cfg["general"]["channel width"] = 20
+        if not "channel width" in self["general"]:
+            if self["general"]["flow Rate [ul/s]"] < 0.16:
+                self["general"]["channel width"] = 20
             else:
-                self._cfg["general"]["channel width"] = 30
+                self["general"]["channel width"] = 30
         ## Check for missing min/max values and set them to zero
         for item in dfn.uid:
             appends = [" min", " max"]
             for a in appends:
-                if not item+a in self._cfg["plotting"]:
-                    self._cfg["plotting"][item+a] = 0
-                if not item+a in self._cfg["filtering"]:
-                    self._cfg["filtering"][item+a] = 0
+                if not item+a in self["plotting"]:
+                    self["plotting"][item+a] = 0
+                if not item+a in self["filtering"]:
+                    self["filtering"][item+a] = 0
 
 
     def _complete_config_from_rtdc_ds(self, rtdc_ds):
@@ -136,14 +139,14 @@ class Configuration(object):
         defs = [["contour accuracy {}", accl],
                 ["kde multivariate {}", accl],
                ]
-        pltng = self._cfg["plotting"]
+        pltng = self["plotting"]
         for k in keys:
             for d, l in defs:
                 var = d.format(dfn.cfgmap[k])
                 if not var in pltng:
                     pltng[var] = l(getattr(rtdc_ds, k))
         # Update data size
-        self._cfg["general"]["cell number"] = rtdc_ds.time.shape[0]
+        self["general"]["cell number"] = rtdc_ds.time.shape[0]
 
 
     def copy(self):

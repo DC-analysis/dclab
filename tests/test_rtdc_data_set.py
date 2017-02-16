@@ -26,31 +26,31 @@ from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 def test_missing_things():
     ddict = example_data_dict(size=67, keys=["Area", "Defo"])
     ds = RTDC_DataSet(ddict=ddict)
-    cfg = copy.deepcopy(ds.Configuration)
+    cfg = ds.config.copy()
     
     # Force creation of Filtering subdict
     ds.config._cfg.pop("Filtering")
     ds.ApplyFilter()
-    assert "Filtering" in ds.Configuration
+    assert "filtering" in ds.config
     
     # Force updating circularity
-    cfg["Filtering"].pop("Defo Min")
-    cfg["Filtering"].pop("Defo Max")
+    cfg["filtering"].pop("defo min")
+    cfg["filtering"].pop("defo max")
     ds.config.update(cfg)
-    ds.ApplyFilter(force=["Circ"])
+    ds.ApplyFilter(force=["circ"])
     
     # Check unknown variable (warning will be displayed
     ds.ApplyFilter(force=["on_purpose_unknown"])
 
 
 def test_min_max_update():
-    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=67, keys=["area", "defo"])
     ds = RTDC_DataSet(ddict=ddict)
-    cfg = copy.deepcopy(ds.Configuration)
+    cfg = ds.config.copy()
 
     # Force updating circularity
-    cfg["Filtering"]["Defo Min"] = .4
-    cfg["Filtering"]["Defo Max"] = .8
+    cfg["filtering"]["defo min"] = .4
+    cfg["filtering"]["defo max"] = .8
     ds.UpdateConfiguration(cfg)
 
     ds.ApplyFilter()

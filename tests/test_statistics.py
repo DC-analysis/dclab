@@ -52,7 +52,7 @@ def test_stat_occur():
     headf, valsf = dclab.statistics.get_statistics(ds)
     
     # disable filtering (there are none anyway) to cover a couple more lines:
-    ds.Configuration["Filtering"]["Enable Filters"] = False
+    ds.config["filtering"]["enable filters"] = False
     headn, valsn = dclab.statistics.get_statistics(ds)
     
     
@@ -69,14 +69,14 @@ def test_stat_occur():
 def test_flow_rate():
     ddict = example_data_dict(size=77, keys=["area", "defo"])
     ds = dclab.RTDC_DataSet(ddict=ddict)
-    ds.Configuration["General"]["Flow Rate [ul/s]"] = 0.172
+    ds.config["general"]["flow rate [ul/s]"] = 0.172
     
     head1, vals1 = dclab.statistics.get_statistics(ds, axes=["defo"])
     head2, vals2 = dclab.statistics.get_statistics(ds, columns=["Events", "Mean"])
     headf, valsf = dclab.statistics.get_statistics(ds)
     
     # disable filtering (there are none anyway) to cover a couple more lines:
-    ds.Configuration["Filtering"]["Enable Filters"] = False
+    ds.config["filtering"]["enable filters"] = False
     headn, valsn = dclab.statistics.get_statistics(ds)
     
     for item in zip(head1, vals1):

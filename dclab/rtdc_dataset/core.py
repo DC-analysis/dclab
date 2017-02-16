@@ -5,7 +5,6 @@ RTDC_DataSet classes and methods
 """
 from __future__ import division, print_function, unicode_literals
 
-import copy
 import hashlib
 from nptdms import TdmsFile
 import numpy as np
@@ -270,7 +269,7 @@ class RTDC_DataSet(object):
 
         Notes
         -----
-        Updates `self.Configuration["Filtering"].
+        Updates `self.config["Filtering"].
         
         The data is filtered according to filterable attributes in
         the global variable `dfn.cfgmap`.
@@ -281,15 +280,15 @@ class RTDC_DataSet(object):
         oldvals = []
         newvals = []
         
-        if not "Filtering" in self.config:
-            self.config["Filtering"] = {"Enable Filters":False}
+        if not "filtering" in self.config:
+            self.config["filtering"] = {"enable filters":False}
 
-        FIL = self.config["Filtering"]
+        FIL = self.config["filtering"]
 
         # Check if we are a hierarchy child and if yes, update the
         # filtered events from the hierarchy parent.
-        if ("Hierarchy Parent" in FIL and
-            FIL["Hierarchy Parent"].lower() != "none"):
+        if ("hierarchy parent" in FIL and
+            FIL["hierarchy parent"].lower() != "none"):
             # Copy event data from hierarchy parent
             self.hparent.ApplyFilter()
             # TODO:
@@ -364,7 +363,7 @@ class RTDC_DataSet(object):
         
         # Filter Polygons
         # check if something has changed
-        pf_id = "Polygon Filters"
+        pf_id = "polygon filters"
         if (
             (pf_id in FIL and not pf_id in OLD) or
             (pf_id in FIL and pf_id in OLD and
@@ -372,7 +371,7 @@ class RTDC_DataSet(object):
             self._filter_polygon[:] = True
             # perform polygon filtering
             for p in PolygonFilter.instances:
-                if p.unique_id in FIL["Polygon Filters"]:
+                if p.unique_id in FIL[pf_id]:
                     # update self._filter_polygon
                     # iterate through axes
                     datax = getattr(self, dfn.cfgmaprev[p.axes[0]])
@@ -387,14 +386,14 @@ class RTDC_DataSet(object):
         # now update the entire object filter
         # get a list of all filters
         self._filter[:] = True
-        if FIL["Enable Filters"]:
+        if FIL["enable filters"]:
             for attr in dir(self):
                 if attr.startswith("_filter_"):
                     self._filter[:] *= getattr(self, attr)
     
             # Filter with configuration keyword argument "Limit Events"
-            if FIL["Limit Events"] > 0:
-                limit = FIL["Limit Events"]
+            if FIL["limit events"] > 0:
+                limit = FIL["limit events"]
                 incl = self._filter.copy()
                 numevents = np.sum(incl)
                 if limit < numevents:
@@ -421,7 +420,7 @@ class RTDC_DataSet(object):
                     warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
                                   "be larger than length of data set! "+
                                   "Resetting 'Limit Events'!")
-                    FIL["Limit Events"] = 0
+                    FIL["limit events"] = 0
             else:
                 # revert everything back to how it was
                 self._filter_limit = np.ones_like(self._filter)
@@ -430,7 +429,7 @@ class RTDC_DataSet(object):
             self._filter *= self._filter_limit
 
         # Actual filtering is then done during plotting            
-        self._old_filters = copy.deepcopy(self.Configuration["Filtering"])
+        self._old_filters = self.config.copy()["filtering"]
 
 
     def compute_columns(self):
@@ -448,6 +447,7 @@ class RTDC_DataSet(object):
             FR = self.config["framerate"]["frame rate"]
             # FR is in Hz
             self.time[:] = (self.frame - self.frame[0]) / FR
+        self.config._complete_config_from_rtdc_ds(self)
 
 
     @property
@@ -482,7 +482,7 @@ class RTDC_DataSet(object):
             - >=1: limit total number of events drawn
             - <1: only perform 1st downsampling step with grid
             If set to None, then
-            self.Configuration["Plotting"]["Downsample Events"]
+            self.config["Plotting"]["Downsample Events"]
             will be used.
         
         Returns
@@ -490,7 +490,7 @@ class RTDC_DataSet(object):
         xnew, xnew : filtered x and y
         """
         self.ApplyFilter()
-        plotfilters = self.Configuration["Plotting"]
+        plotfilters = self.config["Plotting"]
         if downsample_events is None:
             downsample_events = plotfilters["Downsample Events"]
         downsample_events = int(downsample_events)
@@ -508,10 +508,10 @@ class RTDC_DataSet(object):
         hasher.update(obj2str(markersize))
         hasher.update(obj2str(c))
         # Get axes
-        if self.Configuration["Filtering"]["Enable Filters"]:
+        if self.config["filtering"]["enable filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-            hasher.update(obj2str(self.Configuration["Filtering"]))
+            hasher.update(obj2str(self.config["filtering"]))
         else:
             # filtering disabled
             x = getattr(self, dfn.cfgmaprev[xax])
@@ -652,13 +652,13 @@ class RTDC_DataSet(object):
         """
         xax = xax.lower()
         yax = yax.lower()
-        kde_type = self.Configuration["Plotting"]["KDE"].lower()
+        kde_type = self.config["plotting"]["kde"].lower()
         # dummy area-circ
-        deltaarea = self.Configuration["Plotting"]["Contour Accuracy "+xax]
-        deltacirc = self.Configuration["Plotting"]["Contour Accuracy "+yax]
+        deltaarea = self.config["plotting"]["contour accuracy "+xax]
+        deltacirc = self.config["plotting"]["contour accuracy "+yax]
         
         # setup
-        if self.Configuration["Filtering"]["Enable Filters"]:
+        if self.config["filtering"]["enable filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
         else:
@@ -681,8 +681,8 @@ class RTDC_DataSet(object):
                       }
         
         if kde_type == "multivariate":
-            bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
-            bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
+            bwx = self.config["plotting"]["kde multivariate "+xax]
+            bwy = self.config["plotting"]["kde multivariate "+yax]
             kde_kwargs["bw"] = [bwx, bwy]
         
         kde_fct = getattr(kde_methods, "kde_"+kde_type)
@@ -725,14 +725,14 @@ class RTDC_DataSet(object):
         """
         xax = xax.lower()
         yax = yax.lower()
-        if self.Configuration["Filtering"]["Enable Filters"]:
+        if self.config["filtering"]["enable filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
         else:
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
 
-        kde_type = self.Configuration["Plotting"]["KDE"].lower()
+        kde_type = self.config["plotting"]["kde"].lower()
         
         a = time.time()
         
@@ -752,8 +752,8 @@ class RTDC_DataSet(object):
                       }
         
         if kde_type == "multivariate":
-            bwx = self.Configuration["Plotting"]["KDE Multivariate "+xax]
-            bwy = self.Configuration["Plotting"]["KDE Multivariate "+yax]
+            bwx = self.config["plotting"]["kde multivariate "+xax]
+            bwy = self.config["plotting"]["kde multivariate "+yax]
             kde_kwargs["bw"] = [bwx, bwy]
         
         kde_fct = getattr(kde_methods, "kde_"+kde_type)
@@ -792,7 +792,6 @@ class RTDC_DataSet(object):
         else:
             uid=int(filt)
         # append item
-        self.Configuration["Filtering"]["Polygon Filters"].append(uid)
         self.config["filtering"]["polygon filters"].append(uid)
 
 
@@ -806,7 +805,6 @@ class RTDC_DataSet(object):
         else:
             uid = int(filt)
         # remove item
-        self.Configuration["Filtering"]["Polygon Filters"].remove(uid)
         self.config["filtering"]["polygon filters"].remove(uid)
 
 
@@ -830,12 +828,12 @@ class RTDC_DataSet(object):
 
     @DeprecationWarning
     def UpdateConfiguration(self, newcfg):
-        """ Update current configuration `self.Configuration`.
+        """ Update current configuration `self.config`.
         
         Parameters
         ----------
         newcfg : dict
-            Dictionary to update `self.Configuration`
+            Dictionary to update `self.config`
         
         
         Returns
@@ -869,7 +867,7 @@ class RTDC_DataSet(object):
 
         config.update_config_dict(self.config, newcfg)
 
-        if "Filtering" in newcfg:
+        if "filtering" in newcfg:
             # Only writing the new Mins and Maxs is not enough
             # We need to also set the _filter_* attributes.
             self.ApplyFilter(force=force)

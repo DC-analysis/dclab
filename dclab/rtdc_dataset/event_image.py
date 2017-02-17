@@ -48,9 +48,7 @@ class ImageColumn(object):
         idnew = int(idx-self.event_offset)
         if idnew < 0:
             # No data - show a nice transition image instead
-            cdata = np.ones_like(self._image_data[0])
-            cdata *= np.linspace(0,255,cdata.shape[0],
-                                 dtype=np.uint16).reshape(-1,1,1)
+            cdata = self.dummy
         else:
             cdata = self._image_data[idnew]
         return cdata
@@ -61,6 +59,15 @@ class ImageColumn(object):
         if length:
             length = length+self.event_offset
         return length
+
+
+    @property
+    def dummy(self):
+        """Returns a dummy image"""
+        cdata = np.ones_like(self._image_data[0])
+        cdata *= np.linspace(0,255,cdata.shape[0],
+                             dtype=np.uint16).reshape(-1,1,1)
+        return cdata
 
 
     @staticmethod

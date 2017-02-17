@@ -24,45 +24,45 @@ from helper_methods import example_data_dict
 
 
 def test_limit_simple():
-    keys = ["Area", "Defo", "Time", "Frame"]
+    keys = ["area", "defo", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._filter) == 9999
-    filtflt = {"Limit Events": 800}
+    filtflt = {"limit events": 800}
     
-    cfg = {"Filtering": filtflt}
-    ds.UpdateConfiguration(cfg)
+    cfg = {"filtering": filtflt}
+    ds.config.update(cfg)
     ds.ApplyFilter()
     
     assert np.sum(ds._filter) == 800
 
 
 def test_limit_equal():
-    keys = ["Area", "Defo", "Time", "Frame"]
+    keys = ["area", "defo", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._filter) == 9999
-    filtflt = {"Limit Events": 9999}
+    filtflt = {"limit events": 9999}
     
-    cfg = {"Filtering": filtflt}
-    ds.UpdateConfiguration(cfg)
+    cfg = {"filtering": filtflt}
+    ds.config.update(cfg)
     ds.ApplyFilter()
     
     assert np.sum(ds._filter) == 9999
 
 
 def test_limit_above():
-    keys = ["Area", "Defo", "Time", "Frame"]
+    keys = ["area", "defo", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._filter) == 9999
-    filtflt = {"Limit Events": 10000}
+    filtflt = {"limit events": 10000}
     
-    cfg = {"Filtering": filtflt}
-    ds.UpdateConfiguration(cfg)
+    cfg = {"filtering": filtflt}
+    ds.config.update(cfg)
     ds.ApplyFilter()
     
     assert np.sum(ds._filter) == 9999

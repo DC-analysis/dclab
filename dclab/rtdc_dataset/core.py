@@ -225,7 +225,6 @@ class RTDC_DataSet(object):
         mx = os.path.join(self.fdir, self.name.split("_")[0])
         self.config = Configuration(files=[mx+"_para.ini", mx+"_camera.ini"],
                                     rtdc_ds=self)
-        self.SetConfiguration()
 
 
     def _init_filters(self):
@@ -489,18 +488,21 @@ class RTDC_DataSet(object):
         -------
         xnew, xnew : filtered x and y
         """
+        # TODO:
+        # - downsampling could be placed in a separate "plotting" submodule
         self.ApplyFilter()
-        plotfilters = self.config["Plotting"]
+        plotfilters = self.config["plotting"]
         if downsample_events is None:
-            downsample_events = plotfilters["Downsample Events"]
+            downsample_events = plotfilters["downsample events"]
         downsample_events = int(downsample_events)
 
-        downsampling = plotfilters["Downsampling"]            
+        downsampling = plotfilters["downsampling"]            
 
         assert downsample_events > 0
         assert downsampling in [True, False]
 
-        xax, yax = self.GetPlotAxes()
+        xax = self.config["plotting"]["axis x"].lower()
+        yax = self.config["plotting"]["axis y"].lower()
 
         # identifier for this setup
         hasher = hashlib.sha256()
@@ -915,8 +917,6 @@ def GetProjectNameFromPath(path):
         # /home/peter/hans/HLC12398/online/data/
         project = trail3
     else:
-        if os.path.exists(path):
-            warnings.warn("Non-standard directory naming scheme: {}".format(path))
         project = trail1
     return project
 

@@ -51,7 +51,7 @@ def test_min_max_update():
     # Force updating circularity
     cfg["filtering"]["defo min"] = .4
     cfg["filtering"]["defo max"] = .8
-    ds.UpdateConfiguration(cfg)
+    ds.config.update(cfg)
 
     ds.ApplyFilter()
 

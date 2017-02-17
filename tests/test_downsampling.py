@@ -23,17 +23,17 @@ from helper_methods import example_data_dict
 
 
 def test_downsample_none():
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._plot_filter) == 8472
     
-    pltfilt = {"Downsample Events": 100,
-               "Downsampling": False}
+    pltfilt = {"downsample events": 100,
+               "downsampling": False}
 
-    cfg = {"Plotting": pltfilt}
-    ds.UpdateConfiguration(cfg)
+    cfg = {"plotting": pltfilt}
+    ds.config.update(cfg)
     ds.ApplyFilter()
     ds.GetDownSampledScatter()
     assert np.sum(ds._plot_filter) == 8472
@@ -44,27 +44,27 @@ def test_downsample_none():
 
 
 def test_downsample_none2():
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._plot_filter) == 8472
     
-    pltfilt = {"Downsample Events": 100,
-               "Downsampling": True}
-    filtflt = {"Enable Filters": False}
+    pltfilt = {"downsample events": 100,
+               "downsampling": True}
+    filtflt = {"enable filters": False}
     
-    cfg = {"Plotting": pltfilt,
-           "Filtering": filtflt}
-    ds.UpdateConfiguration(cfg)
+    cfg = {"plotting": pltfilt,
+           "filtering": filtflt}
+    ds.config.update(cfg)
     ds.ApplyFilter()
     ds.GetDownSampledScatter()
     
     assert np.sum(ds._plot_filter) == 100
     assert np.sum(ds._filter) == 8472
 
-    filtflt["Enable Filters"] = True
-    ds.UpdateConfiguration(cfg)
+    filtflt["enable filters"] = True
+    ds.config.update(cfg)
     ds.ApplyFilter()
     ds.GetDownSampledScatter()
 
@@ -76,17 +76,17 @@ def test_downsample_none2():
 def test_downsample_yes():
     """ Simple downsampling test.
     """
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._plot_filter) == 8472
     
-    pltfilt = {"Downsample Events": 100,
-               "Downsampling": True}
+    pltfilt = {"downsample events": 100,
+               "downsampling": True}
     
-    cfg = {"Plotting": pltfilt}
-    ds.UpdateConfiguration(cfg)
+    cfg = {"plotting": pltfilt}
+    ds.config.update(cfg)
     ds.ApplyFilter()
     ds.GetDownSampledScatter()
     assert np.sum(ds._plot_filter) == 100
@@ -102,16 +102,16 @@ def test_downsample_up():
     Likely causes removal of too many points and requires
     re-inserting them.
     """
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=10000, keys=keys)
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._plot_filter) == 10000
     
-    pltfilt = {"Downsample Events":9999,
-               "Downsampling": True}
+    pltfilt = {"downsample events":9999,
+               "downsampling": True}
     
-    cfg = {"Plotting": pltfilt}
+    cfg = {"plotting": pltfilt}
     ds.config.update(cfg)
     ds.ApplyFilter()
     ds.GetDownSampledScatter()

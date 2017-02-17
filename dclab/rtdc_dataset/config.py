@@ -75,13 +75,16 @@ class Configuration(object):
         
         # Load default configuration
         self.update(default)
-        # Load configuration files
-        for f in files:
-            self.update(load_from_file(f))
+
         # Update with additional dictionary
         self.update(cfg)
 
+        # Load configuration files
+        for f in files:
+            self.update(load_from_file(f))
+
         self._fix_config()
+        # Complete configuration settings
         if rtdc_ds is not None:
             self._complete_config_from_rtdc_ds(rtdc_ds)
 

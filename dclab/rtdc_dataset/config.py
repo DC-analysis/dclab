@@ -16,16 +16,16 @@ from .. import definitions as dfn
 
 
 if sys.version_info[0] == 2:
-    string_classes = (str, unicode)
+    str_types = (str, unicode)
 else:
-    string_classes = str
+    str_types = str
 
 
 
 class CaseInsensitiveDict(dict):
     @classmethod
     def _k(cls, key):
-        return key.lower() if isinstance(key, string_classes) else key
+        return key.lower() if isinstance(key, str_types) else key
     def __init__(self, *args, **kwargs):
         super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
         self._convert_keys()
@@ -95,9 +95,13 @@ class Configuration(object):
 
     def __getitem__(self, idx):
         item = self._cfg.__getitem__(idx)
-        if isinstance(item, string_classes):
+        if isinstance(item, str_types):
             item = item.lower()
         return item
+
+
+    def __iter__(self):
+        return self._cfg.__iter__()
 
 
     def __setitem__(self, *args):
@@ -161,6 +165,28 @@ class Configuration(object):
         return self._cfg.keys()
 
 
+    def save(self, filename):
+        """Save the configuration to a file"""
+        out = []
+        keys = list(self.keys())
+        keys.sort()
+        for key in keys:
+            out.append("[{}]".format(key))
+            section = self[key]
+            ikeys = list(section.keys())
+            ikeys.sort()
+            for ikey in ikeys:
+                var, val = keyval_typ2str(ikey, section[ikey])
+                out.append("{} = {}".format(var, val))
+            out.append("")
+        
+        with codecs.open(filename, "wb", "utf-8") as f:
+            for i in range(len(out)):
+                # win-like line endings
+                out[i] = out[i]+"\r\n"
+            f.writelines(out)
+
+
     def update(self, newcfg):
         """Update current config with new dictionary"""
         if isinstance(newcfg, Configuration):
@@ -204,15 +230,42 @@ def load_from_file(cfg_file):
                     cfg[section] = CaseInsensitiveDict()
                 continue
             var, val = line.split("=", 1)
-            var, val = map_config_value_str2type(var, val)
+            var, val = keyval_str2typ(var, val)
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val
     return cfg
 
 
 
-def map_config_value_str2type(var, val):
-    if not ( isinstance(val, string_classes) ):
+def keyval_str2typ(var, val):
+    """Convert a variable from a string to its correct type
+
+    
+    Parameters
+    ----------
+    var: str
+        The variable name
+    val: str
+        The value of the variable represented as a string
+    
+    Returns
+    -------
+    varout: str
+        Stripped lowercase `var`
+    valout: any type
+        The value converted from string to its presumed type
+    
+    Notes
+    -----
+    This method is heuristic and is only intended for usage in
+    dclab.
+    
+    
+    See Also
+    --------
+    keyval_typ2str: the opposite
+    """
+    if not ( isinstance(val, str_types) ):
         # already a type:
         return var.strip(), val
     var = var.strip().lower()
@@ -241,6 +294,39 @@ def map_config_value_str2type(var, val):
                 return var, float(val.replace(",","."))
             except ValueError:
                 return var, val
+
+
+def keyval_typ2str(var, val):
+    """Convert a variable to a string
+
+    
+    Parameters
+    ----------
+    var: str
+        The variable name
+    val: any type
+        The value of the variable
+    
+    Returns
+    -------
+    varout: str
+        Stripped lowercase `var`
+    valout: any type
+        The value converted to a useful string representation
+    
+    See Also
+    --------
+    keyval_str2typ: the opposite
+    """
+    varout = var.strip().lower()
+    if isinstance(val, list):
+        data = ", ".join([keyval_typ2str(var, it)[1] for it in val])
+        valout = "["+data+"]"
+    elif isinstance(val, float):
+        valout = "{:.12f}".format(val)
+    else:
+        valout = "{}".format(val)
+    return varout, valout
 
 
 default_file = resource_filename(__name__, 'config_default.cfg')

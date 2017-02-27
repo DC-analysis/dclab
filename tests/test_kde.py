@@ -24,10 +24,8 @@ def test_kde_general():
     ## Download and extract data
     ddict = example_data_dict()
     ds = dclab.RTDC_DataSet(ddict=ddict)
-    
-    kdes = dclab.config.get_config_entry_choices("Plotting", "KDE")
-    
-    for kde in kdes:
+
+    for kde in dclab.kde_methods.methods:
         ds.config["plotting"]["kde"] = kde
         ds.GetKDE_Contour()
         ds.GetKDE_Scatter()

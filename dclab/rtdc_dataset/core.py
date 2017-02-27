@@ -835,13 +835,7 @@ class RTDC_DataSet(object):
         Parameters
         ----------
         newcfg : dict
-            Dictionary to update `self.config`
-        
-        
-        Returns
-        -------
-        None (dictionary is updated in place).
-        
+            Dictionary to update `self.config` with
         
         Notes
         -----
@@ -867,7 +861,7 @@ class RTDC_DataSet(object):
             self.time[:] = (self.frame - self.frame[0]) / FR
             force.append("Time")
 
-        config.update_config_dict(self.config, newcfg)
+        self.config.update(newcfg)
 
         if "filtering" in newcfg:
             # Only writing the new Mins and Maxs is not enough

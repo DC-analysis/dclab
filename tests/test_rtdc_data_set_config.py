@@ -18,14 +18,15 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab import RTDC_DataSet
+from dclab.rtdc_dataset import RTDC_DataSet
+from dclab.rtdc_dataset.config import Configuration, CaseInsensitiveDict
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
 def equals(a, b):
     """Compare objects with allclose"""
-    if isinstance(a, dict):
+    if isinstance(a, (dict, Configuration, CaseInsensitiveDict)):
         for key in a:
             assert key in b, "key not in b"
             assert equals(a[key], b[key])
@@ -36,10 +37,30 @@ def equals(a, b):
     return True
 
 
-
 def test_config_basic():
     ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    assert ds.config["roi"]["height"] == 96.
 
+
+def test_config_save_load():
+    ## Download and extract data
+    tdms_path = retreive_tdms(example_data_sets[0])
+    ds = RTDC_DataSet(tdms_path)
+    _fd, cfg_file = tempfile.mkstemp()
+    ds.config.save(cfg_file)
+    loaded = Configuration(files=[cfg_file])
+    assert equals(loaded, ds.config)
+    
+    
+def test_backwards_compatible_channel_width():
+    cfg = Configuration()
+    fd, fname = tempfile.mkstemp()
+    cfg["General"].pop("Channel Width")
+    cfg["General"]["Flow Rate [ul/s]"] = 0.16
+    cfg.save(fname)
+    cfg2 = Configuration(files=[fname])
+    assert cfg2["General"]["Channel Width"] == 30
+    
 
 if __name__ == "__main__":
     # Run all tests

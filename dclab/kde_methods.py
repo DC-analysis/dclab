@@ -115,3 +115,9 @@ def kde_multivariate(events_x, events_y, bw, xout=None, yout=None, **kwargs):
 
     density = estimator_ly.pdf(positions)
     return density.reshape(xout.shape)
+
+
+methods = {"gauss": kde_gauss,
+           "none": kde_none,
+           "multivariate": kde_multivariate}
+

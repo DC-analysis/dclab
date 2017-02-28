@@ -628,79 +628,12 @@ class RTDC_DataSet(object):
         return result
 
 
-    def GetKDE_Contour(self, yax="defo", xax="area"):
-        """ The evaluated Gaussian Kernel Density Estimate
-        
-        -> for contours
-        
-        
-        Parameters
-        ----------
-        xax : str
-            Identifier for X axis (e.g. "Area", "Area Ratio","Circ",...)
-        yax : str
-            Identifier for Y axis
-        
-        
-        Returns
-        -------
-        X, Y, Z : coordinates
-            The kernel density Z evaluated on a rectangular grid (X,Y).
-        
-        See Also
-        --------
-        `scipy.stats.gaussian_kde`
-        `statsmodels.nonparametric.kernel_density.KDEMultivariate`
-        """
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = self.config["plotting"]["kde"].lower()
-        # dummy area-circ
-        deltaarea = self.config["plotting"]["contour accuracy "+xax]
-        deltacirc = self.config["plotting"]["contour accuracy "+yax]
-        
-        # setup
-        if self.config["filtering"]["enable filters"]:
-            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
-            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-        else:
-            x = getattr(self, dfn.cfgmaprev[xax])
-            y = getattr(self, dfn.cfgmaprev[yax])
-
-        # evaluation
-        xlin = np.arange(x.min(), x.max(), deltaarea)
-        ylin = np.arange(y.min(), y.max(), deltacirc)
-        xmesh, ymesh = np.meshgrid(xlin,ylin)
-
-        a = time.time()
-        
-        # Keyword arguments for kernel density estimation
-        kde_kwargs = {
-                      "events_x": x,
-                      "events_y": y,
-                      "xout": xmesh,
-                      "yout": ymesh,
-                      }
-        
-        if kde_type == "multivariate":
-            bwx = self.config["plotting"]["kde multivariate "+xax]
-            bwy = self.config["plotting"]["kde multivariate "+yax]
-            kde_kwargs["bw"] = [bwx, bwy]
-        
-        kde_fct = getattr(kde_methods, "kde_"+kde_type)
-
-        density = kde_fct(**kde_kwargs)
-
-        print("KDE contour {} time: ".format(kde_type), time.time()-a)
-
-        return xmesh, ymesh, density
-
-
     def get_kde_scatter(self, xax="area", yax="defo", positions=None,
                         kde_type="none", kde_kwargs={}):
         """ The evaluated Gaussian Kernel Density Estimate
         
         -> for scatter plots
+
         
         Parameters
         ----------
@@ -716,21 +649,17 @@ class RTDC_DataSet(object):
             The KDE method to use
         kde_kwargs: dict
             Additional keyword arguments to the KDE method 
-        
+
+
         Returns
         -------
         density : 1d ndarray
             The kernel density evaluated for the filtered data points.
-        
-        
-        See Also
-        --------
-        `RTDC_DataSet.ApplyFilter`
-        
         """
         xax = xax.lower()
         yax = yax.lower()
         kde_type = kde_type.lower()
+        assert kde_type in kde_methods.methods
         
         if self.config["filtering"]["enable filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
@@ -738,8 +667,6 @@ class RTDC_DataSet(object):
         else:
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
-
-        assert kde_type in kde_methods.methods
         
         if positions is None:
             posx = None
@@ -749,15 +676,78 @@ class RTDC_DataSet(object):
             posy = positions[1]
         
         kde_fct = kde_methods.methods[kde_type]
-        
         if len(x):
             density = kde_fct(events_x=x, events_y=y,
-                              xout=posx, yout= posy,
+                              xout=posx, yout=posy,
                               **kde_kwargs)
         else:
             density = []
         
         return density
+
+
+    def get_kde_contour(self, xax="area", yax="defo", xacc=None, yacc=None,
+                        kde_type="none", kde_kwargs={}):
+        """ The evaluated Gaussian Kernel Density Estimate
+        
+        -> for contours
+        
+        
+        Parameters
+        ----------
+        xax: str
+            Identifier for X axis (e.g. "Area", "Area Ratio","Circ",...)
+        yax: str
+            Identifier for Y axis
+        xacc: float
+            Contour accuracy in x direction
+        yacc: float
+            Contour accuracy in y direction
+        kde_type: str
+            The KDE method to use
+        kde_kwargs: dict
+            Additional keyword arguments to the KDE method 
+
+
+        Returns
+        -------
+        X, Y, Z : coordinates
+            The kernel density Z evaluated on a rectangular grid (X,Y).
+        """
+        xax = xax.lower()
+        yax = yax.lower()
+        kde_type = kde_type.lower()
+        assert kde_type in kde_methods.methods
+        
+        # setup
+        if self.config["filtering"]["enable filters"]:
+            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
+            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
+        else:
+            x = getattr(self, dfn.cfgmaprev[xax])
+            y = getattr(self, dfn.cfgmaprev[yax])
+
+        # sensible default values
+        cpstep = lambda a: (np.nanmax(a)-np.nanmin(a))/10
+        if xacc is None:
+            xacc = cpstep(x)
+        if yacc is None:
+            yacc = cpstep(x)
+
+        # evaluation
+        xlin = np.arange(x.min(), x.max(), xacc)
+        ylin = np.arange(y.min(), y.max(), yacc)
+        xmesh, ymesh = np.meshgrid(xlin,ylin)
+
+        kde_fct = kde_methods.methods[kde_type]
+        if len(x):
+            density = kde_fct(events_x=x, events_y=y,
+                              xout=xmesh, yout=ymesh,
+                              **kde_kwargs)
+        else:
+            density = []
+            
+        return xmesh, ymesh, density
 
 
     @DeprecationWarning

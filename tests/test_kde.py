@@ -26,7 +26,7 @@ def test_kde_general():
     ds = dclab.RTDC_DataSet(ddict=ddict)
     
     for kde_type in dclab.kde_methods.methods:
-        #ds.GetKDE_Contour()
+        ds.get_kde_contour(kde_type=kde_type)
         ds.get_kde_scatter(kde_type=kde_type)
 
 
@@ -35,7 +35,7 @@ def test_kde_none():
     ds = dclab.RTDC_DataSet(ddict=ddict)
     sc = ds.get_kde_scatter(kde_type="none")
     assert np.sum(sc) == sc.shape[0]
-    #ds.GetKDE_Contour()
+    ds.get_kde_contour()
 
 
 def test_kde_nofilt():
@@ -43,8 +43,11 @@ def test_kde_nofilt():
     ds = dclab.RTDC_DataSet(ddict=ddict)
     ds.config["filtering"]["enable filters"] = False
     sc = ds.get_kde_scatter()
-    #cc = ds.GetKDE_Contour()
-    #assert sc.shape[0] == sc.shape[0]
+    cc = ds.get_kde_contour()
+    assert sc.shape[0] == 100
+    # This will fail if the default contour accuracy is changed
+    # in `get_kde_contour`.
+    assert cc[0].shape == (10,10)
 
 
 def test_kde_positions():
@@ -56,7 +59,7 @@ def test_kde_positions():
     sc2 = ds.get_kde_scatter(xax="area", yax="defo",
                              positions=(ds.area_um, ds.deform))
     assert np.all(sc==sc2)
-    
+
 
 def test_empty_kde():
     ddict = example_data_dict(size=67, keys=["area", "defo"])

@@ -696,21 +696,26 @@ class RTDC_DataSet(object):
         return xmesh, ymesh, density
 
 
-    def GetKDE_Scatter(self, yax="defo", xax="area", positions=None):
+    def get_kde_scatter(self, xax="area", yax="defo", positions=None,
+                        kde_type="none", kde_kwargs={}):
         """ The evaluated Gaussian Kernel Density Estimate
         
         -> for scatter plots
         
         Parameters
         ----------
-        xax : str
-            Identifier for X axis (e.g. "Area", "Area Ratio","Circ",...)
-        yax : str
+        xax: str
+            Identifier for X axis (e.g. "area", "area ratio","circ",...)
+        yax: str
             Identifier for Y axis
-        positions : list of points
+        positions: list of points
             The positions where the KDE will be computed. Note that
             the KDE estimate is computed from the the points that
             are set in `self._filter`.
+        kde_type: str
+            The KDE method to use
+        kde_kwargs: dict
+            Additional keyword arguments to the KDE method 
         
         Returns
         -------
@@ -721,12 +726,12 @@ class RTDC_DataSet(object):
         See Also
         --------
         `RTDC_DataSet.ApplyFilter`
-        `scipy.stats.gaussian_kde`
-        `statsmodels.nonparametric.kernel_density.KDEMultivariate`
         
         """
         xax = xax.lower()
         yax = yax.lower()
+        kde_type = kde_type.lower()
+        
         if self.config["filtering"]["enable filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
@@ -734,9 +739,7 @@ class RTDC_DataSet(object):
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
 
-        kde_type = self.config["plotting"]["kde"].lower()
-        
-        a = time.time()
+        assert kde_type in kde_methods.methods
         
         if positions is None:
             posx = None
@@ -744,28 +747,16 @@ class RTDC_DataSet(object):
         else:
             posx = positions[0]
             posy = positions[1]
-
-        # Keyword arguments for kernel density estimation
-        kde_kwargs = {
-                      "events_x": x,
-                      "events_y": y,
-                      "xout": posx,
-                      "yout": posy,
-                      }
         
-        if kde_type == "multivariate":
-            bwx = self.config["plotting"]["kde multivariate "+xax]
-            bwy = self.config["plotting"]["kde multivariate "+yax]
-            kde_kwargs["bw"] = [bwx, bwy]
+        kde_fct = kde_methods.methods[kde_type]
         
-        kde_fct = getattr(kde_methods, "kde_"+kde_type)
-        
-        if len(x) != 0:
-            density = kde_fct(**kde_kwargs)
+        if len(x):
+            density = kde_fct(events_x=x, events_y=y,
+                              xout=posx, yout= posy,
+                              **kde_kwargs)
         else:
             density = []
         
-        print("KDE scatter {} time: ".format(kde_type), time.time()-a)
         return density
 
 

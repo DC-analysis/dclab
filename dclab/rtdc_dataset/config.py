@@ -135,23 +135,6 @@ class Configuration(object):
 
     def _complete_config_from_rtdc_ds(self, rtdc_ds):
         """Complete configuration using data columns from RTDC_DataSet"""
-        ## Sensible values for default contour accuracies
-        keys = []
-        for prop in dfn.rdv:
-            if not np.allclose(getattr(rtdc_ds, prop), 0):
-                # There are values for this uid
-                keys.append(prop)
-        # This lambda function seems to do a good job
-        accl = lambda a: (np.nanmax(a)-np.nanmin(a))/10
-        defs = [["contour accuracy {}", accl],
-                ["kde multivariate {}", accl],
-               ]
-        pltng = self["plotting"]
-        for k in keys:
-            for d, l in defs:
-                var = d.format(dfn.cfgmap[k])
-                if not var in pltng:
-                    pltng[var] = l(getattr(rtdc_ds, k))
         # Update data size
         self["general"]["cell number"] = rtdc_ds.time.shape[0]
 

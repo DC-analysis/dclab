@@ -80,7 +80,7 @@ def kde_none(events_x, events_y, xout=None, yout=None, **kwargs):
 
 
 @Cache
-def kde_multivariate(events_x, events_y, bw, xout=None, yout=None, **kwargs):
+def kde_multivariate(events_x, events_y, bw=None, xout=None, yout=None, **kwargs):
     """ Multivariate Kernel Density Estimation
     
     Parameters
@@ -88,7 +88,7 @@ def kde_multivariate(events_x, events_y, bw, xout=None, yout=None, **kwargs):
     events_x, events_y : 1D ndarray
         The input points for kernel density estimation. Input
         is flattened automatically.
-    bw : tuple (bwx, bwy)
+    bw : tuple (bwx, bwy) or None
         The bandwith for kernel density estimation.
     xout, yout : ndarray
         The coordinates at which the KDE should be computed.
@@ -107,6 +107,10 @@ def kde_multivariate(events_x, events_y, bw, xout=None, yout=None, **kwargs):
     if yout is None and yout is None:
         xout = events_x
         yout = events_y
+    if bw is None:
+        # Sensible default parameters
+        cpstep = lambda a: (np.nanmax(a)-np.nanmin(a))/10
+        bw = cpstep(events_x), cpstep(events_y)
     
     positions = np.vstack([xout.flatten(), yout.flatten()])
     estimator_ly = KDEMultivariate(data=[events_x.flatten(),

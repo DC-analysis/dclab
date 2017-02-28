@@ -229,7 +229,7 @@ class RTDC_DataSet(object):
 
     def _init_filters(self):
         datalen = self.time.shape[0]
-        # Plotting filters, set by "GetDownSampledScatter".
+        # Plotting filters, set by "get_downsampled_scatter".
         # This is a nested filter which is applied after self._filter
         self._plot_filter = np.ones_like(self.time, dtype=bool)
 
@@ -268,7 +268,7 @@ class RTDC_DataSet(object):
 
         Notes
         -----
-        Updates `self.config["Filtering"].
+        Updates `self.config["filtering"].
         
         The data is filtered according to filterable attributes in
         the global variable `dfn.cfgmap`.
@@ -462,53 +462,45 @@ class RTDC_DataSet(object):
         self.config.update(k)
 
 
-    def GetDownSampledScatter(self, c=None, axsize=(300,300),
-                              markersize=1,
-                              downsample_events=None):
+    def get_downsampled_scatter(self, xax="area", yax="defo", downsample=0,
+                                axsize=(300,300), markersize=1):
         """ Filters a set of data from overlayed events for plotting
         
         Parameters
         ----------
-        c : 1d array of same length as x and y
-            Value (e.g. kernel density) for each point (x,y)
-        axsize : size tuple
-            Size of the axis.
-        markersize : float
-            Size of the marker (in dots), including edge.
-        downsample_events : int or None
+        xax: str
+            Identifier for x axis (e.g. "area", "area ratio","circ",...)
+        yax: str
+            Identifier for y axis
+        downsample: int or None
             Number of points to draw in the down-sampled plot.
             This number is either 
-            - >=1: limit total number of events drawn
-            - <1: only perform 1st downsampling step with grid
-            If set to None, then
-            self.config["Plotting"]["Downsample Events"]
-            will be used.
-        
+            - >=1: exactly downsample to this number by randomly adding
+                   or removing points 
+            - 0  : do not perform downsampling
+            - <0 : only perform downsampling with grid (not exact)
+        axsize: size tuple
+            Size of the axis.
+        markersize: float
+            Size of the marker (in dots), including edge.
+
         Returns
         -------
-        xnew, xnew : filtered x and y
+        xnew, xnew [,cnew] : filtered x and y
         """
+        assert downsample >= 0
         # TODO:
         # - downsampling could be placed in a separate "plotting" submodule
         self.ApplyFilter()
-        plotfilters = self.config["plotting"]
-        if downsample_events is None:
-            downsample_events = plotfilters["downsample events"]
-        downsample_events = int(downsample_events)
-
-        downsampling = plotfilters["downsampling"]            
-
-        assert downsample_events > 0
-        assert downsampling in [True, False]
-
-        xax = self.config["plotting"]["axis x"].lower()
-        yax = self.config["plotting"]["axis y"].lower()
+        
+        downsample = int(downsample)
+        xax = xax.lower()
+        yax = yax.lower()
 
         # identifier for this setup
         hasher = hashlib.sha256()
         hasher.update(obj2str(axsize))
         hasher.update(obj2str(markersize))
-        hasher.update(obj2str(c))
         # Get axes
         if self.config["filtering"]["enable filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
@@ -519,24 +511,19 @@ class RTDC_DataSet(object):
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
 
-        hasher.update(obj2str(downsample_events))
+        hasher.update(obj2str(downsample))
         hasher.update(obj2str(x))
         hasher.update(obj2str(y))
-        hasher.update(obj2str(downsampling))
         identifier = hasher.hexdigest()
 
         if identifier in self._Downsampled_Scatter:
             result, self._plot_filter = self._Downsampled_Scatter[identifier]
             return result
 
-        if (not downsampling or
-           (downsample_events > 0 and downsample_events > x.shape[0])):
+        if (not downsample or downsample > x.shape[0]):
             # nothing to do
             self._plot_filter = np.ones_like(x, dtype=bool)
-            if c is None:
-                result = x, y
-            else: 
-                result = x, y, c
+            result = x, y
             return result
 
         # Create mask
@@ -554,8 +541,7 @@ class RTDC_DataSet(object):
         gridy = np.linspace(0, axsize[1], axsize[1], endpoint=True).reshape(1,-1)
         
         incl = np.zeros_like(x, dtype=bool)
-        
-        a=time.time()
+
         # set values in mask to false as we iterate over x and y
         #R = markersize/2
         #Rsq = R**2
@@ -579,48 +565,42 @@ class RTDC_DataSet(object):
                 #mask = np.logical_and(np.logical_not(boolvals), mask)
                 #mask[boolvals] = 0
                 incl[i] = True
-        print("downsample time:", time.time()-a)
 
-
-        # Perform upsampling: include events to match downsample_events
-        if downsample_events > 0:
+        # Refine down/upsampling: to exactly match `downsample`
+        if downsample > 0:
             numevents = np.sum(incl)
-            if downsample_events < numevents:
+            if downsample < numevents:
                 # Perform equally distributed removal of events
                 # We have too many events
-                remove = numevents - downsample_events
+                remove = numevents - downsample
                 while remove > 10:
                     there = np.where(incl)[0]
                     # first remove evenly distributed events
                     dist = int(np.ceil(there.shape[0]/remove))
                     incl[there[::dist]] = 0
                     numevents = np.sum(incl)
-                    remove = numevents - downsample_events
+                    remove = numevents - downsample
                 there = np.where(incl)[0]
                 incl[there[:remove]] = 0
             else:
                 # Add equally distributed events in the case
                 # where we have previously downsampled with a grid.
                 # We have not enough events
-                add = downsample_events - numevents
+                add = downsample - numevents
                 while add > 10:
                     away = np.where(~incl)[0]
                     # first remove evenly distributed events
                     dist = int(np.ceil(away.shape[0]/add))
                     incl[away[::dist]] = 1
                     numevents = np.sum(incl)
-                    add = downsample_events - numevents
+                    add = downsample - numevents
                 away = np.where(~incl)[0]
                 incl[away[:add]] = 1
 
         xincl = x[incl]
         yincl = y[incl]
 
-        if c is None:
-            result = [xincl, yincl]
-        else: 
-            dens = c[np.where(incl)]
-            result = [xincl, yincl, dens]
+        result = [xincl, yincl]
         
         self._Downsampled_Scatter[identifier] = result, incl
         self._plot_filter = incl

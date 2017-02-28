@@ -28,18 +28,10 @@ def test_downsample_none():
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._plot_filter) == 8472
-    
-    pltfilt = {"downsample events": 100,
-               "downsampling": False}
-
-    cfg = {"plotting": pltfilt}
-    ds.config.update(cfg)
     ds.ApplyFilter()
-    ds.GetDownSampledScatter()
+    ds.get_downsampled_scatter(downsample=0)
     assert np.sum(ds._plot_filter) == 8472
 
-    # Do it again with kde vals
-    ds.GetDownSampledScatter(c=np.arange(8472))
     
 
 
@@ -50,15 +42,12 @@ def test_downsample_none2():
 
     assert np.sum(ds._plot_filter) == 8472
     
-    pltfilt = {"downsample events": 100,
-               "downsampling": True}
     filtflt = {"enable filters": False}
     
-    cfg = {"plotting": pltfilt,
-           "filtering": filtflt}
+    cfg = {"filtering": filtflt}
     ds.config.update(cfg)
     ds.ApplyFilter()
-    ds.GetDownSampledScatter()
+    ds.get_downsampled_scatter(downsample=100)
     
     assert np.sum(ds._plot_filter) == 100
     assert np.sum(ds._filter) == 8472
@@ -66,7 +55,7 @@ def test_downsample_none2():
     filtflt["enable filters"] = True
     ds.config.update(cfg)
     ds.ApplyFilter()
-    ds.GetDownSampledScatter()
+    ds.get_downsampled_scatter(downsample=100)
 
     assert np.sum(ds._plot_filter) == 100
     assert np.sum(ds._filter) == 8472
@@ -81,20 +70,11 @@ def test_downsample_yes():
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     assert np.sum(ds._plot_filter) == 8472
-    
-    pltfilt = {"downsample events": 100,
-               "downsampling": True}
-    
-    cfg = {"plotting": pltfilt}
-    ds.config.update(cfg)
+
     ds.ApplyFilter()
-    ds.GetDownSampledScatter()
+    ds.get_downsampled_scatter(downsample=100)
     assert np.sum(ds._plot_filter) == 100
-    ds.GetDownSampledScatter()
-    
-    # Do it again with kde vals
-    ds.GetDownSampledScatter(c=np.arange(8472))
-    
+    ds.get_downsampled_scatter(downsample=100)
     
 
 def test_downsample_up():
@@ -108,15 +88,10 @@ def test_downsample_up():
 
     assert np.sum(ds._plot_filter) == 10000
     
-    pltfilt = {"downsample events":9999,
-               "downsampling": True}
-    
-    cfg = {"plotting": pltfilt}
-    ds.config.update(cfg)
     ds.ApplyFilter()
-    ds.GetDownSampledScatter()
+    ds.get_downsampled_scatter(downsample=9999)
     assert np.sum(ds._plot_filter) == 9999
-    ds.GetDownSampledScatter()
+    ds.get_downsampled_scatter(downsample=9999)
 
 
 

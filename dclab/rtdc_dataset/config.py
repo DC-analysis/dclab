@@ -127,8 +127,6 @@ class Configuration(object):
         for item in dfn.uid:
             appends = [" min", " max"]
             for a in appends:
-                if not item+a in self["plotting"]:
-                    self["plotting"][item+a] = 0
                 if not item+a in self["filtering"]:
                     self["filtering"][item+a] = 0
 

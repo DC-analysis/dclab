@@ -23,24 +23,15 @@ from dclab import RTDC_DataSet
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
-def test_missing_things():
+def test_wrong_things():
     ddict = example_data_dict(size=67, keys=["Area", "Defo"])
     ds = RTDC_DataSet(ddict=ddict)
-    cfg = ds.config.copy()
-    
-    # Force creation of Filtering subdict
-    ds.config._cfg.pop("Filtering")
-    ds.ApplyFilter()
-    assert "filtering" in ds.config
-    
-    # Force updating circularity
-    cfg["filtering"].pop("defo min")
-    cfg["filtering"].pop("defo max")
-    ds.config.update(cfg)
-    ds.ApplyFilter(force=["circ"])
     
     # Check unknown variable (warning will be displayed
-    ds.ApplyFilter(force=["on_purpose_unknown"])
+    try:
+        ds.ApplyFilter(force=["on_purpose_unknown"])
+    except ValueError:
+        pass
 
 
 def test_min_max_update():

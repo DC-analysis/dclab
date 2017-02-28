@@ -6,9 +6,7 @@ dclab configuration files and dicts
 from __future__ import division, print_function, unicode_literals
 
 import codecs
-from pkg_resources import resource_filename  # @UnresolvedImport
 import sys
-
 
 from .rtdc_dataset.config import CaseInsensitiveDict, keyval_str2typ
 
@@ -82,10 +80,6 @@ def load_config_file(cfgfilename, cfg=None, capitalize=True):
     return cfg
 
 
-def load_default_config():
-    return load_config_file(cfgfile)
-
-
 def save_config_file(cfgfilename, cfg):
     """ Save configuration to text file
 
@@ -114,11 +108,3 @@ def save_config_file(cfgfilename, cfg):
         for i in range(len(out)):
             out[i] = out[i]+"\r\n"
         f.writelines(out)
-
-
-### Load default configuration
-cfgfile = resource_filename(__name__, 'dclab.cfg')
-cfg = load_default_config()
-cfg_init = CaseInsensitiveDict()
-cfg_init.update(cfg)
-

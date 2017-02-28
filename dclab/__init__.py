@@ -4,26 +4,16 @@
 This library contains classes and methods for the analysis
 of real-time deformability cytometry (RT-DC) data sets.
 """
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
-import codecs
-import copy
-import hashlib
-from nptdms import TdmsFile
-import numpy as np
 import os
-from scipy.stats import norm, gaussian_kde
-from statsmodels.nonparametric.kernel_density import KDEMultivariate
-import time
-
-import warnings
 
 # Definitions
 from . import definitions as dfn
 from ._version import version as __version__
 from .rtdc_dataset import RTDC_DataSet, GetProjectNameFromPath
 from .polygon_filter import PolygonFilter
-from . import statistics, config
+from . import statistics
 
  
 def GetTDMSFiles(directory):

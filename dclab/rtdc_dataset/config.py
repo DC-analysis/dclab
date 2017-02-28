@@ -8,9 +8,7 @@ from __future__ import division, print_function, unicode_literals
 import codecs
 import copy
 import numpy as np
-from pkg_resources import resource_filename
 import sys
-
 
 from .. import definitions as dfn
 
@@ -72,9 +70,6 @@ class Configuration(object):
             The dictionary with which to initialize the configuration
         """
         self._cfg = CaseInsensitiveDict()
-        
-        # Load default configuration
-        self.update(default)
 
         # Update with additional dictionary
         self.update(cfg)
@@ -111,24 +106,50 @@ class Configuration(object):
     def _fix_config(self):
         """Fix missing config keys using default values
         
-        These are conditional default values that complete the
-        static values in `config_default.cfg`.
+        The default values are hard-coded for backwards compatibility
+        and for several functionalities in dclab.
         """
-        ## Old RTDC data files did not mention channel width for high flow rates
-        assert "general" in self, "Configuration not properly initialized!"
-        if not "flow Rate [ul/s]" in self["general"]:
-            self._cfg["general"]["flow Rate [ul/s]"] = np.nan
-        if not "channel width" in self["general"]:
-            if self["general"]["flow Rate [ul/s]"] < 0.16:
-                self["general"]["channel width"] = 20
-            else:
-                self["general"]["channel width"] = 30
-        ## Check for missing min/max values and set them to zero
+        ## Filtering
+        if not "filtering" in self:
+            self["filtering"] = CaseInsensitiveDict()
+        # Enable filters switch is mandatory
+        if not "enable filters" in self["filtering"]:
+            self["filtering"]["enable filters"] = True
+        # Limit events integer to downsample output data
+        if not "limit events" in self["filtering"]:
+            self["filtering"]["limit events"] = 0
+        # Polygon filter list
+        if not "polygon filters" in self["filtering"]:
+            self["filtering"]["polygon filters"] = []
+        # Defaults to no hierarchy parent
+        if not "hierarchy parent" in self["filtering"]:
+            self["filtering"]["hierarchy parent"] = "none"
+        # Check for missing min/max values and set them to zero
         for item in dfn.uid:
             appends = [" min", " max"]
             for a in appends:
                 if not item+a in self["filtering"]:
                     self["filtering"][item+a] = 0
+        ## General
+        if not "general" in self:
+            self["general"] = CaseInsensitiveDict()
+        # Old RTDC data files have an offset in the recorded video file
+        if not "video frame offset" in self["general"]:
+            self["general"]["video frame offset"] = 1
+        # Old RTDC data files did not mention channel width for high flow rates
+        if not "flow Rate [ul/s]" in self["general"]:
+            self["general"]["flow Rate [ul/s]"] = np.nan
+        if not "channel width" in self["general"]:
+            if self["general"]["flow Rate [ul/s]"] < 0.16:
+                self["general"]["channel width"] = 20
+            else:
+                self["general"]["channel width"] = 30
+        ## Image
+        if not "image" in self:
+            self["image"] = CaseInsensitiveDict()
+        # Old RTDC data files do not have resolution
+        if not "pix size" in self["image"]:
+            self["image"]["pix size"] = 0.34
 
 
     def _complete_config_from_rtdc_ds(self, rtdc_ds):
@@ -308,7 +329,3 @@ def keyval_typ2str(var, val):
     else:
         valout = "{}".format(val)
     return varout, valout
-
-
-default_file = resource_filename(__name__, 'config_default.cfg')
-default = load_from_file(default_file)

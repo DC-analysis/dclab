@@ -278,16 +278,12 @@ class RTDC_DataSet(object):
         newkeys = []
         oldvals = []
         newvals = []
-        
-        if not "filtering" in self.config:
-            self.config["filtering"] = {"enable filters":False}
 
         FIL = self.config["filtering"]
 
         # Check if we are a hierarchy child and if yes, update the
         # filtered events from the hierarchy parent.
-        if ("hierarchy parent" in FIL and
-            FIL["hierarchy parent"].lower() != "none"):
+        if FIL["hierarchy parent"].lower() != "none":
             # Copy event data from hierarchy parent
             self.hparent.ApplyFilter()
             # TODO:
@@ -330,13 +326,7 @@ class RTDC_DataSet(object):
             if f in list(dfn.cfgmaprev.keys()):
                 attr2update.append(dfn.cfgmaprev[f])
             else:
-                warnings.warn(
-                    "Unknown variable not force-filtered: {}".format(f))
-
-        if "deform" in attr2update:
-            attr2update.append("circ")
-        elif "circ" in attr2update:
-            attr2update.append("deform")
+                raise ValueError("Unknown variable {}".format(f))
         
         attr2update = np.unique(attr2update)
 
@@ -490,7 +480,8 @@ class RTDC_DataSet(object):
         """
         assert downsample >= 0
         # TODO:
-        # - downsampling could be placed in a separate "plotting" submodule
+        # - downsampling could be placed in a separate "downsampling" submodule
+        #   and reused for filtering in ApplyFilters
         self.ApplyFilter()
         
         downsample = int(downsample)
@@ -804,9 +795,6 @@ class RTDC_DataSet(object):
         changes can be made.
         """
         force = []
-        # TODO:
-        # - if this only applies to tmds files, put it in the corresponding init file
-        #   "Pix Size" and "Framerate" should not be changed by the user. 
         # look for pixel size update first
         if ("Image" in newcfg and
             "Pix Size" in newcfg["Image"]):

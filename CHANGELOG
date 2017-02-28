@@ -1,3 +1,6 @@
+0.2.2
+- Refactoring:
+  - Configuration fully handled by RTDC_DataSet module (#5)
 0.2.1
 - Support npTDMS 0.9.0
 - Add AVI-Export function

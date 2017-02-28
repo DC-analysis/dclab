@@ -13,11 +13,10 @@ import sys
 import time
 import warnings
 
-from .. import config
 from .. import definitions as dfn
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
-from .config import Configuration
+from .config import Configuration, load_from_file
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
 from .event_trace import TraceColumn
@@ -773,10 +772,9 @@ class RTDC_DataSet(object):
         This function is called during `__init__` and it is not
         necessary to run it twice.
         """
-        self.config.update(config.cfg)
         for name, _hash in self.file_hashes:
             if name.endswith(".ini") and os.path.exists(name):
-                newdict = config.load_config_file(name)
+                newdict = load_from_file(name)
                 self.config.update(newdict)
 
 

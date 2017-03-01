@@ -6,6 +6,7 @@ Kernel Density Estimation methods
 from __future__ import division, print_function, unicode_literals
 
 import numpy as np
+from scipy.interpolate import RectBivariateSpline
 from scipy.stats import gaussian_kde
 from statsmodels.nonparametric.kernel_density import KDEMultivariate
 
@@ -18,16 +19,16 @@ def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
     
     Parameters
     ----------
-    events_x, events_y : 1D ndarray
+    events_x, events_y: 1D ndarray
         The input points for kernel density estimation. Input
         is flattened automatically.
-    xout, yout : ndarray
+    xout, yout: ndarray
         The coordinates at which the KDE should be computed.
         If set to none, input coordinates are used.
     
     Returns
     -------
-    density : ndarray, same shape as `xout`
+    density: ndarray, same shape as `xout`
         The KDE for the points in (xout, yout)
 
     See Also
@@ -49,21 +50,65 @@ def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
     return density.reshape(xout.shape)
 
 
-def kde_none(events_x, events_y, xout=None, yout=None, **kwargs):
-    """ No Kernel Density Estimation
+@Cache
+def kde_histogram(events_x, events_y, bins=(42,42), xout=None, yout=None, **kwargs):
+    """ Histogram-based Kernel Density Estimation
     
     Parameters
     ----------
-    events_x, events_y : 1D ndarray
+    events_x, events_y: 1D ndarray
         The input points for kernel density estimation. Input
         is flattened automatically.
-    xout, yout : ndarray
+    bins: tuple (binsx, binsy)
+        The number of bins to use for the histogram.
+    xout, yout: ndarray
         The coordinates at which the KDE should be computed.
         If set to none, input coordinates are used.
     
     Returns
     -------
-    density : ndarray, same shape as `xout`
+    density: ndarray, same shape as `xout`
+        The KDE for the points in (xout, yout)
+
+    See Also
+    --------
+    `numpy.histogram2d`
+    `scipy.interpolate.RectBivariateSpline`
+    """
+    assert (xout is None and yout is None) or (xout is not None and yout is not None)
+    if yout is None and yout is None:
+        xout = events_x
+        yout = events_y
+    
+    # Compute the histogram
+    hist2d, xedges, yedges = np.histogram2d(x=events_x,
+                                            y=events_y,
+                                            bins=bins,
+                                            normed=True)
+    xip = xedges[1:]-(xedges[1]-xedges[0])/2
+    yip = yedges[1:]-(yedges[1]-yedges[0])/2
+    
+    estimator = RectBivariateSpline(x=xip, y=yip, z=hist2d)
+    density = estimator.ev(xout, yout)
+       
+    return density.reshape(xout.shape)
+
+
+def kde_none(events_x, events_y, xout=None, yout=None, **kwargs):
+    """ No Kernel Density Estimation
+    
+    Parameters
+    ----------
+    events_x, events_y: 1D ndarray
+        The input points for kernel density estimation. Input
+        is flattened automatically.
+    xout, yout: ndarray
+        The coordinates at which the KDE should be computed.
+        If set to none, input coordinates are used.
+    
+    Returns
+    -------
+    density: ndarray, same shape as `xout`
         The KDE for the points in (xout, yout)
 
     Notes
@@ -85,18 +130,18 @@ def kde_multivariate(events_x, events_y, bw=None, xout=None, yout=None, **kwargs
     
     Parameters
     ----------
-    events_x, events_y : 1D ndarray
+    events_x, events_y: 1D ndarray
         The input points for kernel density estimation. Input
         is flattened automatically.
-    bw : tuple (bwx, bwy) or None
+    bw: tuple (bwx, bwy) or None
         The bandwith for kernel density estimation.
-    xout, yout : ndarray
+    xout, yout: ndarray
         The coordinates at which the KDE should be computed.
         If set to none, input coordinates are used.
 
     Returns
     -------
-    density : ndarray, same shape as `xout`
+    density: ndarray, same shape as `xout`
         The KDE for the points in (xout, yout)
 
     See Also
@@ -122,6 +167,7 @@ def kde_multivariate(events_x, events_y, bw=None, xout=None, yout=None, **kwargs
 
 
 methods = {"gauss": kde_gauss,
+           "histogram": kde_histogram,
            "none": kde_none,
            "multivariate": kde_multivariate}
 

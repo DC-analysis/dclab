@@ -90,7 +90,8 @@ def kde_histogram(events_x, events_y, bins=(47,47), xout=None, yout=None, **kwar
     
     estimator = RectBivariateSpline(x=xip, y=yip, z=hist2d)
     density = estimator.ev(xout, yout)
-       
+    density[density<0] = 0
+    
     return density.reshape(xout.shape)
 
 

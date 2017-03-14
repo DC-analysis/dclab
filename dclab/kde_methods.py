@@ -51,7 +51,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
 
 
 @Cache
-def kde_histogram(events_x, events_y, bins=(42,42), xout=None, yout=None, **kwargs):
+def kde_histogram(events_x, events_y, bins=(47,47), xout=None, yout=None, **kwargs):
     """ Histogram-based Kernel Density Estimation
     
     Parameters

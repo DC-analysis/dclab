@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-RTDC_DataSet configuration
-"""
+"""Viscosity computation for RT-DC media"""
 from __future__ import division, print_function, unicode_literals
 
 

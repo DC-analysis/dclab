@@ -119,7 +119,7 @@ axl = [
         u"Principal component 1",
         u"Principal component 2",
         u"Event index",
-        u"Apparent Young's Modulus [kPa]",
+        u"Young's Modulus [kPa]",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [

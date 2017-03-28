@@ -22,7 +22,7 @@ def get_elasticity(area, deformation, medium="CellCarrier",
         The deformation (1-circularity) of the event
     medium: str or float
         The medium to compute the viscosity for. If a string
-        in ["CellCarrier", "CellCarrierB"] is given, the viscosity
+        in ["CellCarrier", "CellCarrier B"] is given, the viscosity
         will be computed. If a float is given, this value will be
         used as the viscosity. 
     channel_width: float
@@ -35,7 +35,7 @@ def get_elasticity(area, deformation, medium="CellCarrier",
     Returns
     -------
     elasticity: float or ndarray
-        Apparent elasticity
+        Apparent Young's modulus in kPa
     
     Notes
     -----

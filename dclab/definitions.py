@@ -65,6 +65,7 @@ uid = [
         "pc1",
         "pc2",
         "index",
+        "emodulus",
         ]
 # Axes label (same order as UID)
 axl = [
@@ -117,7 +118,8 @@ axl = [
         u"User defined 0",
         u"Principal component 1",
         u"Principal component 2",
-        u"Event index"
+        u"Event index",
+        u"Apparent Young's Modulus [kPa]",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [
@@ -170,7 +172,8 @@ rdv = [
         "userDef0",
         "pc1",
         "pc2",
-        "index"
+        "index",
+        "emodulus",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda
@@ -436,6 +439,11 @@ tfd = [
         ["Cell Track",
          "time",
          lambda x: np.arange(1,x.shape[0]+1)
+         ],
+        # Young's modulus is computed by user
+        ["Cell Track",
+         "time",
+         lambda x: np.zeros(x.shape) # sic
          ],
         ]
 

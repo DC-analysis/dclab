@@ -13,7 +13,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     ----------
     medium: str
         The medium to compute the viscosity for.
-        One of ["CellCarrier", "CellCarrierB"].
+        One of ["CellCarrier", "CellCarrier B"].
     channel_width: float
         The channel width in µm
     flow_rate: float
@@ -30,7 +30,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     -----
     The CellCarrier A and B media are optimized for RT-DC measurements.
     """
-    assert medium in ["CellCarrier", "CellCarrierB"]
+    assert medium in ["CellCarrier", "CellCarrier B"]
     
     # convert flow_rate from µl/s to m³/s
     # convert channel_width from µm to m
@@ -40,7 +40,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
         temp_corr = (temperature/23.2)**-.866
         term2 = 0.6771/0.5928+0.2121/(0.5928*0.677)
         eta = 0.179*(term1*term2)**(0.677-1)*temp_corr*1e3
-    elif medium == "CellCarrierB":
+    elif medium == "CellCarrier B":
         temp_corr = (temperature/23.6)**-.866
         term2 = 0.6771/0.5928+0.2121/(0.5928*0.634)
         eta = 0.360*(term1*term2)**(0.634-1)*temp_corr*1e3

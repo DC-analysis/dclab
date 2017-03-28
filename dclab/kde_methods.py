@@ -13,7 +13,24 @@ from statsmodels.nonparametric.kernel_density import KDEMultivariate
 from .cached import Cache
 
 
+def remove_nan_inf(kde_method):
+    def new_kde_method(events_x, events_y, *args, **kwargs):
+        x,y = events_x,events_y
+        for issome in [np.isnan, np.isinf]:
+            xsome = issome(x)
+            x = x[~xsome]
+            y = y[~xsome]
+        for issome in [np.isnan, np.isinf]:
+            ysome = issome(y)
+            x = x[~ysome]
+            y = y[~ysome]
+        return kde_method(x,y,*args,**kwargs)
+        
+    return new_kde_method
+
+
 @Cache
+@remove_nan_inf
 def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
     """ Gaussian Kernel Density Estimation
     
@@ -51,6 +68,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
 
 
 @Cache
+@remove_nan_inf
 def kde_histogram(events_x, events_y, bins=(47,47), xout=None, yout=None, **kwargs):
     """ Histogram-based Kernel Density Estimation
     
@@ -126,6 +144,7 @@ def kde_none(events_x, events_y, xout=None, yout=None, **kwargs):
 
 
 @Cache
+@remove_nan_inf
 def kde_multivariate(events_x, events_y, bw=None, xout=None, yout=None, **kwargs):
     """ Multivariate Kernel Density Estimation
     

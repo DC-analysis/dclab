@@ -16,7 +16,7 @@ import warnings
 from .. import definitions as dfn
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
-from .config import Configuration, load_from_file
+from .config import Configuration
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
 from .event_trace import TraceColumn
@@ -27,11 +27,6 @@ if sys.version_info[0] == 2:
     str_classes = (str, unicode)
 else:
     str_classes = str
-
-
-def DeprecationWarning(func, replacement=""):
-    warnings.warn("{} IS DEPRECATED AND WILL BE REMOVED!".format(func.__name__))
-    return func
 
 
 
@@ -342,7 +337,7 @@ class RTDC_DataSet(object):
                     # TODO: speedup
                     # Here one could check for smaller values in the
                     # lists oldvals/newvals that we defined above.
-                    # Be sure to check agains force in that case!
+                    # Be sure to check against force in that case!
                     ivalstart = FIL[fstart]
                     ivalend = FIL[fend]
                     indices[:] = (ivalstart <= data)*(data <= ivalend)
@@ -598,6 +593,72 @@ class RTDC_DataSet(object):
         return result
 
 
+    def get_kde_contour(self, xax="area", yax="defo", xacc=None, yacc=None,
+                        kde_type="none", kde_kwargs={}):
+        """ The evaluated Gaussian Kernel Density Estimate
+        
+        -> for contours
+        
+        
+        Parameters
+        ----------
+        xax: str
+            Identifier for X axis (e.g. "Area", "Area Ratio","Circ",...)
+        yax: str
+            Identifier for Y axis
+        xacc: float
+            Contour accuracy in x direction
+        yacc: float
+            Contour accuracy in y direction
+        kde_type: str
+            The KDE method to use
+        kde_kwargs: dict
+            Additional keyword arguments to the KDE method 
+
+
+        Returns
+        -------
+        X, Y, Z : coordinates
+            The kernel density Z evaluated on a rectangular grid (X,Y).
+        """
+        xax = xax.lower()
+        yax = yax.lower()
+        kde_type = kde_type.lower()
+        assert kde_type in kde_methods.methods
+
+        if self.config["filtering"]["enable filters"]:
+            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
+            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
+        else:
+            x = getattr(self, dfn.cfgmaprev[xax])
+            y = getattr(self, dfn.cfgmaprev[yax])
+        
+        # sensible default values
+        cpstep = lambda a: (a.max()-a.min())/10
+        if xacc is None:
+            xacc = cpstep(x)
+        if yacc is None:
+            yacc = cpstep(x)
+
+        # Ignore infs and nans
+        bad = np.isinf(x)+np.isnan(x)+np.isinf(y)+np.isnan(y)
+        xc = x[~bad]
+        yc = y[~bad]
+        xlin = np.arange(xc.min(), xc.max(), xacc)
+        ylin = np.arange(yc.min(), yc.max(), yacc)
+        xmesh, ymesh = np.meshgrid(xlin,ylin)
+
+        kde_fct = kde_methods.methods[kde_type]
+        if len(x):
+            density = kde_fct(events_x=x, events_y=y,
+                              xout=xmesh, yout=ymesh,
+                              **kde_kwargs)
+        else:
+            density = []
+            
+        return xmesh, ymesh, density
+
+
     def get_kde_scatter(self, xax="area", yax="defo", positions=None,
                         kde_type="none", kde_kwargs={}):
         """ The evaluated Gaussian Kernel Density Estimate
@@ -637,14 +698,14 @@ class RTDC_DataSet(object):
         else:
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
-        
+
         if positions is None:
             posx = None
             posy = None
         else:
             posx = positions[0]
             posy = positions[1]
-        
+
         kde_fct = kde_methods.methods[kde_type]
         if len(x):
             density = kde_fct(events_x=x, events_y=y,
@@ -654,82 +715,6 @@ class RTDC_DataSet(object):
             density = []
         
         return density
-
-
-    def get_kde_contour(self, xax="area", yax="defo", xacc=None, yacc=None,
-                        kde_type="none", kde_kwargs={}):
-        """ The evaluated Gaussian Kernel Density Estimate
-        
-        -> for contours
-        
-        
-        Parameters
-        ----------
-        xax: str
-            Identifier for X axis (e.g. "Area", "Area Ratio","Circ",...)
-        yax: str
-            Identifier for Y axis
-        xacc: float
-            Contour accuracy in x direction
-        yacc: float
-            Contour accuracy in y direction
-        kde_type: str
-            The KDE method to use
-        kde_kwargs: dict
-            Additional keyword arguments to the KDE method 
-
-
-        Returns
-        -------
-        X, Y, Z : coordinates
-            The kernel density Z evaluated on a rectangular grid (X,Y).
-        """
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        assert kde_type in kde_methods.methods
-        
-        # setup
-        if self.config["filtering"]["enable filters"]:
-            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
-            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-        else:
-            x = getattr(self, dfn.cfgmaprev[xax])
-            y = getattr(self, dfn.cfgmaprev[yax])
-
-        # sensible default values
-        cpstep = lambda a: (np.nanmax(a)-np.nanmin(a))/10
-        if xacc is None:
-            xacc = cpstep(x)
-        if yacc is None:
-            yacc = cpstep(x)
-
-        # evaluation
-        xlin = np.arange(x.min(), x.max(), xacc)
-        ylin = np.arange(y.min(), y.max(), yacc)
-        xmesh, ymesh = np.meshgrid(xlin,ylin)
-
-        kde_fct = kde_methods.methods[kde_type]
-        if len(x):
-            density = kde_fct(events_x=x, events_y=y,
-                              xout=xmesh, yout=ymesh,
-                              **kde_kwargs)
-        else:
-            density = []
-            
-        return xmesh, ymesh, density
-
-
-    @DeprecationWarning
-    def GetPlotAxes(self):
-        #return 
-        p = self.config["Plotting"]
-        if not "axis x" in p:
-            p["axis x"] = "area"
-        if not "axis y" in p:
-            p["axis y"] = "defo"
-        
-        return [p["Axis X"].lower(), p["Axis Y"].lower()]
 
 
     def PolygonFilterAppend(self, filt):
@@ -759,65 +744,6 @@ class RTDC_DataSet(object):
             uid = int(filt)
         # remove item
         self.config["filtering"]["polygon filters"].remove(uid)
-
-
-    @DeprecationWarning
-    def SetConfiguration(self):
-        """ Import configuration of measurement
-        
-        Requires the files "MX_camera.ini" and "MX_para.ini" to be
-        present in `self.fdir`. The string "MX_" is at the beginning of
-        `self.name` (measurement identifier).
-        
-        This function is called during `__init__` and it is not
-        necessary to run it twice.
-        """
-        for name, _hash in self.file_hashes:
-            if name.endswith(".ini") and os.path.exists(name):
-                newdict = load_from_file(name)
-                self.config.update(newdict)
-
-
-    @DeprecationWarning
-    def UpdateConfiguration(self, newcfg):
-        """ Update current configuration `self.config`.
-        
-        Parameters
-        ----------
-        newcfg : dict
-            Dictionary to update `self.config` with
-        
-        Notes
-        -----
-        It is not required to update the entire configuration. Small
-        changes can be made.
-        """
-        force = []
-        # look for pixel size update first
-        if ("Image" in newcfg and
-            "Pix Size" in newcfg["Image"]):
-            PIX = newcfg["Image"]["Pix Size"]
-            if not np.allclose(self.area, 0):
-                self.area_um[:] = self.area * PIX**2
-                force.append("Area")
-        # look for frame rate update
-        if ("Framerate" in newcfg and
-            "Frame Rate" in newcfg["Framerate"]):
-            FR = newcfg["Framerate"]["Frame Rate"]
-            # FR is in Hz
-            self.time[:] = (self.frame - self.frame[0]) / FR
-            force.append("Time")
-
-        self.config.update(newcfg)
-
-        if "filtering" in newcfg:
-            # Only writing the new Mins and Maxs is not enough
-            # We need to also set the _filter_* attributes.
-            self.ApplyFilter(force=force)
-        
-        # Reset additional information
-        self.config["General"]["Cell Number"] = self.time.shape[0]
-
 
 
 def hashfile(fname, blocksize=65536):

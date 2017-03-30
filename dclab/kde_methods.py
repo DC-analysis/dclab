@@ -13,25 +13,44 @@ from statsmodels.nonparametric.kernel_density import KDEMultivariate
 from .cached import Cache
 
 
-def remove_nan_inf(kde_method):
-    def new_kde_method(events_x, events_y, *args, **kwargs):
-        x,y = events_x,events_y
-        for issome in [np.isnan, np.isinf]:
-            xsome = issome(x)
-            x = x[~xsome]
-            y = y[~xsome]
-        for issome in [np.isnan, np.isinf]:
-            ysome = issome(y)
-            x = x[~ysome]
-            y = y[~ysome]
-        return kde_method(x,y,*args,**kwargs)
-        
+def get_bad_vals(x,y):
+    return np.isnan(x)+np.isinf(x)+np.isnan(y)+np.isinf(y)
+
+
+def ignore_nan_inf(kde_method):
+    """Ignores nans and infs from the input data
+    
+    Invalid positions in the resulting density are set to nan.
+    """
+    # TODO:
+    # - use the doc string of kde_method and add a Note that
+    #   density will have nans.
+    def new_kde_method(events_x, events_y, xout, yout, *args, **kwargs):
+        bad_in = get_bad_vals(events_x, events_y)
+        if xout is None:
+            density = np.zeros_like(events_x, dtype=float)
+            bad_out = bad_in
+            xo = yo = None
+        else:
+            density = np.zeros_like(xout, dtype=float)
+            bad_out = get_bad_vals(xout, yout)
+            xo = xout[~bad_out]
+            yo = yout[~bad_out]
+        # Filter events
+        ev_x = events_x[~bad_in]
+        ev_y = events_y[~bad_in]
+        density[~bad_out] = kde_method(ev_x, ev_y,
+                                       xo, yo,
+                                       *args, **kwargs)
+        density[bad_out] = np.nan
+        return density
+
     return new_kde_method
 
 
 @Cache
-@remove_nan_inf
-def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
+@ignore_nan_inf
+def kde_gauss(events_x, events_y, xout=None, yout=None):
     """ Gaussian Kernel Density Estimation
     
     Parameters
@@ -68,8 +87,8 @@ def kde_gauss(events_x, events_y, xout=None, yout=None, **kwargs):
 
 
 @Cache
-@remove_nan_inf
-def kde_histogram(events_x, events_y, bins=(47,47), xout=None, yout=None, **kwargs):
+@ignore_nan_inf
+def kde_histogram(events_x, events_y, xout=None, yout=None, bins=(47,47)):
     """ Histogram-based Kernel Density Estimation
     
     Parameters
@@ -77,11 +96,11 @@ def kde_histogram(events_x, events_y, bins=(47,47), xout=None, yout=None, **kwar
     events_x, events_y: 1D ndarray
         The input points for kernel density estimation. Input
         is flattened automatically.
-    bins: tuple (binsx, binsy)
-        The number of bins to use for the histogram.
     xout, yout: ndarray
         The coordinates at which the KDE should be computed.
         If set to none, input coordinates are used.
+    bins: tuple (binsx, binsy)
+        The number of bins to use for the histogram.
     
     Returns
     -------
@@ -113,7 +132,7 @@ def kde_histogram(events_x, events_y, bins=(47,47), xout=None, yout=None, **kwar
     return density.reshape(xout.shape)
 
 
-def kde_none(events_x, events_y, xout=None, yout=None, **kwargs):
+def kde_none(events_x, events_y, xout=None, yout=None):
     """ No Kernel Density Estimation
     
     Parameters
@@ -144,8 +163,8 @@ def kde_none(events_x, events_y, xout=None, yout=None, **kwargs):
 
 
 @Cache
-@remove_nan_inf
-def kde_multivariate(events_x, events_y, bw=None, xout=None, yout=None, **kwargs):
+@ignore_nan_inf
+def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     """ Multivariate Kernel Density Estimation
     
     Parameters

@@ -32,7 +32,9 @@ class Statistics(object):
             x = getattr(rtdc_ds, dfn.cfgmaprev[axis])[rtdc_ds._filter]
         else:
             x = getattr(rtdc_ds, dfn.cfgmaprev[axis])
-        return x
+        bad = np.isnan(x)^np.isinf(x)
+        xout = x[~bad]
+        return xout
     
     def get_data(self, kwargs):
         assert "rtdc_ds" in kwargs, "Keyword argument 'rtdc_ds' missing."

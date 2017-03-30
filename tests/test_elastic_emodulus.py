@@ -28,6 +28,7 @@ def test_simple_emod():
                                       medium="CellCarrier",
                                       channel_width=30,
                                       flow_rate=0.16,
+                                      px_um=0,# withour pixelation correction
                                       temperature=23)
     
     assert np.allclose(emod[10,50], 0.93276932212481323)

@@ -11,7 +11,6 @@ import numpy as np
 import os
 import sys
 import time
-import warnings
 
 from .. import definitions as dfn
 from .. import downsampling
@@ -66,8 +65,7 @@ class RTDC_DataSet(object):
             # We are given a dictionary with data values.
             # - create a unique fake title
             t = time.localtime()
-            rand = "".join([ hex(r)[2:-1] for r in np.random.randint(
-                                                                     10000,
+            rand = "".join([ hex(r)[2:-1] for r in np.random.randint(10000,
                                                                      size=3)])
             tdms_path = "{}_{:02d}_{:02d}/{}.tdms".format(t[0],t[1],t[2],rand)
 
@@ -234,8 +232,6 @@ class RTDC_DataSet(object):
         self._filter = np.ones_like(self.time, dtype=bool)
         # Manual filters, additionally defined by the user
         self._filter_manual = np.ones_like(self._filter)
-        # The filtering array for a general data event limit:
-        self._filter_limit = np.ones_like(self._filter)
         attrlist = dir(self)
         # Find attributes to be filtered
         # These are the filters from which self._filter is computed
@@ -363,11 +359,6 @@ class RTDC_DataSet(object):
                     datay = getattr(self, dfn.cfgmaprev[p.axes[1]])
                     self._filter_polygon *= p.filter(datax, datay)
         
-        # Reset limit filters before
-        # This is important. If we do not do this the we have
-        # a pre-filter that does not make sense.
-        self._filter_limit = np.ones_like(self._filter)
-        
         # now update the entire object filter
         # get a list of all filters
         self._filter[:] = True
@@ -376,7 +367,9 @@ class RTDC_DataSet(object):
                 if attr.startswith("_filter_"):
                     self._filter[:] *= getattr(self, attr)
     
-            # Filter with configuration keyword argument "Limit Events"
+            # Filter with configuration keyword argument "Limit Events".
+            # This additional step limits the total number of events in
+            # self._filter.
             if FIL["limit events"] > 0:
                 limit = FIL["limit events"]
                 sub = self._filter[self._filter]

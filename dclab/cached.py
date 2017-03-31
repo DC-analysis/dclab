@@ -46,7 +46,6 @@ class Cache(object):
             self._update_hash(k)
             self._update_hash(kwargs[k])
 
-
         # make sure we are caching for the correct method
         self._update_hash(self.func.__name__)
         self._update_hash(self.func.__code__.co_filename)

@@ -14,8 +14,10 @@ import time
 import warnings
 
 from .. import definitions as dfn
+from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
+
 from .config import Configuration
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
@@ -58,7 +60,6 @@ class RTDC_DataSet(object):
 
         # Kernel density estimator dictionaries
         self._old_filters = {} # for comparison to new filters
-        self._Downsampled_Scatter = {}
         self._polygon_filter_ids = []
         
         if tdms_path is None:
@@ -224,7 +225,8 @@ class RTDC_DataSet(object):
     def _init_filters(self):
         datalen = self.time.shape[0]
         # Plotting filters, set by "get_downsampled_scatter".
-        # This is a nested filter which is applied after self._filter
+        # This is a nested filter - it must be applied after self._filter
+        # to get the plotted events.
         self._plot_filter = np.ones_like(self.time, dtype=bool)
 
         # Set array filters:
@@ -433,21 +435,7 @@ class RTDC_DataSet(object):
         self.config._complete_config_from_rtdc_ds(self)
 
 
-    @property
-    def Configuration(self):
-        warnings.warn("PLEASE USE RTDC_DataSet.config instead of RTDC_DataSet.Configuration!")
-        return self.config
-
-
-    @Configuration.setter
-    def Configuration(self, k):
-        warnings.warn("PLEASE DO NOT SET RTDC_DataSet.Configuration!")
-        self.config = Configuration()
-        self.config.update(k)
-
-
-    def get_downsampled_scatter(self, xax="area", yax="defo", downsample=0,
-                                axsize=(300,300), markersize=1):
+    def get_downsampled_scatter(self, xax="area", yax="defo", downsample=0):
         """ Filters a set of data from overlayed events for plotting
         
         Parameters
@@ -462,135 +450,33 @@ class RTDC_DataSet(object):
             - >=1: exactly downsample to this number by randomly adding
                    or removing points 
             - 0  : do not perform downsampling
-            - <0 : only perform downsampling with grid (not exact)
-        axsize: size tuple
-            Size of the axis.
-        markersize: float
-            Size of the marker (in dots), including edge.
 
         Returns
         -------
-        xnew, xnew [,cnew] : filtered x and y
+        xnew, xnew: filtered x and y
         """
         assert downsample >= 0
-        # TODO:
-        # - downsampling could be placed in a separate "downsampling" submodule
-        #   and reused for filtering in ApplyFilters
         self.ApplyFilter()
         
         downsample = int(downsample)
         xax = xax.lower()
         yax = yax.lower()
 
-        # identifier for this setup
-        hasher = hashlib.sha256()
-        hasher.update(obj2str(axsize))
-        hasher.update(obj2str(markersize))
         # Get axes
         if self.config["filtering"]["enable filters"]:
             x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
             y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
-            hasher.update(obj2str(self.config["filtering"]))
         else:
             # filtering disabled
             x = getattr(self, dfn.cfgmaprev[xax])
             y = getattr(self, dfn.cfgmaprev[yax])
 
-        hasher.update(obj2str(downsample))
-        hasher.update(obj2str(x))
-        hasher.update(obj2str(y))
-        identifier = hasher.hexdigest()
-
-        if identifier in self._Downsampled_Scatter:
-            result, self._plot_filter = self._Downsampled_Scatter[identifier]
-            return result
-
-        if (not downsample or downsample > x.shape[0]):
-            # nothing to do
-            self._plot_filter = np.ones_like(x, dtype=bool)
-            result = x, y
-            return result
-
-        # Create mask
-        mask = np.ones(axsize, dtype=bool)
-        
-        xmin = x.min()
-        xmax = x.max()
-        ymin = y.min()
-        ymax = y.max()
-        
-        xpx = (x-xmin)/(xmax-xmin) * axsize[0]
-        ypx = (y-ymin)/(ymax-ymin) * axsize[1]
-        
-        gridx = np.linspace(0, axsize[0], axsize[0], endpoint=True).reshape(-1,1)
-        gridy = np.linspace(0, axsize[1], axsize[1], endpoint=True).reshape(1,-1)
-        
-        incl = np.zeros_like(x, dtype=bool)
-
-        # set values in mask to false as we iterate over x and y
-        #R = markersize/2
-        #Rsq = R**2
-        D = markersize
-        
-        # Begin Downsampling
-        eventmask = mask.copy()
-        
-        for i in range(len(x)):
-            xi = xpx[i]
-            yi = ypx[i]
-            ## first filter for exactly overlapping events
-            if not eventmask[int(xi-1), int(yi-1)]:
-                continue
-            eventmask[int(xi-1), int(yi-1)] = False
-            #boolvals = (xi-gridx)**2 + (yi-gridy)**2 < Rsq
-            ## second filter for multiple overlay
-            boolvals = (np.abs(xi-gridx) < D) * (np.abs(yi-gridy) < D)
-            if np.sum(mask[boolvals]) != 0:
-                mask *= np.logical_not(boolvals)
-                #mask = np.logical_and(np.logical_not(boolvals), mask)
-                #mask[boolvals] = 0
-                incl[i] = True
-
-        # Refine down/upsampling: to exactly match `downsample`
-        if downsample > 0:
-            numevents = np.sum(incl)
-            if downsample < numevents:
-                # Perform equally distributed removal of events
-                # We have too many events
-                remove = numevents - downsample
-                while remove > 10:
-                    there = np.where(incl)[0]
-                    # first remove evenly distributed events
-                    dist = int(np.ceil(there.shape[0]/remove))
-                    incl[there[::dist]] = 0
-                    numevents = np.sum(incl)
-                    remove = numevents - downsample
-                there = np.where(incl)[0]
-                incl[there[:remove]] = 0
-            else:
-                # Add equally distributed events in the case
-                # where we have previously downsampled with a grid.
-                # We have not enough events
-                add = downsample - numevents
-                while add > 10:
-                    away = np.where(~incl)[0]
-                    # first remove evenly distributed events
-                    dist = int(np.ceil(away.shape[0]/add))
-                    incl[away[::dist]] = 1
-                    numevents = np.sum(incl)
-                    add = downsample - numevents
-                away = np.where(~incl)[0]
-                incl[away[:add]] = 1
-
-        xincl = x[incl]
-        yincl = y[incl]
-
-        result = [xincl, yincl]
-        
-        self._Downsampled_Scatter[identifier] = result, incl
-        self._plot_filter = incl
-
-        return result
+        xsd, ysd, idx = downsampling.downsample_grid(x, y,
+                                                     samples=downsample,
+                                                     retidx=True)
+        self._plot_filter = idx
+        assert np.alltrue(x[idx] == xsd) 
+        return xsd, ysd
 
 
     def get_kde_contour(self, xax="area", yax="defo", xacc=None, yacc=None,

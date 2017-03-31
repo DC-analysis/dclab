@@ -1,5 +1,7 @@
 0.2.3
-- add look-up table for elastic modulus (#7)
+- Add look-up table for elastic modulus (#7)
+- Improved downsampling
+- Support for nan and inf in columns
 0.2.2
 - Add new histogram-based kernel density estimator (#2)
 - Refactoring:

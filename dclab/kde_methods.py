@@ -25,7 +25,7 @@ def ignore_nan_inf(kde_method):
     # TODO:
     # - use the doc string of kde_method and add a Note that
     #   density will have nans.
-    def new_kde_method(events_x, events_y, xout, yout, *args, **kwargs):
+    def new_kde_method(events_x, events_y, xout=None, yout=None, *args, **kwargs):
         bad_in = get_bad_vals(events_x, events_y)
         if xout is None:
             density = np.zeros_like(events_x, dtype=float)

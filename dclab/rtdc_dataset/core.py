@@ -379,39 +379,12 @@ class RTDC_DataSet(object):
             # Filter with configuration keyword argument "Limit Events"
             if FIL["limit events"] > 0:
                 limit = FIL["limit events"]
-                incl = self._filter.copy()
-                numevents = np.sum(incl)
-                if limit < numevents:
-                    # Perform equally distributed removal of events
-                    # We have too many events
-                    remove = int(numevents - limit)
-                    while remove > 10:
-                        there = np.where(incl)[0]
-                        # first remove evenly distributed events
-                        dist = int(np.ceil(there.shape[0]/remove))
-                        incl[there[::dist]] = 0
-                        numevents = np.sum(incl)
-                        remove = int(numevents - limit)
-                    there = np.where(incl)[0]
-                    incl[there[:remove]] = 0
-                    self._filter_limit = incl
-                    print("'limit events' set to {}/{}".format(np.sum(incl), incl.shape[0]))
-                elif limit == numevents:
-                    # everything is ok
-                    self._filter_limit = np.ones_like(self._filter)
-                    print("'limit events' is size of filtered data.")
-                else:
-                    self._filter_limit = np.ones_like(self._filter)
-                    warnings.warn("{}: 'Limit Events' must not ".format(self.name)+
-                                  "be larger than length of data set! "+
-                                  "Resetting 'Limit Events'!")
-                    FIL["limit events"] = 0
-            else:
-                # revert everything back to how it was
-                self._filter_limit = np.ones_like(self._filter)
-            
-            # Update filter again
-            self._filter *= self._filter_limit
+                sub = self._filter[self._filter]
+                _f, idx = downsampling.downsample_rand(sub,
+                                                       samples=limit,
+                                                       retidx=True)
+                sub[~idx] = False
+                self._filter[self._filter] = sub
 
         # Actual filtering is then done during plotting            
         self._old_filters = self.config.copy()["filtering"]

@@ -8,22 +8,27 @@ import numpy as np
 from .cached import Cache
 
 
-def downsample_rand(a, b, samples, remove_invalid=True):
+def downsample_rand(a, samples, remove_invalid=True, retidx=False):
     """Downsampling by randomly removing points
     
     Parameters
     ----------
-    a, b: 1d ndarrays
-        The input arrays to downsample
+    a: 1d ndarray
+        The input array to downsample
     samples: int
         The desired number of samples
     remove_invalid: bool
         Remove nan and inf values before downsampling
+    retidx: bool
+        Also return a boolean array that corresponds to the
+        downsampled indices in `a`.
 
     Returns
     -------
     dsa, dsb: 1d ndarrays of shape (samples,)
         The pseudo-randomly downsampled arrays `a` and `b`
+    [idx]: 1d boolean array with same shape as `a`
+        A boolean array such that `a[idx] == dsa` is all true
     """
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
@@ -34,22 +39,30 @@ def downsample_rand(a, b, samples, remove_invalid=True):
     
     if remove_invalid:
         # slice out nans and infs
-        bad = np.isnan(a)+np.isinf(a)+np.isnan(b)+np.isinf(b)
+        bad = np.isnan(a)+np.isinf(a)
         a = a[~bad]
-        b = b[~bad]
     
     if samples and (samples < a.shape[0]):
+        keep = np.zeros_like(a, dtype=bool)
         np.random.set_state(rs)
-        keep = np.random.choice(np.arange(a.shape[0]),
-                                size=samples,
-                                replace=False)
+        keep_ids = np.random.choice(np.arange(a.shape[0]),
+                                    size=samples,
+                                    replace=False)
+        keep[keep_ids] = True
         dsa = a[keep]
-        dsb = b[keep]
     else:
+        keep = np.ones_like(a, dtype=bool)
         dsa = a
-        dsb = b
 
-    return dsa, dsb
+    if remove_invalid:
+        # translate the kept values back to the original array
+        keep_inv = np.zeros_like(bad)
+        keep_inv[~bad] = keep
+
+    if retidx:
+        return dsa, keep_inv
+    else:
+        return dsa
 
 
 @Cache

@@ -232,6 +232,8 @@ class RTDC_DataSet(object):
         self._filter = np.ones_like(self.time, dtype=bool)
         # Manual filters, additionally defined by the user
         self._filter_manual = np.ones_like(self._filter)
+        # Invalid filters
+        self._filter_invalid = np.ones_like(self._filter)
         attrlist = dir(self)
         # Find attributes to be filtered
         # These are the filters from which self._filter is computed
@@ -358,6 +360,17 @@ class RTDC_DataSet(object):
                     datax = getattr(self, dfn.cfgmaprev[p.axes[0]])
                     datay = getattr(self, dfn.cfgmaprev[p.axes[1]])
                     self._filter_polygon *= p.filter(datax, datay)
+
+        # Invalid filters
+        self._filter_invalid[:] = True
+        if FIL["remove invalid events"]:            
+            a = time.time()
+            for attr in dfn.cfgmap:
+                if hasattr(self, attr):
+                    col = getattr(self, attr)
+                    invalid = np.isinf(col)+np.isnan(col)
+                    self._filter_invalid *= ~invalid
+            print("...invalid filtering time: {:.2f}s".format(time.time()-a))
         
         # now update the entire object filter
         # get a list of all filters
@@ -378,7 +391,7 @@ class RTDC_DataSet(object):
                                                        retidx=True)
                 sub[~idx] = False
                 self._filter[self._filter] = sub
-
+        
         # Actual filtering is then done during plotting            
         self._old_filters = self.config.copy()["filtering"]
 

@@ -112,6 +112,9 @@ class Configuration(object):
         ## Filtering
         if not "filtering" in self:
             self["filtering"] = CaseInsensitiveDict()
+        # Filter out invalid event values
+        if not "remove invalid events" in self["filtering"]:
+            self["filtering"]["remove invalid events"] = True
         # Enable filters switch is mandatory
         if not "enable filters" in self["filtering"]:
             self["filtering"]["enable filters"] = True

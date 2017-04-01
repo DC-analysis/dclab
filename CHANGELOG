@@ -1,7 +1,9 @@
 0.2.3
 - Add look-up table for elastic modulus (#7)
-- Improve and refactor downsampling (#6)
+- Add filtering option "remove invalid events" to remove nan/inf
 - Support nan and inf in data analysis
+- Improve downsampling performance
+- Refactor downsampling methods (#6)
 0.2.2
 - Add new histogram-based kernel density estimator (#2)
 - Refactoring:

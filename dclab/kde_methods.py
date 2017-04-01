@@ -22,9 +22,6 @@ def ignore_nan_inf(kde_method):
     
     Invalid positions in the resulting density are set to nan.
     """
-    # TODO:
-    # - use the doc string of kde_method and add a Note that
-    #   density will have nans.
     def new_kde_method(events_x, events_y, xout=None, yout=None, *args, **kwargs):
         bad_in = get_bad_vals(events_x, events_y)
         if xout is None:
@@ -45,11 +42,16 @@ def ignore_nan_inf(kde_method):
         density[bad_out] = np.nan
         return density
 
+    doc_add = "\n    Notes\n"+\
+              "    -----\n"+\
+              "    This is a wrapped version that ignores nan and inf values."
+    new_kde_method.__doc__ = kde_method.__doc__ + doc_add
+
     return new_kde_method
 
 
-@Cache
 @ignore_nan_inf
+@Cache
 def kde_gauss(events_x, events_y, xout=None, yout=None):
     """ Gaussian Kernel Density Estimation
     
@@ -82,12 +84,11 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
     except np.linalg.LinAlgError:
         # LinAlgError occurs when matrix to solve is singular (issue #117)
         density = np.zeros(xout.shape)*np.nan
-       
     return density.reshape(xout.shape)
 
 
-@Cache
 @ignore_nan_inf
+@Cache
 def kde_histogram(events_x, events_y, xout=None, yout=None, bins=(47,47)):
     """ Histogram-based Kernel Density Estimation
     
@@ -162,8 +163,8 @@ def kde_none(events_x, events_y, xout=None, yout=None):
     return np.ones(xout.shape)
 
 
-@Cache
 @ignore_nan_inf
+@Cache
 def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     """ Multivariate Kernel Density Estimation
     
@@ -209,4 +210,3 @@ methods = {"gauss": kde_gauss,
            "histogram": kde_histogram,
            "none": kde_none,
            "multivariate": kde_multivariate}
-

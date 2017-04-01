@@ -14,21 +14,29 @@ MAX_SIZE = 100
 
 
 class Cache(object):
-    """
-    A cache that can be used to decorate methods that accept
-    numpy ndarrays as arguments.
-    
-    - cache is based on dictionary
-    - md5 hashes of method arguments are the dictionary keys
-    - applicable decorator for all methods in a module
-    - applicable to methods with the same name in different source files
-    - set cache size with `cached.MAX_SIZE`
-    - only one global cache is generated, there are no instances of `Cache`
-
-    """
     _cache = {}
     _keys = []
     def __init__(self, func):
+        """
+        A cache that can be used to decorate methods that accept
+        numpy ndarrays as arguments.
+        
+        - cache is based on dictionary
+        - md5 hashes of method arguments are the dictionary keys
+        - applicable decorator for all methods in a module
+        - applicable to methods with the same name in different source files
+        - set cache size with `cached.MAX_SIZE`
+        - only one global cache is generated, there are no instances of `Cache`
+    
+        Notes
+        -----
+        If you are using other decorators with this decorator, please make sure
+        to apply the `Cache` first (first line before method definition). This
+        wrapper uses name, doc, and filename of the method to identify it. If
+        another wrapper does not implement a unique `__doc__` and is applied to
+        multiple methods, then `Cached` might return values of the wrong method.
+
+        """
         self.func = func
 
     
@@ -48,6 +56,7 @@ class Cache(object):
 
         # make sure we are caching for the correct method
         self._update_hash(self.func.__name__)
+        self._update_hash(self.func.__doc__)
         self._update_hash(self.func.__code__.co_filename)
         
         ref = self.ahash.hexdigest()
@@ -63,6 +72,11 @@ class Cache(object):
                 Cache._cache.pop(delref)
             return data
 
+
+    @property
+    def __doc__(self):
+        return self.func.__doc__
+    
 
     def _update_hash(self, arg):
         """ Takes an argument and updates the hash.

@@ -24,10 +24,16 @@ def test_kde_general():
     ## Download and extract data
     ddict = example_data_dict()
     ds = dclab.RTDC_DataSet(ddict=ddict)
-    
+
+    dcont = []    
+    dscat = []
     for kde_type in dclab.kde_methods.methods:
-        ds.get_kde_contour(kde_type=kde_type)
-        ds.get_kde_scatter(kde_type=kde_type)
+        dcont.append(ds.get_kde_contour(kde_type=kde_type))
+        dscat.append(ds.get_kde_scatter(kde_type=kde_type))
+    
+    for ii in range(1, len(dcont)-1):
+        assert not np.allclose(dcont[ii], dcont[0])
+        assert not np.allclose(dscat[ii], dscat[0])
 
 
 def test_kde_none():

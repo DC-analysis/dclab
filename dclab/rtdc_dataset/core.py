@@ -364,13 +364,11 @@ class RTDC_DataSet(object):
         # Invalid filters
         self._filter_invalid[:] = True
         if FIL["remove invalid events"]:            
-            a = time.time()
             for attr in dfn.cfgmap:
                 if hasattr(self, attr):
                     col = getattr(self, attr)
                     invalid = np.isinf(col)+np.isnan(col)
                     self._filter_invalid *= ~invalid
-            print("...invalid filtering time: {:.2f}s".format(time.time()-a))
         
         # now update the entire object filter
         # get a list of all filters

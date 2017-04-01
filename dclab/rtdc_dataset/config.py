@@ -224,7 +224,7 @@ def load_from_file(cfg_file):
         # We deal with comments and empty lines
         # We need to check line length first and then we look for
         # a hash.
-        line = line.split("#")[0].strip().lower()
+        line = line.split("#")[0].strip()
         if len(line) != 0:
             if line.startswith("[") and line.endswith("]"):
                 section = line[1:-1]
@@ -236,7 +236,6 @@ def load_from_file(cfg_file):
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val
     return cfg
-
 
 
 def keyval_str2typ(var, val):
@@ -320,7 +319,7 @@ def keyval_typ2str(var, val):
     --------
     keyval_str2typ: the opposite
     """
-    varout = var.strip().lower()
+    varout = var.strip()
     if isinstance(val, list):
         data = ", ".join([keyval_typ2str(var, it)[1] for it in val])
         valout = "["+data+"]"

@@ -369,7 +369,7 @@ class RTDC_DataSet(object):
                     col = getattr(self, attr)
                     invalid = np.isinf(col)+np.isnan(col)
                     self._filter_invalid *= ~invalid
-        
+
         # now update the entire object filter
         # get a list of all filters
         self._filter[:] = True

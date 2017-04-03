@@ -88,9 +88,6 @@ def get_elasticity(area, deformation, medium="CellCarrier",
 
     if px_um:
         # Correct deformation for pixelation effect (inplace).
-        # The precomputed LUT was not corrected for pixelation effects.
-        pixcorr_deformation(area=lut[:,0], deformation=lut[:,1],
-                            px_um=px_um, inplace=True)
         pixcorr_deformation(area=area, deformation=deformation,
                             px_um=px_um, inplace=True)
 

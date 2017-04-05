@@ -1,6 +1,18 @@
 # Elastic modulus look-up table for spheres
 # deformed in a microfluidic channel.
 #
+# A description of the underlying theory can be found here:
+#
+#   Numerical Simulation of Real-Time Deformability Cytometry
+#   to Extract Cell Mechanical Properties
+#   M. Mokbel, D. Mokbel, A. Mietke, N. Träber, S. Girardo,
+#   O. Otto, J. Guck, and S. Aland
+#   ACS Biomaterials Science & Engineering Article ASAP
+#   DOI: 10.1021/acsbiomaterials.6b00558
+#
+# The simulations were performed by by S. Aland.
+# The look-up table was assembled by C. Herold.
+#
 # - channel width: 20um
 # - flow rate: 0.04 ul/s
 # - viscosity: 15 mPa*s

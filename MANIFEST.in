@@ -1,4 +1,5 @@
 include CHANGELOG
+include LICENSE
 include README.rst
 recursive-include tests *.zip *.md *.py
 recursive-include dclab *.txt *.md

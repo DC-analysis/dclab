@@ -99,6 +99,23 @@ class Configuration(object):
         return self._cfg.__iter__()
 
 
+    def __len__(self):
+        return len(self._cfg)
+    
+    
+    def __repr__(self):
+        rep = ""
+        keys = self.keys()
+        keys.sort()
+        for key in keys:
+            rep += "- {}\n".format(key)
+            subkeys = self[key].keys()
+            subkeys.sort()
+            for subkey in subkeys:
+                rep += "   {}: {}\n".format(subkey, self[key][subkey])
+        return rep
+
+
     def __setitem__(self, *args):
         self._cfg.__setitem__(*args)
 

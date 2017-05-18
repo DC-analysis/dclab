@@ -4,7 +4,6 @@
 of the contours"""
 from __future__ import division, print_function, unicode_literals
 import numpy as np
-import itertools as IT
 
 def get_volume(cont, pos_x, pos_y,pix):
     """Compute  volume according to a matlab script from Geoff Olynyk:

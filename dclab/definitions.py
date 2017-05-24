@@ -459,10 +459,10 @@ tr_data = [["fluorescence traces", "FL1raw"],
         ]
 
 # mapping `Measuement` class attributes to configuration file names
-cfgmap = dict()        # area_um -> area
-cfgmaprev = dict()     # area -> area_um
-axlabels = dict()      # area -> Cell Size [µm²]
-axlabelsrev = dict()   # Cell Size [µm²] -> area
+cfgmap = {}        # area_um -> area
+cfgmaprev = {}     # area -> area_um
+axlabels = {}      # area -> Cell Size [µm²]
+axlabelsrev = {}   # Cell Size [µm²] -> area
 
 # here the name maps are defined
 for _u,_a,_r in zip(uid, axl, rdv):

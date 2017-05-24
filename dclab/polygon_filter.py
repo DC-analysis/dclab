@@ -33,7 +33,7 @@ class PolygonFilter(object):
         ----------
         axes : tuple of str
             The axes on which the polygon is defined. The first axis is
-            the x-axis. Example: ("Area", "Defo").
+            the x-axis. Example: ("area", "defo").
         points : array-like object of shape (N,2)
             The N coordinates (x,y) of the polygon. The exact order is
             important.
@@ -123,9 +123,9 @@ class PolygonFilter(object):
         
         for var, val in subdata:
             if var.lower() == "x axis":
-                xaxis = val
+                xaxis = val.lower()
             elif var.lower() == "y axis":
-                yaxis = val
+                yaxis = val.lower()
             elif var.lower() == "name":
                 self.name = val
             elif var.lower().startswith("point"):

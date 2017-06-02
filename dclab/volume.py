@@ -15,16 +15,16 @@ def get_volume(cont, pos_x, pos_y,pix):
     Parameters
     ----------
     cont: list of ndarrays 
-        Each array contains the contour of one event(s) (in pixels)
+        Each array in the list contains the contours of one event (in pixels)
         e.g. obtained using mm.contour (mm is an instance of RTDC_DataSet)
     pos_x: float or ndarray 
-        The x coordinate of the centroid of the event(s)
+        The x coordinate(s) of the centroid of the event(s)
         e.g. obtained using mm.pos_x  (mm is an instance of RTDC_DataSet)
     pos_y: float or ndarray 
-        The y coordinate of the centroid of the event(s)
+        The y coordinate(s) of the centroid of the event(s)
         e.g. obtained using mm.pos_lat  (mm is an instance of RTDC_DataSet)
     px_um: float
-        The detector pixel size in µm. Set this value to zero
+        The detector pixel size in µm.
         e.g. obtained using: mm.config["image"]["pix size"]  (mm is an instance 
         of RTDC_DataSet)
 
@@ -63,10 +63,10 @@ def get_volume(cont, pos_x, pos_y,pix):
         return vol
 
     for i in range(len(pos_x)):
-        try:
+        if len((cont[i])[:,0])>=4:
             contour_x = (cont[i])[:,0] #write x coord in a single array
             contour_y = (cont[i])[:,1]#write y coord in a single array
-            #Turn the contour around (it has to be conter-clockwise!)
+            #Turn the contour around (it has to be counter-clockwise!)
             contour_x = contour_x[::-1]
             contour_y = contour_y[::-1]
             #Move the whole contour down, such that the y coord. of the 
@@ -97,15 +97,7 @@ def get_volume(cont, pos_x, pos_y,pix):
             vol_up = vol_helper(contour_y_up,Z,Zp,dZ,pix)
                             
             v_avg[i] = ((abs(vol_low)+abs(vol_up))/2.0)
-        except: #If the contour has less than 4 pixels, the computation will fail
+        else: #If the contour has less than 4 pixels, the computation will fail
              v_avg[i] = (np.nan)
                 
     return v_avg
-
-
-
-    
-
-
-
-

@@ -32,7 +32,7 @@ else:
 
 
 class RTDC_DataSet(object):
-    """ An RTDC measurement object.
+    """RTDC measurement object
     
     Parameters
     ----------
@@ -413,7 +413,7 @@ class RTDC_DataSet(object):
 
 
     def get_downsampled_scatter(self, xax="area", yax="defo", downsample=0):
-        """ Filters a set of data from overlayed events for plotting
+        """Downsampling by removing points at dense locations
         
         Parameters
         ----------
@@ -458,9 +458,7 @@ class RTDC_DataSet(object):
 
     def get_kde_contour(self, xax="area", yax="defo", xacc=None, yacc=None,
                         kde_type="none", kde_kwargs={}):
-        """ The evaluated Gaussian Kernel Density Estimate
-        
-        -> for contours
+        """Evaluate the kernel density estimate for contours
         
         
         Parameters
@@ -524,9 +522,7 @@ class RTDC_DataSet(object):
 
     def get_kde_scatter(self, xax="area", yax="defo", positions=None,
                         kde_type="none", kde_kwargs={}):
-        """ The evaluated Gaussian Kernel Density Estimate
-        
-        -> for scatter plots
+        """Evaluate the kernel density estimate for scatter data
 
         
         Parameters
@@ -581,7 +577,7 @@ class RTDC_DataSet(object):
 
 
     def PolygonFilterAppend(self, filt):
-        """ Associates a Polygon Filter to the RTDC_DataSet
+        """Associates a Polygon Filter to the RTDC_DataSet
         
         filt can either be an integer or an instance of PolygonFilter
         """
@@ -597,7 +593,7 @@ class RTDC_DataSet(object):
 
 
     def PolygonFilterRemove(self, filt):
-        """ Opposite of PolygonFilterAppend """
+        """Opposite of PolygonFilterAppend """
         msg = "`filt` must be a number or instance of PolygonFilter."
         assert isinstance(filt, (PolygonFilter, int, float)), msg
         
@@ -621,7 +617,7 @@ def hashfile(fname, blocksize=65536):
 
 
 def GetProjectNameFromPath(path):
-    """ Gets the project name from a path.
+    """Get the project name from a path.
     
     For a path "/home/peter/hans/HLC12398/online/M1_13.tdms" or
     For a path "/home/peter/hans/HLC12398/online/data/M1_13.tdms" or

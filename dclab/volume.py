@@ -6,7 +6,7 @@ from __future__ import division, print_function, unicode_literals
 import numpy as np
 
 
-def get_volume(cont, pos_x, pos_y,pix):
+def get_volume(cont, pos_x, pos_y, pix):
     """Calculate the volume of a polygon revolved around an axis 
     
     The volume estimation assumes rotational symmetry. 
@@ -18,10 +18,11 @@ def get_volume(cont, pos_x, pos_y,pix):
     
     Parameters
     ----------
-    cont: ndarray or list of ndarrays 
-        Each array in the list contains the contour of an event
-        (in pixels), e.g. obtained using `mm.contour` where
-        `mm` is an instance of `RTDC_DataSet`.
+    cont: ndarray or list of ndarrays of shape (N,2)
+        A 2D array that holds the contour of an event (in pixels),
+        e.g. obtained using `mm.contour` where  `mm` is an instance
+        of `RTDC_DataSet`. The first and second columns of the
+        correspond to its x- and y-coordinates.
     pos_x: float or ndarray 
         The x coordinate(s) of the centroid of the event(s)
         e.g. obtained using `mm.pos_x`
@@ -49,6 +50,9 @@ def get_volume(cont, pos_x, pos_y,pix):
     pos_y = np.atleast_1d(pos_y)
     if not isinstance(cont, (list,tuple)):
         cont = [cont]
+        ret_list = False
+    else:
+        ret_list = True
 
     # results are stored in a separate array initialized with nans
     v_avg = np.zeros_like(pos_x, dtype=float)*np.nan
@@ -81,7 +85,7 @@ def get_volume(cont, pos_x, pos_y,pix):
             contour_y_upp = np.copy(contour_y)
             contour_y_upp[ind_upp] = 0
             # Move the contour to the left
-            Z = contour_x-pos_x[ii] / pix
+            Z = contour_x - pos_x[ii] / pix
             # Last point of the contour has to overlap with the first point
             Z = np.hstack([Z, Z[0]])
             Zp = Z[0:-1]
@@ -96,6 +100,10 @@ def get_volume(cont, pos_x, pos_y,pix):
                             
             v_avg[ii] = (vol_low + vol_upp) / 2
 
+    if not ret_list:
+        # Do not return a list if the input contour was not in a list
+        v_avg = v_avg[0]
+    
     return v_avg
 
 

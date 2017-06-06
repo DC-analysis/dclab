@@ -19,10 +19,10 @@ def get_volume(cont, pos_x, pos_y, pix):
     Parameters
     ----------
     cont: ndarray or list of ndarrays of shape (N,2)
-        A 2D array that holds the contour of an event (in pixels),
+        A 2D array that holds the contour of an event (in pixels)
         e.g. obtained using `mm.contour` where  `mm` is an instance
-        of `RTDC_DataSet`. The first and second columns of the
-        correspond to its x- and y-coordinates.
+        of `RTDC_DataSet`. The first and second columns of `cont`
+        correspond to the x- and y-coordinates of the contour.
     pos_x: float or ndarray 
         The x coordinate(s) of the centroid of the event(s)
         e.g. obtained using `mm.pos_x`

@@ -65,8 +65,8 @@ class ContourColumn(object):
         # contour frame is missing by comparing it to
         # the "frame" column of the rtdc data set.
         fref = self._contour_data.get_frame(0)
-        f0 = self._rtdc_dataset.frame[0]
-        f1 = self._rtdc_dataset.frame[1]
+        f0 = self._rtdc_dataset["frame"][0]
+        f1 = self._rtdc_dataset["frame"][1]
         if fref == f0:
             self.event_offset = 0
         elif fref == f1:

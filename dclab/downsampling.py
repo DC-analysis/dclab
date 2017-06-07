@@ -135,6 +135,7 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
                 toproc[int(xi-1), int(yi-1)] = False
                 ## second filter for multiple overlay
                 keep[ii] = True
+
         
         # 2. Make sure that we reach `samples` by adding or
         # removing events.        

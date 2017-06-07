@@ -70,8 +70,8 @@ class Export(object):
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
         # Start exporting
-        if len(ds.image):
-            v_size = (ds.image[0].shape[1], ds.image[0].shape[0])
+        if "image" in ds:
+            v_size = (ds["image"][0].shape[1], ds["image"][0].shape[0])
             # FourCC code will not work for all systems
             if platform.system() == "Darwin":
                 fourcc = b"I420"
@@ -90,12 +90,12 @@ class Export(object):
                                    isColor=True)
             if vout.isOpened():
                 # write the filtered frames to avi file
-                for evid in np.arange(len(ds._filter)):
+                for evid in np.arange(len(ds)):
                     # skip frames that were filtered out
                     if not ds._filter[evid]:
                         continue
                     try:
-                        image = ds.image[evid]
+                        image = ds["image"][evid]
                     except:
                         warnings.warn("Could not read image {}!".format(evid))
                         continue
@@ -150,9 +150,9 @@ class Export(object):
     
         # Collect the data
         if filtered:
-            data = [ getattr(ds, dfn.cfgmaprev[c])[ds._filter] for c in columns ]
+            data = [ ds[dfn.cfgmaprev[c]][ds._filter] for c in columns ]
         else:
-            data = [ getattr(ds, dfn.cfgmaprev[c]) for c in columns ]
+            data = [ ds[dfn.cfgmaprev[c]] for c in columns ]
         
         data = np.array(data).transpose()
         fcswrite.write_fcs(filename=path,
@@ -203,9 +203,9 @@ class Export(object):
         with open(path, "ab") as fd:
             # write data
             if filtered:
-                data = [ getattr(ds, dfn.cfgmaprev[c])[ds._filter] for c in columns ]
+                data = [ ds[dfn.cfgmaprev[c]][ds._filter] for c in columns ]
             else:
-                data = [ getattr(ds, dfn.cfgmaprev[c]) for c in columns ]
+                data = [ ds[dfn.cfgmaprev[c]] for c in columns ]
             
             np.savetxt(fd,
                        np.array(data).transpose(),

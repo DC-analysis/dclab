@@ -29,9 +29,9 @@ class Statistics(object):
     def get_column(self, rtdc_ds, axis):
         axis = axis.lower()
         if rtdc_ds.config["filtering"]["enable filters"]:
-            x = getattr(rtdc_ds, dfn.cfgmaprev[axis])[rtdc_ds._filter]
+            x = rtdc_ds[dfn.cfgmaprev[axis]][rtdc_ds._filter]
         else:
-            x = getattr(rtdc_ds, dfn.cfgmaprev[axis])
+            x = rtdc_ds[dfn.cfgmaprev[axis]]
         bad = np.isnan(x)^np.isinf(x)
         xout = x[~bad]
         return xout

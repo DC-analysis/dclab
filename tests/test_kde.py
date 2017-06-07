@@ -63,7 +63,7 @@ def test_kde_positions():
     ds.config["filtering"]["enable filters"] = False
     sc = ds.get_kde_scatter(xax="area", yax="defo")
     sc2 = ds.get_kde_scatter(xax="area", yax="defo",
-                             positions=(ds.area_um, ds.deform))
+                             positions=(ds["area_um"], ds["deform"]))
     assert np.all(sc==sc2)
 
 

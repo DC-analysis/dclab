@@ -1,5 +1,11 @@
 0.2.4
-- Add convenience methods for `RTDC_DataSet.config`
+- Add convenience methods for `Configuration`
+- Refactoring (#8):
+  - Separate classes for .tdms, dict-based, and hierarchy data sets
+  - Introduce "_events" attribute for stored data
+  - Data columns (including image, trace, contour) are accessed via
+    keys instead of attributes.
+  - Make space for new hdf5-based file format
 0.2.3
 - Add look-up table for elastic modulus (#7)
 - Add filtering option "remove invalid events" to remove nan/inf

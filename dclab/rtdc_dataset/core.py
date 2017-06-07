@@ -6,21 +6,16 @@ RTDC_DataSet classes and methods
 from __future__ import division, print_function, unicode_literals
 
 import hashlib
-from nptdms import TdmsFile
-import numpy as np
-import os
 import sys
-import time
+import warnings
+
+import numpy as np
 
 from .. import definitions as dfn
 from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
-from .config import Configuration
-from .event_contour import ContourColumn
-from .event_image import ImageColumn
-from .event_trace import TraceColumn
 from .export import Export
 
 
@@ -30,223 +25,95 @@ else:
     str_classes = str
 
 
-
-class RTDC_DataSet(object):
-    """RTDC measurement object
-    
-    Parameters
-    ----------
-    tdms_path: str
-        Path to a '.tdms' file. Only one of `tdms_path and `ddict` can
-        be specified.
-    ddict: dict
-        Dictionary with keys from `dclab.definitions.uid` (e.g. "area", "defo")
-        with which the class will be instantiated. Not '.tdms' file is required.
-        The configuration is set to the default configuration fo dclab.
-    
-    Notes
-    -----
-    Besides the filter arrays for each data column, there is a manual
-    boolean filter array ``RTDC_DataSet._filter_manual`` that can be edited
-    by the user - a boolean value of ``False`` means that the event is 
-    excluded from all computations.
-    
-    """
-    def __init__(self, tdms_path=None, ddict=None, hparent=None):
-        """ Load tdms file and set all variables """
-        kwinput = [tdms_path, ddict, hparent].count(None)
-        assert kwinput==2, "Specify tdms_path OR ddict OR hparent"
-
+class RTDCBase(object):
+    def __init__(self):
+        """Base class for RT-DC data sets"""
         # Kernel density estimator dictionaries
+        
         self._old_filters = {} # for comparison to new filters
         self._polygon_filter_ids = []
-        
-        if tdms_path is None:
-            # We are given a dictionary with data values.
-            # - create a unique fake title
-            t = time.localtime()
-            rand = "".join([ hex(r)[2:-1] for r in np.random.randint(10000,
-                                                                     size=3)])
-            tdms_path = "{}_{:02d}_{:02d}/{}.tdms".format(t[0],t[1],t[2],rand)
-
-        # Initialize variables and generate hashes
-        self.tdms_filename = tdms_path
-        self.filename = tdms_path
-        self.name = os.path.split(tdms_path)[1].split(".tdms")[0]
-        self.fdir = os.path.dirname(tdms_path)
-        mx = os.path.join(self.fdir, self.name.split("_")[0])
-        self.title = u"{} - {}".format(
-                                       GetProjectNameFromPath(tdms_path),
-                                       os.path.split(mx)[1])
-        fsh = [ tdms_path, mx+"_camera.ini", mx+"_para.ini" ]
-        self.file_hashes = [(f, hashfile(f)) for f in fsh if os.path.exists(f)]
-        ihasher = hashlib.md5()
-        ihasher.update(obj2str(tdms_path))
-        ihasher.update(obj2str(self.file_hashes))
-        self.identifier = ihasher.hexdigest()
-
-        if ddict is not None:
-            # We are given a dictionary with data values.
-            self._init_data_with_dict(ddict)
-        elif hparent is not None:
-            # We were given a hierarchy parent
-            self._init_data_with_hierarchy(hparent)
-        else:
-            # We were given a tdms file.
-            self._init_data_with_tdms(tdms_path)
-
-        # event images
-        self.image = ImageColumn(self)
-        # event contours
-        self.contour = ContourColumn(self)
-        # event traces
-        self.trace = TraceColumn(self)
-        # compute other columns
-        self.compute_columns()
-
         # export functionalities
         self.export = Export(self)
 
 
-    def _init_data_with_dict(self, ddict):
-        for key in ddict:
-            setattr(self, dfn.cfgmaprev[key.lower()], np.array(ddict[key]))
-        fill0 = np.zeros(len(ddict[key]))
-        for key in dfn.rdv:
-            if not hasattr(self, key):
-                setattr(self, key, fill0)
-
-        # Set up filtering
-        self._init_filters()
-        self.config = Configuration(rtdc_ds=self)
+    def __contains__(self, key):
+        val = self[key]
+        ct = False
+        if isinstance(val, np.ndarray): 
+            ct = np.all(val!=0)
+        elif val:
+            ct = True
+        return ct
 
 
-    def _init_data_with_hierarchy(self, hparent):
-        """ Initializes the current RTDC_DataSet with another RTDC_Data set.
+    def __getattr__(self, attr):
+        # temporary workaround to dict-like behavior
+        # This method will not be called unless __getattribute__ raises
+        # an AttributeError.
+        try: 
+            data = self.__getitem__(attr)
+        except:
+            raise AttributeError("Column not found: {}".format(attr))
+        else:
+            warnings.warn("Using geattr to get columns is DEPRECATED!")
+            return data
+
+
+    def __getitem__(self, key):
+        if key in self._events:
+            data = self._events[key]
+            if not np.all(data==0):
+                return data
+        # Compute new data columns dynamically
+        dummy = np.zeros(len(self))
+        if key == "area_um":
+            pix = self.config["image"]["pix size"]
+            return self["area"] * pix**2
+        elif key == "time":
+            if "framerate" in self.config:
+                fr = self.config["framerate"]["frame rate"]
+                return (self["frame"] - self["frame"][0]) / fr
+            else:
+                return dummy
+        else:
+            return dummy
+        # TODO:
+        # - add volume computation or elastic modulus computation here?
+
+
+    def __len__(self):
+        keys = list(self._events.keys())
+        keys.sort()
+        for kk in keys:
+            length = len(self._events[kk])
+            if length:
+                return length
+        else:
+            raise ValueError("Could not determine size of data set.")
         
-        A few words on hierarchies:
-        The idea is that an RTDC_DataSet can use the filtered data of another
-        RTDC_DataSet and interpret these data as unfiltered events. This comes
-        in handy e.g. when the percentage of different subpopulations need to
-        be distinguished without the noise in the original data.
         
-        Children in hierarchies always update their data according to the
-        filtered event data from their parent when `ApplyFilter` is called.
-        This makes it easier to save and load hierarchy children with e.g.
-        ShapeOut and it makes the handling of hierarchies more intuitive
-        (when the parent changes, the child changes as well).
-        
-        Parameters
-        ----------
-        hparent : instance of RTDC_DataSet
-            The hierarchy parent.
-            
-        Attributes
-        ----------
-        hparent : instance of RTDC_DataSet
-            Only hierarchy children have this attribute
-        """
-        self.hparent = hparent
-        
-        ## Copy configuration
-        cfg = hparent.config.copy()
-
-        # Remove previously applied filters
-        pops = []
-        for key in cfg["Filtering"]:
-            if (key.endswith("Min") or
-                key.endswith("Max") or
-                key == "Polygon Filters"):
-                pops.append(key)
-        [ cfg["Filtering"].pop(key) for key in pops ]
-        # Add parent information in dictionary
-        cfg["Filtering"]["Hierarchy Parent"]=hparent.identifier
-
-        self.config = Configuration(cfg=cfg)
-
-        myhash = hashlib.md5(obj2str(time.time())).hexdigest()
-        self.identifier = hparent.identifier+"_child-"+myhash
-        self.title = hparent.title + "_child-"+myhash[-4:]
-        # Apply the filter
-        # This will also populate all event attributes
-        self.ApplyFilter()
-
-
-    def _init_data_with_tdms(self, tdms_filename):
-        """ Initializes the current RTDC_DataSet with a tdms file.
-        """
-        tdms_file = TdmsFile(tdms_filename)
-        ## Set all necessary internal parameters as defined in
-        ## definitions.py
-        ## Note that this is meta-programming. If you want to add a
-        ## different column from tdms files, then edit definitions.py:
-        ## -> uid, axl, rdv, tfd
-        # time is always there
-        datalen = len(tdms_file.object("Cell Track", "time").data)
-        for ii, group in enumerate(dfn.tfd):
-            # ii iterates through the data that we could possibly extract
-            # from a the tdms file.
-            # The `group` contains all information necessary to extract
-            # the data: table name, used column names, method to compute
-            # the desired data from the columns.
-            table = group[0]
-            if not isinstance(group[1], list):
-                # just for standards
-                group[1] = [group[1]]
-            func = group[2]
-            args = []
-            try:
-                for arg in group[1]:
-                    data = tdms_file.object(table, arg).data
-                    if data is None or len(data)==0:
-                        # Fill empty columns with zeros. npTDMS treats empty
-                        # columns in the following way:
-                        # - in nptdms 0.8.2, `data` is `None`
-                        # - in nptdms 0.9.0, `data` is an array of length 0
-                        data = np.zeros(datalen)
-                    args.append(data)
-            except KeyError:
-                # set it to zero
-                func = lambda x: x
-                args = [np.zeros(datalen)]
-            finally:
-                setattr(self, dfn.rdv[ii], func(*args))
-
-
-        # Set up filtering
-        self._init_filters()
-        mx = os.path.join(self.fdir, self.name.split("_")[0])
-        self.config = Configuration(files=[mx+"_para.ini", mx+"_camera.ini"],
-                                    rtdc_ds=self)
-
-
     def _init_filters(self):
-        datalen = self.time.shape[0]
+        datalen = len(self)
         # Plotting filters, set by "get_downsampled_scatter".
         # This is a nested filter - it must be applied after self._filter
         # to get the plotted events.
-        self._plot_filter = np.ones_like(self.time, dtype=bool)
-
+        self._plot_filter = np.ones(datalen, dtype=bool)
         # Set array filters:
         # This is the filter that will be used for plotting:
-        self._filter = np.ones_like(self.time, dtype=bool)
+        self._filter = np.ones(datalen, dtype=bool)
         # Manual filters, additionally defined by the user
         self._filter_manual = np.ones_like(self._filter)
         # Invalid filters
         self._filter_invalid = np.ones_like(self._filter)
-        attrlist = dir(self)
         # Find attributes to be filtered
         # These are the filters from which self._filter is computed
         inifilter = np.ones(datalen, dtype=bool)
-        for attr in attrlist:
-            # only allow filterable attributes from global dfn.cfgmap
-            if not attr in dfn.cfgmap:
-                continue
-            data = getattr(self, attr)
-            if isinstance(data, np.ndarray):
+        for key in dfn.rdv:
+            if key in self:
                 # great, we are dealing with an array
-                setattr(self, "_filter_"+attr, inifilter.copy())
+                setattr(self, "_filter_"+key, inifilter.copy())
         self._filter_polygon = inifilter.copy()
+
 
 
     def ApplyFilter(self, force=[]):
@@ -274,24 +141,6 @@ class RTDC_DataSet(object):
         newvals = []
 
         FIL = self.config["filtering"]
-
-        # Check if we are a hierarchy child and if yes, update the
-        # filtered events from the hierarchy parent.
-        if FIL["hierarchy parent"].lower() != "none":
-            # Copy event data from hierarchy parent
-            self.hparent.ApplyFilter()
-            # TODO:
-            # - somehow copy manually filtered events
-            if (hasattr(self, "_filter_manual") 
-                and np.sum(1-self._filter_manual) != 0):
-                msg = "filter_manual not supported in hierarchy!"
-                raise NotImplementedError(msg)
-
-            for attr in dfn.rdv:
-                filtevents = getattr(self.hparent, attr)[self.hparent._filter]
-                setattr(self, attr, filtevents)
-            self._init_filters()
-            self._old_filters = {}
 
         ## Determine which data was updated
         OLD = self._old_filters
@@ -325,7 +174,7 @@ class RTDC_DataSet(object):
         attr2update = np.unique(attr2update)
 
         for attr in attr2update:
-            data = getattr(self, attr)
+            data = self[attr]
             if isinstance(data, np.ndarray):
                 fstart = dfn.cfgmap[attr]+" min"
                 fend = dfn.cfgmap[attr]+" max"
@@ -357,22 +206,24 @@ class RTDC_DataSet(object):
                 if p.unique_id in FIL[pf_id]:
                     # update self._filter_polygon
                     # iterate through axes
-                    datax = getattr(self, dfn.cfgmaprev[p.axes[0]])
-                    datay = getattr(self, dfn.cfgmaprev[p.axes[1]])
+                    datax = self[dfn.cfgmaprev[p.axes[0]]]
+                    datay = self[dfn.cfgmaprev[p.axes[1]]]
                     self._filter_polygon *= p.filter(datax, datay)
 
         # Invalid filters
         self._filter_invalid[:] = True
         if FIL["remove invalid events"]:            
             for attr in dfn.cfgmap:
-                if hasattr(self, attr):
-                    col = getattr(self, attr)
+                if attr in self:
+                    col = self[attr]
                     invalid = np.isinf(col)+np.isnan(col)
                     self._filter_invalid *= ~invalid
+
 
         # now update the entire object filter
         # get a list of all filters
         self._filter[:] = True
+
         if FIL["enable filters"]:
             for attr in dir(self):
                 if attr.startswith("_filter_"):
@@ -393,23 +244,7 @@ class RTDC_DataSet(object):
         # Actual filtering is then done during plotting            
         self._old_filters = self.config.copy()["filtering"]
 
-
-    def compute_columns(self):
-        """Compute columns that require information from self.config"""
-        # TODO:
-        # - create a list of definitions and compute the data later on
-        if ("image" in self.config and
-            "pix size" in self.config["image"]):
-            PIX = self.config["image"]["pix size"]
-            if not np.allclose(self.area, 0):
-                self.area_um[:] = self.area * PIX**2
-        # look for frame rate update
-        if ("framerate" in self.config and
-            "frame rate" in self.config["Framerate"]):
-            FR = self.config["framerate"]["frame rate"]
-            # FR is in Hz
-            self.time[:] = (self.frame - self.frame[0]) / FR
-        self.config._complete_config_from_rtdc_ds(self)
+        
 
 
     def get_downsampled_scatter(self, xax="area", yax="defo", downsample=0):
@@ -441,12 +276,12 @@ class RTDC_DataSet(object):
 
         # Get axes
         if self.config["filtering"]["enable filters"]:
-            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
-            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
+            x = self[dfn.cfgmaprev[xax]][self._filter]
+            y = self[dfn.cfgmaprev[yax]][self._filter]
         else:
             # filtering disabled
-            x = getattr(self, dfn.cfgmaprev[xax])
-            y = getattr(self, dfn.cfgmaprev[yax])
+            x = self[dfn.cfgmaprev[xax]]
+            y = self[dfn.cfgmaprev[yax]]
 
         xsd, ysd, idx = downsampling.downsample_grid(x, y,
                                                      samples=downsample,
@@ -488,11 +323,11 @@ class RTDC_DataSet(object):
         assert kde_type in kde_methods.methods
 
         if self.config["filtering"]["enable filters"]:
-            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
-            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
+            x = self[dfn.cfgmaprev[xax]][self._filter]
+            y = self[dfn.cfgmaprev[yax]][self._filter]
         else:
-            x = getattr(self, dfn.cfgmaprev[xax])
-            y = getattr(self, dfn.cfgmaprev[yax])
+            x = self[dfn.cfgmaprev[xax]]
+            y = self[dfn.cfgmaprev[yax]]
         
         # sensible default values
         cpstep = lambda a: (a.max()-a.min())/10
@@ -552,11 +387,11 @@ class RTDC_DataSet(object):
         assert kde_type in kde_methods.methods
         
         if self.config["filtering"]["enable filters"]:
-            x = getattr(self, dfn.cfgmaprev[xax])[self._filter]
-            y = getattr(self, dfn.cfgmaprev[yax])[self._filter]
+            x = self[dfn.cfgmaprev[xax]][self._filter]
+            y = self[dfn.cfgmaprev[yax]][self._filter]
         else:
-            x = getattr(self, dfn.cfgmaprev[xax])
-            y = getattr(self, dfn.cfgmaprev[yax])
+            x = self[dfn.cfgmaprev[xax]]
+            y = self[dfn.cfgmaprev[yax]]
 
         if positions is None:
             posx = None
@@ -614,37 +449,6 @@ def hashfile(fname, blocksize=65536):
         buf = afile.read(blocksize)
     afile.close()
     return hasher.hexdigest()
-
-
-def GetProjectNameFromPath(path):
-    """Get the project name from a path.
-    
-    For a path "/home/peter/hans/HLC12398/online/M1_13.tdms" or
-    For a path "/home/peter/hans/HLC12398/online/data/M1_13.tdms" or
-    without the ".tdms" file, this will return always "HLC12398".
-    """
-    if path.endswith(".tdms"):
-        dirn = os.path.dirname(path)
-    elif os.path.isdir(path):
-        dirn = path
-    else:
-        dirn = os.path.dirname(path)
-    # check if the directory contains data or is online
-    root1, trail1 = os.path.split(dirn)
-    root2, trail2 = os.path.split(root1)
-    _root3, trail3 = os.path.split(root2)
-    
-    if trail1.lower() in ["online", "offline"]:
-        # /home/peter/hans/HLC12398/online/
-        project = trail2
-    elif ( trail1.lower() == "data" and 
-           trail2.lower() in ["online", "offline"] ):
-        # this is olis new folder sctructure
-        # /home/peter/hans/HLC12398/online/data/
-        project = trail3
-    else:
-        project = trail1
-    return project
 
 
 def obj2str(obj):

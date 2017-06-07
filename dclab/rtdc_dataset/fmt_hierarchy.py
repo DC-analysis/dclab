@@ -49,6 +49,7 @@ class RTDC_Hierarchy(RTDCBase):
         self.path = "none"
         self.fdir = "none"
         
+        
         ## Copy configuration
         cfg = hparent.config.copy()
 
@@ -69,6 +70,7 @@ class RTDC_Hierarchy(RTDCBase):
         self.identifier = hparent.identifier+"_child-"+myhash
         self.title = hparent.title + "_child-"+myhash[-4:]
         self.name = self.title
+        self.tdms_filename = self.title
         # Apply the filter
         # This will also populate all event attributes
         self.ApplyFilter()
@@ -95,4 +97,5 @@ class RTDC_Hierarchy(RTDCBase):
             and np.sum(1-self._filter_manual) != 0):
             msg = "filter_manual not supported in hierarchy!"
             raise NotImplementedError(msg)
+
         super(RTDC_Hierarchy, self).ApplyFilter(*args, **kwargs)

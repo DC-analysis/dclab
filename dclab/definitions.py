@@ -69,7 +69,7 @@ uid = [
         ]
 # Axes label (same order as UID)
 axl = [
-        u"Area [px²]",
+        u"Area [px]",
         u"Area [µm²]",
         u"Convex to measured area ratio",
         u"Aspect ratio of bounding box",

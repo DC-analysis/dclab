@@ -244,8 +244,6 @@ class RTDCBase(object):
         # Actual filtering is then done during plotting            
         self._old_filters = self.config.copy()["filtering"]
 
-        
-
 
     def get_downsampled_scatter(self, xax="area", yax="defo", downsample=0):
         """Downsampling by removing points at dense locations

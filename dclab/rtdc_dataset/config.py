@@ -68,6 +68,8 @@ class Configuration(object):
             The config files with which to initialize the configuration
         cfg: dict-like
             The dictionary with which to initialize the configuration
+        rtdc_ds: instance of RTDCBase
+            An RT-TC data set.
         """
         self._cfg = CaseInsensitiveDict()
 

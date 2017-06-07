@@ -47,7 +47,7 @@ class RTDC_Dict(RTDCBase):
             kk = dfn.cfgmaprev[key.lower()]
             self._events[kk] = ddict[key]
 
-        fill0 = np.zeros(len(ddict[ddict.keys()[0]]))
+        fill0 = np.zeros(len(ddict[list(ddict.keys())[0]]))
         for key in dfn.rdv:
             if not key in self._events:
                 self._events[key] = fill0

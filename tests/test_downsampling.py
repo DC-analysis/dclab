@@ -32,8 +32,6 @@ def test_downsample_none():
     ds.get_downsampled_scatter(downsample=0)
     assert np.sum(ds._plot_filter) == 8472
 
-    
-
 
 def test_downsample_none2():
     keys = ["area", "defo", "time", "frame", "fl-3width"]

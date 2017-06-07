@@ -174,8 +174,8 @@ class RTDCBase(object):
         attr2update = np.unique(attr2update)
 
         for attr in attr2update:
-            data = self[attr]
-            if isinstance(data, np.ndarray):
+            if attr in self:
+                data = self[attr]
                 fstart = dfn.cfgmap[attr]+" min"
                 fend = dfn.cfgmap[attr]+" max"
                 # If min and max exist and if they are not identical:

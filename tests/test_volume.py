@@ -79,13 +79,13 @@ def test_orientation():
     #obtain the centroid (corresponds to pos_x and pos_lat)
     cx, cy = centroid_of_polygon(ellip) 
 
-    v1 = get_volume(cont=[ellip],
+    v1 = get_volume(cont=ellip,
                         pos_x=cx,
                         pos_y=cy,
                         pix=1)
 
     # Turn contour around
-    v2 = get_volume(cont=[ellip[::-1,:]],
+    v2 = get_volume(cont=ellip[::-1,:],
                         pos_x=cx,
                         pos_y=cy,
                         pix=1)
@@ -105,12 +105,11 @@ def test_get_volume():
                                k=100)
     #obtain the centroid (corresponds to pos_x and pos_lat)
     cx, cy = centroid_of_polygon(ellip) 
-
     elliplist = []
     elliplist.append(ellip)
     volume = get_volume(cont=elliplist,
-                        pos_x=cx,
-                        pos_y=cy,
+                        pos_x=[cx],
+                        pos_y=[cy],
                         pix=1)
     
     #Analytic solution for volume of ellipsoid:
@@ -137,8 +136,8 @@ def test_shape():
     assert isinstance(volume, float)
 
     volumelist = get_volume(cont=[ellip],
-                            pos_x=cx,
-                            pos_y=cy,
+                            pos_x=[cx],
+                            pos_y=[cy],
                             pix=1)    
     assert isinstance(volumelist, np.ndarray)
     

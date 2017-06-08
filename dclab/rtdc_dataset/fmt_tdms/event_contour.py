@@ -18,6 +18,7 @@ class ContourColumn(object):
         text file.
         """
         fname = self.find_contour_file(rtdc_dataset)
+        self.identifier = fname
         if fname is not None:
             self._contour_data = ContourData(fname)
             self._initialized = False
@@ -27,7 +28,7 @@ class ContourColumn(object):
             self._initialized = True
         self._rtdc_dataset = rtdc_dataset
         self.event_offset = 0
-    
+        
     
     def __getitem__(self, idx):
         if not self._initialized:
@@ -43,6 +44,7 @@ class ContourColumn(object):
     def __len__(self):
         length = len(self._contour_data)
         if length:
+            self.determine_offset()
             length += self.event_offset 
         return length
 

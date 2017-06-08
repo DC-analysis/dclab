@@ -189,7 +189,6 @@ class RTDCBase(object):
 
         for attr in attr2update:
             if attr in self:
-                data = self[attr]
                 fstart = dfn.cfgmap[attr]+" min"
                 fend = dfn.cfgmap[attr]+" max"
                 # If min and max exist and if they are not identical:
@@ -203,6 +202,7 @@ class RTDCBase(object):
                     # Be sure to check against force in that case!
                     ivalstart = FIL[fstart]
                     ivalend = FIL[fend]
+                    data = self[attr]
                     indices[:] = (ivalstart <= data)*(data <= ivalend)
                 else:
                     indices[:] = True

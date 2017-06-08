@@ -23,10 +23,10 @@ def get_volume(cont, pos_x, pos_y, pix):
         e.g. obtained using `mm.contour` where  `mm` is an instance
         of `RTDCBase`. The first and second columns of `cont`
         correspond to the x- and y-coordinates of the contour.
-    pos_x: float or ndarray 
+    pos_x: float or ndarray of length N
         The x coordinate(s) of the centroid of the event(s)
         e.g. obtained using `mm.pos_x`
-    pos_y: float or ndarray 
+    pos_y: float or ndarray of length N
         The y coordinate(s) of the centroid of the event(s)
         e.g. obtained using `mm.pos_lat`
     px_um: float
@@ -61,14 +61,18 @@ def get_volume(cont, pos_x, pos_y, pix):
     CRC Press, 2002, e-ISBN 978-1-4200-3544-5.
     See Chapter 5, Section 5.4, doi: 10.1201/9781420035445.ch5
     """
-    #Convert input to 1D arrays
-    pos_x = np.atleast_1d(pos_x)
-    pos_y = np.atleast_1d(pos_y)
-    if not isinstance(cont, (list,tuple)):
+    if np.isscalar(pos_x):
         cont = [cont]
         ret_list = False
     else:
         ret_list = True
+    
+    #Convert input to 1D arrays
+    pos_x = np.atleast_1d(pos_x)
+    pos_y = np.atleast_1d(pos_y)
+
+    assert len(pos_x) == len(pos_y)
+    assert len(pos_x) == len(cont)
 
     # results are stored in a separate array initialized with nans
     v_avg = np.zeros_like(pos_x, dtype=float)*np.nan

@@ -1,4 +1,5 @@
 0.2.4
+- Add (ancilliary) computation of volume (#11)
 - Add convenience methods for `Configuration`
 - Refactoring (#8):
   - Separate classes for .tdms, dict-based, and hierarchy data sets

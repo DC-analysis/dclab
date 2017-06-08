@@ -41,6 +41,8 @@ def obj2str(obj):
         return b"".join(obj2str(o) for o in obj)
     elif isinstance(obj, dict):
         return obj2str(list(obj.items()))
+    elif hasattr(obj, "identifier"):
+        return obj2str(obj.identifier)
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))

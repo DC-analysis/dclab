@@ -99,6 +99,15 @@ class AncillaryColumn():
         return cols
 
 
+    @staticmethod
+    def get_column(column_name):
+        for col in AncillaryColumn.columns:
+            if col.column_name == column_name:
+                return col
+        else:
+            raise ValueError("Column {} not found.".format(column_name))
+
+
     def compute(self, rtdc_ds):
         """Compute the column with self.method
 
@@ -115,7 +124,7 @@ class AncillaryColumn():
         return self.method(rtdc_ds)
 
 
-    def is_available(self, rtdc_ds):
+    def is_available(self, rtdc_ds, verbose=False):
         """Check whether the column is available
         
         Parameters
@@ -132,25 +141,38 @@ class AncillaryColumn():
         for item in self.req_config:
             section, keys = item
             if section not in rtdc_ds.config:
+                if verbose:
+                    print("{} not in config".format(section))
                 return False
             else:
                 for key in keys:
                     if key not in rtdc_ds.config[section]:
+                        if verbose:
+                            print("{} not in config['{}']".format(key,
+                                                                  section))
                         return False
         # Check columns
         # Avoid recursions with `rtdc_ds.__contains__`
         for col in self.req_columns:
-            if col not in rtdc_ds._events:
-                return False
-            elif np.all(rtdc_ds._events[col]==0):
-                # check if it is already in ancillaries
-                if col not in rtdc_ds._ancillaries:
+            if (col in rtdc_ds._events and
+                not np.all(rtdc_ds._events[col]==0)):
+                    return True
+            elif (col not in rtdc_ds._events and
+                  col not in rtdc_ds._ancillaries):
+                try:
+                    cc = AncillaryColumn.get_column(col)
+                except ValueError:
+                    if verbose:
+                        msg = "{} not in _events and not anc".format(col)
+                        print(msg)
                     return False
-            else:
-                if col in self.columns:
-                    if not col.is_available(rtdc_ds):
+                else:
+                    if not cc.is_available(rtdc_ds):
+                        if verbose:
+                            msg = "anc column {} not available".format(col)
+                            print(msg)
                         return False
-                    
+
         # All passed
         return True
 

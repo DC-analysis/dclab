@@ -11,7 +11,6 @@ import numpy as np
 from nptdms import TdmsFile
 
 from dclab import definitions as dfn
-from ..ancilliary_columns import AncilliaryColumn
 from ..config import Configuration
 from ..core import RTDCBase, obj2str, hashfile
 
@@ -116,12 +115,6 @@ class RTDC_TDMS(RTDCBase):
         self.config = Configuration(files=[mx+"_para.ini", mx+"_camera.ini"],
                                     rtdc_ds=self)
 
-        # compute ancilliaries
-        anc = AncilliaryColumn.available_columns(self)
-        for key in dfn.rdv:
-            if key in anc:
-                self[key]
-            
         self._init_filters()
 
 

@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Computation of ancilliary columns
+"""Computation of ancillary columns
 
-Ancilliary columns are computed on-the-fly in dclab if the
+Ancillary columns are computed on-the-fly in dclab if the
 required data is available. The columns are registered here
 and are computed when `RTDCBase.__getitem__` is called with
 the respective column name. When `RTDCBase.__contains__` is
@@ -15,8 +15,8 @@ In [2]: rtdc_dataset["emodulus"]
 Out[2]: ndarray([...])  # now data is computed and cached
 
 Once the data has been computed, `RTDCBase` caches it in
-the `_ancilliaries` property dict together with a hash
-that is computed with `AncilliaryColumn.hash`. The hash
+the `_ancillaries` property dict together with a hash
+that is computed with `AncillaryColumn.hash`. The hash
 is computed from the column data `req_columns` and the
 configuration metadata `req_config`.
 """
@@ -30,7 +30,7 @@ from dclab import elastic, volume
 from .util import obj2str
 
 
-class AncilliaryColumn():
+class AncillaryColumn():
     # Holds all instances of this class
     columns = []
     def __init__(self, column_name, method, req_config=[], req_columns=[]):
@@ -39,7 +39,7 @@ class AncilliaryColumn():
         Parameters
         ----------
         column_name: str
-            The name of the ancilliary column, e.g. "emodulus".
+            The name of the ancillary column, e.g. "emodulus".
         method: callable
             The method that computes the column. This method
             takes an instance of `RTDCBase` as argument.
@@ -61,15 +61,15 @@ class AncilliaryColumn():
         self.req_columns = req_columns
         
         # register this column
-        AncilliaryColumn.columns.append(self)
+        AncillaryColumn.columns.append(self)
 
 
     def __repr__(self):
-        return "Ancilliary column: {}".format(self.column_name)
+        return "Ancillary column: {}".format(self.column_name)
 
 
     def hash(self, rtdc_ds):
-        """Used for identifying an ancilliary computation"""
+        """Used for identifying an ancillary computation"""
         hasher = hashlib.md5()
         hasher.update(obj2str(self.req_config))
         for col in self.req_columns:
@@ -90,10 +90,10 @@ class AncilliaryColumn():
         -------
         columns: dict
             Dictionary with column names as keys and instances
-            of `AncilliaryColumn` as values.
+            of `AncillaryColumn` as values.
         """
         cols = {}
-        for inst in AncilliaryColumn.columns:
+        for inst in AncillaryColumn.columns:
             if inst.is_available(rtdc_ds):
                 cols[inst.column_name] = inst
         return cols
@@ -143,8 +143,8 @@ class AncilliaryColumn():
             if col not in rtdc_ds._events:
                 return False
             elif np.all(rtdc_ds._events[col]==0):
-                # check if it is already in ancilliaries
-                if col not in rtdc_ds._ancilliaries:
+                # check if it is already in ancillaries
+                if col not in rtdc_ds._ancillaries:
                     return False
             else:
                 if col in self.columns:
@@ -214,32 +214,32 @@ def compute_volume(mm):
     return vol
     
 
-# Register ancilliaries
-AncilliaryColumn(column_name="area_ratio",
+# Register ancillaries
+AncillaryColumn(column_name="area_ratio",
                  method=compute_area_ratio,
                  req_columns=["area", "area_raw"]
                  )
 
-AncilliaryColumn(column_name="area_um",
+AncillaryColumn(column_name="area_um",
                  method=compute_area_um,
                  req_config=[["image", ["pix size"]]],
                  req_columns=["area"]
                  )
 
-AncilliaryColumn(column_name="area_aspect",
+AncillaryColumn(column_name="area_aspect",
                  method=compute_aspect,
                  req_columns=["size_x", "size_y"]
                  )
 
-AncilliaryColumn(column_name="deform",
+AncillaryColumn(column_name="deform",
                  method=compute_deform,
                  req_columns=["circ"]
                  )
 
 # TODO:
-# - Define multiple AncilliaryColumn of "emodulus":
+# - Define multiple AncillaryColumn of "emodulus":
 #   (e.g. using "temperature" column) 
-AncilliaryColumn(column_name="emodulus",
+AncillaryColumn(column_name="emodulus",
                  method=compute_emodulus,
                  req_columns=["area_um", "deform"],
                  req_config=[["calculation", 
@@ -258,17 +258,17 @@ AncilliaryColumn(column_name="emodulus",
                              ],
                  )
 
-AncilliaryColumn(column_name="index",
+AncillaryColumn(column_name="index",
                  method=compute_index,
                  )
 
-AncilliaryColumn(column_name="time",
+AncillaryColumn(column_name="time",
                  method=compute_time,
                  req_config=[["framerate", ["frame rate"]]],
                  req_columns=["frame"]
                  )
 
-AncilliaryColumn(column_name="volume",
+AncillaryColumn(column_name="volume",
                  method=compute_volume,
                  req_columns=["contour", "pos_x", "pos_y"],
                  req_config=[["image", ["pix size"]]],

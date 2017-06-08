@@ -12,7 +12,7 @@ from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
-from .ancilliary_columns import AncilliaryColumn
+from .ancillary_columns import AncillaryColumn
 from .export import Export
 from .util import obj2str, hashfile
 
@@ -23,9 +23,9 @@ class RTDCBase(object):
         
         self._old_filters = {} # for comparison to new filters
         self._polygon_filter_ids = []
-        # Ancilliaries have the column name as keys and a
+        # Ancillaries have the column name as keys and a
         # tuple containing column and hash as value.
-        self._ancilliaries = {}
+        self._ancillaries = {}
         # export functionalities
         self.export = Export(self)
 
@@ -43,11 +43,11 @@ class RTDCBase(object):
                 # (e.g. tdms image, trace, contour)
                 ct = True
         if ct == False:
-            # Check ancilliary columns data
-            if key in self._ancilliaries:
+            # Check ancillary columns data
+            if key in self._ancillaries:
                 # already computed
                 ct = True
-            elif key in AncilliaryColumn.available_columns(self):
+            elif key in AncillaryColumn.available_columns(self):
                 # to be computed
                 ct = True
         return ct
@@ -71,22 +71,22 @@ class RTDCBase(object):
             data = self._events[key]
             if not np.all(data==0):
                 return data 
-        # Try to find the column in the ancilliary columns
-        # (see ancilliary_columns.py for more information).
-        # These columns are cached in `self._ancilliaries`.
-        ancol = AncilliaryColumn.available_columns(self)
+        # Try to find the column in the ancillary columns
+        # (see ancillary_columns.py for more information).
+        # These columns are cached in `self._ancillaries`.
+        ancol = AncillaryColumn.available_columns(self)
         if key in ancol:
             # The column is available.
             anhash = ancol[key].hash(self)
-            if (key in self._ancilliaries and 
-                self._ancilliaries[key][0] == anhash):
+            if (key in self._ancillaries and 
+                self._ancillaries[key][0] == anhash):
                 # use cached value
-                data = self._ancilliaries[key][1]
+                data = self._ancillaries[key][1]
             else:
                 # compute new value
                 data = ancol[key].compute(self)
-            # Store computed value in `self._ancilliaries`.
-            self._ancilliaries[key] = (anhash, data)
+            # Store computed value in `self._ancillaries`.
+            self._ancillaries[key] = (anhash, data)
             return data
         else:
             # Return zeros as default empty data.

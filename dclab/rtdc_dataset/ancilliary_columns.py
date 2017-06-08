@@ -26,7 +26,7 @@ import hashlib
 
 import numpy as np
 
-from dclab import elastic
+from dclab import elastic, volume
 from .util import obj2str
 
 
@@ -206,6 +206,13 @@ def compute_time(mm):
     return (mm["frame"] - mm["frame"][0]) / fr
 
 
+def compute_volume(mm):
+    vol = volume.get_volume(cont=mm["contour"],
+                            pos_x=mm["pos_x"],
+                            pos_y=mm["pos_y"],
+                            pix=mm.config["image"]["pix size"])
+    return vol
+    
 
 # Register ancilliaries
 AncilliaryColumn(column_name="area_ratio",
@@ -259,4 +266,10 @@ AncilliaryColumn(column_name="time",
                  method=compute_time,
                  req_config=[["framerate", ["frame rate"]]],
                  req_columns=["frame"]
+                 )
+
+AncilliaryColumn(column_name="volume",
+                 method=compute_volume,
+                 req_columns=["contour", "pos_x", "pos_y"],
+                 req_config=[["image", ["pix size"]]],
                  )

@@ -66,6 +66,7 @@ uid = [ "arearaw",
         "pc2",
         "index",
         "emodulus",
+        "volume",
         ]
 # Axes label (same order as UID)
 axl = [
@@ -121,6 +122,7 @@ axl = [
         u"Principal component 2",
         u"Event index",
         u"Young's Modulus [kPa]",
+        u"Volume [µm³]",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
 rdv = [ "area_raw",
@@ -175,6 +177,7 @@ rdv = [ "area_raw",
         "pc2",
         "index",
         "emodulus",
+        "volume",
        ]
 # tdms file definitions (same order as UID)
 # group, [names], lambda

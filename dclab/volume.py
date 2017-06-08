@@ -28,7 +28,7 @@ def get_volume(cont, pos_x, pos_y, pix):
         e.g. obtained using `mm.pos_x`
     pos_y: float or ndarray of length N
         The y coordinate(s) of the centroid of the event(s)
-        e.g. obtained using `mm.pos_lat`
+        e.g. obtained using `mm.pos_y`
     px_um: float
         The detector pixel size in µm.
         e.g. obtained using: `mm.config["image"]["pix size"]`

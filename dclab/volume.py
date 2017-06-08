@@ -41,9 +41,25 @@ def get_volume(cont, pos_x, pos_y, pix):
     Notes
     -----
     The computation of the volume is based on a full rotation of the 
-    upper half of the contour to obtain the volume. In the same manner
+    upper half of the contour to obtain the volume. Similarly,
     the lower part of the contour is rotated. Both volumes are then
     averaged.
+    
+    The volume is computed radially from the the center position
+    given by (`pos_x`, `pos_y`). For sufficiently smooth contours,
+    such as densely sampled ellipses, the center position does not
+    play an important role. For contours that are given on a coarse
+    grid, as is the case for RT-DC, the center position must be
+    given.
+    
+    The method assumes that the contour is convex.
+    
+    References
+    ----------
+    Advanced Mathematics and Mechanics Applications with MATLAB 3rd ed.
+    by H.B. Wilson, L.H. Turcotte, and D. Halpern, Chapman & Hall
+    CRC Press, 2002, e-ISBN 978-1-4200-3544-5.
+    See Chapter 5, Section 5.4, doi: 10.1201/9781420035445.ch5
     """
     #Convert input to 1D arrays
     pos_x = np.atleast_1d(pos_x)

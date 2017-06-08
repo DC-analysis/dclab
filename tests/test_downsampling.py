@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Downsampling only affects RTDC_DataSet._plot_filter
-"""
+""" Downsampling only affects RTDC_DataSet._plot_filter"""
 from __future__ import print_function
 
 import codecs

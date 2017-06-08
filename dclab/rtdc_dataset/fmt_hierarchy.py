@@ -90,6 +90,10 @@ class RTDC_Hierarchy(RTDCBase):
             filtevents = self.hparent[attr][self.hparent._filter]
             self._events[attr] = filtevents
 
+        # update event index
+        length = np.sum(self.hparent._filter)
+        self._events["index"] = np.arange(1, length+1)
+
         self._init_filters()
         self._old_filters = {}
 

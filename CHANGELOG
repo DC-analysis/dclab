@@ -6,6 +6,8 @@
   - Data columns (including image, trace, contour) are accessed via
     keys instead of attributes.
   - Make space for new hdf5-based file format
+  - Introduce ancilliary columns that are computed on-the-fly
+    (new "_ancilliaries" attribute and "ancilliary_columns.py")
 0.2.3
 - Add look-up table for elastic modulus (#7)
 - Add filtering option "remove invalid events" to remove nan/inf

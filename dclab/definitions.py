@@ -14,7 +14,7 @@ def GetKnownIdentifiers():
 
 ### Define Standard name maps
 # Unique identifier (UID)
-uid = [
+uid = [ "arearaw",
         "areapix",
         "area",
         "area ratio",
@@ -69,7 +69,8 @@ uid = [
         ]
 # Axes label (same order as UID)
 axl = [
-        u"Area [px]",
+        u"Measured area [px]",
+        u"Convex area [px]",
         u"Area [µm²]",
         u"Convex to measured area ratio",
         u"Aspect ratio of bounding box",
@@ -122,7 +123,7 @@ axl = [
         u"Young's Modulus [kPa]",
        ]
 # Unique RTDC_DataSet variable names (same order as UID)
-rdv = [
+rdv = [ "area_raw",
         "area",
         "area_um",
         "area_ratio",
@@ -180,6 +181,11 @@ rdv = [
 # The order of [names] must be the same as the order of the arguments
 # for lambda!
 tfd = [
+        # area_raw
+        ["Cell Track",
+         "raw area",
+         lambda x: x
+         ],
         # area -> area in pixels
         ["Cell Track",
          "area",
@@ -192,13 +198,13 @@ tfd = [
          ],
         # area_ratio
         ["Cell Track",
-         ["area", "raw area"],
-         lambda area, area_raw: area/area_raw
+         "area",
+         lambda x: np.zeros(x.shape)
          ],
         # aspect
         ["Cell Track",
-         ["ax1", "ax2"], #(perpendicular to flow, parallel to flow)
-         lambda ax1, ax2: ax2 / ax1
+         "area", 
+         lambda x: np.zeros(x.shape)
          ],
         # circ
         ["Cell Track",
@@ -208,7 +214,7 @@ tfd = [
         # deform
         ["Cell Track",
          "circularity",
-         lambda x: 1-x
+         lambda x: np.zeros(x.shape)
          ],
         # frame (the time column is actually the image frame number)
         ["Cell Track",

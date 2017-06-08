@@ -1,12 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-RTDC_DataSet classes and methods
-"""
+"""RTDC_DataSet classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
-import hashlib
-import sys
 import warnings
 
 import numpy as np
@@ -16,13 +12,10 @@ from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
+from .ancilliary_columns import AncilliaryColumn
 from .export import Export
+from .util import obj2str, hashfile
 
-
-if sys.version_info[0] == 2:
-    str_classes = (str, unicode)
-else:
-    str_classes = str
 
 
 class RTDCBase(object):
@@ -32,17 +25,33 @@ class RTDCBase(object):
         
         self._old_filters = {} # for comparison to new filters
         self._polygon_filter_ids = []
+        # Ancilliaries have the column name as keys and a
+        # tuple containing column and hash as value.
+        self._ancilliaries = {}
         # export functionalities
         self.export = Export(self)
 
 
     def __contains__(self, key):
-        val = self[key]
         ct = False
-        if isinstance(val, np.ndarray): 
-            ct = np.all(val!=0)
-        elif val:
-            ct = True
+        if key in self._events:
+            # Stored data contains events
+            val = self._events[key]
+            if isinstance(val, np.ndarray):
+                # False of stored data is zero 
+                ct = not np.all(val == 0)
+            elif val:
+                # True if stored data is not empty
+                # (e.g. tdms image, trace, contour)
+                ct = True
+        if ct == False:
+            # Check ancilliary columns data
+            if key in self._ancilliaries:
+                # already computed
+                ct = True
+            elif key in AncilliaryColumn.available_columns(self):
+                # to be computed
+                ct = True
         return ct
 
 
@@ -63,22 +72,29 @@ class RTDCBase(object):
         if key in self._events:
             data = self._events[key]
             if not np.all(data==0):
-                return data
-        # Compute new data columns dynamically
-        dummy = np.zeros(len(self))
-        if key == "area_um":
-            pix = self.config["image"]["pix size"]
-            return self["area"] * pix**2
-        elif key == "time":
-            if "framerate" in self.config:
-                fr = self.config["framerate"]["frame rate"]
-                return (self["frame"] - self["frame"][0]) / fr
+                return data 
+        # Try to find the column in the ancilliary columns
+        # (see ancilliary_columns.py for more information).
+        # These columns are cached in `self._ancilliaries`.
+        ancol = AncilliaryColumn.available_columns(self)
+        if key in ancol:
+            # The column is available.
+            anhash = ancol[key].hash(self)
+            if (key in self._ancilliaries and 
+                self._ancilliaries[key][0] == anhash):
+                # use cached value
+                data = self._ancilliaries[key][1]
             else:
-                return dummy
+                # compute new value
+                data = ancol[key].compute(self)
+            # Store computed value in `self._ancilliaries`.
+            self._ancilliaries[key] = (anhash, data)
+            return data
         else:
-            return dummy
-        # TODO:
-        # - add volume computation or elastic modulus computation here?
+            # Return zeros as default empty data.
+            # TODO:
+            # - Clean the workflow from these zero-columns (raise a KeyError instead)
+            return np.zeros(len(self))
 
 
     def __len__(self):
@@ -437,34 +453,3 @@ class RTDCBase(object):
         # remove item
         self.config["filtering"]["polygon filters"].remove(uid)
 
-
-def hashfile(fname, blocksize=65536):
-    afile = open(fname, 'rb')
-    hasher = hashlib.sha256()
-    buf = afile.read(blocksize)
-    while len(buf) > 0:
-        hasher.update(buf)
-        buf = afile.read(blocksize)
-    afile.close()
-    return hasher.hexdigest()
-
-
-def obj2str(obj):
-    """Full string representation of an object for hashing"""
-    if isinstance(obj, str_classes):
-        return obj.encode("utf-8")
-    elif isinstance(obj, (bool, int, float)):
-        return str(obj).encode("utf-8")
-    elif obj is None:
-        return b"none"
-    elif isinstance(obj, np.ndarray):
-        return obj.tostring()
-    elif isinstance(obj, tuple):
-        return obj2str(list(obj))
-    elif isinstance(obj, list):
-        return b"".join(obj2str(o) for o in obj)
-    elif isinstance(obj, dict):
-        return obj2str(list(obj.items()))
-    else:
-        raise ValueError("No rule to convert object '{}' to string.".
-                         format(obj.__class__))

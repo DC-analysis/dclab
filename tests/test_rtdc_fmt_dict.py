@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Downsampling only affects RTDC_DataSet._plot_filter
+""" Test functions for loading traces
 """
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import codecs
 import copy
@@ -23,15 +23,16 @@ from dclab import RTDC_DataSet
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
-def test_wrong_things():
+def test_contour_not_available():
     ddict = example_data_dict(size=67, keys=["Area", "Defo"])
-    ds = RTDC_DataSet(ddict=ddict)
-    
-    # Check unknown variable (warning will be displayed
-    try:
-        ds.ApplyFilter(force=["on_purpose_unknown"])
-    except ValueError:
-        pass
+    ds = RTDC_DataSet(ddict=ddict)    
+    assert "contour" not in ds
+
+
+def test_image_not_available():
+    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ds = RTDC_DataSet(ddict=ddict)    
+    assert "image" not in ds
 
 
 def test_min_max_update():
@@ -45,6 +46,22 @@ def test_min_max_update():
     ds.config.update(cfg)
 
     ds.ApplyFilter()
+
+
+def test_trace_not_available():
+    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ds = RTDC_DataSet(ddict=ddict)    
+    assert "trace" not in ds
+
+
+def test_wrong_things():
+    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ds = RTDC_DataSet(ddict=ddict)
+    # Check unknown variable (warning will be displayed
+    try:
+        ds.ApplyFilter(force=["on_purpose_unknown"])
+    except ValueError:
+        pass
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ def test_hierarchy_from_tdms():
     ds1._filter_manual[0] = False
     ds2.ApplyFilter()
     assert ds2._filter.shape[0] == ds1._filter.shape[0]-1
-    assert ds2.area[0] == ds1.area[1]
+    assert ds2["area"][0] == ds1["area"][1]
 
 
 if __name__ == "__main__":

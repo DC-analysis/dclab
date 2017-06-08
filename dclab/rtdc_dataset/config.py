@@ -68,6 +68,8 @@ class Configuration(object):
             The config files with which to initialize the configuration
         cfg: dict-like
             The dictionary with which to initialize the configuration
+        rtdc_ds: instance of RTDCBase
+            An RT-TC data set.
         """
         self._cfg = CaseInsensitiveDict()
 
@@ -175,7 +177,7 @@ class Configuration(object):
     def _complete_config_from_rtdc_ds(self, rtdc_ds):
         """Complete configuration using data columns from RTDC_DataSet"""
         # Update data size
-        self["general"]["cell number"] = rtdc_ds.time.shape[0]
+        self["general"]["cell number"] = len(rtdc_ds)
 
 
     def copy(self):

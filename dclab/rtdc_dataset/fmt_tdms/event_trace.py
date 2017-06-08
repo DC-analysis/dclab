@@ -9,7 +9,7 @@ import nptdms
 import numpy as np
 import os
 
-from .. import definitions as dfn
+from dclab import definitions as dfn
 
 
 class TraceColumn(object):

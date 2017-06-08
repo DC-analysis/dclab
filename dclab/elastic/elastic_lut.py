@@ -57,10 +57,9 @@ def get_elasticity(area, deformation, medium="CellCarrier",
     dclab.elast.viscosity.get_viscosity: compute viscosity for known media
     pixcorr_deformation: perform pixelation correction with triple-exponential
     """
-    if copy:
-        # copy input arrays so we can use in-place calculations
-        deformation = deformation.copy()
-        area = area.copy()
+    # copy input arrays so we can use in-place calculations
+    deformation = np.array(deformation, copy=copy, dtype=float)
+    area = np.array(area, copy=copy, dtype=float)
     # Get lut data
     lut_path = pkg_resources.resource_filename("dclab.elastic", "elastic_lut.txt")
     lut = np.loadtxt(lut_path)

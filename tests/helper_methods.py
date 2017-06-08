@@ -6,7 +6,7 @@ import zipfile
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
-import dclab
+from dclab.rtdc_dataset.fmt_tdms import get_tdms_files
 
 
 def example_data_dict(size=100, keys=["Area", "Defo"]):
@@ -40,7 +40,7 @@ def retreive_tdms(zip_file):
     
     ## Load RTDC Data set
     # find tdms files
-    tdmsfiles = dclab.GetTDMSFiles(edest)
+    tdmsfiles = get_tdms_files(edest)
     
     if len(tdmsfiles) == 1:
         tdmsfiles = tdmsfiles[0]

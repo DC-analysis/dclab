@@ -65,6 +65,34 @@ def get_ellipse_coords(a, b, x=0.0, y=0.0, angle=0.0, k=2):
     return pts
 
 
+def test_orientation():
+    """counter-clockwise vs clockwise"""
+    #Helper definitions to get an ellipse
+    major = 10
+    minor = 5
+    ellip = get_ellipse_coords(a=major,
+                               b=minor,
+                               x=minor,
+                               y=5,
+                               angle=0,
+                               k=100)
+    #obtain the centroid (corresponds to pos_x and pos_lat)
+    cx, cy = centroid_of_polygon(ellip) 
+
+    v1 = get_volume(cont=[ellip],
+                        pos_x=cx,
+                        pos_y=cy,
+                        pix=1)
+
+    # Turn contour around
+    v2 = get_volume(cont=[ellip[::-1,:]],
+                        pos_x=cx,
+                        pos_y=cy,
+                        pix=1)
+
+    assert np.all(v1==v2)
+
+
 def test_get_volume():
     #Helper definitions to get an ellipse
     major = 10
@@ -116,7 +144,7 @@ def test_shape():
     
 
 def test_xpos():
-    """xpos is not necessary to compute volume"""
+    """xpos is not necessary to compute volume dense ellipse"""
     major = 10
     minor = 5
     ellip = get_ellipse_coords(a=major,

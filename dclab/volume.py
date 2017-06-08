@@ -76,18 +76,13 @@ def get_volume(cont, pos_x, pos_y, pix):
     for ii in range(pos_x.shape[0]):
         # If the contour has less than 4 pixels, the computation will fail.
         # In that case, the value np.nan is already assigned.
-        if cont[ii].shape[0] >= 4:
-            # Write x and y coords in separate arrays
-            contour_x = cont[ii][:,0]
-            contour_y = cont[ii][:,1]
-            # TODO:
-            # - check whether the contour is counter-clockwise
-            # Turn the contour around (it has to be counter-clockwise!)
-            contour_x = contour_x[::-1]
-            contour_y = contour_y[::-1]
-            # Move the whole contour down, such that the y coord of the 
-            # centroid becomes 0.
-            contour_y = contour_y - pos_y[ii] / pix
+        cc = cont[ii]
+        if cc.shape[0] >= 4:
+            # Center contour coordinates with given centroid
+            contour_x = cc[:,0] - pos_x[ii] / pix
+            contour_y = cc[:,1] - pos_y[ii] / pix
+            # Make sure contour is counter-clockwise
+            contour_x, contour_y = counter_clockwise(contour_x, contour_y)
             # Which points are below the x-axis? (y<0)?
             ind_low = np.where(contour_y < 0)
             # These points will be shifted up to y=0 to build an x-axis
@@ -101,7 +96,7 @@ def get_volume(cont, pos_x, pos_y, pix):
             contour_y_upp = np.copy(contour_y)
             contour_y_upp[ind_upp] = 0
             # Move the contour to the left
-            Z = contour_x - pos_x[ii] / pix
+            Z = contour_x
             # Last point of the contour has to overlap with the first point
             Z = np.hstack([Z, Z[0]])
             Zp = Z[0:-1]
@@ -121,6 +116,29 @@ def get_volume(cont, pos_x, pos_y, pix):
         v_avg = v_avg[0]
     
     return v_avg
+
+
+def counter_clockwise(cx, cy):
+    """Put contour coordinates into counter-clockwise order
+    
+    Parameters
+    ----------
+    cx, cy: 1d ndarrays
+        The x- and y-coordinates of the contour
+    
+    Returns
+    -------
+    cx_cc, cy_cc:
+        The x- and y-coordinates of the contour in
+        counter-clockwise orientation.
+    """
+    # test orientation
+    angles = np.unwrap(np.arctan2(cy,cx))
+    grad = np.gradient(angles)
+    if np.average(grad)>0:
+        return cx[::-1], cy[::-1]
+    else:
+        return cx, cy
 
 
 def _vol_helper(contour_y, Z, Zp, dZ, pix):  

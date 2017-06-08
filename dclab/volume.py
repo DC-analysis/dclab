@@ -52,8 +52,6 @@ def get_volume(cont, pos_x, pos_y, pix):
     grid, as is the case for RT-DC, the center position must be
     given.
     
-    The method assumes that the contour is convex.
-    
     References
     ----------
     Advanced Mathematics and Mechanics Applications with MATLAB 3rd ed.

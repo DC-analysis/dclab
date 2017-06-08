@@ -55,14 +55,14 @@ class RTDC_Hierarchy(RTDCBase):
 
         # Remove previously applied filters
         pops = []
-        for key in cfg["Filtering"]:
-            if (key.endswith("Min") or
-                key.endswith("Max") or
-                key == "Polygon Filters"):
+        for key in cfg["filtering"]:
+            if (key.endswith("min") or
+                key.endswith("max") or
+                key == "polygon filters"):
                 pops.append(key)
-        [ cfg["Filtering"].pop(key) for key in pops ]
+        [ cfg["filtering"].pop(key) for key in pops ]
         # Add parent information in dictionary
-        cfg["Filtering"]["Hierarchy Parent"] = hparent.identifier
+        cfg["filtering"]["hierarchy parent"] = hparent.identifier
 
         self.config = Configuration(cfg = cfg)
 

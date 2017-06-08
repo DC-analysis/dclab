@@ -33,6 +33,7 @@ from .util import obj2str
 class AncillaryColumn():
     # Holds all instances of this class
     columns = []
+    column_names = []
     def __init__(self, column_name, method, req_config=[], req_columns=[]):
         """A data column that is computed from existing data
         
@@ -62,6 +63,7 @@ class AncillaryColumn():
         
         # register this column
         AncillaryColumn.columns.append(self)
+        AncillaryColumn.column_names.append(column_name)
 
 
     def __repr__(self):

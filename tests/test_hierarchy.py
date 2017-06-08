@@ -17,15 +17,15 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab import RTDC_DataSet, dfn
+from dclab import new_dataset, dfn
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
 def test_hierarchy_from_tdms():
     tdms_path = retreive_tdms(example_data_sets[1])
-    ds1 = RTDC_DataSet(tdms_path)
-    ds2 = RTDC_DataSet(hparent=ds1)
+    ds1 = new_dataset(tdms_path)
+    ds2 = new_dataset(ds1)
 
     ds1._filter_manual[0] = False
     ds2.ApplyFilter()

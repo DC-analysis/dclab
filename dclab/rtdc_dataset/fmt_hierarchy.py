@@ -76,6 +76,27 @@ class RTDC_Hierarchy(RTDCBase):
         self.ApplyFilter()
 
 
+    def __contains__(self, key):
+        ct = False 
+        if self.hparent.__contains__(key):
+            value = self.hparent[key]
+            if isinstance(value, np.ndarray):
+                ct = True
+        return ct
+
+
+    def __getitem__(self, key):
+        if key in self._events:
+            return self._events[key]
+        else:
+            item = self.hparent[key]
+            if isinstance(item, np.ndarray):
+                return item[self.hparent._filter]
+            else:
+                msg = "Hierarchy does not implement {}".format(key)
+                raise NotImplementedError(msg)
+
+
     def __len__(self):
         self.hparent.ApplyFilter()
         return np.sum(self.hparent._filter)
@@ -85,10 +106,6 @@ class RTDC_Hierarchy(RTDCBase):
         """Overridden ApplyFilter to perform tasks for hierarchy child"""
         # Copy event data from hierarchy parent
         self.hparent.ApplyFilter()
-
-        for attr in dfn.rdv:
-            filtevents = self.hparent[attr][self.hparent._filter]
-            self._events[attr] = filtevents
 
         # update event index
         length = np.sum(self.hparent._filter)

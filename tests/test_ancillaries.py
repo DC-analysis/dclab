@@ -40,8 +40,24 @@ def test_emodulus():
     assert t4-t3 > t2-t1
 
 
-def test_emodulus_none():
+def test_area_emodulus():
+    # computes "area" from "areapix"
     keys = ["areapix", "defo"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    ds = dclab.new_dataset(ddict)
+    # area can be computed from areapix
+    assert "area" in ds
+    assert "emodulus" not in ds, "not config for emodulus"
+    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                "emodulus model": "elastic sphere",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity": 0.5
+                                }
+    assert "emodulus" in ds
+
+
+def test_emodulus_none():
+    keys = ["arearaw", "defo"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
     assert "emodulus" not in ds, "not config for emodulus"

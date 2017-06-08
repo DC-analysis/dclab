@@ -22,6 +22,7 @@ class TraceColumn(object):
         """
         self._trace = None
         self.mname = rtdc_dataset.tdms_filename
+        self.identifier = self.mname
         
 
     def __getitem__(self, ch):

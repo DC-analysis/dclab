@@ -35,6 +35,7 @@ class ImageColumn(object):
         file.
         """
         fname = self.find_video_file(rtdc_dataset)
+        self.identifier = fname
         if fname is not None:
             self._image_data = ImageMap(fname)
         else:

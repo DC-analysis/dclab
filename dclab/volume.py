@@ -76,9 +76,9 @@ def get_volume(cont, pos_x, pos_y, pix):
     # results are stored in a separate array initialized with nans
     v_avg = np.zeros_like(pos_x, dtype=float)*np.nan
 
-    # v_avg has the shape of `pos_x`. We are iterating over len(cont),
-    # because not each event might contain a contour.
-    for ii in range(len(cont)):
+    # v_avg has the shape of `pos_x`. We are iterating over the smallest
+    # length for `cont` and `pos_x`.
+    for ii in range(min(len(cont), pos_x.shape[0])):
         # If the contour has less than 4 pixels, the computation will fail.
         # In that case, the value np.nan is already assigned.
         cc = cont[ii]

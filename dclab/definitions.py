@@ -8,10 +8,6 @@ from __future__ import division, print_function, unicode_literals
 import numpy as np
 
 
-def GetKnownIdentifiers():
-    return uid
-
-
 ### Define Standard name maps
 # Unique identifier (UID)
 uid = [ "arearaw",

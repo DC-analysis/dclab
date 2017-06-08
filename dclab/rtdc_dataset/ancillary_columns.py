@@ -152,27 +152,9 @@ class AncillaryColumn():
                                                                   section))
                         return False
         # Check columns
-        # Avoid recursions with `rtdc_ds.__contains__`
         for col in self.req_columns:
-            if (col in rtdc_ds._events and
-                not np.all(rtdc_ds._events[col]==0)):
-                    return True
-            elif (col not in rtdc_ds._events and
-                  col not in rtdc_ds._ancillaries):
-                try:
-                    cc = AncillaryColumn.get_column(col)
-                except ValueError:
-                    if verbose:
-                        msg = "{} not in _events and not anc".format(col)
-                        print(msg)
-                    return False
-                else:
-                    if not cc.is_available(rtdc_ds):
-                        if verbose:
-                            msg = "anc column {} not available".format(col)
-                            print(msg)
-                        return False
-
+            if col not in rtdc_ds:
+                return False
         # All passed
         return True
 

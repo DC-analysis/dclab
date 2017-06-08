@@ -79,7 +79,8 @@ class RTDC_Hierarchy(RTDCBase):
     def __contains__(self, key):
         ct = False 
         if self.hparent.__contains__(key):
-            if isinstance(self.hparent[key], np.ndarray):
+            value = self.hparent[key]
+            if isinstance(value, np.ndarray):
                 ct = True
         return ct
 

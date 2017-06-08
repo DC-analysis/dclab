@@ -72,12 +72,15 @@ def get_volume(cont, pos_x, pos_y, pix):
     pos_y = np.atleast_1d(pos_y)
 
     assert len(pos_x) == len(pos_y)
-    assert len(pos_x) == len(cont)
+    if len(pos_x) > 1:
+        assert len(cont) > 1
 
     # results are stored in a separate array initialized with nans
     v_avg = np.zeros_like(pos_x, dtype=float)*np.nan
 
-    for ii in range(pos_x.shape[0]):
+    # v_avg has the shape of `pos_x`. We are iterating over len(cont),
+    # because not each event might contain a contour.
+    for ii in range(len(cont)):
         # If the contour has less than 4 pixels, the computation will fail.
         # In that case, the value np.nan is already assigned.
         cc = cont[ii]

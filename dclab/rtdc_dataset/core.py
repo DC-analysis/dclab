@@ -47,9 +47,16 @@ class RTDCBase(object):
             if key in self._ancillaries:
                 # already computed
                 ct = True
-            elif key in AncillaryColumn.available_columns(self):
-                # to be computed
-                ct = True
+            else:
+                try:
+                    cc = AncillaryColumn.get_column(key)
+                except ValueError:
+                    # column is not an ancillary column
+                    pass
+                else:
+                    if cc.is_available(self):
+                        # to be computed
+                        ct = True
         return ct
 
 

@@ -425,10 +425,13 @@ class RTDCBase(object):
         return density
 
 
-    def PolygonFilterAppend(self, filt):
-        """Associates a Polygon Filter to the RTDC_DataSet
+    def polygon_filter_add(self, filt):
+        """Associate a Polygon Filter with this instance
         
-        filt can either be an integer or an instance of PolygonFilter
+        Parameters
+        ----------
+        filt: int or instance of `PolygonFilter`
+            The polygon filter to add
         """
         msg = "`filt` must be a number or instance of PolygonFilter."
         assert isinstance(filt, (PolygonFilter, int, float)), msg
@@ -441,8 +444,14 @@ class RTDCBase(object):
         self.config["filtering"]["polygon filters"].append(uid)
 
 
-    def PolygonFilterRemove(self, filt):
-        """Opposite of PolygonFilterAppend """
+    def polygon_filter_rm(self, filt):
+        """Remove a polygon filter from this instance
+
+        Parameters
+        ----------
+        filt: int or instance of `PolygonFilter`
+            The polygon filter to remove
+        """
         msg = "`filt` must be a number or instance of PolygonFilter."
         assert isinstance(filt, (PolygonFilter, int, float)), msg
         

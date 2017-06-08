@@ -38,7 +38,7 @@ def test_polygon_import():
         
         # Add polygon filter
         pf = dclab.PolygonFilter(filename=temp.name)
-        ds.PolygonFilterAppend(pf)
+        ds.polygon_filter_add(pf)
         
         ds.ApplyFilter()
 
@@ -85,10 +85,9 @@ def test_polygon_save():
         pf.save(temp3, ret_fobj=False)
 
     # ensure backwards compatibility: the names of the three filters should be the same
-    names = dclab.polygon_filter.GetPolygonFilterNames()
+    names = dclab.polygon_filter.get_polygon_filter_names()
     assert len(names) == 2
     assert names.count(names[0]) == 2
-
 
 
 
@@ -159,11 +158,11 @@ def test_with_rtdc_data_set():
         pf = dclab.PolygonFilter(filename=temp.name)
         pf2 = dclab.PolygonFilter(filename=temp.name)
 
-    ds.PolygonFilterAppend(pf)
-    ds.PolygonFilterAppend(1)
+    ds.polygon_filter_add(pf)
+    ds.polygon_filter_add(1)
 
-    ds.PolygonFilterRemove(0)
-    ds.PolygonFilterRemove(pf2)
+    ds.polygon_filter_rm(0)
+    ds.polygon_filter_rm(pf2)
     
     dclab.PolygonFilter.clear_all_filters()
 

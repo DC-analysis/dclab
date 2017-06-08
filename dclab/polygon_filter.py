@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-PolygonFilter classes and methods
-"""
+"""PolygonFilter classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
 import codecs
@@ -19,15 +17,14 @@ else:
 
 
 class PolygonFilter(object):
-    """ An object for filtering RTDC data based on a polygonial area
-    """
+    """An object for filtering RTDC data based on a polygonial area"""
     # Stuff that is done upon creation (not instantiation) of this class
     instances = []
     _instance_counter = 0
 
     def __init__(self, axes=None, points=None, name=None,
                  filename=None, fileid=0, unique_id=None):
-        """ Instantiates PolygonFilter
+        """Instantiate a polygon filter
         
         Parameters
         ----------
@@ -39,15 +36,14 @@ class PolygonFilter(object):
             important.
         name : str
             A name for the polygon (optional).
-        filename : str (path)
+        filename : str
             A path to a .poly file as create by this classes' `save`
-            method. If filename is given, all other parameters are
+            method. If `filename` is given, all other parameters are
             ignored.
         fileid : int
             Which filter to import from the file (starting at 0).
         unique_id : int
             An integer defining the unique id of the new instance.
-        
         
         Notes
         -----
@@ -82,8 +78,7 @@ class PolygonFilter(object):
     
     
     def _check_data(self):
-        """ Checks if the given data is valid.
-        """
+        """Check if the data given is valid"""
         assert self.axes is not None, "Error, `axes` parm not set."
         assert self.points is not None, "Error, `points` parm not set."
         self.points = np.array(self.points)
@@ -94,9 +89,7 @@ class PolygonFilter(object):
 
 
     def _load(self, filename):
-        """ Imports all data from a text file.
-        
-        """
+        """Import all filters from a text file"""
         fobj = codecs.open(filename, "r", "utf-8")
         data = fobj.readlines()
         fobj.close()
@@ -146,7 +139,7 @@ class PolygonFilter(object):
 
 
     def _set_unique_id(self, unique_id):
-        """ Give our instance a unique id """
+        """Define a unique id"""
         assert isinstance(unique_id, int), "unique_id must be an integer"
 
         if PolygonFilter.instace_exists(unique_id):
@@ -159,27 +152,24 @@ class PolygonFilter(object):
         ic = max(PolygonFilter._instance_counter, unique_id+1)
         PolygonFilter._instance_counter = ic
         self.unique_id = unique_id
-        
+
 
     @staticmethod
     def clear_all_filters():
-        """ Removes all filters and resets instance counter.
-        """
+        """Remove all filters and reset instance counter"""
         PolygonFilter.instances = []
         PolygonFilter._instance_counter = 0
         
     
     def copy(self):
-        """ Returns a copy of the current instance.
-        """
+        """Return a copy of the current instance"""
         return PolygonFilter(axes=self.axes,
                              points=self.points,
                              name=self.name)
     
     
     def filter(self, datax, datay):
-        """ Filters a set of datax and datay according to self.points.
-        """
+        """Filter a set of datax and datay according to `self.points`"""
         f = np.ones(datax.shape, dtype=bool)
         for i, (x,y) in enumerate(zip(datax, datay)):
             f[i] = PolygonFilter.point_in_poly(x, y, self.points)
@@ -188,9 +178,7 @@ class PolygonFilter(object):
     
     @staticmethod
     def get_instance_from_id(unique_id):
-        """ Returns the instance of the PolygonFilter with this
-        unique_id.
-        """
+        """Get an instance of the `PolygonFilter` using a unique id"""
         for instance in PolygonFilter.instances:
             if instance.unique_id == unique_id:
                 return instance
@@ -201,7 +189,7 @@ class PolygonFilter(object):
 
     @staticmethod
     def import_all(path):
-        """ Imports all polygons from a .poly file.
+        """Import all polygons from a .poly file.
         
         Returns a list of the imported polygon filters
         """
@@ -219,8 +207,7 @@ class PolygonFilter(object):
 
     @staticmethod
     def instace_exists(unique_id):
-        """ Returns True if an instance with this id exists
-        """
+        """Determine whether an instance with this unique id exists"""
         try:
             PolygonFilter.get_instance_from_id(unique_id)
         except KeyError:
@@ -231,6 +218,20 @@ class PolygonFilter(object):
 
     @staticmethod
     def point_in_poly(x, y, poly):
+        """Determine whether a point is within a polygon area
+        
+        Parameters
+        ----------
+        x, y: float
+            The coordinates of the point
+        poly: list-like
+            The polygon (`PolygonFilter.points`)
+
+        Returns
+        -------
+        inside: bool
+            `True`, if point is inside.
+        """
         n = len(poly)
         inside = False
 
@@ -250,16 +251,14 @@ class PolygonFilter(object):
 
     @staticmethod
     def remove(unique_id):
-        """ Removes a polygon filter with the unique_id from
-            PolygonFilter.instances
-        """
+        """Remove a polygon filter from `PolygonFilter.instances`"""
         for p in PolygonFilter.instances:
             if p.unique_id == unique_id:
                 PolygonFilter.instances.remove(p)
         
     
     def save(self, polyfile, ret_fobj=False):
-        """ Saves all data to a text file (appends data if file exists).
+        """Save all data to a text file (appends data if file exists).
         
         Polyfile can be either a path to a file or a file object that
         was opened with the write "w" parameter. By using the file
@@ -298,8 +297,7 @@ class PolygonFilter(object):
     
     @staticmethod
     def save_all(polyfile):
-        """ Save all polygon filters
-        """
+        """Save all polygon filters"""
         nump = len(PolygonFilter.instances)
         assert nump != 0, "There are not polygon filters to save."
         for p in PolygonFilter.instances:
@@ -309,10 +307,8 @@ class PolygonFilter(object):
         polyfile.close()
 
 
-def GetPolygonFilterNames():
-    """ Returns the names of all polygon filters in the order of
-        creation.
-    """
+def get_polygon_filter_names():
+    """Get the names of all polygon filters in the order of creation"""
     names = []
     for p in PolygonFilter.instances:
         names.append(p.name)

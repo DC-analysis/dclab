@@ -22,27 +22,31 @@ class PolygonFilter(object):
     instances = []
     _instance_counter = 0
 
-    def __init__(self, axes=None, points=None, name=None,
-                 filename=None, fileid=0, unique_id=None):
+    def __init__(self, axes=None, points=None, inverted=False,
+                 name=None, filename=None, fileid=0,
+                 unique_id=None):
         """Instantiate a polygon filter
         
         Parameters
         ----------
-        axes : tuple of str
+        axes: tuple of str
             The axes on which the polygon is defined. The first axis is
             the x-axis. Example: ("area", "defo").
-        points : array-like object of shape (N,2)
+        points: array-like object of shape (N,2)
             The N coordinates (x,y) of the polygon. The exact order is
             important.
-        name : str
+        inverted: bool
+            Invert the polygon filter. This parameter is overridden
+            if `filename` is given.
+        name: str
             A name for the polygon (optional).
         filename : str
             A path to a .poly file as create by this classes' `save`
             method. If `filename` is given, all other parameters are
             ignored.
-        fileid : int
+        fileid: int
             Which filter to import from the file (starting at 0).
-        unique_id : int
+        unique_id: int
             An integer defining the unique id of the new instance.
         
         Notes
@@ -51,6 +55,7 @@ class PolygonFilter(object):
         (`axes`, `points`). If `filename` is set, all parameters are
         taken from the given .poly file.
         """
+        self.inverted = inverted
         # check if a filename was given
         if filename is not None:
             assert isinstance(fileid, int)
@@ -70,11 +75,18 @@ class PolygonFilter(object):
         # Set unique id
         if unique_id is not None:
             self._set_unique_id(unique_id)
-        
+
         self._check_data()
         # if everything worked out, add to instances
         PolygonFilter.instances.append(self)
-        
+    
+    
+    def __eq__(self, pf):
+        assert isinstance(pf, PolygonFilter)
+        assert self.inverted == pf.inverted
+        assert np.allclose(self.points, pf.points)
+        assert list(self.axes) == list(pf.axes)
+        return True
     
     
     def _check_data(self):
@@ -113,7 +125,7 @@ class PolygonFilter(object):
         subdata = [ [ it.strip() for it in l.split("=") ] for l in subdata ]
 
         points = []
-        
+
         for var, val in subdata:
             if var.lower() == "x axis":
                 xaxis = val.lower()
@@ -121,6 +133,9 @@ class PolygonFilter(object):
                 yaxis = val.lower()
             elif var.lower() == "name":
                 self.name = val
+            elif var.lower() == "inverted":
+                if val == "True":
+                    self.inverted = True
             elif var.lower().startswith("point"):
                 val = np.array(val.strip("[]").split(), dtype=float)
                 points.append([int(var[5:]), val])
@@ -161,18 +176,34 @@ class PolygonFilter(object):
         PolygonFilter._instance_counter = 0
         
     
-    def copy(self):
-        """Return a copy of the current instance"""
+    def copy(self, invert=False):
+        """Return a copy of the current instance
+        
+        Parameters
+        ----------
+        invert: bool
+            The copy will be inverted w.r.t. the original
+        """
+        if invert:
+            inverted = not self.inverted
+        else:
+            inverted = self.inverted
+        
         return PolygonFilter(axes=self.axes,
                              points=self.points,
-                             name=self.name)
-    
-    
+                             name=self.name,
+                             inverted=inverted)
+
+
     def filter(self, datax, datay):
         """Filter a set of datax and datay according to `self.points`"""
         f = np.ones(datax.shape, dtype=bool)
         for i, (x,y) in enumerate(zip(datax, datay)):
             f[i] = PolygonFilter.point_in_poly(x, y, self.points)
+        
+        if self.inverted:
+            np.invert(f,f)
+
         return f
     
     
@@ -279,6 +310,7 @@ class PolygonFilter(object):
         data2write.append("X Axis = {}".format(self.axes[0]))
         data2write.append("Y Axis = {}".format(self.axes[1]))
         data2write.append("Name = {}".format(self.name))
+        data2write.append("Inverted = {}".format(self.inverted))
         for i, point in enumerate(self.points):
             data2write.append("point{:08d} = {:.15e} {:.15e}".format(i,
                                                             point[0],

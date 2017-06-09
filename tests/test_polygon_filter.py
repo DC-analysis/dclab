@@ -26,9 +26,9 @@ point00000002 = 8.025596093384512e-01 6.806282722513089e-03
 point00000003 = 6.150993521573982e-01 1.015706806282723e-03
 """
 
-def test_polygon_import():
+def test_import():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1000, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=1000, keys=["area", "defo"])
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     # save polygon data
@@ -60,9 +60,108 @@ def test_polygon_import():
         dclab.PolygonFilter.import_all(temp.name)
 
         assert len(dclab.PolygonFilter.instances) == 10
-        
 
-def test_polygon_save():
+
+def test_invert():
+    dclab.PolygonFilter.clear_all_filters()
+    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    # points of polygon filter
+    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
+              [np.min(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.min(ddict["defo"])],
+              ]
+    filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+                                points=points,
+                                inverted=False)
+    ds.polygon_filter_add(filt1)
+    assert [0] == ds.config["filtering"]["polygon filters"]
+    n1 = np.sum(ds._filter)
+    ds.ApplyFilter()
+    n2 = np.sum(ds._filter)
+    assert n1 != n2
+    filt2 = dclab.PolygonFilter(axes=["area", "defo"],
+                                points=points,
+                                inverted=True)
+    ds.polygon_filter_add(filt2)
+    assert [0,1] == ds.config["filtering"]["polygon filters"]
+    ds.ApplyFilter()
+    assert np.sum(ds._filter) == 0, "inverted+normal filter filters all"
+    dclab.PolygonFilter.clear_all_filters()
+
+
+def test_invert_copy():
+    dclab.PolygonFilter.clear_all_filters()
+    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+    # points of polygon filter
+    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
+              [np.min(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.min(ddict["defo"])],
+              ]
+    filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+                                points=points,
+                                inverted=False)
+    ds.polygon_filter_add(filt1)
+    assert [0] == ds.config["filtering"]["polygon filters"]
+    n1 = np.sum(ds._filter)
+    ds.ApplyFilter()
+    n2 = np.sum(ds._filter)
+    assert n1 != n2
+    filt2 = filt1.copy(invert=True)
+    ds.polygon_filter_add(filt2)
+    assert [0,1] == ds.config["filtering"]["polygon filters"]
+    ds.ApplyFilter()
+    assert np.sum(ds._filter) == 0, "inverted+normal filter filters all"
+    dclab.PolygonFilter.clear_all_filters()
+
+
+def test_invert_saveload():
+    dclab.PolygonFilter.clear_all_filters()
+    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    # points of polygon filter
+    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
+              [np.min(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.min(ddict["defo"])],
+              ]
+    filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+                                points=points,
+                                inverted=True)
+    _fd, name = tempfile.mkstemp()
+    filt1.save(name)
+    
+    filt2 = dclab.PolygonFilter(filename=name)
+    assert filt2 == filt1
+    
+
+def test_nofile_copy():
+    dclab.PolygonFilter.clear_all_filters()
+    a = dclab.PolygonFilter(axes=("defo", "area"),
+                        points=[[0,1],[1,1]])
+    b = a.copy()
+    dclab.PolygonFilter.clear_all_filters()
+
+
+def test_remove():
+    dclab.PolygonFilter.clear_all_filters()
+    
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
+        temp.write(filter_data)
+        temp.flush()
+        
+        # Add polygon filter
+        pf = dclab.PolygonFilter(filename=temp.name)
+    
+    dclab.PolygonFilter.remove(pf.unique_id)
+    assert len(dclab.PolygonFilter.instances) == 0
+
+    dclab.PolygonFilter.clear_all_filters()
+
+
+def test_save():
     dclab.PolygonFilter.clear_all_filters()
     
     with tempfile.NamedTemporaryFile(mode="w") as temp:
@@ -90,22 +189,6 @@ def test_polygon_save():
     assert names.count(names[0]) == 2
 
 
-
-def test_polygon_remove():
-    dclab.PolygonFilter.clear_all_filters()
-    
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        temp.write(filter_data)
-        temp.flush()
-        
-        # Add polygon filter
-        pf = dclab.PolygonFilter(filename=temp.name)
-    
-    dclab.PolygonFilter.remove(pf.unique_id)
-    assert len(dclab.PolygonFilter.instances) == 0
-
-    dclab.PolygonFilter.clear_all_filters()
-
 def test_unique_id():
     dclab.PolygonFilter.clear_all_filters() 
     with tempfile.NamedTemporaryFile(mode="w") as temp:
@@ -119,36 +202,9 @@ def test_unique_id():
     dclab.PolygonFilter.clear_all_filters()
 
 
-def test_polygon_nofile_copy():
-    dclab.PolygonFilter.clear_all_filters()
-    a = dclab.PolygonFilter(axes=("Defo", "Area"),
-                        points=[[0,1],[1,1]])
-    b = a.copy()
-    dclab.PolygonFilter.clear_all_filters()
-
-    
-def test_wrong_load_key():
-    dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1000, keys=["Area", "Defo"])
-    ds = dclab.RTDC_DataSet(ddict=ddict)
-
-    # save polygon data
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        data = filter_data + "peter=4\n"
-        temp.write(data)
-        temp.flush()
-        
-        try:
-            pf = dclab.PolygonFilter(filename=temp.name)
-        except:
-            pass
-        else:
-            raise ValueError("_load should not accept unknown key!")
-    dclab.PolygonFilter.clear_all_filters()
-
 def test_with_rtdc_data_set():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=821, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=821, keys=["area", "defo"])
     ds = dclab.RTDC_DataSet(ddict=ddict)
 
     # save polygon data
@@ -165,6 +221,28 @@ def test_with_rtdc_data_set():
     ds.polygon_filter_rm(pf2)
     
     dclab.PolygonFilter.clear_all_filters()
+
+
+def test_wrong_load_key():
+    dclab.PolygonFilter.clear_all_filters()
+    ddict = example_data_dict(size=1000, keys=["area", "defo"])
+    ds = dclab.RTDC_DataSet(ddict=ddict)
+
+    # save polygon data
+    with tempfile.NamedTemporaryFile(mode="w") as temp:
+        data = filter_data + "peter=4\n"
+        temp.write(data)
+        temp.flush()
+        
+        try:
+            pf = dclab.PolygonFilter(filename=temp.name)
+        except:
+            pass
+        else:
+            raise ValueError("_load should not accept unknown key!")
+    dclab.PolygonFilter.clear_all_filters()
+
+
 
 if __name__ == "__main__":
     # Run all tests

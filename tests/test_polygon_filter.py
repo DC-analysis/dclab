@@ -132,10 +132,37 @@ def test_invert_saveload():
                                 inverted=True)
     _fd, name = tempfile.mkstemp()
     filt1.save(name)
-    
     filt2 = dclab.PolygonFilter(filename=name)
     assert filt2 == filt1
+
+
+    filt3 = dclab.PolygonFilter(axes=["area", "defo"],
+                                points=points,
+                                inverted=False)
+    _fd, name = tempfile.mkstemp()
+    filt3.save(name)
+    filt4 = dclab.PolygonFilter(filename=name)
+    assert filt4 == filt3
     
+
+def test_inverted_wrong():
+    dclab.PolygonFilter.clear_all_filters()
+    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    # points of polygon filter
+    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
+              [np.min(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.max(ddict["defo"])],
+              [np.average(ddict["area"]), np.min(ddict["defo"])],
+              ]
+    try:
+        filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+                                points=points,
+                                inverted=0)
+    except AssertionError:
+        pass
+    else:
+        raise ValueError("inverted should only be allowed to be bool")
+
 
 def test_nofile_copy():
     dclab.PolygonFilter.clear_all_filters()

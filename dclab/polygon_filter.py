@@ -98,6 +98,7 @@ class PolygonFilter(object):
                "Error, data points must be have two coordinates."
         if self.name is None:
             self.name = "polygon filter {}".format(self.unique_id)
+        assert isinstance(self.inverted, bool)
 
 
     def _load(self, filename):

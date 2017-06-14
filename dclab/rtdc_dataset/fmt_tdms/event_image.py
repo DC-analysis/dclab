@@ -9,21 +9,7 @@ from distutils.version import LooseVersion
 import numpy as np
 import os
 import warnings
-
-
-try:
-    import cv2
-except ImportError:
-    warnings.warn("OpenCV not available!")
-else:
-    # Constants in OpenCV moved from "cv2.cv" to "cv2"
-    if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
-        CV_CAP_PROP_POS_FRAMES = cv2.cv.CV_CAP_PROP_POS_FRAMES
-        CV_CAP_PROP_FRAME_COUNT = cv2.cv.CV_CAP_PROP_FRAME_COUNT
-    else:
-        CV_CAP_PROP_POS_FRAMES = cv2.CAP_PROP_POS_FRAMES
-        CV_CAP_PROP_FRAME_COUNT = cv2.CAP_PROP_FRAME_COUNT
-
+import imageio
 
 
 class ImageColumn(object):
@@ -115,23 +101,38 @@ class ImageMap(object):
         assert os.path.exists(fname)
         self.filename = fname
         self._length = None
+        # video handle:
+        self._cap = None
 
+    
+    @property
+    def video_handle(self):
+        if self._cap is None:
+            self._cap = imageio.get_reader(self.filename)
+        return self._cap
+    
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in RGB"""
-        cap = self._get_video_handler()
-        cap.set(CV_CAP_PROP_POS_FRAMES, idx)
-        flag, cellimg = cap.read()
-        cap.release()
-        if flag:
-            if len(cellimg.shape) == 2:
-                # convert grayscale to color
-                cellimg = np.tile(cellimg, [3,1,1]).transpose(1,2,0)
-        else:
-            msg = "Could not read frame {} from {}".format(idx, self.filename)
-            raise OSError(msg)
-        
+        cap = self.video_handle
+        cellimg = cap.get_data(idx)
+        if np.all(cellimg==0):
+            cellimg = self._get_image_workaround_seek(idx)
         return cellimg
+
+
+    def _get_image_workaround_seek(self, idx):
+        """Same as __getitem__ but seek through the video beforehand
+        
+        This is a workaround for an all-zero image returned by `imageio`. 
+        """
+        warnings.warn("imageio workaround used!")
+        cap = self.video_handle
+        mult = 50
+        for ii in range(idx//mult):
+            _ign = cap.get_data(ii*mult)
+        final = cap.get_data(idx)
+        return final
 
 
     def __len__(self):
@@ -139,20 +140,7 @@ class ImageMap(object):
         determined.
         """
         if self._length is None:
-            cap = self._get_video_handler()
-            length = int(cap.get(CV_CAP_PROP_FRAME_COUNT))
-            cap.release()
+            cap = self.video_handle
+            length = len(cap)
             self._length = length
         return self._length
-    
-    
-    def _get_video_handler(self):
-        old_dir = os.getcwd()
-        fdir, vfile = os.path.split(self.filename)
-        os.chdir(fdir)
-        cap = cv2.VideoCapture(vfile)
-        if not cap.isOpened():
-            cap.open(vfile)
-        os.chdir(old_dir)
-        return cap
-

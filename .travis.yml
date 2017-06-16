@@ -10,6 +10,9 @@ env:
   - GH_REF: github.com/ZELLMECHANIK-DRESDEN/dclab.git
 
 before_install:
+# Install binary packages
+- travis_retry pip install --upgrade pip setuptools wheel
+- travis_retry pip install --only-binary=numpy,pandas,scipy numpy pandas scipy
 # Install fcswrite
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 # Install all dependencies

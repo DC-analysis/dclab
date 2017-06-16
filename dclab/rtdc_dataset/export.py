@@ -1,35 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Export RTDC_DataSet data
-"""
+"""Export RT-DC measurement data"""
 from __future__ import division, print_function, unicode_literals
 
 import codecs
-from distutils.version import LooseVersion
+import imageio
 import fcswrite
 import numpy as np
 import os
-import platform
 import warnings
 
 from .. import definitions as dfn
-
-
-try:
-    import cv2
-except ImportError:
-    warnings.warn("OpenCV not available!")
-else:
-    # Constants in OpenCV moved from "cv2.cv" to "cv2"
-    if LooseVersion(cv2.__version__) < LooseVersion("3.0.0"):
-        CV_CAP_PROP_POS_FRAMES = cv2.cv.CV_CAP_PROP_POS_FRAMES
-        CV_CAP_PROP_FRAME_COUNT = cv2.cv.CV_CAP_PROP_FRAME_COUNT
-        CV_FOURCC = cv2.cv.CV_FOURCC
-    else:
-        CV_CAP_PROP_POS_FRAMES = cv2.CAP_PROP_POS_FRAMES
-        CV_CAP_PROP_FRAME_COUNT = cv2.CAP_PROP_FRAME_COUNT
-        CV_FOURCC = cv2.VideoWriter_fourcc
 
 
 class Export(object):
@@ -56,10 +37,6 @@ class Export(object):
         -----
         Raises OSError if current data set does not contain image data
         """
-        # TODO:
-        # - Write tests for this method
-        # - Make video export work with mac, windows, and linux
-
         ds = self.rtdc_ds
         # Make sure that path ends with .avi
         if not path.endswith(".avi"):
@@ -71,38 +48,25 @@ class Export(object):
                           "Please use the `override=True` option.")
         # Start exporting
         if "image" in ds:
-            v_size = (ds["image"][0].shape[1], ds["image"][0].shape[0])
-            # FourCC code will not work for all systems
-            if platform.system() == "Darwin":
-                fourcc = b"I420"
-                # What about "AVC1"?
-            elif platform.system() == "Windows":
-                fourcc = b"DIB "
-                #HFYU?
-            else:
-                # probably linux
-                fourcc = b"HFYU"
             # Open video for writing
-            vout = cv2.VideoWriter(path,
-                                   fourcc=CV_FOURCC(*fourcc),
-                                   fps=25,
-                                   frameSize=v_size,
-                                   isColor=True)
-            if vout.isOpened():
-                # write the filtered frames to avi file
-                for evid in np.arange(len(ds)):
-                    # skip frames that were filtered out
-                    if not ds._filter[evid]:
-                        continue
-                    try:
-                        image = ds["image"][evid]
-                    except:
-                        warnings.warn("Could not read image {}!".format(evid))
-                        continue
-                    vout.write(image)
-                vout.release()
-            else:
-                raise OSError("Could not write Video.")
+            vout = imageio.get_writer(uri=path,
+                                      format="FFMPEG",
+                                      fps=25,
+                                      codec="rawvideo",
+                                      pixelformat="gray",
+                                      macro_block_size=None,
+                                      ffmpeg_log_level="error")
+            # write the filtered frames to avi file
+            for evid in np.arange(len(ds)):
+                # skip frames that were filtered out
+                if not ds._filter[evid]:
+                    continue
+                try:
+                    image = ds["image"][evid]
+                except:
+                    warnings.warn("Could not read image {}!".format(evid))
+                    continue
+                vout.append_data(image)
         else:
             msg="No image data to export: dataset {} !".format(ds.title)
             raise OSError(msg)
@@ -130,9 +94,7 @@ class Export(object):
         """
         columns = [ c.lower() for c in columns ]
         ds = self.rtdc_ds
-        # TODO:
-        # - Write tests for this method to keep dclab coverage close to 100%
-        
+
         # Make sure that path ends with .fcs
         if not path.endswith(".fcs"):
             path += ".fcs"

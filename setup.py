@@ -30,11 +30,10 @@ if __name__ == "__main__":
         license="GPL v2",
         description=description,
         long_description=open('README.rst').read() if exists('README.rst') else '',
-        install_requires=["fcswrite",
-                          "nptdms",
+        install_requires=["fcswrite", #required by: fcs export
+                          "imageio", #required by: tdms format, avi export
+                          "nptdms", #required by: tdms format
                           "NumPy >= 1.5.1",
-                          # Disable opencv, because is not on PyPI
-                          #"opencv",
                           "scipy",
                           "statsmodels >= 0.5.0"
                           ],

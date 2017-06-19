@@ -1,4 +1,5 @@
 0.2.4
+- Replace OpenCV with imageio
 - Add (ancilliary) computation of volume (#11)
 - Add convenience methods for `Configuration`
 - Refactoring (#8):

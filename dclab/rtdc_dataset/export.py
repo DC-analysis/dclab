@@ -53,7 +53,7 @@ class Export(object):
                                       format="FFMPEG",
                                       fps=25,
                                       codec="rawvideo",
-                                      pixelformat="gray",
+                                      pixelformat="yuv420p",
                                       macro_block_size=None,
                                       ffmpeg_log_level="error")
             # write the filtered frames to avi file

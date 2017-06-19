@@ -5,7 +5,6 @@ Class for efficiently handling image/video data
 """
 from __future__ import division, print_function, unicode_literals
 
-from distutils.version import LooseVersion
 import numpy as np
 import os
 import warnings

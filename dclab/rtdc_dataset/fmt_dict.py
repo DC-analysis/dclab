@@ -27,7 +27,7 @@ class RTDC_Dict(RTDCBase):
         Notes
         -----
         Besides the filter arrays for each data column, there is a manual
-        boolean filter array ``RTDC_DataSet._filter_manual`` that can be edited
+        boolean filter array ``RTDCBase._filter_manual`` that can be edited
         by the user - a boolean value of ``False`` means that the event is 
         excluded from all computations.
         """

@@ -120,7 +120,7 @@ axl = [
         u"Young's Modulus [kPa]",
         u"Volume [µm³]",
        ]
-# Unique RTDC_DataSet variable names (same order as UID)
+# Unique RT-DC dataset variable names (same order as UID)
 rdv = [ "area_raw",
         "area",
         "area_um",
@@ -190,7 +190,7 @@ tfd = [
          "area",
          lambda x: x
         ],
-        # area_um (set by RTDC_DataSet)
+        # area_um (set by RT-DC dataset)
         ["Cell Track",
          "area",
          lambda x: np.zeros(x.shape) # set to zero

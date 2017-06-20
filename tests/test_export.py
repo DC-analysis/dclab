@@ -17,14 +17,14 @@ import zipfile
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab
-from dclab import RTDC_DataSet
+from dclab import new_dataset
 
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
 def test_avi_export():
-    ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retreive_tdms(example_data_sets[1]))
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
     ds.export.avi(path=f1)
@@ -32,7 +32,7 @@ def test_avi_export():
 
 
 def test_avi_override():
-    ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retreive_tdms(example_data_sets[1]))
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
@@ -51,7 +51,7 @@ def test_avi_override():
 def test_avi_no_images():
     keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=127, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
@@ -66,7 +66,7 @@ def test_avi_no_images():
 def test_fcs_export():    
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=222, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.fcs")
@@ -91,7 +91,7 @@ def test_fcs_export():
 def test_fcs_override():
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=212, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.fcs")
@@ -110,7 +110,7 @@ def test_fcs_override():
 def test_fcs_not_filtered():
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=127, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
@@ -123,7 +123,7 @@ def test_fcs_not_filtered():
 def test_tsv_export():    
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=222, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
@@ -148,7 +148,7 @@ def test_tsv_export():
 def test_tsv_override():
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=212, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
@@ -167,7 +167,7 @@ def test_tsv_override():
 def test_tsv_not_filtered():
     keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
     ddict = example_data_dict(size=127, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")

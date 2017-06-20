@@ -10,7 +10,7 @@ from dclab.rtdc_dataset.fmt_tdms import get_tdms_files
 
 
 def example_data_dict(size=100, keys=["Area", "Defo"]):
-    """ Example dict with which an RTDC_DataSet can be instantiated.
+    """Example dict with which an RTDCBase can be instantiated.
     """
     ddict = {}
     for ii, key in enumerate(keys):
@@ -25,7 +25,7 @@ def example_data_dict(size=100, keys=["Area", "Defo"]):
 
 
 def retreive_tdms(zip_file):
-    """ Retrieve a zip file that is reachable via the location
+    """Retrieve a zip file that is reachable via the location
     `webloc`, extract it, and return the paths to extracted
     tdms files.
     """

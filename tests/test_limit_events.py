@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Downsampling only affects RTDC_DataSet._plot_filter
+"""Downsampling only affects RTDCBase._plot_filter
 """
 from __future__ import print_function
 
@@ -26,7 +26,7 @@ from helper_methods import example_data_dict
 def test_limit_simple():
     keys = ["area", "defo", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._filter) == 9999
     filtflt = {"limit events": 800}
@@ -41,7 +41,7 @@ def test_limit_simple():
 def test_limit_equal():
     keys = ["area", "defo", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._filter) == 9999
     filtflt = {"limit events": 9999}
@@ -56,7 +56,7 @@ def test_limit_equal():
 def test_limit_above():
     keys = ["area", "defo", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._filter) == 9999
     filtflt = {"limit events": 10000}

@@ -18,7 +18,7 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab.rtdc_dataset import RTDC_DataSet
+from dclab.rtdc_dataset import new_dataset
 from dclab.rtdc_dataset.config import Configuration, CaseInsensitiveDict
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
@@ -38,14 +38,14 @@ def equals(a, b):
 
 
 def test_config_basic():
-    ds = RTDC_DataSet(tdms_path = retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retreive_tdms(example_data_sets[1]))
     assert ds.config["roi"]["height"] == 96.
 
 
 def test_config_save_load():
     ## Download and extract data
     tdms_path = retreive_tdms(example_data_sets[0])
-    ds = RTDC_DataSet(tdms_path)
+    ds = new_dataset(tdms_path)
     _fd, cfg_file = tempfile.mkstemp()
     ds.config.save(cfg_file)
     loaded = Configuration(files=[cfg_file])

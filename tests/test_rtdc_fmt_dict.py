@@ -18,26 +18,26 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab import RTDC_DataSet
+from dclab import new_dataset
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
 def test_contour_not_available():
     ddict = example_data_dict(size=67, keys=["Area", "Defo"])
-    ds = RTDC_DataSet(ddict=ddict)    
+    ds = new_dataset(ddict)    
     assert "contour" not in ds
 
 
 def test_image_not_available():
     ddict = example_data_dict(size=67, keys=["Area", "Defo"])
-    ds = RTDC_DataSet(ddict=ddict)    
+    ds = new_dataset(ddict)    
     assert "image" not in ds
 
 
 def test_min_max_update():
     ddict = example_data_dict(size=67, keys=["area", "defo"])
-    ds = RTDC_DataSet(ddict=ddict)
+    ds = new_dataset(ddict)
     cfg = ds.config.copy()
 
     # Force updating circularity
@@ -50,13 +50,13 @@ def test_min_max_update():
 
 def test_trace_not_available():
     ddict = example_data_dict(size=67, keys=["Area", "Defo"])
-    ds = RTDC_DataSet(ddict=ddict)    
+    ds = new_dataset(ddict) 
     assert "trace" not in ds
 
 
 def test_wrong_things():
     ddict = example_data_dict(size=67, keys=["Area", "Defo"])
-    ds = RTDC_DataSet(ddict=ddict)
+    ds = new_dataset(ddict)
     # Check unknown variable (warning will be displayed
     try:
         ds.ApplyFilter(force=["on_purpose_unknown"])

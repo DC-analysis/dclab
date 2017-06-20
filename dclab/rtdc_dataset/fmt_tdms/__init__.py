@@ -36,7 +36,7 @@ class RTDC_TDMS(RTDCBase):
         Notes
         -----
         Besides the filter arrays for each data column, there is a manual
-        boolean filter array ``RTDC_DataSet._filter_manual`` that can be edited
+        boolean filter array ``RTDCBase._filter_manual`` that can be edited
         by the user - a boolean value of ``False`` means that the event is 
         excluded from all computations.
         
@@ -71,7 +71,7 @@ class RTDC_TDMS(RTDCBase):
 
 
     def _init_data_with_tdms(self, tdms_filename):
-        """ Initializes the current RTDC_DataSet with a tdms file.
+        """ Initializes the current RT-DC data set with a tdms file.
         """
         tdms_file = TdmsFile(tdms_filename)
         ## Set all necessary internal parameters as defined in

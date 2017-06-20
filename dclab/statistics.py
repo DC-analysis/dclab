@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Statistics computation for RTDC_DataSet instances
+Statistics computation for RT-DC dataset instances
 """
 from __future__ import division, print_function, unicode_literals
 
@@ -69,7 +69,7 @@ def get_statistics(rtdc_ds, columns=None, axes=None):
     """
     Parameters
     ----------
-    rtdc_ds : instance of `dclab.RTDC_DataSet`.
+    rtdc_ds : instance of `dclab.rtdc_dataset.RTDCBase`.
         The data set for which to compute the statistics.
     columns : list of str or None
         The columns for which to compute the statistics.
@@ -164,7 +164,7 @@ Statistics(name="Mean",   req_axis=True, method=np.average)
 Statistics(name="Median", req_axis=True, method=np.median)
 Statistics(name="Mode",   req_axis=True, method=mode)
 Statistics(name="SD",     req_axis=True, method=np.std)
-# Methods that work on an RTDC_DataSet
+# Methods that work on RTDCBase
 Statistics(name="Events",
            method=lambda mm: np.sum(mm._filter))
 Statistics(name="%-gated",

@@ -29,7 +29,7 @@ point00000003 = 6.150993521573982e-01 1.015706806282723e-03
 def test_import():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=1000, keys=["area", "defo"])
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     # save polygon data
     with tempfile.NamedTemporaryFile(mode="w") as temp:
@@ -65,7 +65,7 @@ def test_import():
 def test_invert():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=1234, keys=["area", "defo"])
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     # points of polygon filter
     points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
               [np.min(ddict["area"]), np.max(ddict["defo"])],
@@ -94,7 +94,7 @@ def test_invert():
 def test_invert_copy():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=1234, keys=["area", "defo"])
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     # points of polygon filter
     points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
               [np.min(ddict["area"]), np.max(ddict["defo"])],
@@ -232,7 +232,7 @@ def test_unique_id():
 def test_with_rtdc_data_set():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=821, keys=["area", "defo"])
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     # save polygon data
     with tempfile.NamedTemporaryFile(mode="w") as temp:
@@ -253,7 +253,7 @@ def test_with_rtdc_data_set():
 def test_wrong_load_key():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=1000, keys=["area", "defo"])
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     # save polygon data
     with tempfile.NamedTemporaryFile(mode="w") as temp:

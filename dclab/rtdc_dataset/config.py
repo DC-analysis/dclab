@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-RTDC_DataSet configuration
+RT-DC dataset configuration
 """
 from __future__ import division, print_function, unicode_literals
 
@@ -60,7 +60,7 @@ class CaseInsensitiveDict(dict):
 
 class Configuration(object):
     def __init__(self, files=[], cfg={}, rtdc_ds=None):
-        """Configuration of an RTDC_DataSet
+        """Configuration of an RT-DC dataset
         
         Parameters
         ----------
@@ -175,7 +175,7 @@ class Configuration(object):
 
 
     def _complete_config_from_rtdc_ds(self, rtdc_ds):
-        """Complete configuration using data columns from RTDC_DataSet"""
+        """Complete configuration using data columns from RT-DC dataset"""
         # Update data size
         self["general"]["cell number"] = len(rtdc_ds)
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Downsampling only affects RTDC_DataSet._plot_filter
-"""
+"""Meta functionalities"""
 from __future__ import print_function
 
 import codecs
@@ -18,15 +17,15 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-import dclab
-from dclab import RTDC_DataSet
+import dclab.rtdc_dataset
+from dclab import new_dataset
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
 def test_project_path():
     tfile = retreive_tdms(example_data_sets[0])
-    ds = RTDC_DataSet(tdms_path=tfile)
+    ds = dclab.new_dataset(tfile)
     assert len(ds.file_hashes) != 0
     a = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(tfile)
     b = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile))

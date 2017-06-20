@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""RTDC_DataSet classes and methods"""
+"""RT-DC dataset core classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
 import warnings

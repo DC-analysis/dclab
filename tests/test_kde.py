@@ -23,7 +23,7 @@ from helper_methods import example_data_dict
 def test_kde_general():
     ## Download and extract data
     ddict = example_data_dict()
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     dcont = []    
     dscat = []
@@ -38,7 +38,7 @@ def test_kde_general():
 
 def test_kde_none():
     ddict = example_data_dict()
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     sc = ds.get_kde_scatter(kde_type="none")
     assert np.sum(sc) == sc.shape[0]
     ds.get_kde_contour()
@@ -46,7 +46,7 @@ def test_kde_none():
 
 def test_kde_nofilt():
     ddict = example_data_dict()
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     ds.config["filtering"]["enable filters"] = False
     sc = ds.get_kde_scatter()
     cc = ds.get_kde_contour()
@@ -58,7 +58,7 @@ def test_kde_nofilt():
 
 def test_kde_positions():
     ddict = example_data_dict()
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     
     ds.config["filtering"]["enable filters"] = False
     sc = ds.get_kde_scatter(xax="area", yax="defo")
@@ -69,7 +69,7 @@ def test_kde_positions():
 
 def test_empty_kde():
     ddict = example_data_dict(size=67, keys=["area", "defo"])
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
     ds._filter[:] = 0
     a = ds.get_kde_scatter()
     assert len(a) == 0

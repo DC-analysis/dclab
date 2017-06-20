@@ -25,6 +25,7 @@ def new_dataset(data):
         - dict
         - .tdms file
         - subclass of `RTDCBase`
+          (will create a hierarchy child)
     
     Returns
     -------
@@ -40,13 +41,3 @@ def new_dataset(data):
     else:
         msg = "data type not supported: {}".format(data.__class__)
         raise NotImplementedError(msg)
-
-
-def RTDC_DataSet(*args, **kwargs):
-    msg = "Please use `new_dataset` instead of `RTDC_DataSet` (DEPRECATION)!"
-    warnings.warn(msg)
-    if args:
-        return new_dataset(args[0])
-    else:
-        keys = list(kwargs.keys())
-        return new_dataset(kwargs[keys[0]])

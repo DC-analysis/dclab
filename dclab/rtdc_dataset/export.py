@@ -15,7 +15,7 @@ from .. import definitions as dfn
 
 class Export(object):
     def __init__(self, rtdc_ds):
-        """Export functionalities for RTDC_DataSet"""
+        """Export functionalities for RT-DC datasets"""
         self.rtdc_ds = rtdc_ds
 
 
@@ -73,11 +73,11 @@ class Export(object):
 
 
     def fcs(self, path, columns, filtered=True, override=False):
-        """ Export the data of an RTDC_DataSet to an .fcs file
+        """Export the data of an RT-DC dataset to an .fcs file
         
         Parameters
         ----------
-        mm: instance of dclab.RTDC_DataSet
+        mm: instance of dclab.RTDCBase
             The data set that will be exported.
         path : str
             Path to a .tsv file. The ending .tsv is added automatically.

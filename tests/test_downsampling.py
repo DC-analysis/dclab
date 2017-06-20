@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Downsampling only affects RTDC_DataSet._plot_filter"""
+"""Downsampling only affects RTDCBase._plot_filter"""
 from __future__ import print_function
 
 import codecs
@@ -24,7 +24,7 @@ from helper_methods import example_data_dict
 def test_downsample_none():
     keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=8472, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._plot_filter) == 8472
     ds.ApplyFilter()
@@ -35,7 +35,7 @@ def test_downsample_none():
 def test_downsample_none2():
     keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=8472, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._plot_filter) == 8472
     
@@ -64,7 +64,7 @@ def test_downsample_yes():
     """
     keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=8472, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._plot_filter) == 8472
 
@@ -81,7 +81,7 @@ def test_downsample_up():
     """
     keys = ["area", "defo", "time", "frame", "fl-3width"]
     ddict = example_data_dict(size=10000, keys=keys)
-    ds = dclab.RTDC_DataSet(ddict=ddict)
+    ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._plot_filter) == 10000
     

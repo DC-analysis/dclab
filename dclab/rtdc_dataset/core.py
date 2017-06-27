@@ -115,7 +115,6 @@ class RTDCBase(object):
     @abc.abstractmethod
     def __hash__(self):
         """Hash value must be defined by derived classes"""
-        pass
 
 
     def __len__(self):
@@ -160,14 +159,14 @@ class RTDCBase(object):
                                  )
 
 
-    def ApplyFilter(self, force=[]):
-        """ Computes the filters for the data set
+    def apply_filter(self, force=[]):
+        """Computes the filters for the data set
         
         Uses `self._old_filters` to determine new filters.
 
         Parameters
         ----------
-        force : list()
+        force : list
             A list of parameters that must be refiltered.
 
 
@@ -310,7 +309,7 @@ class RTDCBase(object):
         xnew, xnew: filtered x and y
         """
         assert downsample >= 0
-        self.ApplyFilter()
+        self.apply_filter()
         
         downsample = int(downsample)
         xax = xax.lower()

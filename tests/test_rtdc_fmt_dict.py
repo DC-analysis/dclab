@@ -45,7 +45,7 @@ def test_min_max_update():
     cfg["filtering"]["defo max"] = .8
     ds.config.update(cfg)
 
-    ds.ApplyFilter()
+    ds.apply_filter()
 
 
 def test_trace_not_available():
@@ -59,7 +59,7 @@ def test_wrong_things():
     ds = new_dataset(ddict)
     # Check unknown variable (warning will be displayed
     try:
-        ds.ApplyFilter(force=["on_purpose_unknown"])
+        ds.apply_filter(force=["on_purpose_unknown"])
     except ValueError:
         pass
 

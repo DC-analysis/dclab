@@ -27,7 +27,7 @@ def test_downsample_none():
     ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._plot_filter) == 8472
-    ds.ApplyFilter()
+    ds.apply_filter()
     ds.get_downsampled_scatter(downsample=0)
     assert np.sum(ds._plot_filter) == 8472
 
@@ -43,7 +43,7 @@ def test_downsample_none2():
     
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
-    ds.ApplyFilter()
+    ds.apply_filter()
     ds.get_downsampled_scatter(downsample=100)
     
     assert np.sum(ds._plot_filter) == 100
@@ -51,7 +51,7 @@ def test_downsample_none2():
 
     filtflt["enable filters"] = True
     ds.config.update(cfg)
-    ds.ApplyFilter()
+    ds.apply_filter()
     ds.get_downsampled_scatter(downsample=100)
 
     assert np.sum(ds._plot_filter) == 100
@@ -68,7 +68,7 @@ def test_downsample_yes():
 
     assert np.sum(ds._plot_filter) == 8472
 
-    ds.ApplyFilter()
+    ds.apply_filter()
     ds.get_downsampled_scatter(downsample=100)
     assert np.sum(ds._plot_filter) == 100
     ds.get_downsampled_scatter(downsample=100)
@@ -85,7 +85,7 @@ def test_downsample_up():
 
     assert np.sum(ds._plot_filter) == 10000
     
-    ds.ApplyFilter()
+    ds.apply_filter()
     ds.get_downsampled_scatter(downsample=9999)
     assert np.sum(ds._plot_filter) == 9999
     ds.get_downsampled_scatter(downsample=9999)

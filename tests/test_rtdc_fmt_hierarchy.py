@@ -28,7 +28,7 @@ def test_hierarchy_from_tdms():
     ds2 = new_dataset(ds1)
 
     ds1._filter_manual[0] = False
-    ds2.ApplyFilter()
+    ds2.apply_filter()
     assert ds2._filter.shape[0] == ds1._filter.shape[0]-1
     assert ds2["area"][0] == ds1["area"][1]
 

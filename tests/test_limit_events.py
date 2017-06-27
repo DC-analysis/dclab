@@ -33,7 +33,7 @@ def test_limit_simple():
     
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
-    ds.ApplyFilter()
+    ds.apply_filter()
     
     assert np.sum(ds._filter) == 800
 
@@ -48,7 +48,7 @@ def test_limit_equal():
     
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
-    ds.ApplyFilter()
+    ds.apply_filter()
     
     assert np.sum(ds._filter) == 9999
 
@@ -63,7 +63,7 @@ def test_limit_above():
     
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
-    ds.ApplyFilter()
+    ds.apply_filter()
     
     assert np.sum(ds._filter) == 9999
 

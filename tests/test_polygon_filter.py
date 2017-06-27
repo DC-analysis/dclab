@@ -40,7 +40,7 @@ def test_import():
         pf = dclab.PolygonFilter(filename=temp.name)
         ds.polygon_filter_add(pf)
         
-        ds.ApplyFilter()
+        ds.apply_filter()
 
         assert np.sum(ds._filter) == 330
         
@@ -78,7 +78,7 @@ def test_invert():
     ds.polygon_filter_add(filt1)
     assert [0] == ds.config["filtering"]["polygon filters"]
     n1 = np.sum(ds._filter)
-    ds.ApplyFilter()
+    ds.apply_filter()
     n2 = np.sum(ds._filter)
     assert n1 != n2
     filt2 = dclab.PolygonFilter(axes=["area", "defo"],
@@ -86,7 +86,7 @@ def test_invert():
                                 inverted=True)
     ds.polygon_filter_add(filt2)
     assert [0,1] == ds.config["filtering"]["polygon filters"]
-    ds.ApplyFilter()
+    ds.apply_filter()
     assert np.sum(ds._filter) == 0, "inverted+normal filter filters all"
     dclab.PolygonFilter.clear_all_filters()
 
@@ -107,13 +107,13 @@ def test_invert_copy():
     ds.polygon_filter_add(filt1)
     assert [0] == ds.config["filtering"]["polygon filters"]
     n1 = np.sum(ds._filter)
-    ds.ApplyFilter()
+    ds.apply_filter()
     n2 = np.sum(ds._filter)
     assert n1 != n2
     filt2 = filt1.copy(invert=True)
     ds.polygon_filter_add(filt2)
     assert [0,1] == ds.config["filtering"]["polygon filters"]
-    ds.ApplyFilter()
+    ds.apply_filter()
     assert np.sum(ds._filter) == 0, "inverted+normal filter filters all"
     dclab.PolygonFilter.clear_all_filters()
 

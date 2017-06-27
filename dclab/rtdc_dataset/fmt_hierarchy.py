@@ -20,7 +20,7 @@ class RTDC_Hierarchy(RTDCBase):
         be distinguished without the noise in the original data.
         
         Children in hierarchies always update their data according to the
-        filtered event data from their parent when `ApplyFilter` is called.
+        filtered event data from their parent when `apply_filter` is called.
         This makes it easier to save and load hierarchy children with e.g.
         ShapeOut and it makes the handling of hierarchies more intuitive
         (when the parent changes, the child changes as well).
@@ -62,7 +62,7 @@ class RTDC_Hierarchy(RTDCBase):
 
         # Apply the filter
         # This will also populate all event attributes
-        self.ApplyFilter()
+        self.apply_filter()
 
 
     def __contains__(self, key):
@@ -94,14 +94,14 @@ class RTDC_Hierarchy(RTDCBase):
 
 
     def __len__(self):
-        self.hparent.ApplyFilter()
+        self.hparent.apply_filter()
         return np.sum(self.hparent._filter)
 
 
-    def ApplyFilter(self, *args, **kwargs):
-        """Overridden ApplyFilter to perform tasks for hierarchy child"""
+    def apply_filter(self, *args, **kwargs):
+        """Overridden `apply_filter` to perform tasks for hierarchy child"""
         # Copy event data from hierarchy parent
-        self.hparent.ApplyFilter()
+        self.hparent.apply_filter()
 
         # update event index
         length = np.sum(self.hparent._filter)
@@ -115,4 +115,4 @@ class RTDC_Hierarchy(RTDCBase):
             msg = "filter_manual not supported in hierarchy!"
             raise NotImplementedError(msg)
 
-        super(RTDC_Hierarchy, self).ApplyFilter(*args, **kwargs)
+        super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)

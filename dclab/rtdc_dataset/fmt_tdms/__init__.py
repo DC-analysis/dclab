@@ -3,6 +3,7 @@
 """RT-DC .tdms file format"""
 from __future__ import division, print_function, unicode_literals
 
+import io
 import hashlib
 import os
 import sys
@@ -22,52 +23,46 @@ from .event_trace import TraceColumn
 
 class RTDC_TDMS(RTDCBase):
     def __init__(self, tdms_path):
-        """
+        """TDMS file format for RT-DC measurements
+
         Parameters
         ----------
         tdms_path: str
-            Path to a '.tdms' file. Only one of `tdms_path and `ddict` can
-            be specified.
-        ddict: dict
-            Dictionary with keys from `dclab.definitions.uid` (e.g. "area", "defo")
-            with which the class will be instantiated. Not '.tdms' file is required.
-            The configuration is set to the default configuration fo dclab.
-        
-        Notes
-        -----
-        Besides the filter arrays for each data column, there is a manual
-        boolean filter array ``RTDCBase._filter_manual`` that can be edited
-        by the user - a boolean value of ``False`` means that the event is 
-        excluded from all computations.
-        
+            Path to a '.tdms' measurement file.        
         """
+        # Initialize RTDCBase
         super(RTDC_TDMS, self).__init__()
+
+        # Events is a simple dictionary
         self._events = {}
-
-        # Initialize variables and generate hashes
-        self.tdms_filename = tdms_path
         self.path = tdms_path
-        self.filename = tdms_path
-        self.name = os.path.split(tdms_path)[1].split(".tdms")[0]
-        self.fdir = os.path.dirname(tdms_path)
-        mx = os.path.join(self.fdir, self.name.split("_")[0])
-        self.title = u"{} - {}".format(get_project_name_from_path(tdms_path),
-                                       os.path.split(mx)[1])
-        fsh = [ tdms_path, mx+"_camera.ini", mx+"_para.ini" ]
-        self.file_hashes = [(f, hashfile(f)) for f in fsh if os.path.exists(f)]
-        ihasher = hashlib.md5()
-        ihasher.update(obj2str(tdms_path))
-        ihasher.update(obj2str(self.file_hashes))
-        self.identifier = ihasher.hexdigest()
+        self.title = get_project_name_from_path(tdms_path, append_mx=True)
 
+        # tdms-related convenience properties
+        self._fdir = os.path.dirname(self.path)
+        self._mid = os.path.basename(self.path).split("_")[0]
+        md, mn = os.path.split(self.path)
+        self._path_mx = os.path.join(md, mn.split("_")[0])
+        
         self._init_data_with_tdms(tdms_path)
 
+        # Add additional columns
         # event images
         self._events["image"] = ImageColumn(self)
         # event contours
         self._events["contour"] = ContourColumn(self)
         # event traces
         self._events["trace"] = TraceColumn(self)
+
+
+    def __hash__(self):
+        """Hash value based on file name and .ini file content"""
+
+        # Only hash _camera.ini and _para.ini
+        fsh = [ self._path_mx+"_camera.ini", self._path_mx+"_para.ini" ]
+        hash_str = "_".join([hashfile(f) for f in fsh])
+        hash_str += os.path.basename(self.path)
+        return hash(hash_str)
 
 
     def _init_data_with_tdms(self, tdms_filename):
@@ -111,19 +106,26 @@ class RTDC_TDMS(RTDCBase):
                 self._events[dfn.rdv[ii]] = func(*args)
 
         # Set up filtering
-        mx = os.path.join(self.fdir, self.name.split("_")[0])
-        self.config = Configuration(files=[mx+"_para.ini", mx+"_camera.ini"],
+        self.config = Configuration(files=[self._path_mx+"_para.ini",
+                                           self._path_mx+"_camera.ini"],
                                     rtdc_ds=self)
-
         self._init_filters()
 
 
-def get_project_name_from_path(path):
+
+def get_project_name_from_path(path, append_mx=False):
     """Get the project name from a path.
     
     For a path "/home/peter/hans/HLC12398/online/M1_13.tdms" or
     For a path "/home/peter/hans/HLC12398/online/data/M1_13.tdms" or
     without the ".tdms" file, this will return always "HLC12398".
+    
+    Parameters
+    ----------
+    path: str
+        path to tdms file
+    append_mx: bool
+        append measurement number, e.g. "M1"
     """
     if path.endswith(".tdms"):
         dirn = os.path.dirname(path)
@@ -146,6 +148,11 @@ def get_project_name_from_path(path):
         project = trail3
     else:
         project = trail1
+
+    if append_mx:
+        mx = os.path.basename(path).split("_")[0]
+        project += " - "+mx
+    
     return project
 
 

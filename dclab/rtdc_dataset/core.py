@@ -3,6 +3,8 @@
 """RT-DC dataset core classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
+import abc
+import hashlib
 import warnings
 
 import numpy as np
@@ -16,10 +18,23 @@ from .ancillary_columns import AncillaryColumn
 from .export import Export
 from .util import obj2str, hashfile
 
+
+
 class RTDCBase(object):
+    __metaclass__ = abc.ABCMeta
+    
     def __init__(self):
-        """Base class for RT-DC data sets"""
-        # Kernel density estimator dictionaries
+        """RT-DC measurement base class
+        
+        Notes
+        -----
+        Besides the filter arrays for each data column, there is a manual
+        boolean filter array ``RTDCBase._filter_manual`` that can be edited
+        by the user - a boolean value of ``False`` means that the event is 
+        excluded from all computations.
+        """
+        # file format (derived from class name)
+        self.format = self.__class__.__name__.split("_")[-1].lower()
         
         self._old_filters = {} # for comparison to new filters
         self._polygon_filter_ids = []
@@ -53,6 +68,7 @@ class RTDCBase(object):
                     # to be computed
                     ct = True
         return ct
+
 
 
     def __getattr__(self, attr):
@@ -96,6 +112,11 @@ class RTDCBase(object):
             # - Clean the workflow from these zero-columns (raise a KeyError instead)
             return np.zeros(len(self))
 
+    @abc.abstractmethod
+    def __hash__(self):
+        """Hash value must be defined by derived classes"""
+        pass
+
 
     def __len__(self):
         keys = list(self._events.keys())
@@ -130,6 +151,13 @@ class RTDCBase(object):
                 setattr(self, "_filter_"+key, inifilter.copy())
         self._filter_polygon = inifilter.copy()
 
+
+    @property
+    def identifier(self):
+        """Compute an identifier based on __hash__"""
+        return "mm-{}_{}".format(self.format,
+                                 hashlib.md5(str(hash(self))).hexdigest()
+                                 )
 
 
     def ApplyFilter(self, force=[]):

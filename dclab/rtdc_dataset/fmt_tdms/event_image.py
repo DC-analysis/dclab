@@ -63,13 +63,12 @@ class ImageColumn(object):
         Returns None if no video file is found.
         """
         video = None
-        fdir = rtdc_dataset.fdir
-        if os.path.exists(fdir):
+        if os.path.exists(rtdc_dataset._fdir):
             # Cell images (video)
-            videos = [v for v in os.listdir(fdir) if v.endswith(".avi")]
+            videos = [v for v in os.listdir(rtdc_dataset._fdir) if v.endswith(".avi")]
             # Filter videos according to measurement number
-            meas_id = rtdc_dataset.name.split("_")[0]
-            videos = [v for v in videos if v.split("_")[0] == meas_id] 
+            meas_id = rtdc_dataset._mid
+            videos = [v for v in videos if v.split("_")[0] == meas_id]
             videos.sort()
             if len(videos) != 0:
                 # Defaults to first avi file
@@ -87,7 +86,7 @@ class ImageColumn(object):
         if video is None:
             return None
         else:
-            return os.path.join(fdir, video)
+            return os.path.join(rtdc_dataset._fdir, video)
 
 
 

@@ -1,18 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-RT-DC dictionary file format
-"""
+"""RT-DC hierarchy format"""
 from __future__ import division, print_function, unicode_literals
-
-import hashlib
-import time
 
 import numpy as np
 
-from dclab import definitions as dfn
 from .config import Configuration
-from .core import RTDCBase, obj2str
+from .core import RTDCBase
 
 
 class RTDC_Hierarchy(RTDCBase):
@@ -42,14 +36,13 @@ class RTDC_Hierarchy(RTDCBase):
             Only hierarchy children have this attribute
         """
         super(RTDC_Hierarchy, self).__init__()
-
         self._events = {}
+
+        self.path = hparent.path
+        self.title = hparent.title + "_child"
+
         self.hparent = hparent
 
-        self.path = "none"
-        self.fdir = "none"
-        
-        
         ## Copy configuration
         cfg = hparent.config.copy()
 
@@ -60,17 +53,13 @@ class RTDC_Hierarchy(RTDCBase):
                 key.endswith("max") or
                 key == "polygon filters"):
                 pops.append(key)
+
         [ cfg["filtering"].pop(key) for key in pops ]
         # Add parent information in dictionary
         cfg["filtering"]["hierarchy parent"] = hparent.identifier
 
         self.config = Configuration(cfg = cfg)
 
-        myhash = hashlib.md5(obj2str(time.time())).hexdigest()
-        self.identifier = hparent.identifier+"_child-"+myhash
-        self.title = hparent.title + "_child-"+myhash[-4:]
-        self.name = self.title
-        self.tdms_filename = self.title
         # Apply the filter
         # This will also populate all event attributes
         self.ApplyFilter()
@@ -95,6 +84,13 @@ class RTDC_Hierarchy(RTDCBase):
             else:
                 msg = "Hierarchy does not implement {}".format(key)
                 raise NotImplementedError(msg)
+
+
+    def __hash__(self):
+        """Hashes of hierarchy parents change if the parent changes"""
+        hph = hash(self.hparent)
+        hfilth = hash(self.hparent._filter.tostring())
+        return hph + hfilth
 
 
     def __len__(self):

@@ -21,7 +21,7 @@ class TraceColumn(object):
         not needed at all, e.g. for batch processing with ShapeOut. 
         """
         self._trace = None
-        self.mname = rtdc_dataset.tdms_filename
+        self.mname = rtdc_dataset.path
         self.identifier = self.mname
         
 

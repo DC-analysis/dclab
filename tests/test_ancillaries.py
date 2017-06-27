@@ -18,11 +18,44 @@ import zipfile
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab
 
-from helper_methods import example_data_dict
+from helper_methods import example_data_dict, retreive_tdms, example_data_sets
+
+
+def test_basic():
+    ds = dclab.new_dataset(retreive_tdms(example_data_sets[1]))
+    for cc in [  
+                'fl1_pos',
+                'frame',
+                'size_x',
+                'size_y',
+                'contour',
+                'area_cvx',
+                'circ',
+                'image',
+                'trace',
+                'fl1_width',
+                'ncells',
+                'pos_x',
+                'pos_y',
+                'fl1_area',
+                'fl1_max',
+                ]:
+        assert cc in ds
+
+    # ancillaries
+    for cc in [ 
+               "deform",
+               "area_um",
+               "aspect",
+               "frame",
+               "index",
+               "time",
+               ]:
+        assert cc in ds
 
 
 def test_emodulus():
-    keys = ["area", "defo"]
+    keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
     ds.config["calculation"] = {"emodulus medium": "CellCarrier",
@@ -41,12 +74,12 @@ def test_emodulus():
 
 
 def test_area_emodulus():
-    # computes "area" from "areapix"
-    keys = ["areapix", "defo"]
+    # computes "area_um" from "area_cvx"
+    keys = ["area_cvx", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
     # area can be computed from areapix
-    assert "area" in ds
+    assert "area_um" in ds
     assert "emodulus" not in ds, "not config for emodulus"
     ds.config["calculation"] = {"emodulus medium": "CellCarrier",
                                 "emodulus model": "elastic sphere",
@@ -57,7 +90,7 @@ def test_area_emodulus():
 
 
 def test_emodulus_none():
-    keys = ["arearaw", "defo"]
+    keys = ["area_msd", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
     assert "emodulus" not in ds, "not config for emodulus"
@@ -70,7 +103,7 @@ def test_emodulus_none():
 
 
 def test_emodulus_none2():
-    keys = ["area", "defo"]
+    keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
     assert "emodulus" not in ds, "not config for emodulus"

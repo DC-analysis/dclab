@@ -11,14 +11,13 @@ import sys
 import numpy as np
 from nptdms import TdmsFile
 
-from dclab import definitions as dfn
 from ..config import Configuration
 from ..core import RTDCBase, obj2str, hashfile
 
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
 from .event_trace import TraceColumn
-
+from . import naming
 
 
 class RTDC_TDMS(RTDCBase):
@@ -66,44 +65,26 @@ class RTDC_TDMS(RTDCBase):
 
 
     def _init_data_with_tdms(self, tdms_filename):
-        """ Initializes the current RT-DC data set with a tdms file.
+        """Initializes the current RT-DC data set with a tdms file.
         """
         tdms_file = TdmsFile(tdms_filename)
-        ## Set all necessary internal parameters as defined in
-        ## definitions.py
-        ## Note that this is meta-programming. If you want to add a
-        ## different column from tdms files, then edit definitions.py:
-        ## -> uid, axl, rdv, tfd
         # time is always there
-        datalen = len(tdms_file.object("Cell Track", "time").data)
-        for ii, group in enumerate(dfn.tfd):
-            # ii iterates through the data that we could possibly extract
-            # from a the tdms file.
-            # The `group` contains all information necessary to extract
-            # the data: table name, used column names, method to compute
-            # the desired data from the columns.
-            table = group[0]
-            if not isinstance(group[1], list):
-                # just for standards
-                group[1] = [group[1]]
-            func = group[2]
-            args = []
+        table = "Cell Track"
+        datalen = len(tdms_file.object(table, "time").data)
+        # Edit naming.dclab2tdms to add columns
+        for arg in naming.tdms2dclab:
             try:
-                for arg in group[1]:
-                    data = tdms_file.object(table, arg).data
-                    if data is None or len(data)==0:
-                        # Fill empty columns with zeros. npTDMS treats empty
-                        # columns in the following way:
-                        # - in nptdms 0.8.2, `data` is `None`
-                        # - in nptdms 0.9.0, `data` is an array of length 0
-                        data = np.zeros(datalen)
-                    args.append(data)
+                data = tdms_file.object(table, arg).data
             except KeyError:
-                # set it to zero
-                func = lambda x: x
-                args = [np.zeros(datalen)]
-            finally:
-                self._events[dfn.rdv[ii]] = func(*args)
+                pass
+            else:
+                if data is None or len(data)==0:
+                    # Fill empty columns with zeros. npTDMS treats empty
+                    # columns in the following way:
+                    # - in nptdms 0.8.2, `data` is `None`
+                    # - in nptdms 0.9.0, `data` is an array of length 0
+                    data = np.zeros(datalen)
+                self._events[naming.tdms2dclab[arg]] = data
 
         # Set up filtering
         self.config = Configuration(files=[self._path_mx+"_para.ini",

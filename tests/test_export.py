@@ -49,7 +49,7 @@ def test_avi_override():
 
 
 def test_avi_no_images():
-    keys = ["area", "defo", "time", "frame", "fl-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=127, keys=keys)
     ds = dclab.new_dataset(ddict)
     
@@ -64,7 +64,7 @@ def test_avi_no_images():
 
 
 def test_fcs_export():    
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=222, keys=keys)
     ds = dclab.new_dataset(ddict)
     
@@ -73,7 +73,7 @@ def test_fcs_export():
     f2 = join(edest, "test_unicode.fcs")
     
     ds.export.fcs(f1, keys, override=True)
-    ds.export.fcs(f2, [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
+    ds.export.fcs(f2, [u"area_um", u"deform", u"time", u"frame", u"fl3_width"], override=True)
     
     with codecs.open(f1, mode="rb") as fd:
         a1 = fd.read()
@@ -89,7 +89,7 @@ def test_fcs_export():
 
 
 def test_fcs_override():
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=212, keys=keys)
     ds = dclab.new_dataset(ddict)
     
@@ -108,7 +108,7 @@ def test_fcs_override():
 
 
 def test_fcs_not_filtered():
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=127, keys=keys)
     ds = dclab.new_dataset(ddict)
     
@@ -121,7 +121,7 @@ def test_fcs_not_filtered():
 
 
 def test_tsv_export():    
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=222, keys=keys)
     ds = dclab.new_dataset(ddict)
     
@@ -130,7 +130,7 @@ def test_tsv_export():
     f2 = join(edest, "test_unicode.tsv")
     
     ds.export.tsv(f1, keys, override=True)
-    ds.export.tsv(f2, [u"Area", u"Defo", u"Time", u"Frame", u"FL-3width"], override=True)
+    ds.export.tsv(f2, [u"area_um", u"deform", u"time", u"frame", u"fl3_width"], override=True)
     
     with codecs.open(f1) as fd:
         a1 = fd.read()
@@ -146,7 +146,7 @@ def test_tsv_export():
 
 
 def test_tsv_override():
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=212, keys=keys)
     ds = dclab.new_dataset(ddict)
     
@@ -165,7 +165,7 @@ def test_tsv_override():
 
 
 def test_tsv_not_filtered():
-    keys = ["Area", "Defo", "Time", "Frame", "FL-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=127, keys=keys)
     ds = dclab.new_dataset(ddict)
     

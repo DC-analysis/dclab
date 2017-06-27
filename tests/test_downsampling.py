@@ -22,7 +22,7 @@ from helper_methods import example_data_dict
 
 
 def test_downsample_none():
-    keys = ["area", "defo", "time", "frame", "fl-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
 
@@ -33,7 +33,7 @@ def test_downsample_none():
 
 
 def test_downsample_none2():
-    keys = ["area", "defo", "time", "frame", "fl-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
 
@@ -62,7 +62,7 @@ def test_downsample_none2():
 def test_downsample_yes():
     """ Simple downsampling test.
     """
-    keys = ["area", "defo", "time", "frame", "fl-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
 
@@ -79,7 +79,7 @@ def test_downsample_up():
     Likely causes removal of too many points and requires
     re-inserting them.
     """
-    keys = ["area", "defo", "time", "frame", "fl-3width"]
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=10000, keys=keys)
     ds = dclab.new_dataset(ddict)
 

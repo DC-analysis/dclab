@@ -61,14 +61,14 @@ def test_kde_positions():
     ds = dclab.new_dataset(ddict)
     
     ds.config["filtering"]["enable filters"] = False
-    sc = ds.get_kde_scatter(xax="area", yax="defo")
-    sc2 = ds.get_kde_scatter(xax="area", yax="defo",
+    sc = ds.get_kde_scatter(xax="area_um", yax="deform")
+    sc2 = ds.get_kde_scatter(xax="area_um", yax="deform",
                              positions=(ds["area_um"], ds["deform"]))
     assert np.all(sc==sc2)
 
 
 def test_empty_kde():
-    ddict = example_data_dict(size=67, keys=["area", "defo"])
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
     ds._filter[:] = 0
     a = ds.get_kde_scatter()

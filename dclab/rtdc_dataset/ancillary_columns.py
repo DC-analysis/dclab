@@ -49,7 +49,7 @@ class AncillaryColumn():
             e.g. ["calculation", ["emodulus model", "emodulus viscosity"]]
         req_columns: list
             Required existing columns in the data set,
-            e.g. ["area", "defo"]
+            e.g. ["area_cvx", "deform"]
         
         Notes
         -----
@@ -163,12 +163,12 @@ class AncillaryColumn():
 
 
 def compute_area_ratio(mm):
-    return mm["area"] / mm["area_raw"]
+    return mm["area_cvx"] / mm["area_msd"]
 
 
 def compute_area_um(mm):
     pxs = mm.config["image"]["pix size"]
-    return mm["area"] * pxs**2
+    return mm["area_cvx"] * pxs**2
 
 
 def compute_aspect(mm):
@@ -223,16 +223,16 @@ def compute_volume(mm):
 # Register ancillaries
 AncillaryColumn(column_name="area_ratio",
                  method=compute_area_ratio,
-                 req_columns=["area", "area_raw"]
+                 req_columns=["area_cvx", "area_msd"]
                  )
 
 AncillaryColumn(column_name="area_um",
                  method=compute_area_um,
                  req_config=[["image", ["pix size"]]],
-                 req_columns=["area"]
+                 req_columns=["area_cvx"]
                  )
 
-AncillaryColumn(column_name="area_aspect",
+AncillaryColumn(column_name="aspect",
                  method=compute_aspect,
                  req_columns=["size_x", "size_y"]
                  )

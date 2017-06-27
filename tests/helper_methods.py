@@ -9,7 +9,7 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 from dclab.rtdc_dataset.fmt_tdms import get_tdms_files
 
 
-def example_data_dict(size=100, keys=["Area", "Defo"]):
+def example_data_dict(size=100, keys=["area_um", "deform"]):
     """Example dict with which an RTDCBase can be instantiated.
     """
     ddict = {}

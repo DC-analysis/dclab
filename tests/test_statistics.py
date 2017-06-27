@@ -21,10 +21,10 @@ from helper_methods import example_data_dict
 
 
 def test_stat_defo():
-    ddict = example_data_dict(size=5085, keys=["area", "defo"])
+    ddict = example_data_dict(size=5085, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
     
-    head, vals = dclab.statistics.get_statistics(ds, axes=["defo"])
+    head, vals = dclab.statistics.get_statistics(ds, axes=["deform"])
     
     for h, v in zip(head,vals):
         if h.lower() == "flow rate":
@@ -44,10 +44,10 @@ def test_stat_defo():
        
 
 def test_stat_occur():
-    ddict = example_data_dict(size=5085, keys=["area", "defo"])
+    ddict = example_data_dict(size=5085, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
     
-    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["defo"])
+    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["deform"])
     head2, vals2 = dclab.statistics.get_statistics(ds, columns=["Events", "Mean"])
     headf, valsf = dclab.statistics.get_statistics(ds)
     
@@ -67,11 +67,11 @@ def test_stat_occur():
 
 
 def test_flow_rate():
-    ddict = example_data_dict(size=77, keys=["area", "defo"])
+    ddict = example_data_dict(size=77, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
     ds.config["general"]["flow rate [ul/s]"] = 0.172
     
-    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["defo"])
+    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["deform"])
     head2, vals2 = dclab.statistics.get_statistics(ds, columns=["Events", "Mean"])
     headf, valsf = dclab.statistics.get_statistics(ds)
     
@@ -94,9 +94,9 @@ def test_false_method():
         return x+1
     dclab.statistics.Statistics(name="bad",
                                 method=bad_method)
-    ddict = example_data_dict(size=77, keys=["area", "defo"])
+    ddict = example_data_dict(size=77, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
-    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["defo"])
+    head1, vals1 = dclab.statistics.get_statistics(ds, axes=["deform"])
     out = {}
     for h,v in zip(head1, vals1):
         out[h] = v

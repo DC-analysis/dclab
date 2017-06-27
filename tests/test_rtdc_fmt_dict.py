@@ -24,19 +24,19 @@ from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
 
 def test_contour_not_available():
-    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)    
     assert "contour" not in ds
 
 
 def test_image_not_available():
-    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)    
     assert "image" not in ds
 
 
 def test_min_max_update():
-    ddict = example_data_dict(size=67, keys=["area", "defo"])
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
     cfg = ds.config.copy()
 
@@ -49,13 +49,13 @@ def test_min_max_update():
 
 
 def test_trace_not_available():
-    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict) 
     assert "trace" not in ds
 
 
 def test_wrong_things():
-    ddict = example_data_dict(size=67, keys=["Area", "Defo"])
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
     # Check unknown variable (warning will be displayed
     try:

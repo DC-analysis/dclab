@@ -24,7 +24,7 @@ from helper_methods import example_data_dict
 
 
 def test_limit_simple():
-    keys = ["area", "defo", "time", "frame"]
+    keys = ["area_um", "deform", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.new_dataset(ddict)
 
@@ -39,7 +39,7 @@ def test_limit_simple():
 
 
 def test_limit_equal():
-    keys = ["area", "defo", "time", "frame"]
+    keys = ["area_um", "deform", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.new_dataset(ddict)
 
@@ -54,7 +54,7 @@ def test_limit_equal():
 
 
 def test_limit_above():
-    keys = ["area", "defo", "time", "frame"]
+    keys = ["area_um", "deform", "time", "frame"]
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.new_dataset(ddict)
 

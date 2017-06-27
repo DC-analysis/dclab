@@ -16,7 +16,8 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab import new_dataset, dfn
+from dclab import new_dataset
+import dclab.rtdc_dataset.fmt_tdms.naming
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 
@@ -107,10 +108,10 @@ def test_trace_basic():
 def test_trace_import_fail():
     tdms_path = retreive_tdms(example_data_sets[1])
     edest = dirname(tdms_path)
-    dfn.tr_data.append([u'fluorescence traces', u'peter'])
+    dclab.rtdc_dataset.fmt_tdms.naming.tr_data.append([u'fluorescence traces', u'peter'])
     ds1 = new_dataset(tdms_path)
     # clean up
-    dfn.tr_data.pop(-1)
+    dclab.rtdc_dataset.fmt_tdms.naming.tr_data.pop(-1)
 
 
 def test_trace_methods():

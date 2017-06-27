@@ -32,7 +32,7 @@ def test_map_str2typ():
     assert config.keyval_str2typ("a", "False")[1] == False
     assert config.keyval_str2typ("a", "false")[1] == False
     assert config.keyval_str2typ("a", "true")[1] == True
-    assert config.keyval_str2typ("Area", "is this case even used?")[1] == "is this case even used?"
+    assert config.keyval_str2typ("area_um", "is this case even used?")[1] == "is this case even used?"
     assert config.keyval_str2typ("a", "1,true")[1] == "1,true"
 
 

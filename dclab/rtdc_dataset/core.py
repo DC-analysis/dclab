@@ -288,13 +288,13 @@ class RTDCBase(object):
         self._old_filters = self.config.copy()["filtering"]
 
 
-    def get_downsampled_scatter(self, xax="area", yax="defo", downsample=0):
+    def get_downsampled_scatter(self, xax="area_um", yax="deform", downsample=0):
         """Downsampling by removing points at dense locations
         
         Parameters
         ----------
         xax: str
-            Identifier for x axis (e.g. "area", "area ratio","circ",...)
+            Identifier for x axis (e.g. "area_um", "aspect", "deform", ...)
         yax: str
             Identifier for y axis
         downsample: int or None
@@ -332,7 +332,7 @@ class RTDCBase(object):
         return xsd, ysd
 
 
-    def get_kde_contour(self, xax="area", yax="defo", xacc=None, yacc=None,
+    def get_kde_contour(self, xax="area_um", yax="deform", xacc=None, yacc=None,
                         kde_type="none", kde_kwargs={}):
         """Evaluate the kernel density estimate for contours
         
@@ -340,7 +340,7 @@ class RTDCBase(object):
         Parameters
         ----------
         xax: str
-            Identifier for X axis (e.g. "Area", "Area Ratio","Circ",...)
+            Identifier for X axis (e.g. "area_um", "aspect", "deform", ...)
         yax: str
             Identifier for Y axis
         xacc: float
@@ -396,7 +396,7 @@ class RTDCBase(object):
         return xmesh, ymesh, density
 
 
-    def get_kde_scatter(self, xax="area", yax="defo", positions=None,
+    def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
                         kde_type="none", kde_kwargs={}):
         """Evaluate the kernel density estimate for scatter data
 
@@ -404,7 +404,7 @@ class RTDCBase(object):
         Parameters
         ----------
         xax: str
-            Identifier for X axis (e.g. "area", "area ratio","circ",...)
+            Identifier for X axis (e.g. "area_um", "aspect", "deform",...)
         yax: str
             Identifier for Y axis
         positions: list of points

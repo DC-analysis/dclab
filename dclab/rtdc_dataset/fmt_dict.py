@@ -20,7 +20,7 @@ class RTDC_Dict(RTDCBase):
         Parameters
         ----------
         ddict: dict
-            Dictionary with keys from `dclab.definitions.uid` (e.g. "area", "defo")
+            Dictionary with keys from `dclab.definitions.uid` (e.g. "area_cvx", "deform")
             with which the class will be instantiated.
             The configuration is set to the default configuration of dclab.
         """

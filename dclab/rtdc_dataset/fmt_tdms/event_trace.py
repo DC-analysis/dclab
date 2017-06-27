@@ -9,8 +9,7 @@ import nptdms
 import numpy as np
 import os
 
-from dclab import definitions as dfn
-
+from . import naming
 
 class TraceColumn(object):
     def __init__(self, rtdc_dataset):
@@ -89,7 +88,7 @@ class TraceColumn(object):
             # Load the trace data. The traces file is usually larger than the
             # measurement file.
             tdata = nptdms.TdmsFile(tname)
-            for group, ch in dfn.tr_data:
+            for group, ch in naming.tr_data:
                 try:
                     trdat = tdata.object(group, ch).data
                 except KeyError:

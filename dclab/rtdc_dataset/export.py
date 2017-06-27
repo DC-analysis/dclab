@@ -84,7 +84,7 @@ class Export(object):
         columns : list of str
             The columns in the resulting .tsv file. These are strings
             that are defined in `dclab.definitions.uid`, e.g.
-            "Area", "Defo", "Frame", "FL-1max", "Area Ratio".
+            "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to ``True``, only the filtered data (index in ds._filter)
             are used.
@@ -132,7 +132,7 @@ class Export(object):
         columns : list of str
             The columns in the resulting .tsv file. These are strings
             that are defined in `dclab.definitions.uid`, e.g.
-            "Area", "Defo", "Frame", "FL-1max", "Area Ratio".
+            "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to ``True``, only the filtered data (index in ds._filter)
             are used.

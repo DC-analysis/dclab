@@ -17,8 +17,8 @@ import dclab
 from helper_methods import example_data_dict
 
 filter_data="""[Polygon 00000000]
-X Axis = area
-Y Axis = defo
+X Axis = area_um
+Y Axis = deform
 Name = polygon filter 0
 point00000000 = 6.344607717656481e-03 7.703315881326352e-01
 point00000001 = 7.771010748302133e-01 7.452006980802792e-01
@@ -28,7 +28,7 @@ point00000003 = 6.150993521573982e-01 1.015706806282723e-03
 
 def test_import():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1000, keys=["area", "defo"])
+    ddict = example_data_dict(size=1000, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
 
     # save polygon data
@@ -64,15 +64,15 @@ def test_import():
 
 def test_invert():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    ddict = example_data_dict(size=1234, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
     # points of polygon filter
-    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
-              [np.min(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.min(ddict["defo"])],
+    points = [[np.min(ddict["area_um"]), np.min(ddict["deform"])],
+              [np.min(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.min(ddict["deform"])],
               ]
-    filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+    filt1 = dclab.PolygonFilter(axes=["area_um", "deform"],
                                 points=points,
                                 inverted=False)
     ds.polygon_filter_add(filt1)
@@ -81,7 +81,7 @@ def test_invert():
     ds.apply_filter()
     n2 = np.sum(ds._filter)
     assert n1 != n2
-    filt2 = dclab.PolygonFilter(axes=["area", "defo"],
+    filt2 = dclab.PolygonFilter(axes=["area_um", "deform"],
                                 points=points,
                                 inverted=True)
     ds.polygon_filter_add(filt2)
@@ -93,15 +93,15 @@ def test_invert():
 
 def test_invert_copy():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    ddict = example_data_dict(size=1234, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
     # points of polygon filter
-    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
-              [np.min(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.min(ddict["defo"])],
+    points = [[np.min(ddict["area_um"]), np.min(ddict["deform"])],
+              [np.min(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.min(ddict["deform"])],
               ]
-    filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+    filt1 = dclab.PolygonFilter(axes=["area_um", "deform"],
                                 points=points,
                                 inverted=False)
     ds.polygon_filter_add(filt1)
@@ -120,14 +120,14 @@ def test_invert_copy():
 
 def test_invert_saveload():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    ddict = example_data_dict(size=1234, keys=["area_um", "deform"])
     # points of polygon filter
-    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
-              [np.min(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.min(ddict["defo"])],
+    points = [[np.min(ddict["area_um"]), np.min(ddict["deform"])],
+              [np.min(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.min(ddict["deform"])],
               ]
-    filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+    filt1 = dclab.PolygonFilter(axes=["area_um", "deform"],
                                 points=points,
                                 inverted=True)
     _fd, name = tempfile.mkstemp()
@@ -136,7 +136,7 @@ def test_invert_saveload():
     assert filt2 == filt1
 
 
-    filt3 = dclab.PolygonFilter(axes=["area", "defo"],
+    filt3 = dclab.PolygonFilter(axes=["area_um", "deform"],
                                 points=points,
                                 inverted=False)
     _fd, name = tempfile.mkstemp()
@@ -147,15 +147,15 @@ def test_invert_saveload():
 
 def test_inverted_wrong():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1234, keys=["area", "defo"])
+    ddict = example_data_dict(size=1234, keys=["area_um", "deform"])
     # points of polygon filter
-    points = [[np.min(ddict["area"]), np.min(ddict["defo"])],
-              [np.min(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.max(ddict["defo"])],
-              [np.average(ddict["area"]), np.min(ddict["defo"])],
+    points = [[np.min(ddict["area_um"]), np.min(ddict["deform"])],
+              [np.min(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.max(ddict["deform"])],
+              [np.average(ddict["area_um"]), np.min(ddict["deform"])],
               ]
     try:
-        filt1 = dclab.PolygonFilter(axes=["area", "defo"],
+        filt1 = dclab.PolygonFilter(axes=["area_um", "deform"],
                                 points=points,
                                 inverted=0)
     except AssertionError:
@@ -166,7 +166,7 @@ def test_inverted_wrong():
 
 def test_nofile_copy():
     dclab.PolygonFilter.clear_all_filters()
-    a = dclab.PolygonFilter(axes=("defo", "area"),
+    a = dclab.PolygonFilter(axes=("deform", "area_um"),
                         points=[[0,1],[1,1]])
     b = a.copy()
     dclab.PolygonFilter.clear_all_filters()
@@ -231,7 +231,7 @@ def test_unique_id():
 
 def test_with_rtdc_data_set():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=821, keys=["area", "defo"])
+    ddict = example_data_dict(size=821, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
 
     # save polygon data
@@ -252,7 +252,7 @@ def test_with_rtdc_data_set():
 
 def test_wrong_load_key():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1000, keys=["area", "defo"])
+    ddict = example_data_dict(size=1000, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
 
     # save polygon data

@@ -156,7 +156,7 @@ class RTDCBase(object):
     def identifier(self):
         """Compute an identifier based on __hash__"""
         return "mm-{}_{}".format(self.format,
-                                 hashlib.md5(str(hash(self))).hexdigest()
+                                 hashlib.md5(obj2str(hash(self))).hexdigest()
                                  )
 
 

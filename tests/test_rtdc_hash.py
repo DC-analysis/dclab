@@ -31,7 +31,7 @@ def test_hash_hierarchy():
     tdms_path = retreive_tdms(example_data_sets[1])
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
-    assert ds2.hash == "b66965cd3800d05705491e281b743f1f"
+    assert ds2.hash == "b9b124921ad4d8506ba37331ff3f897b"
 
 
 def test_hash_tdms():

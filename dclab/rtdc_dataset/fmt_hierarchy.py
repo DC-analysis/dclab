@@ -116,5 +116,5 @@ class RTDC_Hierarchy(RTDCBase):
     def hash(self):
         """Hashes of hierarchy parents change if the parent changes"""
         hph = self.hparent.hash
-        hfilth = self.hparent._filter.tostring()
+        hfilth = hashobj(self.hparent._filter)
         return hashobj(hph+hfilth)

@@ -112,10 +112,6 @@ class RTDCBase(object):
             # - Clean the workflow from these zero-columns (raise a KeyError instead)
             return np.zeros(len(self))
 
-    @abc.abstractmethod
-    def __hash__(self):
-        """Hash value must be defined by derived classes"""
-
 
     def __len__(self):
         keys = list(self._events.keys())
@@ -450,6 +446,11 @@ class RTDCBase(object):
             density = []
         
         return density
+
+
+    @abc.abstractproperty
+    def hash(self):
+        """Hashing property must be defined by derived classes"""
 
 
     def polygon_filter_add(self, filt):

@@ -56,5 +56,6 @@ class RTDC_Dict(RTDCBase):
         self._init_filters()
 
 
-    def __hash__(self):
-        return hash(self._ids)
+    @property
+    def hash(self):
+        return self._ids

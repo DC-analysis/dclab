@@ -34,6 +34,7 @@ class RTDC_TDMS(RTDCBase):
 
         # Events is a simple dictionary
         self._events = {}
+        self._hash = None
         self.path = tdms_path
         self.title = get_project_name_from_path(tdms_path, append_mx=True)
 
@@ -52,16 +53,6 @@ class RTDC_TDMS(RTDCBase):
         self._events["contour"] = ContourColumn(self)
         # event traces
         self._events["trace"] = TraceColumn(self)
-
-
-    def __hash__(self):
-        """Hash value based on file name and .ini file content"""
-
-        # Only hash _camera.ini and _para.ini
-        fsh = [ self._path_mx+"_camera.ini", self._path_mx+"_para.ini" ]
-        hash_str = "_".join([hashfile(f) for f in fsh])
-        hash_str += os.path.basename(self.path)
-        return hash(hash_str)
 
 
     def _init_data_with_tdms(self, tdms_filename):
@@ -93,7 +84,18 @@ class RTDC_TDMS(RTDCBase):
         self._init_filters()
 
 
+    @property
+    def hash(self):
+        """Hash value based on file name and .ini file content"""
+        if self._hash is None:
+            # Only hash _camera.ini and _para.ini
+            fsh = [ self._path_mx+"_camera.ini", self._path_mx+"_para.ini" ]
+            hash_str = "_".join([hashfile(f) for f in fsh])
+            hash_str += os.path.basename(self.path)
+            self._hash = hashlib.md5(hash_str).hexdigest()
+        return self._hash
 
+            
 def get_project_name_from_path(path, append_mx=False):
     """Get the project name from a path.
     

@@ -3,6 +3,8 @@
 """RT-DC hierarchy format"""
 from __future__ import division, print_function, unicode_literals
 
+import hashlib
+
 import numpy as np
 
 from .config import Configuration
@@ -86,13 +88,6 @@ class RTDC_Hierarchy(RTDCBase):
                 raise NotImplementedError(msg)
 
 
-    def __hash__(self):
-        """Hashes of hierarchy parents change if the parent changes"""
-        hph = hash(self.hparent)
-        hfilth = hash(self.hparent._filter.tostring())
-        return hph + hfilth
-
-
     def __len__(self):
         self.hparent.apply_filter()
         return np.sum(self.hparent._filter)
@@ -116,3 +111,11 @@ class RTDC_Hierarchy(RTDCBase):
             raise NotImplementedError(msg)
 
         super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
+
+
+    @property
+    def hash(self):
+        """Hashes of hierarchy parents change if the parent changes"""
+        hph = self.hparent.hash
+        hfilth = self.hparent._filter.tostring()
+        return hashlib.md5(hph+hfilth).hexdigest()

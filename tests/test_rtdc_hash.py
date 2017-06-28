@@ -24,20 +24,20 @@ from helper_methods import example_data_dict, retreive_tdms, example_data_sets
 def test_hash_dict():
     ddict = example_data_dict()
     ds = new_dataset(ddict)
-    assert hash(ds) == 5144097797485431247
+    assert ds.hash == "aa4d0faf17bccadc474ad0c1fea4346e"
 
 
 def test_hash_hierarchy():
     tdms_path = retreive_tdms(example_data_sets[1])
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
-    assert hash(ds2) == 7983493369597685688
+    assert ds2.hash == "b66965cd3800d05705491e281b743f1f"
 
 
 def test_hash_tdms():
     tdms_path = retreive_tdms(example_data_sets[1])
     ds = new_dataset(tdms_path)
-    assert hash(ds) == -5287680266361205240
+    assert ds.hash == "ebe3fbea42f7fded61cd478dee6bf90d"
 
 
 

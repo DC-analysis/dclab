@@ -3,12 +3,11 @@
 """RT-DC hierarchy format"""
 from __future__ import division, print_function, unicode_literals
 
-import hashlib
-
 import numpy as np
 
 from .config import Configuration
 from .core import RTDCBase
+from .util import hashobj
 
 
 class RTDC_Hierarchy(RTDCBase):
@@ -118,4 +117,4 @@ class RTDC_Hierarchy(RTDCBase):
         """Hashes of hierarchy parents change if the parent changes"""
         hph = self.hparent.hash
         hfilth = self.hparent._filter.tostring()
-        return hashlib.md5(hph+hfilth).hexdigest()
+        return hashobj(hph+hfilth)

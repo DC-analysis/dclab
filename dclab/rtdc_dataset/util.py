@@ -15,6 +15,7 @@ else:
     
 
 def hashfile(fname, blocksize=65536):
+    """Compute md5 hex-hash of a file"""
     afile = open(fname, 'rb')
     hasher = hashlib.sha256()
     buf = afile.read(blocksize)
@@ -25,8 +26,13 @@ def hashfile(fname, blocksize=65536):
     return hasher.hexdigest()
 
 
+def hashobj(obj):
+    """Compute md5 hex-hash of a Python object"""
+    return hashlib.md5(obj2str(obj)).hexdigest()
+
+
 def obj2str(obj):
-    """Full string representation of an object for hashing"""
+    """String representation of an object for hashing"""
     if isinstance(obj, str_classes):
         return obj.encode("utf-8")
     elif isinstance(obj, (bool, int, float)):

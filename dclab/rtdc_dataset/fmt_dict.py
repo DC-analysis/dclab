@@ -3,7 +3,6 @@
 """RT-DC dictionary format"""
 from __future__ import division, print_function, unicode_literals
 
-import hashlib
 import time
 
 import numpy as np
@@ -11,6 +10,8 @@ import numpy as np
 from dclab import definitions as dfn
 from .config import Configuration
 from .core import RTDCBase
+from .util import hashobj
+
 
 
 class RTDC_Dict(RTDCBase):
@@ -33,7 +34,7 @@ class RTDC_Dict(RTDCBase):
         # Get an identifying string
         keys = list(ddict.keys())
         keys.sort()
-        ids = hashlib.md5(ddict[keys[0]]).hexdigest()
+        ids = hashobj(ddict[keys[0]])
         self._ids = ids
         self.path = "none"
         self.title = "{}_{:02d}_{:02d}/{}.dict".format(t[0], t[1], t[2],ids)

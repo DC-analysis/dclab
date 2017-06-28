@@ -4,7 +4,6 @@
 from __future__ import division, print_function, unicode_literals
 
 import io
-import hashlib
 import os
 import sys
 
@@ -12,7 +11,8 @@ import numpy as np
 from nptdms import TdmsFile
 
 from ..config import Configuration
-from ..core import RTDCBase, obj2str, hashfile
+from ..core import RTDCBase
+from ..util import hashobj, hashfile
 
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
@@ -92,7 +92,7 @@ class RTDC_TDMS(RTDCBase):
             fsh = [ self._path_mx+"_camera.ini", self._path_mx+"_para.ini" ]
             hash_str = "_".join([hashfile(f) for f in fsh])
             hash_str += os.path.basename(self.path)
-            self._hash = hashlib.md5(hash_str).hexdigest()
+            self._hash = hashobj(hash_str)
         return self._hash
 
             

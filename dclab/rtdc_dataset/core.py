@@ -150,9 +150,7 @@ class RTDCBase(object):
     @property
     def identifier(self):
         """Compute an identifier based on __hash__"""
-        return "mm-{}_{}".format(self.format,
-                                 hashlib.md5(obj2str(hash(self))).hexdigest()
-                                 )
+        return "mm-{}_{}".format(self.format, self.hash)
 
 
     def apply_filter(self, force=[]):

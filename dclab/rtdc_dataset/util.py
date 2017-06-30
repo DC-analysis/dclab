@@ -4,6 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 import hashlib
+import io
 import sys
 
 import numpy as np
@@ -14,15 +15,29 @@ else:
     str_classes = str
     
 
-def hashfile(fname, blocksize=65536):
-    """Compute md5 hex-hash of a file"""
-    afile = open(fname, 'rb')
-    hasher = hashlib.sha256()
-    buf = afile.read(blocksize)
-    while len(buf) > 0:
-        hasher.update(buf)
-        buf = afile.read(blocksize)
-    afile.close()
+def hashfile(fname, blocksize=65536, count=0):
+    """Compute md5 hex-hash of a file
+    
+    Parameters
+    ----------
+    fname: str
+        path to the file
+    blocksize: int
+        block size in bytes read from the file
+        (set to `0` to hash the entire file)
+    count: int
+        number of blocks read from the file
+    """
+    hasher = hashlib.md5()
+    with io.open(fname, 'rb') as fd:
+        buf = fd.read(blocksize)
+        ii = 0
+        while len(buf) > 0:
+            hasher.update(buf)
+            buf = fd.read(blocksize)
+            ii += 1
+            if count and ii==count:
+                break
     return hasher.hexdigest()
 
 

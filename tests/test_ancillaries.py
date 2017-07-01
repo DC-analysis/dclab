@@ -18,7 +18,7 @@ import zipfile
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets
+from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
 def test_basic():
@@ -52,6 +52,8 @@ def test_basic():
                "time",
                ]:
         assert cc in ds
+    
+    cleanup()
 
 
 def test_emodulus():

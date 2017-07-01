@@ -20,7 +20,7 @@ import dclab
 from dclab import new_dataset
 
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets
+from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
 def test_avi_export():
@@ -29,6 +29,8 @@ def test_avi_export():
     f1 = join(edest, "test.avi")
     ds.export.avi(path=f1)
     assert os.stat(f1)[6] > 1e4, "Resulting file to small, Something went wrong!"
+    shutil.rmtree(edest, ignore_errors=True)
+    cleanup()
 
 
 def test_avi_override():
@@ -46,6 +48,7 @@ def test_avi_override():
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)
+    cleanup()
 
 
 def test_avi_no_images():
@@ -61,6 +64,7 @@ def test_avi_no_images():
         pass
     else:
         raise ValueError("There should be no image data to write!")
+    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_fcs_export():    

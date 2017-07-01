@@ -19,7 +19,7 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 from dclab import new_dataset
 import dclab.rtdc_dataset.fmt_tdms.naming
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets
+from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
 
@@ -28,6 +28,7 @@ def test_contour_basic():
     assert len(ds["contour"]) == 12
     assert np.allclose(np.average(ds["contour"][0]), 38.488764044943821)
     assert ds["contour"]._initialized
+    cleanup()
 
 
 def test_contour_negative_offset():
@@ -35,11 +36,13 @@ def test_contour_negative_offset():
     _a = ds["contour"][0]
     ds["contour"].event_offset = 1
     assert np.all(ds["contour"][0] == np.zeros((2,2), dtype=int))
+    cleanup()
 
 
 def test_contour_not_initialized():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
     assert ds["contour"]._initialized == False
+    cleanup()
 
 
 def test_image_basic():
@@ -47,11 +50,13 @@ def test_image_basic():
     # Transition image
     assert np.allclose(np.average(ds["image"][0]), 127.03125)
     assert np.allclose(np.average(ds["image"][1]), 45.512017144097221)
+    cleanup()
 
 
 def test_image_column_length():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
     assert len(ds["image"]) == 3
+    cleanup()
 
 
 def test_image_out_of_bounds():
@@ -62,12 +67,14 @@ def test_image_out_of_bounds():
         pass
     else:
         raise ValueError("IndexError should have been raised!")
+    cleanup()
 
 
 def test_load_tdms_all():
     for ds in example_data_sets:
         tdms_path = retreive_tdms(ds)
         ds = new_dataset(tdms_path)
+    cleanup()
 
 
 def test_load_tdms_avi_files():
@@ -90,12 +97,14 @@ def test_load_tdms_avi_files():
     ds4 = new_dataset(tdms_path)
     # use available video if ima* not there
     assert os.path.basename(ds4["image"].video_file) == "M1_test.avi"
+    cleanup()
 
 
 def test_load_tdms_simple():
     tdms_path = retreive_tdms(example_data_sets[0])
     ds = new_dataset(tdms_path)
     assert ds._filter.shape[0] == 156
+    cleanup()
 
 
 def test_trace_basic():
@@ -103,6 +112,7 @@ def test_trace_basic():
     assert ds["trace"].__repr__().count("<not loaded into memory>"), "traces should not be loaded into memory before first access"
     assert len(ds["trace"]) == 6
     assert np.allclose(np.average(ds["trace"]["FL1med"][0]), 287.08999999999997)
+    cleanup()
 
 
 def test_trace_import_fail():
@@ -112,6 +122,7 @@ def test_trace_import_fail():
     ds1 = new_dataset(tdms_path)
     # clean up
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data.pop(-1)
+    cleanup()
 
 
 def test_trace_methods():
@@ -121,6 +132,7 @@ def test_trace_methods():
     for k in ds["trace"]:
         assert  k in  [u'FL1med', u'FL2raw', u'FL2med', u'FL3med', u'FL1raw', u'FL3raw']
     assert ds["trace"].__repr__().count("<loaded into memory>")
+    cleanup()
 
 
 if __name__ == "__main__":

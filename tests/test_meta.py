@@ -20,7 +20,7 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 import dclab.rtdc_dataset
 from dclab import new_dataset
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets
+from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
 def test_project_path():
@@ -37,6 +37,8 @@ def test_project_path():
     assert a == e
     assert a == c
     assert a == d 
+    cleanup()
+
 
 if __name__ == "__main__":
     # Run all tests

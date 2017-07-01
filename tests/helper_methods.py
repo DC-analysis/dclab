@@ -1,12 +1,27 @@
 from os.path import join, basename, dirname, abspath
-import numpy as np
-import tempfile
+
+import shutil
 import sys
+import tempfile
 import zipfile
+
+import numpy as np
+
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from dclab.rtdc_dataset.fmt_tdms import get_tdms_files
+
+
+_tempdirs = []
+
+
+def cleanup():
+    """Removes all extracted directories"""
+    global _tempdirs
+    for _i in range(len(_tempdirs)):
+        tdir = _tempdirs.pop(0)
+        shutil.rmtree(tdir, ignore_errors=True)
 
 
 def example_data_dict(size=100, keys=["area_um", "deform"]):
@@ -29,6 +44,7 @@ def retreive_tdms(zip_file):
     `webloc`, extract it, and return the paths to extracted
     tdms files.
     """
+    global _tempdirs
     thisdir = dirname(abspath(__file__))
     ddir = join(thisdir, "data")
     # unpack
@@ -37,6 +53,8 @@ def retreive_tdms(zip_file):
     # extract all files to a temporary directory
     edest = tempfile.mkdtemp(prefix=basename(zip_file))
     arc.extractall(edest)
+    
+    _tempdirs.append(edest)
     
     ## Load RTDC Data set
     # find tdms files

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import codecs
+import io
 import numpy as np
 import os
 from os.path import abspath, dirname, join
@@ -79,10 +79,10 @@ def test_fcs_export():
     ds.export.fcs(f1, keys, override=True)
     ds.export.fcs(f2, [u"area_um", u"deform", u"time", u"frame", u"fl3_width"], override=True)
     
-    with codecs.open(f1, mode="rb") as fd:
+    with io.open(f1, mode="rb") as fd:
         a1 = fd.read()
     
-    with codecs.open(f2, mode="rb") as fd:
+    with io.open(f2, mode="rb") as fd:
         a2 = fd.read()
 
     assert a1 == a2
@@ -136,10 +136,10 @@ def test_tsv_export():
     ds.export.tsv(f1, keys, override=True)
     ds.export.tsv(f2, [u"area_um", u"deform", u"time", u"frame", u"fl3_width"], override=True)
     
-    with codecs.open(f1) as fd:
+    with io.open(f1) as fd:
         a1 = fd.read()
     
-    with codecs.open(f2) as fd:
+    with io.open(f2) as fd:
         a2 = fd.read()
 
     assert a1 == a2

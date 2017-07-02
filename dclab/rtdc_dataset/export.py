@@ -3,7 +3,7 @@
 """Export RT-DC measurement data"""
 from __future__ import division, print_function, unicode_literals
 
-import codecs
+import io
 import imageio
 import fcswrite
 import numpy as np
@@ -155,7 +155,7 @@ class Export(object):
             assert c in dfn.uid, "Unknown column name {}".format(c)
         
         # Open file
-        with codecs.open(path, "w", encoding="utf-8") as fd:
+        with io.open(path, "w") as fd:
             # write header
             header1 = "\t".join([ c for c in columns ])
             fd.write("# "+header1+"\n")

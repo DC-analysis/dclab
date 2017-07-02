@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 
-import codecs
 import numpy as np
 import os
 from os.path import abspath, dirname, join

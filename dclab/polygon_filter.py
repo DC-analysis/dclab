@@ -3,7 +3,7 @@
 """PolygonFilter classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
-import codecs
+import io
 import numpy as np
 import os
 import sys
@@ -103,9 +103,8 @@ class PolygonFilter(object):
 
     def _load(self, filename):
         """Import all filters from a text file"""
-        fobj = codecs.open(filename, "r", "utf-8")
-        data = fobj.readlines()
-        fobj.close()
+        with io.open(filename, "r") as fd:
+            data = fd.readlines()
 
         # Get the strings that correspond to self.fileid
         bool_head = [ l.strip().startswith("[") for l in data ]
@@ -300,7 +299,7 @@ class PolygonFilter(object):
         closed and returned. 
         """
         if isinstance(polyfile, string_classes):
-            fobj = codecs.open(polyfile, "a", "utf-8")
+            fobj = io.open(polyfile, "a")
         else:
             # file or tempfile._TemporaryFileWrapper
             fobj = polyfile

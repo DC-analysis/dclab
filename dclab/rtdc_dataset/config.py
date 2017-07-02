@@ -5,8 +5,8 @@ RT-DC dataset configuration
 """
 from __future__ import division, print_function, unicode_literals
 
-import codecs
 import copy
+import io
 import numpy as np
 import sys
 
@@ -204,7 +204,7 @@ class Configuration(object):
                 out.append("{} = {}".format(var, val))
             out.append("")
         
-        with codecs.open(filename, "wb", "utf-8") as f:
+        with io.open(filename, "w") as f:
             for i in range(len(out)):
                 # win-like line endings
                 out[i] = out[i]+"\r\n"
@@ -213,14 +213,11 @@ class Configuration(object):
 
     def update(self, newcfg):
         """Update current config with new dictionary"""
-        if isinstance(newcfg, Configuration):
-            newcfg = newcfg._cfg
         for key in newcfg.keys():
             if not key in self._cfg:
                 self._cfg[key] = CaseInsensitiveDict()
             for skey in newcfg[key]:
                 self._cfg[key][skey] = newcfg[key][skey]
-
 
 
 def load_from_file(cfg_file):
@@ -238,7 +235,7 @@ def load_from_file(cfg_file):
     cfg : CaseInsensitiveDict
         Dictionary with configuration parameters
     """
-    with codecs.open(cfg_file, 'r', 'utf-8') as f:
+    with io.open(cfg_file, 'r') as f:
         code = f.readlines()
 
     cfg = CaseInsensitiveDict()

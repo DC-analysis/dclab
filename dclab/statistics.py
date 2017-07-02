@@ -48,12 +48,15 @@ class Statistics(object):
 
     def __call__(self, **kwargs):
         data = self.get_data(kwargs)
-        try:
-            result = self.method(data)
-        except:
-            warnings.warn("Failed to compute {} for {}: {}".format(
-                          self.name, kwargs["rtdc_ds"].title, tb.format_exc()))
+        if len(data) == 0:
             result = np.nan
+        else:
+            try:
+                result = self.method(data)
+            except:
+                warnings.warn("Failed to compute {} for {}: {}".format(
+                              self.name, kwargs["rtdc_ds"].title, tb.format_exc()))
+                result = np.nan
         return result
 
 

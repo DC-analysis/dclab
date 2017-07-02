@@ -59,7 +59,7 @@ class RTDC_Hierarchy(RTDCBase):
         # Add parent information in dictionary
         cfg["filtering"]["hierarchy parent"] = hparent.identifier
 
-        self.config = Configuration(cfg = cfg)
+        self.config = Configuration(cfg=cfg)
 
         # Apply the filter
         # This will also populate all event attributes
@@ -115,6 +115,7 @@ class RTDC_Hierarchy(RTDCBase):
     @property
     def hash(self):
         """Hashes of hierarchy parents change if the parent changes"""
+        self.apply_filter()
         hph = self.hparent.hash
         hfilth = hashobj(self.hparent._filter)
         return hashobj(hph+hfilth)

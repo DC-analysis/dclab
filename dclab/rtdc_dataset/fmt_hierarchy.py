@@ -68,10 +68,8 @@ class RTDC_Hierarchy(RTDCBase):
 
     def __contains__(self, key):
         ct = False 
-        if self.hparent.__contains__(key):
-            value = self.hparent[key]
-            if isinstance(value, np.ndarray):
-                ct = True
+        if key in self.hparent:
+            ct = True
         return ct
 
 
@@ -96,7 +94,6 @@ class RTDC_Hierarchy(RTDCBase):
         """Overridden `apply_filter` to perform tasks for hierarchy child"""
         # Copy event data from hierarchy parent
         self.hparent.apply_filter()
-
         # update event index
         length = np.sum(self.hparent._filter)
         self._events["index"] = np.arange(1, length+1)
@@ -108,7 +105,6 @@ class RTDC_Hierarchy(RTDCBase):
             and np.sum(1-self._filter_manual) != 0):
             msg = "filter_manual not supported in hierarchy!"
             raise NotImplementedError(msg)
-
         super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
 
 

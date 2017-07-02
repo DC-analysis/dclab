@@ -139,7 +139,7 @@ class RTDCBase(object):
         # Find attributes to be filtered
         # These are the filters from which self._filter is computed
         inifilter = np.ones(datalen, dtype=bool)
-        for key in dfn.rdv:
+        for key in dfn.uid:
             if key in self:
                 # great, we are dealing with an array
                 setattr(self, "_filter_"+key, inifilter.copy())
@@ -302,7 +302,6 @@ class RTDCBase(object):
         xnew, xnew: filtered x and y
         """
         assert downsample >= 0
-        self.apply_filter()
         
         downsample = int(downsample)
         xax = xax.lower()

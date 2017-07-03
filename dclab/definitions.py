@@ -55,9 +55,21 @@ columns = [
    ]
 
 
+column_names = [ cc[0] for cc in columns ]
+column_labels = [ cc[1] for cc in columns ]
+
+name2label = {}
+for _cc in columns:
+    name2label[cc[0]] = cc[1]
+
+# Backwards compatibility
+# TODO:
+# - remove everything below this line and make sure dclab
+#   and ShapeOut work with the definitions above.
+
 # Convenience lists and maps
-uid = [ cc[0] for cc in columns ]
-axl = [ cc[1] for cc in columns ]
+uid = column_names
+axl = column_labels
 rdv = uid
 
 

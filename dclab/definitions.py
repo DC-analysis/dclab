@@ -4,7 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 
-columns = [
+_columns = [
    ["area_cvx", "Convex area [px]"],
    ["area_msd", "Measured area [px]"],
    ["area_ratio", "Convex to measured area ratio"],
@@ -54,10 +54,16 @@ columns = [
    ["volume", "Volume [µm³]"],
    ]
 
+# Add userdef columns
+for _i in range(10):
+    _columns.append(["userdef{}".format(_i),
+                     "User defined {}".format(_i)
+                     ])
 
-column_names = [ _cc[0] for _cc in columns ]
-column_labels = [ _cc[1] for _cc in columns ]
+
+column_names = [ _cc[0] for _cc in _columns ]
+column_labels = [ _cc[1] for _cc in _columns ]
 
 name2label = {}
-for _cc in columns:
+for _cc in _columns:
     name2label[_cc[0]] = _cc[1]

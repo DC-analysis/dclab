@@ -36,6 +36,10 @@ dclab2tdms = {
    "size_y": "ax1",
    }
 
+# Add userdef columns
+for _i in range(10):
+    dclab2tdms["userdef{}".format(_i)] = "userDef{}".format(_i)
+
 
 # inverse of dclab2tdms
 tdms2dclab = {}

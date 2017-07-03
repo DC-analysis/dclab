@@ -15,7 +15,6 @@ from .. import kde_methods
 
 from .ancillary_columns import AncillaryColumn
 from .export import Export
-from .util import obj2str, hashfile
 
 
 
@@ -139,7 +138,7 @@ class RTDCBase(object):
         # Find attributes to be filtered
         # These are the filters from which self._filter is computed
         inifilter = np.ones(datalen, dtype=bool)
-        for key in dfn.uid:
+        for key in dfn.column_names:
             if key in self:
                 # great, we are dealing with an array
                 setattr(self, "_filter_"+key, inifilter.copy())
@@ -166,9 +165,7 @@ class RTDCBase(object):
         Notes
         -----
         Updates `self.config["filtering"].
-        
-        The data is filtered according to filterable attributes in
-        the global variable `dfn.cfgmap`.
+
         """
 
         # These lists may help us become very fast in the future
@@ -190,20 +187,20 @@ class RTDCBase(object):
                 newvals.append(FIL[skey])
 
         # A simple filtering technique just updates the _filter_*
-        # variables using the global dfn.cfgmap dictionary.
+        # variables.
         
         # This line gets the attribute names of self that need updates.
         attr2update = []
         for k in newkeys:
             # k[:-4] because we want to crop " Min" and " Max"
             # "Polygon Filters" is not processed here.
-            if k[:-4] in dfn.uid:
-                attr2update.append(dfn.cfgmaprev[k[:-4]])
+            if k[:-4] in dfn.column_names:
+                attr2update.append(k[:-4])
 
         for f in force:
             # Check if a correct variable is forced
-            if f in list(dfn.cfgmaprev.keys()):
-                attr2update.append(dfn.cfgmaprev[f])
+            if f in dfn.column_names:
+                attr2update.append(f)
             else:
                 raise ValueError("Unknown variable {}".format(f))
         
@@ -211,8 +208,8 @@ class RTDCBase(object):
 
         for attr in attr2update:
             if attr in self:
-                fstart = dfn.cfgmap[attr]+" min"
-                fend = dfn.cfgmap[attr]+" max"
+                fstart = attr + " min"
+                fend = attr + " max"
                 # If min and max exist and if they are not identical:
                 indices = getattr(self, "_filter_"+attr)
                 if (fstart in FIL and
@@ -242,14 +239,14 @@ class RTDCBase(object):
                 if p.unique_id in FIL[pf_id]:
                     # update self._filter_polygon
                     # iterate through axes
-                    datax = self[dfn.cfgmaprev[p.axes[0]]]
-                    datay = self[dfn.cfgmaprev[p.axes[1]]]
+                    datax = self[p.axes[0]]
+                    datay = self[p.axes[1]]
                     self._filter_polygon *= p.filter(datax, datay)
 
         # Invalid filters
         self._filter_invalid[:] = True
         if FIL["remove invalid events"]:            
-            for attr in dfn.cfgmap:
+            for attr in dfn.column_names:
                 if attr in self:
                     col = self[attr]
                     invalid = np.isinf(col)+np.isnan(col)
@@ -309,12 +306,12 @@ class RTDCBase(object):
 
         # Get axes
         if self.config["filtering"]["enable filters"]:
-            x = self[dfn.cfgmaprev[xax]][self._filter]
-            y = self[dfn.cfgmaprev[yax]][self._filter]
+            x = self[xax][self._filter]
+            y = self[yax][self._filter]
         else:
             # filtering disabled
-            x = self[dfn.cfgmaprev[xax]]
-            y = self[dfn.cfgmaprev[yax]]
+            x = self[xax]
+            y = self[yax]
 
         xsd, ysd, idx = downsampling.downsample_grid(x, y,
                                                      samples=downsample,
@@ -356,11 +353,11 @@ class RTDCBase(object):
         assert kde_type in kde_methods.methods
 
         if self.config["filtering"]["enable filters"]:
-            x = self[dfn.cfgmaprev[xax]][self._filter]
-            y = self[dfn.cfgmaprev[yax]][self._filter]
+            x = self[xax][self._filter]
+            y = self[yax][self._filter]
         else:
-            x = self[dfn.cfgmaprev[xax]]
-            y = self[dfn.cfgmaprev[yax]]
+            x = self[xax]
+            y = self[yax]
         
         # sensible default values
         cpstep = lambda a: (a.max()-a.min())/10
@@ -420,11 +417,11 @@ class RTDCBase(object):
         assert kde_type in kde_methods.methods
         
         if self.config["filtering"]["enable filters"]:
-            x = self[dfn.cfgmaprev[xax]][self._filter]
-            y = self[dfn.cfgmaprev[yax]][self._filter]
+            x = self[xax][self._filter]
+            y = self[yax][self._filter]
         else:
-            x = self[dfn.cfgmaprev[xax]]
-            y = self[dfn.cfgmaprev[yax]]
+            x = self[xax]
+            y = self[yax]
 
         if positions is None:
             posx = None

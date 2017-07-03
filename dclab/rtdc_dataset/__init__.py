@@ -5,8 +5,9 @@ from __future__ import unicode_literals
 import sys
 import warnings
 
-from .core import hashfile, RTDCBase
+from .core import RTDCBase
 from .config import Configuration
+from .util import hashfile
 from . import fmt_dict, fmt_tdms, fmt_hierarchy
 
 if sys.version_info[0] == 2:

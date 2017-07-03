@@ -83,7 +83,7 @@ class Export(object):
             Path to a .tsv file. The ending .tsv is added automatically.
         columns : list of str
             The columns in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.uid`, e.g.
+            that are defined in `dclab.definitions.column_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to ``True``, only the filtered data (index in ds._filter)
@@ -103,18 +103,18 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that columns are in dfn.uid
+        # Check that columns are in dfn.column_names
         for c in columns:
-            assert c in dfn.uid, "Unknown column name {}".format(c)
+            assert c in dfn.column_names, "Unknown column name {}".format(c)
         
         # Collect the header
-        chn_names = [ dfn.axlabels[c] for c in columns ]
+        chn_names = [ dfn.name2label[c] for c in columns ]
     
         # Collect the data
         if filtered:
-            data = [ ds[dfn.cfgmaprev[c]][ds._filter] for c in columns ]
+            data = [ ds[c][ds._filter] for c in columns ]
         else:
-            data = [ ds[dfn.cfgmaprev[c]] for c in columns ]
+            data = [ ds[c] for c in columns ]
         
         data = np.array(data).transpose()
         fcswrite.write_fcs(filename=path,
@@ -131,7 +131,7 @@ class Export(object):
             Path to a .tsv file. The ending .tsv is added automatically.
         columns : list of str
             The columns in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.uid`, e.g.
+            that are defined in `dclab.definitions.column_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to ``True``, only the filtered data (index in ds._filter)
@@ -150,24 +150,24 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that columns are in dfn.uid
+        # Check that columns are in dfn.column_names
         for c in columns:
-            assert c in dfn.uid, "Unknown column name {}".format(c)
+            assert c in dfn.column_names, "Unknown column name {}".format(c)
         
         # Open file
         with io.open(path, "w") as fd:
             # write header
             header1 = "\t".join([ c for c in columns ])
             fd.write("# "+header1+"\n")
-            header2 = "\t".join([ dfn.axlabels[c] for c in columns ])
+            header2 = "\t".join([ dfn.name2label[c] for c in columns ])
             fd.write("# "+header2+"\n")
 
         with open(path, "ab") as fd:
             # write data
             if filtered:
-                data = [ ds[dfn.cfgmaprev[c]][ds._filter] for c in columns ]
+                data = [ ds[c][ds._filter] for c in columns ]
             else:
-                data = [ ds[dfn.cfgmaprev[c]] for c in columns ]
+                data = [ ds[c] for c in columns ]
             
             np.savetxt(fd,
                        np.array(data).transpose(),

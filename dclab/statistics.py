@@ -29,9 +29,9 @@ class Statistics(object):
     def get_column(self, rtdc_ds, axis):
         axis = axis.lower()
         if rtdc_ds.config["filtering"]["enable filters"]:
-            x = rtdc_ds[dfn.cfgmaprev[axis]][rtdc_ds._filter]
+            x = rtdc_ds[axis][rtdc_ds._filter]
         else:
-            x = rtdc_ds[dfn.cfgmaprev[axis]]
+            x = rtdc_ds[axis]
         bad = np.isnan(x)^np.isinf(x)
         xout = x[~bad]
         return xout
@@ -81,7 +81,7 @@ def get_statistics(rtdc_ds, columns=None, axes=None):
         If set to `None`, statistics for all columns are computed.
     axes : list of str
         Column name identifiers are defined in
-        `dclab.definitions.uid`.
+        `dclab.definitions.column_names`.
         If set to `None`, statistics for all axes are computed. 
     
     Returns
@@ -99,7 +99,7 @@ def get_statistics(rtdc_ds, columns=None, axes=None):
         columns = c1+c2
 
     if axes is None:
-        axes = dfn.uid
+        axes = dfn.column_names
     else:
         axes = [a.lower() for a in axes]
     
@@ -114,7 +114,7 @@ def get_statistics(rtdc_ds, columns=None, axes=None):
             meth = Statistics.available_methods[c]
             if meth.req_axis:
                 values.append(meth(rtdc_ds=rtdc_ds, axis=ax))
-                header.append(" ".join([c, dfn.axlabels[ax]]))
+                header.append(" ".join([c, dfn.name2label[ax]]))
             else:
                 # Prevent multiple entries of this column.
                 if not header.count(c):

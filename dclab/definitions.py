@@ -55,33 +55,9 @@ columns = [
    ]
 
 
-column_names = [ cc[0] for cc in columns ]
-column_labels = [ cc[1] for cc in columns ]
+column_names = [ _cc[0] for _cc in columns ]
+column_labels = [ _cc[1] for _cc in columns ]
 
 name2label = {}
 for _cc in columns:
-    name2label[cc[0]] = cc[1]
-
-# Backwards compatibility
-# TODO:
-# - remove everything below this line and make sure dclab
-#   and ShapeOut work with the definitions above.
-
-# Convenience lists and maps
-uid = column_names
-axl = column_labels
-rdv = uid
-
-
-# mapping `Measuement` class attributes to configuration file names
-cfgmap = {}        # area_um -> area
-cfgmaprev = {}     # area -> area_um
-axlabels = {}      # area -> Cell Size [µm²]
-axlabelsrev = {}   # Cell Size [µm²] -> area
-
-# here the name maps are defined
-for _u,_a,_r in zip(uid, axl, rdv):
-    cfgmap[_r] = _u
-    cfgmaprev[_u] = _r
-    axlabels[_u] = _a
-    axlabelsrev[_a] = _u
+    name2label[_cc[0]] = _cc[1]

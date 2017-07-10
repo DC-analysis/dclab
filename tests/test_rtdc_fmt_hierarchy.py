@@ -26,7 +26,7 @@ def test_hierarchy_from_tdms():
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
 
-    ds1._filter_manual[0] = False
+    ds1.filter.manual[0] = False
     ds2.apply_filter()
     assert ds2._filter.shape[0] == ds1._filter.shape[0]-1
     assert ds2["area_um"][0] == ds1["area_um"][1]

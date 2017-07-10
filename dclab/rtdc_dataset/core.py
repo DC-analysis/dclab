@@ -4,18 +4,16 @@
 from __future__ import division, print_function, unicode_literals
 
 import abc
-import warnings
 
 import numpy as np
 
-from .. import definitions as dfn
 from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
 from .ancillary_columns import AncillaryColumn
 from .export import Export
-
+from .filter import Filter
 
 
 class RTDCBase(object):
@@ -34,7 +32,6 @@ class RTDCBase(object):
         # file format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
         
-        self._old_filters = {} # for comparison to new filters
         self._polygon_filter_ids = []
         # Ancillaries have the column name as keys and a
         # tuple containing column and hash as value.
@@ -66,20 +63,6 @@ class RTDCBase(object):
                     # to be computed
                     ct = True
         return ct
-
-
-
-    def __getattr__(self, attr):
-        # temporary workaround to dict-like behavior
-        # This method will not be called unless __getattribute__ raises
-        # an AttributeError.
-        try: 
-            data = self.__getitem__(attr)
-        except:
-            raise AttributeError("Column not found: {}".format(attr))
-        else:
-            warnings.warn("Using geattr to get columns is DEPRECATED!")
-            return data
 
 
     def __getitem__(self, key):
@@ -120,29 +103,20 @@ class RTDCBase(object):
                 return length
         else:
             raise ValueError("Could not determine size of data set.")
-        
-        
+    
+    
+    @property
+    def _filter(self):
+        """return the current filter boolean array"""
+        return self.filter.all
+
+
     def _init_filters(self):
-        datalen = len(self)
-        # Plotting filters, set by "get_downsampled_scatter".
-        # This is a nested filter - it must be applied after self._filter
-        # to get the plotted events.
-        self._plot_filter = np.ones(datalen, dtype=bool)
-        # Set array filters:
-        # This is the filter that will be used for plotting:
-        self._filter = np.ones(datalen, dtype=bool)
-        # Manual filters, additionally defined by the user
-        self._filter_manual = np.ones_like(self._filter)
-        # Invalid filters
-        self._filter_invalid = np.ones_like(self._filter)
-        # Find attributes to be filtered
-        # These are the filters from which self._filter is computed
-        inifilter = np.ones(datalen, dtype=bool)
-        for key in dfn.column_names:
-            if key in self:
-                # great, we are dealing with an array
-                setattr(self, "_filter_"+key, inifilter.copy())
-        self._filter_polygon = inifilter.copy()
+        # Plot filters is only used for plotting and does
+        # not have anything to do with filtering.
+        self._plot_filter = np.ones(len(self), dtype=bool)
+        
+        self.filter = Filter(self)
 
 
     @property
@@ -152,130 +126,8 @@ class RTDCBase(object):
 
 
     def apply_filter(self, force=[]):
-        """Computes the filters for the data set
-        
-        Uses `self._old_filters` to determine new filters.
-
-        Parameters
-        ----------
-        force : list
-            A list of parameters that must be refiltered.
-
-
-        Notes
-        -----
-        Updates `self.config["filtering"].
-
-        """
-
-        # These lists may help us become very fast in the future
-        newkeys = []
-        oldvals = []
-        newvals = []
-
-        FIL = self.config["filtering"]
-
-        ## Determine which data was updated
-        OLD = self._old_filters
-        
-        for skey in list(FIL.keys()):
-            if not skey in OLD:
-                OLD[skey] = None
-            if OLD[skey] != FIL[skey]:
-                newkeys.append(skey)
-                oldvals.append(OLD[skey])
-                newvals.append(FIL[skey])
-
-        # A simple filtering technique just updates the _filter_*
-        # variables.
-        
-        # This line gets the attribute names of self that need updates.
-        attr2update = []
-        for k in newkeys:
-            # k[:-4] because we want to crop " Min" and " Max"
-            # "Polygon Filters" is not processed here.
-            if k[:-4] in dfn.column_names:
-                attr2update.append(k[:-4])
-
-        for f in force:
-            # Check if a correct variable is forced
-            if f in dfn.column_names:
-                attr2update.append(f)
-            else:
-                raise ValueError("Unknown variable {}".format(f))
-        
-        attr2update = np.unique(attr2update)
-
-        for attr in attr2update:
-            if attr in self:
-                fstart = attr + " min"
-                fend = attr + " max"
-                # If min and max exist and if they are not identical:
-                indices = getattr(self, "_filter_"+attr)
-                if (fstart in FIL and
-                    fend in FIL and
-                    FIL[fstart] != FIL[fend]):
-                    # TODO: speedup
-                    # Here one could check for smaller values in the
-                    # lists oldvals/newvals that we defined above.
-                    # Be sure to check against force in that case!
-                    ivalstart = FIL[fstart]
-                    ivalend = FIL[fend]
-                    data = self[attr]
-                    indices[:] = (ivalstart <= data)*(data <= ivalend)
-                else:
-                    indices[:] = True
-        
-        # Filter Polygons
-        # check if something has changed
-        pf_id = "polygon filters"
-        if (
-            (pf_id in FIL and not pf_id in OLD) or
-            (pf_id in FIL and pf_id in OLD and
-             FIL[pf_id] != OLD[pf_id])):
-            self._filter_polygon[:] = True
-            # perform polygon filtering
-            for p in PolygonFilter.instances:
-                if p.unique_id in FIL[pf_id]:
-                    # update self._filter_polygon
-                    # iterate through axes
-                    datax = self[p.axes[0]]
-                    datay = self[p.axes[1]]
-                    self._filter_polygon *= p.filter(datax, datay)
-
-        # Invalid filters
-        self._filter_invalid[:] = True
-        if FIL["remove invalid events"]:            
-            for attr in dfn.column_names:
-                if attr in self:
-                    col = self[attr]
-                    invalid = np.isinf(col)+np.isnan(col)
-                    self._filter_invalid *= ~invalid
-
-
-        # now update the entire object filter
-        # get a list of all filters
-        self._filter[:] = True
-
-        if FIL["enable filters"]:
-            for attr in dir(self):
-                if attr.startswith("_filter_"):
-                    self._filter[:] *= getattr(self, attr)
-    
-            # Filter with configuration keyword argument "Limit Events".
-            # This additional step limits the total number of events in
-            # self._filter.
-            if FIL["limit events"] > 0:
-                limit = FIL["limit events"]
-                sub = self._filter[self._filter]
-                _f, idx = downsampling.downsample_rand(sub,
-                                                       samples=limit,
-                                                       retidx=True)
-                sub[~idx] = False
-                self._filter[self._filter] = sub
-        
-        # Actual filtering is then done during plotting            
-        self._old_filters = self.config.copy()["filtering"]
+        """Computes the filters for the data set"""
+        self.filter.update(force)
 
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform", downsample=0):

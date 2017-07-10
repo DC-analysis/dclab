@@ -99,12 +99,11 @@ class RTDC_Hierarchy(RTDCBase):
         self._events["index"] = np.arange(1, length+1)
 
         self._init_filters()
-        self._old_filters = {}
 
-        if (hasattr(self, "_filter_manual") 
-            and np.sum(1-self._filter_manual) != 0):
+        if np.sum(1-self.filter.manual) != 0:
             msg = "filter_manual not supported in hierarchy!"
             raise NotImplementedError(msg)
+
         super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
 
 

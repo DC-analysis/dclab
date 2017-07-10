@@ -5,7 +5,7 @@ from __future__ import print_function
 
 import numpy as np
 import os
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname, join, basename
 import shutil
 import sys
 import tempfile
@@ -61,7 +61,7 @@ def test_image_column_length():
 def test_image_out_of_bounds():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
     try:
-        a = ds["image"][5]
+        _a = ds["image"][5]
     except IndexError:
         pass
     else:
@@ -114,11 +114,27 @@ def test_trace_basic():
     cleanup()
 
 
+def test_project_path():
+    tfile = retreive_tdms(example_data_sets[0])
+    ds = dclab.new_dataset(tfile)
+    assert ds.identifier == "mm-tdms_69733e31b005c145997fac8a22107ded"
+    a = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(tfile)
+    b = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile))
+    assert a == b
+    c = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile)+"/online/"+basename(tfile))
+    d = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile)+"/online/data/"+basename(tfile))
+    e = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile)+"/online/data/")
+    
+    assert a == e
+    assert a == c
+    assert a == d 
+    cleanup()
+
+
 def test_trace_import_fail():
     tdms_path = retreive_tdms(example_data_sets[1])
-    edest = dirname(tdms_path)
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data.append([u'fluorescence traces', u'peter'])
-    ds1 = new_dataset(tdms_path)
+    _ds1 = new_dataset(tdms_path)
     # clean up
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data.pop(-1)
     cleanup()

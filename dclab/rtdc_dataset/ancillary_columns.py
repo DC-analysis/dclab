@@ -248,18 +248,17 @@ AncillaryColumn(column_name="area_um",
                 req_columns=["area_cvx"]
                 )
 
-if False:
-    # Do not yet register this method until uncertainties
-    # of brightness computation are fully understood.
-    AncillaryColumn(column_name="bright_avg",
-                    method=compute_bright_avg,
-                    req_columns=["image", "contour"],
-                    )
-    
-    AncillaryColumn(column_name="bright_sd",
-                    method=compute_bright_sd,
-                    req_columns=["image", "contour"],
-                    )
+# Do not yet register this method until uncertainties
+# of brightness computation are fully understood.
+AncillaryColumn(column_name="bright_avg",
+                method=compute_bright_avg,
+                req_columns=["image", "contour"],
+                )
+
+AncillaryColumn(column_name="bright_sd",
+                method=compute_bright_sd,
+                req_columns=["image", "contour"],
+                )
 
 AncillaryColumn(column_name="aspect",
                 method=compute_aspect,

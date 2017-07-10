@@ -37,20 +37,22 @@ def get_brightness(cont, img, ret_data="avg,sd"):
     bright_std: float or ndarray of size N
         Standard deviation of image data within the contour
     """
+    # This method is based on a pull request by Maik Herbig.
     ret_avg = "avg" in ret_data
     ret_std = "sd" in ret_data
     
-    assert ret_avg * ret_std != 0, "No metrices selected!"
+    assert ret_avg + ret_std != 0, "No metrices selected!"
     
-    if not type(img)==list:
+    if isinstance(cont, np.ndarray):
+        # If cont is an array, it is not a list of contours,
+        # because contours can have different lengths.
         img = [img]
         cont = [cont]
         ret_list = False
     else:
         ret_list = True
-    
-    msg = '`img` and `cont` must have same size!'
-    assert len(img) == len(cont), msg
+
+    length = min(len(img), len(cont))
     
     # Results are stored in a separate array initialized with nans
     if ret_avg:
@@ -58,22 +60,18 @@ def get_brightness(cont, img, ret_data="avg,sd"):
     if ret_std:
         std = np.zeros(len(img), dtype=float) * np.nan
 
-    for ii in range(len(img)):
+    for ii in range(length):
         imgi = img[ii]
+        conti = cont[ii]
         # Initialize frame mask
         fmi = np.zeros_like(imgi, dtype=bool)
         # Set to true where the contour is
-        fmi[cont[ii][:,1], cont[ii][:,0]] = True
+        fmi[conti[:,1], conti[:,0]] = True
         # Fill holes
         scipy.ndimage.morphology.binary_fill_holes(fmi, output=fmi)
         # Assign results
         if ret_avg:
-            # Add .5 to the average value to reproduce values of the
-            # online analysis. This term is somehow related to how
-            # OpenCV performs image calculations differently. Note
-            # that there is still a discrepancy (<.1 in grayscale
-            # values) due to the different analysis in OpenCV. 
-            avg[ii] = np.mean(imgi[fmi])+.5
+            avg[ii] = np.mean(imgi[fmi])
         if ret_std:
             std[ii] = np.std(imgi[fmi])
 
@@ -85,7 +83,12 @@ def get_brightness(cont, img, ret_data="avg,sd"):
         results.append(std)
     
     if not ret_list:
+        # Only return scalars
         results = [ r[0] for r in results ]
-     
+    
+    if ret_avg+ret_std == 1:
+        # Only return one column
+        return results[0]
+    
     return results
 

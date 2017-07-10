@@ -27,11 +27,8 @@ def test_simple_bright():
         img = ds["image"][ii][:,:,0]
         cont = ds["contour"][ii]
         avg, std = get_brightness(cont=cont, img=img, ret_data="avg,sd")
-        print(avg - ds["bright_avg"][ii], std-ds["bright_sd"][ii])
-        
-        # TODO:
-        # - do actual testing with tolerances
-
+        assert np.allclose(avg, ds["bright_avg"][ii])
+        assert np.allclose(std, ds["bright_sd"][ii])
 
 
 if __name__ == "__main__":

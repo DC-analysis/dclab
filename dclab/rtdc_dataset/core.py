@@ -25,7 +25,7 @@ class RTDCBase(object):
         Notes
         -----
         Besides the filter arrays for each data column, there is a manual
-        boolean filter array ``RTDCBase._filter_manual`` that can be edited
+        boolean filter array ``RTDCBase.filter.manual`` that can be edited
         by the user - a boolean value of ``False`` means that the event is 
         excluded from all computations.
         """
@@ -100,6 +100,13 @@ class RTDCBase(object):
                 return length
         else:
             raise ValueError("Could not determine size of data set.")
+    
+    
+    def __repr__(self):
+        repr = self.identifier
+        if self.path is not "none":
+            repr += " - file: {}".format(self.path)
+        return repr
     
     
     @property

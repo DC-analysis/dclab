@@ -32,7 +32,7 @@ class Filter(object):
         self.all = np.ones(len(rtdc_ds), dtype=bool)
         # invalid (nan/inf) events
         self.invalid = np.ones(len(rtdc_ds), dtype=bool)
-        # manual filters
+        # reserved for filtering
         self.manual = np.ones(len(rtdc_ds), dtype=bool)
         # polygon filters
         self.polygon = np.ones(len(rtdc_ds), dtype=bool)

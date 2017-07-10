@@ -23,6 +23,7 @@ configuration metadata `req_config`.
 from __future__ import division, print_function, unicode_literals
 
 import hashlib
+import warnings
 
 import numpy as np
 
@@ -123,7 +124,19 @@ class AncillaryColumn():
         column: array- or list-like
             The computed data column.
         """
-        return self.method(rtdc_ds)
+        data = self.method(rtdc_ds)
+        if data.size < len(rtdc_ds):
+            msg = "Zero-padding results for {} in {}!".format(self.column_name,
+                                                              rtdc_ds)
+            warnings.warn(msg)
+            data = np.pad(data.astype(float),
+                          (0, len(rtdc_ds)-data.size),
+                          mode="constant",
+                          constant_values=np.nan)
+        elif data.size > len(rtdc_ds):
+            raise ValueError("Ancillary column is larger than size of dataset!")
+        
+        return data
 
 
     def is_available(self, rtdc_ds, verbose=False):

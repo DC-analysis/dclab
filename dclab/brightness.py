@@ -60,7 +60,7 @@ def get_brightness_cv2(images,cont):
         brightn_mean = brightn_mean[0]
         brightn_std = brightn_std[0]
      
-    return(brightn,brightn_std)
+    return(brightn_mean,brightn_std)
 
 def get_brightness_pillow(images,cont):
     """

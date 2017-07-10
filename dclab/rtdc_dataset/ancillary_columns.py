@@ -26,7 +26,7 @@ import hashlib
 
 import numpy as np
 
-from dclab import elastic, volume
+from dclab import brightness, elastic, volume
 from .util import obj2str
 
 
@@ -176,6 +176,22 @@ def compute_aspect(mm):
     return mm["size_x"] / mm["size_y"]
 
 
+def compute_bright_avg(mm):
+    bavg = brightness.get_brightness(cont=mm["contour"],
+                                     img=mm["image"],
+                                     ret_data="avg",
+                                     )
+    return bavg
+
+
+def compute_bright_sd(mm):
+    bstd = brightness.get_brightness(cont=mm["contour"],
+                                     img=mm["image"],
+                                     ret_data="sd",
+                                     )
+    return bstd
+
+
 def compute_deform(mm):
     return 1 - mm["circ"]
 
@@ -222,60 +238,78 @@ def compute_volume(mm):
 
 # Register ancillaries
 AncillaryColumn(column_name="area_ratio",
-                 method=compute_area_ratio,
-                 req_columns=["area_cvx", "area_msd"]
-                 )
+                method=compute_area_ratio,
+                req_columns=["area_cvx", "area_msd"]
+                )
 
 AncillaryColumn(column_name="area_um",
-                 method=compute_area_um,
-                 req_config=[["image", ["pix size"]]],
-                 req_columns=["area_cvx"]
-                 )
+                method=compute_area_um,
+                req_config=[["image", ["pix size"]]],
+                req_columns=["area_cvx"]
+                )
+
+if False:
+    # Do not yet register this method until uncertainties
+    # of brightness computation are fully understood.
+    AncillaryColumn(column_name="bright_avg",
+                    method=compute_bright_avg,
+                    req_columns=["image", "contour"],
+                    )
+    
+    AncillaryColumn(column_name="bright_sd",
+                    method=compute_bright_sd,
+                    req_columns=["image", "contour"],
+                    )
 
 AncillaryColumn(column_name="aspect",
-                 method=compute_aspect,
-                 req_columns=["size_x", "size_y"]
-                 )
+                method=compute_aspect,
+                req_columns=["size_x", "size_y"]
+                )
+
+AncillaryColumn(column_name="bright_avg",
+                method=compute_aspect,
+                req_columns=["size_x", "size_y"]
+                )
 
 AncillaryColumn(column_name="deform",
-                 method=compute_deform,
-                 req_columns=["circ"]
-                 )
+                method=compute_deform,
+                req_columns=["circ"]
+                )
 
 # TODO:
 # - Define multiple AncillaryColumn of "emodulus":
 #   (e.g. using "temperature" column) 
 AncillaryColumn(column_name="emodulus",
-                 method=compute_emodulus,
-                 req_columns=["area_um", "deform"],
-                 req_config=[["calculation", 
-                              ["emodulus medium",
-                               "emodulus model",
-                               "emodulus temperature",
-                               "emodulus viscosity"]
-                              ],
-                             ["image",
-                              ["pix size"]
-                              ],
-                             ["general", 
-                              ["flow rate [ul/s]",
-                               "channel width"]
-                              ],
+                method=compute_emodulus,
+                req_columns=["area_um", "deform"],
+                req_config=[["calculation", 
+                             ["emodulus medium",
+                              "emodulus model",
+                              "emodulus temperature",
+                              "emodulus viscosity"]
                              ],
-                 )
+                            ["image",
+                             ["pix size"]
+                             ],
+                            ["general", 
+                             ["flow rate [ul/s]",
+                              "channel width"]
+                             ],
+                            ],
+                )
 
 AncillaryColumn(column_name="index",
-                 method=compute_index,
-                 )
+                method=compute_index,
+                )
 
 AncillaryColumn(column_name="time",
-                 method=compute_time,
-                 req_config=[["framerate", ["frame rate"]]],
-                 req_columns=["frame"]
-                 )
+                method=compute_time,
+                req_config=[["framerate", ["frame rate"]]],
+                req_columns=["frame"]
+                )
 
 AncillaryColumn(column_name="volume",
-                 method=compute_volume,
-                 req_columns=["contour", "pos_x", "pos_y"],
-                 req_config=[["image", ["pix size"]]],
-                 )
+                method=compute_volume,
+                req_columns=["contour", "pos_x", "pos_y"],
+                req_config=[["image", ["pix size"]]],
+                )

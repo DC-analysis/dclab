@@ -108,12 +108,15 @@ def get_statistics(rtdc_ds, columns=None, axes=None):
 
     # To make sure that all columns are computed for each axis in a block,
     # we loop over all axes. It would be easier to loop over the columns,
-    # but the resulting statistics would be human-friendly.
+    # but the resulting statistics would not be human-friendly.
     for ax in axes:
         for c in columns:
             meth = Statistics.available_methods[c]
             if meth.req_axis:
-                values.append(meth(rtdc_ds=rtdc_ds, axis=ax))
+                if ax in rtdc_ds:
+                    values.append(meth(rtdc_ds=rtdc_ds, axis=ax))
+                else:
+                    values.append(np.nan)
                 header.append(" ".join([c, dfn.name2label[ax]]))
             else:
                 # Prevent multiple entries of this column.

@@ -116,7 +116,7 @@ class ImageMap(object):
         cellimg = cap.get_data(idx)
         if np.all(cellimg==0):
             cellimg = self._get_image_workaround_seek(idx)
-        return cellimg
+        return np.array(cellimg, dtype=float)
 
 
     def _get_image_workaround_seek(self, idx):

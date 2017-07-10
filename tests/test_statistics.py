@@ -92,6 +92,7 @@ def test_false_method():
     def bad_method(x):
         return x+1
     dclab.statistics.Statistics(name="bad",
+                                req_axis=False,
                                 method=bad_method)
     ddict = example_data_dict(size=77, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)

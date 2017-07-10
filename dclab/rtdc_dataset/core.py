@@ -88,10 +88,7 @@ class RTDCBase(object):
             self._ancillaries[key] = (anhash, data)
             return data
         else:
-            # Return zeros as default empty data.
-            # TODO:
-            # - Clean the workflow from these zero-columns (raise a KeyError instead)
-            return np.zeros(len(self))
+            raise KeyError("Column '{}' does not exist!".format(key))
 
 
     def __len__(self):

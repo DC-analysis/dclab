@@ -1,5 +1,5 @@
 0.2.5
-- Add ancillary columns "bright_avg" and "bright_sd"
+- Add ancillary columns "bright_avg" and "bright_sd" (#18, #19)
 - Standardize attributes of RTDCBase subclasses (#12)
 - Refactoring:
   - New column names and removal of redundant column identifiers (#16)

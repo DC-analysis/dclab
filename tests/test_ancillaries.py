@@ -180,6 +180,15 @@ def test_time():
     cleanup()
 
 
+def test_volume():
+    ds = dclab.new_dataset(retreive_tdms("rtdc_data_minimal.zip"))
+    vol = ds["volume"]
+    # There are a lot of nans, because the contour is not given everywhere
+    vol = vol[~np.isnan(vol)]
+    assert np.allclose(vol[0], 574.60368907528346)
+    assert np.allclose(vol[12], 1010.5669523203878)
+
+
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

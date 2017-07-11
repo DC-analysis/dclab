@@ -4,8 +4,9 @@
 - Refactoring:
   - New column names and removal of redundant column identifiers (#16)
   - Minor improvements towards PEP8 (e.g. #15)
+  - New class for handling filters (#13)
 - Bugfixes:
-  - Hierarchy child computes all ancillary columns of parent upon
+  - Hierarchy child computed all ancillary columns of parent upon
     checking availability of a column.
 0.2.4
 - Replace OpenCV with imageio

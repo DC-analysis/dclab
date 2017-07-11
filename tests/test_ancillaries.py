@@ -67,7 +67,26 @@ def test_0error():
         raise ValueError("Should have raised KeyError!")
 
 
+def test_aspect():
+    # Aspect ratio of the data
+    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    aspect = ds["aspect"]
+    assert np.sum(aspect>1) == 904
+    assert np.sum(aspect<1) == 48
+    cleanup() 
+
+
+def test_area_ratio():
+    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video.zip"))
+    comp_ratio = ds["area_ratio"]
+    # The convex area is always >= the raw area
+    assert np.all(comp_ratio>=1)
+    assert np.allclose(comp_ratio[0], 1.0196464)
+    cleanup() 
+
+
 def test_brightness():
+    # Brightness of the image
     ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
@@ -150,6 +169,15 @@ def test_emodulus_none2():
                                 "emodulus viscosity": 0.5
                                 }
     assert "emodulus" not in ds, "emodulus model should be missing"
+
+
+def test_time():
+    ds = dclab.new_dataset(retreive_tdms("rtdc_data_minimal.zip"))
+    tt = ds["time"]
+    assert tt[0] == 0
+    assert np.allclose(tt[1], 0.0385)
+    assert np.all(np.diff(tt) > 0)
+    cleanup()
 
 
 if __name__ == "__main__":

@@ -146,6 +146,17 @@ class RTDCBase(object):
         self.filter.update(force)
 
 
+    @property
+    def columns(self):
+        """Return all available columns"""
+        mycols = []
+        for col in dfn.column_names + ["contour", "image", "trace"]:
+            if col in self:
+                mycols.append(col)
+        mycols.sort()
+        return mycols
+
+
     def get_downsampled_scatter(self, xax="area_um", yax="deform", downsample=0):
         """Downsampling by removing points at dense locations
         

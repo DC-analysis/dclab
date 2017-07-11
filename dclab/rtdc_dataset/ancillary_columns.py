@@ -187,7 +187,15 @@ def compute_area_um(mm):
 
 
 def compute_aspect(mm):
-    #perpendicular to flow, parallel to flow
+    """Compute the aspect ratio of the bounding box
+    
+    Notes
+    -----
+    If the cell is elongated along the channel, i.e.
+    `size_x` is larger than `size_y`, then the aspect
+    ratio is larger than 1.
+    """
+    #parallel to flow, perpendicular to flow
     return mm["size_x"] / mm["size_y"]
 
 

@@ -2,7 +2,7 @@
 # values are the column names in the tdms file format.
 dclab2tdms = {
    "area_cvx": "area",
-   "area_msd": "area raw",
+   "area_msd": "raw area",
    "bright_avg": "Brightness",
    "bright_sd": "BrightnessSD",
    "circ": "circularity",

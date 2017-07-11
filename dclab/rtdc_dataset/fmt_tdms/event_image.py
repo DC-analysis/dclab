@@ -26,7 +26,7 @@ class ImageColumn(object):
         else:
             self._image_data = []
         conf = rtdc_dataset.config
-        self.event_offset = conf["general"]["video frame offset"]
+        self.event_offset = int(conf["general"]["video frame offset"])
         self.video_file = fname
         
 

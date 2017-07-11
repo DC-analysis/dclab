@@ -4,6 +4,8 @@
 from __future__ import division, print_function, unicode_literals
 
 
+# These are columns that contain a scalar value for each event.
+# Other valid columns are "image", "contour", and "trace".
 _columns = [
    ["area_cvx", "Convex area [px]"],
    ["area_msd", "Measured area [px]"],

@@ -69,16 +69,7 @@ class AncillaryColumn():
 
     def __repr__(self):
         return "Ancillary column: {}".format(self.column_name)
-
-
-    def hash(self, rtdc_ds):
-        """Used for identifying an ancillary computation"""
-        hasher = hashlib.md5()
-        hasher.update(obj2str(self.req_config))
-        for col in self.req_columns:
-            hasher.update(obj2str(rtdc_ds[col]))
-        return hasher.hexdigest()
-    
+   
     
     @staticmethod
     def available_columns(rtdc_ds):
@@ -102,15 +93,6 @@ class AncillaryColumn():
         return cols
 
 
-    @staticmethod
-    def get_column(column_name):
-        for col in AncillaryColumn.columns:
-            if col.column_name == column_name:
-                return col
-        else:
-            raise ValueError("Column {} not found.".format(column_name))
-
-
     def compute(self, rtdc_ds):
         """Compute the column with self.method
 
@@ -125,6 +107,10 @@ class AncillaryColumn():
             The computed data column.
         """
         data = self.method(rtdc_ds)
+
+        msg = "Ancillary column size must be <= the size of the dataset!"
+        assert data.size <= len(rtdc_ds), msg
+        
         if data.size < len(rtdc_ds):
             msg = "Zero-padding results for {} in {}!".format(self.column_name,
                                                               rtdc_ds)
@@ -133,10 +119,26 @@ class AncillaryColumn():
                           (0, len(rtdc_ds)-data.size),
                           mode="constant",
                           constant_values=np.nan)
-        elif data.size > len(rtdc_ds):
-            raise ValueError("Ancillary column is larger than size of dataset!")
         
         return data
+
+
+    @staticmethod
+    def get_column(column_name):
+        for col in AncillaryColumn.columns:
+            if col.column_name == column_name:
+                return col
+        else:
+            raise KeyError("Column {} not found.".format(column_name))
+
+
+    def hash(self, rtdc_ds):
+        """Used for identifying an ancillary computation"""
+        hasher = hashlib.md5()
+        hasher.update(obj2str(self.req_config))
+        for col in self.req_columns:
+            hasher.update(obj2str(rtdc_ds[col]))
+        return hasher.hexdigest()
 
 
     def is_available(self, rtdc_ds, verbose=False):
@@ -261,8 +263,11 @@ AncillaryColumn(column_name="area_um",
                 req_columns=["area_cvx"]
                 )
 
-# Do not yet register this method until uncertainties
-# of brightness computation are fully understood.
+AncillaryColumn(column_name="aspect",
+                method=compute_aspect,
+                req_columns=["size_x", "size_y"]
+                )
+
 AncillaryColumn(column_name="bright_avg",
                 method=compute_bright_avg,
                 req_columns=["image", "contour"],
@@ -273,15 +278,6 @@ AncillaryColumn(column_name="bright_sd",
                 req_columns=["image", "contour"],
                 )
 
-AncillaryColumn(column_name="aspect",
-                method=compute_aspect,
-                req_columns=["size_x", "size_y"]
-                )
-
-AncillaryColumn(column_name="bright_avg",
-                method=compute_aspect,
-                req_columns=["size_x", "size_y"]
-                )
 
 AncillaryColumn(column_name="deform",
                 method=compute_deform,

@@ -20,7 +20,7 @@ import dclab
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
-def test_basic():
+def test_0basic():
     ds = dclab.new_dataset(retreive_tdms(example_data_sets[1]))
     for cc in [  
                 'fl1_pos',
@@ -55,6 +55,44 @@ def test_basic():
     cleanup()
 
 
+def test_0error():
+    keys = ["circ"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    ds = dclab.new_dataset(ddict)
+    try:
+        ds["unknown_column"]
+    except KeyError:
+        pass
+    else:
+        raise ValueError("Should have raised KeyError!")
+
+
+def test_brightness():
+    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    # This is something low-level and should not be done in a script.
+    # Remove the brightness columns from RTDCBase to force computation with
+    # the image and contour columns. 
+    real_avg = ds._events.pop("bright_avg")
+    real_sd = ds._events.pop("bright_sd")
+    # This will cause a zero-padding warning:
+    comp_avg = ds["bright_avg"]
+    comp_sd = ds["bright_sd"] 
+    # Set first element to nan, because there is no image
+    comp_avg[0] = np.nan
+    comp_sd[0] = np.nan
+    idcompare = ~np.isnan(comp_avg)
+    assert np.allclose(real_avg[idcompare], comp_avg[idcompare])
+    assert np.allclose(real_sd[idcompare], comp_sd[idcompare])
+    cleanup()
+
+
+def test_deform():
+    keys = ["circ"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    ds = dclab.new_dataset(ddict)
+    assert np.allclose(ds["deform"], 1-ds["circ"])
+    
+
 def test_emodulus():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -74,7 +112,7 @@ def test_emodulus():
     assert t4-t3 > t2-t1
 
 
-def test_area_emodulus():
+def test_emodulus_area():
     # computes "area_um" from "area_cvx"
     keys = ["area_cvx", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)

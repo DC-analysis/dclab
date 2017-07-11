@@ -29,6 +29,7 @@ def test_simple_bright():
         avg, std = get_brightness(cont=cont, img=img, ret_data="avg,sd")
         assert np.allclose(avg, ds["bright_avg"][ii])
         assert np.allclose(std, ds["bright_sd"][ii])
+    cleanup()
 
 
 if __name__ == "__main__":

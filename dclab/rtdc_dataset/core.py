@@ -7,6 +7,7 @@ import abc
 
 import numpy as np
 
+from .. import definitions as dfn
 from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
@@ -79,16 +80,27 @@ class RTDCBase(object):
             anhash = ancol[key].hash(self)
             if (key in self._ancillaries and 
                 self._ancillaries[key][0] == anhash):
-                # use cached value
+                # Use cached value
                 data = self._ancillaries[key][1]
             else:
-                # compute new value
+                # Compute new value
                 data = ancol[key].compute(self)
-            # Store computed value in `self._ancillaries`.
-            self._ancillaries[key] = (anhash, data)
+                # Store computed value in `self._ancillaries`.
+                self._ancillaries[key] = (anhash, data)
             return data
         else:
             raise KeyError("Column '{}' does not exist!".format(key))
+
+
+    def __iter__(self):
+        """An iterator over all valid scalar columns"""
+        mycols = []
+        for col in dfn.column_names:
+            if col in self:
+                mycols.append(col)
+        mycols.sort()
+        for col in mycols:
+            yield col
 
 
     def __len__(self):
@@ -103,10 +115,10 @@ class RTDCBase(object):
     
     
     def __repr__(self):
-        repr = self.identifier
+        repre = self.identifier
         if self.path is not "none":
-            repr += " - file: {}".format(self.path)
-        return repr
+            repre += " - file: {}".format(self.path)
+        return repre
     
     
     @property

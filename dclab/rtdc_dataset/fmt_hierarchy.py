@@ -37,7 +37,6 @@ class RTDC_Hierarchy(RTDCBase):
             Only hierarchy children have this attribute
         """
         super(RTDC_Hierarchy, self).__init__()
-        self._events = {}
 
         self.path = hparent.path
         self.title = hparent.title + "_child"
@@ -74,19 +73,17 @@ class RTDC_Hierarchy(RTDCBase):
 
 
     def __getitem__(self, key):
-        if key in self._events:
-            return self._events[key]
-        else:
+        if key not in self._events:
             item = self.hparent[key]
             if isinstance(item, np.ndarray):
-                return item[self.hparent._filter]
+                self._events[key] = item[self.hparent._filter]
             else:
                 msg = "Hierarchy does not implement {}".format(key)
                 raise NotImplementedError(msg)
+        return self._events[key]
 
 
     def __len__(self):
-        self.hparent.apply_filter()
         return np.sum(self.hparent._filter)
 
 
@@ -96,6 +93,7 @@ class RTDC_Hierarchy(RTDCBase):
         self.hparent.apply_filter()
         # update event index
         length = np.sum(self.hparent._filter)
+        self._events = {}
         self._events["index"] = np.arange(1, length+1)
 
         self._init_filters()
@@ -110,7 +108,8 @@ class RTDC_Hierarchy(RTDCBase):
     @property
     def hash(self):
         """Hashes of hierarchy parents change if the parent changes"""
-        self.apply_filter()
+        # Do not apply filters here (speed)
         hph = self.hparent.hash
         hfilth = hashobj(self.hparent._filter)
-        return hashobj(hph+hfilth)
+        dhash = hashobj(hph+hfilth)
+        return dhash

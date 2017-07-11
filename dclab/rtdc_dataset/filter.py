@@ -36,7 +36,6 @@ class Filter(object):
         self.manual = np.ones(len(rtdc_ds), dtype=bool)
         # polygon filters
         self.polygon = np.ones(len(rtdc_ds), dtype=bool)
-
         # old filter configuration of `rtdc_ds`
         self._old_config = {}
 

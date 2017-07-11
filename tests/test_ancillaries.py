@@ -77,10 +77,9 @@ def test_brightness():
     # This will cause a zero-padding warning:
     comp_avg = ds["bright_avg"]
     comp_sd = ds["bright_sd"] 
-    # Set first element to nan, because there is no image
-    comp_avg[0] = np.nan
-    comp_sd[0] = np.nan
     idcompare = ~np.isnan(comp_avg)
+    # ignore first event (no image data)
+    idcompare[0] = False
     assert np.allclose(real_avg[idcompare], comp_avg[idcompare])
     assert np.allclose(real_sd[idcompare], comp_sd[idcompare])
     cleanup()

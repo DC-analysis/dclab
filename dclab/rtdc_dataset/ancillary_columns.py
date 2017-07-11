@@ -104,22 +104,22 @@ class AncillaryColumn():
         Returns
         -------
         column: array- or list-like
-            The computed data column.
+            The computed data column (read-only).
         """
         data = self.method(rtdc_ds)
+        dsize = len(rtdc_ds) - data.size
 
         msg = "Ancillary column size must be <= the size of the dataset!"
-        assert data.size <= len(rtdc_ds), msg
+        assert dsize >= 0, msg
         
-        if data.size < len(rtdc_ds):
-            msg = "Zero-padding results for {} in {}!".format(self.column_name,
-                                                              rtdc_ds)
+        if dsize > 0:
+            msg = "Resizing column {} in {} to match event number!".format(
+                                                            self.column_name,
+                                                            rtdc_ds)
             warnings.warn(msg)
-            data = np.pad(data.astype(float),
-                          (0, len(rtdc_ds)-data.size),
-                          mode="constant",
-                          constant_values=np.nan)
-        
+            data.resize(len(rtdc_ds))
+            data[-dsize:] = np.nan
+        data.setflags(write=False)
         return data
 
 

@@ -109,16 +109,16 @@ class AncillaryColumn():
         data = self.method(rtdc_ds)
         dsize = len(rtdc_ds) - data.size
 
-        msg = "Ancillary column size must be <= the size of the dataset!"
-        assert dsize >= 0, msg
-        
         if dsize > 0:
-            msg = "Resizing column {} in {} to match event number!".format(
-                                                            self.column_name,
-                                                            rtdc_ds)
-            warnings.warn(msg)
-            data.resize(len(rtdc_ds))
+            msg = "Growing column {} in {} by {} to match event number!"
+            warnings.warn(msg.format(self.column_name, rtdc_ds, abs(dsize)))
+            data.resize(len(rtdc_ds), refcheck=False)
             data[-dsize:] = np.nan
+        elif dsize < 0:
+            msg = "Shrinking column {} in {} by {} to match event number!"
+            warnings.warn(msg.format(self.column_name, rtdc_ds, abs(dsize)))
+            data.resize(len(rtdc_ds), refcheck=False)
+
         data.setflags(write=False)
         return data
 

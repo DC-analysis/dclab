@@ -1,5 +1,7 @@
 0.2.6
-- Shrink ancillary column size if it exceeds data set size
+- Bugfixes:
+  - Shrink ancillary column size if it exceeds data set size
+  - Two hierarchy children of one parent have the same hash
 0.2.5
 - Add ancillary columns "bright_avg" and "bright_sd" (#18, #19)
 - Standardize attributes of RTDCBase subclasses (#12)

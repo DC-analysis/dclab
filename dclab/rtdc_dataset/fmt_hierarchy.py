@@ -107,9 +107,10 @@ class RTDC_Hierarchy(RTDCBase):
 
     @property
     def hash(self):
-        """Hashes of hierarchy parents change if the parent changes"""
+        """Hashes of a hierarchy child changes if the parent changes"""
         # Do not apply filters here (speed)
         hph = self.hparent.hash
-        hfilth = hashobj(self.hparent._filter)
-        dhash = hashobj(hph+hfilth)
+        hpfilt = hashobj(self.hparent._filter)
+        chfilt = hashobj(self._filter)
+        dhash = hashobj(hph+hpfilt+chfilt)
         return dhash

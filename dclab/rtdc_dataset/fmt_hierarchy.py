@@ -111,6 +111,5 @@ class RTDC_Hierarchy(RTDCBase):
         # Do not apply filters here (speed)
         hph = self.hparent.hash
         hpfilt = hashobj(self.hparent._filter)
-        chfilt = hashobj(self._filter)
-        dhash = hashobj(hph+hpfilt+chfilt)
+        dhash = hashobj(hph+hpfilt)
         return dhash

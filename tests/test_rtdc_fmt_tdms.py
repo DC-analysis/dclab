@@ -117,7 +117,8 @@ def test_trace_basic():
 def test_project_path():
     tfile = retreive_tdms(example_data_sets[0])
     ds = dclab.new_dataset(tfile)
-    assert ds.identifier == "mm-tdms_69733e31b005c145997fac8a22107ded"
+    assert ds.hash == "69733e31b005c145997fac8a22107ded"
+    assert ds.format == "tdms"
     a = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(tfile)
     b = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile))
     assert a == b

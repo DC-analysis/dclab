@@ -4,6 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 import abc
+import random
 
 import numpy as np
 
@@ -20,7 +21,7 @@ from .filter import Filter
 class RTDCBase(object):
     __metaclass__ = abc.ABCMeta
     
-    def __init__(self):
+    def __init__(self, identifier=None):
         """RT-DC measurement base class
         
         Notes
@@ -39,6 +40,13 @@ class RTDCBase(object):
         self._ancillaries = {}
         # export functionalities
         self.export = Export(self)
+        # Unique identifier
+        if identifier is None:
+            # Generate a unique identifier for this data set
+            rhex = [random.choice('0123456789abcdef') for _n in range(7)]
+            self._identifier = "mm-{}_{}".format(self.format, "".join(rhex))
+        else:
+            self._identifier = identifier
 
 
     def __contains__(self, key):
@@ -138,7 +146,7 @@ class RTDCBase(object):
     @property
     def identifier(self):
         """Compute an identifier based on __hash__"""
-        return "mm-{}_{}".format(self.format, self.hash)
+        return self._identifier
 
 
     def apply_filter(self, force=[]):

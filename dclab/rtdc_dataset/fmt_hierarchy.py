@@ -11,7 +11,7 @@ from .util import hashobj
 
 
 class RTDC_Hierarchy(RTDCBase):
-    def __init__(self, hparent):
+    def __init__(self, hparent, *args, **kwargs):
         """A hierarchy child of a subclass of RTDCBase
         
         A few words on hierarchies:
@@ -30,13 +30,15 @@ class RTDC_Hierarchy(RTDCBase):
         ----------
         hparent : instance of RTDCBase
             The hierarchy parent.
-            
+        *args, **kwargs:
+            (Keyword) arguments for `RTDCBase`
+
         Attributes
         ----------
         hparent : instance of RTDCBase
             Only hierarchy children have this attribute
         """
-        super(RTDC_Hierarchy, self).__init__()
+        super(RTDC_Hierarchy, self).__init__(*args, **kwargs)
 
         self.path = hparent.path
         self.title = hparent.title + "_child"

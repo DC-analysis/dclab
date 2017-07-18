@@ -15,7 +15,7 @@ from .util import hashobj
 
 
 class RTDC_Dict(RTDCBase):
-    def __init__(self, ddict):
+    def __init__(self, ddict, *args, **kwargs):
         """Dictionary-based RT-DC data set 
         
         Parameters
@@ -25,10 +25,12 @@ class RTDC_Dict(RTDCBase):
             (e.g. "area_cvx", "deform") with which the class will be
             instantiated. The configuration is set to the default
             configuration of dclab.
+        *args, **kwargs:
+            (Keyword) arguments for `RTDCBase`
         """
         assert ddict
         
-        super(RTDC_Dict, self).__init__()
+        super(RTDC_Dict, self).__init__(*args, **kwargs)
 
         t = time.localtime()
         

@@ -16,7 +16,7 @@ else:
     str_classes = str
 
 
-def new_dataset(data):
+def new_dataset(data, identifier=None):
     """Initialize a new RT-DC data set
     
     Parameters
@@ -27,6 +27,9 @@ def new_dataset(data):
         - .tdms file
         - subclass of `RTDCBase`
           (will create a hierarchy child)
+    identifier: str
+        A unique identifier for this data set. If set to `None`
+        an identifier will be generated.
     
     Returns
     -------
@@ -34,11 +37,11 @@ def new_dataset(data):
         A new dataset instance
     """
     if isinstance(data, dict):
-        return fmt_dict.RTDC_Dict(data)
+        return fmt_dict.RTDC_Dict(data, identifier=identifier)
     elif isinstance(data, str_classes):
-        return fmt_tdms.RTDC_TDMS(data)
+        return fmt_tdms.RTDC_TDMS(data, identifier=identifier)
     elif isinstance(data, RTDCBase):
-        return fmt_hierarchy.RTDC_Hierarchy(data)
+        return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier)
     else:
         msg = "data type not supported: {}".format(data.__class__)
         raise NotImplementedError(msg)

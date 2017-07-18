@@ -21,16 +21,18 @@ from . import naming
 
 
 class RTDC_TDMS(RTDCBase):
-    def __init__(self, tdms_path):
+    def __init__(self, tdms_path, *args, **kwargs):
         """TDMS file format for RT-DC measurements
 
         Parameters
         ----------
         tdms_path: str
-            Path to a '.tdms' measurement file.        
+            Path to a '.tdms' measurement file.
+        *args, **kwargs:
+            (Keyword) arguments for `RTDCBase`
         """
         # Initialize RTDCBase
-        super(RTDC_TDMS, self).__init__()
+        super(RTDC_TDMS, self).__init__(*args, **kwargs)
 
         # Events is a simple dictionary
         self._events = {}

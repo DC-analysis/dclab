@@ -5,8 +5,10 @@ Class for efficiently handling contour data
 """
 from __future__ import division, print_function, unicode_literals
 
-import numpy as np
+import io
 import os
+
+import numpy as np
 
 
 class ContourColumn(object):
@@ -128,7 +130,7 @@ class ContourData(object):
         This function populates the internal list of contours
         as strings which will be available as `self.data`.
         """
-        with open(self.filename) as fd:
+        with io.open(self.filename) as fd:
             data = fd.read()
             
         ident = "Contour in frame"

@@ -71,9 +71,10 @@ class ContourColumn(object):
         fref = self._contour_data.get_frame(0)
         f0 = self._rtdc_dataset["frame"][0]
         f1 = self._rtdc_dataset["frame"][1]
-        if fref == f0:
+        # Use allclose to avoid float/integer comparison problems
+        if np.allclose(fref, f0):
             self.event_offset = 0
-        elif fref == f1:
+        elif np.allclose(fref, f1):
             self.event_offset = 1
         else:
             raise IndexError("Contour data has unknown offset!")
@@ -154,6 +155,3 @@ class ContourData(object):
         cont = self.data[idx]
         frame = int(cont.strip().split(" ", 1)[0])
         return frame
-        
-        
-        

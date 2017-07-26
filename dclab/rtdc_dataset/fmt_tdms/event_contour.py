@@ -7,6 +7,7 @@ from __future__ import division, print_function, unicode_literals
 
 import io
 import os
+import warnings
 
 import numpy as np
 
@@ -89,12 +90,29 @@ class ContourColumn(object):
         Returns None if no contour file is found.
         """
         cfile = None
-        if os.path.exists(rtdc_dataset._fdir):
-            for f in os.listdir(rtdc_dataset._fdir):
-                if (f.endswith("_contours.txt") and
-                    f.startswith(rtdc_dataset._mid)):
-                    cfile = os.path.join(rtdc_dataset._fdir, f)
+        tdmsname = os.path.basename(rtdc_dataset.path)
+        cont_id = os.path.splitext(tdmsname)[0]
+        candidates = os.listdir(rtdc_dataset._fdir)
+        candidates = [ c for c in candidates if c.endswith("_contours.txt") ]
+        # Search for perfect matches, e.g.
+        # - M1_0.240000ul_s.tdms
+        # - M1_0.240000ul_s_contours.txt
+        for c1 in candidates:
+            if c1.startswith(cont_id):
+                cfile = os.path.join(rtdc_dataset._fdir, c1)
+                break
+        else:
+            # Search for M* matches, e.g.
+            # - M1_0.240000ul_s.tdms
+            # - M1_contours.txt
+            for c2 in candidates:
+                if (c2.split("_")[0] == rtdc_dataset._mid):
+                    # Do not confuse with M10_contours.txt
+                    cfile = os.path.join(rtdc_dataset._fdir, c1)
                     break
+            else:
+                msg = "No contour data found for {}".format(rtdc_dataset)
+                warnings.warn(msg)
         return cfile
 
 
@@ -108,7 +126,7 @@ class ContourData(object):
         list (enumerated from 0 on).
         """
         self._initialized = False
-        self.filename=fname
+        self.filename = fname
 
 
     def __getitem__(self, idx):

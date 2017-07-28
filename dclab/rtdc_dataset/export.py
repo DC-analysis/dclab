@@ -70,6 +70,9 @@ class Export(object):
                     if np.isnan(image[0,0]):
                         # This is a nan-valued image
                         image = np.zeros_like(image, dtype=np.uint8)
+                # Convert image to RGB
+                image = image.reshape(image.shape[0], image.shape[1], 1)
+                image = np.repeat(image, 3, axis=2)
                 vout.append_data(image)
         else:
             msg="No image data to export: dataset {} !".format(ds.title)

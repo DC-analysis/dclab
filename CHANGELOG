@@ -5,7 +5,7 @@
   - Generate random RTDCBase.identifier (do not use RTDCBase.hash)
     to fix problem with identical identifiers for hierarchy children
   - Correctly determine contour data files (tdms file format)
-  - 
+  - Allow contour data indices larger than uint8
 0.2.5
 - Add ancillary columns "bright_avg" and "bright_sd" (#18, #19)
 - Standardize attributes of RTDCBase subclasses (#12)

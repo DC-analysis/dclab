@@ -24,7 +24,7 @@ def test_simple_bright():
     ds = new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
     for ii in range(2,7):
         # This stripped data set has only 7 video frames / contours
-        img = ds["image"][ii][:,:,0]
+        img = ds["image"][ii]
         cont = ds["contour"][ii]
         avg, std = get_brightness(cont=cont, img=img, ret_data="avg,sd")
         assert np.allclose(avg, ds["bright_avg"][ii])

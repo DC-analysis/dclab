@@ -66,6 +66,10 @@ class Export(object):
                 except:
                     warnings.warn("Could not read image {}!".format(evid))
                     continue
+                else:
+                    if np.isnan(image[0,0]):
+                        # This is a nan-valued image
+                        image = np.zeros_like(image, dtype=np.uint8)
                 vout.append_data(image)
         else:
             msg="No image data to export: dataset {} !".format(ds.title)

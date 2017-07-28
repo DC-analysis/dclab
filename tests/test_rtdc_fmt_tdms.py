@@ -47,8 +47,9 @@ def test_contour_not_initialized():
 def test_image_basic():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
     # Transition image
-    assert np.allclose(np.average(ds["image"][0]), 127.03125)
-    assert np.allclose(np.average(ds["image"][1]), 45.512017144097221)
+    assert np.all(np.isnan(ds["image"][0]))
+    # Real image
+    assert np.allclose(np.average(ds["image"][1]), 45.1490478515625)
     cleanup()
 
 

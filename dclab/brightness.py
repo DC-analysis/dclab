@@ -62,8 +62,6 @@ def get_brightness(cont, img, ret_data="avg,sd"):
 
     for ii in range(length):
         imgi = img[ii]
-        if len(imgi.shape) == 3:
-            imgi = np.array(imgi[:,:,0], dtype=float)
         conti = cont[ii]
         # Initialize frame mask
         fmi = np.zeros_like(imgi, dtype=bool)

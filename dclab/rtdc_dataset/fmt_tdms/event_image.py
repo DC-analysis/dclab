@@ -33,7 +33,7 @@ class ImageColumn(object):
     def __getitem__(self, idx):
         idnew = int(idx-self.event_offset)
         if idnew < 0:
-            # No data - show a nice transition image instead
+            # No data - show a dummy image instead
             cdata = self.dummy
         else:
             cdata = self._image_data[idnew]
@@ -50,9 +50,7 @@ class ImageColumn(object):
     @property
     def dummy(self):
         """Returns a dummy image"""
-        cdata = np.ones_like(self._image_data[0])
-        cdata *= np.linspace(0,255,cdata.shape[0],
-                             dtype=np.uint16).reshape(-1,1,1)
+        cdata = np.zeros_like(self._image_data[0])*np.nan
         return cdata
 
 
@@ -111,11 +109,14 @@ class ImageMap(object):
     
 
     def __getitem__(self, idx):
-        """Returns the requested frame from the video in RGB"""
+        """Returns the requested frame from the video in gray scale"""
         cap = self.video_handle
         cellimg = cap.get_data(idx)
         if np.all(cellimg==0):
             cellimg = self._get_image_workaround_seek(idx)
+        # Convert to grayscale
+        if len(cellimg.shape) == 3:
+            cellimg = np.array(cellimg[:,:,0])
         return cellimg
 
 

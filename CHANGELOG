@@ -1,4 +1,5 @@
 0.2.6
+- Return event images as gray scale (#17) 
 - Bugfixes:
   - Shrink ancillary column size if it exceeds data set size
   - Generate random RTDCBase.identifier (do not use RTDCBase.hash)

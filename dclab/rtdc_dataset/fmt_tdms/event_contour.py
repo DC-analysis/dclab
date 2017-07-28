@@ -136,7 +136,7 @@ class ContourData(object):
         if len(cont) > 1:
             _frame = int(cont.pop(0))
             cont = [ np.fromstring(c.strip("()"), sep=",") for c in cont ]
-            cont = np.array(cont, dtype=np.uint8)
+            cont = np.array(cont, dtype=np.uint)
             return cont
 
 

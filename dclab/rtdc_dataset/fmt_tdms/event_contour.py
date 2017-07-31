@@ -89,7 +89,6 @@ class ContourColumn(object):
         
         Returns None if no contour file is found.
         """
-        cfile = None
         tdmsname = os.path.basename(rtdc_dataset.path)
         cont_id = os.path.splitext(tdmsname)[0]
         candidates = os.listdir(rtdc_dataset._fdir)

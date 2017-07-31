@@ -78,8 +78,6 @@ class ContourColumn(object):
         elif np.allclose(fref, f1):
             self.event_offset = 1
         else:
-            import IPython
-            IPython.embed()
             msg = "Contour data has unknown offset (frame {})!".format(fref)
             raise IndexError(msg)
         self._initialized = True

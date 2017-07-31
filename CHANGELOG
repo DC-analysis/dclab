@@ -1,3 +1,6 @@
+0.2.7
+- Bugfixes:
+  - Typo when finding contour data files (tdms file format)
 0.2.6
 - Return event images as gray scale (#17) 
 - Bugfixes:

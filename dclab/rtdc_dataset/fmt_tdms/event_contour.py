@@ -78,6 +78,8 @@ class ContourColumn(object):
         elif np.allclose(fref, f1):
             self.event_offset = 1
         else:
+            import IPython
+            IPython.embed()
             msg = "Contour data has unknown offset (frame {})!".format(fref)
             raise IndexError(msg)
         self._initialized = True
@@ -108,11 +110,12 @@ class ContourColumn(object):
             for c2 in candidates:
                 if (c2.split("_")[0] == rtdc_dataset._mid):
                     # Do not confuse with M10_contours.txt
-                    cfile = os.path.join(rtdc_dataset._fdir, c1)
+                    cfile = os.path.join(rtdc_dataset._fdir, c2)
                     break
             else:
                 msg = "No contour data found for {}".format(rtdc_dataset)
                 warnings.warn(msg)
+                cfile = None
         return cfile
 
 

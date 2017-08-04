@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Computation of mean and standard deviation of grayscale values inside the 
-contour for RT-DC measurements
-"""
+"""Computation of inertia ratio from contour data"""
 from __future__ import division, print_function, unicode_literals
 import numpy as np
 

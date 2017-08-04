@@ -11,8 +11,8 @@ import numpy as np
 def get_inert_ratio_raw(cont):
     """Compute the inertia ratio of a contour
     
-    The inertia ratio is computed from the second order of moments
-    along x (m20) and y (m02) via `sqrt(m20/m02)`.
+    The inertia ratio is computed from the central second order of moments
+    along x (mu20) and y (mu02) via `sqrt(mu20/mu02)`.
     
     Parameters
     ----------
@@ -61,7 +61,7 @@ def cont_moments_cv(cont,
     """Compute the moments of a contour
     
     The moments are computed in the same way as they are computed
-    in OpenCV's `moments.cpp`.
+    in OpenCV's `contourMoments` in `moments.cpp`.
     
     Parameters
     ----------
@@ -136,12 +136,14 @@ def cont_moments_cv(cont,
                  )
 
         if m["m00"] > dbl_epsilon:
+            # Center of gravity
             cx = m["m10"]/m["m00"]
             cy = m["m01"]/m["m00"]
         else:
             cx = 0
             cy = 0
 
+        # central second order moments
         m["mu20"] = m["m20"] - m["m10"]*cx
         m["mu11"] = m["m11"] - m["m10"]*cy
         m["mu02"] = m["m02"] - m["m01"]*cy

@@ -25,7 +25,7 @@ dclab2tdms = {
    "fl3_pos": "FL3pos",
    "fl3_width": "FL3width",
    "frame": "time", # [sic]
-   "inert_ratio": "InertiaRatio",
+   "inert_ratio_cvx": "InertiaRatio",
    "inert_ratio_raw": "InertiaRatioRaw",
    "ncells": "NrOfCells",
    "pc1": "PC1",

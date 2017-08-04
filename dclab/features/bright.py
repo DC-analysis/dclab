@@ -9,7 +9,7 @@ import scipy.ndimage
 
 
 
-def get_brightness(cont, img, ret_data="avg,sd"):
+def get_bright(cont, img, ret_data="avg,sd"):
     """Compute avg and/or std of the event brightness
     
     The event brightness is defined by the gray-scale values of the

@@ -200,18 +200,18 @@ def compute_aspect(mm):
 
 
 def compute_bright_avg(mm):
-    bavg = features.bright.get_brightness(cont=mm["contour"],
-                                          img=mm["image"],
-                                          ret_data="avg",
-                                          )
+    bavg = features.bright.get_bright(cont=mm["contour"],
+                                      img=mm["image"],
+                                      ret_data="avg",
+                                      )
     return bavg
 
 
 def compute_bright_sd(mm):
-    bstd = features.bright.get_brightness(cont=mm["contour"],
-                                          img=mm["image"],
-                                          ret_data="sd",
-                                          )
+    bstd = features.bright.get_bright(cont=mm["contour"],
+                                      img=mm["image"],
+                                      ret_data="sd",
+                                      )
     return bstd
 
 
@@ -244,6 +244,10 @@ def compute_emodulus(mm):
 
 def compute_index(mm):
     return np.arange(1, len(mm)+1)
+
+
+def compute_inert_ratio(mm):
+    return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
 
 
 def compute_time(mm):
@@ -316,6 +320,11 @@ AncillaryColumn(column_name="emodulus",
 
 AncillaryColumn(column_name="index",
                 method=compute_index,
+                )
+
+AncillaryColumn(column_name="inert_ratio_raw",
+                method=compute_inert_ratio,
+                req_columns=["contour"],
                 )
 
 AncillaryColumn(column_name="time",

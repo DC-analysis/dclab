@@ -1,6 +1,9 @@
 0.2.7
+- New ancillary column "inert_ratio_raw"
 - Bugfixes:
   - Typo when finding contour data files (tdms file format)
+- Rrefactoring:
+  - "features" submodule with basic methods for ancillary columns
 0.2.6
 - Return event images as gray scale (#17) 
 - Bugfixes:

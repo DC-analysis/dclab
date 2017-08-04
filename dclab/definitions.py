@@ -41,9 +41,10 @@ _columns = [
    ["fl3_pos", "FL-3 position of peak [µs]"],
    ["fl3_width", "FL-3 width [µs]"],
    ["frame", "Video frame number"],
-   # What is Inertia ratio exactly m20/m02?
-   ["inert_ratio", "Inertia ratio sqrt(m20/m02)"],
-   ["inert_ratio_raw", "Raw inertia ratio sqrt(m20/m02)"],
+   # The inertia ratios of the event contours are defined by the
+   # second moments of area. 
+   ["inert_ratio_cvx", "Inertia ratio of convex contour sqrt(m20/m02)"],
+   ["inert_ratio_raw", "Inertia ratio of raw contour sqrt(m20/m02)"],
    ["index", "Event index"],
    ["ncells", "Number of cells in image"],
    ["pc1", "Principal component 1"],

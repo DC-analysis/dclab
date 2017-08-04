@@ -246,7 +246,7 @@ def compute_index(mm):
     return np.arange(1, len(mm)+1)
 
 
-def compute_inert_ratio(mm):
+def compute_inert_ratio_raw(mm):
     return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
 
 
@@ -323,7 +323,7 @@ AncillaryColumn(column_name="index",
                 )
 
 AncillaryColumn(column_name="inert_ratio_raw",
-                method=compute_inert_ratio,
+                method=compute_inert_ratio_raw,
                 req_columns=["contour"],
                 )
 

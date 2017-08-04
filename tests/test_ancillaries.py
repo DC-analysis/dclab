@@ -171,7 +171,7 @@ def test_emodulus_none2():
     assert "emodulus" not in ds, "emodulus model should be missing"
 
 
-def test_inert_ratio():
+def test_inert_ratio_raw():
     # Brightness of the image
     ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.

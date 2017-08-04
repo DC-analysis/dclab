@@ -17,7 +17,7 @@ from helper_methods import retreive_tdms, cleanup
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from dclab import new_dataset
-from dclab.features.bright import get_brightness
+from dclab.features.bright import get_bright
 
 
 def test_simple_bright():
@@ -26,7 +26,7 @@ def test_simple_bright():
         # This stripped data set has only 7 video frames / contours
         img = ds["image"][ii]
         cont = ds["contour"][ii]
-        avg, std = get_brightness(cont=cont, img=img, ret_data="avg,sd")
+        avg, std = get_bright(cont=cont, img=img, ret_data="avg,sd")
         assert np.allclose(avg, ds["bright_avg"][ii])
         assert np.allclose(std, ds["bright_sd"][ii])
     cleanup()

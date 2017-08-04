@@ -91,4 +91,3 @@ def get_brightness(cont, img, ret_data="avg,sd"):
         return results[0]
     
     return results
-

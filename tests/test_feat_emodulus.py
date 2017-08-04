@@ -14,7 +14,7 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab.elastic import elastic_lut
+from dclab.features import emodulus
 
 
 def test_simple_emod():
@@ -22,13 +22,13 @@ def test_simple_emod():
     y = np.linspace(0,0.1,100)
     x,y = np.meshgrid(x,y)
     
-    emod = elastic_lut.get_elasticity(area=x,
-                                      deformation=y,
-                                      medium="CellCarrier",
-                                      channel_width=30,
-                                      flow_rate=0.16,
-                                      px_um=0,# withour pixelation correction
-                                      temperature=23)
+    emod = emodulus.get_emodulus(area=x,
+                                 deformation=y,
+                                 medium="CellCarrier",
+                                 channel_width=30,
+                                 flow_rate=0.16,
+                                 px_um=0,# withour pixelation correction
+                                 temperature=23)
     
     assert np.allclose(emod[10,50], 0.93276932212481323)
 

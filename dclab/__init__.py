@@ -13,4 +13,4 @@ from . import definitions as dfn
 from ._version import version as __version__
 from .rtdc_dataset import new_dataset
 from .polygon_filter import PolygonFilter
-from . import statistics, elastic
+from . import statistics

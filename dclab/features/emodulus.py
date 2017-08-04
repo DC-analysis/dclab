@@ -7,13 +7,13 @@ import numpy as np
 import pkg_resources
 import scipy.interpolate as spint
 
-from .viscosity import get_viscosity
+from .emodulus_viscosity import get_viscosity
 
 
 
-def get_elasticity(area, deformation, medium="CellCarrier",
-                   channel_width=20.0, flow_rate=0.16, px_um=0.34,
-                   temperature=23.0, copy=True):
+def get_emodulus(area, deformation, medium="CellCarrier",
+                 channel_width=20.0, flow_rate=0.16, px_um=0.34,
+                 temperature=23.0, copy=True):
     """Compute apparent Young's modulus
     
     Parameters
@@ -61,7 +61,7 @@ def get_elasticity(area, deformation, medium="CellCarrier",
     deformation = np.array(deformation, copy=copy, dtype=float)
     area = np.array(area, copy=copy, dtype=float)
     # Get lut data
-    lut_path = pkg_resources.resource_filename("dclab.elastic", "elastic_lut.txt")
+    lut_path = pkg_resources.resource_filename("dclab.features", "emodulus_lut.txt")
     lut = np.loadtxt(lut_path)
     # These meta data are the simulation parameters of the lut 
     lut_channel_width = 20.0

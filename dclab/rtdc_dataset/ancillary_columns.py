@@ -27,7 +27,7 @@ import warnings
 
 import numpy as np
 
-from dclab import brightness, elastic, volume
+from .. import features
 from .util import obj2str
 
 
@@ -200,18 +200,18 @@ def compute_aspect(mm):
 
 
 def compute_bright_avg(mm):
-    bavg = brightness.get_brightness(cont=mm["contour"],
-                                     img=mm["image"],
-                                     ret_data="avg",
-                                     )
+    bavg = features.bright.get_brightness(cont=mm["contour"],
+                                          img=mm["image"],
+                                          ret_data="avg",
+                                          )
     return bavg
 
 
 def compute_bright_sd(mm):
-    bstd = brightness.get_brightness(cont=mm["contour"],
-                                     img=mm["image"],
-                                     ret_data="sd",
-                                     )
+    bstd = features.bright.get_brightness(cont=mm["contour"],
+                                          img=mm["image"],
+                                          ret_data="sd",
+                                          )
     return bstd
 
 
@@ -231,7 +231,7 @@ def compute_emodulus(mm):
         medium = viscosity
 
     # compute elastic modulus
-    emod = elastic.get_elasticity(
+    emod = features.emodulus.get_emodulus(
             area=mm["area_um"],
             deformation=mm["deform"],
             medium=medium,
@@ -252,10 +252,10 @@ def compute_time(mm):
 
 
 def compute_volume(mm):
-    vol = volume.get_volume(cont=mm["contour"],
-                            pos_x=mm["pos_x"],
-                            pos_y=mm["pos_y"],
-                            pix=mm.config["image"]["pix size"])
+    vol = features.volume.get_volume(cont=mm["contour"],
+                                     pos_x=mm["pos_x"],
+                                     pos_y=mm["pos_y"],
+                                     pix=mm.config["image"]["pix size"])
     return vol
     
 

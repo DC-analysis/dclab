@@ -17,7 +17,7 @@ from helper_methods import retreive_tdms, cleanup
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from dclab import new_dataset
-from dclab.brightness import get_brightness
+from dclab.features.bright import get_brightness
 
 
 def test_simple_bright():

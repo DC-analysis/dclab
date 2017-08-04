@@ -7,7 +7,7 @@ An ellipse is created and the analytical and numerical solution are compared
 from __future__ import division
 
 import numpy as np
-from dclab.volume import get_volume
+from dclab.features.volume import get_volume
 import itertools as IT
 
 

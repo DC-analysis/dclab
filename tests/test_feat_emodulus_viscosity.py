@@ -14,7 +14,7 @@ import zipfile
 
 # Add parent directory to beginning of path variable
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from dclab.elastic import viscosity
+from dclab.features import emodulus_viscosity
 
 
 def test_cell_carrier():
@@ -26,17 +26,17 @@ def test_cell_carrier():
     eta_b = [7.5,5.8,5.0,9.4,7.3,6.3,5.7,4.9,6.9,5.9,5.3,7.3,6.7,5.8]
     
     for c, f, t, a in zip(ch_sizes, fl_rates, temps, eta_a):
-        eta = viscosity.get_viscosity(medium="CellCarrier",
-                                       channel_width=c,
-                                       flow_rate=f,
-                                       temperature=t)
+        eta = emodulus_viscosity.get_viscosity(medium="CellCarrier",
+                                               channel_width=c,
+                                               flow_rate=f,
+                                               temperature=t)
         assert np.allclose(np.round(eta, 1), a)
 
     for c, f, t, b in zip(ch_sizes, fl_rates, temps, eta_b):
-        eta = viscosity.get_viscosity(medium="CellCarrier B",
-                                       channel_width=c,
-                                       flow_rate=f,
-                                       temperature=t)
+        eta = emodulus_viscosity.get_viscosity(medium="CellCarrier B",
+                                               channel_width=c,
+                                               flow_rate=f,
+                                               temperature=t)
         assert np.allclose(np.round(eta, 1), b)
 
 

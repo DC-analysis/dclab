@@ -3,7 +3,7 @@
 """Test tdms file format"""
 from __future__ import print_function
 
-import numpy as np
+import io
 import os
 from os.path import abspath, dirname, join, basename
 import shutil
@@ -11,6 +11,8 @@ import sys
 import tempfile
 import warnings
 import zipfile
+
+import numpy as np
 
 
 # Add parent directory to beginning of path variable
@@ -28,6 +30,47 @@ def test_contour_basic():
     assert np.allclose(np.average(ds["contour"][0]), 38.488764044943821)
     assert ds["contour"]._initialized
     cleanup()
+
+
+def test_contour_naming():
+    # Test that we always find the correct contour name
+    ds = new_dataset(retreive_tdms(example_data_sets[0]))
+    dp = ds.path
+    dn = dirname(dp)
+    contfile = join(dn, "M1_0.120000ul_s_contours.txt")
+    contfileshort = join(dn, "M1_contours.txt")
+    del ds
+    
+    # "M1_0.120000ul_s_contours.txt" should have priority over
+    # "M1_contours.txt".
+    with io.open(contfileshort, "w") as _fd:
+        pass
+    ds2 = new_dataset(dp)
+    assert ds2["contour"].identifier == contfile
+    assert not np.allclose(ds2["contour"][1], 0)
+    del ds2
+    
+    # Check if "M1_contours.txt" is used if the other is not
+    # there.
+    os.remove(contfileshort)
+    os.rename(contfile, contfileshort)
+    ds3 = new_dataset(dp)
+    assert ds3["contour"].identifier == contfileshort
+    del ds3
+    os.rename(contfileshort, contfile)
+    
+    # Create M10 file
+    with io.open(join(dn, "M10_contours.txt"), "w") as _fd:
+        pass
+    ds4 = new_dataset(dp)
+    assert ds4["contour"].identifier == contfile
+    del ds4
+    
+    # Check when there is no contour file
+    os.remove(contfile)
+    # This will issue a warning that no contour data was found.
+    ds5 = new_dataset(dp)
+    assert ds5["contour"].identifier is None
 
 
 def test_contour_negative_offset():

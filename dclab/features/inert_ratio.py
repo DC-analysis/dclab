@@ -89,7 +89,7 @@ def get_inert_ratio_raw(cont):
 
     See Also
     --------
-    get_inert_ratio_raw: Compute inertia ratio of the convex hull of
+    get_inert_ratio_cvx: Compute inertia ratio of the convex hull of
                          a contour
     """
     if isinstance(cont, np.ndarray):

@@ -36,7 +36,14 @@ class ImageColumn(object):
             # No data - show a dummy image instead
             cdata = self.dummy
         else:
-            cdata = self._image_data[idnew]
+            try:
+                cdata = self._image_data[idnew]
+            except imageio.plugins.ffmpeg.CannotReadFrameError:
+                # The avi is corrupt. Return a dummy image.
+                msg = "Frame {} in {} is corrupt!".format(idnew,
+                                                          self.identifier)
+                warnings.warn(msg)
+                cdata = self.dummy
         return cdata
 
 

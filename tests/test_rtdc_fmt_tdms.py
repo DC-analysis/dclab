@@ -70,6 +70,25 @@ def test_image_out_of_bounds():
     cleanup()
 
 
+def test_large_fov():
+    ds = new_dataset(retreive_tdms(example_data_sets[3]))
+    # initial image is missing
+    assert np.all(np.isnan(ds["image"][0]))
+    # initial contour is empty
+    assert np.allclose(ds["contour"][0], 0)
+    # maximum of contour is larger than 255 (issue #167)
+    assert ds["contour"][1].max() == 815
+    # compute brightness with given contour
+    # Remove the brightness column and let it recompute
+    # using the ancillary columns. Besides testing the
+    # correct positioning of the contour, this is a
+    # sanity test for the brightness computation.
+    bavg = ds._events.pop("bright_avg")
+    bcom = ds["bright_avg"]
+    assert np.allclose(bavg[1], bcom[1])
+    cleanup()
+
+
 def test_load_tdms_all():
     for ds in example_data_sets:
         tdms_path = retreive_tdms(ds)

@@ -69,4 +69,5 @@ def retreive_tdms(zip_file):
 example_data_sets = ["rtdc_data_minimal.zip",
                      "rtdc_data_traces_video.zip",
                      "rtdc_data_traces_video_bright.zip",
+                     "rtdc_data_traces_video_large_fov.zip",
                      ]

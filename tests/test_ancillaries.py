@@ -171,6 +171,22 @@ def test_emodulus_none2():
     assert "emodulus" not in ds, "emodulus model should be missing"
 
 
+def test_inert_ratio_cvx():
+    # Brightness of the image
+    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    # This is something low-level and should not be done in a script.
+    # Remove the brightness columns from RTDCBase to force computation with
+    # the image and contour columns. 
+    real_ir = ds._events.pop("inert_ratio_cvx")
+    # This will cause a zero-padding warning:
+    comp_ir = ds["inert_ratio_cvx"]
+    idcompare = ~np.isnan(comp_ir)
+    # ignore first event (no image data)
+    idcompare[0] = False
+    assert np.allclose(real_ir[idcompare], comp_ir[idcompare])
+    cleanup()
+
+
 def test_inert_ratio_raw():
     # Brightness of the image
     ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))

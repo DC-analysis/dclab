@@ -2,8 +2,65 @@
 # -*- coding: utf-8 -*-
 """Computation of inertia ratio from contour data"""
 from __future__ import division, print_function, unicode_literals
-import numpy as np
 
+import numpy as np
+import scipy.spatial as ssp
+
+
+def get_inert_ratio_cvx(cont):
+    """Compute the inertia ratio of the convex hull of a contour
+    
+    The inertia ratio is computed from the central second order of moments
+    along x (mu20) and y (mu02) via `sqrt(mu20/mu02)`.
+    
+    Parameters
+    ----------
+    cont: ndarray or list of ndarrays of shape (N,2)
+        A 2D array that holds the contour of an event (in pixels)
+        e.g. obtained using `mm.contour` where  `mm` is an instance
+        of `RTDCBase`. The first and second columns of `cont`
+        correspond to the x- and y-coordinates of the contour.
+
+    Returns
+    -------
+    inert_ratio: float or ndarray of size N
+        The inertia ratio of the contour
+
+    Notes
+    -----
+    The contour moments mu20 and mu02 are computed the same way they
+    are computed in OpenCV's `moments.cpp`.
+    
+    
+    See Also
+    --------
+    get_inert_ratio_raw: Compute inertia ratio of a raw contour
+    """
+    if isinstance(cont, np.ndarray):
+        # If cont is an array, it is not a list of contours,
+        # because contours can have different lengths.
+        cont = [cont]
+        ret_list = False
+    else:
+        ret_list = True
+
+    length = len(cont)
+
+    inert_ratio = np.zeros(length, dtype=float) * np.nan
+
+    for ii in range(length):
+        try:
+            chull = ssp.ConvexHull(cont[ii])
+        except ssp.qhull.QhullError:
+            pass
+        else:
+            hull = cont[ii][chull.vertices,:]
+            inert_ratio[ii] = get_inert_ratio_raw(hull)
+
+    if not ret_list:
+        inert_ratio = inert_ratio[0]
+    
+    return inert_ratio
 
 
 def get_inert_ratio_raw(cont):
@@ -29,6 +86,11 @@ def get_inert_ratio_raw(cont):
     -----
     The contour moments mu20 and mu02 are computed the same way they
     are computed in OpenCV's `moments.cpp`.
+
+    See Also
+    --------
+    get_inert_ratio_raw: Compute inertia ratio of the convex hull of
+                         a contour
     """
     if isinstance(cont, np.ndarray):
         # If cont is an array, it is not a list of contours,
@@ -76,6 +138,10 @@ def cont_moments_cv(cont,
         A dictionary of moments. If the moment `m00` is smaller
         than half of `flt_epsilon`, `None` is returned.
     """
+    # Make sure we have no unsigned integers
+    if np.issubdtype(cont.dtype, np.unsignedinteger):
+        cont = cont.astype(np.int)
+        
     xi = cont[:,0]
     yi = cont[:,1]
     

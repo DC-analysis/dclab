@@ -246,6 +246,10 @@ def compute_index(mm):
     return np.arange(1, len(mm)+1)
 
 
+def compute_inert_ratio_cvx(mm):
+    return features.inert_ratio.get_inert_ratio_cvx(cont=mm["contour"])
+
+
 def compute_inert_ratio_raw(mm):
     return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
 
@@ -320,6 +324,11 @@ AncillaryColumn(column_name="emodulus",
 
 AncillaryColumn(column_name="index",
                 method=compute_index,
+                )
+
+AncillaryColumn(column_name="inert_ratio_cvx",
+                method=compute_inert_ratio_cvx,
+                req_columns=["contour"],
                 )
 
 AncillaryColumn(column_name="inert_ratio_raw",

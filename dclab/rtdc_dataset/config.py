@@ -207,7 +207,7 @@ class Configuration(object):
         with io.open(filename, "w") as f:
             for i in range(len(out)):
                 # win-like line endings
-                out[i] = out[i]+"\r\n"
+                out[i] = out[i]+"\n"
             f.writelines(out)
 
 

@@ -68,10 +68,7 @@ class RTDC_Hierarchy(RTDCBase):
 
 
     def __contains__(self, key):
-        ct = False 
-        if key in self.hparent:
-            ct = True
-        return ct
+        return self.hparent.__contains__(key)
 
 
     def __getitem__(self, key):

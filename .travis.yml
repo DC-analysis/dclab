@@ -21,12 +21,12 @@ before_install:
 - travis_retry python -c "import imageio; imageio.plugins.ffmpeg.download()"
 install:
 - travis_retry pip install coverage
-- travis_retry pip install coveralls
+- travis_retry pip install codecov
 - python setup.py develop
 - pip freeze
 script:
 - coverage run --source=dclab ./setup.py test
 - coverage report -m
 after_success:
-- coveralls --verbose
+- codecov
 

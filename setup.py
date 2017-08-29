@@ -6,7 +6,7 @@ import sys
 
 author = u"Paul Müller"
 authors = [author]
-description = 'Data analysis for real-time deformability cytometry.'
+description = 'Library for real-time deformability cytometry (RT-DC)'
 name = 'dclab'
 year = "2015"
 

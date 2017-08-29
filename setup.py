@@ -37,18 +37,17 @@ if __name__ == "__main__":
                           "scipy >= 0.12.0",
                           "statsmodels >= 0.5.0"
                           ],
-        keywords=["RTDC", "deformation", "cytometry", "zellmechanik"],
+        keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],
         setup_requires=['pytest-runner'],
         tests_require=["pytest", "urllib3"],
         include_package_data=True,
-        classifiers= [
-            'Operating System :: OS Independent',
-            'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3.2',
-            'Programming Language :: Python :: 3.3',
-            'Topic :: Scientific/Engineering :: Visualization',
-            'Intended Audience :: Science/Research'
-                     ],
+        classifiers= ['Operating System :: OS Independent',
+                      'Programming Language :: Python :: 2.7',
+                      'Programming Language :: Python :: 3.2',
+                      'Programming Language :: Python :: 3.3',
+                      'Topic :: Scientific/Engineering :: Visualization',
+                      'Intended Audience :: Science/Research'
+                      ],
         platforms=['ALL'],
         )
 

@@ -1,4 +1,5 @@
 0.2.7
+- New submodule and classes for managing isoelastics
 - New ancillary columns "inert_ratio_raw" and "inert_ratio_cvx"
 - Bugfixes:
   - Typo when finding contour data files (tdms file format)

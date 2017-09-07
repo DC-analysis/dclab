@@ -35,7 +35,7 @@ if __name__ == "__main__":
                           "nptdms", #required by: tdms format
                           "NumPy >= 1.5.1",
                           "scipy >= 0.12.0",
-                          "statsmodels >= 0.5.0"
+                          "statsmodels >= 0.5.0",
                           ],
         keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],
         setup_requires=['pytest-runner'],
@@ -46,7 +46,7 @@ if __name__ == "__main__":
                       'Programming Language :: Python :: 3.2',
                       'Programming Language :: Python :: 3.3',
                       'Topic :: Scientific/Engineering :: Visualization',
-                      'Intended Audience :: Science/Research'
+                      'Intended Audience :: Science/Research',
                       ],
         platforms=['ALL'],
         )

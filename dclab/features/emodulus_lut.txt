@@ -13,9 +13,13 @@
 # The simulations were performed by by S. Aland.
 # The look-up table was assembled by C. Herold.
 #
-# - channel width: 20um
-# - flow rate: 0.04 ul/s
-# - viscosity: 15 mPa*s
+# - column 1: area_um
+# - column 2: deform
+# - column 3: emodulus
+# - channel width [um]: 20
+# - flow rate [ul/s]: 0.04
+# - viscosity [mPa*s]: 15
+# - method: FEM
 #
 # apparent_area_um^2 deformation elastic_modulus_kPa
 3.5017387e+01 3.0340000e-03 2.6960177e+00

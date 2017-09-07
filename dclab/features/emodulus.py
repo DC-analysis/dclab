@@ -26,7 +26,7 @@ def get_emodulus(area, deformation, medium="CellCarrier",
         The medium to compute the viscosity for. If a string
         in ["CellCarrier", "CellCarrier B"] is given, the viscosity
         will be computed. If a float is given, this value will be
-        used as the viscosity. 
+        used as the viscosity in mPa*s. 
     channel_width: float
         The channel width in µm
     flow_rate: float

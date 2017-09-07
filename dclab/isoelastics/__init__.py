@@ -42,6 +42,13 @@ class Isoelastics(object):
             Biophysical Journal 109(10) 2015
             DOI: 10.1016/j.bpj.2015.09.006
         
+        
+        Notes
+        -----
+        If only the positions of the isoelastics are of interest and
+        not the value of the elastic modulus, then it is sufficient
+        to supply values for the channel width and set the values
+        for flow rate and viscosity to a constant (e.g. 1).
         """
         assert col1 in ["area_um", "deform"]
         assert col2 in ["area_um", "deform"]
@@ -214,8 +221,8 @@ class Isoelastics(object):
             self._add(iso_circ, col1c, col2c, method, meta)
         
 
-    def get(self, col1, col2, channel_width, flow_rate,
-            viscosity, method):
+    def get(self, col1, col2, method, channel_width,
+            flow_rate=None, viscosity=None):
         """Get isoelastics
         
         Parameters
@@ -228,10 +235,16 @@ class Isoelastics(object):
             (e.g. isoel[0][:,1])
         channel_width: float
             Channel width in µm
-        flow_rate: float
-            Flow rate through the channel in µl/s
-        viscosity: float
-            Viscosity of the medium in mPa*s
+        flow_rate: float or `None`
+            Flow rate through the channel in µl/s. If set to
+            `None`, the flow rate of the imported data will
+            be used (only do this if you do not need the
+            correct values for elastic moduli).
+        viscosity: float or `None`
+            Viscosity of the medium in mPa*s. If set to
+            `None`, the flow rate of the imported data will
+            be used (only do this if you do not need the
+            correct values for elastic moduli).
         method: str
             The method used to compute the isoelastics
             (must be one of `VALID_METHODS`). 
@@ -247,6 +260,12 @@ class Isoelastics(object):
         
         isoel = self._data[method][col1][col2]["isoelastics"]
         meta = self._data[method][col1][col2]["meta"]
+        
+        if flow_rate is None:
+            flow_rate = meta[1]
+        
+        if viscosity is None:
+            viscosity = meta[2]
         
         isoel_ret = self.convert(isoel, col1, col2,
                                  channel_width_in=meta[0],

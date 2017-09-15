@@ -10,7 +10,7 @@
 #   ACS Biomaterials Science & Engineering Article ASAP
 #   DOI: 10.1021/acsbiomaterials.6b00558
 #
-# The simulations were performed by by S. Aland.
+# The simulations were performed by S. Aland.
 # The look-up table was assembled by C. Herold.
 #
 # - column 1: area_um

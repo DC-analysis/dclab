@@ -5,10 +5,6 @@ python:
 - '3.5'
 notifications:
   email: false
-env:
-  global:
-  - GH_REF: github.com/ZELLMECHANIK-DRESDEN/dclab.git
-
 before_install:
 # Install binary packages
 - travis_retry pip install --upgrade pip setuptools wheel

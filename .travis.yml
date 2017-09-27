@@ -5,7 +5,7 @@ python:
 - '3.5'
 notifications:
   email: false
-before_install:
+install:
 # Install binary packages
 - travis_retry pip install --upgrade pip setuptools wheel
 - travis_retry pip install --only-binary=numpy,pandas,scipy numpy pandas scipy
@@ -15,10 +15,9 @@ before_install:
 - travis_retry pip install .
 # Download ffmpeg (required by imageio)
 - travis_retry python -c "import imageio; imageio.plugins.ffmpeg.download()"
-install:
-- travis_retry pip install coverage
-- travis_retry pip install codecov
 - python setup.py develop
+# for tests:
+- travis_retry pip install codecov coverage
 - pip freeze
 script:
 - coverage run --source=dclab ./setup.py test

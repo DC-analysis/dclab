@@ -101,7 +101,8 @@ class ImageMap(object):
         
         Initialize this class with a video file.
         """
-        assert os.path.exists(fname)
+        if not os.path.exists(fname):
+            raise OSError("file does not exist: {}".format(fname))
         self.filename = fname
         self._length = None
         # video handle:

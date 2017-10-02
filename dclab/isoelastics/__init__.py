@@ -25,6 +25,79 @@ class Isoelastics(object):
             self.load_data(path)
 
 
+    def _add(self, isoel, col1, col2, method, meta):
+        """Convenience method for population self._data"""
+        self._data[method][col1][col2]["isoelastics"] = isoel
+        self._data[method][col1][col2]["meta"] = meta
+
+        # Use advanced slicing to flip the data columns
+        isoel_flip = [ iso[:,[1,0,2]] for iso in isoel ]
+        self._data[method][col2][col1]["isoelastics"] = isoel_flip
+        self._data[method][col2][col1]["meta"] = meta
+
+
+    def add(self, isoel, col1, col2, channel_width,
+            flow_rate, viscosity, method):
+        """Add isoelastics
+        
+        Parameters
+        ----------
+        isoel: list of ndarrays
+            Each list item resembles one isoelastic line stored
+            as an array of shape (N,3). The last column contains
+            the emodulus data.
+        col1: str
+            Name of the first column of all isoelastics
+            (e.g. isoel[0][:,0])
+        col2: str
+            Name of the second column of all isoelastics
+            (e.g. isoel[0][:,1])
+        channel_width: float
+            Channel width in µm
+        flow_rate: float
+            Flow rate through the channel in µl/s
+        viscosity: float
+            Viscosity of the medium in mPa*s
+        method: str
+            The method used to compute the isoelastics
+            (must be one of `VALID_METHODS`).
+        
+        Notes
+        -----
+        The following isoelastics are automatically added for
+        user convenience:
+        - isoelastics with `col1` and `col2` interchanged
+        - isoelastics for circularity if deformation was given
+        """
+        if method not in VALID_METHODS:
+            validstr = ",".join(VALID_METHODS)
+            raise ValueError("`method` must be one of {}!".format(validstr))
+        for col in [col1, col2]:
+            if col not in dfn.column_names:
+                raise ValueError("Not a valid column name: {}".format(col))
+        
+        meta = [channel_width, flow_rate, viscosity]
+        
+        # Add the column data
+        self._add(isoel, col1, col2, method, meta)
+        
+        # Also add the column data for circularity
+        if "deform" in [col1, col2]:
+            col1c, col2c = col1, col2
+            if col1c == "deform":
+                deform_ax = 0
+                col1c = "circ"
+            else:
+                deform_ax = 1
+                col2c = "circ"
+            iso_circ = []
+            for iso in isoel:
+                iso = iso.copy()
+                iso[:,deform_ax] = 1 - iso[:,deform_ax]
+                iso_circ.append(iso)
+            self._add(iso_circ, col1c, col2c, method, meta)
+
+
     @staticmethod
     def convert(isoel, col1, col2,
                 channel_width_in, channel_width_out,
@@ -50,9 +123,11 @@ class Isoelastics(object):
         to supply values for the channel width and set the values
         for flow rate and viscosity to a constant (e.g. 1).
         """
-        assert col1 in ["area_um", "deform"]
-        assert col2 in ["area_um", "deform"]
-        assert col1 != col2
+        if (col1 not in ["area_um", "deform"] or 
+            col2 not in ["area_um", "deform"]):
+            raise ValueError("Columns must be one of: area_um, deform!")
+        if col1 == col2:
+            raise ValueError("Columns are the same!")
         
         if col1 == "area_um":
             area_ax = 0
@@ -79,7 +154,66 @@ class Isoelastics(object):
             
             new_isoel.append(iso)
         return new_isoel
+
+
+    def get(self, col1, col2, method, channel_width,
+            flow_rate=None, viscosity=None):
+        """Get isoelastics
         
+        Parameters
+        ----------
+        col1: str
+            Name of the first column of all isoelastics
+            (e.g. isoel[0][:,0])
+        col2: str
+            Name of the second column of all isoelastics
+            (e.g. isoel[0][:,1])
+        channel_width: float
+            Channel width in µm
+        flow_rate: float or `None`
+            Flow rate through the channel in µl/s. If set to
+            `None`, the flow rate of the imported data will
+            be used (only do this if you do not need the
+            correct values for elastic moduli).
+        viscosity: float or `None`
+            Viscosity of the medium in mPa*s. If set to
+            `None`, the flow rate of the imported data will
+            be used (only do this if you do not need the
+            correct values for elastic moduli).
+        method: str
+            The method used to compute the isoelastics
+            (must be one of `VALID_METHODS`). 
+        """
+        if method not in VALID_METHODS:
+            validstr = ",".join(VALID_METHODS)
+            raise ValueError("`method` must be one of {}!".format(validstr))
+        for col in [col1, col2]:
+            if col not in dfn.column_names:
+                raise ValueError("Not a valid column name: {}".format(col))
+        
+        if "isoelastics" not in self._data[method][col2][col1]:
+            msg = "No isoelastics matching {}, {}, {}".format(col1, col2,
+                                                              method)
+            raise KeyError(msg)
+        
+        isoel = self._data[method][col1][col2]["isoelastics"]
+        meta = self._data[method][col1][col2]["meta"]
+        
+        if flow_rate is None:
+            flow_rate = meta[1]
+        
+        if viscosity is None:
+            viscosity = meta[2]
+        
+        isoel_ret = self.convert(isoel, col1, col2,
+                                 channel_width_in=meta[0],
+                                 channel_width_out=channel_width,
+                                 flow_rate_in=meta[1],
+                                 flow_rate_out=flow_rate,
+                                 viscosity_in=meta[2],
+                                 viscosity_out=viscosity)
+        return isoel_ret
+
 
     def load_data(self, path):
         """Load isoelastics from a text file
@@ -149,132 +283,6 @@ class Isoelastics(object):
                  flow_rate=meta["flow rate [ul/s]"],
                  viscosity=meta["viscosity [mPa*s]"],
                  method=meta["method"])
-
-
-    def _add(self, isoel, col1, col2, method, meta):
-        """Convenience method for population self._data"""
-        self._data[method][col1][col2]["isoelastics"] = isoel
-        self._data[method][col1][col2]["meta"] = meta
-
-        # Use advanced slicing to flip the data columns
-        isoel_flip = [ iso[:,[1,0,2]] for iso in isoel ]
-        self._data[method][col2][col1]["isoelastics"] = isoel_flip
-        self._data[method][col2][col1]["meta"] = meta
-
-
-    def add(self, isoel, col1, col2, channel_width,
-            flow_rate, viscosity, method):
-        """Add isoelastics
-        
-        Parameters
-        ----------
-        isoel: list of ndarrays
-            Each list item resembles one isoelastic line stored
-            as an array of shape (N,3). The last column contains
-            the emodulus data.
-        col1: str
-            Name of the first column of all isoelastics
-            (e.g. isoel[0][:,0])
-        col2: str
-            Name of the second column of all isoelastics
-            (e.g. isoel[0][:,1])
-        channel_width: float
-            Channel width in µm
-        flow_rate: float
-            Flow rate through the channel in µl/s
-        viscosity: float
-            Viscosity of the medium in mPa*s
-        method: str
-            The method used to compute the isoelastics
-            (must be one of `VALID_METHODS`).
-        
-        Notes
-        -----
-        The following isoelastics are automatically added for
-        user convenience:
-        - isoelastics with `col1` and `col2` interchanged
-        - isoelastics for circularity if deformation was given
-        """
-        assert method in VALID_METHODS
-        assert col1 in dfn.column_names
-        assert col2 in dfn.column_names
-        
-        meta = [channel_width, flow_rate, viscosity]
-        
-        # Add the column data
-        self._add(isoel, col1, col2, method, meta)
-        
-        # Also add the column data for circularity
-        if "deform" in [col1, col2]:
-            col1c, col2c = col1, col2
-            if col1c == "deform":
-                deform_ax = 0
-                col1c = "circ"
-            else:
-                deform_ax = 1
-                col2c = "circ"
-            iso_circ = []
-            for iso in isoel:
-                iso = iso.copy()
-                iso[:,deform_ax] = 1 - iso[:,deform_ax]
-                iso_circ.append(iso)
-            self._add(iso_circ, col1c, col2c, method, meta)
-        
-
-    def get(self, col1, col2, method, channel_width,
-            flow_rate=None, viscosity=None):
-        """Get isoelastics
-        
-        Parameters
-        ----------
-        col1: str
-            Name of the first column of all isoelastics
-            (e.g. isoel[0][:,0])
-        col2: str
-            Name of the second column of all isoelastics
-            (e.g. isoel[0][:,1])
-        channel_width: float
-            Channel width in µm
-        flow_rate: float or `None`
-            Flow rate through the channel in µl/s. If set to
-            `None`, the flow rate of the imported data will
-            be used (only do this if you do not need the
-            correct values for elastic moduli).
-        viscosity: float or `None`
-            Viscosity of the medium in mPa*s. If set to
-            `None`, the flow rate of the imported data will
-            be used (only do this if you do not need the
-            correct values for elastic moduli).
-        method: str
-            The method used to compute the isoelastics
-            (must be one of `VALID_METHODS`). 
-        """
-        assert method in VALID_METHODS
-        assert col1 in dfn.column_names
-        assert col2 in dfn.column_names
-        
-        if "isoelastics" not in self._data[method][col2][col1]:
-            msg = "No isoelastics matching {}, {}, {}".format(col1, col2,
-                                                              method)
-            raise KeyError(msg)
-        
-        isoel = self._data[method][col1][col2]["isoelastics"]
-        meta = self._data[method][col1][col2]["meta"]
-        
-        if flow_rate is None:
-            flow_rate = meta[1]
-        
-        if viscosity is None:
-            viscosity = meta[2]
-        
-        isoel_ret = self.convert(isoel, col1, col2,
-                                 channel_width_in=meta[0],
-                                 channel_width_out=channel_width,
-                                 flow_rate_in=meta[1],
-                                 flow_rate_out=flow_rate,
-                                 viscosity_in=meta[2],
-                                 viscosity_out=viscosity)
-        return isoel_ret
 
 
 

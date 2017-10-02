@@ -41,7 +41,8 @@ def get_bright(cont, img, ret_data="avg,sd"):
     ret_avg = "avg" in ret_data
     ret_std = "sd" in ret_data
     
-    assert ret_avg + ret_std != 0, "No metrices selected!"
+    if ret_avg + ret_std == 0:
+        raise ValueError("No valid metrices selected!")
     
     if isinstance(cont, np.ndarray):
         # If cont is an array, it is not a list of contours,

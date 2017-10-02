@@ -112,7 +112,8 @@ class Export(object):
                           "Please use the `override=True` option.")
         # Check that columns are in dfn.column_names
         for c in columns:
-            assert c in dfn.column_names, "Unknown column name {}".format(c)
+            if c not in dfn.column_names:
+                raise ValueError("Unknown column name {}".format(c))
         
         # Collect the header
         chn_names = [ dfn.name2label[c] for c in columns ]
@@ -159,7 +160,8 @@ class Export(object):
                           "Please use the `override=True` option.")
         # Check that columns are in dfn.column_names
         for c in columns:
-            assert c in dfn.column_names, "Unknown column name {}".format(c)
+            if c not in dfn.column_names:
+                raise ValueError("Unknown column name {}".format(c))
         
         # Open file
         with io.open(path, "w") as fd:

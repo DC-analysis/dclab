@@ -33,7 +33,8 @@ def downsample_rand(a, samples, remove_invalid=True, retidx=False):
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
     
-    assert remove_invalid, "Downsampling cannot handle inf/nan yet!"
+    if not remove_invalid:
+        raise ValueError("Downsampling cannot handle inf/nan yet!")
     
     samples = int(samples)
     
@@ -98,7 +99,8 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
     
-    assert remove_invalid, "Downsampling cannot handle inf/nan yet!"
+    if not remove_invalid:
+        raise ValueError("Downsampling cannot handle inf/nan yet!")
     
     samples = int(samples)
     

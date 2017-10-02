@@ -58,9 +58,10 @@ class PolygonFilter(object):
         self.inverted = inverted
         # check if a filename was given
         if filename is not None:
-            assert isinstance(fileid, int)
-            assert os.path.exists(filename),\
-                   "Error, no such file: {}".format(filename)
+            if not isinstance(fileid, int):
+                raise ValueError("`fileid` must be an integer!")
+            if not os.path.exists(filename):
+                raise ValueError("Error, no such file: {}".format(filename))
             self.fileid = fileid
             # This also sets a unique id
             self._load(filename)
@@ -82,23 +83,29 @@ class PolygonFilter(object):
     
     
     def __eq__(self, pf):
-        assert isinstance(pf, PolygonFilter)
-        assert self.inverted == pf.inverted
-        assert np.allclose(self.points, pf.points)
-        assert list(self.axes) == list(pf.axes)
-        return True
-    
+        if (isinstance(pf, PolygonFilter) and
+            self.inverted == pf.inverted and
+            np.allclose(self.points, pf.points) and
+            list(self.axes) == list(pf.axes)):
+            eq = True
+        else:
+            eq = False
+        return eq
+
     
     def _check_data(self):
         """Check if the data given is valid"""
-        assert self.axes is not None, "Error, `axes` parm not set."
-        assert self.points is not None, "Error, `points` parm not set."
+        if self.axes is None:
+            raise PolygonFilterError("`axes` parm not set.")
+        if self.points is None:
+            raise PolygonFilterError("`points` parm not set.")
         self.points = np.array(self.points)
-        assert self.points.shape[1] == 2, \
-               "Error, data points must be have two coordinates."
+        if self.points.shape[1] != 2:
+            raise PolygonFilterError("data points' shape[1] must be 2.")
         if self.name is None:
             self.name = "polygon filter {}".format(self.unique_id)
-        assert isinstance(self.inverted, bool)
+        if not isinstance(self.inverted, bool):
+            raise PolygonFilterError("`inverted` must be boolean.")
 
 
     def _load(self, filename):
@@ -331,12 +338,17 @@ class PolygonFilter(object):
     def save_all(polyfile):
         """Save all polygon filters"""
         nump = len(PolygonFilter.instances)
-        assert nump != 0, "There are not polygon filters to save."
+        if nump == 0:
+            raise PolygonFilterError("There are not polygon filters to save.")
         for p in PolygonFilter.instances:
             # we return the ret_obj, so we don't need to open and
             # close the file multiple times.
             polyfile = p.save(polyfile, ret_fobj=True)
         polyfile.close()
+
+
+class PolygonFilterError(BaseException):
+    pass
 
 
 def get_polygon_filter_names():

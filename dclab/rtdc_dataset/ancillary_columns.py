@@ -223,7 +223,7 @@ def compute_emodulus(mm):
     calccfg = mm.config["calculation"]
 
     model = calccfg["emodulus model"]
-    assert model=="elastic sphere"
+    assert model == "elastic sphere"
     
     medium = calccfg["emodulus medium"]
     viscosity = calccfg["emodulus viscosity"]

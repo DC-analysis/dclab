@@ -158,7 +158,7 @@ def test_inverted_wrong():
         filt1 = dclab.PolygonFilter(axes=["area_um", "deform"],
                                 points=points,
                                 inverted=0)
-    except AssertionError:
+    except dclab.polygon_filter.PolygonFilterError:
         pass
     else:
         raise ValueError("inverted should only be allowed to be bool")

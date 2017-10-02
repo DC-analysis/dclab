@@ -69,9 +69,11 @@ def get_volume(cont, pos_x, pos_y, pix):
     pos_x = np.atleast_1d(pos_x)
     pos_y = np.atleast_1d(pos_y)
 
-    assert len(pos_x) == len(pos_y)
-    if len(pos_x) > 1:
-        assert len(cont) > 1
+    if pos_x.size != pos_y.size:
+        raise ValueError("Size of `pos_x` and `pos_y` must match!")
+    
+    if pos_x.size > 1 and len(cont) <= 1:
+        raise ValueError("Number of given contours too small!")
 
     # results are stored in a separate array initialized with nans
     v_avg = np.zeros_like(pos_x, dtype=float)*np.nan

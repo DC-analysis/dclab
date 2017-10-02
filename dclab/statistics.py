@@ -37,11 +37,14 @@ class Statistics(object):
         return xout
     
     def get_data(self, kwargs):
-        assert "rtdc_ds" in kwargs, "Keyword argument 'rtdc_ds' missing."
+        if "rtdc_ds" not in kwargs:
+            raise ValueError("Keyword argument 'rtdc_ds' missing.")
+        
         rtdc_ds = kwargs["rtdc_ds"]
 
         if self.req_axis:
-            assert "axis" in kwargs, "Keyword argument 'axis' missing."
+            if "axis" not in kwargs:
+                raise ValueError("Keyword argument 'axis' missing.")
             return self.get_column(rtdc_ds, kwargs["axis"])
         else:
             return rtdc_ds

@@ -185,7 +185,8 @@ class RTDCBase(object):
         -------
         xnew, xnew: filtered x and y
         """
-        assert downsample >= 0
+        if downsample < 0:
+            raise ValueError("`downsample` must be zero or positive!")
         
         downsample = int(downsample)
         xax = xax.lower()
@@ -237,7 +238,8 @@ class RTDCBase(object):
         xax = xax.lower()
         yax = yax.lower()
         kde_type = kde_type.lower()
-        assert kde_type in kde_methods.methods
+        if kde_type not in kde_methods.methods:
+            raise ValueError("Not a valid kde type: {}!".format(kde_type))
 
         if self.config["filtering"]["enable filters"]:
             x = self[xax][self._filter]
@@ -301,7 +303,8 @@ class RTDCBase(object):
         xax = xax.lower()
         yax = yax.lower()
         kde_type = kde_type.lower()
-        assert kde_type in kde_methods.methods
+        if kde_type not in kde_methods.methods:
+            raise ValueError("Not a valid kde type: {}!".format(kde_type))
         
         if self.config["filtering"]["enable filters"]:
             x = self[xax][self._filter]
@@ -341,8 +344,9 @@ class RTDCBase(object):
         filt: int or instance of `PolygonFilter`
             The polygon filter to add
         """
-        msg = "`filt` must be a number or instance of PolygonFilter."
-        assert isinstance(filt, (PolygonFilter, int, float)), msg
+        if not isinstance(filt, (PolygonFilter, int, float)):
+            msg = "`filt` must be a number or instance of PolygonFilter!"
+            raise ValueError(msg)
         
         if isinstance(filt, PolygonFilter):
             uid=filt.unique_id
@@ -360,8 +364,9 @@ class RTDCBase(object):
         filt: int or instance of `PolygonFilter`
             The polygon filter to remove
         """
-        msg = "`filt` must be a number or instance of PolygonFilter."
-        assert isinstance(filt, (PolygonFilter, int, float)), msg
+        if not isinstance(filt, (PolygonFilter, int, float)):
+            msg = "`filt` must be a number or instance of PolygonFilter!"
+            raise ValueError(msg)
         
         if isinstance(filt, PolygonFilter):
             uid = filt.unique_id

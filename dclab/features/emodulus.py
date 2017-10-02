@@ -137,8 +137,9 @@ def pixcorr_deformation(area, deformation, px_um=0.34, inplace=False):
     deformation_corr: float or ndarray
         The corrected deformation of the event(s)
     """
-    msg = "Pixelelation correction for {}um per px unavailable!".format(px_um)
-    assert px_um in [0.34], msg
+    if px_um not in [0.34]:
+        msg = "Pixel correction for {}um resolution available!".format(px_um)
+        raise ValueError(px_um)
     
     if px_um==0.34:
         # A triple-exponential decay can be used to correct for pixelation

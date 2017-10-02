@@ -73,7 +73,12 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
     --------
     `scipy.stats.gaussian_kde`
     """
-    assert (xout is None and yout is None) or (xout is not None and yout is not None)
+    valid_combi = ((xout is None and yout is None) or
+                   (xout is not None and yout is not None)
+                   )
+    if not valid_combi:
+        raise ValueError("Both `xout` and `yout` must be (un)set.")
+    
     if yout is None and yout is None:
         xout = events_x
         yout = events_y
@@ -113,7 +118,12 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=(47,47)):
     `numpy.histogram2d`
     `scipy.interpolate.RectBivariateSpline`
     """
-    assert (xout is None and yout is None) or (xout is not None and yout is not None)
+    valid_combi = ((xout is None and yout is None) or
+                   (xout is not None and yout is not None)
+                   )
+    if not valid_combi:
+        raise ValueError("Both `xout` and `yout` must be (un)set.")
+
     if yout is None and yout is None:
         xout = events_x
         yout = events_y
@@ -155,7 +165,12 @@ def kde_none(events_x, events_y, xout=None, yout=None):
     This method is a convenience method that always returns ones in the shape
     that the other methods in this module produce.
     """
-    assert (xout is None and yout is None) or (xout is not None and yout is not None)
+    valid_combi = ((xout is None and yout is None) or
+                   (xout is not None and yout is not None)
+                   )
+    if not valid_combi:
+        raise ValueError("Both `xout` and `yout` must be (un)set.")
+
     if yout is None and yout is None:
         xout = events_x
         yout = events_y
@@ -188,7 +203,12 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     --------
     `statsmodels.nonparametric.kernel_density.KDEMultivariate`
     """
-    assert (xout is None and yout is None) or (xout is not None and yout is not None)
+    valid_combi = ((xout is None and yout is None) or
+                   (xout is not None and yout is not None)
+                   )
+    if not valid_combi:
+        raise ValueError("Both `xout` and `yout` must be (un)set.")
+
     if yout is None and yout is None:
         xout = events_x
         yout = events_y

@@ -1,108 +1,108 @@
 0.2.7
-- New submodule and classes for managing isoelastics
-- New ancillary columns "inert_ratio_raw" and "inert_ratio_cvx"
-- Bugfixes:
-  - Typo when finding contour data files (tdms file format)
-- Rrefactoring:
-  - "features" submodule with basic methods for ancillary columns
+ - New submodule and classes for managing isoelastics
+ - New ancillary columns "inert_ratio_raw" and "inert_ratio_cvx"
+ - Bugfixes:
+   - Typo when finding contour data files (tdms file format)
+ - Rrefactoring:
+   - "features" submodule with basic methods for ancillary columns
 0.2.6
-- Return event images as gray scale (#17) 
-- Bugfixes:
-  - Shrink ancillary column size if it exceeds data set size
-  - Generate random RTDCBase.identifier (do not use RTDCBase.hash)
-    to fix problem with identical identifiers for hierarchy children
-  - Correctly determine contour data files (tdms file format)
-  - Allow contour data indices larger than uint8
+ - Return event images as gray scale (#17) 
+ - Bugfixes:
+   - Shrink ancillary column size if it exceeds data set size
+   - Generate random RTDCBase.identifier (do not use RTDCBase.hash)
+     to fix problem with identical identifiers for hierarchy children
+   - Correctly determine contour data files (tdms file format)
+   - Allow contour data indices larger than uint8
 0.2.5
-- Add ancillary columns "bright_avg" and "bright_sd" (#18, #19)
-- Standardize attributes of RTDCBase subclasses (#12)
-- Refactoring:
-  - New column names and removal of redundant column identifiers (#16)
-  - Minor improvements towards PEP8 (e.g. #15)
-  - New class for handling filters (#13)
-- Bugfixes:
-  - Hierarchy child computed all ancillary columns of parent upon
-    checking availability of a column
+ - Add ancillary columns "bright_avg" and "bright_sd" (#18, #19)
+ - Standardize attributes of RTDCBase subclasses (#12)
+ - Refactoring:
+   - New column names and removal of redundant column identifiers (#16)
+   - Minor improvements towards PEP8 (e.g. #15)
+   - New class for handling filters (#13)
+ - Bugfixes:
+   - Hierarchy child computed all ancillary columns of parent upon
+     checking availability of a column
 0.2.4
-- Replace OpenCV with imageio
-- Add (ancilliary) computation of volume (#11)
-- Add convenience methods for `Configuration`
-- Refactoring (#8):
-  - Separate classes for .tdms, dict-based, and hierarchy data sets
-  - Introduce "_events" attribute for stored data
-  - Data columns (including image, trace, contour) are accessed via
-    keys instead of attributes.
-  - Make space for new hdf5-based file format
-  - Introduce ancilliary columns that are computed on-the-fly
+ - Replace OpenCV with imageio
+ - Add (ancilliary) computation of volume (#11)
+ - Add convenience methods for `Configuration`
+ - Refactoring (#8):
+   - Separate classes for .tdms, dict-based, and hierarchy data sets
+   - Introduce "_events" attribute for stored data
+   - Data columns (including image, trace, contour) are accessed via
+     keys instead of attributes.
+   - Make space for new hdf5-based file format
+   - Introduce ancilliary columns that are computed on-the-fly
     (new "_ancilliaries" attribute and "ancilliary_columns.py")
 0.2.3
-- Add look-up table for elastic modulus (#7)
-- Add filtering option "remove invalid events" to remove nan/inf
-- Support nan and inf in data analysis
-- Improve downsampling performance
-- Refactor downsampling methods (#6)
+ - Add look-up table for elastic modulus (#7)
+ - Add filtering option "remove invalid events" to remove nan/inf
+ - Support nan and inf in data analysis
+ - Improve downsampling performance
+ - Refactor downsampling methods (#6)
 0.2.2
-- Add new histogram-based kernel density estimator (#2)
-- Refactoring:
-  - Configuration fully handled by RTDC_DataSet module (#5)
-  - Simplify video export function (#4)
-  - Removed "Plotting" configuration key
-  - Removed .cfg configuration files
+ - Add new histogram-based kernel density estimator (#2)
+ - Refactoring:
+   - Configuration fully handled by RTDC_DataSet module (#5)
+   - Simplify video export function (#4)
+   - Removed "Plotting" configuration key
+   - Removed .cfg configuration files
 0.2.1
-- Support npTDMS 0.9.0
-- Add AVI-Export function
-- Add lazy submodule for event trace data and rename `RTDC_DataSet.traces`
-  to `RTDC_DataSet.trace`
-- Add "Event index" column
+ - Support npTDMS 0.9.0
+ - Add AVI-Export function
+ - Add lazy submodule for event trace data and rename `RTDC_DataSet.traces`
+   to `RTDC_DataSet.trace`
+ - Add "Event index" column
 0.2.0
-- Compute sensible default configuration parameters for
-  KDE estimation and contour plotting
-- Speed-up handling of contour text files
-- Add support for "User Defined" column in tdms files
+ - Compute sensible default configuration parameters for
+   KDE estimation and contour plotting
+ - Speed-up handling of contour text files
+ - Add support for "User Defined" column in tdms files
 0.1.9
-- Implement hierarchical instantiation of RTDC_DataSet
-- Bugfix: Prevent instances of PolygonFilter that have same id
-- Load InertiaRatio and InertiaRatioRaw from tdms files
+ - Implement hierarchical instantiation of RTDC_DataSet
+ - Bugfix: Prevent instances of PolygonFilter that have same id
+ - Load InertiaRatio and InertiaRatioRaw from tdms files
 0.1.8
-- Allow to instantiate RTDC_DataSet without a tdms file
-- Add statistics submodule
-- Bugfixes:
-  - Faulty hashing strategy in `RTDC_DataSet.GetDownSampledScatter`
-- Code cleanup (renamed methods, cleaned structure)
-- Corrections/additions in definitions (fRT-DC)
+ - Allow to instantiate RTDC_DataSet without a tdms file
+ - Add statistics submodule
+ - Bugfixes:
+   - Faulty hashing strategy in `RTDC_DataSet.GetDownSampledScatter`
+ - Code cleanup (renamed methods, cleaned structure)
+ - Corrections/additions in definitions (fRT-DC)
 0.1.7
-- Added channel: distance between to first fl. peaks
-- Added fluorescence channels: peak position, peak area, number of peaks
-- Allow to disable KDE computation
-- Add filter array for manual (user-defined) filtering
-- Add config parameters for log axis scaling
-- Add channels: bounding box x- and y-size
-- Bugfixes:
-  - cached.py did not handle `None`
-  - Limiting number of events caused integer/bool error
+ - Added channel: distance between to first fl. peaks
+ - Added fluorescence channels: peak position, peak area, number of peaks
+ - Allow to disable KDE computation
+ - Add filter array for manual (user-defined) filtering
+ - Add config parameters for log axis scaling
+ - Add channels: bounding box x- and y-size
+ - Bugfixes:
+   - cached.py did not handle `None`
+   - Limiting number of events caused integer/bool error
 0.1.6
-- Added `RTDC_DataSet.ExportTSV` for data export
-- Bugfixes:
-  - Correct determination of video file in RTDCDataSet
-  - Fix multivariate KDE computation
-  - Contour accuracy for Defo overridden by that of Circ
+ - Added `RTDC_DataSet.ExportTSV` for data export
+ - Bugfixes:
+   - Correct determination of video file in RTDCDataSet
+   - Fix multivariate KDE computation
+   - Contour accuracy for Defo overridden by that of Circ
 0.1.5
-- Fix regressions with filtering.
-  https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/43 
-- Ignore empty columns in .tdms files (#1)
-- Moved RTDC_DataSet and PolygonFilter classes to separate files
-- Introduce more transparent caching - improves speed in some cases
+ - Fix regressions with filtering.
+   https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/43 
+ - Ignore empty columns in .tdms files (#1)
+ - Moved RTDC_DataSet and PolygonFilter classes to separate files
+ - Introduce more transparent caching - improves speed in some cases
 0.1.4
-- Added support for 3-channel fluorescence data (FL-1..3 max/width)
+ - Added support for 3-channel fluorescence data (FL-1..3 max/width)
 0.1.3
-- Fixed minor polygon filter problems.
-- Fix a couple of ShapeOut-related issues:
-  - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/17 
-  - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/20
-  - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/37
-  - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/38
+ - Fixed minor polygon filter problems.
+ - Fix a couple of ShapeOut-related issues:
+   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/17 
+   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/20
+   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/37
+   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/38
 0.1.2
-- Add support for limiting amount of data points analyzed
-  with the configuration keyword "Limit Events"
-- Comments refer to "events" instead of "points" from now on
+ - Add support for limiting amount of data points analyzed
+   with the configuration keyword "Limit Events"
+ - Comments refer to "events" instead of "points" from now on
 

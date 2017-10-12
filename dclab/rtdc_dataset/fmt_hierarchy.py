@@ -91,9 +91,11 @@ class RTDC_Hierarchy(RTDCBase):
         # Copy event data from hierarchy parent
         self.hparent.apply_filter()
         # update event index
-        length = np.sum(self.hparent._filter)
+        event_count = np.sum(self.hparent._filter)
         self._events = {}
-        self._events["index"] = np.arange(1, length+1)
+        self._events["index"] = np.arange(1, event_count+1)
+        # update config
+        self.config["experiment"]["event count"] = event_count
 
         self._init_filters()
 

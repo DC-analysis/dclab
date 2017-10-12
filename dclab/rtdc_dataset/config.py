@@ -211,7 +211,7 @@ def load_from_file(cfg_file):
                 continue
             var, val = line.split("=", 1)
             var = var.strip().lower()
-            val = val.strip()
+            val = val.strip("' ").strip('" ').strip()
             # convert parameter value to correct type
             if (section in dfn.config_types and
                 var in dfn.config_types[section]):

@@ -68,7 +68,7 @@ def test_stat_occur():
 def test_flow_rate():
     ddict = example_data_dict(size=77, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
-    ds.config["general"]["flow rate [ul/s]"] = 0.172
+    ds.config["setup"]["flow rate"] = 0.172
     
     head1, vals1 = dclab.statistics.get_statistics(ds, axes=["deform"])
     head2, vals2 = dclab.statistics.get_statistics(ds, columns=["Events", "Mean"])

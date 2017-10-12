@@ -7,7 +7,6 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 import io
-import numpy as np
 import sys
 
 from .. import definitions as dfn
@@ -59,7 +58,7 @@ class CaseInsensitiveDict(dict):
 
 
 class Configuration(object):
-    def __init__(self, files=[], cfg={}, rtdc_ds=None):
+    def __init__(self, files=[], cfg={}):
         """Configuration of an RT-DC dataset
         
         Parameters
@@ -68,11 +67,12 @@ class Configuration(object):
             The config files with which to initialize the configuration
         cfg: dict-like
             The dictionary with which to initialize the configuration
-        rtdc_ds: instance of RTDCBase
-            An RT-DC data set.
         """
         self._cfg = CaseInsensitiveDict()
 
+        # set initial default values
+        self._init_default_values()
+        
         # Update with additional dictionary
         self.update(cfg)
 
@@ -80,17 +80,14 @@ class Configuration(object):
         for f in files:
             self.update(load_from_file(f))
 
-        self._fix_config()
-        # Complete configuration settings
-        if rtdc_ds is not None:
-            self._complete_config_from_rtdc_ds(rtdc_ds)
-
 
     def __contains__(self, key):
         return self._cfg.__contains__(key)
 
 
     def __getitem__(self, idx):
+        if idx not in self and idx in dfn.config_keys:
+            self._cfg[idx] = CaseInsensitiveDict()
         item = self._cfg.__getitem__(idx)
         if isinstance(item, str_types):
             item = item.lower()
@@ -107,12 +104,10 @@ class Configuration(object):
     
     def __repr__(self):
         rep = ""
-        keys = self.keys()
-        keys.sort()
+        keys = sorted(list(self.keys()))
         for key in keys:
             rep += "- {}\n".format(key)
-            subkeys = self[key].keys()
-            subkeys.sort()
+            subkeys = sorted(list(self[key].keys()))
             for subkey in subkeys:
                 rep += "   {}: {}\n".format(subkey, self[key][subkey])
         return rep
@@ -122,62 +117,27 @@ class Configuration(object):
         self._cfg.__setitem__(*args)
 
 
-    def _fix_config(self):
-        """Fix missing config keys using default values
+    def _init_default_values(self):
+        """Set default initial values
         
         The default values are hard-coded for backwards compatibility
         and for several functionalities in dclab.
         """
-        ## Filtering
-        if not "filtering" in self:
-            self["filtering"] = CaseInsensitiveDict()
         # Do not filter out invalid event values
-        if not "remove invalid events" in self["filtering"]:
-            self["filtering"]["remove invalid events"] = False
+        self["filtering"]["remove invalid events"] = False
         # Enable filters switch is mandatory
-        if not "enable filters" in self["filtering"]:
-            self["filtering"]["enable filters"] = True
+        self["filtering"]["enable filters"] = True
         # Limit events integer to downsample output data
-        if not "limit events" in self["filtering"]:
-            self["filtering"]["limit events"] = 0
+        self["filtering"]["limit events"] = 0
         # Polygon filter list
-        if not "polygon filters" in self["filtering"]:
-            self["filtering"]["polygon filters"] = []
+        self["filtering"]["polygon filters"] = []
         # Defaults to no hierarchy parent
-        if not "hierarchy parent" in self["filtering"]:
-            self["filtering"]["hierarchy parent"] = "none"
+        self["filtering"]["hierarchy parent"] = "none"
         # Check for missing min/max values and set them to zero
         for item in dfn.column_names:
             appends = [" min", " max"]
             for a in appends:
-                if not item+a in self["filtering"]:
-                    self["filtering"][item+a] = 0
-        ## General
-        if not "general" in self:
-            self["general"] = CaseInsensitiveDict()
-        # Old RTDC data files have an offset in the recorded video file
-        if not "video frame offset" in self["general"]:
-            self["general"]["video frame offset"] = 1
-        # Old RTDC data files did not mention channel width for high flow rates
-        if not "flow Rate [ul/s]" in self["general"]:
-            self["general"]["flow Rate [ul/s]"] = np.nan
-        if not "channel width" in self["general"]:
-            if self["general"]["flow Rate [ul/s]"] < 0.16:
-                self["general"]["channel width"] = 20
-            else:
-                self["general"]["channel width"] = 30
-        ## Image
-        if not "image" in self:
-            self["image"] = CaseInsensitiveDict()
-        # Old RTDC data files do not have resolution
-        if not "pix size" in self["image"]:
-            self["image"]["pix size"] = 0.34
-
-
-    def _complete_config_from_rtdc_ds(self, rtdc_ds):
-        """Complete configuration using data columns from RT-DC dataset"""
-        # Update data size
-        self["general"]["cell number"] = len(rtdc_ds)
+                self["filtering"][item + a] = 0
 
 
     def copy(self):
@@ -192,8 +152,7 @@ class Configuration(object):
     def save(self, filename):
         """Save the configuration to a file"""
         out = []
-        keys = list(self.keys())
-        keys.sort()
+        keys = sorted(list(self.keys()))
         for key in keys:
             out.append("[{}]".format(key))
             section = self[key]
@@ -203,7 +162,7 @@ class Configuration(object):
                 var, val = keyval_typ2str(ikey, section[ikey])
                 out.append("{} = {}".format(var, val))
             out.append("")
-        
+
         with io.open(filename, "w") as f:
             for i in range(len(out)):
                 # win-like line endings
@@ -246,12 +205,21 @@ def load_from_file(cfg_file):
         line = line.split("#")[0].strip()
         if len(line) != 0:
             if line.startswith("[") and line.endswith("]"):
-                section = line[1:-1]
+                section = line[1:-1].lower()
                 if not section in cfg:
                     cfg[section] = CaseInsensitiveDict()
                 continue
             var, val = line.split("=", 1)
-            var, val = keyval_str2typ(var, val)
+            var = var.strip().lower()
+            val = val.strip()
+            # convert parameter value to correct type
+            if (section in dfn.config_types and
+                var in dfn.config_types[section]):
+                # standard parameter with known type
+                val = dfn.config_types[section][var](val)
+            else:
+                # unknown parameter (e.g. plotting in ShapeOut), guess type
+                var, val = keyval_str2typ(var, val)
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val
     return cfg

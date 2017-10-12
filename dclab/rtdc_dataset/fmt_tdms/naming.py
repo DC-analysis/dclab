@@ -57,3 +57,69 @@ tr_data = [["fluorescence traces", "FL1raw"],
            ["fluorescence traces", "FL2med"],
            ["fluorescence traces", "FL3med"],
         ]
+
+configmap = {
+    "experiment": {
+        "run index": ("General", "Measurement Number"),
+        },
+    # All special keywords related to RT-FDC
+    "fluorescence": {
+        "bit depth": ("FLUOR", "Bitdepthraw"),
+        "channel count": ("FLUOR", "FL-Channels"),
+        "laser 1 power": ("FLUOR", "Laser Power 488 [mW]"),
+        "laser 2 power": ("FLUOR", "Laser Power 561 [mW]"),
+        "laser 3 power": ("FLUOR", "Laser Power 640 [mW]"),
+        "laser 1 lambda": 488,
+        "laser 2 lambda": 561,
+        "laser 3 lambda": 640,
+        "sample rate": ("FLUOR", "Samplerate"),
+        "signal max": ("FLUOR", "ADCmax"),
+        "signal min": ("FLUOR", "ADCmin"),
+        },
+    # All tdms-related parameters
+    "fmt_tdms": {
+        "video frame offset": ("General", "video frame offset"),
+        },
+    # All imaging-related keywords
+    "imaging": {
+        "exposure time": ("Framerate", "Shutter Time"),
+        "flash current": ("General", "Current LED [A]"),
+        "flash device": "LED (undefined)",
+        "flash duration": ("General", "Shutter Time LED [us]"),
+        "frame rate": ("Framerate", "Frame Rate"),
+        "pixel size": ("Image", "Pix Size"),
+        "roi position x": ("ROI", "x-pos"),
+        "roi position y": ("ROI", "y-pos"),
+        "roi size x": ("ROI", "width"),
+        "roi size y": ("ROI", "height"),
+        },
+    # All parameters for online contour extraction from the event images
+    "online_contour": {
+        "bin area min": ("Image", "Trig Thresh"),
+        "bin kernel": ("Image", "Bin Ops"),
+        "bin margin": ("Image", "Margin"),
+        "bin threshold": ("Image", "Thresh"),
+        "image blur": ("Image", "Blur"),
+        "no absdiff": ("Image", "Diff_Method"),
+        },
+    # All online filters
+    "online_filter": {
+        "aspect min": ("Image", "Cell Aspect Min"),
+        "aspect max": ("Image", "Cell Aspect Max"),
+        "size_x max": ("Image", "Cell Max Length"),
+        "size_y max": ("Image", "Cell Max Height"),
+        },
+    # All setup-related keywords, except imaging
+    "setup": {
+        "channel width": ("General", "Channel width"),
+        "chip region": ("General", "Region"),
+        "flow rate": ("General", "Flow Rate [ul/s]"),
+        "flow rate sample": ("General", "Sample Flow Rate [ul/s]"),
+        "flow rate sheath": ("General", "Sheath Flow Rate [ul/s]"),
+        #"medium": "CellCarrier",
+        "module composition": ("Image", "Setup"),
+        "software version": "tdms-acquisition (unknown)",
+        "temperature": ("FLUOR", "Ambient Temperature"),
+        #"viscosity": None,
+        },
+    }

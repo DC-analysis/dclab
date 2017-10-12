@@ -5,10 +5,13 @@ from __future__ import division, print_function, unicode_literals
 
 import io
 import os
+import time
 import sys
 
 import numpy as np
 from nptdms import TdmsFile
+
+from ... import definitions as dfn
 
 from ..config import Configuration
 from ..core import RTDCBase
@@ -79,11 +82,64 @@ class RTDC_TDMS(RTDCBase):
                     data = np.zeros(datalen)
                 self._events[naming.tdms2dclab[arg]] = data
 
-        # Set up filtering
-        self.config = Configuration(files=[self._path_mx+"_para.ini",
+        # Set up configuration
+        tdms_config = Configuration(files=[self._path_mx+"_para.ini",
                                            self._path_mx+"_camera.ini"],
-                                    rtdc_ds=self)
+                                    )
+        dclab_config = Configuration()
+        for section in naming.configmap:
+            for pname in naming.configmap[section]:
+                meta = naming.configmap[section][pname]
+                typ = dfn.config_types[section][pname]
+                if isinstance(meta, tuple):
+                    osec, opar = meta
+                    if osec in tdms_config and opar in tdms_config[osec]:
+                        val = tdms_config[osec][opar]
+                        dclab_config[section][pname] = typ(val)
+                else:
+                    dclab_config[section][pname] = typ(meta)
+
+        self.config = dclab_config
+        self._complete_config_tdms()
+
         self._init_filters()
+
+
+    def _complete_config_tdms(self):
+        # experiment
+        gmtime = time.gmtime(os.stat(self.path).st_mtime)
+        if "date" not in self.config["experiment"]:
+            # Date of measurement ('YYYY-MM-DD')
+            datestr = time.strftime("%Y-%m-%d", gmtime)
+            self.config["experiment"]["date"] = datestr
+        if "event count" not in self.config["experiment"]:
+            # Number of recorded events
+            self.config["experiment"]["event count"] = len(self)
+        if "sample" not in self.config["experiment"]:
+            # Measured sample or user-defined reference
+            self.config["experiment"]["sample"] = self.title
+        if "time" not in self.config["experiment"]:
+            # Start time of measurement ('HH:MM:SS')
+            timestr = time.strftime("%H-%M-%S", gmtime)
+            self.config["experiment"]["time"] = timestr
+        # fmt_tdms
+        if "video frame offset" not in self.config["fmt_tdms"]:
+            self.config["fmt_tdms"]["video frame offset"] = 1
+        # setup (compatibility to old tdms formats)
+        if "flow rate" not in self.config["setup"]:
+            self.config["setup"]["flow rate"] = np.nan
+        if "channel width" not in self.config["setup"]:
+            if self.config["setup"]["flow Rate [ul/s]"] < 0.16:
+                self.config["setup"]["channel width"] = 20
+            else:
+                self.config["setup"]["channel width"] = 30
+        if "temperature" not in self.config["setup"]:
+            self.config["setup"]["temperature"] = np.nan
+        if "viscosity" not in self.config["setup"]:
+            self.config["setup"]["viscosity"] = np.nan
+        # imaging
+        if "pixel size" in self.config["imaging"]:
+            self.config["imaging"]["pixel size"] = 0.34
 
 
     @property

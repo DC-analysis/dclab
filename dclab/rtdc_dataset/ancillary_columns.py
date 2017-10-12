@@ -182,7 +182,7 @@ def compute_area_ratio(mm):
 
 
 def compute_area_um(mm):
-    pxs = mm.config["image"]["pix size"]
+    pxs = mm.config["imaging"]["pixel size"]
     return mm["area_cvx"] * pxs**2
 
 
@@ -235,9 +235,9 @@ def compute_emodulus(mm):
             area=mm["area_um"],
             deformation=mm["deform"],
             medium=medium,
-            channel_width=mm.config["general"]["channel width"],
-            flow_rate=mm.config["general"]["flow rate [ul/s]"],
-            px_um=mm.config["image"]["pix size"],
+            channel_width=mm.config["setup"]["channel width"],
+            flow_rate=mm.config["setup"]["flow rate"],
+            px_um=mm.config["imaging"]["pixel size"],
             temperature=mm.config["calculation"]["emodulus temperature"])
     return emod
 
@@ -255,7 +255,7 @@ def compute_inert_ratio_raw(mm):
 
 
 def compute_time(mm):
-    fr = mm.config["framerate"]["frame rate"]
+    fr = mm.config["imaging"]["frame rate"]
     return (mm["frame"] - mm["frame"][0]) / fr
 
 
@@ -263,7 +263,7 @@ def compute_volume(mm):
     vol = features.volume.get_volume(cont=mm["contour"],
                                      pos_x=mm["pos_x"],
                                      pos_y=mm["pos_y"],
-                                     pix=mm.config["image"]["pix size"])
+                                     pix=mm.config["imaging"]["pixel size"])
     return vol
     
 
@@ -275,7 +275,7 @@ AncillaryColumn(column_name="area_ratio",
 
 AncillaryColumn(column_name="area_um",
                 method=compute_area_um,
-                req_config=[["image", ["pix size"]]],
+                req_config=[["imaging", ["pixel size"]]],
                 req_columns=["area_cvx"]
                 )
 
@@ -312,11 +312,11 @@ AncillaryColumn(column_name="emodulus",
                               "emodulus temperature",
                               "emodulus viscosity"]
                              ],
-                            ["image",
-                             ["pix size"]
+                            ["imaging",
+                             ["pixel size"]
                              ],
-                            ["general", 
-                             ["flow rate [ul/s]",
+                            ["setup", 
+                             ["flow rate",
                               "channel width"]
                              ],
                             ],
@@ -338,12 +338,12 @@ AncillaryColumn(column_name="inert_ratio_raw",
 
 AncillaryColumn(column_name="time",
                 method=compute_time,
-                req_config=[["framerate", ["frame rate"]]],
+                req_config=[["imaging", ["frame rate"]]],
                 req_columns=["frame"]
                 )
 
 AncillaryColumn(column_name="volume",
                 method=compute_volume,
                 req_columns=["contour", "pos_x", "pos_y"],
-                req_config=[["image", ["pix size"]]],
+                req_config=[["imaging", ["pixel size"]]],
                 )

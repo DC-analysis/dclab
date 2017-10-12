@@ -30,15 +30,18 @@ def equals(a, b):
             assert key in b, "key not in b"
             assert equals(a[key], b[key])
     elif isinstance(a, (float, int)):
-        assert np.allclose(a,b)
+        if np.isnan(a):
+            assert np.isnan(b)
+        else:
+            assert np.allclose(a,b), "a={} vs b={}".format(a, b)
     else:
-        assert a==b
+        assert a==b, "a={} vs b={}".format(a, b)
     return True
 
 
 def test_config_basic():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
-    assert ds.config["roi"]["height"] == 96.
+    assert ds.config["imaging"]["roi size y"] == 96.
     cleanup()
 
 
@@ -51,17 +54,7 @@ def test_config_save_load():
     loaded = Configuration(files=[cfg_file])
     assert equals(loaded, ds.config)
     cleanup()
-    
-    
-def test_backwards_compatible_channel_width():
-    cfg = Configuration()
-    fd, fname = tempfile.mkstemp()
-    cfg["General"].pop("Channel Width")
-    cfg["General"]["Flow Rate [ul/s]"] = 0.16
-    cfg.save(fname)
-    cfg2 = Configuration(files=[fname])
-    assert cfg2["General"]["Channel Width"] == 30
-    
+
 
 if __name__ == "__main__":
     # Run all tests

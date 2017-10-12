@@ -71,3 +71,101 @@ column_labels = [ _cc[1] for _cc in _columns ]
 name2label = {}
 for _cc in _columns:
     name2label[_cc[0]] = _cc[1]
+
+
+# _meta contains all valid configuration keywords for a measurement.
+# The variable names depict the corresponding section title in
+# a configuration file, e.g.
+#
+#    [setup]
+#    channel width = 20
+#    chip region = channel
+#    ...
+#    [imaging]
+#    exposure time = 20
+#    ...
+#    etc.
+_meta = {
+    # All parameters related to the actual experiment
+    "experiment": [
+        ["date", str, "Date of measurement ('YYYY-MM-DD')"],
+        ["event count", int, "Number of recorded events"],
+        ["run index", int, "Index of measurement run"],
+        ["sample", str, "Measured sample or user-defined reference"],
+        ["time", str, "Start time of measurement ('HH:MM:SS')"],
+        ],
+    # All special keywords related to RT-FDC
+    "fluorescence": [
+        ["bit depth", int, "Trace bit depth"],
+        ["channel count", int, "Number of channels"],
+        ["laser 1 power", float, "Laser 1 output power [mW]"],
+        ["laser 2 power", float, "Laser 2 output power [mW]"],
+        ["laser 3 power", float, "Laser 3 output power [mW]"],
+        ["laser 1 lambda", float, "Laser 1 wavelength [nm]"],
+        ["laser 2 lambda", float, "Laser 2 wavelength [nm]"],
+        ["laser 3 lambda", float, "Laser 3 wavelength [nm]"],
+        ["sample rate", float, "Trace sample rate [Hz]"],
+        ["signal max", float, "Upper voltage detection limit [V]"],
+        ["signal min", float, "Lower voltage detection limit [V]"],
+        ],
+    # All tdms-related parameters
+    "fmt_tdms": [
+        ["video frame offset", int, "Missing events at beginning of video"],
+        ],
+    # All imaging-related keywords
+    "imaging": [
+        ["exposure time", float, "Sensor exposure time [µs]"],
+        ["flash current", float, "Light source current [A]"],
+        ["flash device", str, "Light source device type (e.g. green LED)"],
+        ["flash duration", float, "Light source flash duration [µs]"],
+        ["frame rate", float, "Imaging frame rate [Hz]"],
+        ["pixel size", float, "Pixel size [µm]"],
+        ["roi position x", float, "Image x coordinate on sensor [px]"],
+        ["roi position y", float, "Image y coordinate on sensor [px]"],
+        ["roi size x", int, "Image width [px]"],
+        ["roi size y", int, "Image height [px]"],
+        ],
+    # All parameters for online contour extraction from the event images
+    "online_contour": [
+        ["bin area min", int, "Minium pixel area of binary image event"],
+        ["bin kernel", int, "Odd ellipse kernel size, binary image morphing"],
+        ["bin margin", int, "Remove margin in x for contour detection"],
+        ["bin threshold", int, "Binary threshold for avg-bg-corrected image"],
+        ["image blur", int, "Odd sigma for Gaussian blur (21x21 kernel)"],
+        ["no absdiff", bool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
+        ],
+    # All online filters
+    "online_filter": [
+        ["aspect min", float, "Minimum aspect ratio of bounding box"],
+        ["aspect max", float, "Maximum aspect ratio of bounding box"],
+        ["size_x max", int, "Maximum bounding box size x [µm]"],
+        ["size_y max", int, "Maximum bounding box size y [µm]"],
+        ["size_x min", int, "Minimum bounding box size x [µm]"],
+        ["size_y min", int, "Minimum bounding box size y [µm]"],
+        ],
+    # All setup-related keywords, except imaging
+    "setup": [
+        ["channel width", float, "Width of microfluidic channel [µm]"],
+        ["chip region", str, "Imaged chip region (channel or reservoir)"],
+        ["flow rate", float, "Flow rate in channel [µl/s]"],
+        ["flow rate sample", float, "Sample flow rate [µl/s]"],
+        ["flow rate sheath", float, "Sheath flow rate [µl/s]"],
+        ["medium", str, "The medium used (e.g. CellCarrierB, water)"],
+        ["module composition", str, "Comma-separated list of modules used"],
+        ["software version", str, "Acquisition software with version"],
+        ["temperature", float, "Chip temperature [°C]"],
+        ["viscosity", float, "Medium viscosity [Pa*s], if 'medium' not given"]
+        ],
+    }
+
+# dict with section as keys and config parameter names as values
+config_keys = {}
+for _key in _meta:
+    config_keys[_key] = [ it[0] for it in _meta[_key] ]
+
+# dict of dicts containing the type of section parameters
+config_types = {}
+for _key in _meta:
+    config_types[_key] = {}
+    for _subkey, _type, __ in _meta[_key]:
+        config_types[_key][_subkey] = _type

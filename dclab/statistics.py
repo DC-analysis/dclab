@@ -64,9 +64,9 @@ class Statistics(object):
 
 
 def flow_rate(mm):
-    conf = mm.config["general"]
-    if "flow rate [ul/s]" in conf:
-        return conf["flow rate [ul/s]"]
+    conf = mm.config["setup"]
+    if "flow rate" in conf:
+        return conf["flow rate"]
     else:
         return np.nan
 

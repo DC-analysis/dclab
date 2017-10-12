@@ -115,6 +115,9 @@ def test_emodulus():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus medium": "CellCarrier",
                                 "emodulus model": "elastic sphere",
                                 "emodulus temperature": 23.0,
@@ -136,8 +139,11 @@ def test_emodulus_area():
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
     # area can be computed from areapix
+    ds.config["imaging"]["pixel size"] = .34
     assert "area_um" in ds
     assert "emodulus" not in ds, "not config for emodulus"
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
     ds.config["calculation"] = {"emodulus medium": "CellCarrier",
                                 "emodulus model": "elastic sphere",
                                 "emodulus temperature": 23.0,

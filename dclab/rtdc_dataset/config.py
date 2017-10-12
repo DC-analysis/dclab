@@ -7,7 +7,6 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 import io
-import numpy as np
 import sys
 
 from .. import definitions as dfn
@@ -59,7 +58,7 @@ class CaseInsensitiveDict(dict):
 
 
 class Configuration(object):
-    def __init__(self, files=[], cfg={}, rtdc_ds=None):
+    def __init__(self, files=[], cfg={}):
         """Configuration of an RT-DC dataset
         
         Parameters
@@ -68,8 +67,6 @@ class Configuration(object):
             The config files with which to initialize the configuration
         cfg: dict-like
             The dictionary with which to initialize the configuration
-        rtdc_ds: instance of RTDCBase
-            An RT-DC data set.
         """
         self._cfg = CaseInsensitiveDict()
 
@@ -81,9 +78,6 @@ class Configuration(object):
             self.update(load_from_file(f))
 
         self._fix_config()
-        # Complete configuration settings
-        if rtdc_ds is not None:
-            self._complete_config_from_rtdc_ds(rtdc_ds)
 
 
     def __contains__(self, key):
@@ -91,6 +85,8 @@ class Configuration(object):
 
 
     def __getitem__(self, idx):
+        if idx not in self and idx in dfn.config_keys:
+            self._cfg[idx] = CaseInsensitiveDict()
         item = self._cfg.__getitem__(idx)
         if isinstance(item, str_types):
             item = item.lower()
@@ -107,12 +103,10 @@ class Configuration(object):
     
     def __repr__(self):
         rep = ""
-        keys = self.keys()
-        keys.sort()
+        keys = sorted(list(self.keys()))
         for key in keys:
             rep += "- {}\n".format(key)
-            subkeys = self[key].keys()
-            subkeys.sort()
+            subkeys = sorted(list(self[key].keys()))
             for subkey in subkeys:
                 rep += "   {}: {}\n".format(subkey, self[key][subkey])
         return rep
@@ -152,32 +146,6 @@ class Configuration(object):
             for a in appends:
                 if not item+a in self["filtering"]:
                     self["filtering"][item+a] = 0
-        ## General
-        if not "general" in self:
-            self["general"] = CaseInsensitiveDict()
-        # Old RTDC data files have an offset in the recorded video file
-        if not "video frame offset" in self["general"]:
-            self["general"]["video frame offset"] = 1
-        # Old RTDC data files did not mention channel width for high flow rates
-        if not "flow Rate [ul/s]" in self["general"]:
-            self["general"]["flow Rate [ul/s]"] = np.nan
-        if not "channel width" in self["general"]:
-            if self["general"]["flow Rate [ul/s]"] < 0.16:
-                self["general"]["channel width"] = 20
-            else:
-                self["general"]["channel width"] = 30
-        ## Image
-        if not "image" in self:
-            self["image"] = CaseInsensitiveDict()
-        # Old RTDC data files do not have resolution
-        if not "pix size" in self["image"]:
-            self["image"]["pix size"] = 0.34
-
-
-    def _complete_config_from_rtdc_ds(self, rtdc_ds):
-        """Complete configuration using data columns from RT-DC dataset"""
-        # Update data size
-        self["general"]["cell number"] = len(rtdc_ds)
 
 
     def copy(self):
@@ -192,8 +160,7 @@ class Configuration(object):
     def save(self, filename):
         """Save the configuration to a file"""
         out = []
-        keys = list(self.keys())
-        keys.sort()
+        keys = sorted(list(self.keys()))
         for key in keys:
             out.append("[{}]".format(key))
             section = self[key]

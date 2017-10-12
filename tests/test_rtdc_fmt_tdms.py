@@ -23,7 +23,6 @@ import dclab.rtdc_dataset.fmt_tdms.naming
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
-
 def test_contour_basic():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
     assert len(ds["contour"]) == 12

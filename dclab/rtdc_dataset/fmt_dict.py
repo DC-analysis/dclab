@@ -49,13 +49,15 @@ class RTDC_Dict(RTDCBase):
             self._events[key] = ddict[key]
 
         # Populate empty columns
-        fill0 = np.zeros(len(ddict[list(ddict.keys())[0]]))
+        event_count = len(ddict[list(ddict.keys())[0]])
+        fill0 = np.zeros(event_count)
         for key in dfn.column_names:
             if not key in self._events:
                 self._events[key] = fill0
 
+        self.config = Configuration()
+        self.config["experiment"]["event count"] = event_count
         # Set up filtering
-        self.config = Configuration(rtdc_ds=self)
         self._init_filters()
 
 

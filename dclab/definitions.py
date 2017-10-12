@@ -35,6 +35,12 @@ class Bool(object):
     def __bool__(self):
         return self.value
     
+    def __int__(self):
+        return int(self.value)
+
+    def __float__(self):
+        return float(self.value)
+    
     def __len__(self):
         return self.value
 

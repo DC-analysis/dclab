@@ -94,18 +94,18 @@ class RTDC_TDMS(RTDCBase):
                 if isinstance(meta, tuple):
                     osec, opar = meta
                     if osec in tdms_config and opar in tdms_config[osec]:
-                        val = tdms_config[osec][opar]
+                        val = tdms_config[osec].pop(opar)
                         dclab_config[section][pname] = typ(val)
                 else:
                     dclab_config[section][pname] = typ(meta)
 
         self.config = dclab_config
-        self._complete_config_tdms()
+        self._complete_config_tdms(tdms_config)
 
         self._init_filters()
 
 
-    def _complete_config_tdms(self):
+    def _complete_config_tdms(self, residual_config={}):
         # experiment
         gmtime = time.gmtime(os.stat(self.path).st_mtime)
         if "date" not in self.config["experiment"]:
@@ -134,7 +134,13 @@ class RTDC_TDMS(RTDCBase):
             else:
                 self.config["setup"]["channel width"] = 30
         if "temperature" not in self.config["setup"]:
-            self.config["setup"]["temperature"] = np.nan
+            if "ambient temp. [c]" in residual_config["image"]:
+                temp = residual_config["image"]["ambient temp. [c]"]
+            elif "ambient temperature [c]" in residual_config["image"]:
+                temp = residual_config["image"]["ambient temperature [c]"]
+            else:
+                temp = np.nan
+            self.config["setup"]["temperature"] = temp
         if "viscosity" not in self.config["setup"]:
             self.config["setup"]["viscosity"] = np.nan
         # imaging

@@ -83,7 +83,7 @@ configmap = {
     # All imaging-related keywords
     "imaging": {
         "exposure time": ("Framerate", "Shutter Time"),
-        "flash current": ("General", "Current LED [A]"),
+        "flash current": ("General", "Current LED"),
         "flash device": "LED (undefined)",
         "flash duration": ("General", "Shutter Time LED [us]"),
         "frame rate": ("Framerate", "Frame Rate"),

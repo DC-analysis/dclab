@@ -21,6 +21,16 @@ from dclab import new_dataset, dfn
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
+def test_event_count():
+    tdms_path = retreive_tdms(example_data_sets[1])
+    ds = new_dataset(tdms_path)
+    ds.filter.manual[0] = False
+    ch = new_dataset(ds)
+    assert ds.config["experiment"]["event count"] == len(ds)
+    assert ch.config["experiment"]["event count"] == len(ch)
+    assert len(ds) == len(ch) + 1
+
+
 def test_hierarchy_from_tdms():
     tdms_path = retreive_tdms(example_data_sets[1])
     ds1 = new_dataset(tdms_path)

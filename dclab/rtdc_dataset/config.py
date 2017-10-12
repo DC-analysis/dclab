@@ -70,14 +70,15 @@ class Configuration(object):
         """
         self._cfg = CaseInsensitiveDict()
 
+        # set initial default values
+        self._init_default_values()
+        
         # Update with additional dictionary
         self.update(cfg)
 
         # Load configuration files
         for f in files:
             self.update(load_from_file(f))
-
-        self._fix_config()
 
 
     def __contains__(self, key):
@@ -116,36 +117,27 @@ class Configuration(object):
         self._cfg.__setitem__(*args)
 
 
-    def _fix_config(self):
-        """Fix missing config keys using default values
+    def _init_default_values(self):
+        """Set default initial values
         
         The default values are hard-coded for backwards compatibility
         and for several functionalities in dclab.
         """
-        ## Filtering
-        if not "filtering" in self:
-            self["filtering"] = CaseInsensitiveDict()
         # Do not filter out invalid event values
-        if not "remove invalid events" in self["filtering"]:
-            self["filtering"]["remove invalid events"] = False
+        self["filtering"]["remove invalid events"] = False
         # Enable filters switch is mandatory
-        if not "enable filters" in self["filtering"]:
-            self["filtering"]["enable filters"] = True
+        self["filtering"]["enable filters"] = True
         # Limit events integer to downsample output data
-        if not "limit events" in self["filtering"]:
-            self["filtering"]["limit events"] = 0
+        self["filtering"]["limit events"] = 0
         # Polygon filter list
-        if not "polygon filters" in self["filtering"]:
-            self["filtering"]["polygon filters"] = []
+        self["filtering"]["polygon filters"] = []
         # Defaults to no hierarchy parent
-        if not "hierarchy parent" in self["filtering"]:
-            self["filtering"]["hierarchy parent"] = "none"
+        self["filtering"]["hierarchy parent"] = "none"
         # Check for missing min/max values and set them to zero
         for item in dfn.column_names:
             appends = [" min", " max"]
             for a in appends:
-                if not item+a in self["filtering"]:
-                    self["filtering"][item+a] = 0
+                self["filtering"][item + a] = 0
 
 
     def copy(self):
@@ -170,7 +162,7 @@ class Configuration(object):
                 var, val = keyval_typ2str(ikey, section[ikey])
                 out.append("{} = {}".format(var, val))
             out.append("")
-        
+
         with io.open(filename, "w") as f:
             for i in range(len(out)):
                 # win-like line endings

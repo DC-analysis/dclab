@@ -3,6 +3,62 @@
 """Naming conventions"""
 from __future__ import division, print_function, unicode_literals
 
+import copy
+import sys
+
+if sys.version_info[0] == 2:
+    str_types = (str, unicode)
+else:
+    str_types = str
+
+
+class Bool(object):
+    """A boolean object"""
+    def __init__(self, value):
+        if isinstance(value, str_types):
+            value = value.lower()
+            if value == "false":
+                value = False
+            elif value == "true":
+                value = True
+            elif value:
+                value = bool(float(value))
+            else:
+                raise ValueError("empty string")
+        else:
+            value = bool(float(value))
+        self.value = value
+
+    def __repr__(self):
+        return "{}".format(self.value)
+
+    def __bool__(self):
+        return self.value
+    
+    def __len__(self):
+        return self.value
+
+    def __eq__(self, other):
+        if isinstance(other, Bool):
+            return self.value == other.value
+        else:
+            return self.value == other
+
+
+class IntList(list):
+    """A list of integers"""
+    def __init__(self, alist=[]):
+        super(IntList, self).__init__()
+        if not isinstance(alist, (list, tuple)):
+            # we have a string (comma-separated integers)
+            alist = alist.strip().strip("[] ").split(",")
+        for it in alist:
+            if it:
+                self.append(it)
+
+    def append(self, value):
+        super(IntList, self).append(int(value))
+
 
 # These are columns that contain a scalar value for each event.
 # Other valid columns are "image", "contour", and "trace".
@@ -85,7 +141,7 @@ for _cc in _columns:
 #    exposure time = 20
 #    ...
 #    etc.
-_meta = {
+_cfg_meta = {
     # All parameters related to the actual experiment
     "experiment": [
         ["date", str, "Date of measurement ('YYYY-MM-DD')"],
@@ -132,7 +188,7 @@ _meta = {
         ["bin margin", int, "Remove margin in x for contour detection"],
         ["bin threshold", int, "Binary threshold for avg-bg-corrected image"],
         ["image blur", int, "Odd sigma for Gaussian blur (21x21 kernel)"],
-        ["no absdiff", bool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
+        ["no absdiff", Bool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
         ],
     # All online filters
     "online_filter": [
@@ -150,22 +206,45 @@ _meta = {
         ["flow rate", float, "Flow rate in channel [µl/s]"],
         ["flow rate sample", float, "Sample flow rate [µl/s]"],
         ["flow rate sheath", float, "Sheath flow rate [µl/s]"],
-        ["medium", str, "The medium used (e.g. CellCarrierB, water)"],
+        ["medium", str, "Medium used (e.g. CellCarrierB, water)"],
         ["module composition", str, "Comma-separated list of modules used"],
         ["software version", str, "Acquisition software with version"],
         ["temperature", float, "Chip temperature [°C]"],
-        ["viscosity", float, "Medium viscosity [Pa*s], if 'medium' not given"]
+        ["viscosity", float, "Medium viscosity [Pa*s] if 'medium' not given"],
         ],
     }
 
+
+_cfg_analysis = {
+    # filtering parameters
+    "filtering": [
+        ["hierarchy parent", str, "Hierarchy parent of the data set"],
+        ["remove invalid events", Bool, "Remove events with inf/nan values"],
+        ["enable filters", Bool, "Enable filtering"],
+        ["limit events", Bool, "Upper limit for number of filtered events"],
+        ["polygon filters", IntList, "Polygon filter indices"],
+        ],
+    # Addition user-defined data
+    "calculation": [
+        ["emodulus model", str, "Model for computing elastic moduli"],
+        ["emodulus medium", str, "Medium used (e.g. CellCarrierB, water)"],
+        ["emodulus temperature", float, "Chip temperature [°C]"],
+        ["emodulus viscosity", float, "Viscosity [Pa*s] if 'medium' unknown"],
+        ]
+    }
+
+
+_cfg = copy.deepcopy(_cfg_meta)
+_cfg.update(_cfg_analysis)
+
 # dict with section as keys and config parameter names as values
 config_keys = {}
-for _key in _meta:
-    config_keys[_key] = [ it[0] for it in _meta[_key] ]
+for _key in _cfg:
+    config_keys[_key] = [ it[0] for it in _cfg[_key] ]
 
 # dict of dicts containing the type of section parameters
 config_types = {}
-for _key in _meta:
+for _key in _cfg:
     config_types[_key] = {}
-    for _subkey, _type, __ in _meta[_key]:
+    for _subkey, _type, __ in _cfg[_key]:
         config_types[_key][_subkey] = _type

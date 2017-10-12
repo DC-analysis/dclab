@@ -1,3 +1,5 @@
+0.2.8
+ - Refactor configuration class to support new format (#26)
 0.2.7
  - New submodule and classes for managing isoelastics
  - New ancillary columns "inert_ratio_raw" and "inert_ratio_cvx"

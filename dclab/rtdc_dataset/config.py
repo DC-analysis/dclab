@@ -213,12 +213,21 @@ def load_from_file(cfg_file):
         line = line.split("#")[0].strip()
         if len(line) != 0:
             if line.startswith("[") and line.endswith("]"):
-                section = line[1:-1]
+                section = line[1:-1].lower()
                 if not section in cfg:
                     cfg[section] = CaseInsensitiveDict()
                 continue
             var, val = line.split("=", 1)
-            var, val = keyval_str2typ(var, val)
+            var = var.strip().lower()
+            val = val.strip()
+            # convert parameter value to correct type
+            if (section in dfn.config_types and
+                var in dfn.config_types[section]):
+                # standard parameter with known type
+                val = dfn.config_types[section][var](val)
+            else:
+                # unknown parameter (e.g. plotting in ShapeOut), guess type
+                var, val = keyval_str2typ(var, val)
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val
     return cfg

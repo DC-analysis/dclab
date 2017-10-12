@@ -35,7 +35,7 @@ def equals(a, b):
         else:
             assert np.allclose(a,b), "a={} vs b={}".format(a, b)
     else:
-        assert a==b
+        assert a==b, "a={} vs b={}".format(a, b)
     return True
 
 

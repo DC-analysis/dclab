@@ -209,9 +209,9 @@ _cfg_meta = {
     "setup": [
         ["channel width", float, "Width of microfluidic channel [µm]"],
         ["chip region", str, "Imaged chip region (channel or reservoir)"],
-        ["flow rate", float, "Flow rate in channel [µl/s]"],
-        ["flow rate sample", float, "Sample flow rate [µl/s]"],
-        ["flow rate sheath", float, "Sheath flow rate [µl/s]"],
+        ["flow rate", float, "Flow rate in channel [µL/s]"],
+        ["flow rate sample", float, "Sample flow rate [µL/s]"],
+        ["flow rate sheath", float, "Sheath flow rate [µL/s]"],
         ["medium", str, "Medium used (e.g. CellCarrierB, water)"],
         ["module composition", str, "Comma-separated list of modules used"],
         ["software version", str, "Acquisition software with version"],

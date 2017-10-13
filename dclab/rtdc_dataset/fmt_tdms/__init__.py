@@ -120,7 +120,7 @@ class RTDC_TDMS(RTDCBase):
             self.config["experiment"]["sample"] = self.title
         if "time" not in self.config["experiment"]:
             # Start time of measurement ('HH:MM:SS')
-            timestr = time.strftime("%H-%M-%S", gmtime)
+            timestr = time.strftime("%H:%M:%S", gmtime)
             self.config["experiment"]["time"] = timestr
         # fmt_tdms
         if "video frame offset" not in self.config["fmt_tdms"]:
@@ -129,10 +129,13 @@ class RTDC_TDMS(RTDCBase):
         if "flow rate" not in self.config["setup"]:
             self.config["setup"]["flow rate"] = np.nan
         if "channel width" not in self.config["setup"]:
-            if self.config["setup"]["flow Rate [ul/s]"] < 0.16:
-                self.config["setup"]["channel width"] = 20
+            if "channel width" in residual_config["general"]:
+                channel_width = residual_config["general"]["channel width"]
+            if self.config["setup"]["flow rate"] < 0.16:
+                channel_width = 20
             else:
-                self.config["setup"]["channel width"] = 30
+                channel_width = 30
+            self.config["setup"]["channel width"] = channel_width
         if "temperature" not in self.config["setup"]:
             if "ambient temp. [c]" in residual_config["image"]:
                 temp = residual_config["image"]["ambient temp. [c]"]

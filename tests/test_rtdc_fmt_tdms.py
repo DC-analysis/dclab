@@ -23,6 +23,29 @@ import dclab.rtdc_dataset.fmt_tdms.naming
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
 
+def test_compatibility_minimal():
+    ds = new_dataset(retreive_tdms("rtdc_data_minimal.zip"))
+    assert ds.config["setup"]["channel width"] == 20
+    assert ds.config["setup"]["chip region"].lower() == "channel"
+    assert ds.config["setup"]["flow rate"] == 0.12
+    assert ds.config["imaging"]["pixel size"] == 0.34
+    assert ds.config["imaging"]["flash current"] == 70
+    cleanup()
+
+
+def test_compatibility_shapein201():
+    ds = new_dataset(retreive_tdms("rtdc_data_shapein_v2.0.1.zip"))
+    assert ds.config["setup"]["channel width"] == 20
+    assert ds.config["setup"]["chip region"].lower() == "channel"
+    assert ds.config["setup"]["software version"] == "ShapeIn 2.0.1"
+    assert ds.config["imaging"]["pixel size"] == 0.34
+    assert ds.config["imaging"]["flash duration"] == 2
+    assert ds.config["experiment"]["date"] == "2017-10-12"
+    assert ds.config["experiment"]["time"] == "12:54:31"
+    
+    
+    cleanup()
+
 def test_contour_basic():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
     assert len(ds["contour"]) == 12

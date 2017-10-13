@@ -70,4 +70,5 @@ example_data_sets = ["rtdc_data_minimal.zip",
                      "rtdc_data_traces_video.zip",
                      "rtdc_data_traces_video_bright.zip",
                      "rtdc_data_traces_video_large_fov.zip",
+                     "rtdc_data_shapein_v2.0.1.zip",
                      ]

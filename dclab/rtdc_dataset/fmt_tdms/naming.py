@@ -61,6 +61,9 @@ tr_data = [["fluorescence traces", "FL1raw"],
 configmap = {
     "experiment": {
         "run index": ("General", "Measurement Number"),
+        "sample": ("General", "Sample Name"),
+        "date": ("General", "Date [YYYY-MM-DD]"),
+        "time": ("General", "Start Time [hh:mm:ss]"),
         },
     # All special keywords related to RT-FDC
     "fluorescence": {
@@ -72,9 +75,9 @@ configmap = {
         "laser 1 lambda": 488,
         "laser 2 lambda": 561,
         "laser 3 lambda": 640,
-        "sample rate": ("FLUOR", "Samplerate"),
-        "signal max": ("FLUOR", "ADCmax"),
-        "signal min": ("FLUOR", "ADCmin"),
+        "sample rate": ("FLUOR", "Samplerate [sps]"),
+        "signal max": ("FLUOR", "ADCmax [V]"),
+        "signal min": ("FLUOR", "ADCmin [V]"),
         },
     # All tdms-related parameters
     "fmt_tdms": {
@@ -83,7 +86,7 @@ configmap = {
     # All imaging-related keywords
     "imaging": {
         "exposure time": ("Framerate", "Shutter Time"),
-        "flash current": ("General", "Current LED"),
+        "flash current": ("General", "Current LED [A]"),
         "flash device": "LED (undefined)",
         "flash duration": ("General", "Shutter Time LED [us]"),
         "frame rate": ("Framerate", "Frame Rate"),
@@ -111,14 +114,14 @@ configmap = {
         },
     # All setup-related keywords, except imaging
     "setup": {
-        "channel width": ("General", "Channel width"),
+        "channel width": ("General", "Channel width [um]"),
         "chip region": ("General", "Region"),
         "flow rate": ("General", "Flow Rate [ul/s]"),
         "flow rate sample": ("General", "Sample Flow Rate [ul/s]"),
         "flow rate sheath": ("General", "Sheath Flow Rate [ul/s]"),
-        #"medium": "CellCarrier",
+        "medium": ("General", "Buffer Medium"),
         "module composition": ("Image", "Setup"),
-        "software version": "tdms-acquisition (unknown)",
+        "software version": ("General", "Software Version"),
         "temperature": ("FLUOR", "Ambient Temperature"),
         #"viscosity": None,
         },

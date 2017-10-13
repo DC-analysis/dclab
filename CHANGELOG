@@ -1,6 +1,7 @@
 0.2.9
  - Bugfixes:
    - Regression when loading configuration strings containing quotes
+   - Parameters missing when loading ShapeIn 2.0.1 tdms data
 0.2.8
  - Refactor configuration class to support new format (#26)
 0.2.7

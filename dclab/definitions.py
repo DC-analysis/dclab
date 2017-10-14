@@ -169,6 +169,7 @@ _cfg_meta = {
         ["sample rate", float, "Trace sample rate [Hz]"],
         ["signal max", float, "Upper voltage detection limit [V]"],
         ["signal min", float, "Lower voltage detection limit [V]"],
+        ["trace median", int, "Rolling median filter size for traces"],
         ],
     # All tdms-related parameters
     "fmt_tdms": [

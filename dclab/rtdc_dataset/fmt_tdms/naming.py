@@ -1,5 +1,5 @@
-# Keys are the column names dclab and
-# values are the column names in the tdms file format.
+# Keys are the feature names dclab and
+# values are the feature names in the tdms file format.
 dclab2tdms = {
    "area_cvx": "area",
    "area_msd": "raw area",
@@ -36,7 +36,7 @@ dclab2tdms = {
    "size_y": "ax1",
    }
 
-# Add userdef columns
+# Add userdef features
 for _i in range(10):
     dclab2tdms["userdef{}".format(_i)] = "userDef{}".format(_i)
 
@@ -48,8 +48,8 @@ for kk in dclab2tdms:
 
 
 # traces_tdms file definitions
-# The second column should not contain duplicates! - even if the 
-# entries in the first columns are different.
+# The second feature should not contain duplicates! - even if the 
+# entries in the first features are different.
 tr_data = [["fluorescence traces", "FL1raw"],
            ["fluorescence traces", "FL2raw"],
            ["fluorescence traces", "FL3raw"],

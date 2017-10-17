@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Computation of ancillary columns
+"""Computation of ancillary features
 
-Ancillary columns are computed on-the-fly in dclab if the
-required data is available. The columns are registered here
+Ancillary features are computed on-the-fly in dclab if the
+required data is available. The features are registered here
 and are computed when `RTDCBase.__getitem__` is called with
-the respective column name. When `RTDCBase.__contains__` is
-called with the column name, then the column is not yet
+the respective feature name. When `RTDCBase.__contains__` is
+called with the feature name, then the feature is not yet
 computed, but the prerequisites are evaluated:
 
 In [1]: "emodulus" in rtdc_dataset  # nothing is computed
@@ -16,8 +16,8 @@ Out[2]: ndarray([...])  # now data is computed and cached
 
 Once the data has been computed, `RTDCBase` caches it in
 the `_ancillaries` property dict together with a hash
-that is computed with `AncillaryColumn.hash`. The hash
-is computed from the column data `req_columns` and the
+that is computed with `AncillaryFeature.hash`. The hash
+is computed from the feature data `req_features` and the
 configuration metadata `req_config`.
 """
 from __future__ import division, print_function, unicode_literals
@@ -31,49 +31,49 @@ from .. import features
 from .util import obj2str
 
 
-class AncillaryColumn():
+class AncillaryFeature():
     # Holds all instances of this class
-    columns = []
-    column_names = []
-    def __init__(self, column_name, method, req_config=[], req_columns=[]):
-        """A data column that is computed from existing data
+    features = []
+    feature_names = []
+    def __init__(self, feature_name, method, req_config=[], req_features=[]):
+        """A data feature that is computed from existing data
         
         Parameters
         ----------
-        column_name: str
-            The name of the ancillary column, e.g. "emodulus".
+        feature_name: str
+            The name of the ancillary feature, e.g. "emodulus".
         method: callable
-            The method that computes the column. This method
+            The method that computes the feature. This method
             takes an instance of `RTDCBase` as argument.
         req_config: list
-            Required configuration parameters to compute the column,
+            Required configuration parameters to compute the feature,
             e.g. ["calculation", ["emodulus model", "emodulus viscosity"]]
-        req_columns: list
-            Required existing columns in the data set,
+        req_features: list
+            Required existing features in the data set,
             e.g. ["area_cvx", "deform"]
         
         Notes
         -----
-        `req_config` and `req_columns` are used to test whether the
-        column can be computed in `self.is_available`.
+        `req_config` and `req_features` are used to test whether the
+        feature can be computed in `self.is_available`.
         """
-        self.column_name = column_name
+        self.feature_name = feature_name
         self.method = method
         self.req_config = req_config
-        self.req_columns = req_columns
+        self.req_features = req_features
         
-        # register this column
-        AncillaryColumn.columns.append(self)
-        AncillaryColumn.column_names.append(column_name)
+        # register this feature
+        AncillaryFeature.features.append(self)
+        AncillaryFeature.feature_names.append(feature_name)
 
 
     def __repr__(self):
-        return "Ancillary column: {}".format(self.column_name)
+        return "Ancillary feature: {}".format(self.feature_name)
    
     
     @staticmethod
-    def available_columns(rtdc_ds):
-        """Determine available columns for an RT-DS data set
+    def available_features(rtdc_ds):
+        """Determine available features for an RT-DS data set
         
         Parameters
         ----------
@@ -82,41 +82,41 @@ class AncillaryColumn():
         
         Returns
         -------
-        columns: dict
-            Dictionary with column names as keys and instances
-            of `AncillaryColumn` as values.
+        features: dict
+            Dictionary with feature names as keys and instances
+            of `AncillaryFeature` as values.
         """
         cols = {}
-        for inst in AncillaryColumn.columns:
+        for inst in AncillaryFeature.features:
             if inst.is_available(rtdc_ds):
-                cols[inst.column_name] = inst
+                cols[inst.feature_name] = inst
         return cols
 
 
     def compute(self, rtdc_ds):
-        """Compute the column with self.method
+        """Compute the feature with self.method
 
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
-            The data set to compute the column for
+            The data set to compute the feature for
         
         Returns
         -------
-        column: array- or list-like
-            The computed data column (read-only).
+        feature: array- or list-like
+            The computed data feature (read-only).
         """
         data = self.method(rtdc_ds)
         dsize = len(rtdc_ds) - data.size
 
         if dsize > 0:
-            msg = "Growing column {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.column_name, rtdc_ds, abs(dsize)))
+            msg = "Growing feature {} in {} by {} to match event number!"
+            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)))
             data.resize(len(rtdc_ds), refcheck=False)
             data[-dsize:] = np.nan
         elif dsize < 0:
-            msg = "Shrinking column {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.column_name, rtdc_ds, abs(dsize)))
+            msg = "Shrinking feature {} in {} by {} to match event number!"
+            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)))
             data.resize(len(rtdc_ds), refcheck=False)
 
         data.setflags(write=False)
@@ -124,25 +124,25 @@ class AncillaryColumn():
 
 
     @staticmethod
-    def get_column(column_name):
-        for col in AncillaryColumn.columns:
-            if col.column_name == column_name:
+    def get_feature(feature_name):
+        for col in AncillaryFeature.features:
+            if col.feature_name == feature_name:
                 return col
         else:
-            raise KeyError("Column {} not found.".format(column_name))
+            raise KeyError("Feature {} not found.".format(feature_name))
 
 
     def hash(self, rtdc_ds):
         """Used for identifying an ancillary computation"""
         hasher = hashlib.md5()
         hasher.update(obj2str(self.req_config))
-        for col in self.req_columns:
+        for col in self.req_features:
             hasher.update(obj2str(rtdc_ds[col]))
         return hasher.hexdigest()
 
 
     def is_available(self, rtdc_ds, verbose=False):
-        """Check whether the column is available
+        """Check whether the feature is available
         
         Parameters
         ----------
@@ -152,7 +152,7 @@ class AncillaryColumn():
         Returns
         -------
         available: bool
-            `True`, if column can be computed with `compute`
+            `True`, if feature can be computed with `compute`
         """
         # Check config keys
         for item in self.req_config:
@@ -168,8 +168,8 @@ class AncillaryColumn():
                             print("{} not in config['{}']".format(key,
                                                                   section))
                         return False
-        # Check columns
-        for col in self.req_columns:
+        # Check features
+        for col in self.req_features:
             if col not in rtdc_ds:
                 return False
         # All passed
@@ -268,44 +268,44 @@ def compute_volume(mm):
     
 
 # Register ancillaries
-AncillaryColumn(column_name="area_ratio",
+AncillaryFeature(feature_name="area_ratio",
                 method=compute_area_ratio,
-                req_columns=["area_cvx", "area_msd"]
+                req_features=["area_cvx", "area_msd"]
                 )
 
-AncillaryColumn(column_name="area_um",
+AncillaryFeature(feature_name="area_um",
                 method=compute_area_um,
                 req_config=[["imaging", ["pixel size"]]],
-                req_columns=["area_cvx"]
+                req_features=["area_cvx"]
                 )
 
-AncillaryColumn(column_name="aspect",
+AncillaryFeature(feature_name="aspect",
                 method=compute_aspect,
-                req_columns=["size_x", "size_y"]
+                req_features=["size_x", "size_y"]
                 )
 
-AncillaryColumn(column_name="bright_avg",
+AncillaryFeature(feature_name="bright_avg",
                 method=compute_bright_avg,
-                req_columns=["image", "contour"],
+                req_features=["image", "contour"],
                 )
 
-AncillaryColumn(column_name="bright_sd",
+AncillaryFeature(feature_name="bright_sd",
                 method=compute_bright_sd,
-                req_columns=["image", "contour"],
+                req_features=["image", "contour"],
                 )
 
 
-AncillaryColumn(column_name="deform",
+AncillaryFeature(feature_name="deform",
                 method=compute_deform,
-                req_columns=["circ"]
+                req_features=["circ"]
                 )
 
 # TODO:
-# - Define multiple AncillaryColumn of "emodulus":
-#   (e.g. using "temperature" column) 
-AncillaryColumn(column_name="emodulus",
+# - Define multiple AncillaryFeature of "emodulus":
+#   (e.g. using "temperature" feature) 
+AncillaryFeature(feature_name="emodulus",
                 method=compute_emodulus,
-                req_columns=["area_um", "deform"],
+                req_features=["area_um", "deform"],
                 req_config=[["calculation", 
                              ["emodulus medium",
                               "emodulus model",
@@ -322,28 +322,28 @@ AncillaryColumn(column_name="emodulus",
                             ],
                 )
 
-AncillaryColumn(column_name="index",
+AncillaryFeature(feature_name="index",
                 method=compute_index,
                 )
 
-AncillaryColumn(column_name="inert_ratio_cvx",
+AncillaryFeature(feature_name="inert_ratio_cvx",
                 method=compute_inert_ratio_cvx,
-                req_columns=["contour"],
+                req_features=["contour"],
                 )
 
-AncillaryColumn(column_name="inert_ratio_raw",
+AncillaryFeature(feature_name="inert_ratio_raw",
                 method=compute_inert_ratio_raw,
-                req_columns=["contour"],
+                req_features=["contour"],
                 )
 
-AncillaryColumn(column_name="time",
+AncillaryFeature(feature_name="time",
                 method=compute_time,
                 req_config=[["imaging", ["frame rate"]]],
-                req_columns=["frame"]
+                req_features=["frame"]
                 )
 
-AncillaryColumn(column_name="volume",
+AncillaryFeature(feature_name="volume",
                 method=compute_volume,
-                req_columns=["contour", "pos_x", "pos_y"],
+                req_features=["contour", "pos_x", "pos_y"],
                 req_config=[["imaging", ["pixel size"]]],
                 )

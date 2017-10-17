@@ -21,7 +21,7 @@ class RTDC_Dict(RTDCBase):
         Parameters
         ----------
         ddict: dict
-            Dictionary with keys from `dclab.definitions.column_names`
+            Dictionary with keys from `dclab.definitions.feature_names`
             (e.g. "area_cvx", "deform") with which the class will be
             instantiated. The configuration is set to the default
             configuration of dclab.
@@ -48,10 +48,10 @@ class RTDC_Dict(RTDCBase):
         for key in ddict:
             self._events[key] = ddict[key]
 
-        # Populate empty columns
+        # Populate empty features
         event_count = len(ddict[list(ddict.keys())[0]])
         fill0 = np.zeros(event_count)
-        for key in dfn.column_names:
+        for key in dfn.feature_names:
             if not key in self._events:
                 self._events[key] = fill0
 

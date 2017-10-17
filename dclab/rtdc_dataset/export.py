@@ -79,7 +79,7 @@ class Export(object):
             raise OSError(msg)
 
 
-    def fcs(self, path, columns, filtered=True, override=False):
+    def fcs(self, path, features, filtered=True, override=False):
         """Export the data of an RT-DC dataset to an .fcs file
         
         Parameters
@@ -88,9 +88,9 @@ class Export(object):
             The data set that will be exported.
         path : str
             Path to a .tsv file. The ending .tsv is added automatically.
-        columns : list of str
-            The columns in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.column_names`, e.g.
+        features : list of str
+            The features in the resulting .tsv file. These are strings
+            that are defined in `dclab.definitions.feature_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to ``True``, only the filtered data (index in ds._filter)
@@ -99,7 +99,7 @@ class Export(object):
             If set to ``True``, an existing file ``path`` will be overridden.
             If set to ``False``, an ``OSError`` will be raised.
         """
-        columns = [ c.lower() for c in columns ]
+        features = [ c.lower() for c in features ]
         ds = self.rtdc_ds
 
         # Make sure that path ends with .fcs
@@ -110,19 +110,19 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that columns are in dfn.column_names
-        for c in columns:
-            if c not in dfn.column_names:
-                raise ValueError("Unknown column name {}".format(c))
+        # Check that features are in dfn.feature_names
+        for c in features:
+            if c not in dfn.feature_names:
+                raise ValueError("Unknown feature name {}".format(c))
         
         # Collect the header
-        chn_names = [ dfn.name2label[c] for c in columns ]
+        chn_names = [ dfn.feature_name2label[c] for c in features ]
     
         # Collect the data
         if filtered:
-            data = [ ds[c][ds._filter] for c in columns ]
+            data = [ ds[c][ds._filter] for c in features ]
         else:
-            data = [ ds[c] for c in columns ]
+            data = [ ds[c] for c in features ]
         
         data = np.array(data).transpose()
         fcswrite.write_fcs(filename=path,
@@ -130,16 +130,16 @@ class Export(object):
                            data=data)
 
 
-    def tsv(self, path, columns, filtered=True, override=False):
+    def tsv(self, path, features, filtered=True, override=False):
         """ Export the data of the current instance to a .tsv file
         
         Parameters
         ----------
         path : str
             Path to a .tsv file. The ending .tsv is added automatically.
-        columns : list of str
-            The columns in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.column_names`, e.g.
+        features : list of str
+            The features in the resulting .tsv file. These are strings
+            that are defined in `dclab.definitions.feature_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to ``True``, only the filtered data (index in ds._filter)
@@ -148,7 +148,7 @@ class Export(object):
             If set to ``True``, an existing file ``path`` will be overridden.
             If set to ``False``, an ``OSError`` will be raised.
         """
-        columns = [ c.lower() for c in columns ]
+        features = [ c.lower() for c in features ]
         ds = self.rtdc_ds
         # Make sure that path ends with .tsv
         if not path.endswith(".tsv"):
@@ -158,25 +158,25 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that columns are in dfn.column_names
-        for c in columns:
-            if c not in dfn.column_names:
-                raise ValueError("Unknown column name {}".format(c))
+        # Check that features are in dfn.feature_names
+        for c in features:
+            if c not in dfn.feature_names:
+                raise ValueError("Unknown feature name {}".format(c))
         
         # Open file
         with io.open(path, "w") as fd:
             # write header
-            header1 = "\t".join([ c for c in columns ])
+            header1 = "\t".join([ c for c in features ])
             fd.write("# "+header1+"\n")
-            header2 = "\t".join([ dfn.name2label[c] for c in columns ])
+            header2 = "\t".join([ dfn.feature_name2label[c] for c in features ])
             fd.write("# "+header2+"\n")
 
         with open(path, "ab") as fd:
             # write data
             if filtered:
-                data = [ ds[c][ds._filter] for c in columns ]
+                data = [ ds[c][ds._filter] for c in features ]
             else:
-                data = [ ds[c] for c in columns ]
+                data = [ ds[c] for c in features ]
             
             np.savetxt(fd,
                        np.array(data).transpose(),

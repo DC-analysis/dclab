@@ -13,7 +13,7 @@ from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
-from .ancillary_columns import AncillaryColumn
+from .ancillaries import AncillaryFeature
 from .export import Export
 from .filter import Filter
 
@@ -26,7 +26,7 @@ class RTDCBase(object):
         
         Notes
         -----
-        Besides the filter arrays for each data column, there is a manual
+        Besides the filter arrays for each data feature, there is a manual
         boolean filter array ``RTDCBase.filter.manual`` that can be edited
         by the user - a boolean value of ``False`` means that the event is 
         excluded from all computations.
@@ -35,8 +35,8 @@ class RTDCBase(object):
         self.format = self.__class__.__name__.split("_")[-1].lower()
         
         self._polygon_filter_ids = []
-        # Ancillaries have the column name as keys and a
-        # tuple containing column and hash as value.
+        # Ancillaries have the feature name as keys and a
+        # tuple containing feature and hash as value.
         self._ancillaries = {}
         # export functionalities
         self.export = Export(self)
@@ -62,12 +62,12 @@ class RTDCBase(object):
                 # (e.g. tdms image, trace, contour)
                 ct = True
         if ct == False:
-            # Check ancillary columns data
+            # Check ancillary features data
             if key in self._ancillaries:
                 # already computed
                 ct = True
-            elif key in AncillaryColumn.column_names:
-                cc = AncillaryColumn.get_column(key)
+            elif key in AncillaryFeature.feature_names:
+                cc = AncillaryFeature.get_feature(key)
                 if cc.is_available(self):
                     # to be computed
                     ct = True
@@ -79,12 +79,12 @@ class RTDCBase(object):
             data = self._events[key]
             if not np.all(data==0):
                 return data 
-        # Try to find the column in the ancillary columns
-        # (see ancillary_columns.py for more information).
-        # These columns are cached in `self._ancillaries`.
-        ancol = AncillaryColumn.available_columns(self)
+        # Try to find the feature in the ancillary features
+        # (see ancillaries.py for more information).
+        # These features are cached in `self._ancillaries`.
+        ancol = AncillaryFeature.available_features(self)
         if key in ancol:
-            # The column is available.
+            # The feature is available.
             anhash = ancol[key].hash(self)
             if (key in self._ancillaries and 
                 self._ancillaries[key][0] == anhash):
@@ -101,9 +101,9 @@ class RTDCBase(object):
 
 
     def __iter__(self):
-        """An iterator over all valid scalar columns"""
+        """An iterator over all valid scalar features"""
         mycols = []
-        for col in dfn.column_names:
+        for col in dfn.feature_names:
             if col in self:
                 mycols.append(col)
         mycols.sort()
@@ -155,10 +155,10 @@ class RTDCBase(object):
 
 
     @property
-    def columns(self):
-        """Return all available columns"""
+    def features(self):
+        """Return all available features"""
         mycols = []
-        for col in dfn.column_names + ["contour", "image", "trace"]:
+        for col in dfn.feature_names + ["contour", "image", "trace"]:
             if col in self:
                 mycols.append(col)
         mycols.sort()

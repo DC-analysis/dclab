@@ -134,7 +134,7 @@ class Configuration(object):
         # Defaults to no hierarchy parent
         self["filtering"]["hierarchy parent"] = "none"
         # Check for missing min/max values and set them to zero
-        for item in dfn.column_names:
+        for item in dfn.feature_names:
             appends = [" min", " max"]
             for a in appends:
                 self["filtering"][item + a] = 0
@@ -275,7 +275,7 @@ def keyval_str2typ(var, val):
             return var, False
         elif val[0] in ["'", '"'] and val[-1] in ["'", '"']:
             return var, val.strip("'").strip('"').strip()
-        elif val in dfn.column_names:
+        elif val in dfn.feature_names:
             return var, val
         else:
             try:

@@ -47,10 +47,10 @@ class Isoelastics(object):
             as an array of shape (N,3). The last column contains
             the emodulus data.
         col1: str
-            Name of the first column of all isoelastics
+            Name of the first feature of all isoelastics
             (e.g. isoel[0][:,0])
         col2: str
-            Name of the second column of all isoelastics
+            Name of the second feature of all isoelastics
             (e.g. isoel[0][:,1])
         channel_width: float
             Channel width in µm
@@ -73,15 +73,15 @@ class Isoelastics(object):
             validstr = ",".join(VALID_METHODS)
             raise ValueError("`method` must be one of {}!".format(validstr))
         for col in [col1, col2]:
-            if col not in dfn.column_names:
-                raise ValueError("Not a valid column name: {}".format(col))
+            if col not in dfn.feature_names:
+                raise ValueError("Not a valid feature name: {}".format(col))
         
         meta = [channel_width, flow_rate, viscosity]
         
-        # Add the column data
+        # Add the feature data
         self._add(isoel, col1, col2, method, meta)
         
-        # Also add the column data for circularity
+        # Also add the feature data for circularity
         if "deform" in [col1, col2]:
             col1c, col2c = col1, col2
             if col1c == "deform":
@@ -163,10 +163,10 @@ class Isoelastics(object):
         Parameters
         ----------
         col1: str
-            Name of the first column of all isoelastics
+            Name of the first feature of all isoelastics
             (e.g. isoel[0][:,0])
         col2: str
-            Name of the second column of all isoelastics
+            Name of the second feature of all isoelastics
             (e.g. isoel[0][:,1])
         channel_width: float
             Channel width in µm
@@ -188,8 +188,8 @@ class Isoelastics(object):
             validstr = ",".join(VALID_METHODS)
             raise ValueError("`method` must be one of {}!".format(validstr))
         for col in [col1, col2]:
-            if col not in dfn.column_names:
-                raise ValueError("Not a valid column name: {}".format(col))
+            if col not in dfn.feature_names:
+                raise ValueError("Not a valid feature name: {}".format(col))
         
         if "isoelastics" not in self._data[method][col2][col1]:
             msg = "No isoelastics matching {}, {}, {}".format(col1, col2,
@@ -260,8 +260,8 @@ class Isoelastics(object):
                 elif line and not line.startswith("#"):
                     break
 
-        assert meta["column 1"] in dfn.column_names
-        assert meta["column 2"] in dfn.column_names
+        assert meta["column 1"] in dfn.feature_names
+        assert meta["column 2"] in dfn.feature_names
         assert meta["column 3"] == "emodulus"
         assert meta["method"] in VALID_METHODS
 
@@ -288,7 +288,7 @@ class Isoelastics(object):
 
 class IsoelasticsDict(dict):
     def __getitem__(self, key):
-        if key in VALID_METHODS + dfn.column_names:
+        if key in VALID_METHODS + dfn.feature_names:
             if key not in self:
                 self[key] = IsoelasticsDict()
         return super(IsoelasticsDict, self).__getitem__(key)

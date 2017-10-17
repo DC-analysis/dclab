@@ -15,18 +15,18 @@ from . import definitions as dfn
 class Statistics(object):
     available_methods = {}
 
-    def __init__(self, name, method, req_axis=False):
+    def __init__(self, name, method, req_feature=False):
         """ A helper class for statistics.
         
         All statistical methods are registered in the dictionary
         `Statistics.available_methods`.
         """
-        self.method=method
-        self.name=name
-        self.req_axis=req_axis
-        Statistics.available_methods[name]=self
+        self.method = method
+        self.name = name
+        self.req_feature = req_feature
+        Statistics.available_methods[name] = self
 
-    def get_column(self, rtdc_ds, axis):
+    def get_feature(self, rtdc_ds, axis):
         axis = axis.lower()
         if rtdc_ds.config["filtering"]["enable filters"]:
             x = rtdc_ds[axis][rtdc_ds._filter]
@@ -42,10 +42,10 @@ class Statistics(object):
         
         rtdc_ds = kwargs["rtdc_ds"]
 
-        if self.req_axis:
-            if "axis" not in kwargs:
-                raise ValueError("Keyword argument 'axis' missing.")
-            return self.get_column(rtdc_ds, kwargs["axis"])
+        if self.req_feature:
+            if "feature" not in kwargs:
+                raise ValueError("Keyword argument 'feature' missing.")
+            return self.get_feature(rtdc_ds, kwargs["feature"])
         else:
             return rtdc_ds
 
@@ -57,8 +57,9 @@ class Statistics(object):
             try:
                 result = self.method(data)
             except:
+                exc = tb.format_exc().replace("\n", "\n    | ")
                 warnings.warn("Failed to compute {} for {}: {}".format(
-                              self.name, kwargs["rtdc_ds"].title, tb.format_exc()))
+                              self.name, kwargs["rtdc_ds"].title, exc))
                 result = np.nan
         return result
 
@@ -71,61 +72,61 @@ def flow_rate(mm):
         return np.nan
 
     
-def get_statistics(rtdc_ds, columns=None, axes=None):
+def get_statistics(rtdc_ds, methods=None, features=None):
     """
     Parameters
     ----------
     rtdc_ds : instance of `dclab.rtdc_dataset.RTDCBase`.
         The data set for which to compute the statistics.
-    columns : list of str or None
-        The columns for which to compute the statistics.
+    methods : list of str or None
+        The methods wih which to compute the statistics.
         The list of available methods is given with
         `dclab.statistics.Statistics.available_methods.keys()`
-        If set to `None`, statistics for all columns are computed.
-    axes : list of str
-        Column name identifiers are defined in
-        `dclab.definitions.column_names`.
+        If set to `None`, statistics for all methods are computed.
+    features : list of str
+        Feature name identifiers are defined in
+        `dclab.definitions.feature_names`.
         If set to `None`, statistics for all axes are computed. 
     
     Returns
     -------
     header : list of str
-        The header (column names) of the computed statistics.
+        The header (feature + method names) of the computed statistics.
     values : list of float
         The computed statistics.
     """
-    if columns is None:
+    if methods is None:
         cls = list(Statistics.available_methods.keys())
-        # sort the columns in a usable way
-        c1 = [ c for c in cls if not Statistics.available_methods[c].req_axis ]
-        c2 = [ c for c in cls if Statistics.available_methods[c].req_axis ]
-        columns = c1+c2
+        # sort the features in a usable way
+        me1 = [ m for m in cls if not Statistics.available_methods[m].req_feature ]
+        me2 = [ m for m in cls if Statistics.available_methods[m].req_feature ]
+        methods = me1 + me2
 
-    if axes is None:
-        axes = dfn.column_names
+    if features is None:
+        features = dfn.feature_names
     else:
-        axes = [a.lower() for a in axes]
+        features = [a.lower() for a in features]
     
     header = []
     values = []
 
-    # To make sure that all columns are computed for each axis in a block,
-    # we loop over all axes. It would be easier to loop over the columns,
+    # To make sure that all methods are computed for each feature in a block,
+    # we loop over all features. It would be easier to loop over the methods,
     # but the resulting statistics would not be human-friendly.
-    for ax in axes:
-        for c in columns:
-            meth = Statistics.available_methods[c]
-            if meth.req_axis:
-                if ax in rtdc_ds:
-                    values.append(meth(rtdc_ds=rtdc_ds, axis=ax))
+    for ft in features:
+        for mt in methods:
+            meth = Statistics.available_methods[mt]
+            if meth.req_feature:
+                if ft in rtdc_ds:
+                    values.append(meth(rtdc_ds=rtdc_ds, feature=ft))
                 else:
                     values.append(np.nan)
-                header.append(" ".join([c, dfn.name2label[ax]]))
+                header.append(" ".join([mt, dfn.feature_name2label[ft]]))
             else:
-                # Prevent multiple entries of this column.
-                if not header.count(c):
+                # Prevent multiple entries of this method.
+                if not header.count(mt):
                     values.append(meth(rtdc_ds=rtdc_ds))
-                    header.append(c)
+                    header.append(mt)
 
     return header, values
 
@@ -169,10 +170,10 @@ def mode(data):
 
 ## Register all the methods
 # Methods that require an axis
-Statistics(name="Mean",   req_axis=True, method=np.average)
-Statistics(name="Median", req_axis=True, method=np.median)
-Statistics(name="Mode",   req_axis=True, method=mode)
-Statistics(name="SD",     req_axis=True, method=np.std)
+Statistics(name="Mean",   req_feature=True, method=np.average)
+Statistics(name="Median", req_feature=True, method=np.median)
+Statistics(name="Mode",   req_feature=True, method=mode)
+Statistics(name="SD",     req_feature=True, method=np.std)
 # Methods that work on RTDCBase
 Statistics(name="Events",
            method=lambda mm: np.sum(mm._filter))

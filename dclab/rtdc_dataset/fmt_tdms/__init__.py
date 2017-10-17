@@ -51,7 +51,7 @@ class RTDC_TDMS(RTDCBase):
         
         self._init_data_with_tdms(tdms_path)
 
-        # Add additional columns
+        # Add additional features
         # event images
         self._events["image"] = ImageColumn(self)
         # event contours
@@ -67,7 +67,7 @@ class RTDC_TDMS(RTDCBase):
         # time is always there
         table = "Cell Track"
         datalen = len(tdms_file.object(table, "time").data)
-        # Edit naming.dclab2tdms to add columns
+        # Edit naming.dclab2tdms to add features
         for arg in naming.tdms2dclab:
             try:
                 data = tdms_file.object(table, arg).data
@@ -75,8 +75,8 @@ class RTDC_TDMS(RTDCBase):
                 pass
             else:
                 if data is None or len(data)==0:
-                    # Fill empty columns with zeros. npTDMS treats empty
-                    # columns in the following way:
+                    # Fill empty features with zeros. npTDMS treats empty
+                    # features in the following way:
                     # - in nptdms 0.8.2, `data` is `None`
                     # - in nptdms 0.9.0, `data` is an array of length 0
                     data = np.zeros(datalen)

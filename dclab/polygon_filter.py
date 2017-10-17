@@ -30,8 +30,8 @@ class PolygonFilter(object):
         Parameters
         ----------
         axes: tuple of str
-            The axes on which the polygon is defined. The first axis is
-            the x-axis. Example: ("area_um", "deform").
+            The axes/features on which the polygon is defined. The
+            first axis is the x-axis. Example: ("area_um", "deform").
         points: array-like object of shape (N,2)
             The N coordinates (x,y) of the polygon. The exact order is
             important.

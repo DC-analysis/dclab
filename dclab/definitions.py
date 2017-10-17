@@ -155,7 +155,7 @@ FEATURES = [
    ["time", "Event time [s]"],
    ["volume", "Volume [µm³]"],
    ]
-# Add userdef featuress
+# Add userdef features
 for _i in range(10):
     FEATURES.append(["userdef{}".format(_i),
                      "User defined {}".format(_i)

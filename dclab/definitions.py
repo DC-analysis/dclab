@@ -161,6 +161,17 @@ for _i in range(10):
                      "User defined {}".format(_i)
                      ])
 
+# List of fluorescence traces
+FLUOR_TRACES = [
+    "fl1_median",
+    "fl1_raw",
+    "fl2_median",
+    "fl2_raw",    
+    "fl3_median",
+    "fl3_raw",
+    ]
+
+
 # CFG convenience lists and dicts
 _cfg = copy.deepcopy(CFG_METADATA)
 _cfg.update(CFG_ANALYSIS)

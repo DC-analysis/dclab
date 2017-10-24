@@ -55,7 +55,7 @@ class RTDCBase(object):
             # Stored data contains events
             val = self._events[key]
             if isinstance(val, np.ndarray):
-                # False of stored data is zero 
+                # False if stored data is zero 
                 ct = not np.all(val == 0)
             elif val:
                 # True if stored data is not empty

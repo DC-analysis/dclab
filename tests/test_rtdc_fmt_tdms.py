@@ -191,14 +191,6 @@ def test_load_tdms_simple():
     cleanup()
 
 
-def test_trace_basic():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
-    assert ds["trace"].__repr__().count("<not loaded into memory>"), "traces should not be loaded into memory before first access"
-    assert len(ds["trace"]) == 6
-    assert np.allclose(np.average(ds["trace"]["FL1med"][0]), 287.08999999999997)
-    cleanup()
-
-
 def test_project_path():
     tfile = retreive_tdms(example_data_sets[0])
     ds = dclab.new_dataset(tfile)
@@ -217,21 +209,32 @@ def test_project_path():
     cleanup()
 
 
+def test_trace_basic():
+    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    assert ds["trace"].__repr__().count("<not loaded into memory>"), "traces should not be loaded into memory before first access"
+    assert len(ds["trace"]) == 6
+    assert np.allclose(np.average(ds["trace"]["fl1_median"][0]), 287.08999999999997)
+    cleanup()
+
+
 def test_trace_import_fail():
+    # make sure undefined trace data does not raise an error
     tdms_path = retreive_tdms(example_data_sets[1])
-    dclab.rtdc_dataset.fmt_tdms.naming.tr_data.append([u'fluorescence traces', u'peter'])
-    _ds1 = new_dataset(tdms_path)
+    dclab.definitions.FLUOR_TRACES.append("peter")
+    dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = [u'ukwn', u'ha']
+    new_dataset(tdms_path)
     # clean up
-    dclab.rtdc_dataset.fmt_tdms.naming.tr_data.pop(-1)
+    dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map.pop("peter")
+    dclab.definitions.FLUOR_TRACES.pop(-1)
     cleanup()
 
 
 def test_trace_methods():
     ds = new_dataset(retreive_tdms(example_data_sets[1]))
     for k in list(ds["trace"].keys()):
-        assert  k in  [u'FL1med', u'FL2raw', u'FL2med', u'FL3med', u'FL1raw', u'FL3raw']
+        assert  k in  dclab.definitions.FLUOR_TRACES
     for k in ds["trace"]:
-        assert  k in  [u'FL1med', u'FL2raw', u'FL2med', u'FL3med', u'FL1raw', u'FL3raw']
+        assert  k in  dclab.definitions.FLUOR_TRACES
     assert ds["trace"].__repr__().count("<loaded into memory>")
     cleanup()
 
@@ -242,4 +245,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

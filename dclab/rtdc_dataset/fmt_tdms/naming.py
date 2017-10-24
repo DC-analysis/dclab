@@ -50,13 +50,14 @@ for kk in dclab2tdms:
 # traces_tdms file definitions
 # The second feature should not contain duplicates! - even if the 
 # entries in the first features are different.
-tr_data = [["fluorescence traces", "FL1raw"],
-           ["fluorescence traces", "FL2raw"],
-           ["fluorescence traces", "FL3raw"],
-           ["fluorescence traces", "FL1med"],
-           ["fluorescence traces", "FL2med"],
-           ["fluorescence traces", "FL3med"],
-        ]
+tr_data_map = {
+    "fl1_raw": ["fluorescence traces", "FL1raw"],
+    "fl2_raw": ["fluorescence traces", "FL2raw"],
+    "fl3_raw": ["fluorescence traces", "FL3raw"],
+    "fl1_median": ["fluorescence traces", "FL1med"],
+    "fl2_median": ["fluorescence traces", "FL2med"],
+    "fl3_median": ["fluorescence traces", "FL3med"],
+    }
 
 configmap = {
     "experiment": {

@@ -11,6 +11,8 @@ import os
 
 from . import naming
 
+from ... import definitions as dfn
+
 class TraceColumn(object):
     def __init__(self, rtdc_dataset):
         """Prepares everything but does not load the trace data yet
@@ -24,8 +26,11 @@ class TraceColumn(object):
         self.identifier = self.mname
         
 
-    def __getitem__(self, ch):
-        return self.trace.__getitem__(ch)
+    def __getitem__(self, trace_key):
+        if trace_key not in dfn.FLUOR_TRACES:
+            msg = "Unknown fluorescence trace key: {}".format(trace_key)
+            raise ValueError(msg)
+        return self.trace.__getitem__(trace_key)
 
 
     def __len__(self):
@@ -47,7 +52,7 @@ class TraceColumn(object):
             rep = "No trace data available!"
         else:
             rep = "Fluorescence trace data from file {}, <{}>".format(tname,
-                                                                       addstr)
+                                                                      addstr)
         return rep
 
 
@@ -88,7 +93,8 @@ class TraceColumn(object):
             # Load the trace data. The traces file is usually larger than the
             # measurement file.
             tdata = nptdms.TdmsFile(tname)
-            for group, ch in naming.tr_data:
+            for trace_key in dfn.FLUOR_TRACES:
+                group, ch = naming.tr_data_map[trace_key]
                 try:
                     trdat = tdata.object(group, ch).data
                 except KeyError:
@@ -98,7 +104,7 @@ class TraceColumn(object):
                         # Only add trace if there is actual data.
                         # Split only needs the position of the sections,
                         # so we remove the first (0) index.
-                        trace[ch] = np.split(trdat, sampleids[1:])
+                        trace[trace_key] = np.split(trdat, sampleids[1:])
         return trace
         
 

@@ -5,7 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 
-from .cfg_funcs import fbool, fintlist, func_types
+from .cfg_funcs import fbool, fintlist, func_types, lcstr
 
 
 # All configuration keywords editable by the user
@@ -20,7 +20,7 @@ CFG_ANALYSIS = {
         ],
     # Addition user-defined data
     "calculation": [
-        ["emodulus model", str, "Model for computing elastic moduli"],
+        ["emodulus model", lcstr, "Model for computing elastic moduli"],
         ["emodulus medium", str, "Medium used (e.g. CellCarrierB, water)"],
         ["emodulus temperature", float, "Chip temperature [°C]"],
         ["emodulus viscosity", float, "Viscosity [Pa*s] if 'medium' unknown"],
@@ -90,7 +90,7 @@ CFG_METADATA = {
     # All setup-related keywords, except imaging
     "setup": [
         ["channel width", float, "Width of microfluidic channel [µm]"],
-        ["chip region", str, "Imaged chip region (channel or reservoir)"],
+        ["chip region", lcstr, "Imaged chip region (channel or reservoir)"],
         ["flow rate", float, "Flow rate in channel [µL/s]"],
         ["flow rate sample", float, "Sample flow rate [µL/s]"],
         ["flow rate sheath", float, "Sheath flow rate [µL/s]"],

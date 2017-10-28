@@ -11,6 +11,7 @@ else:
 
 
 def fbool(value):
+    """boolean"""
     if isinstance(value, str_types):
         value = value.lower()
         if value == "false":
@@ -36,6 +37,11 @@ def fintlist(alist):
         if it:
             outlist.append(int(it))
     return outlist
+
+
+def lcstr(astr):
+    """lower-case string"""
+    return astr.lower()
 
 
 func_types = {fbool: bool,

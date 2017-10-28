@@ -5,7 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 
-from .cfg_types import Bool, IntList
+from .cfg_funcs import fbool, fintlist, func_types
 
 
 # All configuration keywords editable by the user
@@ -13,10 +13,10 @@ CFG_ANALYSIS = {
     # filtering parameters
     "filtering": [
         ["hierarchy parent", str, "Hierarchy parent of the data set"],
-        ["remove invalid events", Bool, "Remove events with inf/nan values"],
-        ["enable filters", Bool, "Enable filtering"],
-        ["limit events", Bool, "Upper limit for number of filtered events"],
-        ["polygon filters", IntList, "Polygon filter indices"],
+        ["remove invalid events", fbool, "Remove events with inf/nan values"],
+        ["enable filters", fbool, "Enable filtering"],
+        ["limit events", fbool, "Upper limit for number of filtered events"],
+        ["polygon filters", fintlist, "Polygon filter indices"],
         ],
     # Addition user-defined data
     "calculation": [
@@ -76,7 +76,7 @@ CFG_METADATA = {
         ["bin margin", int, "Remove margin in x for contour detection"],
         ["bin threshold", int, "Binary threshold for avg-bg-corrected image"],
         ["image blur", int, "Odd sigma for Gaussian blur (21x21 kernel)"],
-        ["no absdiff", Bool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
+        ["no absdiff", fbool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
         ],
     # All online filters
     "online_filter": [
@@ -179,11 +179,19 @@ _cfg.update(CFG_ANALYSIS)
 config_keys = {}
 for _key in _cfg:
     config_keys[_key] = [ it[0] for it in _cfg[_key] ]
+# dict of dicts containing functions to convert input data
+config_funcs = {}
+for _key in _cfg:
+    config_funcs[_key] = {}
+    for _subkey, _type, __ in _cfg[_key]:
+        config_funcs[_key][_subkey] = _type
 # dict of dicts containing the type of section parameters
 config_types = {}
 for _key in _cfg:
     config_types[_key] = {}
     for _subkey, _type, __ in _cfg[_key]:
+        if _type in func_types:
+            _type = func_types[_type]
         config_types[_key][_subkey] = _type
 
 # FEATURE convenience lists and dicts

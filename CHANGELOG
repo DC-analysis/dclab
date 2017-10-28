@@ -2,6 +2,7 @@
  - Code cleanup:
    - Refactoring: Use the term "feature" consistently
    - Unify trace handling in dclab (#30)
+   - Add functions to convert input config data
 0.2.9
  - Bugfixes:
    - Regression when loading configuration strings containing quotes

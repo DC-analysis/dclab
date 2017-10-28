@@ -90,7 +90,7 @@ class RTDC_TDMS(RTDCBase):
         for section in naming.configmap:
             for pname in naming.configmap[section]:
                 meta = naming.configmap[section][pname]
-                typ = dfn.config_types[section][pname]
+                typ = dfn.config_funcs[section][pname]
                 if isinstance(meta, tuple):
                     osec, opar = meta
                     if osec in tdms_config and opar in tdms_config[osec]:

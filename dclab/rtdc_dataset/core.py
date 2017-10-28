@@ -149,11 +149,6 @@ class RTDCBase(object):
         return self._identifier
 
 
-    def apply_filter(self, force=[]):
-        """Computes the filters for the data set"""
-        self.filter.update(force)
-
-
     @property
     def features(self):
         """Return all available features"""
@@ -163,6 +158,16 @@ class RTDCBase(object):
                 mycols.append(col)
         mycols.sort()
         return mycols
+
+
+    @abc.abstractproperty
+    def hash(self):
+        """Hashing property must be defined by derived classes"""
+
+
+    def apply_filter(self, force=[]):
+        """Computes the filters for the data set"""
+        self.filter.update(force)
 
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform", downsample=0):
@@ -330,10 +335,6 @@ class RTDCBase(object):
         
         return density
 
-
-    @abc.abstractproperty
-    def hash(self):
-        """Hashing property must be defined by derived classes"""
 
 
     def polygon_filter_add(self, filt):

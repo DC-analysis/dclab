@@ -213,10 +213,10 @@ def load_from_file(cfg_file):
             var = var.strip().lower()
             val = val.strip("' ").strip('" ').strip()
             # convert parameter value to correct type
-            if (section in dfn.config_types and
-                var in dfn.config_types[section]):
+            if (section in dfn.config_funcs and
+                var in dfn.config_funcs[section]):
                 # standard parameter with known type
-                val = dfn.config_types[section][var](val)
+                val = dfn.config_funcs[section][var](val)
             else:
                 # unknown parameter (e.g. plotting in ShapeOut), guess type
                 var, val = keyval_str2typ(var, val)

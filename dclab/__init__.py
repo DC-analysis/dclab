@@ -10,7 +10,11 @@ import os
 
 # Definitions
 from . import definitions as dfn
-from ._version import version as __version__
-from .rtdc_dataset import new_dataset
+from . import features
+from . import isoelastics
 from .polygon_filter import PolygonFilter
+from . import rtdc_dataset
+from .rtdc_dataset import new_dataset
 from . import statistics
+
+from ._version import version as __version__

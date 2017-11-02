@@ -3,18 +3,13 @@
 from __future__ import print_function
 
 import sys
-from os.path import abspath, dirname, join
-
-import numpy as np
 import time
 
-# Add parent directory to beginning of path variable
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
+import numpy as np
 
 from dclab import cached
 
 from helper_methods import retreive_tdms, example_data_sets
-
 
 
 def test_cache():

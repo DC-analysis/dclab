@@ -244,7 +244,7 @@ class Isoelastics(object):
         """
         # Get metadata
         meta = {}
-        with io.open(path) as fd:
+        with io.open(str(path)) as fd:
             while True:
                 line = fd.readline().strip()
                 if line.startswith("# - "):

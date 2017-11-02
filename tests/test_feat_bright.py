@@ -2,22 +2,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import numpy as np
-import os
-from os.path import abspath, dirname, join
 import shutil
-import sys
 import tempfile
 import warnings
 import zipfile
 
-from helper_methods import retreive_tdms, cleanup
-
-# Add parent directory to beginning of path variable
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
+import numpy as np
 
 from dclab import new_dataset
 from dclab.features.bright import get_bright
+
+from helper_methods import retreive_tdms, cleanup
 
 
 def test_simple_bright():

@@ -6,16 +6,16 @@ An ellipse is created and the analytical and numerical solution are compared
 """
 from __future__ import division
 
-from os.path import dirname, abspath, join
+import pathlib
 
 import numpy as np
+
 from dclab import isoelastics as iso 
 
 
 def get_isofile(name="example_isoelastics.txt"):
-    thisdir = dirname(abspath(__file__))
-    ddir = join(thisdir, "data")
-    return join(ddir, name)
+    thisdir = pathlib.Path(__file__).parent
+    return thisdir / "data" / name
 
 
 def test_circ():

@@ -5,18 +5,13 @@
 from __future__ import print_function, unicode_literals
 
 import copy
-import numpy as np
-import os
-from os.path import abspath, dirname, join
 import shutil
-import sys
 import tempfile
 import warnings
 import zipfile
 
+import numpy as np
 
-# Add parent directory to beginning of path variable
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
 from dclab import new_dataset
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets

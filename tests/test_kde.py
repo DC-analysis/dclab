@@ -2,23 +2,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import sys
-from os.path import abspath, dirname, join
-
-import numpy as np
-
-# Add parent directory to beginning of path variable
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
-
-import dclab
-
 import os
-
-
 import warnings
 import zipfile
 
+import numpy as np
+import dclab
+
 from helper_methods import example_data_dict
+
 
 def test_kde_general():
     ## Download and extract data

@@ -1,14 +1,9 @@
-from os.path import join, basename, dirname, abspath
-
+import pathlib
 import shutil
-import sys
 import tempfile
 import zipfile
 
 import numpy as np
-
-
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from dclab.rtdc_dataset.fmt_tdms import get_tdms_files
 
@@ -45,13 +40,13 @@ def retreive_tdms(zip_file):
     tdms files.
     """
     global _tempdirs
-    thisdir = dirname(abspath(__file__))
-    ddir = join(thisdir, "data")
+    thisdir = pathlib.Path(__file__).parent
+    zpath = thisdir / "data" / zip_file
     # unpack
-    arc = zipfile.ZipFile(join(ddir, zip_file))
+    arc = zipfile.ZipFile(str(zpath))
     
     # extract all files to a temporary directory
-    edest = tempfile.mkdtemp(prefix=basename(zip_file))
+    edest = tempfile.mkdtemp(prefix=zpath.stem)
     arc.extractall(edest)
     
     _tempdirs.append(edest)

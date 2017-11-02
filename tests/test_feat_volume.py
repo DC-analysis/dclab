@@ -6,9 +6,11 @@ An ellipse is created and the analytical and numerical solution are compared
 """
 from __future__ import division
 
-import numpy as np
-from dclab.features.volume import get_volume
 import itertools as IT
+
+import numpy as np
+
+from dclab.features.volume import get_volume
 
 
 def area_of_polygon(x,y):

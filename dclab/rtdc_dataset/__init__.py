@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals 
 
+import pathlib
 import sys
 import warnings
 
@@ -38,8 +39,10 @@ def new_dataset(data, identifier=None):
     """
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier)
-    elif isinstance(data, str_classes):
+    elif isinstance(data, (str_classes)):
         return fmt_tdms.RTDC_TDMS(data, identifier=identifier)
+    elif isinstance(data, pathlib.Path):
+        return fmt_tdms.RTDC_TDMS(str(data), identifier=identifier)
     elif isinstance(data, RTDCBase):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier)
     else:

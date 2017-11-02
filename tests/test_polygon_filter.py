@@ -2,19 +2,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
-import numpy as np
-import os
-from os.path import join, exists, isdir, dirname, abspath
-import sys
 import tempfile
 
-# Add parent directory to beginning of path variable
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
+import numpy as np
 
 import dclab
 
-
 from helper_methods import example_data_dict
+
 
 filter_data="""[Polygon 00000000]
 X Axis = area_um
@@ -155,9 +150,9 @@ def test_inverted_wrong():
               [np.average(ddict["area_um"]), np.min(ddict["deform"])],
               ]
     try:
-        filt1 = dclab.PolygonFilter(axes=["area_um", "deform"],
-                                points=points,
-                                inverted=0)
+        dclab.PolygonFilter(axes=["area_um", "deform"],
+                            points=points,
+                            inverted=0)
     except dclab.polygon_filter.PolygonFilterError:
         pass
     else:
@@ -168,7 +163,7 @@ def test_nofile_copy():
     dclab.PolygonFilter.clear_all_filters()
     a = dclab.PolygonFilter(axes=("deform", "area_um"),
                         points=[[0,1],[1,1]])
-    b = a.copy()
+    a.copy()
     dclab.PolygonFilter.clear_all_filters()
 
 
@@ -252,8 +247,6 @@ def test_with_rtdc_data_set():
 
 def test_wrong_load_key():
     dclab.PolygonFilter.clear_all_filters()
-    ddict = example_data_dict(size=1000, keys=["area_um", "deform"])
-    ds = dclab.new_dataset(ddict)
 
     # save polygon data
     with tempfile.NamedTemporaryFile(mode="w") as temp:
@@ -262,7 +255,7 @@ def test_wrong_load_key():
         temp.flush()
         
         try:
-            pf = dclab.PolygonFilter(filename=temp.name)
+            dclab.PolygonFilter(filename=temp.name)
         except:
             pass
         else:

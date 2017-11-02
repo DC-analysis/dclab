@@ -5,18 +5,14 @@ from __future__ import print_function
 
 import io
 import os
-from os.path import abspath, dirname, join, basename
+import pathlib
 import shutil
-import sys
 import tempfile
 import warnings
 import zipfile
 
 import numpy as np
 
-
-# Add parent directory to beginning of path variable
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
 from dclab import new_dataset
 import dclab.rtdc_dataset.fmt_tdms.naming
 
@@ -57,39 +53,39 @@ def test_contour_basic():
 def test_contour_naming():
     # Test that we always find the correct contour name
     ds = new_dataset(retreive_tdms(example_data_sets[0]))
-    dp = ds.path
-    dn = dirname(dp)
-    contfile = join(dn, "M1_0.120000ul_s_contours.txt")
-    contfileshort = join(dn, "M1_contours.txt")
+    dp = pathlib.Path(ds.path).resolve()
+    dn = dp.parent
+    contfile = dn / "M1_0.120000ul_s_contours.txt"
+    contfileshort = dn / "M1_contours.txt"
     del ds
     
     # "M1_0.120000ul_s_contours.txt" should have priority over
     # "M1_contours.txt".
-    with io.open(contfileshort, "w") as _fd:
+    with contfileshort.open(mode="w"):
         pass
     ds2 = new_dataset(dp)
-    assert ds2["contour"].identifier == contfile
+    assert ds2["contour"].identifier == str(contfile)
     assert not np.allclose(ds2["contour"][1], 0)
     del ds2
     
     # Check if "M1_contours.txt" is used if the other is not
     # there.
-    os.remove(contfileshort)
-    os.rename(contfile, contfileshort)
+    os.remove(str(contfileshort))
+    contfile.rename(contfileshort)
     ds3 = new_dataset(dp)
-    assert ds3["contour"].identifier == contfileshort
+    assert ds3["contour"].identifier == str(contfileshort)
     del ds3
-    os.rename(contfileshort, contfile)
+    contfileshort.rename(contfile)
     
     # Create M10 file
-    with io.open(join(dn, "M10_contours.txt"), "w") as _fd:
+    with (dn / "M10_contours.txt").open(mode="w"):
         pass
     ds4 = new_dataset(dp)
-    assert ds4["contour"].identifier == contfile
+    assert ds4["contour"].identifier == str(contfile)
     del ds4
     
     # Check when there is no contour file
-    os.remove(contfile)
+    os.remove(str(contfile))
     # This will issue a warning that no contour data was found.
     ds5 = new_dataset(dp)
     assert ds5["contour"].identifier is None
@@ -163,24 +159,24 @@ def test_load_tdms_all():
 
 def test_load_tdms_avi_files():
     tdms_path = retreive_tdms(example_data_sets[1])
-    edest = dirname(tdms_path)
+    edest = pathlib.Path(tdms_path).parent
     ds1 = new_dataset(tdms_path)
-    assert os.path.basename(ds1["image"].video_file) == "M1_imaq.avi"
-    shutil.copyfile(join(edest, "M1_imaq.avi"),
-                    join(edest, "M1_imag.avi"))
+    assert pathlib.Path(ds1["image"].video_file).name == "M1_imaq.avi"
+    shutil.copyfile(str(edest / "M1_imaq.avi"),
+                    str(edest / "M1_imag.avi"))
     ds2 = new_dataset(tdms_path)
     # prefer imag over imaq
-    assert os.path.basename(ds2["image"].video_file) == "M1_imag.avi"
-    shutil.copyfile(join(edest, "M1_imaq.avi"),
-                    join(edest, "M1_test.avi"))
+    assert pathlib.Path(ds2["image"].video_file).name == "M1_imag.avi"
+    shutil.copyfile(str(edest / "M1_imaq.avi"),
+                    str(edest / "M1_test.avi"))
     ds3 = new_dataset(tdms_path)
     # ignore any other videos
-    assert os.path.basename(ds3["image"].video_file) == "M1_imag.avi"
-    os.remove(join(edest, "M1_imaq.avi"))
-    os.remove(join(edest, "M1_imag.avi"))
+    assert pathlib.Path(ds3["image"].video_file).name == "M1_imag.avi"
+    os.remove(str(edest / "M1_imaq.avi"))
+    os.remove(str(edest / "M1_imag.avi"))
     ds4 = new_dataset(tdms_path)
     # use available video if ima* not there
-    assert os.path.basename(ds4["image"].video_file) == "M1_test.avi"
+    assert pathlib.Path(ds4["image"].video_file).name == "M1_test.avi"
     cleanup()
 
 
@@ -196,12 +192,13 @@ def test_project_path():
     ds = dclab.new_dataset(tfile)
     assert ds.hash == "69733e31b005c145997fac8a22107ded"
     assert ds.format == "tdms"
-    a = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(tfile)
-    b = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile))
+    tpath = pathlib.Path(tfile).resolve()
+    a = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath))
+    b = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent))
     assert a == b
-    c = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile)+"/online/"+basename(tfile))
-    d = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile)+"/online/data/"+basename(tfile))
-    e = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(dirname(tfile)+"/online/data/")
+    c = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent / "online" / tpath.name))
+    d = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent / "online" / "data" / tpath.name))
+    e = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent / "online" / "data"))
     
     assert a == e
     assert a == c

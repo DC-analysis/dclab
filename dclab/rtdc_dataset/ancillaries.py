@@ -180,10 +180,19 @@ class AncillaryFeature():
 def compute_area_ratio(mm):
     return mm["area_cvx"] / mm["area_msd"]
 
+AncillaryFeature(feature_name="area_ratio",
+                 method=compute_area_ratio,
+                 req_features=["area_cvx", "area_msd"])
+
 
 def compute_area_um(mm):
     pxs = mm.config["imaging"]["pixel size"]
     return mm["area_cvx"] * pxs**2
+
+AncillaryFeature(feature_name="area_um",
+                 method=compute_area_um,
+                 req_config=[["imaging", ["pixel size"]]],
+                 req_features=["area_cvx"])
 
 
 def compute_aspect(mm):
@@ -198,6 +207,10 @@ def compute_aspect(mm):
     #parallel to flow, perpendicular to flow
     return mm["size_x"] / mm["size_y"]
 
+AncillaryFeature(feature_name="aspect",
+                 method=compute_aspect,
+                 req_features=["size_x", "size_y"])
+
 
 def compute_bright_avg(mm):
     bavg = features.bright.get_bright(cont=mm["contour"],
@@ -205,6 +218,10 @@ def compute_bright_avg(mm):
                                       ret_data="avg",
                                       )
     return bavg
+
+AncillaryFeature(feature_name="bright_avg",
+                 method=compute_bright_avg,
+                 req_features=["image", "contour"])
 
 
 def compute_bright_sd(mm):
@@ -214,22 +231,27 @@ def compute_bright_sd(mm):
                                       )
     return bstd
 
+AncillaryFeature(feature_name="bright_sd",
+                 method=compute_bright_sd,
+                 req_features=["image", "contour"])
+
 
 def compute_deform(mm):
     return 1 - mm["circ"]
 
+AncillaryFeature(feature_name="deform",
+                 method=compute_deform,
+                 req_features=["circ"])
+
 
 def compute_emodulus(mm):
     calccfg = mm.config["calculation"]
-
     model = calccfg["emodulus model"]
     assert model == "elastic sphere"
-    
     medium = calccfg["emodulus medium"]
     viscosity = calccfg["emodulus viscosity"]
     if medium == "Other":
         medium = viscosity
-
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(
             area=mm["area_um"],
@@ -241,109 +263,138 @@ def compute_emodulus(mm):
             temperature=mm.config["calculation"]["emodulus temperature"])
     return emod
 
+# TODO:
+# - Define multiple AncillaryFeature of "emodulus":
+#   (e.g. using "temperature" feature) 
+AncillaryFeature(feature_name="emodulus",
+                 method=compute_emodulus,
+                 req_features=["area_um", "deform"],
+                 req_config=[["calculation", ["emodulus medium",
+                                              "emodulus model",
+                                              "emodulus temperature",
+                                              "emodulus viscosity"]],
+                             ["imaging", ["pixel size"]],
+                             ["setup", ["flow rate", "channel width"]]
+                             ])
+
+
+def compute_fl1_max_ctc(mm):
+    return features.fl_crosstalk.correct_crosstalk(
+            fl1=mm["fl1_max"],
+            fl2=mm["fl2_max"],
+            fl3=mm["fl3_max"],
+            fl_channel=1,
+            ct21=mm.config["crosstalk fl21"],
+            ct31=mm.config["crosstalk fl31"],
+            ct12=mm.config["crosstalk fl12"],
+            ct32=mm.config["crosstalk fl32"],
+            ct13=mm.config["crosstalk fl13"],
+            ct23=mm.config["crosstalk fl23"])
+
+AncillaryFeature(feature_name="fl1_max_ctc",
+                 method=compute_fl1_max_ctc,
+                 req_features=["fl1_max", "fl2_max", "fl3_max"],
+                 req_config=[["analysis", ["crosstalk fl21",
+                                           "crosstalk fl31",
+                                           "crosstalk fl12",
+                                           "crosstalk fl32",
+                                           "crosstalk fl13",
+                                           "crosstalk fl23"]]
+                             ])
+
+
+def compute_fl2_max_ctc(mm):
+    return features.fl_crosstalk.correct_crosstalk(
+            fl1=mm["fl1_max"],
+            fl2=mm["fl2_max"],
+            fl3=mm["fl3_max"],
+            fl_channel=2,
+            ct21=mm.config["crosstalk fl21"],
+            ct31=mm.config["crosstalk fl31"],
+            ct12=mm.config["crosstalk fl12"],
+            ct32=mm.config["crosstalk fl32"],
+            ct13=mm.config["crosstalk fl13"],
+            ct23=mm.config["crosstalk fl23"])
+
+AncillaryFeature(feature_name="fl2_max_ctc",
+                 method=compute_fl2_max_ctc,
+                 req_features=["fl1_max", "fl2_max", "fl3_max"],
+                 req_config=[["analysis", ["crosstalk fl21",
+                                           "crosstalk fl31",
+                                           "crosstalk fl12",
+                                           "crosstalk fl32",
+                                           "crosstalk fl13",
+                                           "crosstalk fl23"]]
+                             ])
+
+
+def compute_fl3_max_ctc(mm):
+    return features.fl_crosstalk.correct_crosstalk(
+            fl1=mm["fl1_max"],
+            fl2=mm["fl2_max"],
+            fl3=mm["fl3_max"],
+            fl_channel=3,
+            ct21=mm.config["crosstalk fl21"],
+            ct31=mm.config["crosstalk fl31"],
+            ct12=mm.config["crosstalk fl12"],
+            ct32=mm.config["crosstalk fl32"],
+            ct13=mm.config["crosstalk fl13"],
+            ct23=mm.config["crosstalk fl23"])
+
+AncillaryFeature(feature_name="fl3_max_ctc",
+                 method=compute_fl3_max_ctc,
+                 req_features=["fl1_max", "fl2_max", "fl3_max"],
+                 req_config=[["analysis", ["crosstalk fl21",
+                                           "crosstalk fl31",
+                                           "crosstalk fl12",
+                                           "crosstalk fl32",
+                                           "crosstalk fl13",
+                                           "crosstalk fl23"]]
+                             ])
+
 
 def compute_index(mm):
     return np.arange(1, len(mm)+1)
+
+AncillaryFeature(feature_name="index",
+                 method=compute_index)
 
 
 def compute_inert_ratio_cvx(mm):
     return features.inert_ratio.get_inert_ratio_cvx(cont=mm["contour"])
 
+AncillaryFeature(feature_name="inert_ratio_cvx",
+                 method=compute_inert_ratio_cvx,
+                 req_features=["contour"])
+
 
 def compute_inert_ratio_raw(mm):
     return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
+
+AncillaryFeature(feature_name="inert_ratio_raw",
+                 method=compute_inert_ratio_raw,
+                 req_features=["contour"])
 
 
 def compute_time(mm):
     fr = mm.config["imaging"]["frame rate"]
     return (mm["frame"] - mm["frame"][0]) / fr
 
+AncillaryFeature(feature_name="time",
+                 method=compute_time,
+                 req_config=[["imaging", ["frame rate"]]],
+                 req_features=["frame"])
+
 
 def compute_volume(mm):
-    vol = features.volume.get_volume(cont=mm["contour"],
-                                     pos_x=mm["pos_x"],
-                                     pos_y=mm["pos_y"],
-                                     pix=mm.config["imaging"]["pixel size"])
+    vol = features.volume.get_volume(
+                    cont=mm["contour"],
+                    pos_x=mm["pos_x"],
+                    pos_y=mm["pos_y"],
+                    pix=mm.config["imaging"]["pixel size"])
     return vol
-    
-
-# Register ancillaries
-AncillaryFeature(feature_name="area_ratio",
-                method=compute_area_ratio,
-                req_features=["area_cvx", "area_msd"]
-                )
-
-AncillaryFeature(feature_name="area_um",
-                method=compute_area_um,
-                req_config=[["imaging", ["pixel size"]]],
-                req_features=["area_cvx"]
-                )
-
-AncillaryFeature(feature_name="aspect",
-                method=compute_aspect,
-                req_features=["size_x", "size_y"]
-                )
-
-AncillaryFeature(feature_name="bright_avg",
-                method=compute_bright_avg,
-                req_features=["image", "contour"],
-                )
-
-AncillaryFeature(feature_name="bright_sd",
-                method=compute_bright_sd,
-                req_features=["image", "contour"],
-                )
-
-
-AncillaryFeature(feature_name="deform",
-                method=compute_deform,
-                req_features=["circ"]
-                )
-
-# TODO:
-# - Define multiple AncillaryFeature of "emodulus":
-#   (e.g. using "temperature" feature) 
-AncillaryFeature(feature_name="emodulus",
-                method=compute_emodulus,
-                req_features=["area_um", "deform"],
-                req_config=[["calculation", 
-                             ["emodulus medium",
-                              "emodulus model",
-                              "emodulus temperature",
-                              "emodulus viscosity"]
-                             ],
-                            ["imaging",
-                             ["pixel size"]
-                             ],
-                            ["setup", 
-                             ["flow rate",
-                              "channel width"]
-                             ],
-                            ],
-                )
-
-AncillaryFeature(feature_name="index",
-                method=compute_index,
-                )
-
-AncillaryFeature(feature_name="inert_ratio_cvx",
-                method=compute_inert_ratio_cvx,
-                req_features=["contour"],
-                )
-
-AncillaryFeature(feature_name="inert_ratio_raw",
-                method=compute_inert_ratio_raw,
-                req_features=["contour"],
-                )
-
-AncillaryFeature(feature_name="time",
-                method=compute_time,
-                req_config=[["imaging", ["frame rate"]]],
-                req_features=["frame"]
-                )
 
 AncillaryFeature(feature_name="volume",
-                method=compute_volume,
-                req_features=["contour", "pos_x", "pos_y"],
-                req_config=[["imaging", ["pixel size"]]],
-                )
+                 method=compute_volume,
+                 req_features=["contour", "pos_x", "pos_y"],
+                 req_config=[["imaging", ["pixel size"]]])

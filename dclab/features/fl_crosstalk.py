@@ -7,6 +7,31 @@ import numpy as np
 
 
 def get_inversion_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
+    """Compute crosstalk inversion matrix
+
+    The crosstalk matrix is
+
+    | c11 c12 c13 |
+    | c21 c22 c23 |
+    | c31 c32 c33 |
+
+    The diagonal elements are computed from the given crosstalk
+    matrix elements such that every row sums up to 1, i.e.
+
+    ct11 = 1 - ct12 - ct13
+    ct22 = 1 - ct21 - ct23
+    ct33 = 1 - ct31 - ct32
+
+    Parameters
+    ----------
+    cij: float
+        Crosstalk (bleed-through) from channel i to channel j
+
+    Returns
+    -------
+    inv: np.matrix
+        The inverted crosstalk matrix
+    """
     ct11 = 1 - ct12 - ct13
     ct22 = 1 - ct21 - ct23
     ct33 = 1 - ct31 - ct32
@@ -50,6 +75,28 @@ def get_inversion_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
 
 def correct_crosstalk(fl1, fl2, fl3, fl_channel,
                       ct21, ct31, ct12, ct32, ct13, ct23):
+    """Perform crosstalk correction
+
+    Parameters
+    ----------
+    fli: int, float, or np.ndarray
+        Measured fluorescence signals
+    fl_channel: int (1, 2, or 3)
+        The channel number for which the crosstalk-corrected signal
+        should be computed
+    cij: float
+        Crosstalk (bleed-through) from channel i to channel j
+
+    See Also
+    --------
+    get_inversion_matrix: compute the inverse crosstalk matrix
+
+    Notes
+    -----
+    If there are only two channels (e.g. fl1 and fl2), then the
+    crosstalk to and from the other channel (ct31, ct32, ct13, ct23)
+    should be set to zero.
+    """
     fl_channel = int(fl_channel)
     if fl_channel not in [1, 2, 3]:
         raise ValueError("`fl_channel` must be 1, 2, or 3!")

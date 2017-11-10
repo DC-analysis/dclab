@@ -194,7 +194,7 @@ def test_fl_crosstalk_2chan():
     assert np.allclose(fl2_max, ds["fl2_max"])
 
 
-def test_fl_crosstalk_3chanvs3chan():
+def test_fl_crosstalk_3chanvs2chan():
     data = {"fl1_max": np.linspace(1, 1.1, 10),
             "fl2_max": np.linspace(0, 4.1, 10),
             "fl3_max": np.linspace(3, 2.5, 10),
@@ -222,6 +222,17 @@ def test_fl_crosstalk_3chanvs3chan():
     ds["fl2_max_ctc"]
     ds["fl3_max_ctc"]
     ds.config.update(analysis)
+
+
+def test_fl_crosstalk_missing():
+    data = {"fl1_max": np.linspace(1, 1.1, 10),
+            "fl2_max": np.linspace(0, 4.1, 10),
+            }
+    ds = dclab.new_dataset(data)
+    analysis = {"calculation": {"crosstalk fl12": .4,
+                                }}
+    ds.config.update(analysis)
+    assert "fl2_max_ctc" not in ds
 
 
 def test_inert_ratio_cvx():

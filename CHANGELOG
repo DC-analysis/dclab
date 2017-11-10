@@ -1,5 +1,10 @@
 0.3.0
+ - New fluorescence crosstalk correction feature recipe (#35)
+ - New ancillary columns "fl1_max_ctc", "fl2_max_ctc", "fl3_max_ctc" (#35)
+ - Bugfixes:
+   - Configuration key values were not hashed for ancillary features
  - Code cleanup:
+   - Refactoring: Put ancillary columns into a new folder module
    - Refactoring: Use the term "feature" consistently
    - Unify trace handling in dclab (#30)
    - Add functions to convert input config data

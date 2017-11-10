@@ -67,10 +67,14 @@ class RTDCBase(object):
                 # already computed
                 ct = True
             elif key in AncillaryFeature.feature_names:
-                cc = AncillaryFeature.get_feature(key)
-                if cc.is_available(self):
-                    # to be computed
-                    ct = True
+                # get all instance of AncillaryFeature that
+                # compute the feature `key`
+                instlist = AncillaryFeature.get_instances(key)
+                for inst in instlist:
+                    if inst.is_available(self):
+                        # to be computed
+                        ct = True
+                        break
         return ct
 
 

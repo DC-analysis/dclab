@@ -17,28 +17,26 @@ from helper_methods import example_data_dict, retreive_tdms, example_data_sets, 
 
 def test_0basic():
     ds = dclab.new_dataset(retreive_tdms(example_data_sets[1]))
-    for cc in [  
-                'fl1_pos',
-                'frame',
-                'size_x',
-                'size_y',
-                'contour',
-                'area_cvx',
-                'circ',
-                'image',
-                'trace',
-                'fl1_width',
-                'ncells',
-                'pos_x',
-                'pos_y',
-                'fl1_area',
-                'fl1_max',
+    for cc in ['fl1_pos',
+               'frame',
+               'size_x',
+               'size_y',
+               'contour',
+               'area_cvx',
+               'circ',
+               'image',
+               'trace',
+               'fl1_width',
+               'ncells',
+               'pos_x',
+               'pos_y',
+               'fl1_area',
+               'fl1_max',
                 ]:
         assert cc in ds
 
     # ancillaries
-    for cc in [ 
-               "deform",
+    for cc in ["deform",
                "area_um",
                "aspect",
                "frame",
@@ -172,6 +170,29 @@ def test_emodulus_none2():
     assert "emodulus" not in ds, "emodulus model should be missing"
 
 
+def test_fl_crosstalk_2chan():
+    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_2flchan.zip"))
+    # simple example
+    analysis = {"calculation": {"crosstalk fl12": 0,
+                                "crosstalk fl21": .1}}
+    ds.config.update(analysis)
+    assert not np.allclose(ds["fl2_max"], ds["fl2_max_ctc"])
+    assert not np.allclose(ds["fl1_max"], ds["fl1_max_ctc"])
+    # advanced example
+    ct12 = .5
+    ct21 = .3
+    analysis2 = {"calculation": {"crosstalk fl12": ct12,
+                                 "crosstalk fl21": ct21}}
+    # AncillaryColumn uses hashes to check whether a particular calculation
+    # was already performed. Thus, just updating the config will trigger
+    # a new crosstalk correction once the data is requested.
+    ds.config.update(analysis2)
+    fl1_max = ct21 * ds["fl2_max_ctc"] + (1 - ct12) * ds["fl1_max_ctc"]
+    fl2_max = ct12 * ds["fl1_max_ctc"] + (1 - ct21) * ds["fl2_max_ctc"]
+    assert np.allclose(fl1_max, ds["fl1_max"])
+    assert np.allclose(fl2_max, ds["fl2_max"])
+
+
 def test_inert_ratio_cvx():
     # Brightness of the image
     ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
@@ -223,6 +244,7 @@ def test_volume():
 
 
 if __name__ == "__main__":
+    test_fl_crosstalk_2chan()
     # Run all tests
     loc = locals()
     for key in list(loc.keys()):

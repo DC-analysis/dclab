@@ -6,11 +6,10 @@ from __future__ import division, print_function, unicode_literals
 import numpy as np
 
 
-
 def get_inversion_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
-    ct11 = 1 - ct21 - ct31
-    ct22 = 1 - ct12 - ct32
-    ct33 = 1 - ct13 - ct23
+    ct11 = 1 - ct12 - ct13
+    ct22 = 1 - ct21 - ct23
+    ct33 = 1 - ct31 - ct32
 
     if ct11 < 0:
         msg = "ct21+ct31 ({}+{}) must not exceed 1!".format(ct21, ct31)
@@ -47,12 +46,12 @@ def get_inversion_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
                            [ct31, ct32, ct33],
                            ])
     return crosstalk.getI()
-    
+
 
 def correct_crosstalk(fl1, fl2, fl3, fl_channel,
                       ct21, ct31, ct12, ct32, ct13, ct23):
     fl_channel = int(fl_channel)
-    if str(fl_channel) not in [1, 2, 3]:
+    if fl_channel not in [1, 2, 3]:
         raise ValueError("`fl_channel` must be 1, 2, or 3!")
 
     minv = get_inversion_matrix(ct21=ct21, ct31=ct31, ct12=ct12,

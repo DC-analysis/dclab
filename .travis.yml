@@ -15,7 +15,7 @@ install:
 - travis_retry pip install .
 # Download ffmpeg (required by imageio)
 - travis_retry python -c "import imageio; imageio.plugins.ffmpeg.download()"
-- python setup.py develop
+- travis_retry pip install -e .
 # for tests:
 - travis_retry pip install codecov coverage
 - pip freeze

@@ -11,6 +11,7 @@ import zipfile
 import numpy as np
 
 import dclab
+from dclab.rtdc_dataset import ancillaries
 
 from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
 
@@ -191,6 +192,36 @@ def test_fl_crosstalk_2chan():
     fl2_max = ct12 * ds["fl1_max_ctc"] + (1 - ct21) * ds["fl2_max_ctc"]
     assert np.allclose(fl1_max, ds["fl1_max"])
     assert np.allclose(fl2_max, ds["fl2_max"])
+
+
+def test_fl_crosstalk_3chanvs3chan():
+    data = {"fl1_max": np.linspace(1, 1.1, 10),
+            "fl2_max": np.linspace(0, 4.1, 10),
+            "fl3_max": np.linspace(3, 2.5, 10),
+            }
+    ds = dclab.new_dataset(data)
+    analysis = {"calculation": {"crosstalk fl12": .4,
+                                "crosstalk fl21": .05,
+                                }}
+    ds.config.update(analysis)
+    assert "fl2_max_ctc" in ds
+    try:
+        ds["fl2_max_ctc"]
+    except ancillaries.af_fl_max_ctc.MissingCrosstalkMatrixElementsError:
+        pass
+    else:
+        assert False, "Crosstalk correction from missing data should not work"
+    # add missing matrix elements
+    analysis = {"calculation": {"crosstalk fl13": .1,
+                                "crosstalk fl23": .7,
+                                "crosstalk fl31": .2,
+                                "crosstalk fl32": .2,
+                                }}
+    ds.config.update(analysis)
+    ds["fl1_max_ctc"]
+    ds["fl2_max_ctc"]
+    ds["fl3_max_ctc"]
+    ds.config.update(analysis)
 
 
 def test_inert_ratio_cvx():

@@ -7,6 +7,10 @@ from ... import features
 from .ancillary_feature import AncillaryFeature
 
 
+class MissingCrosstalkMatrixElementsError(BaseException):
+    pass
+
+
 def compute_ctc(mm, fl_channel):
     if "fl1_max" in mm:
         fl1 = mm["fl1_max"]
@@ -33,9 +37,21 @@ def compute_ctc(mm, fl_channel):
             par = "ct{}{}".format(i, j)
             if key in mm.config["calculation"]:
                 ctdict[par] = mm.config["calculation"][key]
-            else:
-                ctdict[par] = 0
-    
+
+    if ("fl1_max" in mm and
+        "fl2_max" in mm and
+        "fl3_max" in mm and
+        ("ct12" not in ctdict or
+         "ct13" not in ctdict or
+         "ct21" not in ctdict or
+         "ct23" not in ctdict or
+         "ct31" not in ctdict or
+         "ct32" not in ctdict)):
+        msg = "{}, has fl1_max, fl2_max, and fl3_max,".format(mm) \
+              + " but not all crosstalk matrix elements are" \
+              + " defined in the 'calculation' configuration section."
+        raise MissingCrosstalkMatrixElementsError(msg)
+
     return features.fl_crosstalk.correct_crosstalk(
             fl1=fl1,
             fl2=fl2,

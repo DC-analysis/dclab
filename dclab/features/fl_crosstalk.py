@@ -74,7 +74,7 @@ def get_inversion_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
 
 
 def correct_crosstalk(fl1, fl2, fl3, fl_channel,
-                      ct21, ct31, ct12, ct32, ct13, ct23):
+                      ct21=0, ct31=0, ct12=0, ct32=0, ct13=0, ct23=0):
     """Perform crosstalk correction
 
     Parameters

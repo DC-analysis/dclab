@@ -84,7 +84,7 @@ class RTDCBase(object):
             if not np.all(data==0):
                 return data 
         # Try to find the feature in the ancillary features
-        # (see ancillaries.py for more information).
+        # (see ancillaries submodule for more information).
         # These features are cached in `self._ancillaries`.
         ancol = AncillaryFeature.available_features(self)
         if key in ancol:

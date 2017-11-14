@@ -107,27 +107,30 @@ def register():
                 ["crosstalk fl32",
                  "crosstalk fl23"]) 
 
-    # These must be added first
     for flch in [1, 2, 3]:
         AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
                          method=get_method(flch),
                          req_features=opts_all[0],
-                         req_config=[["calculation", opts_all[1]]])
+                         req_config=[["calculation", opts_all[1]]],
+                         priority=1)
 
     for flch in [1, 2]:
         AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
                          method=get_method(flch),
                          req_features=opts_12[0],
-                         req_config=[["calculation", opts_12[1]]])
+                         req_config=[["calculation", opts_12[1]]],
+                         priority=0)
 
     for flch in [1, 3]:
         AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
                          method=get_method(flch),
                          req_features=opts_13[0],
-                         req_config=[["calculation", opts_13[1]]])
+                         req_config=[["calculation", opts_13[1]]],
+                         priority=0)
 
     for flch in [2, 3]:
         AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
                          method=get_method(flch),
                          req_features=opts_23[0],
-                         req_config=[["calculation", opts_23[1]]])
+                         req_config=[["calculation", opts_23[1]]],
+                         priority=0)

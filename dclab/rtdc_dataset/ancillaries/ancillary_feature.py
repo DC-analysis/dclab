@@ -34,7 +34,8 @@ class AncillaryFeature():
     # Holds all instances of this class
     features = []
     feature_names = []
-    def __init__(self, feature_name, method, req_config=[], req_features=[]):
+    def __init__(self, feature_name, method, req_config=[], req_features=[],
+                 priority=0):
         """A data feature that is computed from existing data
         
         Parameters
@@ -50,6 +51,12 @@ class AncillaryFeature():
         req_features: list
             Required existing features in the data set,
             e.g. ["area_cvx", "deform"]
+        priority: int
+            The priority of the feature; if there are multiple
+            AncillaryFeature defined for the same feature_name,
+            then the priority of the features defines which feature
+            returns True in `self.is_available`. A higher value
+            means a higher priority.
         
         Notes
         -----
@@ -60,6 +67,7 @@ class AncillaryFeature():
         self.method = method
         self.req_config = req_config
         self.req_features = req_features
+        self.priority = priority
         
         # register this feature
         AncillaryFeature.features.append(self)
@@ -163,6 +171,13 @@ class AncillaryFeature():
         -------
         available: bool
             `True`, if feature can be computed with `compute`
+        
+        Notes
+        -----
+        This method returns `False` for a feature if there
+        is a feature defined with the same name but with
+        higher priority (even if the feature would be
+        available otherwise).
         """
         # Check config keys
         for item in self.req_config:
@@ -182,5 +197,26 @@ class AncillaryFeature():
         for col in self.req_features:
             if col not in rtdc_ds:
                 return False
-        # All passed
+        # Check priorities of other features
+        for of in AncillaryFeature.features:
+            if of == self:
+                # nothing to compare
+                continue
+            elif of.feature_name == self.feature_name:
+                # same feature name
+                if of.priority <= self.priority:
+                    # lower priority, ignore
+                    continue
+                else:
+                    # higher priority
+                    if of.is_available(rtdc_ds):
+                        # higher priority is available, thus
+                        # this feature is not available
+                        return False
+                    else:
+                        # higher priority not available
+                        continue
+            else:
+                # other feature
+                continue
         return True

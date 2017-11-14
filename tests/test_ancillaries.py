@@ -235,6 +235,47 @@ def test_fl_crosstalk_missing():
     assert "fl2_max_ctc" not in ds
 
 
+def test_fl_crosstalk_priority():
+    data = {"fl1_max": np.linspace(1, 1.1, 10),
+            "fl2_max": np.linspace(0, 4.1, 10),
+            "fl3_max": np.linspace(3, 2.5, 10),
+            }
+    ds = dclab.new_dataset(data)
+    analysis = {"calculation": {"crosstalk fl12": .4,
+                                "crosstalk fl21": .05,
+                                }}
+    ds.config.update(analysis)
+    av = ancillaries.AncillaryFeature.available_features(ds)
+    avkeys = list(av.keys())
+    assert "fl1_max_ctc" in avkeys
+    assert "fl2_max_ctc" in avkeys
+    assert "fl3_max_ctc" not in avkeys
+    reqconf = [['calculation', ['crosstalk fl21', 'crosstalk fl12']]]
+    assert av["fl1_max_ctc"].req_config == reqconf
+    analysis = {"calculation": {"crosstalk fl13": .1,
+                                "crosstalk fl23": .7,
+                                "crosstalk fl31": .2,
+                                "crosstalk fl32": .2,
+                                }}
+    ds.config.update(analysis)
+    # If there are three fl features and the corresponding crosstalk
+    # values, then we must always have triple crosstalk correction.
+    av2 = ancillaries.AncillaryFeature.available_features(ds)
+    av2keys = list(av2.keys())
+    assert "fl1_max_ctc" in av2keys
+    assert "fl2_max_ctc" in av2keys
+    assert "fl3_max_ctc" in av2keys
+    reqconf2 = [['calculation', ["crosstalk fl21",
+                                 "crosstalk fl31",
+                                 "crosstalk fl12",
+                                 "crosstalk fl32",
+                                 "crosstalk fl13",
+                                 "crosstalk fl23"]]]
+    assert av2["fl1_max_ctc"].req_config == reqconf2
+    assert av2["fl2_max_ctc"].req_config == reqconf2
+    assert av2["fl3_max_ctc"].req_config == reqconf2
+
+
 def test_inert_ratio_cvx():
     # Brightness of the image
     ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))

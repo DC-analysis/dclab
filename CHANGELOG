@@ -1,6 +1,7 @@
 0.3.0
  - New fluorescence crosstalk correction feature recipe (#35)
- - New ancillary columns "fl1_max_ctc", "fl2_max_ctc", "fl3_max_ctc" (#35)
+ - New ancillary features "fl1_max_ctc", "fl2_max_ctc", "fl3_max_ctc" (#35)
+ - Add priority for multiple ancillary features with same name
  - Bugfixes:
    - Configuration key values were not hashed for ancillary features
  - Code cleanup:

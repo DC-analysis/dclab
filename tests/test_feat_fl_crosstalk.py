@@ -25,10 +25,10 @@ def test_simple_crosstalk():
     ct13 = .01
     ct23 = .2
 
-    ct11 = 1 - ct12 - ct13
-    ct22 = 1 - ct21 - ct23
-    ct33 = 1 - ct31 - ct32
-    
+    ct11 = 1
+    ct22 = 1
+    ct33 = 1
+
     # compute cross-talked data
     fl1_bleed = ct11 * fl1 + ct21 * fl2 + ct31 * fl3
     fl2_bleed = ct12 * fl1 + ct22 * fl2 + ct32 * fl3

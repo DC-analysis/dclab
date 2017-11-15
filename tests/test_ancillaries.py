@@ -177,7 +177,8 @@ def test_fl_crosstalk_2chan():
     analysis = {"calculation": {"crosstalk fl12": 0,
                                 "crosstalk fl21": .1}}
     ds.config.update(analysis)
-    assert not np.allclose(ds["fl2_max"], ds["fl2_max_ctc"])
+    # normalization is c11 = c22 = c33 = 1
+    assert np.allclose(ds["fl2_max"], ds["fl2_max_ctc"])
     assert not np.allclose(ds["fl1_max"], ds["fl1_max_ctc"])
     # advanced example
     ct12 = .5
@@ -188,8 +189,8 @@ def test_fl_crosstalk_2chan():
     # was already performed. Thus, just updating the config will trigger
     # a new crosstalk correction once the data is requested.
     ds.config.update(analysis2)
-    fl1_max = ct21 * ds["fl2_max_ctc"] + (1 - ct12) * ds["fl1_max_ctc"]
-    fl2_max = ct12 * ds["fl1_max_ctc"] + (1 - ct21) * ds["fl2_max_ctc"]
+    fl1_max = ds["fl1_max_ctc"] + ct21 * ds["fl2_max_ctc"]
+    fl2_max = ds["fl2_max_ctc"] + ct12 * ds["fl1_max_ctc"]
     assert np.allclose(fl1_max, ds["fl1_max"])
     assert np.allclose(fl2_max, ds["fl2_max"])
 

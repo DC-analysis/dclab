@@ -9,12 +9,22 @@ import warnings
 from .core import RTDCBase
 from .config import Configuration
 from .util import hashfile
-from . import fmt_dict, fmt_tdms, fmt_hierarchy
+from . import fmt_dict, fmt_hdf5, fmt_tdms, fmt_hierarchy
 
 if sys.version_info[0] == 2:
     str_classes = (str, unicode)
 else:
     str_classes = str
+
+
+def _load_file(path, identifier):
+    path = pathlib.Path(path).resolve()
+    if path.suffix == ".tdms":
+        return fmt_tdms.RTDC_TDMS(str(path), identifier=identifier)
+    elif path.suffix == ".rtdc":
+        return fmt_hdf5.RTDC_HDF5(str(path), identifier=identifier)
+    else:
+        raise ValueError("Unknown file extension: '{}'".format(path.suffix))
 
 
 def new_dataset(data, identifier=None):
@@ -26,6 +36,7 @@ def new_dataset(data, identifier=None):
         can be one of the following:
         - dict
         - .tdms file
+        - .rtdc file
         - subclass of `RTDCBase`
           (will create a hierarchy child)
     identifier: str
@@ -39,10 +50,8 @@ def new_dataset(data, identifier=None):
     """
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier)
-    elif isinstance(data, (str_classes)):
-        return fmt_tdms.RTDC_TDMS(data, identifier=identifier)
-    elif isinstance(data, pathlib.Path):
-        return fmt_tdms.RTDC_TDMS(str(data), identifier=identifier)
+    elif isinstance(data, (str_classes)) or isinstance(data, pathlib.Path):
+        return _load_file(data, identifier=identifier)
     elif isinstance(data, RTDCBase):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier)
     else:

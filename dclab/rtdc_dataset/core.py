@@ -52,14 +52,17 @@ class RTDCBase(object):
     def __contains__(self, key):
         ct = False
         if key in self._events:
-            # Stored data contains events
-            val = self._events[key]
-            if isinstance(val, np.ndarray):
-                # False if stored data is zero 
-                ct = not np.all(val == 0)
-            elif val:
-                # True if stored data is not empty
-                # (e.g. tdms image, trace, contour)
+            if self.format == "tdms":
+                # Take into account special cases of the tdms file format
+                val = self._events[key]
+                if isinstance(val, np.ndarray):
+                    # False if stored data is zero
+                    ct = not np.all(val == 0)
+                elif val:
+                    # True if stored data is not empty
+                    # (e.g. tdms image, trace, contour)
+                    ct = True
+            else:
                 ct = True
         if ct == False:
             # Check ancillary features data
@@ -101,7 +104,7 @@ class RTDCBase(object):
                 self._ancillaries[key] = (anhash, data)
             return data
         else:
-            raise KeyError("Column '{}' does not exist!".format(key))
+            raise KeyError("Feature '{}' does not exist!".format(key))
 
 
     def __iter__(self):

@@ -30,9 +30,10 @@ if __name__ == "__main__":
         license="GPL v2",
         description=description,
         long_description=open('README.rst').read() if exists('README.rst') else '',
-        install_requires=["fcswrite", #required by: fcs export
-                          "imageio", #required by: tdms format, avi export
-                          "nptdms", #required by: tdms format
+        install_requires=["fcswrite",  # required by: fcs export
+                          "h5py",  # required by: hdf5 format
+                          "imageio",  #required by: tdms format, avi export
+                          "nptdms",  #required by: tdms format
                           "NumPy >= 1.5.1",
                           "pathlib",
                           "scipy >= 0.12.0",

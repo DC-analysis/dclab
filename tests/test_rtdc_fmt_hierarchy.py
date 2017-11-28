@@ -13,11 +13,11 @@ import numpy as np
 
 from dclab import new_dataset, dfn
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
+from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
 
 
 def test_event_count():
-    tdms_path = retreive_tdms(example_data_sets[1])
+    tdms_path = retrieve_data(example_data_sets[1])
     ds = new_dataset(tdms_path)
     ds.filter.manual[0] = False
     ch = new_dataset(ds)
@@ -27,7 +27,7 @@ def test_event_count():
 
 
 def test_hierarchy_from_tdms():
-    tdms_path = retreive_tdms(example_data_sets[1])
+    tdms_path = retrieve_data(example_data_sets[1])
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
 
@@ -39,7 +39,7 @@ def test_hierarchy_from_tdms():
 
 
 def test_same_hash_different_identifier():
-    tdms_path = retreive_tdms(example_data_sets[1])
+    tdms_path = retrieve_data(example_data_sets[1])
     ds1 = new_dataset(tdms_path)
     ds1.filter.manual[0] = False
     ch1 = new_dataset(ds1)

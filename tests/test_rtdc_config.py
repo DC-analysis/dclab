@@ -15,7 +15,7 @@ import numpy as np
 from dclab.rtdc_dataset import new_dataset
 from dclab.rtdc_dataset.config import Configuration, CaseInsensitiveDict
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
+from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
 
 
 def equals(a, b):
@@ -35,14 +35,14 @@ def equals(a, b):
 
 
 def test_config_basic():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert ds.config["imaging"]["roi size y"] == 96.
     cleanup()
 
 
 def test_config_save_load():
     ## Download and extract data
-    tdms_path = retreive_tdms(example_data_sets[0])
+    tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
     _fd, cfg_file = tempfile.mkstemp()
     ds.config.save(cfg_file)

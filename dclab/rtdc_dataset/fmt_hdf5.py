@@ -43,6 +43,9 @@ class H5ContourEvent(object):
     def __getitem__(self, key):
         return self.h5group[str(key)].value
 
+    def __len__(self):
+        return len(self.h5group)
+
 
 class RTDC_HDF5(RTDCBase):
     def __init__(self, h5path, *args, **kwargs):

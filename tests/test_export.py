@@ -15,11 +15,11 @@ import numpy as np
 import dclab
 from dclab import new_dataset
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
+from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
 
 
 def test_avi_export():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
     ds.export.avi(path=f1)
@@ -29,7 +29,7 @@ def test_avi_export():
 
 
 def test_avi_override():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")

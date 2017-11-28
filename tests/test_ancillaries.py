@@ -13,11 +13,11 @@ import numpy as np
 import dclab
 from dclab.rtdc_dataset import ancillaries
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
+from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
 
 
 def test_0basic():
-    ds = dclab.new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = dclab.new_dataset(retrieve_data(example_data_sets[1]))
     for cc in ['fl1_pos',
                'frame',
                'size_x',
@@ -63,7 +63,7 @@ def test_0error():
 
 def test_aspect():
     # Aspect ratio of the data
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     aspect = ds["aspect"]
     assert np.sum(aspect>1) == 904
     assert np.sum(aspect<1) == 48
@@ -71,7 +71,7 @@ def test_aspect():
 
 
 def test_area_ratio():
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     comp_ratio = ds["area_ratio"]
     # The convex area is always >= the raw area
     assert np.all(comp_ratio>=1)
@@ -81,7 +81,7 @@ def test_area_ratio():
 
 def test_brightness():
     # Brightness of the image
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
     # the image and contour columns. 
@@ -172,7 +172,7 @@ def test_emodulus_none2():
 
 
 def test_fl_crosstalk_2chan():
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_2flchan.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
     # simple example
     analysis = {"calculation": {"crosstalk fl12": 0,
                                 "crosstalk fl21": .1}}
@@ -279,7 +279,7 @@ def test_fl_crosstalk_priority():
 
 def test_inert_ratio_cvx():
     # Brightness of the image
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
     # the image and contour columns. 
@@ -295,7 +295,7 @@ def test_inert_ratio_cvx():
 
 def test_inert_ratio_raw():
     # Brightness of the image
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
     # the image and contour columns. 
@@ -310,7 +310,7 @@ def test_inert_ratio_raw():
 
 
 def test_time():
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_minimal.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     tt = ds["time"]
     assert tt[0] == 0
     assert np.allclose(tt[1], 0.0385)
@@ -319,7 +319,7 @@ def test_time():
 
 
 def test_volume():
-    ds = dclab.new_dataset(retreive_tdms("rtdc_data_minimal.zip"))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     vol = ds["volume"]
     # There are a lot of nans, because the contour is not given everywhere
     vol = vol[~np.isnan(vol)]

@@ -12,11 +12,11 @@ import numpy as np
 from dclab import new_dataset
 from dclab.features.bright import get_bright
 
-from helper_methods import retreive_tdms, cleanup
+from helper_methods import retrieve_data, cleanup
 
 
 def test_simple_bright():
-    ds = new_dataset(retreive_tdms("rtdc_data_traces_video_bright.zip"))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     for ii in range(2,7):
         # This stripped data set has only 7 video frames / contours
         img = ds["image"][ii]

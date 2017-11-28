@@ -14,7 +14,7 @@ import numpy as np
 
 from dclab import new_dataset
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets
+from helper_methods import example_data_dict, retrieve_data, example_data_sets
 
 
 def test_contour_not_available():

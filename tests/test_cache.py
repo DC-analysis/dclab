@@ -9,7 +9,7 @@ import numpy as np
 
 from dclab import cached
 
-from helper_methods import retreive_tdms, example_data_sets
+from helper_methods import retrieve_data, example_data_sets
 
 
 def test_cache():

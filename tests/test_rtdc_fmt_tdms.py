@@ -16,11 +16,11 @@ import numpy as np
 from dclab import new_dataset
 import dclab.rtdc_dataset.fmt_tdms.naming
 
-from helper_methods import example_data_dict, retreive_tdms, example_data_sets, cleanup
+from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
 
 
 def test_compatibility_minimal():
-    ds = new_dataset(retreive_tdms("rtdc_data_minimal.zip"))
+    ds = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     assert ds.config["setup"]["channel width"] == 20
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.12
@@ -30,7 +30,7 @@ def test_compatibility_minimal():
 
 
 def test_compatibility_shapein201():
-    ds = new_dataset(retreive_tdms("rtdc_data_shapein_v2.0.1.zip"))
+    ds = new_dataset(retrieve_data("rtdc_data_shapein_v2.0.1.zip"))
     assert ds.config["setup"]["channel width"] == 20
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["software version"] == "ShapeIn 2.0.1"
@@ -38,12 +38,11 @@ def test_compatibility_shapein201():
     assert ds.config["imaging"]["flash duration"] == 2
     assert ds.config["experiment"]["date"] == "2017-10-12"
     assert ds.config["experiment"]["time"] == "12:54:31"
-    
-    
     cleanup()
 
+
 def test_contour_basic():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert len(ds["contour"]) == 12
     assert np.allclose(np.average(ds["contour"][0]), 38.488764044943821)
     assert ds["contour"]._initialized
@@ -52,7 +51,7 @@ def test_contour_basic():
 
 def test_contour_naming():
     # Test that we always find the correct contour name
-    ds = new_dataset(retreive_tdms(example_data_sets[0]))
+    ds = new_dataset(retrieve_data(example_data_sets[0]))
     dp = pathlib.Path(ds.path).resolve()
     dn = dp.parent
     contfile = dn / "M1_0.120000ul_s_contours.txt"
@@ -92,7 +91,7 @@ def test_contour_naming():
 
 
 def test_contour_negative_offset():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     _a = ds["contour"][0]
     ds["contour"].event_offset = 1
     assert np.all(ds["contour"][0] == np.zeros((2,2), dtype=int))
@@ -100,13 +99,13 @@ def test_contour_negative_offset():
 
 
 def test_contour_not_initialized():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert ds["contour"]._initialized == False
     cleanup()
 
 
 def test_image_basic():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     # Transition image
     assert np.all(np.isnan(ds["image"][0]))
     # Real image
@@ -115,13 +114,13 @@ def test_image_basic():
 
 
 def test_image_column_length():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert len(ds["image"]) == 3
     cleanup()
 
 
 def test_image_out_of_bounds():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     try:
         _a = ds["image"][5]
     except IndexError:
@@ -132,7 +131,7 @@ def test_image_out_of_bounds():
 
 
 def test_large_fov():
-    ds = new_dataset(retreive_tdms(example_data_sets[3]))
+    ds = new_dataset(retrieve_data(example_data_sets[3]))
     # initial image is missing
     assert np.all(np.isnan(ds["image"][0]))
     # initial contour is empty
@@ -152,13 +151,13 @@ def test_large_fov():
 
 def test_load_tdms_all():
     for ds in example_data_sets:
-        tdms_path = retreive_tdms(ds)
+        tdms_path = retrieve_data(ds)
         ds = new_dataset(tdms_path)
     cleanup()
 
 
 def test_load_tdms_avi_files():
-    tdms_path = retreive_tdms(example_data_sets[1])
+    tdms_path = retrieve_data(example_data_sets[1])
     edest = pathlib.Path(tdms_path).parent
     ds1 = new_dataset(tdms_path)
     assert pathlib.Path(ds1["image"].video_file).name == "M1_imaq.avi"
@@ -181,14 +180,14 @@ def test_load_tdms_avi_files():
 
 
 def test_load_tdms_simple():
-    tdms_path = retreive_tdms(example_data_sets[0])
+    tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
     assert ds._filter.shape[0] == 156
     cleanup()
 
 
 def test_project_path():
-    tfile = retreive_tdms(example_data_sets[0])
+    tfile = retrieve_data(example_data_sets[0])
     ds = dclab.new_dataset(tfile)
     assert ds.hash == "69733e31b005c145997fac8a22107ded"
     assert ds.format == "tdms"
@@ -207,7 +206,7 @@ def test_project_path():
 
 
 def test_trace_basic():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert ds["trace"].__repr__().count("<not loaded into memory>"), "traces should not be loaded into memory before first access"
     assert len(ds["trace"]) == 6
     assert np.allclose(np.average(ds["trace"]["fl1_median"][0]), 287.08999999999997)
@@ -216,7 +215,7 @@ def test_trace_basic():
 
 def test_trace_import_fail():
     # make sure undefined trace data does not raise an error
-    tdms_path = retreive_tdms(example_data_sets[1])
+    tdms_path = retrieve_data(example_data_sets[1])
     dclab.definitions.FLUOR_TRACES.append("peter")
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = [u'ukwn', u'ha']
     new_dataset(tdms_path)
@@ -227,7 +226,7 @@ def test_trace_import_fail():
 
 
 def test_trace_methods():
-    ds = new_dataset(retreive_tdms(example_data_sets[1]))
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
     for k in list(ds["trace"].keys()):
         assert  k in  dclab.definitions.FLUOR_TRACES
     for k in ds["trace"]:

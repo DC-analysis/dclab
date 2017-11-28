@@ -5,7 +5,7 @@ import zipfile
 
 import numpy as np
 
-from dclab.rtdc_dataset.fmt_tdms import get_tdms_files
+from dclab.rtdc_dataset import fmt_tdms
 
 
 _tempdirs = []
@@ -34,31 +34,37 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
     return ddict
 
 
-def retreive_tdms(zip_file):
-    """Retrieve a zip file that is reachable via the location
-    `webloc`, extract it, and return the paths to extracted
-    tdms files.
+def find_data(path):
+    """Find tdms and rtdc data files in a directory"""
+    path = pathlib.Path(path)
+    tdmsfiles = fmt_tdms.get_tdms_files(str(path))
+    rtdcfiles = [r for r in path.rglob("*.rtdc") if r.is_file()]
+    files = [pathlib.Path(ff) for ff in rtdcfiles + tdmsfiles]
+    return files
+
+
+def retrieve_data(zip_file):
+    """Eytract contents of data zip file and return dir
     """
     global _tempdirs
-    thisdir = pathlib.Path(__file__).parent
-    zpath = thisdir / "data" / zip_file
+    zpath = pathlib.Path(__file__).resolve().parent / "data" / zip_file
     # unpack
     arc = zipfile.ZipFile(str(zpath))
     
     # extract all files to a temporary directory
-    edest = tempfile.mkdtemp(prefix=zpath.stem)
+    edest = tempfile.mkdtemp(prefix=zpath.name)
     arc.extractall(edest)
     
     _tempdirs.append(edest)
     
-    ## Load RTDC Data set
+    ## Load RT-DC Data set
     # find tdms files
-    tdmsfiles = get_tdms_files(edest)
+    datafiles = find_data(edest)
     
-    if len(tdmsfiles) == 1:
-        tdmsfiles = tdmsfiles[0]
+    if len(datafiles) == 1:
+        datafiles = datafiles[0]
 
-    return tdmsfiles
+    return datafiles
     
 # Do not change order:    
 example_data_sets = ["rtdc_data_minimal.zip",

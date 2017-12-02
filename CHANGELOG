@@ -1,6 +1,7 @@
 0.3.1
  - Remove all-zero dummy columns from dict format
  - Implement hdf5-based RT-DC data reader (#32)
+ - Implement hdf5-based RT-DC data writer (#33)
 0.3.0
  - New fluorescence crosstalk correction feature recipe (#35)
  - New ancillary features "fl1_max_ctc", "fl2_max_ctc", "fl3_max_ctc" (#35)

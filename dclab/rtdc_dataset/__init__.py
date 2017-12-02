@@ -6,10 +6,12 @@ import pathlib
 import sys
 import warnings
 
-from .core import RTDCBase
 from .config import Configuration
-from .util import hashfile
+from .core import RTDCBase
 from . import fmt_dict, fmt_hdf5, fmt_tdms, fmt_hierarchy
+from .util import hashfile
+from .write_hdf5 import write
+
 
 if sys.version_info[0] == 2:
     str_classes = (str, unicode)

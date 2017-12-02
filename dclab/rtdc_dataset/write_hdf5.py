@@ -82,7 +82,8 @@ def store_scalar(h5group, name, data):
 
 
 def store_trace(h5group, data):
-    if len(data.values()[0].shape) == 1:
+    firstkey = sorted(list(data.keys()))[0]
+    if len(data[firstkey].shape) == 1:
         # single event
         for dd in data:
             data[dd] = data[dd].reshape(1, -1)    

@@ -1,3 +1,4 @@
+import numbers
 import os
 import tempfile
 
@@ -17,7 +18,7 @@ def cleanup(afile):
 def test_bulk_scalar():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
-                                 prefix="dclab_test_bulk_scalar_")
+                                prefix="dclab_test_bulk_scalar_")
     write(rtdc_file, data)
     # Read the file:
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
@@ -40,7 +41,7 @@ def replace_contour():
              "contour": contour}
     data2 = {"contour": contour2}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
-                                 prefix="dclab_test_replace_contour_")
+                                prefix="dclab_test_replace_contour_")
     write(rtdc_file, data1)
     write(rtdc_file, data2, mode="replace")
     # verify
@@ -61,7 +62,7 @@ def test_bulk_contour():
     data = {"area_um": np.linspace(100.7, 110.9, num),
             "contour": contour}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
-                                 prefix="dclab_test_bulk_contour_")
+                                prefix="dclab_test_bulk_contour_")
     write(rtdc_file, data)
     # Read the file:
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
@@ -78,7 +79,7 @@ def test_bulk_image():
     data = {"area_um": np.linspace(100.7, 110.9, num),
             "image": image}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
-                                 prefix="dclab_test_bulk_image_")
+                                prefix="dclab_test_bulk_image_")
     write(rtdc_file, data)
     # Read the file:
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
@@ -93,7 +94,7 @@ def test_bulk_logs():
            "This is the second line.",
            ]
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
-                                 prefix="dclab_test_bulk_logs_")
+                                prefix="dclab_test_bulk_logs_")
     write(rtdc_file, logs={"testlog": log})
     # Read the file:
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
@@ -159,7 +160,7 @@ def test_meta():
     # Read the file:
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         assert rtdc_data.attrs["online_contour:no absdiff"] == True
-        assert isinstance(rtdc_data.attrs["online_contour:image blur"], int)
+        assert isinstance(rtdc_data.attrs["online_contour:image blur"], numbers.Integral)
         assert rtdc_data.attrs["setup:channel width"] == 20
         assert rtdc_data.attrs["setup:chip region"] == "channel"
     cleanup(rtdc_file)

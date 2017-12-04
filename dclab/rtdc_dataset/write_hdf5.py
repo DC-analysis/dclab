@@ -53,9 +53,9 @@ def store_image(h5group, data):
                                       )
         # Create and Set image attributes
         # HDFView recognizes this as a series of images
-        dset.attrs["CLASS"] = "IMAGE"
-        dset.attrs["IMAGE_VERSION"] = "1.2"
-        dset.attrs["IMAGE_SUBCLASS"] = "IMAGE_GRAYSCALE"
+        dset.attrs.create('CLASS', b'IMAGE')
+        dset.attrs.create('IMAGE_VERSION', b'1.2')
+        dset.attrs.create('IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE')
     else:
         dset = h5group["image"]
         oldsize = dset.shape[0]
@@ -86,18 +86,22 @@ def store_trace(h5group, data):
         # single event
         for dd in data:
             data[dd] = data[dd].reshape(1, -1)
+    # create trace group
     if "trace" not in h5group:
         grp = h5group.create_group("trace")
-        for flt in data:
-            maxshape = (None, data[flt].shape[-1])
+    else:
+        grp = h5group["trace"]
+
+    for flt in data:
+        # create traces data sets
+        if flt not in grp:
+            maxshape = (None, data[flt].shape[1])
             grp.create_dataset(flt,
                                data=data[flt],
                                maxshape=maxshape,
                                chunks=True,
                                fletcher32=True)
-    else:
-        grp = h5group["trace"]
-        for flt in data:
+        else:
             dset = grp[flt]
             oldsize = dset.shape[0]
             dset.resize(oldsize + data[flt].shape[0], axis=0)

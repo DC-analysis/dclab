@@ -16,7 +16,6 @@ from .. import kde_methods
 from .ancillaries import AncillaryFeature
 from .export import Export
 from .filter import Filter
-from .write_hdf5 import write
 
 
 class RTDCBase(object):
@@ -128,8 +127,8 @@ class RTDCBase(object):
                 return length
         else:
             raise ValueError("Could not determine size of data set.")
-    
-    
+
+
     def __repr__(self):
         repre = self.identifier
         if self.path is not "none":

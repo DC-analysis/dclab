@@ -100,13 +100,13 @@ class TraceColumn(object):
                 except KeyError:
                     pass
                 else:
-                    if trdat is not None:
+                    if trdat is not None and trdat.size != 0:
                         # Only add trace if there is actual data.
                         # Split only needs the position of the sections,
                         # so we remove the first (0) index.
                         trace[trace_key] = np.split(trdat, sampleids[1:])
         return trace
-        
+
 
     @staticmethod
     def find_trace_file(mname):

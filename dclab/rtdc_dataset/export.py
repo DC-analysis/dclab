@@ -4,11 +4,12 @@
 from __future__ import division, print_function, unicode_literals
 
 import io
+import os
+import warnings
+
 import imageio
 import fcswrite
 import numpy as np
-import os
-import warnings
 
 from .. import definitions as dfn
 from .write_hdf5 import write
@@ -179,13 +180,21 @@ class Export(object):
                 # event-wise, because
                 # - tdms-based data sets don't allow indexing with numpy
                 # - there might be memory issues
-                if feat in ["contour", "image", "trace"]:
+                if feat in ["contour", "image"]:
                     for ii in range(len(self.rtdc_ds)):
                         if filtarr[ii]:
                             dat = self.rtdc_ds[feat][ii]
                             write(h5obj,
                                   data={feat: dat},
                                   mode="append")
+                elif feat == "trace":
+                    for ii in range(len(self.rtdc_ds)):
+                        if filtarr[ii]:
+                            for tr in self.rtdc_ds["trace"].keys():
+                                dat = self.rtdc_ds["trace"][tr][ii]
+                                write(h5obj,
+                                      data={"trace": {tr: dat}},
+                                      mode="append")
                 else:
                     write(h5obj,
                           data={feat: self.rtdc_ds[feat][filtarr]},

@@ -9,7 +9,7 @@ import h5py
 import numpy as np
 
 from .. import definitions as dfn
-
+from .._version import version
 
 if sys.version_info[0] == 2:
     h5str = unicode
@@ -227,6 +227,8 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
             idk = "{}:{}".format(sec, ck)
             conftype = dfn.config_types[sec][ck]
             h5obj.attrs[idk] = conftype(meta[sec][ck])
+    # write version
+    h5obj.attrs["setup:software version"] = "dclab {}".format(version)
 
     # Write data
     # create events group

@@ -164,7 +164,7 @@ class RTDC_TDMS(RTDCBase):
             self._hash = hashobj(tohash)
         return self._hash
 
-            
+
 def get_project_name_from_path(path, append_mx=False):
     """Get the project name from a path.
     

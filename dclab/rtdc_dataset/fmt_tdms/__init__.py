@@ -189,6 +189,7 @@ def get_project_name_from_path(path, append_mx=False):
         dirn = os.path.dirname(path)
         mx = ""
 
+    project = ""
     if mx:
         # check para.ini
         para = os.path.join(dirn, mx + "_para.ini")
@@ -199,8 +200,6 @@ def get_project_name_from_path(path, append_mx=False):
                 if line.startswith("Sample Name ="):
                     project = line.split("=")[1].strip()
                     break
-            else:
-                project = ""
     
     if not project:
         # check if the directory contains data or is online

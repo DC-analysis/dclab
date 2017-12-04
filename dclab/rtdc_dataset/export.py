@@ -11,7 +11,7 @@ import os
 import warnings
 
 from .. import definitions as dfn
-from write_hdf5 import write
+from .write_hdf5 import write
 
 
 class Export(object):

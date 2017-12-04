@@ -11,6 +11,7 @@ import os
 import warnings
 
 from .. import definitions as dfn
+from write_hdf5 import write
 
 
 class Export(object):
@@ -130,7 +131,7 @@ class Export(object):
                            data=data)
 
 
-    def hdf5(self, path, override=False):
+    def hdf5(self, path, features, filtered=True, override=False):
         """Export the data of the current instance to an HDF5 file
         
         Parameters
@@ -138,6 +139,13 @@ class Export(object):
         path : str
             Path to an .rtdc file. The ending .rtdc is added
             automatically.
+        features : list of str
+            The features in the resulting .tsv file. These are strings
+            that are defined in `dclab.definitions.feature_names`, e.g.
+            "area_cvx", "deform", "frame", "fl1_max", "aspect".
+        filtered : bool
+            If set to `True`, only the filtered data (index in ds._filter)
+            are used.
         override : bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
@@ -150,7 +158,38 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        self.rtdc_ds.save(path)
+        elif os.path.exists(path):
+            os.remove(path)
+        
+        meta = {}
+        # only export configuration meta data (no user-defined config)
+        for sec in dfn.CFG_METADATA:
+            if sec in self.rtdc_ds.config:
+                meta[sec] = self.rtdc_ds.config[sec].copy()
+
+        if filtered:
+            filtarr = self.rtdc_ds.filter.all
+        else:
+            filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
+
+        # write meta data
+        with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
+            # write each feature individually
+            for feat in features:
+                # event-wise, because
+                # - tdms-based data sets don't allow indexing with numpy
+                # - there might be memory issues
+                if feat in ["contour", "image", "trace"]:
+                    for ii in range(len(self.rtdc_ds)):
+                        if filtarr[ii]:
+                            dat = self.rtdc_ds[feat][ii]
+                            write(h5obj,
+                                  data={feat: dat},
+                                  mode="append")
+                else:
+                    write(h5obj,
+                          data={feat: self.rtdc_ds[feat][filtarr]},
+                          mode="append")
 
 
     def tsv(self, path, features, filtered=True, override=False):

@@ -383,9 +383,3 @@ class RTDCBase(object):
             uid = int(filt)
         # remove item
         self.config["filtering"]["polygon filters"].remove(uid)
-
-
-    def save(self, path):
-        """Save current data set to an hdf5 file"""
-        meta = self.config
-        write(path_or_h5file=path, data=self, meta=meta)

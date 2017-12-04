@@ -181,28 +181,45 @@ def get_project_name_from_path(path, append_mx=False):
     """
     if path.endswith(".tdms"):
         dirn = os.path.dirname(path)
+        mx = os.path.basename(path).split("_")[0]
     elif os.path.isdir(path):
         dirn = path
+        mx = ""
     else:
         dirn = os.path.dirname(path)
-    # check if the directory contains data or is online
-    root1, trail1 = os.path.split(dirn)
-    root2, trail2 = os.path.split(root1)
-    _root3, trail3 = os.path.split(root2)
+        mx = ""
+
+    if mx:
+        # check para.ini
+        para = os.path.join(dirn, mx + "_para.ini")
+        if os.path.exists(para):
+            with io.open(para) as fd:
+                lines = fd.readlines()
+            for line in lines:
+                if line.startswith("Sample Name ="):
+                    project = line.split("=")[1].strip()
+                    break
+            else:
+                project = ""
     
-    if trail1.lower() in ["online", "offline"]:
-        # /home/peter/hans/HLC12398/online/
-        project = trail2
-    elif ( trail1.lower() == "data" and 
-           trail2.lower() in ["online", "offline"] ):
-        # this is olis new folder sctructure
-        # /home/peter/hans/HLC12398/online/data/
-        project = trail3
-    else:
-        project = trail1
+    if not project:
+        # check if the directory contains data or is online
+        root1, trail1 = os.path.split(dirn)
+        root2, trail2 = os.path.split(root1)
+        _root3, trail3 = os.path.split(root2)
+        
+        if trail1.lower() in ["online", "offline"]:
+            # /home/peter/hans/HLC12398/online/
+            project = trail2
+        elif ( trail1.lower() == "data" and 
+               trail2.lower() in ["online", "offline"] ):
+            # this is olis new folder sctructure
+            # /home/peter/hans/HLC12398/online/data/
+            project = trail3
+        else:
+            project = trail1
 
     if append_mx:
-        mx = os.path.basename(path).split("_")[0]
         project += " - "+mx
     
     return project

@@ -132,24 +132,27 @@ class Export(object):
                            data=data)
 
 
-    def hdf5(self, path, features, filtered=True, override=False):
+    def hdf5(self, path, features, filtered=True, override=False,
+             compression="szip"):
         """Export the data of the current instance to an HDF5 file
         
         Parameters
         ----------
-        path : str
+        path: str
             Path to an .rtdc file. The ending .rtdc is added
             automatically.
-        features : list of str
+        features: list of str
             The features in the resulting .tsv file. These are strings
             that are defined in `dclab.definitions.feature_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "aspect".
-        filtered : bool
+        filtered: bool
             If set to `True`, only the filtered data (index in ds._filter)
             are used.
-        override : bool
+        override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
+        compression: str or None
+            Compression method used by h5py
         """
         # Make sure that path ends with .rtdc
         if not path.endswith(".rtdc"):
@@ -170,9 +173,11 @@ class Export(object):
 
         if filtered:
             filtarr = self.rtdc_ds.filter.all
+            nev = np.sum(filtarr)
         else:
-            filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
-
+            nev = len(self.rtdc_ds)
+            filtarr = np.ones(nev, dtype=bool)
+            
         # write meta data
         with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
             # write each feature individually
@@ -180,21 +185,56 @@ class Export(object):
                 # event-wise, because
                 # - tdms-based data sets don't allow indexing with numpy
                 # - there might be memory issues
-                if feat in ["contour", "image"]:
+                if feat == "contour":
+                    cont_list = []
+                    cmax = 0
                     for ii in range(len(self.rtdc_ds)):
                         if filtarr[ii]:
-                            dat = self.rtdc_ds[feat][ii]
-                            write(h5obj,
-                                  data={feat: dat},
-                                  mode="append")
-                elif feat == "trace":
+                            dat = self.rtdc_ds["contour"][ii]
+                            cont_list.append(dat)
+                            cmax = max(cmax, dat.max())
+                    write(h5obj,
+                          data={"contour": cont_list},
+                          mode="append",
+                          compression=compression)
+                elif feat == "image":
+                    # store image stacks (reduced file size and save time)
+                    m = 64
+                    im0 = self.rtdc_ds["image"][0]
+                    imstack = np.zeros((m, im0.shape[0], im0.shape[1]),
+                                       dtype=im0.dtype)
+                    jj = 0
                     for ii in range(len(self.rtdc_ds)):
                         if filtarr[ii]:
-                            for tr in self.rtdc_ds["trace"].keys():
-                                dat = self.rtdc_ds["trace"][tr][ii]
+                            dat = self.rtdc_ds["image"][ii]
+                            imstack[jj] = dat
+                            if (jj + 1) % m == 0:
+                                jj = 0
                                 write(h5obj,
-                                      data={"trace": {tr: dat}},
-                                      mode="append")
+                                      data={"image": imstack},
+                                      mode="append",
+                                      compression=compression)
+                            else:
+                                jj += 1
+                    # write rest
+                    if jj:
+                        write(h5obj,
+                              data={"image": imstack[:jj, :, :]},
+                              mode="append",
+                              compression=compression)                        
+                elif feat == "trace":
+                    for tr in self.rtdc_ds["trace"].keys():
+                        tr0 = self.rtdc_ds["trace"][tr][0]
+                        trdat = np.zeros((nev, tr0.size), dtype=tr0.dtype)
+                        jj = 0
+                        for ii in range(len(self.rtdc_ds)):
+                            if filtarr[ii]:
+                                trdat[jj] = self.rtdc_ds["trace"][tr][ii]
+                                jj += 1
+                        write(h5obj,
+                              data={"trace": {tr: trdat}},
+                              mode="append",
+                              compression=compression)
                 else:
                     write(h5obj,
                           data={feat: self.rtdc_ds[feat][filtarr]},

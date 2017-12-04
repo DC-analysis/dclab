@@ -107,7 +107,7 @@ def test_contour_not_initialized():
 def test_image_basic():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     # Transition image
-    assert np.all(np.isnan(ds["image"][0]))
+    assert np.allclose(ds["image"][0], 0)
     # Real image
     assert np.allclose(np.average(ds["image"][1]), 45.1490478515625)
     cleanup()
@@ -133,7 +133,7 @@ def test_image_out_of_bounds():
 def test_large_fov():
     ds = new_dataset(retrieve_data(example_data_sets[3]))
     # initial image is missing
-    assert np.all(np.isnan(ds["image"][0]))
+    assert np.allclose(ds["image"][0], 0)
     # initial contour is empty
     assert np.allclose(ds["contour"][0], 0)
     # maximum of contour is larger than 255 (issue #167)

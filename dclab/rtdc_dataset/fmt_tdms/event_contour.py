@@ -132,13 +132,18 @@ class ContourData(object):
     def __getitem__(self, idx):
         cont = self.data[idx]
         cont = cont.strip()
-        cont = cont.splitlines()
+        cont = cont.replace(")", "")
+        cont = cont.replace("(", "")
+        cont = cont.replace("(", "")
+        cont = cont.replace("\n", ",")
+        cont = cont.replace("   ", " ")
+        cont = cont.replace("  ", " ")
         if len(cont) > 1:
-            _frame = int(cont.pop(0))
-            cont = [ np.fromstring(c.strip("()"), sep=",") for c in cont ]
-            cont = np.array(cont, dtype=np.uint)
-            return cont
-
+            _frame, cont = cont.split(" ", 1)
+            cont = cont.strip(" ,")
+            data = np.fromstring(cont, sep = ",", dtype=np.uint16).reshape(-1, 2)
+            return data
+        
 
     def __len__(self):
         return len(self.data)

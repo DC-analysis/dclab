@@ -50,7 +50,8 @@ def test_bulk_contour():
 
 def test_bulk_image():
     num = 7
-    image = np.arange(20 * 90 * 50).reshape(20, 90, 50)
+    image = np.zeros((20, 90, 50))
+    image += np.arange(90).reshape(1, 90, 1)
     data = {"area_um": np.linspace(100.7, 110.9, num),
             "image": image}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",

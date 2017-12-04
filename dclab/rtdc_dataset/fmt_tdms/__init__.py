@@ -117,7 +117,8 @@ class RTDC_TDMS(RTDCBase):
             self.config["experiment"]["event count"] = len(self)
         if "sample" not in self.config["experiment"]:
             # Measured sample or user-defined reference
-            self.config["experiment"]["sample"] = self.title
+            sample = get_project_name_from_path(self.path)
+            self.config["experiment"]["sample"] = sample
         if "time" not in self.config["experiment"]:
             # Start time of measurement ('HH:MM:SS')
             timestr = time.strftime("%H:%M:%S", gmtime)

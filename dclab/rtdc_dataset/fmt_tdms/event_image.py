@@ -57,7 +57,7 @@ class ImageColumn(object):
     @property
     def dummy(self):
         """Returns a dummy image"""
-        cdata = np.zeros_like(self._image_data[0])*np.nan
+        cdata = np.zeros_like(self._image_data[0])
         return cdata
 
 

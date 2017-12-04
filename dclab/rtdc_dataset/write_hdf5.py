@@ -17,7 +17,7 @@ else:
     h5str = str
 
 
-def store_contour(h5group, data, compression="lzf"):
+def store_contour(h5group, data, compression):
     if not isinstance(data, (list, tuple)):
         # single event
         data = [data]
@@ -38,19 +38,19 @@ def store_contour(h5group, data, compression="lzf"):
                                compression=compression)
 
 
-def store_image(h5group, data):
+def store_image(h5group, data, compression):
     if len(data.shape) == 2:
         # single event
         data = data.reshape(1, data.shape[0], data.shape[1])
     if "image" not in h5group:
         maxshape = (None, data.shape[1], data.shape[2])
-        chunks = (1, data.shape[1], data.shape[2])
         dset = h5group.create_dataset("image",
                                       data=data,
+                                      dtype=np.uint8,
                                       maxshape=maxshape,
-                                      chunks=chunks,
+                                      chunks=True,
                                       fletcher32=True,
-                                      )
+                                      compression=compression)
         # Create and Set image attributes
         # HDFView recognizes this as a series of images
         dset.attrs.create('CLASS', b'IMAGE')
@@ -80,7 +80,7 @@ def store_scalar(h5group, name, data):
         dset[oldsize:] = data
 
 
-def store_trace(h5group, data):
+def store_trace(h5group, data, compression):
     firstkey = sorted(list(data.keys()))[0]
     if len(data[firstkey].shape) == 1:
         # single event
@@ -100,7 +100,8 @@ def store_trace(h5group, data):
                                data=data[flt],
                                maxshape=maxshape,
                                chunks=True,
-                               fletcher32=True)
+                               fletcher32=True,
+                               compression=compression)
         else:
             dset = grp[flt]
             oldsize = dset.shape[0]
@@ -127,7 +128,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
         - contour: list of `N` 2d ndarrays of shape `(2,C)`, any dtype,
           with each ndarray containing the x- and y- coordinates
           of `C` contour points in pixels.
-        - image: 3d ndarray of shape `(N,A,B)`, uint8,
+        - image: 3d ndarray of shape `(N,A,B)`, is converted to uint8,
           with the image dimensions `(x,y) = (A,B)`
         - trace: 2d ndarray of shape `(N,T)`, any dtype
           with a globally constant trace length `T`.
@@ -166,8 +167,8 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
                    `h5py.File` object is closed and `None` is returned
                    (default)
     compression: str
-        Compression method for contour data and logs,
-        one of ["lzf", "szip", "gzip"].
+        Compression method for "contour", "image", and "trace" data
+        as well as and logs; one of [None, "lzf", "gzip", "szip"].
 
     Notes
     -----
@@ -176,6 +177,8 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
     """
     if mode not in ["append", "replace", "reset"]:
         raise ValueError("`mode` must be one of [append, replace, reset]")
+    if compression not in [None, "gzip", "lzf", "szip"]:
+        raise ValueError("`compression` must be one of [gzip, lzf, szip]")
 
     if (not hasattr(data, "__iter__") or
         not hasattr(data, "__contains__") or
@@ -252,10 +255,12 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
                           compression=compression)
         elif fk == "image":
             store_image(h5group=events,
-                        data=data["image"])
+                        data=data["image"],
+                        compression=compression)
         elif fk == "trace":
             store_trace(h5group=events,
-                        data=data["trace"])
+                        data=data["trace"],
+                        compression=compression)
 
     # Write logs
     if "logs" not in h5obj:

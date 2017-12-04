@@ -145,20 +145,18 @@ def test_hdf5_filtered():
     N = 10
     keys = ["area_um"]
     ddict = example_data_dict(size=N, keys=keys)
-    ddict["image"] = [ np.arange(10 * 20).reshape(10, 20) ] * N
-    ddict["image"][3] = np.arange(10 * 20).reshape(10, 20) * 2 + 1
+    ddict["image"] = [ np.arange(10 * 20, dtype=np.int64).reshape(10, 20) ] * N
+    ddict["image"][3] = np.arange(10 * 20, dtype=np.int64).reshape(10, 20) + 22
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
     ds1.filter.manual[2] = False
     ds1.apply_filter()
     fta = ds1.filter.manual.copy()
-    
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_filtered.rtdc")
     ds1.export.hdf5(f1, keys + ["image"])
-
 
     ds2 = dclab.new_dataset(f1)
     
@@ -166,7 +164,7 @@ def test_hdf5_filtered():
     assert np.allclose(ds2["area_um"], ds1["area_um"][fta])
     assert np.allclose(ds2["image"][2], ds1["image"][3])
     assert np.all(ds2["image"][2] != ds1["image"][2])
-    
+
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)
 

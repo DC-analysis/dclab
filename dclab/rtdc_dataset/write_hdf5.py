@@ -9,7 +9,6 @@ import h5py
 import numpy as np
 
 from .. import definitions as dfn
-from .core import RTDCBase
 
 
 if sys.version_info[0] == 2:
@@ -31,7 +30,7 @@ def store_contour(h5group, data, compression="lzf"):
                                 compression=compression)
     else:
         grp = h5group["contour"]
-        curid = len(grp["contour"].keys())
+        curid = len(grp.keys())
         for ii, cc in enumerate(data):
             grp.create_dataset("{}".format(curid + ii),
                                data=cc,
@@ -86,7 +85,7 @@ def store_trace(h5group, data):
     if len(data[firstkey].shape) == 1:
         # single event
         for dd in data:
-            data[dd] = data[dd].reshape(1, -1)    
+            data[dd] = data[dd].reshape(1, -1)
     if "trace" not in h5group:
         grp = h5group.create_group("trace")
         for flt in data:
@@ -102,23 +101,23 @@ def store_trace(h5group, data):
             dset = grp[flt]
             oldsize = dset.shape[0]
             dset.resize(oldsize + data[flt].shape[0], axis=0)
-            dset[oldsize:] = data[flt]        
+            dset[oldsize:] = data[flt]
 
 
-def write(rtdc_file, data={}, meta={}, logs={}, mode="reset",
+def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
           compression=None):
     """Write data to an RT-DC file
-    
+
     Parameters
     ----------
-    rtdc_file: path or h5py.File
+    path: path or h5py.File
         The path or the hdf5 file object to write to.
-    data: dict or dclab.rtdc_dataset.RTDCBase
+    data: dict-like
         The data to store. Each key of `data` must either be a valid
-        scalar feature name (see `dclab.dfn.FEATURES`) or
+        scalar feature name (see `dclab.dfn.feature_names`) or
         one of ["contour", "image", "trace"]. The data type
         must be given according to the feature type:
-        
+
         - scalar feature: 1d ndarray of size `N`, any dtype,
           with the number of events `N`.
         - contour: list of `N` 2d ndarrays of shape `(2,C)`, any dtype,
@@ -129,10 +128,10 @@ def write(rtdc_file, data={}, meta={}, logs={}, mode="reset",
         - trace: 2d ndarray of shape `(N,T)`, any dtype
           with a globally constant trace length `T`.
     meta: dict of dicts
-        The meta data to store (see `dclab.dfn.CFG_METADATA`).
+        The meta data to store (see `dclab.dfn.config_keys`).
         Each key depicts a meta data section name whose data is given
         as a dictionary, e.g.
-        
+
             meta = {"imaging": {"exposure time": 20,
                                 "flash duration": 2,
                                 ...
@@ -143,7 +142,7 @@ def write(rtdc_file, data={}, meta={}, logs={}, mode="reset",
                               },
                     ...
                     }
-        
+
         Only section key names and key values therein registered
         in dclab are allowed and are converted to the pre-defined
         dtype.
@@ -165,61 +164,67 @@ def write(rtdc_file, data={}, meta={}, logs={}, mode="reset",
     compression: str
         Compression method for contour data and logs,
         one of ["lzf", "szip", "gzip"].
+
+    Notes
+    -----
+    If `data` is an instance of RTDCBase, then `meta` must be set to
+    `data.config`, otherwise no meta data will be saved.
     """
     if mode not in ["append", "replace", "reset"]:
         raise ValueError("`mode` must be one of [append, replace, reset]")
-    if isinstance(rtdc_file, h5py.File):
-        h5obj = rtdc_file
-    else:
-        if mode == "reset":
-            h5mode = "w"
-        else:
-            h5mode = "a"
-        h5obj = h5py.File(rtdc_file, mode=h5mode)
 
-    if isinstance(data, RTDCBase):
-        # RT-DC data set
-        feat_keys = data.features()
-        newmeta = {}
-        for mk in dfn.CFG_METADATA:
-            newmeta[mk] = dict(data.config[mk])
-        newmeta.update(meta)
-        meta = newmeta
-    elif isinstance(data, dict):
-        # dictionary
-        feat_keys = list(data.keys())
-        feat_keys.sort()
-    else:
-        msg = "`data` must be dict or RTDCBase"
+    if (not hasattr(data, "__iter__") or
+        not hasattr(data, "__contains__") or
+            not hasattr(data, "__getitem__") or
+            isinstance(data, (list, np.ndarray))):
+        msg = "`data` must be dict-like"
         raise ValueError(msg)
 
-    ## Write meta data
+    # Check meta data
     for sec in meta:
-        if sec not in dfn.CFG_METADATA:
+        if sec not in dfn.config_keys:
             # only allow writing of meta data that are not editable
             # by the user (not dclab.dfn.CFG_ANALYSIS)
             msg = "Meta data section not defined in dclab: {}".format(sec)
             raise ValueError(msg)
         for ck in meta[sec]:
-            idk = "{}:{}".format(sec, ck)
             if ck not in dfn.config_keys[sec]:
-                msg = "Meta data key not defined in dclab: {}".format(idk)
+                msg = "Meta key not defined in dclab: {}:{}".format(sec, ck)
                 raise ValueError(msg)
-            conftype = dfn.config_types[sec][ck]
-            h5obj.attrs[idk] = conftype(meta[sec][ck])
 
-    ## Write data
-    # data sanity checks
-    for kk in feat_keys:
-        if not (kk in dfn.feature_names or
-                kk in ["contour", "image", "trace"]):
-            msg = "Unknown data key: {}".format(kk)
-            raise ValueError(msg)
+    # Check feature keys
+    feat_keys = []
+    for kk in data:
+        if kk in dfn.feature_names + ["contour", "image", "trace"]:
+            feat_keys.append(kk)
+        else:
+            raise ValueError("Unknown key '{}'!".format(kk))
+        # verify trace names
         if kk == "trace":
             for sk in data["trace"]:
                 if sk not in dfn.FLUOR_TRACES:
                     msg = "Unknown trace key: {}".format(sk)
-                    raise ValueError(msg)   
+                    raise ValueError(msg)
+
+    # Create file
+    # (this should happen after all checks)
+    if isinstance(path_or_h5file, h5py.File):
+        h5obj = path_or_h5file
+    else:
+        if mode == "reset":
+            h5mode = "w"
+        else:
+            h5mode = "a"
+        h5obj = h5py.File(path_or_h5file, mode=h5mode)
+
+    # Write meta
+    for sec in meta:
+        for ck in meta[sec]:
+            idk = "{}:{}".format(sec, ck)
+            conftype = dfn.config_types[sec][ck]
+            h5obj.attrs[idk] = conftype(meta[sec][ck])
+
+    # Write data
     # create events group
     if "events" not in h5obj:
         h5obj.create_group("events")
@@ -246,7 +251,7 @@ def write(rtdc_file, data={}, meta={}, logs={}, mode="reset",
             store_trace(h5group=events,
                         data=data["trace"])
 
-    ## Write logs
+    # Write logs
     if "logs" not in h5obj:
         h5obj.create_group("logs")
     log_group = h5obj["logs"]
@@ -255,12 +260,12 @@ def write(rtdc_file, data={}, meta={}, logs={}, mode="reset",
         for rl in logs:
             if rl in log_group:
                 del log_group[rl]
-    # store logs
     dt = h5py.special_dtype(vlen=h5str)
     for lkey in logs:
         ldata = logs[lkey]
         if isinstance(ldata, (str, h5str)):
-            logs = [ldata]
+            # single event
+            ldata = [ldata]
         lnum = len(ldata)
         if lkey not in log_group:
             log_dset = log_group.create_dataset(lkey,

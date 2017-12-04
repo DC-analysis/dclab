@@ -16,6 +16,7 @@ from .. import kde_methods
 from .ancillaries import AncillaryFeature
 from .export import Export
 from .filter import Filter
+from .write_hdf5 import write
 
 
 class RTDCBase(object):
@@ -382,3 +383,9 @@ class RTDCBase(object):
             uid = int(filt)
         # remove item
         self.config["filtering"]["polygon filters"].remove(uid)
+
+
+    def save(self, path):
+        """Save current data set to an hdf5 file"""
+        meta = self.config
+        write(path_or_h5file=path, data=self, meta=meta)

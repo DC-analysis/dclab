@@ -28,31 +28,6 @@ def test_bulk_scalar():
     cleanup(rtdc_file)
 
 
-def replace_contour():
-    num = 7
-    contour = []
-    contour2 = []
-    for ii in range(5, num + 5):
-        cii = np.arange(2 * ii).reshape(2, ii)
-        contour.append(cii)
-        contour2.append(cii*2)
-    
-    data1 = {"area_um": np.linspace(100.7, 110.9, num),
-             "contour": contour}
-    data2 = {"contour": contour2}
-    rtdc_file = tempfile.mktemp(suffix=".rtdc",
-                                prefix="dclab_test_replace_contour_")
-    write(rtdc_file, data1)
-    write(rtdc_file, data2, mode="replace")
-    # verify
-    with h5py.File(rtdc_file, mode="r") as rtdc_data:
-        events = rtdc_data["events"]
-        assert "contour" in events.keys()
-        assert not np.allclose(events["contour"]["10"], contour[10])
-        assert np.allclose(events["contour"]["10"], contour2[10])
-    cleanup(rtdc_file)
-
-
 def test_bulk_contour():
     num = 7
     contour = []
@@ -122,6 +97,43 @@ def test_bulk_trace():
     cleanup(rtdc_file)
 
 
+def test_data_error():
+    data = {"area_um": np.linspace(100.7, 110.9, 100)}
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_")
+    try:
+        write(rtdc_file, data, mode="unknown")
+    except ValueError:
+        pass
+    else:
+        assert False, "ValueError should have been raised (wrong mode)"
+
+    try:
+        write(rtdc_file, ["peter"])
+    except ValueError:
+        pass
+    else:
+        assert False, "ValueError should have been raised (wrong data)"
+    
+    data2 = {"area_undefined": np.linspace(100.7, 110.9, 100)}
+    try:
+        write(rtdc_file, data2)
+    except ValueError:
+        pass
+    else:
+        assert False, "ValueError should have been raised (feature name)"
+
+    data3 = {"trace": {"fl_unknown": np.arange(10)}}
+    try:
+        write(rtdc_file, data3)
+    except ValueError:
+        pass
+    else:
+        assert False, "ValueError should have been raised (trace name)"
+    
+    cleanup(rtdc_file)
+
+
 def test_logs_append():
     log1 = ["This is a test log that contains two lines.",
             "This is the second line.",
@@ -166,6 +178,30 @@ def test_meta():
     cleanup(rtdc_file)
 
 
+def test_meta_error():
+    data = {"area_um": np.linspace(100.7, 110.9, 100)}
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_meta_")
+    
+    meta1 = {"rediculous_section": {"a": 4}} 
+    try:
+        write(rtdc_file, data, meta=meta1)
+    except ValueError:
+        pass
+    else:
+        assert False, "ValueError should have been raised (unkwn section)"
+
+    meta2 = {"setup": {"rediculous_key": 4}}
+    try:
+        write(rtdc_file, data, meta=meta2)
+    except ValueError:
+        pass
+    else:
+        assert False, "ValueError should have been raised (unkwn key)"
+
+    cleanup(rtdc_file)
+
+
 def test_mode():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
     data2 = {"deform": np.linspace(.7, .8, 100)}
@@ -190,44 +226,6 @@ def test_mode():
     cleanup(rtdc_file)
 
 
-def test_real_time():
-    # Create huge array
-    N = 116
-    # Writing 10 images at a time is faster than writing one image at a time
-    M = 4
-    assert N//M == np.round(N/M)
-    shx = 256
-    shy = 96
-    images = np.zeros((M, shy, shx), dtype=np.uint8)
-    axis1 = np.linspace(0,1,M)
-    axis2 = np.arange(M)
-    rtdc_file = tempfile.mktemp(suffix=".rtdc",
-                                prefix="dclab_test_realtime_")
-    with h5py.File(rtdc_file, "w") as fobj:
-        # simulate real time and write one image at a time
-        for ii in range(N//M):
-            #print(ii)
-            num_img = np.copy(images) + ii
-
-            data = {"area_um": axis1,
-                    "area_cvx": axis2,
-                    "image": num_img}
-            
-            write(fobj,
-                  data=data,
-                  mode="append",
-                  )
-
-    # Read the file:
-    with h5py.File(rtdc_file, mode="r") as rtdc_data:
-        events = rtdc_data["events"]
-        assert events["image"].shape == (N, shy, shx)
-        assert events["area_um"].shape == (N,)
-        assert np.dtype(events["area_um"]) == np.float
-        assert np.dtype(events["area_cvx"]) == np.int
-    cleanup(rtdc_file)
-
-
 def test_mode_return():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
 
@@ -245,6 +243,130 @@ def test_mode_return():
     assert ret3 is None
     
     cleanup(rtdc_file)
+
+
+def test_real_time():
+    # Create huge array
+    N = 116
+    # Writing 10 images at a time is faster than writing one image at a time
+    M = 4
+    assert N//M == np.round(N/M)
+    shx = 48
+    shy = 32
+    images = np.zeros((M, shy, shx), dtype=np.uint8)
+    contours = [np.arange(20).reshape(10, 2)] * M
+    traces = {"fl1_median": np.arange(M * 55).reshape(M, 55)}
+    axis1 = np.linspace(0,1,M)
+    axis2 = np.arange(M)
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_realtime_")
+    with h5py.File(rtdc_file, "w") as fobj:
+        # simulate real time and write one image at a time
+        for ii in range(N//M):
+            #print(ii)
+            num_img = np.copy(images) + ii
+
+            data = {"area_um": axis1,
+                    "area_cvx": axis2,
+                    "image": num_img,
+                    "contour": contours,
+                    "trace": traces}
+            
+            write(fobj,
+                  data=data,
+                  mode="append",
+                  )
+
+    # Read the file:
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        events = rtdc_data["events"]
+        assert events["image"].shape == (N, shy, shx)
+        assert events["area_um"].shape == (N,)
+        assert events["contour"]["0"].shape == (10, 2)
+        assert events["trace"]["fl1_median"].shape == (N, 55)
+        assert np.dtype(events["area_um"]) == np.float
+        assert np.dtype(events["area_cvx"]) == np.int
+        
+    cleanup(rtdc_file)
+
+
+def test_real_time_single():
+    # Create huge array
+    N = 33
+    shx = 30
+    shy = 10
+    image = np.zeros((shy, shx), dtype=np.uint8)
+    contour = np.arange(22).reshape(11, 2)
+    trace = {"fl1_median": np.arange(43)}
+
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_realtime_single_")
+    with h5py.File(rtdc_file, "w") as fobj:
+        # simulate real time and write one image at a time
+        for ii in range(N):
+            data = {"area_um": ii * .1,
+                    "area_cvx": ii * 5,
+                    "image": image * ii,
+                    "contour": contour,
+                    "trace": trace}
+            write(fobj,
+                  data=data,
+                  mode="append",
+                  logs={"log1": "line {}".format(ii)}
+                  )
+
+    # Read the file:
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        events = rtdc_data["events"]
+        assert events["image"].shape == (N, shy, shx)
+        assert events["area_um"].shape == (N,)
+        assert events["contour"]["0"].shape == (11, 2)
+        assert events["trace"]["fl1_median"].shape == (N, 43)
+        assert np.dtype(events["area_um"]) == np.float
+        assert np.dtype(events["area_cvx"]) == np.int
+        logs = rtdc_data["logs"]
+        assert len(logs["log1"]) == N
+        
+    cleanup(rtdc_file)
+
+
+def test_replace_contour():
+    num = 7
+    contour = []
+    contour2 = []
+    for ii in range(5, num + 5):
+        cii = np.arange(2 * ii).reshape(2, ii)
+        contour.append(cii)
+        contour2.append(cii*2)
+    
+    data1 = {"area_um": np.linspace(100.7, 110.9, num),
+             "contour": contour}
+    data2 = {"contour": contour2}
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_replace_contour_")
+    write(rtdc_file, data1)
+    write(rtdc_file, data2, mode="replace")
+    # verify
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        events = rtdc_data["events"]
+        assert "contour" in events.keys()
+        assert not np.allclose(events["contour"]["6"], contour[6])
+        assert np.allclose(events["contour"]["6"], contour2[6])
+    cleanup(rtdc_file)
+
+
+def test_replace_logs():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_replace_logs_")
+    write(rtdc_file, logs={"log1": ["hans", "und"]})
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        logs = rtdc_data["logs"]
+        assert len(logs["log1"]) == 2
+
+    write(rtdc_file, logs={"log1": ["peter"]}, mode="replace")
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        logs = rtdc_data["logs"]
+        assert len(logs["log1"]) == 1
 
 
 if __name__ == "__main__":

@@ -27,11 +27,11 @@ class Export(object):
         path : str
             Path to a .tsv file. The ending .tsv is added automatically.
         filtered : bool
-            If set to ``True``, only the filtered data (index in ds._filter)
+            If set to `True`, only the filtered data (index in ds._filter)
             are used.
         override : bool
-            If set to ``True``, an existing file ``path`` will be overridden.
-            If set to ``False``, an ``OSError`` will be raised.
+            If set to `True`, an existing file ``path`` will be overridden.
+            If set to `False`, raises `OSError` if ``path`` exists.
         
         Notes
         -----
@@ -93,11 +93,11 @@ class Export(object):
             that are defined in `dclab.definitions.feature_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
-            If set to ``True``, only the filtered data (index in ds._filter)
+            If set to `True`, only the filtered data (index in ds._filter)
             are used.
         override : bool
-            If set to ``True``, an existing file ``path`` will be overridden.
-            If set to ``False``, an ``OSError`` will be raised.
+            If set to `True`, an existing file ``path`` will be overridden.
+            If set to `False`, raises `OSError` if ``path`` exists.
         """
         features = [ c.lower() for c in features ]
         ds = self.rtdc_ds
@@ -130,8 +130,31 @@ class Export(object):
                            data=data)
 
 
+    def hdf5(self, path, override=False):
+        """Export the data of the current instance to an HDF5 file
+        
+        Parameters
+        ----------
+        path : str
+            Path to an .rtdc file. The ending .rtdc is added
+            automatically.
+        override : bool
+            If set to `True`, an existing file ``path`` will be overridden.
+            If set to `False`, raises `OSError` if ``path`` exists.
+        """
+        # Make sure that path ends with .rtdc
+        if not path.endswith(".rtdc"):
+            path += ".rtdc"
+        # Check if file already exist
+        if not override and os.path.exists(path):
+            raise OSError("File already exists: {}\n".format(
+                                    path.encode("ascii", "ignore"))+
+                          "Please use the `override=True` option.")
+        self.rtdc_ds.save(path)
+
+
     def tsv(self, path, features, filtered=True, override=False):
-        """ Export the data of the current instance to a .tsv file
+        """Export the data of the current instance to a .tsv file
         
         Parameters
         ----------
@@ -142,11 +165,11 @@ class Export(object):
             that are defined in `dclab.definitions.feature_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
-            If set to ``True``, only the filtered data (index in ds._filter)
+            If set to `True`, only the filtered data (index in ds._filter)
             are used.
         override : bool
-            If set to ``True``, an existing file ``path`` will be overridden.
-            If set to ``False``, an ``OSError`` will be raised.
+            If set to `True`, an existing file ``path`` will be overridden.
+            If set to `False`, raises `OSError` if ``path`` exists.
         """
         features = [ c.lower() for c in features ]
         ds = self.rtdc_ds

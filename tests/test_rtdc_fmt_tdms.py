@@ -208,7 +208,7 @@ def test_project_path():
 def test_trace_basic():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert ds["trace"].__repr__().count("<not loaded into memory>"), "traces should not be loaded into memory before first access"
-    assert len(ds["trace"]) == 6
+    assert len(ds["trace"]) == 2
     assert np.allclose(np.average(ds["trace"]["fl1_median"][0]), 287.08999999999997)
     cleanup()
 

@@ -3,20 +3,16 @@
 """Test tdms file format"""
 from __future__ import print_function
 
-import io
 import os
 import pathlib
 import shutil
-import tempfile
-import warnings
-import zipfile
 
 import numpy as np
 
 from dclab import new_dataset
 import dclab.rtdc_dataset.fmt_tdms.naming
 
-from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
+from helper_methods import retrieve_data, example_data_sets, cleanup
 
 
 def test_compatibility_minimal():
@@ -57,7 +53,7 @@ def test_contour_naming():
     contfile = dn / "M1_0.120000ul_s_contours.txt"
     contfileshort = dn / "M1_contours.txt"
     del ds
-    
+
     # "M1_0.120000ul_s_contours.txt" should have priority over
     # "M1_contours.txt".
     with contfileshort.open(mode="w"):
@@ -66,7 +62,7 @@ def test_contour_naming():
     assert ds2["contour"].identifier == str(contfile)
     assert not np.allclose(ds2["contour"][1], 0)
     del ds2
-    
+
     # Check if "M1_contours.txt" is used if the other is not
     # there.
     os.remove(str(contfileshort))
@@ -75,14 +71,14 @@ def test_contour_naming():
     assert ds3["contour"].identifier == str(contfileshort)
     del ds3
     contfileshort.rename(contfile)
-    
+
     # Create M10 file
     with (dn / "M10_contours.txt").open(mode="w"):
         pass
     ds4 = new_dataset(dp)
     assert ds4["contour"].identifier == str(contfile)
     del ds4
-    
+
     # Check when there is no contour file
     os.remove(str(contfile))
     # This will issue a warning that no contour data was found.
@@ -92,15 +88,15 @@ def test_contour_naming():
 
 def test_contour_negative_offset():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
-    _a = ds["contour"][0]
+    ds["contour"][0]
     ds["contour"].event_offset = 1
-    assert np.all(ds["contour"][0] == np.zeros((2,2), dtype=int))
+    assert np.all(ds["contour"][0] == np.zeros((2, 2), dtype=int))
     cleanup()
 
 
 def test_contour_not_initialized():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
-    assert ds["contour"]._initialized == False
+    assert not ds["contour"]._initialized
     cleanup()
 
 
@@ -122,7 +118,7 @@ def test_image_column_length():
 def test_image_out_of_bounds():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     try:
-        _a = ds["image"][5]
+        ds["image"][5]
     except IndexError:
         pass
     else:
@@ -193,23 +189,29 @@ def test_project_path():
     assert ds.format == "tdms"
     tpath = pathlib.Path(tfile).resolve()
     a = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath))
-    b = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent))
+    b = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(
+        str(tpath.parent))
     assert a == b
-    c = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent / "online" / tpath.name))
-    d = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent / "online" / "data" / tpath.name))
-    e = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(str(tpath.parent / "online" / "data"))
-    
+    c = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(
+        str(tpath.parent / "online" / tpath.name))
+    d = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(
+        str(tpath.parent / "online" / "data" / tpath.name))
+    e = dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path(
+        str(tpath.parent / "online" / "data"))
+
     assert a == e
     assert a == c
-    assert a == d 
+    assert a == d
     cleanup()
 
 
 def test_trace_basic():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
-    assert ds["trace"].__repr__().count("<not loaded into memory>"), "traces should not be loaded into memory before first access"
+    msg = "traces should not be loaded into memory before first access"
+    assert ds["trace"].__repr__().count("<not loaded into memory>"), msg
     assert len(ds["trace"]) == 2
-    assert np.allclose(np.average(ds["trace"]["fl1_median"][0]), 287.08999999999997)
+    assert np.allclose(np.average(
+        ds["trace"]["fl1_median"][0]), 287.08999999999997)
     cleanup()
 
 
@@ -228,9 +230,9 @@ def test_trace_import_fail():
 def test_trace_methods():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     for k in list(ds["trace"].keys()):
-        assert  k in  dclab.definitions.FLUOR_TRACES
+        assert k in dclab.definitions.FLUOR_TRACES
     for k in ds["trace"]:
-        assert  k in  dclab.definitions.FLUOR_TRACES
+        assert k in dclab.definitions.FLUOR_TRACES
     assert ds["trace"].__repr__().count("<loaded into memory>")
     cleanup()
 

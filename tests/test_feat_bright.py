@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import shutil
-import tempfile
-import warnings
-import zipfile
-
 import numpy as np
 
 from dclab import new_dataset
@@ -17,7 +12,7 @@ from helper_methods import retrieve_data, cleanup
 
 def test_simple_bright():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
-    for ii in range(2,7):
+    for ii in range(2, 7):
         # This stripped data set has only 7 video frames / contours
         img = ds["image"][ii]
         cont = ds["contour"][ii]
@@ -33,4 +28,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

@@ -7,6 +7,7 @@ import numpy as np
 
 from dclab.rtdc_dataset import write
 
+
 def cleanup(afile):
     # cleanup
     try:
@@ -115,7 +116,7 @@ def test_data_error():
         pass
     else:
         assert False, "ValueError should have been raised (wrong data)"
-    
+
     data2 = {"area_undefined": np.linspace(100.7, 110.9, 100)}
     try:
         write(rtdc_file, data2)
@@ -131,7 +132,7 @@ def test_data_error():
         pass
     else:
         assert False, "ValueError should have been raised (trace name)"
-    
+
     cleanup(rtdc_file)
 
 
@@ -159,21 +160,24 @@ def test_logs_append():
 def test_meta():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
     meta = {"setup": {
-                "channel width": 20,
-                "chip region": "Channel",
-                },
-            "online_contour": {
-                "no absdiff": "True",
-                "image blur": 3.0,
-                },
-            }
+        "channel width": 20,
+        "chip region": "Channel",
+    },
+        "online_contour": {
+        "no absdiff": "True",
+        "image blur": 3.0,
+    },
+    }
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_meta_")
     write(rtdc_file, data, meta=meta)
     # Read the file:
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
-        assert rtdc_data.attrs["online_contour:no absdiff"] == True
-        assert isinstance(rtdc_data.attrs["online_contour:image blur"], numbers.Integral)
+        abool = rtdc_data.attrs["online_contour:no absdiff"]
+        assert abool
+        assert isinstance(abool, (bool, np.bool_))
+        anint = rtdc_data.attrs["online_contour:image blur"] 
+        assert isinstance(anint, numbers.Integral)
         assert rtdc_data.attrs["setup:channel width"] == 20
         assert rtdc_data.attrs["setup:chip region"] == "channel"
     cleanup(rtdc_file)
@@ -183,8 +187,8 @@ def test_meta_error():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_error_meta_")
-    
-    meta1 = {"rediculous_section": {"a": 4}} 
+
+    meta1 = {"rediculous_section": {"a": 4}}
     try:
         write(rtdc_file, data, meta=meta1)
     except ValueError:
@@ -206,7 +210,7 @@ def test_meta_error():
 def test_mode():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
     data2 = {"deform": np.linspace(.7, .8, 100)}
-    
+
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_replace_")
     write(rtdc_file, data=data, mode="reset")
@@ -215,7 +219,7 @@ def test_mode():
     with h5py.File(rtdc_file, mode="r") as rtdc_data1:
         events1 = rtdc_data1["events"]
         assert "area_um" in events1.keys()
-        assert len(events1["area_um"]) == 2*len(data["area_um"])
+        assert len(events1["area_um"]) == 2 * len(data["area_um"])
 
     write(rtdc_file, data=data, mode="replace")
     write(rtdc_file, data=data2, mode="replace")
@@ -236,13 +240,13 @@ def test_mode_return():
     ret1 = write(rtdc_file, data=data, mode="append")
     assert isinstance(ret1, h5py.File)
     ret1.close()
-    
+
     ret2 = write(rtdc_file, data=data, mode="replace")
     assert ret2 is None
 
     ret3 = write(rtdc_file, data=data, mode="reset")
     assert ret3 is None
-    
+
     cleanup(rtdc_file)
 
 
@@ -251,20 +255,20 @@ def test_real_time():
     N = 116
     # Writing 10 images at a time is faster than writing one image at a time
     M = 4
-    assert N//M == np.round(N/M)
+    assert N // M == np.round(N / M)
     shx = 48
     shy = 32
     images = np.zeros((M, shy, shx), dtype=np.uint8)
     contours = [np.arange(20).reshape(10, 2)] * M
     traces = {"fl1_median": np.arange(M * 55).reshape(M, 55)}
-    axis1 = np.linspace(0,1,M)
+    axis1 = np.linspace(0, 1, M)
     axis2 = np.arange(M)
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_realtime_")
     with h5py.File(rtdc_file, "w") as fobj:
         # simulate real time and write one image at a time
-        for ii in range(N//M):
-            #print(ii)
+        for ii in range(N // M):
+            # print(ii)
             num_img = np.copy(images) + ii
 
             data = {"area_um": axis1,
@@ -272,7 +276,7 @@ def test_real_time():
                     "image": num_img,
                     "contour": contours,
                     "trace": traces}
-            
+
             write(fobj,
                   data=data,
                   mode="append",
@@ -287,7 +291,7 @@ def test_real_time():
         assert events["trace"]["fl1_median"].shape == (N, 55)
         assert np.dtype(events["area_um"]) == np.float
         assert np.dtype(events["area_cvx"]) == np.int
-        
+
     cleanup(rtdc_file)
 
 
@@ -327,7 +331,7 @@ def test_real_time_single():
         assert np.dtype(events["area_cvx"]) == np.int
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == N
-        
+
     cleanup(rtdc_file)
 
 
@@ -338,8 +342,8 @@ def test_replace_contour():
     for ii in range(5, num + 5):
         cii = np.arange(2 * ii).reshape(2, ii)
         contour.append(cii)
-        contour2.append(cii*2)
-    
+        contour2.append(cii * 2)
+
     data1 = {"area_um": np.linspace(100.7, 110.9, num),
              "contour": contour}
     data2 = {"contour": contour2}
@@ -368,6 +372,7 @@ def test_replace_logs():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == 1
+    cleanup(rtdc_file)
 
 
 if __name__ == "__main__":

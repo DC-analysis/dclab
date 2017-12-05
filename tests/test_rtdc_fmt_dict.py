@@ -4,28 +4,20 @@
 """
 from __future__ import print_function, unicode_literals
 
-import copy
-import shutil
-import tempfile
-import warnings
-import zipfile
-
-import numpy as np
-
 from dclab import new_dataset
 
-from helper_methods import example_data_dict, retrieve_data, example_data_sets
+from helper_methods import example_data_dict
 
 
 def test_contour_not_available():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
-    ds = new_dataset(ddict)    
+    ds = new_dataset(ddict)
     assert "contour" not in ds
 
 
 def test_image_not_available():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
-    ds = new_dataset(ddict)    
+    ds = new_dataset(ddict)
     assert "image" not in ds
 
 
@@ -44,7 +36,7 @@ def test_min_max_update():
 
 def test_trace_not_available():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
-    ds = new_dataset(ddict) 
+    ds = new_dataset(ddict)
     assert "trace" not in ds
 
 

@@ -4,16 +4,9 @@
 """
 from __future__ import print_function
 
-import shutil
-import tempfile
-import warnings
-import zipfile
+from dclab import new_dataset
 
-import numpy as np
-
-from dclab import new_dataset, dfn
-
-from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
+from helper_methods import retrieve_data, example_data_sets, cleanup
 
 
 def test_event_count():
@@ -33,7 +26,7 @@ def test_hierarchy_from_tdms():
 
     ds1.filter.manual[0] = False
     ds2.apply_filter()
-    assert ds2._filter.shape[0] == ds1._filter.shape[0]-1
+    assert ds2._filter.shape[0] == ds1._filter.shape[0] - 1
     assert ds2["area_um"][0] == ds1["area_um"][1]
     cleanup()
 
@@ -44,7 +37,7 @@ def test_same_hash_different_identifier():
     ds1.filter.manual[0] = False
     ch1 = new_dataset(ds1)
     ch2 = new_dataset(ds1)
-    assert len(ch1) == len(ds1)-1
+    assert len(ch1) == len(ds1) - 1
     assert ch1.hash == ch2.hash
     assert ch1.identifier != ch2.identifier
 
@@ -55,4 +48,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

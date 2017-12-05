@@ -2,14 +2,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import shutil
-import tempfile
-import warnings
-import zipfile
-
 import numpy as np
 
-from dclab import new_dataset
 from dclab.features.fl_crosstalk import correct_crosstalk
 
 
@@ -32,7 +26,7 @@ def test_simple_crosstalk():
     # compute cross-talked data
     fl1_bleed = ct11 * fl1 + ct21 * fl2 + ct31 * fl3
     fl2_bleed = ct12 * fl1 + ct22 * fl2 + ct32 * fl3
-    fl3_bleed = ct13 * fl1 + ct23 * fl2 + ct33 * fl3 
+    fl3_bleed = ct13 * fl1 + ct23 * fl2 + ct33 * fl3
 
     # obtain crosstalk-corrected data
     fl1_ctc = correct_crosstalk(fl1=fl1_bleed,
@@ -79,4 +73,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

@@ -4,18 +4,15 @@
 """
 from __future__ import print_function, unicode_literals
 
-import copy
-import shutil
+import os
 import tempfile
-import warnings
-import zipfile
 
 import numpy as np
 
 from dclab.rtdc_dataset import new_dataset
 from dclab.rtdc_dataset.config import Configuration, CaseInsensitiveDict
 
-from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
+from helper_methods import retrieve_data, example_data_sets, cleanup
 
 
 def equals(a, b):
@@ -28,9 +25,9 @@ def equals(a, b):
         if np.isnan(a):
             assert np.isnan(b)
         else:
-            assert np.allclose(a,b), "a={} vs b={}".format(a, b)
+            assert np.allclose(a, b), "a={} vs b={}".format(a, b)
     else:
-        assert a==b, "a={} vs b={}".format(a, b)
+        assert a == b, "a={} vs b={}".format(a, b)
     return True
 
 
@@ -41,14 +38,18 @@ def test_config_basic():
 
 
 def test_config_save_load():
-    ## Download and extract data
+    # Download and extract data
     tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
-    _fd, cfg_file = tempfile.mkstemp()
+    cfg_file = tempfile.mktemp(prefix="test_dclab_rtdc_config_")
     ds.config.save(cfg_file)
     loaded = Configuration(files=[cfg_file])
     assert equals(loaded, ds.config)
     cleanup()
+    try:
+        os.remove(cfg_file)
+    except OSError:
+        pass
 
 
 if __name__ == "__main__":

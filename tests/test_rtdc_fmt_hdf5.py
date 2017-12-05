@@ -3,20 +3,11 @@
 """Test tdms file format"""
 from __future__ import print_function
 
-import io
-import os
-import pathlib
-import shutil
-import tempfile
-import warnings
-import zipfile
-
 import numpy as np
 
-import dclab
 from dclab import new_dataset
 
-from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
+from helper_methods import retrieve_data, cleanup
 
 
 def test_config():
@@ -55,9 +46,9 @@ def test_trace():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert len(ds["trace"]) == 2
     assert ds["trace"]["fl1_raw"].shape == (5, 100)
-    assert np.allclose(np.average(ds["trace"]["fl1_median"][0]), 0.027744706519425219)
+    assert np.allclose(np.average(
+        ds["trace"]["fl1_median"][0]), 0.027744706519425219)
     cleanup()
-
 
 
 if __name__ == "__main__":

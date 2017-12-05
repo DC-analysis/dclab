@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import shutil
-import warnings
-import zipfile
-
 import numpy as np
 
 import dclab
@@ -16,39 +12,39 @@ from helper_methods import example_data_dict
 def test_stat_defo():
     ddict = example_data_dict(size=5085, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
-    
+
     head, vals = dclab.statistics.get_statistics(ds, features=["deform"])
-    
-    for h, v in zip(head,vals):
+
+    for h, v in zip(head, vals):
         if h.lower() == "flow rate":
-            assert np.isnan(v) #backwards compatibility!
+            assert np.isnan(v)  # backwards compatibility!
         elif h.lower() == "events":
-            assert v==5085
+            assert v == 5085
         elif h.lower() == "%-gated":
-            assert v==100
+            assert v == 100
         elif h.lower().startswith("sd "):
-            assert np.allclose(v,0.288990352083)
+            assert np.allclose(v, 0.288990352083)
         elif h.lower().startswith("median "):
-            assert np.allclose(v,0.494188566376)
+            assert np.allclose(v, 0.494188566376)
         elif h.lower().startswith("mode "):
-            assert np.allclose(v,0.260923009639)
+            assert np.allclose(v, 0.260923009639)
         elif h.lower().startswith("mean "):
-            assert np.allclose(v,0.497743857424)
-       
+            assert np.allclose(v, 0.497743857424)
+
 
 def test_stat_occur():
     ddict = example_data_dict(size=5085, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
-    
+
     head1, vals1 = dclab.statistics.get_statistics(ds, features=["deform"])
-    head2, vals2 = dclab.statistics.get_statistics(ds, methods=["Events", "Mean"])
+    head2, vals2 = dclab.statistics.get_statistics(
+        ds, methods=["Events", "Mean"])
     headf, valsf = dclab.statistics.get_statistics(ds)
-    
+
     # disable filtering (there are none anyway) to cover a couple more lines:
     ds.config["filtering"]["enable filters"] = False
     headn, valsn = dclab.statistics.get_statistics(ds)
-    
-    
+
     for item in zip(head1, vals1):
         assert item in zip(headf, valsf)
 
@@ -63,15 +59,16 @@ def test_flow_rate():
     ddict = example_data_dict(size=77, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
     ds.config["setup"]["flow rate"] = 0.172
-    
+
     head1, vals1 = dclab.statistics.get_statistics(ds, features=["deform"])
-    head2, vals2 = dclab.statistics.get_statistics(ds, methods=["Events", "Mean"])
+    head2, vals2 = dclab.statistics.get_statistics(
+        ds, methods=["Events", "Mean"])
     headf, valsf = dclab.statistics.get_statistics(ds)
-    
+
     # disable filtering (there are none anyway) to cover a couple more lines:
     ds.config["filtering"]["enable filters"] = False
     headn, valsn = dclab.statistics.get_statistics(ds)
-    
+
     for item in zip(head1, vals1):
         assert item in zip(headf, valsf)
 
@@ -79,7 +76,7 @@ def test_flow_rate():
         assert item in zip(headf, valsf)
 
     for item in zip(headn, valsn):
-        assert item in zip(headf, valsf)    
+        assert item in zip(headf, valsf)
 
 
 def test_false_method():
@@ -92,14 +89,14 @@ def test_false_method():
     ds = dclab.new_dataset(ddict)
     head1, vals1 = dclab.statistics.get_statistics(ds, features=["deform"])
     out = {}
-    for h,v in zip(head1, vals1):
+    for h, v in zip(head1, vals1):
         out[h] = v
     assert np.isnan(out["bad"])
-    
+
     # clean up
     mth = dclab.statistics.Statistics.available_methods
     for k in mth:
-        if k=="bad":
+        if k == "bad":
             mth.pop(k)
             break
 

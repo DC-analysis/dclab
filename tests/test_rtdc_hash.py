@@ -2,16 +2,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import shutil
-import tempfile
-import warnings
-import zipfile
+from dclab import new_dataset
 
-import numpy as np
-
-from dclab import new_dataset, dfn
-
-from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
+from helper_methods import example_data_dict, retrieve_data, \
+                           example_data_sets, cleanup
 
 
 def test_hash_dict():
@@ -41,4 +35,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

@@ -147,8 +147,8 @@ class PolygonFilter(object):
                 val = np.array(val.strip("[]").split(), dtype=float)
                 points.append([int(var[5:]), val])
             else:
-                raise NotImplementedError("Unknown variable: {} = {}".
-                                          format(var, val))
+                raise KeyError("Unknown variable: {} = {}".
+                               format(var, val))
         self.axes = (xaxis, yaxis)
         # sort points
         points.sort()

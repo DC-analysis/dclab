@@ -2,18 +2,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import shutil
-import sys
 import time
-import warnings
-import zipfile
 
 import numpy as np
 
 import dclab
 from dclab.rtdc_dataset import ancillaries
 
-from helper_methods import example_data_dict, retrieve_data, example_data_sets, cleanup
+from helper_methods import example_data_dict, retrieve_data, \
+                           example_data_sets, cleanup
 
 
 def test_0basic():
@@ -33,7 +30,7 @@ def test_0basic():
                'pos_y',
                'fl1_area',
                'fl1_max',
-                ]:
+               ]:
         assert cc in ds
 
     # ancillaries
@@ -45,7 +42,7 @@ def test_0basic():
                "time",
                ]:
         assert cc in ds
-    
+
     cleanup()
 
 
@@ -65,18 +62,18 @@ def test_aspect():
     # Aspect ratio of the data
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     aspect = ds["aspect"]
-    assert np.sum(aspect>1) == 904
-    assert np.sum(aspect<1) == 48
-    cleanup() 
+    assert np.sum(aspect > 1) == 904
+    assert np.sum(aspect < 1) == 48
+    cleanup()
 
 
 def test_area_ratio():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     comp_ratio = ds["area_ratio"]
     # The convex area is always >= the raw area
-    assert np.all(comp_ratio>=1)
+    assert np.all(comp_ratio >= 1)
     assert np.allclose(comp_ratio[0], 1.0196464)
-    cleanup() 
+    cleanup()
 
 
 def test_brightness():
@@ -84,12 +81,12 @@ def test_brightness():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
-    # the image and contour columns. 
+    # the image and contour columns.
     real_avg = ds._events.pop("bright_avg")
     real_sd = ds._events.pop("bright_sd")
     # This will cause a zero-padding warning:
     comp_avg = ds["bright_avg"]
-    comp_sd = ds["bright_sd"] 
+    comp_sd = ds["bright_sd"]
     idcompare = ~np.isnan(comp_avg)
     # ignore first event (no image data)
     idcompare[0] = False
@@ -102,8 +99,8 @@ def test_deform():
     keys = ["circ"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
-    assert np.allclose(ds["deform"], 1-ds["circ"])
-    
+    assert np.allclose(ds["deform"], 1 - ds["circ"])
+
 
 def test_emodulus():
     keys = ["area_um", "deform"]
@@ -120,11 +117,11 @@ def test_emodulus():
     t1 = time.time()
     assert "emodulus" in ds
     t2 = time.time()
-    
+
     t3 = time.time()
     ds["emodulus"]
     t4 = time.time()
-    assert t4-t3 > t2-t1
+    assert t4 - t3 > t2 - t1
 
 
 def test_emodulus_area():
@@ -282,7 +279,7 @@ def test_inert_ratio_cvx():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
-    # the image and contour columns. 
+    # the image and contour columns.
     real_ir = ds._events.pop("inert_ratio_cvx")
     # This will cause a zero-padding warning:
     comp_ir = ds["inert_ratio_cvx"]
@@ -298,7 +295,7 @@ def test_inert_ratio_raw():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
-    # the image and contour columns. 
+    # the image and contour columns.
     real_ir = ds._events.pop("inert_ratio_raw")
     # This will cause a zero-padding warning:
     comp_ir = ds["inert_ratio_raw"]

@@ -3,11 +3,6 @@
 """Downsampling only affects RTDCBase._plot_filter"""
 from __future__ import print_function
 
-import shutil
-import tempfile
-import warnings
-import zipfile
-
 import numpy as np
 
 import dclab
@@ -32,14 +27,14 @@ def test_downsample_none2():
     ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._plot_filter) == 8472
-    
+
     filtflt = {"enable filters": False}
-    
+
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
     ds.apply_filter()
     ds.get_downsampled_scatter(downsample=100)
-    
+
     assert np.sum(ds._plot_filter) == 100
     assert np.sum(ds._filter) == 8472
 
@@ -50,7 +45,6 @@ def test_downsample_none2():
 
     assert np.sum(ds._plot_filter) == 100
     assert np.sum(ds._filter) == 8472
-
 
 
 def test_downsample_yes():
@@ -66,7 +60,7 @@ def test_downsample_yes():
     ds.get_downsampled_scatter(downsample=100)
     assert np.sum(ds._plot_filter) == 100
     ds.get_downsampled_scatter(downsample=100)
-    
+
 
 def test_downsample_up():
     """
@@ -78,12 +72,11 @@ def test_downsample_up():
     ds = dclab.new_dataset(ddict)
 
     assert np.sum(ds._plot_filter) == 10000
-    
+
     ds.apply_filter()
     ds.get_downsampled_scatter(downsample=9999)
     assert np.sum(ds._plot_filter) == 9999
     ds.get_downsampled_scatter(downsample=9999)
-
 
 
 if __name__ == "__main__":
@@ -92,4 +85,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

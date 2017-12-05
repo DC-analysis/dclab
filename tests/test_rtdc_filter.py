@@ -4,16 +4,9 @@
 """
 from __future__ import print_function, unicode_literals
 
-import copy
-import shutil
-import tempfile
-import warnings
-import zipfile
-
 import numpy as np
 
 from dclab.rtdc_dataset import new_dataset
-from dclab.rtdc_dataset.config import Configuration, CaseInsensitiveDict
 
 from helper_methods import example_data_dict
 
@@ -23,11 +16,11 @@ def test_filter_min_max():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
     amin, amax = ds["area_um"].min(), ds["area_um"].max()
-    ds.config["filtering"]["area_um min"] = (amax+amin)/2
+    ds.config["filtering"]["area_um min"] = (amax + amin) / 2
     ds.config["filtering"]["area_um max"] = amax
     ds.apply_filter()
     assert np.sum(ds.filter.all) == 4256
-    
+
     ds.config["filtering"]["deform min"] = ds["deform"].min()
     ds.config["filtering"]["deform max"] = ds["deform"].max()
     assert np.sum(ds.filter.all) == 4256

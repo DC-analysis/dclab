@@ -2,15 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import os
-from os.path import abspath, dirname, join
-import shutil
-import sys
-import warnings
-import zipfile
-
-import numpy as np
-
 from dclab.rtdc_dataset import config
 
 
@@ -26,10 +17,11 @@ def test_map_typ2str():
 def test_map_str2typ():
     assert config.keyval_str2typ(" a ", 1) == ("a", 1)
     assert config.keyval_str2typ("a", "[1, 2, 3]")[1] == [1, 2, 3]
-    assert config.keyval_str2typ("a", "False")[1] == False
-    assert config.keyval_str2typ("a", "false")[1] == False
-    assert config.keyval_str2typ("a", "true")[1] == True
-    assert config.keyval_str2typ("area_um", "is this case even used?")[1] == "is this case even used?"
+    assert not config.keyval_str2typ("a", "False")[1]
+    assert not config.keyval_str2typ("a", "false")[1]
+    assert config.keyval_str2typ("a", "true")[1]
+    assert config.keyval_str2typ("area_um", "is this case even used?")[
+        1] == "is this case even used?"
     assert config.keyval_str2typ("a", "1,true")[1] == "1,true"
 
 
@@ -39,4 +31,3 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-    

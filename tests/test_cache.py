@@ -2,30 +2,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import sys
 import time
 
-import numpy as np
-
 from dclab import cached
-
-from helper_methods import retrieve_data, example_data_sets
 
 
 def test_cache():
     "Test if caching happens"
-    wait = .05    
+    wait = .05
+
     @cached.Cache
     def func1(x):
         time.sleep(wait)
-        return 2*x
+        return 2 * x
 
     a = func1(4)
     assert a == 8
     t1 = time.time()
     b = func1(4)
     t2 = time.time()
-    assert t2-t1 < wait
+    assert t2 - t1 < wait
     assert b == a
 
 
@@ -34,23 +30,23 @@ def test_cache_size():
     ss = 10
     wait = .01
     cached.MAX_SIZE = ss
-    
+
     @cached.Cache
     def func1(x):
         time.sleep(wait)
-        return 2*x    
+        return 2 * x
     for ii in range(ss):
         func1(ii)
-    
+
     t1 = time.time()
     for ii in range(ss):
         func1(ii)
     t2 = time.time()
-    assert t2-t1 < wait
-    
+    assert t2 - t1 < wait
+
     func1(3.14)
     t3 = time.time()
-    assert t3-t2 > wait
+    assert t3 - t2 > wait
 
 
 if __name__ == "__main__":

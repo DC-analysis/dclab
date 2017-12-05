@@ -133,7 +133,7 @@ class Export(object):
 
 
     def hdf5(self, path, features, filtered=True, override=False,
-             compression="szip"):
+             compression="gzip"):
         """Export the data of the current instance to an HDF5 file
         
         Parameters

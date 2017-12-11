@@ -25,6 +25,27 @@ def test_circ():
     assert np.allclose(iso1[0][:, 1], 1 - iso2[0][:, 1])
 
 
+def test_circ_get():
+    i1 = iso.Isoelastics([get_isofile()])
+    iso_circ = i1.get(col1="area_um",
+                      col2="circ",
+                      method="analytical",
+                      channel_width=15,
+                      flow_rate=0.04,
+                      viscosity=15)
+    iso_deform = i1.get(col1="area_um",
+                        col2="deform",
+                        method="analytical",
+                        channel_width=15,
+                        flow_rate=0.04,
+                        viscosity=15)
+    for ii in range(len(iso_circ)):
+        isc = iso_circ[ii]
+        isd = iso_deform[ii]
+        assert np.allclose(isc[:, 0], isd[:, 0])
+        assert np.allclose(isc[:, 1], 1 - isd[:, 1])
+
+
 def test_convert():
     i1 = iso.Isoelastics([get_isofile()])
     isoel = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
@@ -49,6 +70,51 @@ def test_convert():
     assert np.allclose(isoel15[0][1, 1], 5.164055600000000065e-03)
     assert np.allclose(isoel15[0][9, 1], 2.311524599999999902e-02)
     assert np.allclose(isoel15[1][1, 1], 2.904264599999999922e-03)
+
+
+def test_convert_error():
+    i1 = iso.Isoelastics([get_isofile()])
+    isoel = i1.get(col1="area_um",
+                   col2="deform",
+                   method="analytical",
+                   channel_width=15)
+
+    kwargs=dict(channel_width_in=15,
+                channel_width_out=20,
+                flow_rate_in=.12,
+                flow_rate_out=.08,
+                viscosity_in=15,
+                viscosity_out=15)
+    
+    try:
+        i1.convert(isoel=isoel,
+                   col1="deform",
+                   col2="deform",
+                   **kwargs)
+    except ValueError:
+        pass
+    else:
+        assert False, "identical columns"
+
+    try:
+        i1.convert(isoel=isoel,
+                   col1="deform",
+                   col2="circ",
+                   **kwargs)
+    except ValueError:
+        pass
+    else:
+        assert False, "area_um required"
+
+    try:
+        i1.convert(isoel=isoel,
+                   col1="deform",
+                   col2="volume",
+                   **kwargs)
+    except ValueError:
+        pass
+    else:
+        assert False, "undefined column volume"
 
 
 def test_data_slicing():

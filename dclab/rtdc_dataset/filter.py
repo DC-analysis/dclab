@@ -3,6 +3,7 @@
 """RT-DC dataset core classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
+import warnings
 
 import numpy as np
 
@@ -52,7 +53,6 @@ class Filter(object):
 
     def update(self, force=[]):
         """Update the filters according to `self.rtdc_ds.config["filtering"]`
-
 
         Parameters
         ----------
@@ -113,6 +113,10 @@ class Filter(object):
                     # Be sure to check against force in that case!
                     ivalstart = cfg_cur[fstart]
                     ivalend = cfg_cur[fend]
+                    if ivalstart > ivalend:
+                        msg = "inverting filter: {} > {}".format(fstart, fend)
+                        warnings.warn(msg)
+                        ivalstart, ivalend = ivalend, ivalstart
                     data = self.rtdc_ds[col]
                     col_filt[:] = (ivalstart <= data)*(data <= ivalend)
                 else:

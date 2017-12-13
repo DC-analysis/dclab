@@ -3,6 +3,7 @@
  - Implement hdf5-based RT-DC data reader (#32)
  - Implement hdf5-based RT-DC data writer (#33)
  - Bugfixes:
+   - Automatically fix inverted box filters 
    - RTDC_TDMS trace data contained empty arrays when no trace
      data was present (trace key should not have been accessible) 
    - Not possible to get isoelastics for circularity

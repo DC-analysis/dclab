@@ -39,6 +39,7 @@ class H5Events(object):
 class H5ContourEvent(object):
     def __init__(self, h5group):
         self.h5group = h5group
+        self.identifier = h5group["0"].value
 
     def __getitem__(self, key):
         return self.h5group[str(key)].value

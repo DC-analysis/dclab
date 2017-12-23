@@ -7,6 +7,7 @@ import hashlib
 import io
 import sys
 
+import h5py
 import numpy as np
 
 if sys.version_info[0] == 2:
@@ -64,6 +65,8 @@ def obj2str(obj):
         return obj2str(list(obj.items()))
     elif hasattr(obj, "identifier"):
         return obj2str(obj.identifier)
+    elif isinstance(obj, h5py.Dataset):
+        return obj2str(obj[0])
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))

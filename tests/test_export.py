@@ -11,7 +11,7 @@ import tempfile
 import numpy as np
 
 import dclab
-from dclab import new_dataset
+from dclab import dfn, new_dataset
 
 from helper_methods import example_data_dict, retrieve_data, \
                            example_data_sets, cleanup
@@ -144,10 +144,9 @@ def test_hdf5():
 
 def test_hdf5_filtered():
     N = 10
-    keys = ["area_um"]
+    keys = ["area_um", "image"]
     ddict = example_data_dict(size=N, keys=keys)
-    ddict["image"] = [np.arange(10 * 20, dtype=np.int64).reshape(10, 20)] * N
-    ddict["image"][3] = np.arange(10 * 20, dtype=np.int64).reshape(10, 20) + 22
+    ddict["image"][3] = np.arange(10 * 20, dtype=np.uint8).reshape(10, 20) + 22
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
@@ -157,7 +156,7 @@ def test_hdf5_filtered():
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_filtered.rtdc")
-    ds1.export.hdf5(f1, keys + ["image"])
+    ds1.export.hdf5(f1, keys)
 
     ds2 = dclab.new_dataset(f1)
 
@@ -165,6 +164,49 @@ def test_hdf5_filtered():
     assert np.allclose(ds2["area_um"], ds1["area_um"][fta])
     assert np.allclose(ds2["image"][2], ds1["image"][3])
     assert np.all(ds2["image"][2] != ds1["image"][2])
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_hdf5_contour_image_trace():
+    N = 65
+    keys = ["contour", "image", "trace"]
+    ddict = example_data_dict(size=N, keys=keys)
+
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
+    ds1.export.hdf5(f1, keys, filtered=False)
+    ds2 = dclab.new_dataset(f1)
+
+    for ii in range(N):
+        assert np.all(ds1["image"][ii] == ds2["image"][ii])
+        assert np.all(ds1["contour"][ii] == ds2["contour"][ii])
+    
+    for key in dfn.FLUOR_TRACES:
+        assert np.all(ds1["trace"][key] == ds2["trace"][key])
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_hdf5_override():
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=212, keys=keys)
+    ds = dclab.new_dataset(ddict)
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.rtdc")
+    ds.export.hdf5(f1, keys, override=True)
+    try:
+        ds.export.hdf5(f1[:-5], keys, override=False)
+    except OSError:
+        pass
+    else:
+        raise ValueError("Should append .rtdc and not override!")
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)

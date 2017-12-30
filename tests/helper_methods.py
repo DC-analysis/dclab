@@ -6,7 +6,7 @@ import zipfile
 import numpy as np
 
 from dclab.rtdc_dataset import fmt_tdms
-
+from dclab import definitions as dfn
 
 _tempdirs = []
 
@@ -24,8 +24,36 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
     """
     ddict = {}
     for ii, key in enumerate(keys):
-        if key in ["Time", "Frame"]:
+        if key in ["time", "frame"]:
             val = np.arange(size)
+        elif key == "contour":
+            cdata = []
+            for ss in range(size):
+                cont = np.array([5, 5,
+                                 5, 6,
+                                 5, 7,
+                                 6, 7,
+                                 7, 7,
+                                 7, 6,
+                                 7, 5,
+                                 6, 5,
+                                 5, 5]).reshape(-1, 2)
+                cdata.append(cont + ss)
+            val = cdata
+        elif key == "image":
+            imdat = []
+            for ss in range(size):
+                data = np.arange(10 * 20, dtype=np.uint8).reshape(10, 20) + ss
+                imdat.append(data)
+            val = imdat
+        elif key == "trace":
+            trdata = {}
+            kk = 1
+            for tr in dfn.FLUOR_TRACES:
+                trac = np.arange(100 * size, dtype=np.int64).reshape(size, -1)
+                trdata[tr] = trac - kk
+                kk += 1
+            val = trdata
         else:
             state = np.random.RandomState(size + ii)
             val = state.random_sample(size)

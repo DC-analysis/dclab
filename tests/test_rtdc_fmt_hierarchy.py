@@ -7,6 +7,7 @@ from __future__ import print_function
 import numpy as np
 
 from dclab import new_dataset
+from dclab.rtdc_dataset import fmt_hierarchy
 
 from helper_methods import example_data_dict, example_data_sets, cleanup, \
     retrieve_data
@@ -66,6 +67,16 @@ def test_hierarchy_from_tdms():
     cleanup()
 
 
+def test_index_deep_contour():
+    data = example_data_dict(42, keys=["area_um", "contour", "deform"])
+    ds = new_dataset(data)
+    ds.filter.manual[3] = False
+    c1 = new_dataset(ds)
+    c1.filter.manual[1] = False
+    c2 = new_dataset(c1)
+    assert np.all(c2["contour"][3] == ds["contour"][5])
+
+
 def test_manual_exclude():
     data = example_data_dict(42, keys=["area_um", "deform"])
     p = new_dataset(data)
@@ -76,13 +87,13 @@ def test_manual_exclude():
     c2.apply_filter()
     c2.filter.manual[1] = False
     c3.apply_filter()
-    c3.filter.manual[0] = False
 
     # simple exclusion of few events
     assert len(c3) == len(p) - 2
 
     # removing event in parent removes the event from the
     # child altogether, including the manual filter
+    c3.filter.manual[0] = False
     c2.filter.manual[0] = False
     c3.apply_filter()
     assert np.alltrue(c3.filter.manual)
@@ -92,7 +103,38 @@ def test_manual_exclude():
     c2.filter.manual[0] = True
     c3.apply_filter()
     assert not c3.filter.manual[0]
-    assert not c3.filter.manual[0]
+
+
+def test_manual_exclude_parent_changed():
+    data = example_data_dict(42, keys=["area_um", "deform"])
+    p = new_dataset(data)
+    p.filter.manual[4] = False
+    c = new_dataset(p)
+    c.filter.manual[5] = False
+    c.apply_filter()
+    p.config["filtering"]["deform max"] = .5
+    p.apply_filter()
+    assert np.sum(p.filter.all) == 21
+    # size of child is directly determined from parent
+    assert len(c) == 21
+    # filters have not yet been updated
+    assert len(c.filter.all) == 41
+    assert c.filter.parent_changed
+    # the initially excluded event
+    assert c.filter.retrieve_manual_indices() == [6]
+
+    # try to change the excluded events
+    try:
+        c.filter.apply_manual_indices([1, 2])
+    except fmt_hierarchy.HierarchyFilterError:
+        pass
+    else:
+        assert False, "expected HierarchyFilterError"
+
+    # this can be resolved by applying the filter
+    c.apply_filter()
+    c.filter.apply_manual_indices([1, 2])
+    assert c.filter.retrieve_manual_indices() == [1, 2]
 
 
 def test_same_hash_different_identifier():

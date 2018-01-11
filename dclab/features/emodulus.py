@@ -139,7 +139,7 @@ def pixcorr_deformation(area, deformation, px_um=0.34, inplace=False):
     """
     if px_um not in [0.34]:
         msg = "Pixel correction for {}um resolution available!".format(px_um)
-        raise ValueError(px_um)
+        raise ValueError(msg)
     
     if px_um==0.34:
         # A triple-exponential decay can be used to correct for pixelation

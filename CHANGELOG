@@ -2,6 +2,7 @@
  - Add logic to compute parent/root/child event indices of RTDC_Hierarchy
    - Hierarchy children now support contour, image, and traces
    - Hierarchy children now support and remember manual filters (#22)
+ - Update emodulus look-up table with larger values for deformation
 0.3.1
  - Remove all-zero dummy columns from dict format
  - Implement hdf5-based RT-DC data reader (#32)

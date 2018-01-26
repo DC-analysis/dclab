@@ -12,8 +12,8 @@ def test_simple_emod():
     y = np.linspace(0, 0.1, 100)
     x, y = np.meshgrid(x, y)
 
-    emod = emodulus.get_emodulus(area=x,
-                                 deformation=y,
+    emod = emodulus.get_emodulus(area_um=x,
+                                 deform=y,
                                  medium="CellCarrier",
                                  channel_width=30,
                                  flow_rate=0.16,

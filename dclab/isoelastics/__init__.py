@@ -9,6 +9,8 @@ from pkg_resources import resource_filename
 import numpy as np
 
 from .. import definitions as dfn
+from ..features import emodulus as feat_emod
+
 
 ISOFILES = ["isoel-analytical-area_um-deform.txt"]
 ISOFILES = [resource_filename("dclab.isoelastics", _if) for _if in ISOFILES]
@@ -102,16 +104,27 @@ class Isoelastics(object):
                 viscosity_in, viscosity_out):
         """Convert isoelastics in area_um-deform space
 
-        The conversion formula is described in
-
-            Extracting Cell Stiffness from Real-Time Deformability
-            Cytometry: Theory and Experiment
-            A. Mietke, O. Otto, S. Girardo, P. Rosendahl,
-            A. Taubenberger, S. Golfier, E. Ulbricht,
-            S. Aland, J. Guck, E. Fischer-Friedrich
-            Biophysical Journal 109(10) 2015
-            DOI: 10.1016/j.bpj.2015.09.006
-
+        Parameters
+        ----------
+        isoel: list of 2d ndarrays of shape (N, 3)
+            Each item in the list corresponds to one isoelasticity
+            line. The first column is defined by `col1`, the second
+            by `col2`, and the third column is the emodulus.
+        col1, col2: str
+            Define the fist to columns of each isoelasticity line.
+            One of ["area_um", "circ", "deform"]
+        channel_width_in: float
+            Original channel width [µm]
+        channel_width_out: float
+            Target channel width [µm]
+        flow_rate_in: float
+            Original flow rate [µl/s]
+        flow_rate_in: float
+            Target flow rate [µl/s]
+        viscosity_in: float
+            Original viscosity [mPa*s]
+        viscosity_out: float
+            Target viscosity [mPa*s]
 
         Notes
         -----
@@ -119,6 +132,10 @@ class Isoelastics(object):
         not the value of the elastic modulus, then it is sufficient
         to supply values for the channel width and set the values
         for flow rate and viscosity to a constant (e.g. 1).
+
+        See Also
+        --------
+        dclab.features.emodulus.convert: conversion method used
         """
         if (col1 not in ["area_um", "circ", "deform"] or
                 col2 not in ["area_um", "circ", "deform"]):
@@ -131,27 +148,25 @@ class Isoelastics(object):
 
         if col1 == "area_um":
             area_ax = 0
+            defo_ax = 1
         else:
             area_ax = 1
-
-        if (channel_width_in == channel_width_out and
-            viscosity_in == viscosity_out and
-                flow_rate_in == flow_rate_out):
-            # Nothing to do
-            return isoel
+            defo_ax = 0
 
         new_isoel = []
 
         for iso in isoel:
             iso = iso.copy()
-            if channel_width_in != channel_width_out:
-                # convert lut area axis to match channel width
-                iso[:, area_ax] *= (channel_width_out / channel_width_in)**2
-
-            iso[:, 2] *= (flow_rate_out / flow_rate_in) *\
-                (viscosity_out / viscosity_in) *\
-                (channel_width_in / channel_width_out)**3
-
+            feat_emod.convert(area_um=iso[:, area_ax],
+                              deform=iso[:, defo_ax],
+                              emodulus=iso[:, 2],
+                              channel_width_in=channel_width_in,
+                              channel_width_out=channel_width_out,
+                              flow_rate_in=flow_rate_in,
+                              flow_rate_out=flow_rate_out,
+                              viscosity_in=viscosity_in,
+                              viscosity_out=viscosity_out,
+                              inplace=True)
             new_isoel.append(iso)
         return new_isoel
 

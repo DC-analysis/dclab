@@ -10,16 +10,84 @@ import scipy.interpolate as spint
 from .emodulus_viscosity import get_viscosity
 
 
-def get_emodulus(area, deformation, medium="CellCarrier",
+def convert(area_um, deform, emodulus,
+            channel_width_in, channel_width_out,
+            flow_rate_in, flow_rate_out,
+            viscosity_in, viscosity_out,
+            inplace=False):
+    """convert area-deformation-emodulus triplet
+
+    The conversion formula is described in
+
+        Extracting Cell Stiffness from Real-Time Deformability
+        Cytometry: Theory and Experiment
+        A. Mietke, O. Otto, S. Girardo, P. Rosendahl,
+        A. Taubenberger, S. Golfier, E. Ulbricht,
+        S. Aland, J. Guck, E. Fischer-Friedrich
+        Biophysical Journal 109(10) 2015
+        DOI: 10.1016/j.bpj.2015.09.006
+
+    Parameters
+    ----------
+    area_um: ndarray
+        Convex cell area [µm²]
+    deform: ndarray
+        Deformation
+    emodulus: ndarray
+        Young's Modulus [kPa]
+    channel_width_in: float
+        Original channel width [µm]
+    channel_width_out: float
+        Target channel width [µm]
+    flow_rate_in: float
+        Original flow rate [µl/s]
+    flow_rate_in: float
+        Target flow rate [µl/s]
+    viscosity_in: float
+        Original viscosity [mPa*s]
+    viscosity_out: float
+        Target viscosity [mPa*s]
+    inplace: bool
+        If True, override input arrays with corrected data
+
+    Returns
+    -------
+    area_um_corr: ndarray
+        Corrected cell area [µm²]
+    deform_corr: ndarray
+        Deformation (a copy if `inplace` is False)
+    emodulus_corr: ndarray
+        Corrected emodulus [kPa]
+    """
+    copy = not inplace
+    # make sure area_um_corr is not an integer array
+    area_um_corr = np.array(area_um, dtype=float, copy=copy)
+    deform_corr = np.array(deform, copy=copy)
+    emodulus_corr = np.array(emodulus, copy=copy)
+
+    if channel_width_in != channel_width_out:
+        area_um_corr *= (channel_width_out / channel_width_in)**2
+
+    if (flow_rate_in != flow_rate_out or
+            viscosity_in != viscosity_out or
+            channel_width_in != channel_width_out):
+        emodulus_corr *= (flow_rate_out / flow_rate_in) \
+            * (viscosity_out / viscosity_in) \
+            * (channel_width_in / channel_width_out)**3
+
+    return area_um_corr, deform_corr, emodulus_corr
+
+
+def get_emodulus(area_um, deform, medium="CellCarrier",
                  channel_width=20.0, flow_rate=0.16, px_um=0.34,
                  temperature=23.0, copy=True):
     """Compute apparent Young's modulus
 
     Parameters
     ----------
-    area: float or ndarray
+    area_um: float or ndarray
         Apparent (2D image) area in µm² of the event(s)
-    deformation: float or ndarray
+    deform: float or ndarray
         The deformation (1-circularity) of the event(s)
     medium: str or float
         The medium to compute the viscosity for. If a string
@@ -57,8 +125,8 @@ def get_emodulus(area, deformation, medium="CellCarrier",
     pixcorr_deformation: perform pixelation correction with triple-exponential
     """
     # copy input arrays so we can use in-place calculations
-    deformation = np.array(deformation, copy=copy, dtype=float)
-    area = np.array(area, copy=copy, dtype=float)
+    deform = np.array(deform, copy=copy, dtype=float)
+    area_um = np.array(area_um, copy=copy, dtype=float)
     # Get lut data
     lut_path = pkg_resources.resource_filename(
         "dclab.features", "emodulus_lut.txt")
@@ -67,42 +135,45 @@ def get_emodulus(area, deformation, medium="CellCarrier",
     lut_channel_width = 20.0
     lut_flow_rate = 0.04
     lut_visco = 15.0
-    # Corrections
-    # We correct the lut, because it contains less points than
-    # the event data to implement. Furthermore, the lut could
-    # be cached in the future, if this takes up a lot of time.
-    if lut_channel_width != channel_width:
-        # convert lut area axis to match channel width
-        lut[:, 0] *= (channel_width / lut_channel_width)**2
     # Compute viscosity
     if isinstance(medium, (float, int)):
         visco = medium
     else:
         visco = get_viscosity(medium=medium, channel_width=channel_width,
                               flow_rate=flow_rate, temperature=temperature)
-    # Correct elastic modulus
-    lut[:, 2] *= (flow_rate / lut_flow_rate) *\
-        (visco / lut_visco) *\
-        (lut_channel_width / channel_width)**3
+    # Corrections
+    # We correct the lut, because it contains less points than
+    # the event data to implement. Furthermore, the lut could
+    # be cached in the future, if this takes up a lot of time.
+    convert(area_um=lut[:, 0],
+            deform=lut[:, 1],
+            emodulus=lut[:, 2],
+            channel_width_in=lut_channel_width,
+            channel_width_out=channel_width,
+            flow_rate_in=lut_flow_rate,
+            flow_rate_out=flow_rate,
+            viscosity_in=lut_visco,
+            viscosity_out=visco,
+            inplace=True)
 
     if px_um:
         # Correct deformation for pixelation effect (inplace).
-        pixcorr_deformation(area=area, deformation=deformation,
-                            px_um=px_um, inplace=True)
+        pixcorr_deform(area_um=area_um, deform=deform,
+                       px_um=px_um, inplace=True)
 
     # Normalize interpolation data such that the spacing for
     # area and deformation is about the same during interpolation.
     area_norm = lut[:, 0].max()
     normalize(lut[:, 0], area_norm)
-    normalize(area, area_norm)
+    normalize(area_um, area_norm)
 
     defo_norm = lut[:, 1].max()
     normalize(lut[:, 1], defo_norm)
-    normalize(deformation, defo_norm)
+    normalize(deform, defo_norm)
 
     # Perform interpolation
     emod = spint.griddata((lut[:, 0], lut[:, 1]), lut[:, 2],
-                          (area, deformation),
+                          (area_um, deform),
                           method='linear')
     return emod
 
@@ -113,34 +184,36 @@ def normalize(data, dmax):
     return data
 
 
-def pixcorr_deformation(area, deformation, px_um=0.34, inplace=False):
+def pixcorr_deform(area_um, deform, px_um=0.34, inplace=False):
     """Correct deformation for pixelation effects
 
     The contour in RT-DC measurements is computed on a
     pixelated grid. Due to sampling problems, the measured
     deformation is overestimated and must be corrected.
 
+    The correction formula is described in:
+
+        Mapping of Deformation to Apparent Young's Modulus
+        in Real-Time Deformability Cytometry
+        Christoph Herold, arXiv:1704.00572 [cond-mat.soft] (2017)
+        https://arxiv.org/abs/1704.00572
+
     Parameters
     ----------
-    area: float or ndarray
+    area_um: float or ndarray
         Apparent (2D image) area in µm² of the event(s)
-    deformation: float or ndarray
+    deform: float or ndarray
         The deformation (1-circularity) of the event(s)
     px_um: float
         The detector pixel size in µm.
     inplace: bool
         Change the deformation values in-place
 
-
     Returns
     -------
     deformation_corr: float or ndarray
         The corrected deformation of the event(s)
     """
-    if px_um not in [0.34]:
-        msg = "Pixel correction for {}um resolution available!".format(px_um)
-        raise ValueError(msg)
-
     # A triple-exponential decay can be used to correct for pixelation
     # for apparent cell areas between 10 and 1250µm².
     # For 99 different radii between 0.4 μm and 20 μm circular objects were
@@ -153,14 +226,14 @@ def pixcorr_deformation(area, deformation, px_um=0.34, inplace=False):
     # in the pixelation correction formula.
     pxcorr = (.34 / px_um)**2
     offs = 0.0012
-    exp1 = 0.020 * np.exp(-area * pxcorr / 7.1)
-    exp2 = 0.010 * np.exp(-area * pxcorr / 38.6)
-    exp3 = 0.005 * np.exp(-area * pxcorr / 296)
+    exp1 = 0.020 * np.exp(-area_um * pxcorr / 7.1)
+    exp2 = 0.010 * np.exp(-area_um * pxcorr / 38.6)
+    exp3 = 0.005 * np.exp(-area_um * pxcorr / 296)
     delta = offs + exp1 + exp2 + exp3
 
     if inplace:
-        deformation -= delta
+        deform -= delta
     else:
-        deformation = deformation - delta
+        deform = deform - delta
 
-    return deformation
+    return deform

@@ -16,8 +16,8 @@ def compute_emodulus(mm):
         medium = viscosity
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(
-            area=mm["area_um"],
-            deformation=mm["deform"],
+            area_um=mm["area_um"],
+            deform=mm["deform"],
             medium=medium,
             channel_width=mm.config["setup"]["channel width"],
             flow_rate=mm.config["setup"]["flow rate"],

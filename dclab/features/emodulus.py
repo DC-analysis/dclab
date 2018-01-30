@@ -143,8 +143,8 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
                               flow_rate=flow_rate, temperature=temperature)
     # Corrections
     # We correct the lut, because it contains less points than
-    # the event data to implement. Furthermore, the lut could
-    # be cached in the future, if this takes up a lot of time.
+    # the event data. Furthermore, the lut could be cached
+    # in the future, if this takes up a lot of time.
     convert(area_um=lut[:, 0],
             deform=lut[:, 1],
             emodulus=lut[:, 2],
@@ -157,9 +157,9 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
             inplace=True)
 
     if px_um:
-        # Correct deformation for pixelation effect (inplace).
-        pixcorr_deform(area_um=area_um, deform=deform,
-                       px_um=px_um, inplace=True)
+        # Correct deformation for pixelation effect (subtract ddelt).
+        ddelt = pixcorr_deform_delta(area_um=area_um, px_um=px_um)
+        deform -= ddelt
 
     # Normalize interpolation data such that the spacing for
     # area and deformation is about the same during interpolation.
@@ -184,8 +184,8 @@ def normalize(data, dmax):
     return data
 
 
-def pixcorr_deform(area_um, deform, px_um=0.34, inplace=False):
-    """Correct deformation for pixelation effects
+def pixcorr_deform_delta(area_um, px_um=0.34, inplace=False):
+    """Deformation correction term for pixelation effects
 
     The contour in RT-DC measurements is computed on a
     pixelated grid. Due to sampling problems, the measured
@@ -202,8 +202,6 @@ def pixcorr_deform(area_um, deform, px_um=0.34, inplace=False):
     ----------
     area_um: float or ndarray
         Apparent (2D image) area in µm² of the event(s)
-    deform: float or ndarray
-        The deformation (1-circularity) of the event(s)
     px_um: float
         The detector pixel size in µm.
     inplace: bool
@@ -211,8 +209,10 @@ def pixcorr_deform(area_um, deform, px_um=0.34, inplace=False):
 
     Returns
     -------
-    deformation_corr: float or ndarray
-        The corrected deformation of the event(s)
+    deform_delta: float or ndarray
+        Error of the deformation of the event(s) that must be
+        subtracted from `deform`.
+        deform_corr = deform -  deform_delta
     """
     # A triple-exponential decay can be used to correct for pixelation
     # for apparent cell areas between 10 and 1250µm².
@@ -231,9 +231,4 @@ def pixcorr_deform(area_um, deform, px_um=0.34, inplace=False):
     exp3 = 0.005 * np.exp(-area_um * pxcorr / 296)
     delta = offs + exp1 + exp2 + exp3
 
-    if inplace:
-        deform -= delta
-    else:
-        deform = deform - delta
-
-    return deform
+    return delta

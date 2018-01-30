@@ -4,6 +4,7 @@
    - Hierarchy children now support and remember manual filters (#22)
  - Update emodulus look-up table with larger values for deformation
  - Implement pixel size correction for emodulus computation
+ - Allow to add pixelation error to isoelastics (`add_px_err=True`) (#28)
 0.3.1
  - Remove all-zero dummy columns from dict format
  - Implement hdf5-based RT-DC data reader (#32)

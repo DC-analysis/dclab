@@ -11,11 +11,35 @@ import pathlib
 import numpy as np
 
 from dclab import isoelastics as iso
+from dclab.features import emodulus
 
 
 def get_isofile(name="example_isoelastics.txt"):
     thisdir = pathlib.Path(__file__).parent
     return thisdir / "data" / name
+
+
+def test_pixel_err():
+    i1 = iso.Isoelastics([get_isofile()])
+    isoel = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
+    px_um = .10
+    # add the error
+    isoel_err = i1.add_px_err(isoel=isoel,
+                              col1="area_um",
+                              col2="deform",
+                              px_um=px_um,
+                              inplace=False)
+    # remove the error manually
+    isoel_corr = []
+    for iss in isoel_err:
+        iss = iss.copy()
+        iss[:, 1] -= emodulus.corrpix_deform_delta(area_um=iss[:, 0],
+                                                   px_um=px_um)
+        isoel_corr.append(iss)
+    
+    for ii in range(len(isoel)):
+        assert not np.allclose(isoel[ii], isoel_err[ii])
+        assert np.allclose(isoel[ii], isoel_corr[ii])
 
 
 def test_circ():

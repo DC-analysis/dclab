@@ -78,6 +78,56 @@ def convert(area_um, deform, emodulus,
     return area_um_corr, deform_corr, emodulus_corr
 
 
+def corrpix_deform_delta(area_um, px_um=0.34):
+    """Deformation correction term for pixelation effects
+
+    The contour in RT-DC measurements is computed on a
+    pixelated grid. Due to sampling problems, the measured
+    deformation is overestimated and must be corrected.
+
+    The correction formula is described in:
+
+        Mapping of Deformation to Apparent Young's Modulus
+        in Real-Time Deformability Cytometry
+        Christoph Herold, arXiv:1704.00572 [cond-mat.soft] (2017)
+        https://arxiv.org/abs/1704.00572
+
+    Parameters
+    ----------
+    area_um: float or ndarray
+        Apparent (2D image) area in µm² of the event(s)
+    px_um: float
+        The detector pixel size in µm.
+    inplace: bool
+        Change the deformation values in-place
+
+    Returns
+    -------
+    deform_delta: float or ndarray
+        Error of the deformation of the event(s) that must be
+        subtracted from `deform`.
+        deform_corr = deform -  deform_delta
+    """
+    # A triple-exponential decay can be used to correct for pixelation
+    # for apparent cell areas between 10 and 1250µm².
+    # For 99 different radii between 0.4 μm and 20 μm circular objects were
+    # simulated on a pixel grid with the pixel resolution of 340 nm/pix. At
+    # each radius 1000 random starting points were created and the
+    # obtained contours were analyzed in the same fashion as RT-DC data.
+    # A convex hull on the contour was used to calculate the size (as area)
+    # and the deformation.
+    # The pixel size correction `pxcorr` takes into account the pixel size
+    # in the pixelation correction formula.
+    pxcorr = (.34 / px_um)**2
+    offs = 0.0012
+    exp1 = 0.020 * np.exp(-area_um * pxcorr / 7.1)
+    exp2 = 0.010 * np.exp(-area_um * pxcorr / 38.6)
+    exp3 = 0.005 * np.exp(-area_um * pxcorr / 296)
+    delta = offs + exp1 + exp2 + exp3
+
+    return delta
+
+
 def get_emodulus(area_um, deform, medium="CellCarrier",
                  channel_width=20.0, flow_rate=0.16, px_um=0.34,
                  temperature=23.0, copy=True):
@@ -158,7 +208,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
 
     if px_um:
         # Correct deformation for pixelation effect (subtract ddelt).
-        ddelt = pixcorr_deform_delta(area_um=area_um, px_um=px_um)
+        ddelt = corrpix_deform_delta(area_um=area_um, px_um=px_um)
         deform -= ddelt
 
     # Normalize interpolation data such that the spacing for
@@ -184,51 +234,3 @@ def normalize(data, dmax):
     return data
 
 
-def pixcorr_deform_delta(area_um, px_um=0.34, inplace=False):
-    """Deformation correction term for pixelation effects
-
-    The contour in RT-DC measurements is computed on a
-    pixelated grid. Due to sampling problems, the measured
-    deformation is overestimated and must be corrected.
-
-    The correction formula is described in:
-
-        Mapping of Deformation to Apparent Young's Modulus
-        in Real-Time Deformability Cytometry
-        Christoph Herold, arXiv:1704.00572 [cond-mat.soft] (2017)
-        https://arxiv.org/abs/1704.00572
-
-    Parameters
-    ----------
-    area_um: float or ndarray
-        Apparent (2D image) area in µm² of the event(s)
-    px_um: float
-        The detector pixel size in µm.
-    inplace: bool
-        Change the deformation values in-place
-
-    Returns
-    -------
-    deform_delta: float or ndarray
-        Error of the deformation of the event(s) that must be
-        subtracted from `deform`.
-        deform_corr = deform -  deform_delta
-    """
-    # A triple-exponential decay can be used to correct for pixelation
-    # for apparent cell areas between 10 and 1250µm².
-    # For 99 different radii between 0.4 μm and 20 μm circular objects were
-    # simulated on a pixel grid with the pixel resolution of 340 nm/pix. At
-    # each radius 1000 random starting points were created and the
-    # obtained contours were analyzed in the same fashion as RT-DC data.
-    # A convex hull on the contour was used to calculate the size (as area)
-    # and the deformation.
-    # The pixel size correction `pxcorr` takes into account the pixel size
-    # in the pixelation correction formula.
-    pxcorr = (.34 / px_um)**2
-    offs = 0.0012
-    exp1 = 0.020 * np.exp(-area_um * pxcorr / 7.1)
-    exp2 = 0.010 * np.exp(-area_um * pxcorr / 38.6)
-    exp3 = 0.005 * np.exp(-area_um * pxcorr / 296)
-    delta = offs + exp1 + exp2 + exp3
-
-    return delta

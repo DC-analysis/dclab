@@ -7,7 +7,7 @@
 #   to Extract Cell Mechanical Properties
 #   M. Mokbel, D. Mokbel, A. Mietke, N. Träber, S. Girardo,
 #   O. Otto, J. Guck, and S. Aland
-#   ACS Biomaterials Science & Engineering Article ASAP
+#   ACS Biomaterials Science & Engineering 3(11) 2017
 #   DOI: 10.1021/acsbiomaterials.6b00558
 #
 # The simulations were performed by S. Aland, D. Mokbel.

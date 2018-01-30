@@ -97,11 +97,78 @@ class Isoelastics(object):
                 iso_circ.append(iso)
             self._add(iso_circ, col1c, col2c, method, meta)
 
+    
+    @staticmethod
+    def add_px_err(isoel, col1, col2, px_um, inplace=False):
+        """Undo pixelation correction
+
+        Isoelasticity lines are already corrected for pixelation
+        effects as described in
+
+        Mapping of Deformation to Apparent Young's Modulus
+        in Real-Time Deformability Cytometry
+        Christoph Herold, arXiv:1704.00572 [cond-mat.soft] (2017)
+        https://arxiv.org/abs/1704.00572.
+
+        If the isoealsticity lines are displayed with deformation data
+        that are not corrected, then the lines must be "un"-corrected,
+        i.e. the pixelation error must be added to the lines to match
+        the experimental data.
+
+        Parameters
+        ----------
+        isoel: list of 2d ndarrays of shape (N, 3)
+            Each item in the list corresponds to one isoelasticity
+            line. The first column is defined by `col1`, the second
+            by `col2`, and the third column is the emodulus.
+        col1, col2: str
+            Define the fist to columns of each isoelasticity line.
+            One of ["area_um", "circ", "deform"]
+        px_um: float
+            Pixel size [µm]
+        """
+        Isoelastics.check_col12(col1, col2)
+        if "deform" in [col1, col2]:
+            # add error for deformation
+            sign = +1
+        else:
+            # subtract error for circularity
+            sign = -1
+        if col1 == "area_um":
+            area_ax = 0
+            deci_ax = 1
+        else:
+            area_ax = 1
+            deci_ax = 0
+        
+        new_isoel = []
+        for iso in isoel:
+            iso = np.array(iso, copy=not inplace)
+            ddeci = feat_emod.corrpix_deform_delta(area_um=iso[:, area_ax],
+                                                   px_um=px_um)
+            iso[:, deci_ax] += sign * ddeci
+            new_isoel.append(iso)
+        return new_isoel
+
+
+    @staticmethod
+    def check_col12(col1, col2):
+        if (col1 not in ["area_um", "circ", "deform"] or
+                col2 not in ["area_um", "circ", "deform"]):
+            raise ValueError("Columns must be one of: area_um, circ, deform!")
+        if col1 == col2:
+            raise ValueError("Columns are the same!")
+        if "area_um" not in [col1, col2]:
+            # avoid [circ, deform]
+            raise ValueError("One column must be set to 'area_um'!")
+
+
     @staticmethod
     def convert(isoel, col1, col2,
                 channel_width_in, channel_width_out,
                 flow_rate_in, flow_rate_out,
-                viscosity_in, viscosity_out):
+                viscosity_in, viscosity_out,
+                inplace=False):
         """Convert isoelastics in area_um-deform space
 
         Parameters
@@ -137,15 +204,7 @@ class Isoelastics(object):
         --------
         dclab.features.emodulus.convert: conversion method used
         """
-        if (col1 not in ["area_um", "circ", "deform"] or
-                col2 not in ["area_um", "circ", "deform"]):
-            raise ValueError("Columns must be one of: area_um, circ, deform!")
-        if col1 == col2:
-            raise ValueError("Columns are the same!")
-        if "area_um" not in [col1, col2]:
-            # avoid [circ, deform]
-            raise ValueError("One column must be set to 'area_um'!")
-
+        Isoelastics.check_col12(col1, col2)
         if col1 == "area_um":
             area_ax = 0
             defo_ax = 1
@@ -156,7 +215,7 @@ class Isoelastics(object):
         new_isoel = []
 
         for iso in isoel:
-            iso = iso.copy()
+            iso = np.array(iso, copy=not inplace)
             feat_emod.convert(area_um=iso[:, area_ax],
                               deform=iso[:, defo_ax],
                               emodulus=iso[:, 2],
@@ -170,8 +229,9 @@ class Isoelastics(object):
             new_isoel.append(iso)
         return new_isoel
 
-    def get(self, col1, col2, method, channel_width,
-            flow_rate=None, viscosity=None):
+
+    def get(self, col1, col2, method, channel_width, flow_rate=None,
+            viscosity=None, add_px_err=False, px_um=None):
         """Get isoelastics
 
         Parameters
@@ -182,6 +242,9 @@ class Isoelastics(object):
         col2: str
             Name of the second feature of all isoelastics
             (e.g. isoel[0][:,1])
+        method: str
+            The method used to compute the isoelastics
+            (must be one of `VALID_METHODS`).
         channel_width: float
             Channel width in µm
         flow_rate: float or `None`
@@ -194,9 +257,18 @@ class Isoelastics(object):
             `None`, the flow rate of the imported data will
             be used (only do this if you do not need the
             correct values for elastic moduli).
-        method: str
-            The method used to compute the isoelastics
-            (must be one of `VALID_METHODS`).
+        add_px_err: bool
+            If True, add pixelation errors according to
+            C. Herold (2017), https://arxiv.org/abs/1704.00572
+        px_um: float
+            Pixel size [µm], used for pixelation error computation
+
+        See Also
+        --------
+        dclab.features.emodulus.convert: conversion in-between
+            channel sizes and viscosities
+        dclab.features.emodulus.corrpix_deform_delta: pixelation
+            error that is applied to the deformation data
         """
         if method not in VALID_METHODS:
             validstr = ",".join(VALID_METHODS)
@@ -225,7 +297,14 @@ class Isoelastics(object):
                                  flow_rate_in=meta[1],
                                  flow_rate_out=flow_rate,
                                  viscosity_in=meta[2],
-                                 viscosity_out=viscosity)
+                                 viscosity_out=viscosity,
+                                 inplace=False)
+
+        if add_px_err:
+            self.add_px_err(isoel=isoel_ret,
+                            px_um=px_um,
+                            inplace=True)
+
         return isoel_ret
 
     def load_data(self, path):

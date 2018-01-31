@@ -12,10 +12,12 @@ from .. import definitions as dfn
 from ..features import emodulus as feat_emod
 
 
-ISOFILES = ["isoel-analytical-area_um-deform.txt"]
+ISOFILES = ["isoel-analytical-area_um-deform.txt",
+            "isoel-numerical-area_um-deform.txt",
+            ]
 ISOFILES = [resource_filename("dclab.isoelastics", _if) for _if in ISOFILES]
 
-VALID_METHODS = ["analytical", "fem"]
+VALID_METHODS = ["analytical", "numerical"]
 
 
 class Isoelastics(object):
@@ -302,6 +304,8 @@ class Isoelastics(object):
 
         if add_px_err:
             self.add_px_err(isoel=isoel_ret,
+                            col1=col1,
+                            col2=col2,
                             px_um=px_um,
                             inplace=True)
 

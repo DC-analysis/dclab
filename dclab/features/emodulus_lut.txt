@@ -19,7 +19,8 @@
 # - channel width [um]: 20
 # - flow rate [ul/s]: 0.04
 # - viscosity [mPa*s]: 15
-# - method: FEM
+# - method: numerical
+# - method details: FEM
 #
 # apparent_area_um^2 deformation elastic_modulus_kPa
 4.7983585e+01 4.4842000e-02 5.7280829e-01

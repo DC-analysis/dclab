@@ -61,3 +61,5 @@ docs/_build/
 *.rst~
 
 _version_save.py
+.env
+*.bib.bak

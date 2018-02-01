@@ -1,0 +1,6 @@
+=============
+Bilbliography
+=============
+
+.. bibliography:: dclab.bib
+

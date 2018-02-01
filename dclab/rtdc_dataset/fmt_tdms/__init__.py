@@ -148,7 +148,7 @@ class RTDC_TDMS(RTDCBase):
         if "viscosity" not in self.config["setup"]:
             self.config["setup"]["viscosity"] = np.nan
         # imaging
-        if "pixel size" in self.config["imaging"]:
+        if "pixel size" not in self.config["imaging"]:
             self.config["imaging"]["pixel size"] = 0.34
 
 

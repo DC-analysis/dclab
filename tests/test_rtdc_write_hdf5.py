@@ -176,7 +176,7 @@ def test_meta():
         abool = rtdc_data.attrs["online_contour:no absdiff"]
         assert abool
         assert isinstance(abool, (bool, np.bool_))
-        anint = rtdc_data.attrs["online_contour:image blur"] 
+        anint = rtdc_data.attrs["online_contour:image blur"]
         assert isinstance(anint, numbers.Integral)
         assert rtdc_data.attrs["setup:channel width"] == 20
         assert rtdc_data.attrs["setup:chip region"] == "channel"

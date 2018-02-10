@@ -228,8 +228,8 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
     for sec in meta:
         for ck in meta[sec]:
             idk = "{}:{}".format(sec, ck)
-            conftype = dfn.config_types[sec][ck]
-            h5obj.attrs[idk] = conftype(meta[sec][ck])
+            conffunc = dfn.config_funcs[sec][ck]
+            h5obj.attrs[idk] = conffunc(meta[sec][ck])
     # write version
     h5obj.attrs["setup:software version"] = "dclab {}".format(version)
 

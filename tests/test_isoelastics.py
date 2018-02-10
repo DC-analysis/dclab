@@ -36,7 +36,7 @@ def test_pixel_err():
         iss[:, 1] -= emodulus.corrpix_deform_delta(area_um=iss[:, 0],
                                                    px_um=px_um)
         isoel_corr.append(iss)
-    
+
     for ii in range(len(isoel)):
         assert not np.allclose(isoel[ii], isoel_err[ii])
         assert np.allclose(isoel[ii], isoel_corr[ii])
@@ -103,13 +103,13 @@ def test_convert_error():
                    method="analytical",
                    channel_width=15)
 
-    kwargs=dict(channel_width_in=15,
-                channel_width_out=20,
-                flow_rate_in=.12,
-                flow_rate_out=.08,
-                viscosity_in=15,
-                viscosity_out=15)
-    
+    kwargs = dict(channel_width_in=15,
+                  channel_width_out=20,
+                  flow_rate_in=.12,
+                  flow_rate_out=.08,
+                  viscosity_in=15,
+                  viscosity_out=15)
+
     try:
         i1.convert(isoel=isoel,
                    col1="deform",

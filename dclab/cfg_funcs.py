@@ -43,6 +43,7 @@ def lcstr(astr):
     """lower-case string"""
     return astr.lower()
 
-
+#: maps functions to their expected output types
 func_types = {fbool: bool,
-              fintlist: list}
+              fintlist: list,
+              lcstr: str_types}

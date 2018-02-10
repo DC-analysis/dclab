@@ -72,7 +72,7 @@ def find_data(path):
 
 
 def retrieve_data(zip_file):
-    """Eytract contents of data zip file and return dir
+    """Eytract contents of data zip file and return data files
     """
     global _tempdirs
     zpath = pathlib.Path(__file__).resolve().parent / "data" / zip_file

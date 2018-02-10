@@ -10,7 +10,7 @@ import dclab
 from dclab.rtdc_dataset import ancillaries
 
 from helper_methods import example_data_dict, retrieve_data, \
-                           example_data_sets, cleanup
+    example_data_sets, cleanup
 
 
 def test_0basic():

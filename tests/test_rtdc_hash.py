@@ -5,7 +5,7 @@ from __future__ import print_function
 from dclab import new_dataset
 
 from helper_methods import example_data_dict, retrieve_data, \
-                           example_data_sets, cleanup
+    example_data_sets, cleanup
 
 
 def test_hash_dict():

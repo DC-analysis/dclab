@@ -14,7 +14,7 @@ import dclab
 from dclab import dfn, new_dataset
 
 from helper_methods import example_data_dict, retrieve_data, \
-                           example_data_sets, cleanup
+    example_data_sets, cleanup
 
 
 def test_avi_export():
@@ -185,7 +185,7 @@ def test_hdf5_contour_image_trace():
     for ii in range(N):
         assert np.all(ds1["image"][ii] == ds2["image"][ii])
         assert np.all(ds1["contour"][ii] == ds2["contour"][ii])
-    
+
     for key in dfn.FLUOR_TRACES:
         assert np.all(ds1["trace"][key] == ds2["trace"][key])
 

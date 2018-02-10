@@ -139,7 +139,7 @@ def test_invert_saveload():
         os.remove(name)
     except OSError:
         pass
-    
+
     name = tempfile.mktemp(prefix="test_dclab_polygon_")
     filt3.save(name)
     filt4 = dclab.PolygonFilter(filename=name)

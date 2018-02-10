@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Test functions for loading contours
-"""
 from __future__ import print_function, unicode_literals
 
 import numpy as np

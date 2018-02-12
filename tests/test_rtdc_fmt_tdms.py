@@ -182,6 +182,18 @@ def test_load_tdms_simple():
     cleanup()
 
 
+def test_pixel_size():
+    path = retrieve_data("rtdc_data_minimal.zip")
+    para = path.parent / "M1_para.ini"
+    data = para.open("r").read()
+    newdata = data.replace("Pix Size = 0.340000", "Pix Size = 0.120000")
+    with para.open("w") as fd:
+        fd.write(newdata)
+    ds = new_dataset(path)
+    assert ds.config["imaging"]["pixel size"] == 0.12
+    cleanup()
+
+
 def test_project_path():
     tfile = retrieve_data(example_data_sets[0])
     ds = dclab.new_dataset(tfile)

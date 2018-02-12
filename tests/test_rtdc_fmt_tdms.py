@@ -126,6 +126,14 @@ def test_image_out_of_bounds():
     cleanup()
 
 
+def test_fluorescence_config():
+    ds1 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    assert "fluorescence" not in ds1.config
+    ds2 = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
+    assert "fluorescence" in ds2.config
+    cleanup()
+
+
 def test_large_fov():
     ds = new_dataset(retrieve_data(example_data_sets[3]))
     # initial image is missing

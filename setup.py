@@ -39,6 +39,11 @@ if __name__ == "__main__":
                           "scipy >= 0.12.0",
                           "statsmodels >= 0.5.0",
                           ],
+        entry_points={
+           "console_scripts": [
+               "dclab_verify_dataset = dclab.cli:verify_dataset",
+                ],
+           },
         keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],
         setup_requires=['pytest-runner'],
         tests_require=["pytest", "urllib3"],

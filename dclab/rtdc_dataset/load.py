@@ -137,7 +137,6 @@ def check_dataset(path_or_ds):
     tocheck = IMPORTANT_KEYS
     # should we also check for fluorescence keys?
     if ("fluorescence" in ds.config or
-        "trace" in ds._events or
         "fl1_max" in ds._events or
         "fl2_max" in ds._events or
             "fl3_max" in ds._events):

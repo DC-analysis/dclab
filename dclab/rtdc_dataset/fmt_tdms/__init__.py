@@ -123,6 +123,11 @@ class RTDC_TDMS(RTDCBase):
             # Start time of measurement ('HH:MM:SS')
             timestr = time.strftime("%H:%M:%S", gmtime)
             self.config["experiment"]["time"] = timestr
+        # fluorescence
+        if "fluorescence" in self.config:
+            self.config["fluorescence"]["laser 1 lambda"] = 488
+            self.config["fluorescence"]["laser 2 lambda"] = 561
+            self.config["fluorescence"]["laser 3 lambda"] = 640
         # fmt_tdms
         if "video frame offset" not in self.config["fmt_tdms"]:
             self.config["fmt_tdms"]["video frame offset"] = 1
@@ -133,9 +138,9 @@ class RTDC_TDMS(RTDCBase):
             if "channel width" in residual_config["general"]:
                 channel_width = residual_config["general"]["channel width"]
             if self.config["setup"]["flow rate"] < 0.16:
-                channel_width = 20
+                channel_width = 20.
             else:
-                channel_width = 30
+                channel_width = 30.
             self.config["setup"]["channel width"] = channel_width
         if "temperature" not in self.config["setup"]:
             if "ambient temp. [c]" in residual_config["image"]:

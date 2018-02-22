@@ -36,7 +36,6 @@ install_requires=["fcswrite",
                   "h5py",
                   "imageio",
                   "nptdms",
-                  "numpy",
                   "pathlib",
                   "scipy",
                   "scipy.interpolate",
@@ -46,7 +45,6 @@ install_requires=["fcswrite",
                   "statsmodels",
                   "statsmodels.nonparametric",
                   "statsmodels.nonparametric.kernel_density",
-                  "dclab.isoelastics.default",
                   ]
 
 for mod_name in install_requires:

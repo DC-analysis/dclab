@@ -1,9 +1,9 @@
-qpformat documentation
-======================
+dclab documentation
+===================
 
-Qpformat is a Python3 library for opening quantitative
-phase imaging data file formats. This is the
-documentation of qpformat version |release|.
+Dclab is a Python library for  python library for the post-measurement
+analysis of real-time deformability cytometry (RT-DC) data sets. This
+is the documentation of dclab version |release|.
 
 .. toctree::
    :maxdepth: 4

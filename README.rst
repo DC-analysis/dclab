@@ -1,7 +1,7 @@
 dclab
 =====
 
-|PyPI Version| |Build Status| |Coverage Status|
+|PyPI Version| |Build Status| |Coverage Status| |Docs Status|
 
 
 This is a Python library for the post-measurement analysis of

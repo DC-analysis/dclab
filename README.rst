@@ -8,6 +8,12 @@ This is a Python library for the post-measurement analysis of
 real-time deformability cytometry (RT-DC) data sets; an essential part of
 `ShapeOut <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut>`__.
 
+Documentation
+-------------
+
+The documentation, including the code reference and examples, is available on
+`dclab.readthedocs.io <https://dclab.readthedocs.io/en/stable/>`__.
+
 
 Installation
 ------------
@@ -16,13 +22,6 @@ To install the latest release, simply run
 ::
 
 	pip install dclab
-	
-
-If you want to get the bleeding edge from GitHub, run
-
-::
-
-	pip install git+git://github.com/ZELLMECHANIK-DRESDEN/dclab.git
 
 
 Information for developers
@@ -95,3 +94,5 @@ version of dclab to PyPI in order to get your new code into ShapeOut.
    :target: https://travis-ci.org/ZELLMECHANIK-DRESDEN/dclab
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/ZELLMECHANIK-DRESDEN/dclab/master.svg
    :target: https://codecov.io/gh/ZELLMECHANIK-DRESDEN/dclab
+.. |Docs Status| image:: https://readthedocs.org/projects/dclab/badge/?version=latest
+   :target: https://readthedocs.org/projects/dclab/builds/

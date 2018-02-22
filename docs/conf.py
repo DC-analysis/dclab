@@ -39,7 +39,13 @@ install_requires=["fcswrite",
                   "NumPy",
                   "pathlib",
                   "scipy",
+                  "scipy.interpolate",
+                  "scipy.ndimage",
+                  "scipy.spatial",
+                  "scipy.stats",
                   "statsmodels",
+                  "statsmodels.nonparametric",
+                  "statsmodels.nonparametric.kernel_density",
                   ]
 
 for mod_name in install_requires:

@@ -10,6 +10,7 @@ is the documentation of dclab version |release|.
    :caption: Contents:
 
    examples
+   sec_code_reference
    z_bib
 
 

@@ -170,9 +170,9 @@ def check_dataset(path_or_ds):
         if "image" in ds._events:
             imdat = ds["image"]
             miss_imkey = []
-            for key, val in [['CLASS', b'IMAGE'],
-                             ['IMAGE_VERSION', b'1.2'],
-                             ['IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE']]:
+            for key, val in [['CLASS', 'IMAGE'],
+                             ['IMAGE_VERSION', '1.2'],
+                             ['IMAGE_SUBCLASS', 'IMAGE_GRAYSCALE']]:
                 if key not in imdat.attrs or imdat.attrs.get(key) != val:
                     miss_imkey.append(key)
             if miss_imkey:

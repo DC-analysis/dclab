@@ -19,8 +19,9 @@ kwargs = {"col1": "area_um",  # x-axis
           "add_px_err": False  # no pixelation error
           }
 
-analy = dclab.isoelastics.default.get(method="analytical", **kwargs)
-numer = dclab.isoelastics.default.get(method="numerical", **kwargs)
+isos = dclab.isoelastics.get_default()
+analy = isos.get(method="analytical", **kwargs)
+numer = isos.get(method="numerical", **kwargs)
 
 plt.figure(figsize=(8, 4))
 ax = plt.subplot(111, title="elastic sphere isoelasticity lines")

@@ -389,4 +389,6 @@ class IsoelasticsDict(dict):
         return super(IsoelasticsDict, self).__getitem__(key)
 
 
-default = Isoelastics(ISOFILES)
+def get_default():
+    """Return default isoelasticity lines"""
+    return Isoelastics(ISOFILES)

@@ -41,7 +41,7 @@ if __name__ == "__main__":
                           ],
         entry_points={
            "console_scripts": [
-               "dclab_verify_dataset = dclab.cli:verify_dataset",
+               "dclab-verify-dataset = dclab.cli:verify_dataset",
                 ],
            },
         keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],

@@ -46,6 +46,7 @@ install_requires=["fcswrite",
                   "statsmodels",
                   "statsmodels.nonparametric",
                   "statsmodels.nonparametric.kernel_density",
+                  "dclab.isoelastics.default",
                   ]
 
 for mod_name in install_requires:

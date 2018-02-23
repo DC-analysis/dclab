@@ -27,6 +27,24 @@ def fbool(value):
     return value
 
 
+def fint(value):
+    """integer"""
+    if isinstance(value, str_types):
+        # strings might have been saved wrongly as booleans
+        value = value.lower()
+        if value == "false":
+            value = 0
+        elif value == "true":
+            value = 1
+        elif value:
+            value = int(float(value))
+        else:
+            raise ValueError("empty string")
+    else:
+        value = int(float(value))
+    return value
+
+
 def fintlist(alist):
     """A list of integers"""
     outlist = []
@@ -35,7 +53,7 @@ def fintlist(alist):
         alist = alist.strip().strip("[] ").split(",")
     for it in alist:
         if it:
-            outlist.append(int(it))
+            outlist.append(fint(it))
     return outlist
 
 
@@ -45,5 +63,6 @@ def lcstr(astr):
 
 #: maps functions to their expected output types
 func_types = {fbool: bool,
+              fint: int,
               fintlist: list,
               lcstr: str_types}

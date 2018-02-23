@@ -5,7 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 
-from .cfg_funcs import fbool, fintlist, func_types, lcstr
+from .cfg_funcs import fbool, fint, fintlist, func_types, lcstr
 
 
 # All configuration keywords editable by the user
@@ -15,7 +15,7 @@ CFG_ANALYSIS = {
         ["hierarchy parent", str, "Hierarchy parent of the data set"],
         ["remove invalid events", fbool, "Remove events with inf/nan values"],
         ["enable filters", fbool, "Enable filtering"],
-        ["limit events", int, "Upper limit for number of filtered events"],
+        ["limit events", fint, "Upper limit for number of filtered events"],
         ["polygon filters", fintlist, "Polygon filter indices"],
         ],
     # Addition user-defined data
@@ -38,15 +38,15 @@ CFG_METADATA = {
     # All parameters related to the actual experiment
     "experiment": [
         ["date", str, "Date of measurement ('YYYY-MM-DD')"],
-        ["event count", int, "Number of recorded events"],
-        ["run index", int, "Index of measurement run"],
+        ["event count", fint, "Number of recorded events"],
+        ["run index", fint, "Index of measurement run"],
         ["sample", str, "Measured sample or user-defined reference"],
         ["time", str, "Start time of measurement ('HH:MM:SS')"],
         ],
     # All special keywords related to RT-FDC
     "fluorescence": [
-        ["bit depth", int, "Trace bit depth"],
-        ["channel count", int, "Number of channels"],
+        ["bit depth", fint, "Trace bit depth"],
+        ["channel count", fint, "Number of channels"],
         ["laser 1 power", float, "Laser 1 output power [mW]"],
         ["laser 2 power", float, "Laser 2 output power [mW]"],
         ["laser 3 power", float, "Laser 3 output power [mW]"],
@@ -56,11 +56,11 @@ CFG_METADATA = {
         ["sample rate", float, "Trace sample rate [Hz]"],
         ["signal max", float, "Upper voltage detection limit [V]"],
         ["signal min", float, "Lower voltage detection limit [V]"],
-        ["trace median", int, "Rolling median filter size for traces"],
+        ["trace median", fint, "Rolling median filter size for traces"],
         ],
     # All tdms-related parameters
     "fmt_tdms": [
-        ["video frame offset", int, "Missing events at beginning of video"],
+        ["video frame offset", fint, "Missing events at beginning of video"],
         ],
     # All imaging-related keywords
     "imaging": [
@@ -72,26 +72,26 @@ CFG_METADATA = {
         ["pixel size", float, "Pixel size [µm]"],
         ["roi position x", float, "Image x coordinate on sensor [px]"],
         ["roi position y", float, "Image y coordinate on sensor [px]"],
-        ["roi size x", int, "Image width [px]"],
-        ["roi size y", int, "Image height [px]"],
+        ["roi size x", fint, "Image width [px]"],
+        ["roi size y", fint, "Image height [px]"],
         ],
     # All parameters for online contour extraction from the event images
     "online_contour": [
-        ["bin area min", int, "Minium pixel area of binary image event"],
-        ["bin kernel", int, "Odd ellipse kernel size, binary image morphing"],
-        ["bin margin", int, "Remove margin in x for contour detection"],
-        ["bin threshold", int, "Binary threshold for avg-bg-corrected image"],
-        ["image blur", int, "Odd sigma for Gaussian blur (21x21 kernel)"],
+        ["bin area min", fint, "Minium pixel area of binary image event"],
+        ["bin kernel", fint, "Odd ellipse kernel size, binary image morphing"],
+        ["bin margin", fint, "Remove margin in x for contour detection"],
+        ["bin threshold", fint, "Binary threshold for avg-bg-corrected image"],
+        ["image blur", fint, "Odd sigma for Gaussian blur (21x21 kernel)"],
         ["no absdiff", fbool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
         ],
     # All online filters
     "online_filter": [
         ["aspect min", float, "Minimum aspect ratio of bounding box"],
         ["aspect max", float, "Maximum aspect ratio of bounding box"],
-        ["size_x max", int, "Maximum bounding box size x [µm]"],
-        ["size_y max", int, "Maximum bounding box size y [µm]"],
-        ["size_x min", int, "Minimum bounding box size x [µm]"],
-        ["size_y min", int, "Minimum bounding box size y [µm]"],
+        ["size_x max", fint, "Maximum bounding box size x [µm]"],
+        ["size_y max", fint, "Maximum bounding box size y [µm]"],
+        ["size_x min", fint, "Minimum bounding box size x [µm]"],
+        ["size_y min", fint, "Minimum bounding box size y [µm]"],
         ],
     # All setup-related keywords, except imaging
     "setup": [

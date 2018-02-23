@@ -15,7 +15,7 @@ CFG_ANALYSIS = {
         ["hierarchy parent", str, "Hierarchy parent of the data set"],
         ["remove invalid events", fbool, "Remove events with inf/nan values"],
         ["enable filters", fbool, "Enable filtering"],
-        ["limit events", fbool, "Upper limit for number of filtered events"],
+        ["limit events", int, "Upper limit for number of filtered events"],
         ["polygon filters", fintlist, "Polygon filter indices"],
         ],
     # Addition user-defined data

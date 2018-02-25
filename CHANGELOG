@@ -1,8 +1,9 @@
 0.3.3
+ - CLI: add tdms-to-rtdc converter "dclab-tdms2rtdc" (#36)
  - Bugfixes:
    - "limit events" filtering must be integer not boolean (#41)
 0.3.2
- - CLI: add rudimentary dataset checker "dclab_verify_dataset" (#37)
+ - CLI: add rudimentary dataset checker "dclab-verify-dataset" (#37)
  - Add logic to compute parent/root/child event indices of RTDC_Hierarchy
    - Hierarchy children now support contour, image, and traces
    - Hierarchy children now support and remember manual filters (#22)

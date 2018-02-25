@@ -5,6 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import io
 import os
+import pathlib
 import warnings
 
 import imageio
@@ -154,20 +155,24 @@ class Export(object):
         compression: str or None
             Compression method used by h5py
         """
+        path = pathlib.Path(path)
         # Make sure that path ends with .rtdc
-        if not path.endswith(".rtdc"):
-            path += ".rtdc"
+        if not path.suffix == ".rtdc":
+            path = path.parent / (path.name + ".rtdc")
         # Check if file already exist
-        if not override and os.path.exists(path):
+        if not override and path.exists():
             raise OSError("File already exists: {}\n".format(
-                                    path.encode("ascii", "ignore"))+
+                          str(path).encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        elif os.path.exists(path):
-            os.remove(path)
+        elif path.exists():
+            path.unlink()
         
         meta = {}
         # only export configuration meta data (no user-defined config)
         for sec in dfn.CFG_METADATA:
+            if sec in ["fmt_tdms"]:
+                # ignored sections
+                continue
             if sec in self.rtdc_ds.config:
                 meta[sec] = self.rtdc_ds.config[sec].copy()
 

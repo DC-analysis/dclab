@@ -5,6 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import io
 import os
+import pathlib
 import time
 import sys
 
@@ -237,12 +238,12 @@ def get_tdms_files(directory):
     of all found '.tdms' project files, except fluorescence
     data trace files which end with `_traces.tdms`.
     """
-    directory = os.path.realpath(directory)
-    tdmslist = list()
-    for root, _dirs, files in os.walk(directory):
-        for f in files:
-            # Exclude traces files of fRT-DC setup
-            if (f.endswith(".tdms") and (not f.endswith("_traces.tdms"))):
-                tdmslist.append(os.path.realpath(os.path.join(root,f)))
+    path = pathlib.Path(directory).resolve()
+    # get all tdms files
+    tdmslist = [r for r in path.rglob("*.tdms") if r.is_file()]
+    # exclude traces files
+    tdmslist = [r for r in tdmslist if not r.name.endswith("_traces.tdms")]
+    # convert to strings
+    tdmslist = [str(r) for r in tdmslist]
     tdmslist.sort()
     return tdmslist

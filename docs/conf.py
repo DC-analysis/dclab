@@ -77,6 +77,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.napoleon',
               'sphinxcontrib.bibtex',
+              'sphinxarg.ext',
               'fancy_include',
               ]
 

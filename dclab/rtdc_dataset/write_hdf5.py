@@ -222,7 +222,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
             h5mode = "w"
         else:
             h5mode = "a"
-        h5obj = h5py.File(path_or_h5file, mode=h5mode)
+        h5obj = h5py.File(str(path_or_h5file), mode=h5mode)
 
     # Write meta
     for sec in meta:

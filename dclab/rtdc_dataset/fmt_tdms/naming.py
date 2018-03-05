@@ -36,16 +36,19 @@ dclab2tdms = {
    "size_y": "ax1",
    }
 
-# Add userdef features
+# Add lower-case userdef features
 for _i in range(10):
     dclab2tdms["userdef{}".format(_i)] = "userDef{}".format(_i)
-
 
 # inverse of dclab2tdms
 tdms2dclab = {}
 for kk in dclab2tdms:
     tdms2dclab[dclab2tdms[kk]] = kk
 
+# Add capitalized userdef features as well.
+# see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/212
+for _i in range(10):
+    tdms2dclab["UserDef{}".format(_i)] = "userdef{}".format(_i)
 
 # traces_tdms file definitions
 # The second feature should not contain duplicates! - even if the 

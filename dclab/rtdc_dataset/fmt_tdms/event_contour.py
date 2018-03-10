@@ -91,7 +91,7 @@ class ContourColumn(object):
         """
         tdmsname = os.path.basename(rtdc_dataset.path)
         cont_id = os.path.splitext(tdmsname)[0]
-        candidates = os.listdir(rtdc_dataset._fdir)
+        candidates = sorted(os.listdir(rtdc_dataset._fdir))
         candidates = [ c for c in candidates if c.endswith("_contours.txt") ]
         # Search for perfect matches, e.g.
         # - M1_0.240000ul_s.tdms
@@ -101,7 +101,7 @@ class ContourColumn(object):
                 cfile = os.path.join(rtdc_dataset._fdir, c1)
                 break
         else:
-            # Search for M* matches, e.g.
+            # Search for M* matches with most overlap, e.g.
             # - M1_0.240000ul_s.tdms
             # - M1_contours.txt
             for c2 in candidates:

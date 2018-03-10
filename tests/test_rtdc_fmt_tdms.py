@@ -52,20 +52,23 @@ def test_contour_naming():
     dn = dp.parent
     contfile = dn / "M1_0.120000ul_s_contours.txt"
     contfileshort = dn / "M1_contours.txt"
+    contfileexact = dn / "M1_2us_70A_0.120000ul_s_contours.txt"
     del ds
 
-    # "M1_0.120000ul_s_contours.txt" should have priority over
-    # "M1_contours.txt".
-    with contfileshort.open(mode="w"):
-        pass
+    # Test for perfect match
+    # "M1_2us_70A_0.120000ul_s_contours.txt" should have priority over
+    # "M1_contours.txt" and "M1_0.120000ul_s_contours.txt".
+    shutil.copy(str(contfile), str(contfileshort))
+    shutil.copy(str(contfile), str(contfileexact))
     ds2 = new_dataset(dp)
-    assert ds2["contour"].identifier == str(contfile)
+    assert ds2["contour"].identifier == str(contfileexact)
     assert not np.allclose(ds2["contour"][1], 0)
     del ds2
 
     # Check if "M1_contours.txt" is used if the other is not
     # there.
-    os.remove(str(contfileshort))
+    contfileshort.unlink()
+    contfileexact.unlink()
     contfile.rename(contfileshort)
     ds3 = new_dataset(dp)
     assert ds3["contour"].identifier == str(contfileshort)

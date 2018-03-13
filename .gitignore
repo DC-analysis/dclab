@@ -63,3 +63,4 @@ docs/_build/
 _version_save.py
 .env
 *.bib.bak
+.pytest_cache

@@ -7,6 +7,7 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 import io
+import pathlib
 import sys
 
 from .. import definitions as dfn
@@ -194,7 +195,8 @@ def load_from_file(cfg_file):
     cfg : CaseInsensitiveDict
         Dictionary with configuration parameters
     """
-    with io.open(cfg_file, 'r') as f:
+    path = pathlib.Path(cfg_file).resolve()
+    with path.open('r') as f:
         code = f.readlines()
 
     cfg = CaseInsensitiveDict()

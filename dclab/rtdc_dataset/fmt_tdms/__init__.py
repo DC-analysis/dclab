@@ -126,9 +126,9 @@ class RTDC_TDMS(RTDCBase):
             self.config["experiment"]["time"] = timestr
         # fluorescence
         if "fluorescence" in self.config:
-            self.config["fluorescence"]["laser 1 lambda"] = 488
-            self.config["fluorescence"]["laser 2 lambda"] = 561
-            self.config["fluorescence"]["laser 3 lambda"] = 640
+            self.config["fluorescence"]["laser 1 lambda"] = 488.
+            self.config["fluorescence"]["laser 2 lambda"] = 561.
+            self.config["fluorescence"]["laser 3 lambda"] = 640.
         # fmt_tdms
         if "video frame offset" not in self.config["fmt_tdms"]:
             self.config["fmt_tdms"]["video frame offset"] = 1

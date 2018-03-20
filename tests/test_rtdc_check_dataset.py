@@ -9,7 +9,11 @@ from helper_methods import cleanup, retrieve_data
 
 def test_basic():
     h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
-    check_dataset(h5path)
+    viol, aler, info = check_dataset(h5path)
+    assert len(viol) == 0
+    assert len(aler) == 0
+    assert "Data file format: hdf5" in info
+    assert "Fluorescence: True" in info
     cleanup()
 
 

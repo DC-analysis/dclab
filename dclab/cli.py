@@ -6,6 +6,18 @@ from .rtdc_dataset import fmt_tdms, load
 from . import definitions as dfn
 
 
+def print_info(string):
+    print("\033[1m{}\033[0m".format(string))
+
+
+def print_alert(string):
+    print_info("\033[33m{}".format(string))
+
+
+def print_violation(string):
+    print_info("\033[31m{}".format(string))
+
+
 def tdms2rtdc():
     """Convert .tdms data sets to the hdf5-based .rtdc file format"""
     parser = tdms2rtdc_parser()
@@ -25,8 +37,8 @@ def tdms2rtdc():
     for ii, ff in enumerate(files_tdms):
         ff = pathlib.Path(ff)
         relpath = ff.relative_to(path_tdms)
-        print("\033[1mConverting {:d}/{:d}: {}\033[0m".format(
-              ii + 1, len(files_tdms), relpath))
+        print_info("Converting {:d}/{:d}: {}".format(
+                    ii + 1, len(files_tdms), relpath))
         # load dataset
         ds = load.load_file(ff)
         # determine output file name (same relative path)
@@ -87,7 +99,14 @@ def verify_dataset():
     parser = verify_dataset_parser()
     args = parser.parse_args()
     path_in = pathlib.Path(args.path).resolve()
-    load.check_dataset(path_in)
+    viol, aler, info = load.check_dataset(path_in)
+    print_info("Checking {}".format(path_in))
+    for inf in info:
+        print_info(inf)
+    for ale in aler:
+        print_alert(ale)
+    for vio in viol:
+        print_violation(vio)
 
 
 def verify_dataset_parser():

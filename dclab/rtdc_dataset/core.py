@@ -52,16 +52,13 @@ class RTDCBase(object):
     def __contains__(self, key):
         ct = False
         if key in self._events:
-            if self.format == "tdms":
-                # Take into account special cases of the tdms file format
-                val = self._events[key]
-                if isinstance(val, np.ndarray):
-                    # False if stored data is zero
-                    ct = not np.all(val == 0)
-                elif val:
-                    # True if stored data is not empty
-                    # (e.g. tdms image, trace, contour)
-                    ct = True
+            if (self.format == "tdms" and
+                key in ["contour", "image", "trace"]
+                and self._events[key]):
+                # Take into account special cases of the tdms file format:
+                # tdms features "image", "trace", "contour" are True if
+                # the data exist on disk
+                ct = True
             else:
                 ct = True
         if ct == False:

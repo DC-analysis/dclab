@@ -107,6 +107,8 @@ def verify_dataset():
         print_alert(ale)
     for vio in viol:
         print_violation(vio)
+    print_info("Check Complete: {} violations and {} alerts".format(len(viol),
+                                                                    len(aler)))
 
 
 def verify_dataset_parser():

@@ -67,7 +67,6 @@ class RTDC_TDMS(RTDCBase):
         tdms_file = TdmsFile(tdms_filename)
         # time is always there
         table = "Cell Track"
-        datalen = len(tdms_file.object(table, "time").data)
         # Edit naming.dclab2tdms to add features
         for arg in naming.tdms2dclab:
             try:
@@ -76,16 +75,16 @@ class RTDC_TDMS(RTDCBase):
                 pass
             else:
                 if data is None or len(data)==0:
-                    # Fill empty features with zeros. npTDMS treats empty
+                    # Ignore empty features. npTDMS treats empty
                     # features in the following way:
                     # - in nptdms 0.8.2, `data` is `None`
                     # - in nptdms 0.9.0, `data` is an array of length 0
-                    data = np.zeros(datalen)
+                    continue
                 self._events[naming.tdms2dclab[arg]] = data
 
         # Set up configuration
-        tdms_config = Configuration(files=[self._path_mx+"_para.ini",
-                                           self._path_mx+"_camera.ini"],
+        tdms_config = Configuration(files=[self._path_mx + "_para.ini",
+                                           self._path_mx + "_camera.ini"],
                                     )
         dclab_config = Configuration()
         for section in naming.configmap:

@@ -11,7 +11,7 @@ def test_basic():
     h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     viol, aler, info = check_dataset(h5path)
     assert len(viol) == 0
-    assert len(aler) == 0
+    assert len(aler) == 1
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     cleanup()

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Check RT-DC data sets for completeness"""
+"""Load and check RT-DC data sets for completeness"""
 from __future__ import unicode_literals
 
 import pathlib
@@ -103,8 +103,11 @@ def check_dataset(path_or_ds):
                 viol.append("Metadata: Datatype of [{}] {} ".format(sec, key)
                             + "must be '{}'".format(dfn.config_types[sec][key])
                             )
-    # check important meta data keys
+    # check existence of meta data keys
+    # The "must" be present:
     tocheck = IMPORTANT_KEYS
+    # These sections "should" be fully present
+    tocheck_sec_aler = ["experiment", "imaging", "setup"]
     # should we also check for fluorescence keys?
     if ("fluorescence" in ds.config or
         "fl1_max" in ds._events or
@@ -120,10 +123,16 @@ def check_dataset(path_or_ds):
         if sec not in ds.config:
             viol.append("Metadata: Missing section '{}'".format(sec))
         else:
-            for key in tocheck[sec]:
-                if key not in ds.config[sec]:
+            for key in dfn.config_keys[sec]:
+                if (key in tocheck[sec] and
+                        key not in ds.config[sec]):
                     viol.append("Metadata: Missing key [{}] {}".format(sec,
                                                                        key))
+                elif (sec in tocheck_sec_aler and
+                        key not in ds.config[sec]):
+                    aler.append("Metadata: Missing key [{}] {}".format(sec,
+                                                                       key))
+
     # check for feature column names
     for feat in ds._events.keys():
         if feat not in dfn.feature_names + ["contour", "image", "trace"]:

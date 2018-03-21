@@ -1,4 +1,5 @@
 0.3.3
+ - ref: do not import missing features as zeros in fmt_tdms 
  - CLI:
    - add tdms-to-rtdc converter "dclab-tdms2rtdc" (#36)
    - improve "dclab-verify-dataset" user experience

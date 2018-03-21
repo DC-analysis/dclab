@@ -4,7 +4,6 @@
 from __future__ import division, print_function, unicode_literals
 
 import io
-import os
 import pathlib
 import sys
 import warnings
@@ -57,10 +56,10 @@ class PolygonFilter(object):
         (`axes`, `points`). If `filename` is set, all parameters are
         taken from the given .poly file.
         """
-        filename = pathlib.Path(filename)
         self.inverted = inverted
         # check if a filename was given
         if filename is not None:
+            filename = pathlib.Path(filename)
             if not isinstance(fileid, int):
                 raise ValueError("`fileid` must be an integer!")
             if not filename.exists():

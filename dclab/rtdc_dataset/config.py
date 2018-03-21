@@ -6,7 +6,6 @@ RT-DC dataset configuration
 from __future__ import division, print_function, unicode_literals
 
 import copy
-import io
 import pathlib
 import sys
 
@@ -152,6 +151,7 @@ class Configuration(object):
 
     def save(self, filename):
         """Save the configuration to a file"""
+        filename = pathlib.Path(filename)
         out = []
         keys = sorted(list(self.keys()))
         for key in keys:
@@ -164,7 +164,7 @@ class Configuration(object):
                 out.append("{} = {}".format(var, val))
             out.append("")
 
-        with io.open(filename, "w") as f:
+        with filename.open("w") as f:
             for i in range(len(out)):
                 # win-like line endings
                 out[i] = out[i]+"\n"

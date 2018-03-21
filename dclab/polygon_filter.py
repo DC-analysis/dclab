@@ -4,10 +4,12 @@
 from __future__ import division, print_function, unicode_literals
 
 import io
-import numpy as np
 import os
+import pathlib
 import sys
 import warnings
+
+import numpy as np
 
 
 if sys.version_info[0] == 2:
@@ -55,12 +57,13 @@ class PolygonFilter(object):
         (`axes`, `points`). If `filename` is set, all parameters are
         taken from the given .poly file.
         """
+        filename = pathlib.Path(filename)
         self.inverted = inverted
         # check if a filename was given
         if filename is not None:
             if not isinstance(fileid, int):
                 raise ValueError("`fileid` must be an integer!")
-            if not os.path.exists(filename):
+            if not filename.exists():
                 raise ValueError("Error, no such file: {}".format(filename))
             self.fileid = fileid
             # This also sets a unique id
@@ -110,7 +113,8 @@ class PolygonFilter(object):
 
     def _load(self, filename):
         """Import all filters from a text file"""
-        with io.open(filename, "r") as fd:
+        filename = pathlib.Path(filename)
+        with filename.open() as fd:
             data = fd.readlines()
 
         # Get the strings that correspond to self.fileid
@@ -305,8 +309,8 @@ class PolygonFilter(object):
         If `ret_fobj` is `True`, then the file object will not be
         closed and returned. 
         """
-        if isinstance(polyfile, string_classes):
-            fobj = io.open(polyfile, "a")
+        if isinstance(polyfile, (string_classes, pathlib.Path)):
+            fobj = io.open(str(polyfile), "a")
         else:
             # file or tempfile._TemporaryFileWrapper
             fobj = polyfile
@@ -343,8 +347,8 @@ class PolygonFilter(object):
         for p in PolygonFilter.instances:
             # we return the ret_obj, so we don't need to open and
             # close the file multiple times.
-            polyfile = p.save(polyfile, ret_fobj=True)
-        polyfile.close()
+            polyobj = p.save(polyfile, ret_fobj=True)
+        polyobj.close()
 
 
 class PolygonFilterError(BaseException):

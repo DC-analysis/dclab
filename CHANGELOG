@@ -6,7 +6,7 @@
  - Bugfixes:
    - "limit events" filtering must be integer not boolean (#41)
    - Support opening tdms files with capitalized "userDef" column names
-   - OSError on when trying to open files from repository root
+   - OSError when trying to open files from repository root
 0.3.2
  - CLI: add rudimentary dataset checker "dclab-verify-dataset" (#37)
  - Add logic to compute parent/root/child event indices of RTDC_Hierarchy

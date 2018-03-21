@@ -3,7 +3,7 @@
 """Isoelastics management"""
 from __future__ import division, unicode_literals
 
-import io
+import pathlib
 from pkg_resources import resource_filename
 
 import numpy as np
@@ -338,9 +338,10 @@ class Isoelastics(object):
         path: str
             Path to a isoelastics text file
         """
+        path = pathlib.Path(path).resolve()
         # Get metadata
         meta = {}
-        with io.open(str(path)) as fd:
+        with path.open() as fd:
             while True:
                 line = fd.readline().strip()
                 if line.startswith("# - "):

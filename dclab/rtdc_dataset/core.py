@@ -202,13 +202,8 @@ class RTDCBase(object):
         yax = yax.lower()
 
         # Get axes
-        if self.config["filtering"]["enable filters"]:
-            x = self[xax][self._filter]
-            y = self[yax][self._filter]
-        else:
-            # filtering disabled
-            x = self[xax]
-            y = self[yax]
+        x = self[xax][self.filter.all]
+        y = self[yax][self.filter.all]
 
         xsd, ysd, idx = downsampling.downsample_grid(x, y,
                                                      samples=downsample,

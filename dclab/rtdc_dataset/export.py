@@ -101,6 +101,11 @@ class Export(object):
         override : bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
+
+        Notes
+        -----
+        Due to incompatibility with the .fcs file format, all events with
+        NaN-valued features are not exported.
         """
         features = [ c.lower() for c in features ]
         ds = self.rtdc_ds

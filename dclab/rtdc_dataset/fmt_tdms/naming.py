@@ -73,9 +73,9 @@ configmap = {
     "fluorescence": {
         "bit depth": ("FLUOR", "Bitdepthraw"),
         "channel count": ("FLUOR", "FL-Channels"),
-        "laser 1 power": ("FLUOR", "Laser Power 488 [mW]"),
-        "laser 2 power": ("FLUOR", "Laser Power 561 [mW]"),
-        "laser 3 power": ("FLUOR", "Laser Power 640 [mW]"),
+        "laser 1 power": ("FLUOR", "Laser1 488 nm Power [%]"),
+        "laser 2 power": ("FLUOR", "Laser2 561 nm Power [%]"),
+        "laser 3 power": ("FLUOR", "Laser3 640 nm Power [%]"),
         "sample rate": ("FLUOR", "Samplerate [sps]"),
         "signal max": ("FLUOR", "ADCmax [V]"),
         "signal min": ("FLUOR", "ADCmin [V]"),
@@ -121,7 +121,5 @@ configmap = {
         "medium": ("General", "Buffer Medium"),
         "module composition": ("Image", "Setup"),
         "software version": ("General", "Software Version"),
-        "temperature": ("FLUOR", "Ambient Temperature"),
-        #"viscosity": None,
         },
     }

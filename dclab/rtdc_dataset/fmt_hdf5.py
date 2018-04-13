@@ -4,6 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 import os
+import warnings
 
 import h5py
 
@@ -11,6 +12,10 @@ from dclab import definitions as dfn
 from .config import Configuration
 from .core import RTDCBase
 from .util import hashobj, hashfile
+
+
+class UnknownKeyWarning(UserWarning):
+    pass
 
 
 class H5Events(object):
@@ -84,8 +89,12 @@ class RTDC_HDF5(RTDCBase):
         config = Configuration()
         for key in h5attrs:
             section, pname = key.split(":")
-            typ = dfn.config_funcs[section][pname]
-            config[section][pname] = typ(h5attrs[key])
+            if pname not in dfn.config_funcs[section]:
+                msg = "Unknown key {} in section [{}]!".format(key, section)
+                warnings.warn(msg, UnknownKeyWarning)
+            else:
+                typ = dfn.config_funcs[section][pname]
+                config[section][pname] = typ(h5attrs[key])
         return config
 
     @property

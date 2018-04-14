@@ -37,14 +37,6 @@ IMPORTANT_KEYS = {
         "roi position y",
         "roi size x",
         "roi size y"],
-    "online_contour": [
-        "bin area min",
-        "bin kernel",
-        "bin margin",
-        "bin threshold",
-        "image blur",
-        "no absdiff",
-        ],
     "setup": [
         "channel width",
         "chip region",
@@ -115,7 +107,7 @@ def check_dataset(path_or_ds):
     # These "must" be present:
     tocheck = IMPORTANT_KEYS
     # These sections "should" be fully present
-    tocheck_sec_aler = ["experiment", "imaging", "setup"]
+    tocheck_sec_aler = ["experiment", "imaging", "online_contour", "setup"]
     # should we also check for fluorescence keys?
     if ("fluorescence" in ds.config or
         "fl1_max" in ds._events or
@@ -143,7 +135,7 @@ def check_dataset(path_or_ds):
             lsc2 = 0
             for ii in range(1, 4):
                 kl = "laser {} lambda".format(ii)
-                kp =  "laser {} power".format(ii)
+                kp = "laser {} power".format(ii)
                 if (kl in ds.config["fluorescence"] and
                         kp in ds.config["fluorescence"]):
                     lsc2 += 1
@@ -152,7 +144,7 @@ def check_dataset(path_or_ds):
                 viol.append(msg)
     else:
         info.append("Fluorescence: False")
-    # search for missing keys
+    # search for missing keys (hard)
     for sec in tocheck:
         if sec not in ds.config:
             viol.append("Metadata: Missing section '{}'".format(sec))
@@ -164,6 +156,20 @@ def check_dataset(path_or_ds):
                                                                        key))
                 elif (sec in tocheck_sec_aler and
                         key not in ds.config[sec]):
+                    # Note: fluorescence is not treated here. It can be
+                    # incomplete (e.g. number of channels installed may vary)
+                    aler.append("Metadata: Missing key [{}] {}".format(sec,
+                                                                       key))
+    # search again (soft)
+    for sec in tocheck_sec_aler:
+        if sec in tocheck:
+            # already treated above (hard)
+            continue
+        if sec not in ds.config:
+            aler.append("Metadata: Missing section '{}'".format(sec))
+        else:
+            for key in dfn.config_keys[sec]:
+                if key not in ds.config[sec]:
                     aler.append("Metadata: Missing key [{}] {}".format(sec,
                                                                        key))
     # check for medium

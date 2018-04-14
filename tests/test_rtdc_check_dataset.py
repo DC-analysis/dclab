@@ -14,11 +14,11 @@ def test_basic():
     # Metadata: Missing key [fluorescence] laser count
     # Metadata: Missing key [fluorescence] lasers installed
     # Metadata: Missing key [fluorescence] samples per event
-    # Metadata: Missing section 'online_contour'
     # Metadata: fluorescence channel count inconsitent
-    assert len(viol) == 6
-    # "[setup] identifier" missing
-    assert len(aler) == 1
+    assert len(viol) == 5
+    # Metadata: Missing key [setup] identifier'
+    # Metadata: Missing section 'online_contour'
+    assert len(aler) == 2
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     cleanup()

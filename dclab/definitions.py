@@ -131,7 +131,7 @@ CFG_METADATA = {
         ["flow rate sample", float, "Sample flow rate [µL/s]"],
         ["flow rate sheath", float, "Sheath flow rate [µL/s]"],
         ["identifier", str, "Unique setup identifier"],
-        # "medium" is one of CellCarrier, CellCarrierB, water, or none
+        # "medium" is one of CellCarrier, CellCarrierB, water, or other
         ["medium", str, "Medium used"],
         ["module composition", str, "Comma-separated list of modules used"],
         ["software version", str, "Acquisition software with version"],

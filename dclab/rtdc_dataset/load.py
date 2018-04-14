@@ -29,12 +29,22 @@ IMPORTANT_KEYS = {
         "sample",
         "time"],
     "imaging": [
+        "flash device",
+        "flash duration",
         "frame rate",
         "pixel size",
         "roi position x",
         "roi position y",
         "roi size x",
         "roi size y"],
+    "online_contour": [
+        "bin area min",
+        "bin kernel",
+        "bin margin",
+        "bin threshold",
+        "image blur",
+        "no absdiff",
+        ],
     "setup": [
         "channel width",
         "chip region",
@@ -47,13 +57,11 @@ IMPORTANT_KEYS_FL = {
     "fluorescence": [
         "bit depth",
         "channel count",
-        "laser 1 power",
-        "laser 2 power",
-        "laser 3 power",
-        "laser 1 lambda",
-        "laser 2 lambda",
-        "laser 3 lambda",
+        "channels installed",
+        "laser count",
+        "lasers installed",
         "sample rate",
+        "samples per event",
         "signal max",
         "signal min",
         "trace median"],
@@ -104,7 +112,7 @@ def check_dataset(path_or_ds):
                             + "must be '{}'".format(dfn.config_types[sec][key])
                             )
     # check existence of meta data keys
-    # The "must" be present:
+    # These "must" be present:
     tocheck = IMPORTANT_KEYS
     # These sections "should" be fully present
     tocheck_sec_aler = ["experiment", "imaging", "setup"]
@@ -116,6 +124,32 @@ def check_dataset(path_or_ds):
         info.append("Fluorescence: True")
         tocheck = tocheck.copy()
         tocheck.update(IMPORTANT_KEYS_FL)
+        # check for number of channels
+        if "channel count" in ds.config["fluorescence"]:
+            chc1 = ds.config["fluorescence"]["channel count"]
+            chc2 = 0
+            for ii in range(1, 4):
+                chn = "channel {} name".format(ii)
+                ecn = "fl{}_max".format(ii)
+                if (chn in ds.config["fluorescence"] and
+                        ecn in ds._events):
+                    chc2 += 1
+            if chc1 != chc2:
+                msg = "Metadata: fluorescence channel count inconsitent"
+                viol.append(msg)
+        # check for number of lasers
+        if "laser count" in ds.config["fluorescence"]:
+            lsc1 = ds.config["fluorescence"]["laser count"]
+            lsc2 = 0
+            for ii in range(1, 4):
+                kl = "laser {} lambda".format(ii)
+                kp =  "laser {} power".format(ii)
+                if (kl in ds.config["fluorescence"] and
+                        kp in ds.config["fluorescence"]):
+                    lsc2 += 1
+            if lsc1 != lsc2:
+                msg = "Metadata: fluorescence laser count inconsistent"
+                viol.append(msg)
     else:
         info.append("Fluorescence: False")
     # search for missing keys
@@ -132,7 +166,12 @@ def check_dataset(path_or_ds):
                         key not in ds.config[sec]):
                     aler.append("Metadata: Missing key [{}] {}".format(sec,
                                                                        key))
-
+    # check for medium
+    if "medium" in ds.config["setup"]:
+        med = ds.config["setup"]["medium"]
+        if med not in ["CellCarrier", "CellCarrierB", "water", "other"]:
+            msg = "Metadata: Invalid value [setup] medium: '{}'".format(med)
+            viol.append(msg)
     # check for feature column names
     for feat in ds._events.keys():
         if feat not in dfn.feature_names + ["contour", "image", "trace"]:

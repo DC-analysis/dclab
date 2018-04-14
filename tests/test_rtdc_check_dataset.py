@@ -10,7 +10,14 @@ from helper_methods import cleanup, retrieve_data
 def test_basic():
     h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     viol, aler, info = check_dataset(h5path)
-    assert len(viol) == 0
+    # Metadata: Missing key [fluorescence] channels installed
+    # Metadata: Missing key [fluorescence] laser count
+    # Metadata: Missing key [fluorescence] lasers installed
+    # Metadata: Missing key [fluorescence] samples per event
+    # Metadata: Missing section 'online_contour'
+    # Metadata: fluorescence channel count inconsitent
+    assert len(viol) == 6
+    # "[setup] identifier" missing
     assert len(aler) == 1
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info

@@ -142,16 +142,6 @@ class RTDC_TDMS(RTDCBase):
             else:
                 channel_width = 30.
             self.config["setup"]["channel width"] = channel_width
-        if "temperature" not in self.config["setup"]:
-            if "ambient temp. [c]" in residual_config["image"]:
-                temp = residual_config["image"]["ambient temp. [c]"]
-            elif "ambient temperature [c]" in residual_config["image"]:
-                temp = residual_config["image"]["ambient temperature [c]"]
-            else:
-                temp = np.nan
-            self.config["setup"]["temperature"] = temp
-        if "viscosity" not in self.config["setup"]:
-            self.config["setup"]["viscosity"] = np.nan
         # imaging
         if "pixel size" not in self.config["imaging"]:
             self.config["imaging"]["pixel size"] = 0.34

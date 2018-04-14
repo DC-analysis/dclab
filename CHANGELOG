@@ -1,6 +1,7 @@
 0.3.4
  - configuration keys:
    - added new keys for [fluorescence]
+   - added [setup]: "identifier"
    - removed [imaging]: "exposure time", "flash current"
 0.3.3
  - ref: do not import missing features as zeros in fmt_tdms 

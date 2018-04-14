@@ -30,8 +30,6 @@ CFG_ANALYSIS = {
         ["crosstalk fl32", float, "Fluorescence crosstalk, channel 3 to 1"],
         ["crosstalk fl31", float, "Fluorescence crosstalk, channel 1 to 3"],
         ["crosstalk fl32", float, "Fluorescence crosstalk, channel 2 to 3"],
-        ["temperature", float, "Chip temperature [°C]"],
-        ["viscosity", float, "Medium viscosity [Pa*s] if 'medium' not given"],
     ]
 }
 

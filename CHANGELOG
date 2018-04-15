@@ -3,6 +3,7 @@
    - added new keys for [fluorescence]
    - added [setup]: "identifier"
    - removed [imaging]: "exposure time", "flash current"
+   - removed [setup]: "temperature", "viscosity"
 0.3.3
  - ref: do not import missing features as zeros in fmt_tdms 
  - CLI:

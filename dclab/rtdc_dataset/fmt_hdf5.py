@@ -76,7 +76,7 @@ class RTDC_HDF5(RTDCBase):
         self.config = RTDC_HDF5.parse_config(h5path)
 
         self.title = self.config["experiment"]["sample"]
-        
+
         # Set up filtering
         self._init_filters()
 
@@ -85,6 +85,12 @@ class RTDC_HDF5(RTDCBase):
         """Parse the RT-DC configuration of an hdf5 file"""
         with h5py.File(h5path, mode="r") as fh5:
             h5attrs = dict(fh5.attrs)
+
+        # Convert byte strings to unicode strings
+        # https://github.com/h5py/h5py/issues/379
+        for key in h5attrs:
+            if isinstance(h5attrs[key], bytes):
+                h5attrs[key] = h5attrs[key].decode("utf-8")
 
         config = Configuration()
         for key in h5attrs:

@@ -44,6 +44,7 @@ CFG_METADATA = {
         ["time", str, "Start time of measurement ('HH:MM:SS')"],
     ],
     # All special keywords related to RT-FDC
+    # This section should not be present for regular RT-DC measurements.
     "fluorescence": [
         ["bit depth", fint, "Trace bit depth"],
         ["channel 1 name", str, "FL1 description"],

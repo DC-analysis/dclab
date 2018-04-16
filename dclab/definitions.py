@@ -122,7 +122,7 @@ CFG_METADATA = {
         # "target*" is only set if measurement is stopped automatically.
         # "target*" is not necessarily reached (e.g. user aborted).
         ["target duration", float, "Target measurement duration [min]"],
-        ["target event count", fint, "Target event count for soft gating"],
+        ["target event count", fint, "Target event count for online gating"],
     ],
     # All setup-related keywords, except imaging
     "setup": [

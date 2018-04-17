@@ -21,7 +21,6 @@ def test_compatibility_minimal():
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.12
     assert ds.config["imaging"]["pixel size"] == 0.34
-    assert ds.config["imaging"]["flash current"] == 70
     cleanup()
 
 

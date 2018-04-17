@@ -27,7 +27,7 @@ dclab2tdms = {
    "frame": "time", # [sic]
    "inert_ratio_cvx": "InertiaRatio",
    "inert_ratio_raw": "InertiaRatioRaw",
-   "ncells": "NrOfCells",
+   "nevents": "NrOfCells",
    "pc1": "PC1",
    "pc2": "PC2",
    "pos_x": "x",
@@ -73,9 +73,9 @@ configmap = {
     "fluorescence": {
         "bit depth": ("FLUOR", "Bitdepthraw"),
         "channel count": ("FLUOR", "FL-Channels"),
-        "laser 1 power": ("FLUOR", "Laser Power 488 [mW]"),
-        "laser 2 power": ("FLUOR", "Laser Power 561 [mW]"),
-        "laser 3 power": ("FLUOR", "Laser Power 640 [mW]"),
+        "laser 1 power": ("FLUOR", "Laser1 488 nm Power [%]"),
+        "laser 2 power": ("FLUOR", "Laser2 561 nm Power [%]"),
+        "laser 3 power": ("FLUOR", "Laser3 640 nm Power [%]"),
         "sample rate": ("FLUOR", "Samplerate [sps]"),
         "signal max": ("FLUOR", "ADCmax [V]"),
         "signal min": ("FLUOR", "ADCmin [V]"),
@@ -86,8 +86,6 @@ configmap = {
         },
     # All imaging-related keywords
     "imaging": {
-        "exposure time": ("Framerate", "Shutter Time"),
-        "flash current": ("General", "Current LED [A]"),
         "flash device": "LED (undefined)",
         "flash duration": ("General", "Shutter Time LED [us]"),
         "frame rate": ("Framerate", "Frame Rate"),
@@ -123,7 +121,5 @@ configmap = {
         "medium": ("General", "Buffer Medium"),
         "module composition": ("Image", "Setup"),
         "software version": ("General", "Software Version"),
-        "temperature": ("FLUOR", "Ambient Temperature"),
-        #"viscosity": None,
         },
     }

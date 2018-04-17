@@ -1,22 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Test tdms file format"""
+"""Test hdf5 file format"""
 from __future__ import print_function
+
+import warnings
 
 import numpy as np
 
 from dclab import new_dataset
+from dclab.rtdc_dataset.fmt_hdf5 import UnknownKeyWarning
 
 from helper_methods import retrieve_data, cleanup
 
 
 def test_config():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
+    with warnings.catch_warnings(record=True):
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        warnings.simplefilter("ignore", UnknownKeyWarning)
+        ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
+        
     assert ds.config["setup"]["channel width"] == 30
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.16
     assert ds.config["imaging"]["pixel size"] == 0.34
-    assert ds.config["imaging"]["flash current"] == 100
     cleanup()
 
 
@@ -54,6 +61,6 @@ def test_trace():
 if __name__ == "__main__":
     # Run all tests
     loc = locals()
-    for key in list(loc.keys()):
+    for key in sorted(list(loc.keys())):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()

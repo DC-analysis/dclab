@@ -3,7 +3,9 @@
 """RT-DC hdf5 format"""
 from __future__ import division, print_function, unicode_literals
 
+from distutils.version import LooseVersion
 import os
+import warnings
 
 import h5py
 
@@ -11,6 +13,18 @@ from dclab import definitions as dfn
 from .config import Configuration
 from .core import RTDCBase
 from .util import hashobj, hashfile
+
+
+#: rtdc files exported with dclab prior to this version are not supported
+MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev11"
+
+
+class OldFormatNotSupportedError(BaseException):
+    pass
+
+
+class UnknownKeyWarning(UserWarning):
+    pass
 
 
 class H5Events(object):
@@ -70,8 +84,19 @@ class RTDC_HDF5(RTDCBase):
         # Parse configuration
         self.config = RTDC_HDF5.parse_config(h5path)
 
+        # check version
+        rtdc_soft = self.config["setup"]["software version"]
+        if rtdc_soft.startswith("dclab "):
+            rtdc_ver = LooseVersion(rtdc_soft.split(" ")[1])
+            if rtdc_ver < LooseVersion(MIN_DCLAB_EXPORT_VERSION):
+                msg = "The file {} was created ".format(self.path) \
+                      + "with dclab {} which is ".format(rtdc_ver) \
+                      + "not supported anymore! Please rerun " \
+                      + "dclab-tdms2rtdc / export the data again."
+                raise OldFormatNotSupportedError(msg)
+
         self.title = self.config["experiment"]["sample"]
-        
+
         # Set up filtering
         self._init_filters()
 
@@ -81,11 +106,21 @@ class RTDC_HDF5(RTDCBase):
         with h5py.File(h5path, mode="r") as fh5:
             h5attrs = dict(fh5.attrs)
 
+        # Convert byte strings to unicode strings
+        # https://github.com/h5py/h5py/issues/379
+        for key in h5attrs:
+            if isinstance(h5attrs[key], bytes):
+                h5attrs[key] = h5attrs[key].decode("utf-8")
+
         config = Configuration()
         for key in h5attrs:
             section, pname = key.split(":")
-            typ = dfn.config_funcs[section][pname]
-            config[section][pname] = typ(h5attrs[key])
+            if pname not in dfn.config_funcs[section]:
+                msg = "Unknown key {} in section [{}]!".format(key, section)
+                warnings.warn(msg, UnknownKeyWarning)
+            else:
+                typ = dfn.config_funcs[section][pname]
+                config[section][pname] = typ(h5attrs[key])
         return config
 
     @property

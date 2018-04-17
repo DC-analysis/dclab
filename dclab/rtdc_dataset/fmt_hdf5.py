@@ -3,6 +3,7 @@
 """RT-DC hdf5 format"""
 from __future__ import division, print_function, unicode_literals
 
+from distutils.version import LooseVersion
 import os
 import warnings
 
@@ -12,6 +13,14 @@ from dclab import definitions as dfn
 from .config import Configuration
 from .core import RTDCBase
 from .util import hashobj, hashfile
+
+
+#: rtdc files exported with dclab prior to this version are not supported
+MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev11"
+
+
+class OldFormatNotSupportedError(BaseException):
+    pass
 
 
 class UnknownKeyWarning(UserWarning):
@@ -74,6 +83,17 @@ class RTDC_HDF5(RTDCBase):
 
         # Parse configuration
         self.config = RTDC_HDF5.parse_config(h5path)
+
+        # check version
+        rtdc_soft = self.config["setup"]["software version"]
+        if rtdc_soft.startswith("dclab "):
+            rtdc_ver = LooseVersion(rtdc_soft.split(" ")[1])
+            if rtdc_ver < LooseVersion(MIN_DCLAB_EXPORT_VERSION):
+                msg = "The file {} was created ".format(self.path) \
+                      + "with dclab {} which is ".format(rtdc_ver) \
+                      + "not supported anymore! Please rerun " \
+                      + "dclab-tdms2rtdc / export the data again."
+                raise OldFormatNotSupportedError(msg)
 
         self.title = self.config["experiment"]["sample"]
 

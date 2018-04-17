@@ -185,7 +185,7 @@ FEATURES = [
     ["inert_ratio_cvx", "Inertia ratio of convex contour sqrt(m20/m02)"],
     ["inert_ratio_raw", "Inertia ratio of raw contour sqrt(m20/m02)"],
     ["index", "Event index"],
-    ["ncells", "Number of cells in image"],
+    ["nevents", "Total number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
     ["pos_x", "Position along channel axis [µm]"],

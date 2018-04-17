@@ -25,7 +25,7 @@ def test_0basic():
                'image',
                'trace',
                'fl1_width',
-               'ncells',
+               'nevents',
                'pos_x',
                'pos_y',
                'fl1_area',

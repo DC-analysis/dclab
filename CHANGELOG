@@ -1,4 +1,5 @@
 0.4.0
+ - Bugfix: CLI "dclab-tdms2rtdc" did not work for single tdms files (#45)
  - update configuration keys:
    - added new keys for [fluorescence]
    - added [setup]: "identifier"

@@ -16,7 +16,7 @@ from .util import hashobj, hashfile
 
 
 #: rtdc files exported with dclab prior to this version are not supported
-MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev11"
+MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 
 
 class OldFormatNotSupportedError(BaseException):

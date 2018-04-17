@@ -31,18 +31,26 @@ def tdms2rtdc():
         files_tdms = fmt_tdms.get_tdms_files(path_tdms)
         if path_rtdc.is_file():
             raise ValueError("rtdc_path is a file: {}".format(path_rtdc))
+        files_rtdc = []
+        for ff in files_tdms:
+            ff = pathlib.Path(ff)
+            rp = ff.relative_to(path_tdms)
+            # determine output file name (same relative path)
+            rpr = path_rtdc / rp.with_suffix(".rtdc")
+            files_rtdc.append(rpr)
     else:
         files_tdms = [path_tdms]
+        files_rtdc = [path_rtdc]
 
-    for ii, ff in enumerate(files_tdms):
-        ff = pathlib.Path(ff)
-        relpath = ff.relative_to(path_tdms)
+    for ii in range(len(files_tdms)):
+        ff = pathlib.Path(files_tdms[ii])
+        fr = pathlib.Path(files_rtdc[ii])
+
         print_info("Converting {:d}/{:d}: {}".format(
-                    ii + 1, len(files_tdms), relpath))
+            ii + 1, len(files_tdms), ff))
         # load dataset
         ds = load.load_file(ff)
-        # determine output file name (same relative path)
-        fr = path_rtdc / relpath.with_suffix(".rtdc")
+        # create directory
         if not fr.parent.exists():
             fr.parent.mkdir(parents=True)
         # determine features to export

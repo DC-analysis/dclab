@@ -1,3 +1,6 @@
+0.4.1
+ - update configuration keys:
+   - removed [online_contour]: "bin margin" (#47)
 0.4.0
  - Bugfix: CLI "dclab-tdms2rtdc" did not work for single tdms files (#45)
  - update configuration keys:

@@ -99,7 +99,6 @@ configmap = {
     "online_contour": {
         "bin area min": ("Image", "Trig Thresh"),
         "bin kernel": ("Image", "Bin Ops"),
-        "bin margin": ("Image", "Margin"),
         "bin threshold": ("Image", "Thresh"),
         "image blur": ("Image", "Blur"),
         "no absdiff": ("Image", "Diff_Method"),

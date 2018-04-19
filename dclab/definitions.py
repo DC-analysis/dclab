@@ -85,7 +85,6 @@ CFG_METADATA = {
     "online_contour": [
         ["bin area min", fint, "Minium pixel area of binary image event"],
         ["bin kernel", fint, "Odd ellipse kernel size, binary image morphing"],
-        ["bin margin", fint, "Remove margin in x for contour detection"],
         ["bin threshold", fint, "Binary threshold for avg-bg-corrected image"],
         ["image blur", fint, "Odd sigma for Gaussian blur (21x21 kernel)"],
         ["no absdiff", fbool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],

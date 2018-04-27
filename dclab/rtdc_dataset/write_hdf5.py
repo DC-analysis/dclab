@@ -63,6 +63,35 @@ def store_image(h5group, data, compression):
         dset[oldsize:] = data
 
 
+def store_mask(h5group, data, compression):
+    # store binary mask data as uint8 to allow visualization in HDFView
+    data = np.asarray(data, dtype=np.uint8)
+    if data.max() != 255 and data.min() == 0:
+        data = data / data.max() * 255
+    if len(data.shape) == 2:
+        # single event
+        data = data.reshape(1, data.shape[0], data.shape[1])
+    if "mask" not in h5group:
+        maxshape = (None, data.shape[1], data.shape[2])
+        dset = h5group.create_dataset("mask",
+                                      data=data,
+                                      dtype=np.uint8,
+                                      maxshape=maxshape,
+                                      chunks=True,
+                                      fletcher32=True,
+                                      compression=compression)
+        # Create and Set image attributes
+        # HDFView recognizes this as a series of images
+        dset.attrs.create('CLASS', b'IMAGE')
+        dset.attrs.create('IMAGE_VERSION', b'1.2')
+        dset.attrs.create('IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE')
+    else:
+        dset = h5group["mask"]
+        oldsize = dset.shape[0]
+        dset.resize(oldsize + data.shape[0], axis=0)
+        dset[oldsize:] = data
+
+
 def store_scalar(h5group, name, data):
     if np.isscalar(data):
         # single event
@@ -118,10 +147,9 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
     path: path or h5py.File
         The path or the hdf5 file object to write to.
     data: dict-like
-        The data to store. Each key of `data` must either be a valid
-        scalar feature name (see `dclab.dfn.feature_names`) or
-        one of ["contour", "image", "trace"]. The data type
-        must be given according to the feature type:
+        The data to store. Each key of `data` must be a valid
+        feature name (see `dclab.dfn.feature_names`). The data
+        type must be given according to the feature type:
 
         - scalar feature: 1d ndarray of size `N`, any dtype,
           with the number of events `N`.
@@ -129,6 +157,8 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
           with each ndarray containing the x- and y- coordinates
           of `C` contour points in pixels.
         - image: 3d ndarray of shape `(N,A,B)`, is converted to uint8,
+          with the image dimensions `(x,y) = (A,B)`
+        - mask: 3d ndarray of shape `(N,A,B)`, is converted to bool,
           with the image dimensions `(x,y) = (A,B)`
         - trace: 2d ndarray of shape `(N,T)`, any dtype
           with a globally constant trace length `T`.
@@ -202,7 +232,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
     # Check feature keys
     feat_keys = []
     for kk in data:
-        if kk in dfn.feature_names + ["contour", "image", "trace"]:
+        if kk in dfn.feature_names:
             feat_keys.append(kk)
         else:
             raise ValueError("Unknown key '{}'!".format(kk))
@@ -245,7 +275,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
                 del events[rk]
     # store experimental data
     for fk in feat_keys:
-        if fk in dfn.feature_names:
+        if fk in dfn.scalar_feature_names:
             store_scalar(h5group=events,
                          name=fk,
                          data=data[fk])
@@ -257,6 +287,10 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
             store_image(h5group=events,
                         data=data["image"],
                         compression=compression)
+        elif fk == "mask":
+            store_mask(h5group=events,
+                       data=data["mask"],
+                       compression=compression)
         elif fk == "trace":
             store_trace(h5group=events,
                         data=data["trace"],

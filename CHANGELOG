@@ -1,4 +1,8 @@
 0.4.1
+ - BREAKING CHANGE: definitions.feature_names now contains non-scalar
+   features (inlcuding "image", "contour", "mask", and "trace"). To
+   test for scalar features, use definitions.scalar_feature_names.
+ - add new non-scalar feature "mask" (#48)
  - update configuration keys:
    - removed [online_contour]: "bin margin" (#47)
 0.4.0

@@ -45,7 +45,7 @@ class Filter(object):
         """Return the filter for a feature of `self.rtdc_ds`"""
         if key in self.rtdc_ds:
             if (key not in self._filters and
-                key in dfn.feature_names):
+                key in dfn.scalar_feature_names):
                 # Generate filters on-the-fly
                 self._filters[key] = np.ones(len(self.rtdc_ds), dtype=bool)
         return self._filters[key]
@@ -83,13 +83,13 @@ class Filter(object):
         col2filter = []
         for k in newkeys:
             # k[:-4] because we want to crop " min" and " max"
-            if k[:-4] in dfn.feature_names:
+            if k[:-4] in dfn.scalar_feature_names:
                 col2filter.append(k[:-4])
 
 
         for f in force:
             # Manually add forced features
-            if f in dfn.feature_names:
+            if f in dfn.scalar_feature_names:
                 col2filter.append(f)
             else:
                 # Make sure the feature name is valid.
@@ -142,7 +142,7 @@ class Filter(object):
         # 3. Invalid filters
         self.invalid[:] = True
         if cfg_cur["remove invalid events"]:            
-            for col in dfn.feature_names:
+            for col in dfn.scalar_feature_names:
                 if col in self.rtdc_ds:
                     data = self.rtdc_ds[col]
                     invalid = np.isinf(data)+np.isnan(data)

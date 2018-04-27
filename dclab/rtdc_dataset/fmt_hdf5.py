@@ -37,14 +37,14 @@ class H5Events(object):
 
     def __getitem__(self, key):
         # user-level checking is done in core.py
-        assert key in dfn.feature_names + ["contour", "image", "trace"]
+        assert key in dfn.feature_names
         data = self._h5["events"][key]
-        if key in dfn.feature_names:
-            return data.value
-        elif key in ["image", "trace"]:
+        if key in ["image", "mask", "trace"]:
             return data
         elif key == "contour":
             return H5ContourEvent(data)
+        else:
+            return data.value
 
     def keys(self):
         return sorted(list(self._h5["events"].keys()))

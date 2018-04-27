@@ -40,6 +40,17 @@ class ChildImage(object):
         return hp["image"][pidx]
 
 
+class ChildMask(object):
+    def __init__(self, child):
+        self.child = child
+
+    def __getitem__(self, idx):
+        pidx = map_indices_child2parent(child=self.child,
+                                        child_indices=[idx])[0]
+        hp = self.child.hparent
+        return hp["mask"][pidx]
+
+
 class ChildTrace(object):
     def __init__(self, child, flname):
         self.child = child
@@ -228,7 +239,7 @@ class RTDC_Hierarchy(RTDCBase):
         # to `self._events` in `self.apply_filter`.
         if key not in self._events:
             item = self.hparent[key]
-            if key in dfn.feature_names:
+            if key in dfn.scalar_feature_names:
                 self._events[key] = item[self.hparent._filter]
         return self._events[key]
 
@@ -267,6 +278,8 @@ class RTDC_Hierarchy(RTDCBase):
             self._events["contour"] = ChildContour(self)
         if "image" in self.hparent:
             self._events["image"] = ChildImage(self)
+        if "mask" in self.hparent:
+            self._events["mask"] = ChildMask(self)
         if "trace" in self.hparent:
             trdict = {}
             for flname in dfn.FLUOR_TRACES:

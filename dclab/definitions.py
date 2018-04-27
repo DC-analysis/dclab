@@ -139,8 +139,7 @@ CFG_METADATA = {
 }
 
 # List of scalar features (one number per event).
-# The non-scalar features "image", "contour", and "trace" are not listed here.
-FEATURES = [
+FEATURES_SCALAR = [
     ["area_cvx", "Convex area [px]"],
     ["area_msd", "Measured area [px]"],
     ["area_ratio", "Porosity (convex to measured area ratio)"],
@@ -196,9 +195,20 @@ FEATURES = [
 ]
 # Add userdef features
 for _i in range(10):
-    FEATURES.append(["userdef{}".format(_i),
+    FEATURES_SCALAR.append(["userdef{}".format(_i),
                      "User defined {}".format(_i)
                      ])
+
+# List of non-scalar features
+FEATURES_NON_SCALAR = [
+    # This is a (M, 2)-shaped array with integer contour coordinates
+    ["contour", "Binary event contour image"],
+    ["image", "Gray scale event image"],
+    # This is the contour with holes filled
+    ["mask", "Binary region labeling the event in the image"],
+    # See FLUOR_TRACES for valid keys
+    ["trace", "Dictionary of fluorescence traces"],
+]
 
 # List of fluorescence traces
 FLUOR_TRACES = [
@@ -234,8 +244,11 @@ for _key in _cfg:
         config_types[_key][_subkey] = _type
 
 # FEATURE convenience lists and dicts
-feature_names = [_cc[0] for _cc in FEATURES]
-feature_labels = [_cc[1] for _cc in FEATURES]
+feature_names = [_cc[0] for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR]
+feature_labels = [_cc[1] for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR]
 feature_name2label = {}
-for _cc in FEATURES:
+for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR:
     feature_name2label[_cc[0]] = _cc[1]
+
+scalar_feature_names = [_cc[0] for _cc in FEATURES_SCALAR]
+

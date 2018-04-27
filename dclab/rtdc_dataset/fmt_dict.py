@@ -5,9 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import time
 
-import numpy as np
 
-from dclab import definitions as dfn
 from .config import Configuration
 from .core import RTDCBase
 from .util import hashobj
@@ -22,9 +20,9 @@ class RTDC_Dict(RTDCBase):
         ----------
         ddict: dict
             Dictionary with keys from `dclab.definitions.feature_names`
-            (e.g. "area_cvx", "deform") with which the class will be
-            instantiated. The configuration is set to the default
-            configuration of dclab.
+            (e.g. "area_cvx", "deform", "image") with which the class
+            will be instantiated. The configuration is set to the
+            default configuration of dclab.
         *args, **kwargs:
             (Keyword) arguments for `RTDCBase`
         """

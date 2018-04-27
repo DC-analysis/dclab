@@ -107,7 +107,7 @@ class RTDCBase(object):
     def __iter__(self):
         """An iterator over all valid scalar features"""
         mycols = []
-        for col in dfn.feature_names:
+        for col in dfn.scalar_feature_names:
             if col in self:
                 mycols.append(col)
         mycols.sort()
@@ -157,7 +157,7 @@ class RTDCBase(object):
     def features(self):
         """Return all available features"""
         mycols = []
-        for col in dfn.feature_names + ["contour", "image", "trace"]:
+        for col in dfn.feature_names:
             if col in self:
                 mycols.append(col)
         mycols.sort()

@@ -93,8 +93,8 @@ class Export(object):
             Path to a .tsv file. The ending .tsv is added automatically.
         features : list of str
             The features in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.feature_names`, e.g.
-            "area_cvx", "deform", "frame", "fl1_max", "aspect".
+            that are defined in `dclab.definitions.scalar_feature_names`,
+             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to `True`, only the filtered data (index in ds._filter)
             are used.
@@ -118,10 +118,11 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that features are in dfn.feature_names
+        # Check that features are in dfn.scalar_feature_names
         for c in features:
-            if c not in dfn.feature_names:
-                raise ValueError("Unknown feature name {}".format(c))
+            if c not in dfn.scalar_feature_names:
+                msg = "Unknown or unsupported feature name: {}".format(c)
+                raise ValueError(msg)
         
         # Collect the header
         chn_names = [ dfn.feature_name2label[c] for c in features ]
@@ -150,7 +151,7 @@ class Export(object):
         features: list of str
             The features in the resulting .tsv file. These are strings
             that are defined in `dclab.definitions.feature_names`, e.g.
-            "area_cvx", "deform", "frame", "fl1_max", "aspect".
+            "area_cvx", "deform", "frame", "fl1_max", "image".
         filtered: bool
             If set to `True`, only the filtered data (index in ds._filter)
             are used.
@@ -260,8 +261,8 @@ class Export(object):
             Path to a .tsv file. The ending .tsv is added automatically.
         features : list of str
             The features in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.feature_names`, e.g.
-            "area_cvx", "deform", "frame", "fl1_max", "aspect".
+            that are defined in `dclab.definitions.scalar_feature_names`,
+             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered : bool
             If set to `True`, only the filtered data (index in ds._filter)
             are used.
@@ -279,9 +280,9 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                                     path.encode("ascii", "ignore"))+
                           "Please use the `override=True` option.")
-        # Check that features are in dfn.feature_names
+        # Check that features are in dfn.scalar_feature_names
         for c in features:
-            if c not in dfn.feature_names:
+            if c not in dfn.scalar_feature_names:
                 raise ValueError("Unknown feature name {}".format(c))
         
         # Open file

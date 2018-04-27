@@ -85,7 +85,7 @@ def get_statistics(rtdc_ds, methods=None, features=None):
         If set to `None`, statistics for all methods are computed.
     features : list of str
         Feature name identifiers are defined in
-        `dclab.definitions.feature_names`.
+        `dclab.definitions.scalar_feature_names`.
         If set to `None`, statistics for all axes are computed. 
     
     Returns
@@ -103,7 +103,7 @@ def get_statistics(rtdc_ds, methods=None, features=None):
         methods = me1 + me2
 
     if features is None:
-        features = dfn.feature_names
+        features = dfn.scalar_feature_names
     else:
         features = [a.lower() for a in features]
     

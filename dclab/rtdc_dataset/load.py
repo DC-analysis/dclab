@@ -180,7 +180,7 @@ def check_dataset(path_or_ds):
             viol.append(msg)
     # check for feature column names
     for feat in ds._events.keys():
-        if feat not in dfn.feature_names + ["contour", "image", "trace"]:
+        if feat not in dfn.feature_names:
             viol.append("Features: Unknown key '{}'".format(feat))
     info.append("Data file format: {}".format(ds.format))
     # hdf5-based checks

@@ -56,13 +56,13 @@ def tdms2rtdc():
         # determine features to export
         features = []
         if args.compute_features:
-            tocomp = dfn.feature_names + ["contour", "image", "trace"]
+            tocomp = dfn.feature_names
         else:
             tocomp = ds._events
         for feat in tocomp:
-            if feat in ["contour", "image", "trace"]:
+            if feat not in dfn.scalar_feature_names:
                 if not ds[feat]:
-                    # ignore non-existent c/i/t
+                    # ignore non-existent contour, image, mask, or trace
                     continue
             elif feat not in ds:
                 # ignore non-existent feature

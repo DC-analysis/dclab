@@ -8,6 +8,7 @@ import os
 import warnings
 
 import h5py
+import numpy as np
 
 from dclab import definitions as dfn
 from .config import Configuration
@@ -39,10 +40,12 @@ class H5Events(object):
         # user-level checking is done in core.py
         assert key in dfn.feature_names
         data = self._h5["events"][key]
-        if key in ["image", "mask", "trace"]:
+        if key in ["image", "trace"]:
             return data
         elif key == "contour":
             return H5ContourEvent(data)
+        elif key == "mask":
+            return H5MaskEvent(data)
         else:
             return data.value
 
@@ -57,6 +60,18 @@ class H5ContourEvent(object):
 
     def __getitem__(self, key):
         return self.h5group[str(key)].value
+
+    def __len__(self):
+        return len(self.h5group)
+
+
+class H5MaskEvent(object):
+    """Cast uint8 masks to boolean"""
+    def __init__(self, h5group):
+        self.h5group = h5group
+
+    def __getitem__(self, idx):
+        return np.asarray(self.h5group[idx], bool)
 
     def __len__(self):
         return len(self.h5group)

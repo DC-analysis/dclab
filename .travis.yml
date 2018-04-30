@@ -9,7 +9,6 @@ install:
 # Install binary packages
 - travis_retry pip install --upgrade pip setuptools wheel
 - travis_retry pip install --only-binary=numpy,pandas,scipy numpy pandas scipy
-- travis_retry pip intall cython
 # Install fcswrite
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 # Install all other dependencies

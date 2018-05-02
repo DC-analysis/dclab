@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import pathlib
 import time
 
 import numpy as np
@@ -92,6 +93,33 @@ def test_brightness():
     idcompare[0] = False
     assert np.allclose(real_avg[idcompare], comp_avg[idcompare])
     assert np.allclose(real_sd[idcompare], comp_sd[idcompare])
+    cleanup()
+
+
+def test_contour_basic():
+    ds1 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    # export all data except for contour data
+    features = ds1.features
+    features.remove("contour")
+    dspath = pathlib.Path(ds1.path)
+    tempout = dspath.parent / (dspath.name + "without_contour.rtdc")
+    ds1.export.hdf5(tempout, features=features)
+    ds2 = dclab.new_dataset(tempout)
+
+    # contours 0, 2, and 4 are not very nice
+    for ii in [1, 3, 5, 6, 7]:
+        cin = ds1["contour"][ii]
+        cout = ds2["contour"][ii]
+        # simple presence test
+        for ci in cin:
+            assert ci in cout
+        # order
+        for ii in range(1, len(cin)):
+            c2 = np.roll(cin, ii, axis=0)
+            if np.all(c2 == cout):
+                break
+        else:
+            assert False, "contours not matching, check orientation?"
     cleanup()
 
 

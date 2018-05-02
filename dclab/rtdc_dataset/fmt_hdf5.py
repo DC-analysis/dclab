@@ -69,12 +69,23 @@ class H5MaskEvent(object):
     """Cast uint8 masks to boolean"""
     def __init__(self, h5group):
         self.h5group = h5group
+        # identifier required because "mask" is used for computation
+        # of ancillary feature "contour".
+        self.identifier = str(self.h5group.parent.parent.file)
 
     def __getitem__(self, idx):
-        return np.asarray(self.h5group[idx], bool)
+        return np.asarray(self.h5group[idx], dtype=bool)
+
+    def __iter__(self):
+        for idx in range(len(self)):
+            yield self[idx]
 
     def __len__(self):
         return len(self.h5group)
+
+    @property
+    def shape(self):
+        return self.h5group.shape
 
 
 class RTDC_HDF5(RTDCBase):

@@ -21,7 +21,6 @@ class Export(object):
         """Export functionalities for RT-DC datasets"""
         self.rtdc_ds = rtdc_ds
 
-
     def avi(self, path, override=False):
         """Exports filtered event images to an avi file
 
@@ -35,7 +34,7 @@ class Export(object):
         override : bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
-        
+
         Notes
         -----
         Raises OSError if current data set does not contain image data
@@ -47,8 +46,8 @@ class Export(object):
         # Check if file already exist
         if not override and os.path.exists(path):
             raise OSError("File already exists: {}\n".format(
-                                    path.encode("ascii", "ignore"))+
-                          "Please use the `override=True` option.")
+                path.encode("ascii", "ignore")) +
+                "Please use the `override=True` option.")
         # Start exporting
         if "image" in ds:
             # Open video for writing
@@ -66,11 +65,11 @@ class Export(object):
                     continue
                 try:
                     image = ds["image"][evid]
-                except:
+                except BaseException:
                     warnings.warn("Could not read image {}!".format(evid))
                     continue
                 else:
-                    if np.isnan(image[0,0]):
+                    if np.isnan(image[0, 0]):
                         # This is a nan-valued image
                         image = np.zeros_like(image, dtype=np.uint8)
                 # Convert image to RGB
@@ -78,13 +77,12 @@ class Export(object):
                 image = np.repeat(image, 3, axis=2)
                 vout.append_data(image)
         else:
-            msg="No image data to export: dataset {} !".format(ds.title)
+            msg = "No image data to export: dataset {} !".format(ds.title)
             raise OSError(msg)
-
 
     def fcs(self, path, features, filtered=True, override=False):
         """Export the data of an RT-DC dataset to an .fcs file
-        
+
         Parameters
         ----------
         mm: instance of dclab.RTDCBase
@@ -107,7 +105,7 @@ class Export(object):
         Due to incompatibility with the .fcs file format, all events with
         NaN-valued features are not exported.
         """
-        features = [ c.lower() for c in features ]
+        features = [c.lower() for c in features]
         ds = self.rtdc_ds
 
         # Make sure that path ends with .fcs
@@ -116,33 +114,32 @@ class Export(object):
         # Check if file already exist
         if not override and os.path.exists(path):
             raise OSError("File already exists: {}\n".format(
-                                    path.encode("ascii", "ignore"))+
-                          "Please use the `override=True` option.")
+                path.encode("ascii", "ignore")) +
+                "Please use the `override=True` option.")
         # Check that features are in dfn.scalar_feature_names
         for c in features:
             if c not in dfn.scalar_feature_names:
                 msg = "Unknown or unsupported feature name: {}".format(c)
                 raise ValueError(msg)
-        
+
         # Collect the header
-        chn_names = [ dfn.feature_name2label[c] for c in features ]
-    
+        chn_names = [dfn.feature_name2label[c] for c in features]
+
         # Collect the data
         if filtered:
-            data = [ ds[c][ds._filter] for c in features ]
+            data = [ds[c][ds._filter] for c in features]
         else:
-            data = [ ds[c] for c in features ]
-        
+            data = [ds[c] for c in features]
+
         data = np.array(data).transpose()
         fcswrite.write_fcs(filename=path,
                            chn_names=chn_names,
                            data=data)
 
-
     def hdf5(self, path, features, filtered=True, override=False,
              compression="gzip"):
         """Export the data of the current instance to an HDF5 file
-        
+
         Parameters
         ----------
         path: str
@@ -168,12 +165,13 @@ class Export(object):
         # Check if file already exist
         if not override and path.exists():
             raise OSError("File already exists: {}\n".format(
-                          str(path).encode("ascii", "ignore"))+
+                          str(path).encode("ascii", "ignore")) +
                           "Please use the `override=True` option.")
         elif path.exists():
             path.unlink()
-        
+
         meta = {}
+
         # only export configuration meta data (no user-defined config)
         for sec in dfn.CFG_METADATA:
             if sec in ["fmt_tdms"]:
@@ -181,6 +179,11 @@ class Export(object):
                 continue
             if sec in self.rtdc_ds.config:
                 meta[sec] = self.rtdc_ds.config[sec].copy()
+        # update number of events
+        if filtered:
+            meta["experiment"]["event count"] = np.sum(self.rtdc_ds.filter.all)
+        else:
+            meta["experiment"]["event count"] = self.rtdc_ds.filter.all.size
 
         if filtered:
             filtarr = self.rtdc_ds.filter.all
@@ -188,7 +191,7 @@ class Export(object):
         else:
             nev = len(self.rtdc_ds)
             filtarr = np.ones(nev, dtype=bool)
-            
+
         # write meta data
         with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
             # write each feature individually
@@ -208,21 +211,21 @@ class Export(object):
                           data={"contour": cont_list},
                           mode="append",
                           compression=compression)
-                elif feat == "image":
+                elif feat in ["mask", "image"]:
                     # store image stacks (reduced file size and save time)
                     m = 64
-                    im0 = self.rtdc_ds["image"][0]
+                    im0 = self.rtdc_ds[feat][0]
                     imstack = np.zeros((m, im0.shape[0], im0.shape[1]),
                                        dtype=im0.dtype)
                     jj = 0
                     for ii in range(len(self.rtdc_ds)):
                         if filtarr[ii]:
-                            dat = self.rtdc_ds["image"][ii]
+                            dat = self.rtdc_ds[feat][ii]
                             imstack[jj] = dat
                             if (jj + 1) % m == 0:
                                 jj = 0
                                 write(h5obj,
-                                      data={"image": imstack},
+                                      data={feat: imstack},
                                       mode="append",
                                       compression=compression)
                             else:
@@ -230,9 +233,9 @@ class Export(object):
                     # write rest
                     if jj:
                         write(h5obj,
-                              data={"image": imstack[:jj, :, :]},
+                              data={feat: imstack[:jj, :, :]},
                               mode="append",
-                              compression=compression)                        
+                              compression=compression)
                 elif feat == "trace":
                     for tr in self.rtdc_ds["trace"].keys():
                         tr0 = self.rtdc_ds["trace"][tr][0]
@@ -251,10 +254,9 @@ class Export(object):
                           data={feat: self.rtdc_ds[feat][filtarr]},
                           mode="append")
 
-
     def tsv(self, path, features, filtered=True, override=False):
         """Export the data of the current instance to a .tsv file
-        
+
         Parameters
         ----------
         path : str
@@ -270,7 +272,7 @@ class Export(object):
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
         """
-        features = [ c.lower() for c in features ]
+        features = [c.lower() for c in features]
         ds = self.rtdc_ds
         # Make sure that path ends with .tsv
         if not path.endswith(".tsv"):
@@ -278,28 +280,28 @@ class Export(object):
         # Check if file already exist
         if not override and os.path.exists(path):
             raise OSError("File already exists: {}\n".format(
-                                    path.encode("ascii", "ignore"))+
-                          "Please use the `override=True` option.")
+                path.encode("ascii", "ignore")) +
+                "Please use the `override=True` option.")
         # Check that features are in dfn.scalar_feature_names
         for c in features:
             if c not in dfn.scalar_feature_names:
                 raise ValueError("Unknown feature name {}".format(c))
-        
+
         # Open file
         with io.open(path, "w") as fd:
             # write header
-            header1 = "\t".join([ c for c in features ])
+            header1 = "\t".join([c for c in features])
             fd.write("# "+header1+"\n")
-            header2 = "\t".join([ dfn.feature_name2label[c] for c in features ])
+            header2 = "\t".join([dfn.feature_name2label[c] for c in features])
             fd.write("# "+header2+"\n")
 
         with open(path, "ab") as fd:
             # write data
             if filtered:
-                data = [ ds[c][ds._filter] for c in features ]
+                data = [ds[c][ds._filter] for c in features]
             else:
-                data = [ ds[c] for c in features ]
-            
+                data = [ds[c] for c in features]
+
             np.savetxt(fd,
                        np.array(data).transpose(),
                        fmt=str("%.10e"),

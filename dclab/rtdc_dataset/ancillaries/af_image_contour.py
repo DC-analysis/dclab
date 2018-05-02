@@ -6,6 +6,11 @@ from ... import features
 from .ancillary_feature import AncillaryFeature
 
 
+def compute_contour(mm):
+    cont = features.contour.get_contour(mask=mm["mask"])
+    return cont
+
+
 def compute_bright_avg(mm):
     bavg = features.bright.get_bright(cont=mm["contour"],
                                       img=mm["image"],
@@ -40,6 +45,9 @@ def compute_volume(mm):
 
 
 def register():
+    AncillaryFeature(feature_name="contour",
+                     method=compute_contour,
+                     req_features=["mask"])
     AncillaryFeature(feature_name="bright_avg",
                      method=compute_bright_avg,
                      req_features=["image", "contour"])

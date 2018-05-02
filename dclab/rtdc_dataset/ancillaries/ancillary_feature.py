@@ -34,10 +34,11 @@ class AncillaryFeature():
     # Holds all instances of this class
     features = []
     feature_names = []
+
     def __init__(self, feature_name, method, req_config=[], req_features=[],
                  priority=0):
         """A data feature that is computed from existing data
-        
+
         Parameters
         ----------
         feature_name: str
@@ -57,7 +58,7 @@ class AncillaryFeature():
             then the priority of the features defines which feature
             returns True in `self.is_available`. A higher value
             means a higher priority.
-        
+
         Notes
         -----
         `req_config` and `req_features` are used to test whether the
@@ -68,25 +69,23 @@ class AncillaryFeature():
         self.req_config = req_config
         self.req_features = req_features
         self.priority = priority
-        
+
         # register this feature
         AncillaryFeature.features.append(self)
         AncillaryFeature.feature_names.append(feature_name)
 
-
     def __repr__(self):
         return "Ancillary feature: {}".format(self.feature_name)
-   
-    
+
     @staticmethod
     def available_features(rtdc_ds):
         """Determine available features for an RT-DC data set
-        
+
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
             The data set to check availability for
-        
+
         Returns
         -------
         features: dict
@@ -99,7 +98,6 @@ class AncillaryFeature():
                 cols[inst.feature_name] = inst
         return cols
 
-
     def compute(self, rtdc_ds):
         """Compute the feature with self.method
 
@@ -107,14 +105,14 @@ class AncillaryFeature():
         ----------
         rtdc_ds: instance of RTDCBase
             The data set to compute the feature for
-        
+
         Returns
         -------
         feature: array- or list-like
             The computed data feature (read-only).
         """
         data = self.method(rtdc_ds)
-        dsize = len(rtdc_ds) - data.size
+        dsize = len(rtdc_ds) - len(data)
 
         if dsize > 0:
             msg = "Growing feature {} in {} by {} to match event number!"
@@ -126,9 +124,14 @@ class AncillaryFeature():
             warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)))
             data.resize(len(rtdc_ds), refcheck=False)
 
-        data.setflags(write=False)
-        return data
+        if isinstance(data, np.ndarray):
+            data.setflags(write=False)
+        elif isinstance(data, list):
+            for item in data:
+                if isinstance(item, np.ndarray):
+                    item.setflags(write=False)
 
+        return data
 
     @staticmethod
     def get_instances(feature_name):
@@ -139,10 +142,9 @@ class AncillaryFeature():
                 feats.append(ft)
         return feats
 
-
     def hash(self, rtdc_ds):
         """Used for identifying an ancillary computation
-        
+
         The data columns and the used configuration keys/values
         are hashed.
         """
@@ -158,20 +160,19 @@ class AncillaryFeature():
                 hasher.update(obj2str(data))
         return hasher.hexdigest()
 
-
     def is_available(self, rtdc_ds, verbose=False):
         """Check whether the feature is available
-        
+
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
             The data set to check availability for
-        
+
         Returns
         -------
         available: bool
             `True`, if feature can be computed with `compute`
-        
+
         Notes
         -----
         This method returns `False` for a feature if there

@@ -1,4 +1,5 @@
 """Basic methods for event feature computation"""
+from . import contour
 from . import bright
 from . import emodulus
 from . import fl_crosstalk

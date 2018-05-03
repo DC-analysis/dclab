@@ -20,6 +20,7 @@ from ..util import hashobj, hashfile
 
 from .event_contour import ContourColumn
 from .event_image import ImageColumn
+from .event_mask import MaskColumn
 from .event_trace import TraceColumn
 from . import naming
 
@@ -57,6 +58,8 @@ class RTDC_TDMS(RTDCBase):
         self._events["image"] = ImageColumn(self)
         # event contours
         self._events["contour"] = ContourColumn(self)
+        # event masks (requires contour)
+        self._events["mask"] = MaskColumn(self)
         # event traces
         self._events["trace"] = TraceColumn(self)
 

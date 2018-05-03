@@ -102,6 +102,14 @@ def test_contour_not_initialized():
     cleanup()
 
 
+def test_fluorescence_config():
+    ds1 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    assert "fluorescence" not in ds1.config
+    ds2 = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
+    assert "fluorescence" in ds2.config
+    cleanup()
+
+
 def test_image_basic():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     # Transition image
@@ -125,14 +133,6 @@ def test_image_out_of_bounds():
         pass
     else:
         raise ValueError("IndexError should have been raised!")
-    cleanup()
-
-
-def test_fluorescence_config():
-    ds1 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
-    assert "fluorescence" not in ds1.config
-    ds2 = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
-    assert "fluorescence" in ds2.config
     cleanup()
 
 
@@ -189,6 +189,17 @@ def test_load_tdms_simple():
     tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
     assert ds._filter.shape[0] == 156
+    cleanup()
+
+
+def test_mask_basic():
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    assert len(ds["mask"]) == 12
+    # Test mask computation by averaging brightness and comparing to
+    # the ancillary feature "bright_avg".
+    bavg1 = ds["bright_avg"][1]
+    bavg2 = np.mean(ds["image"][1][ds["mask"][1]])
+    assert np.allclose(bavg1, bavg2), "mask is correctly computed from contour"
     cleanup()
 
 

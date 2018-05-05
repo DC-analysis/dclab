@@ -1,7 +1,9 @@
-0.4.1
- - BREAKING CHANGE: definitions.feature_names now contains non-scalar
-   features (inlcuding "image", "contour", "mask", and "trace"). To
-   test for scalar features, use definitions.scalar_feature_names.
+0.5.0
+ - BREAKING CHANGES:
+   - definitions.feature_names now contains non-scalar
+     features (inlcuding "image", "contour", "mask", and "trace"). To
+     test for scalar features, use definitions.scalar_feature_names.
+   - features bright_* are computed from mask instead of from contour
  - Bugfixes:
    - Write correct event count in exported hdf5 data files
  - add new non-scalar feature "mask" (#48)

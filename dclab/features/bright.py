@@ -1,29 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Computation of mean and standard deviation of grayscale values inside the 
-contour for RT-DC measurements
+"""
+Computation of mean and standard deviation of grayscale values inside the
+RT-DC event image mask.
 """
 from __future__ import division, print_function, unicode_literals
+
 import numpy as np
-import scipy.ndimage
 
 
-
-def get_bright(cont, img, ret_data="avg,sd"):
+def get_bright(mask, image, ret_data="avg,sd"):
     """Compute avg and/or std of the event brightness
-    
+
     The event brightness is defined by the gray-scale values of the
-    image data within the event contour area. 
-    
+    image data within the event mask area.
+
     Parameters
     ----------
-    cont: ndarray or list of ndarrays of shape (N,2)
-        A 2D array that holds the contour of an event (in pixels)
-        e.g. obtained using `mm.contour` where  `mm` is an instance
-        of `RTDCBase`. The first and second columns of `cont`
-        correspond to the x- and y-coordinates of the contour.
-    img: ndarray or list of ndarrays 
-        A 2D array that holds the image in form of gray-scale values of an event    
+    mask: ndarray or list of ndarrays of shape (M,N) and dtype bool
+        The mask values, True where the event is located in `image`.
+    image: ndarray or list of ndarrays of shape (M,N)
+        A 2D array that holds the image in form of grayscale values
+        of an event.
     ret_data: str
         A comma-separated list of metrices to compute
         - "avg": compute the average
@@ -40,41 +38,34 @@ def get_bright(cont, img, ret_data="avg,sd"):
     # This method is based on a pull request by Maik Herbig.
     ret_avg = "avg" in ret_data
     ret_std = "sd" in ret_data
-    
+
     if ret_avg + ret_std == 0:
         raise ValueError("No valid metrices selected!")
-    
-    if isinstance(cont, np.ndarray):
-        # If cont is an array, it is not a list of contours,
-        # because contours can have different lengths.
-        img = [img]
-        cont = [cont]
+
+    if isinstance(mask, np.ndarray) and len(mask.shape) == 2:
+        # We have a single image
+        image = [image]
+        mask = [mask]
         ret_list = False
     else:
         ret_list = True
 
-    length = min(len(img), len(cont))
-    
+    length = min(len(mask), len(image))
+
     # Results are stored in a separate array initialized with nans
     if ret_avg:
-        avg = np.zeros(len(img), dtype=float) * np.nan
+        avg = np.zeros(length, dtype=float) * np.nan
     if ret_std:
-        std = np.zeros(len(img), dtype=float) * np.nan
+        std = np.zeros(length, dtype=float) * np.nan
 
     for ii in range(length):
-        imgi = img[ii]
-        conti = cont[ii]
-        # Initialize frame mask
-        fmi = np.zeros_like(imgi, dtype=bool)
-        # Set to true where the contour is
-        fmi[conti[:,1], conti[:,0]] = True
-        # Fill holes
-        scipy.ndimage.morphology.binary_fill_holes(fmi, output=fmi)
+        imgi = image[ii]
+        mski = mask[ii]
         # Assign results
         if ret_avg:
-            avg[ii] = np.mean(imgi[fmi])
+            avg[ii] = np.mean(imgi[mski])
         if ret_std:
-            std[ii] = np.std(imgi[fmi])
+            std[ii] = np.std(imgi[mski])
 
     results = []
     # Keep alphabetical order
@@ -82,13 +73,13 @@ def get_bright(cont, img, ret_data="avg,sd"):
         results.append(avg)
     if ret_std:
         results.append(std)
-    
+
     if not ret_list:
         # Only return scalars
-        results = [ r[0] for r in results ]
-    
+        results = [r[0] for r in results]
+
     if ret_avg+ret_std == 1:
         # Only return one column
         return results[0]
-    
+
     return results

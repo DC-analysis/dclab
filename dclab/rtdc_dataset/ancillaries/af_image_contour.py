@@ -12,16 +12,16 @@ def compute_contour(mm):
 
 
 def compute_bright_avg(mm):
-    bavg = features.bright.get_bright(cont=mm["contour"],
-                                      img=mm["image"],
+    bavg = features.bright.get_bright(mask=mm["mask"],
+                                      image=mm["image"],
                                       ret_data="avg",
                                       )
     return bavg
 
 
 def compute_bright_sd(mm):
-    bstd = features.bright.get_bright(cont=mm["contour"],
-                                      img=mm["image"],
+    bstd = features.bright.get_bright(mask=mm["mask"],
+                                      image=mm["image"],
                                       ret_data="sd",
                                       )
     return bstd

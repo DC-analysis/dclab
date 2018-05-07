@@ -6,6 +6,7 @@ import numpy as np
 
 from dclab import new_dataset
 from dclab.features.contour import get_contour
+from dclab.features.volume import get_volume
 
 from helper_methods import retrieve_data, cleanup
 
@@ -30,6 +31,25 @@ def test_simple_contour():
     else:
         assert False, "contours not matching, check orientation?"
     cleanup()
+
+
+def test_volume():
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    mask = [mi for mi in ds["mask"]]
+    cont1 = [ci for ci in ds["contour"]]
+    cont2 = get_contour(mask)
+
+    kw = dict(pos_x=ds["pos_x"],
+              pos_y=ds["pos_y"],
+              pix=ds.config["imaging"]["pixel size"])
+
+    v1 = get_volume(cont=cont1, **kw)
+    v2 = get_volume(cont=cont2, **kw)
+
+    # TODO:
+
+    cleanup()
+
 
 
 if __name__ == "__main__":

@@ -61,6 +61,10 @@ class H5ContourEvent(object):
     def __getitem__(self, key):
         return self.h5group[str(key)].value
 
+    def __iter__(self):
+        for idx in range(len(self)):
+            yield self[idx]
+
     def __len__(self):
         return len(self.h5group)
 

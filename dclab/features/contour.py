@@ -31,7 +31,7 @@ def get_contour(mask):
         of `RTDCBase`. The first and second columns of `cont`
         correspond to the x- and y-coordinates of the contour.
     """
-    if len(mask.shape) == 2:
+    if isinstance(mask, np.ndarray) and len(mask.shape) == 2:
         mask = [mask]
         ret_list = False
     else:

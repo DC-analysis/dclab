@@ -16,19 +16,20 @@ def compute_emodulus(mm):
         medium = viscosity
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(
-            area_um=mm["area_um"],
-            deform=mm["deform"],
-            medium=medium,
-            channel_width=mm.config["setup"]["channel width"],
-            flow_rate=mm.config["setup"]["flow rate"],
-            px_um=mm.config["imaging"]["pixel size"],
-            temperature=mm.config["calculation"]["emodulus temperature"])
+        area_um=mm["area_um"],
+        deform=mm["deform"],
+        medium=medium,
+        channel_width=mm.config["setup"]["channel width"],
+        flow_rate=mm.config["setup"]["flow rate"],
+        px_um=mm.config["imaging"]["pixel size"],
+        temperature=mm.config["calculation"]["emodulus temperature"])
     return emod
+
 
 def register():
     # TODO:
     # - Define multiple AncillaryFeature of "emodulus":
-    #   (e.g. using "temperature" feature) 
+    #   (e.g. using "temperature" feature)
     AncillaryFeature(feature_name="emodulus",
                      method=compute_emodulus,
                      req_features=["area_um", "deform"],

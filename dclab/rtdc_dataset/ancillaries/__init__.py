@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from .ancillary_feature import AncillaryFeature
+from .ancillary_feature import AncillaryFeature  # noqa: F401
 from . import af_basic
 from . import af_emodulus
 from . import af_fl_max_ctc

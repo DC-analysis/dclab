@@ -16,7 +16,7 @@ def compute_ctc(mm, fl_channel):
         fl1 = mm["fl1_max"]
     else:
         fl1 = 0
-    
+
     if "fl2_max" in mm:
         fl2 = mm["fl2_max"]
     else:
@@ -26,9 +26,9 @@ def compute_ctc(mm, fl_channel):
         fl3 = mm["fl3_max"]
     else:
         fl3 = 0
-    
+
     ctdict = {}
-    
+
     for i in [1, 2, 3]:
         for j in [1, 2, 3]:
             if i == j:
@@ -53,11 +53,11 @@ def compute_ctc(mm, fl_channel):
         raise MissingCrosstalkMatrixElementsError(msg)
 
     return features.fl_crosstalk.correct_crosstalk(
-            fl1=fl1,
-            fl2=fl2,
-            fl3=fl3,
-            fl_channel=fl_channel,
-            **ctdict)
+        fl1=fl1,
+        fl2=fl2,
+        fl3=fl3,
+        fl_channel=fl_channel,
+        **ctdict)
 
 
 def compute_ctc1(mm):
@@ -74,11 +74,11 @@ def compute_ctc3(mm):
 
 def get_method(fl_channel):
     if fl_channel == 1:
-        return compute_ctc1 
+        return compute_ctc1
     elif fl_channel == 2:
         return compute_ctc2
     elif fl_channel == 3:
-        return compute_ctc3    
+        return compute_ctc3
 
 
 def register():
@@ -92,10 +92,10 @@ def register():
                  "crosstalk fl13",
                  "crosstalk fl23"])
 
-    opts_12 =  (["fl1_max",
-                 "fl2_max"],
-                ["crosstalk fl21",
-                 "crosstalk fl12"])
+    opts_12 = (["fl1_max",
+                "fl2_max"],
+               ["crosstalk fl21",
+                "crosstalk fl12"])
 
     opts_13 = (["fl1_max",
                 "fl3_max"],
@@ -104,8 +104,8 @@ def register():
 
     opts_23 = (["fl2_max",
                 "fl3_max"],
-                ["crosstalk fl32",
-                 "crosstalk fl23"]) 
+               ["crosstalk fl32",
+                "crosstalk fl23"])
 
     for flch in [1, 2, 3]:
         AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),

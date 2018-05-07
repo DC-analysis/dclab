@@ -37,10 +37,10 @@ def compute_inert_ratio_raw(mm):
 
 def compute_volume(mm):
     vol = features.volume.get_volume(
-                    cont=mm["contour"],
-                    pos_x=mm["pos_x"],
-                    pos_y=mm["pos_y"],
-                    pix=mm.config["imaging"]["pixel size"])
+        cont=mm["contour"],
+        pos_x=mm["pos_x"],
+        pos_y=mm["pos_y"],
+        pix=mm.config["imaging"]["pixel size"])
     return vol
 
 
@@ -48,6 +48,7 @@ def register():
     AncillaryFeature(feature_name="contour",
                      method=compute_contour,
                      req_features=["mask"])
+
     AncillaryFeature(feature_name="bright_avg",
                      method=compute_bright_avg,
                      req_features=["image", "contour"])

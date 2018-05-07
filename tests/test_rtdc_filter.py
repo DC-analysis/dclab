@@ -19,8 +19,10 @@ def test_filter_min_max():
     ds.apply_filter()
     assert np.sum(ds.filter.all) == 4256
 
-    ds.config["filtering"]["deform min"] = ds["deform"].min()
-    ds.config["filtering"]["deform max"] = ds["deform"].max()
+    # make sure data is not filtered before calling ds.apply_filter
+    dmin, dmax = ds["deform"].min(), ds["deform"].max()
+    ds.config["filtering"]["deform min"] = (dmin + dmax) / 2
+    ds.config["filtering"]["deform max"] = dmax
     assert np.sum(ds.filter.all) == 4256
 
 

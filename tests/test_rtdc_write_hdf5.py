@@ -66,6 +66,28 @@ def test_bulk_image():
     cleanup(rtdc_file)
 
 
+def test_bulk_mask():
+    num = 7
+    mask = []
+    for ii in range(5, num + 5):
+        mii = np.zeros(200, dtype=bool)
+        mii[:ii] = True
+        mask.append(mii.reshape(20, 10))
+    data = {"area_um": np.linspace(100.7, 110.9, num),
+            "mask": mask}
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_bulk_mask_")
+    write(rtdc_file, data)
+    # Read the file:
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        events = rtdc_data["events"]
+        assert "mask" in events.keys()
+        # Masks are stored as uint8
+        assert np.allclose(events["mask"][6], mask[6]*255)
+        assert events["mask"][1].shape == (20, 10)
+    cleanup(rtdc_file)
+
+
 def test_bulk_logs():
     log = ["This is a test log that contains two lines.",
            "This is the second line.",
@@ -258,8 +280,9 @@ def test_real_time():
     assert N // M == np.round(N / M)
     shx = 48
     shy = 32
-    images = np.zeros((M, shy, shx), dtype=np.uint8)
     contours = [np.arange(20).reshape(10, 2)] * M
+    images = np.zeros((M, shy, shx), dtype=np.uint8)
+    masks = np.zeros((M, shy, shx), dtype=np.bool)
     traces = {"fl1_median": np.arange(M * 55).reshape(M, 55)}
     axis1 = np.linspace(0, 1, M)
     axis2 = np.arange(M)
@@ -275,6 +298,7 @@ def test_real_time():
                     "area_cvx": axis2,
                     "image": num_img,
                     "contour": contours,
+                    "mask": masks,
                     "trace": traces}
 
             write(fobj,
@@ -301,6 +325,7 @@ def test_real_time_single():
     shx = 30
     shy = 10
     image = np.zeros((shy, shx), dtype=np.uint8)
+    mask = np.zeros((shy, shx), dtype=np.bool)
     contour = np.arange(22).reshape(11, 2)
     trace = {"fl1_median": np.arange(43)}
 
@@ -313,6 +338,7 @@ def test_real_time_single():
                     "area_cvx": ii * 5,
                     "image": image * ii,
                     "contour": contour,
+                    "mask": mask,
                     "trace": trace}
             write(fobj,
                   data=data,

@@ -66,7 +66,7 @@ def store_image(h5group, data, compression):
 def store_mask(h5group, data, compression):
     # store binary mask data as uint8 to allow visualization in HDFView
     data = np.asarray(data, dtype=np.uint8)
-    if data.max() != 255 and data.min() == 0:
+    if data.max() != 255 and data.max() != 0 and data.min() == 0:
         data = data / data.max() * 255
     if len(data.shape) == 2:
         # single event

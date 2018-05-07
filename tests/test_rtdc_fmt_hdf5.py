@@ -3,24 +3,18 @@
 """Test hdf5 file format"""
 from __future__ import print_function
 
-import warnings
-
 import numpy as np
+import pytest
 
 from dclab import new_dataset
-from dclab.rtdc_dataset.fmt_hdf5 import UnknownKeyWarning
 
 from helper_methods import retrieve_data, cleanup
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_config():
-    with warnings.catch_warnings(record=True):
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter("always")
-        warnings.simplefilter("ignore", UnknownKeyWarning)
-        ds = new_dataset(retrieve_data(
-            "rtdc_data_hdf5_contour_image_trace.zip"))
-
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert ds.config["setup"]["channel width"] == 30
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.16

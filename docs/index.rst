@@ -15,6 +15,7 @@ is the documentation of dclab version |release|.
    sec_cli
    sec_code_reference
    z_bib
+   sec_imprint
 
 
 Indices and tables

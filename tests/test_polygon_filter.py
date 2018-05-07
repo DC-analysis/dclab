@@ -6,6 +6,7 @@ import os
 import tempfile
 
 import numpy as np
+import pytest
 
 import dclab
 
@@ -23,6 +24,7 @@ point00000003 = 6.150993521573982e-01 1.015706806282723e-03
 """
 
 
+@pytest.mark.filterwarnings('ignore::UserWarning')
 def test_import():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=1000, keys=["area_um", "deform"])

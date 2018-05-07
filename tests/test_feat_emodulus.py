@@ -29,7 +29,6 @@ def test_simple_emod():
     assert np.allclose(emod[80, 80], 0.60737083178222251)
 
 
-
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

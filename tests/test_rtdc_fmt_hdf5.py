@@ -18,8 +18,9 @@ def test_config():
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
         warnings.simplefilter("ignore", UnknownKeyWarning)
-        ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
-        
+        ds = new_dataset(retrieve_data(
+            "rtdc_data_hdf5_contour_image_trace.zip"))
+
     assert ds.config["setup"]["channel width"] == 30
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.16

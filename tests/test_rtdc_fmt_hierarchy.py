@@ -5,6 +5,7 @@
 from __future__ import print_function
 
 import numpy as np
+import pytest
 
 from dclab import new_dataset
 from dclab.rtdc_dataset import fmt_hierarchy
@@ -41,6 +42,18 @@ def test_feat_image():
     ch = new_dataset(ds)
     assert np.all(ch["image"][0] == ds["image"][1])
     assert np.all(ch["image"][1] == ds["image"][3])
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+def test_feat_mask():
+    path = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    ds = new_dataset(path)
+    ds.filter.manual[0] = False
+    ds.filter.manual[2] = False
+    ch = new_dataset(ds)
+    assert np.all(ch["mask"][0] == ds["mask"][1])
+    assert np.all(ch["mask"][1] == ds["mask"][3])
 
 
 def test_feat_trace():

@@ -9,6 +9,7 @@ import shutil
 import tempfile
 
 import numpy as np
+import pytest
 
 import dclab
 from dclab import dfn, new_dataset
@@ -17,6 +18,7 @@ from helper_methods import example_data_dict, retrieve_data, \
     example_data_sets, cleanup
 
 
+@pytest.mark.filterwarnings('ignore::UserWarning')
 def test_avi_export():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     edest = tempfile.mkdtemp()

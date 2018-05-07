@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
+import pytest
+
 from dclab.rtdc_dataset import check_dataset
 
 from helper_methods import cleanup, retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_basic():
     h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     viol, aler, info = check_dataset(h5path)

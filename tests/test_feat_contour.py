@@ -46,10 +46,8 @@ def test_volume():
     v1 = get_volume(cont=cont1, **kw)
     v2 = get_volume(cont=cont2, **kw)
 
-    # TODO:
-
+    assert np.allclose(v1, v2)
     cleanup()
-
 
 
 if __name__ == "__main__":

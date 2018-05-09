@@ -46,11 +46,19 @@ def get_contour(mask):
         # round all coordinates to pixel values
         c1 = np.asarray(np.round(c0), int)
         # remove duplicates
-        _c2, idx = np.unique(c1, axis=0, return_index=True)
-        # sort unique indices and retrieve pixelated contour
-        c3 = c1[sorted(idx)]
-        contours.append(c3)
+        c2 = remove_duplicates(c1)
+        contours.append(c2)
     if ret_list:
         return contours
     else:
         return contours[0]
+
+
+def remove_duplicates(cont):
+    out = []
+    for ii in range(len(cont)):
+        if np.all(cont[ii] == cont[ii - 1]):
+            pass
+        else:
+            out.append(cont[ii])
+    return np.array(out)

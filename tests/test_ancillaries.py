@@ -106,8 +106,7 @@ def test_contour_basic():
     ds1.export.hdf5(tempout, features=features)
     ds2 = dclab.new_dataset(tempout)
 
-    # contours 0, 2, and 4 are not very nice
-    for ii in [1, 3, 5, 6, 7]:
+    for ii in range(len(ds1)):
         cin = ds1["contour"][ii]
         cout = ds2["contour"][ii]
         # simple presence test

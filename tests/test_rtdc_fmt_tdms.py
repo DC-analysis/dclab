@@ -203,6 +203,23 @@ def test_mask_basic():
     cleanup()
 
 
+def test_mask_img_shape():
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    # shape from configuration
+    assert ds["mask"]._img_shape == (96, 256)
+    # shape from image data
+    ds.config["imaging"].pop("roi size x")
+    ds.config["imaging"].pop("roi size y")
+    ds["mask"]._shape = None
+    assert ds["mask"]._img_shape == (96, 256)
+    # no shape available
+    ds._events.pop("image")
+    ds["mask"].image = None
+    ds["mask"]._shape = None
+    assert ds["mask"]._img_shape == (0, 0)
+    assert len(ds["mask"]) == 0
+
+
 def test_pixel_size():
     path = retrieve_data("rtdc_data_minimal.zip")
     para = path.parent / "M1_para.ini"

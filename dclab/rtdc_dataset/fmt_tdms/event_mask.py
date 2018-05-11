@@ -17,21 +17,21 @@ class MaskColumn(object):
         self._shape = None
 
     def __getitem__(self, idx):
-        mask = np.zeros(self.shape, dtype=bool)
+        mask = np.zeros(self._img_shape, dtype=bool)
         conti = self.contour[idx]
         mask[conti[:, 1], conti[:, 0]] = True
         ndi.morphology.binary_fill_holes(mask, output=mask)
         return mask
 
     def __len__(self):
-        if self.shape != (0, 0):
+        if self._img_shape != (0, 0):
             lc = len(self.contour)
         else:
             lc = 0
         return lc
 
     @property
-    def shape(self):
+    def _img_shape(self):
         if self._shape is None:
             cfgim = self._rtdc_dataset.config["imaging"]
             if "roi size x" in cfgim and "roi size y" in cfgim:

@@ -1,7 +1,7 @@
 dclab
 =====
 
-|PyPI Version| |Build Status| |Coverage Status| |Docs Status|
+|PyPI Version| |Build Status Linux| |Build Status Win| |Coverage Status| |Docs Status|
 
 
 This is a Python library for the post-measurement analysis of
@@ -90,8 +90,10 @@ version of dclab to PyPI in order to get your new code into ShapeOut.
 
 .. |PyPI Version| image:: http://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
-.. |Build Status| image:: http://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg
+.. |Build Status Linux| image:: http://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg?label=build_linux
    :target: https://travis-ci.org/ZELLMECHANIK-DRESDEN/dclab
+.. |Build Status Win| image:: https://img.shields.io/appveyor/ci/paulmueller/dclab/master.svg?label=build_win
+   :target: https://ci.appveyor.com/project/paulmueller/dclab
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/ZELLMECHANIK-DRESDEN/dclab/master.svg
    :target: https://codecov.io/gh/ZELLMECHANIK-DRESDEN/dclab
 .. |Docs Status| image:: https://readthedocs.org/projects/dclab/badge/?version=latest

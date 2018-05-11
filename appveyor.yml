@@ -8,8 +8,8 @@ notifications:
 
 environment:
   matrix:
-    - PYTHON: "C:\\Miniconda36"
-    - PYTHON: "C:\\Miniconda36-x64"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36-x64"
 
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
@@ -19,7 +19,8 @@ install:
 
   # install
   # latest version of fcswrit
-  - "conda install --yes --quiet numpy pip wheel scipy statsmodels"
+  - "pip install wheel"
+  - "pip install numpy"
   # fcswrite
   - "pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest

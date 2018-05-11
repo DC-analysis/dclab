@@ -29,6 +29,8 @@ install:
   - "%PYTHON%\\python.exe -m pip install numpy"
   # the rest
   - "%PYTHON%\\python.exe -m pip install ."
+  # Download ffmpeg binary
+  - imageio_download_bin --package-dir ffmpeg
   - "%PYTHON%\\python.exe -m pip freeze"
 
 build: off

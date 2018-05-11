@@ -8,8 +8,8 @@ notifications:
 
 environment:
   matrix:
-    - PYTHON: "C:\Miniconda36"
-    - PYTHON: "C:\Miniconda36-x64"
+    - PYTHON: "C:\\Miniconda36"
+    - PYTHON: "C:\\Miniconda36-x64"
 
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
@@ -23,24 +23,24 @@ install:
   # fcswrite
   - "pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest
-  - "%PYTHON%\\python.exe -m pip install ."
+  - "pip install ."
   # Download ffmpeg binary
-  - "%PYTHON%\\Scripts\\imageio_download_bin --package-dir ffmpeg"
-  - "%PYTHON%\\python.exe -m pip freeze"
+  - "imageio_download_bin --package-dir ffmpeg"
+  - "python -m pip freeze"
 
 build: off
 
 test_script:
-  - "%PYTHON%\\python.exe -m pip install coverage"
-  - "%PYTHON%\\python.exe -m pip install codecov"
-  - "%PYTHON%\\python.exe -m coverage run --source=dclab ./setup.py test"
-  - "%PYTHON%\\python.exe -m coverage report -m"
+  - "pip install coverage"
+  - "pip install codecov"
+  - "coverage run --source=dclab ./setup.py test"
+  - "coverage report -m"
   # Allow codecov to fail
-  - "%PYTHON%\\python.exe -m codecov || exit 0"
+  - "codecov || exit 0"
 
 after_test:
   # If tests are successful, create a whl package for the project.
-  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+  - "python setup.py bdist_wheel"
   - ps: "ls dist"
 
 artifacts:

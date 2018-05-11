@@ -105,26 +105,17 @@ class ImageMap(object):
             raise OSError("file does not exist: {}".format(fname))
         self.filename = fname
         self._length = None
-        # video handle:
-        self._cap = None
 
-    
-    @property
-    def video_handle(self):
-        if self._cap is None:
-            self._cap = imageio.get_reader(self.filename)
-        return self._cap
-    
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in gray scale"""
-        cap = self.video_handle
-        cellimg = cap.get_data(idx)
-        if np.all(cellimg==0):
-            cellimg = self._get_image_workaround_seek(idx)
-        # Convert to grayscale
-        if len(cellimg.shape) == 3:
-            cellimg = np.array(cellimg[:,:,0])
+        with imageio.get_reader(self.filename) as cap:
+            cellimg = cap.get_data(idx)
+            if np.all(cellimg==0):
+                cellimg = self._get_image_workaround_seek(idx)
+            # Convert to grayscale
+            if len(cellimg.shape) == 3:
+                cellimg = np.array(cellimg[:,:,0])
         return cellimg
 
 
@@ -134,11 +125,11 @@ class ImageMap(object):
         This is a workaround for an all-zero image returned by `imageio`. 
         """
         warnings.warn("imageio workaround used!")
-        cap = self.video_handle
-        mult = 50
-        for ii in range(idx//mult):
-            _ign = cap.get_data(ii*mult)
-        final = cap.get_data(idx)
+        with imageio.get_reader(self.filename) as cap:
+            mult = 50
+            for ii in range(idx//mult):
+                _ign = cap.get_data(ii*mult)
+            final = cap.get_data(idx)
         return final
 
 
@@ -147,7 +138,7 @@ class ImageMap(object):
         determined.
         """
         if self._length is None:
-            cap = self.video_handle
-            length = len(cap)
+            with imageio.get_reader(self.filename) as cap:
+                length = len(cap)
             self._length = length
         return self._length

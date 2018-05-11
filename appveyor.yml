@@ -34,7 +34,6 @@ install:
 build: off
 
 test_script:
-  - '%PYTHON%\\python.exe -m pip -c "import dclab; print dclab.__version__"'
   - "%PYTHON%\\python.exe -m pip install coverage"
   - "%PYTHON%\\python.exe -m pip install codecov"
   - "%PYTHON%\\python.exe -m coverage run --source=dclab ./setup.py test"

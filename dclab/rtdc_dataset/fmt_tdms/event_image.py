@@ -14,7 +14,7 @@ import imageio
 class ImageColumn(object):
     def __init__(self, rtdc_dataset):
         """A wrapper for ImageMap that takes into account event offsets
-        
+
         Event offsets appear when the first event that is recorded in the
         tdms files does not have a corresponding cell image in the video
         file.
@@ -28,7 +28,6 @@ class ImageColumn(object):
         conf = rtdc_dataset.config
         self.event_offset = int(conf["fmt_tdms"]["video frame offset"])
         self.video_file = fname
-        
 
     def __getitem__(self, idx):
         idnew = int(idx-self.event_offset)
@@ -46,13 +45,11 @@ class ImageColumn(object):
                 cdata = self.dummy
         return cdata
 
-
     def __len__(self):
         length = len(self._image_data)
         if length:
             length = length+self.event_offset
         return length
-
 
     @property
     def dummy(self):
@@ -60,17 +57,17 @@ class ImageColumn(object):
         cdata = np.zeros_like(self._image_data[0])
         return cdata
 
-
     @staticmethod
     def find_video_file(rtdc_dataset):
         """Tries to find a video file that belongs to an RTDC data set
-        
+
         Returns None if no video file is found.
         """
         video = None
         if os.path.exists(rtdc_dataset._fdir):
             # Cell images (video)
-            videos = [v for v in os.listdir(rtdc_dataset._fdir) if v.endswith(".avi")]
+            videos = [v for v in os.listdir(
+                rtdc_dataset._fdir) if v.endswith(".avi")]
             # Filter videos according to measurement number
             meas_id = rtdc_dataset._mid
             videos = [v for v in videos if v.split("_")[0] == meas_id]
@@ -94,51 +91,59 @@ class ImageColumn(object):
             return os.path.join(rtdc_dataset._fdir, video)
 
 
-
 class ImageMap(object):
     def __init__(self, fname):
         """Access a video file of an RT-DC data set
-        
+
         Initialize this class with a video file.
         """
         if not os.path.exists(fname):
             raise OSError("file does not exist: {}".format(fname))
         self.filename = fname
         self._length = None
+        # video handle:
+        self._cap = None
 
+    def __del__(self):
+        if self._cap is not None:
+            self._cap.close()
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in gray scale"""
-        with imageio.get_reader(self.filename) as cap:
-            cellimg = cap.get_data(idx)
-            if np.all(cellimg==0):
-                cellimg = self._get_image_workaround_seek(idx)
-            # Convert to grayscale
-            if len(cellimg.shape) == 3:
-                cellimg = np.array(cellimg[:,:,0])
+        cap = self.video_handle
+        cellimg = cap.get_data(idx)
+        if np.all(cellimg == 0):
+            cellimg = self._get_image_workaround_seek(idx)
+        # Convert to grayscale
+        if len(cellimg.shape) == 3:
+            cellimg = np.array(cellimg[:, :, 0])
         return cellimg
-
-
-    def _get_image_workaround_seek(self, idx):
-        """Same as __getitem__ but seek through the video beforehand
-        
-        This is a workaround for an all-zero image returned by `imageio`. 
-        """
-        warnings.warn("imageio workaround used!")
-        with imageio.get_reader(self.filename) as cap:
-            mult = 50
-            for ii in range(idx//mult):
-                _ign = cap.get_data(ii*mult)
-            final = cap.get_data(idx)
-        return final
-
 
     def __len__(self):
         """Returns the length of the video or `True` if the length cannot be
         determined.
         """
         if self._length is None:
-            with imageio.get_reader(self.filename) as cap:
-                length = len(cap)
+            cap = self.video_handle
+            length = len(cap)
             self._length = length
         return self._length
+
+    def _get_image_workaround_seek(self, idx):
+        """Same as __getitem__ but seek through the video beforehand
+
+        This is a workaround for an all-zero image returned by `imageio`.
+        """
+        warnings.warn("imageio workaround used!")
+        cap = self.video_handle
+        mult = 50
+        for ii in range(idx//mult):
+            cap.get_data(ii*mult)
+        final = cap.get_data(idx)
+        return final
+
+    @property
+    def video_handle(self):
+        if self._cap is None:
+            self._cap = imageio.get_reader(self.filename)
+        return self._cap

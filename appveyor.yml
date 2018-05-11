@@ -8,25 +8,20 @@ notifications:
 
 environment:
   matrix:
-    - PYTHON: "C:\\Python35"
-    - PYTHON: "C:\\Python35-x64"
-    - PYTHON: "C:\\Python36"
-    - PYTHON: "C:\\Python36-x64"
-init:
-  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+    - PYTHON: "C:\Miniconda36"
+    - PYTHON: "C:\Miniconda36-x64"
 
 install:
-  # We need wheel installed to build wheels
-  - "%PYTHON%\\python.exe -m pip install wheel"
+  - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
   # Check that we have the expected version and architecture for Python
-  - "%PYTHON%\\python.exe --version"
+  - "python --version"
 
   # install
   # latest version of fcswrit
-  - "%PYTHON%\\python.exe -m pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
-  # numpy is required by statsmodels installation
-  - "%PYTHON%\\python.exe -m pip install numpy"
+  - "conda install --yes --quiet numpy pip wheel scipy statsmodels"
+  # fcswrite
+  - "pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest
   - "%PYTHON%\\python.exe -m pip install ."
   # Download ffmpeg binary

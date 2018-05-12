@@ -13,7 +13,7 @@ class MaskColumn(object):
         self.contour = rtdc_dataset["contour"]
         self.image = rtdc_dataset["image"]
         self.identifier = self.contour.identifier
-        self._rtdc_dataset = rtdc_dataset
+        self.config = rtdc_dataset.config
         self._shape = None
 
     def __getitem__(self, idx):
@@ -33,7 +33,7 @@ class MaskColumn(object):
     @property
     def _img_shape(self):
         if self._shape is None:
-            cfgim = self._rtdc_dataset.config["imaging"]
+            cfgim = self.config["imaging"]
             if "roi size x" in cfgim and "roi size y" in cfgim:
                 # get shape from congig
                 self._shape = (cfgim["roi size y"], cfgim["roi size x"])

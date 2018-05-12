@@ -29,7 +29,7 @@ class ContourColumn(object):
             self._contour_data = []
             # prevent `determine_offset` to be called
             self._initialized = True
-        self._rtdc_dataset = rtdc_dataset
+        self.frame = rtdc_dataset["frame"]
         self.event_offset = 0
         
     
@@ -58,7 +58,7 @@ class ContourColumn(object):
         
         Notes
         -----
-        - the "frame" column of `self._rtdc_dataset` is compared to
+        - the "frame" column of `rtdc_dataset` is compared to
           the first contour in the contour text file to determine an
           offset by one event
         - modifies the property `event_offset` and sets `_initialized`
@@ -70,8 +70,8 @@ class ContourColumn(object):
         # contour frame is missing by comparing it to
         # the "frame" column of the rtdc data set.
         fref = self._contour_data.get_frame(0)
-        f0 = self._rtdc_dataset["frame"][0]
-        f1 = self._rtdc_dataset["frame"][1]
+        f0 = self.frame[0]
+        f1 = self.frame[1]
         # Use allclose to avoid float/integer comparison problems
         if np.allclose(fref, f0):
             self.event_offset = 0

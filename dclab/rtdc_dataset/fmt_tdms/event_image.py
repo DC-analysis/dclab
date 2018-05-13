@@ -107,6 +107,7 @@ class ImageMap(object):
     def __del__(self):
         if self._cap is not None:
             self._cap.close()
+        print("del")
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in gray scale"""

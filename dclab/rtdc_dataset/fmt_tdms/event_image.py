@@ -5,10 +5,15 @@ Class for efficiently handling image/video data
 """
 from __future__ import division, print_function, unicode_literals
 
-import numpy as np
 import os
+import sys
 import warnings
+
+import numpy as np
 import imageio
+
+
+ISWIN = sys.platform.startswith("win")
 
 
 class ImageColumn(object):
@@ -106,8 +111,16 @@ class ImageMap(object):
 
     def __del__(self):
         if self._cap is not None:
+            if ISWIN:
+                # This is a workaround for windows when pytest fails due
+                # to "OSError: [WinError 6] The handle is invalid",
+                # which is somehow related to the fact that "_proc.kill()"
+                # must be called twice (in "close()" and in this case) in
+                # order to terminate the process and due to the fact the
+                # we are not using the with-statement in combination
+                # with imageio.get_reader().
+                self._cap._proc.kill()
             self._cap.close()
-        print("del")
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in gray scale"""

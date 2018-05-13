@@ -8,6 +8,8 @@ notifications:
 
 environment:
   matrix:
+    - PYTHON: "C:\\Python27"
+    - PYTHON: "C:\\Python27-x64"
     - PYTHON: "C:\\Python36"
     - PYTHON: "C:\\Python36-x64"
 
@@ -34,10 +36,10 @@ build: off
 test_script:
   - "pip install coverage"
   - "pip install codecov"
-  #- "coverage run --source=dclab ./setup.py test"
-  #- "coverage report -m"
+  - "coverage run --source=dclab ./setup.py test"
+  - "coverage report -m"
   # Allow codecov to fail
-  #- "codecov || exit 0"
+  - "codecov || exit 0"
 
 after_test:
   # If tests are successful, create a whl package for the project.

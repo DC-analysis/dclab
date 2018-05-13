@@ -31,34 +31,39 @@ def test_import():
     ds = dclab.new_dataset(ddict)
 
     # save polygon data
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        temp.write(filter_data)
-        temp.flush()
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
 
-        # Add polygon filter
-        pf = dclab.PolygonFilter(filename=temp.name)
-        ds.polygon_filter_add(pf)
+    # Add polygon filter
+    pf = dclab.PolygonFilter(filename=tf)
+    ds.polygon_filter_add(pf)
 
-        ds.apply_filter()
+    ds.apply_filter()
 
-        assert np.sum(ds._filter) == 330
+    assert np.sum(ds._filter) == 330
 
-        dclab.PolygonFilter.import_all(temp.name)
+    dclab.PolygonFilter.import_all(tf)
 
-        assert len(dclab.PolygonFilter.instances) == 2
+    assert len(dclab.PolygonFilter.instances) == 2
 
-        # Import multiples
-        b = filter_data
-        b = b.replace("Polygon 00000000", "Polygon 00000001")
-        temp.write(b)
-        temp.flush()
-        dclab.PolygonFilter.import_all(temp.name)
+    # Import multiples
+    b = filter_data
+    b = b.replace("Polygon 00000000", "Polygon 00000001")
+    with open(tf, "a") as fd:
+        fd.write(b)
+    dclab.PolygonFilter.import_all(tf)
 
-        # Import previously saved
-        dclab.PolygonFilter.save_all(temp.name)
-        dclab.PolygonFilter.import_all(temp.name)
+    # Import previously saved
+    dclab.PolygonFilter.save_all(tf)
+    dclab.PolygonFilter.import_all(tf)
 
-        assert len(dclab.PolygonFilter.instances) == 10
+    assert len(dclab.PolygonFilter.instances) == 10
+
+    try:
+        os.remove(tf)
+    except OSError:
+        pass
 
 
 def test_invert():
@@ -182,40 +187,43 @@ def test_nofile_copy():
 def test_remove():
     dclab.PolygonFilter.clear_all_filters()
 
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        temp.write(filter_data)
-        temp.flush()
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
 
-        # Add polygon filter
-        pf = dclab.PolygonFilter(filename=temp.name)
+    # Add polygon filter
+    pf = dclab.PolygonFilter(filename=tf)
 
     dclab.PolygonFilter.remove(pf.unique_id)
     assert len(dclab.PolygonFilter.instances) == 0
 
     dclab.PolygonFilter.clear_all_filters()
+    try:
+        os.remove(tf)
+    except OSError:
+        pass
 
 
 def test_save():
     dclab.PolygonFilter.clear_all_filters()
 
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        temp.write(filter_data)
-        temp.flush()
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
 
-        # Add polygon filter
-        pf = dclab.PolygonFilter(filename=temp.name)
+    # Add polygon filter
+    pf = dclab.PolygonFilter(filename=tf)
 
-        with tempfile.NamedTemporaryFile(mode="w") as temp2:
-            pf.save(temp2, ret_fobj=True)
-            temp2.flush()
+    _fd, tf2 = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf2, "w") as fd:
+        fd.write(filter_data)
+        pf.save(tf2, ret_fobj=True)
+        pf2 = dclab.PolygonFilter(filename=tf2)
+        assert np.allclose(pf.points, pf2.points)
 
-            pf2 = dclab.PolygonFilter(filename=temp2.name)
-
-            assert np.allclose(pf.points, pf2.points)
-
-    with tempfile.NamedTemporaryFile(mode="w") as temp3:
-        dclab.PolygonFilter.save_all(temp3.name)
-        pf.save(temp3, ret_fobj=False)
+    _fd, tf3 = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    dclab.PolygonFilter.save_all(tf3)
+    pf.save(tf3, ret_fobj=False)
 
     # ensure backwards compatibility: the names of the
     # three filters should be the same
@@ -223,18 +231,30 @@ def test_save():
     assert len(names) == 2
     assert names.count(names[0]) == 2
 
+    try:
+        os.remove(tf)
+        os.remove(tf2)
+        os.remove(tf3)
+    except OSError:
+        pass
+
 
 def test_unique_id():
     dclab.PolygonFilter.clear_all_filters()
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        temp.write(filter_data)
-        temp.flush()
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
 
-        # Add polygon filter
-        pf = dclab.PolygonFilter(filename=temp.name, unique_id=2)
-        pf2 = dclab.PolygonFilter(filename=temp.name, unique_id=2)
-        assert pf.unique_id != pf2.unique_id
+    # Add polygon filter
+    pf = dclab.PolygonFilter(filename=tf, unique_id=2)
+    pf2 = dclab.PolygonFilter(filename=tf, unique_id=2)
+    assert pf.unique_id != pf2.unique_id
     dclab.PolygonFilter.clear_all_filters()
+
+    try:
+        os.remove(tf)
+    except OSError:
+        pass
 
 
 def test_with_rtdc_data_set():
@@ -243,11 +263,11 @@ def test_with_rtdc_data_set():
     ds = dclab.new_dataset(ddict)
 
     # save polygon data
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        temp.write(filter_data)
-        temp.flush()
-        pf = dclab.PolygonFilter(filename=temp.name)
-        pf2 = dclab.PolygonFilter(filename=temp.name)
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
+    pf = dclab.PolygonFilter(filename=tf)
+    pf2 = dclab.PolygonFilter(filename=tf)
 
     ds.polygon_filter_add(pf)
     ds.polygon_filter_add(1)
@@ -256,23 +276,26 @@ def test_with_rtdc_data_set():
     ds.polygon_filter_rm(pf2)
 
     dclab.PolygonFilter.clear_all_filters()
+    try:
+        os.remove(tf)
+    except OSError:
+        pass
 
 
 def test_wrong_load_key():
     dclab.PolygonFilter.clear_all_filters()
 
     # save polygon data
-    with tempfile.NamedTemporaryFile(mode="w") as temp:
-        data = filter_data + "peter=4\n"
-        temp.write(data)
-        temp.flush()
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data + "peter=4\n")
 
-        try:
-            dclab.PolygonFilter(filename=temp.name)
-        except KeyError:
-            pass
-        else:
-            raise ValueError("_load should not accept unknown key!")
+    try:
+        dclab.PolygonFilter(filename=tf)
+    except KeyError:
+        pass
+    else:
+        raise ValueError("_load should not accept unknown key!")
     dclab.PolygonFilter.clear_all_filters()
 
 

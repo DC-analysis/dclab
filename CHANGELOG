@@ -5,7 +5,8 @@
      test for scalar features, use definitions.scalar_feature_names.
    - features bright_* are computed from mask instead of from contour
  - Bugfixes:
-   - Write correct event count in exported hdf5 data files
+   - write correct event count in exported hdf5 data files
+   - improve implementation of video file handling in fmt_tdms
  - add new non-scalar feature "mask" (#48)
  - update configuration keys:
    - removed [online_contour]: "bin margin" (#47)

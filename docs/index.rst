@@ -11,6 +11,7 @@ is the documentation of dclab version |release|.
    :maxdepth: 4
    :caption: Contents:
 
+   sec_getting_started
    examples
    sec_cli
    sec_code_reference

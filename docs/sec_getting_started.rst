@@ -53,7 +53,7 @@ Experimental RT-DC datasets are always loaded with the
     ds = dclab.new_dataset("/path/to/measurement/M2.rtdc")
 
 The object returned by `new_dataset` is always an instance of
-:class:`RTDCBase <dclab.rtdc_dataset.core.RTDCBase`. To show all
+:class:`RTDCBase <dclab.rtdc_dataset.core.RTDCBase>`. To show all
 available features, use:
 
 .. code-block:: python

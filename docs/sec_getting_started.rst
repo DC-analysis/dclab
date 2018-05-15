@@ -45,7 +45,7 @@ Experimental RT-DC datasets are always loaded with the
 .. code-block:: python
 
     import numpy as np
-    import dcalb
+    import dclab
 
     # .tdms file format
     ds = dclab.new_dataset("/path/to/measurement/Online/M1.tdms")

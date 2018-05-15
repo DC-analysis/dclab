@@ -8,8 +8,8 @@
    - write correct event count in exported hdf5 data files
    - improve implementation of video file handling in fmt_tdms
  - add new non-scalar feature "mask" (#48)
- - update configuration keys:
-   - removed [online_contour]: "bin margin" (#47)
+ - removed configuration key [online_contour]: "bin margin" (#47)
+ - minor improvements for the tdms file format
 0.4.0
  - Bugfix: CLI "dclab-tdms2rtdc" did not work for single tdms files (#45)
  - update configuration keys:

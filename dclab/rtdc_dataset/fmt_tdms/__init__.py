@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """RT-DC .tdms file format"""
-from __future__ import division, print_function, unicode_literals
+from __future__ import division, print_function
 
 import io
 import os
@@ -148,6 +148,10 @@ class RTDC_TDMS(RTDCBase):
         # imaging
         if "pixel size" not in self.config["imaging"]:
             self.config["imaging"]["pixel size"] = 0.34
+        # medium convention for CellCarrierB
+        if ("medium" in self.config["setup"] and
+                self.config["setup"]["medium"].lower() == "cellcarrier b"):
+            self.config["setup"]["medium"] = "CellCarrierB"
 
 
     @property

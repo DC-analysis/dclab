@@ -20,7 +20,7 @@ install:
   - "python --version"
 
   # install
-  - "pip install --upgrade pip setuptools wheel"
+  - "pip install wheel"
   # dependencies for statsmodels (not installed automatically)
   - "pip install numpy scipy pandas patsy"
   # latest version of fcswrite

@@ -48,10 +48,13 @@ setup(
                       "h5py",      # required by: hdf5 format
                       "imageio",   # required by: tdms format, avi export
                       "nptdms",    # required by: tdms format
-                      "numpy >= 1.5.1",
+                      "numpy>=1.5.1",
                       "pathlib",
-                      "scipy >= 0.12.0",
-                      "statsmodels >= 0.5.0",
+                      "scipy>=0.12.0",
+                      "statsmodels>=0.5.0",
+                      # Additional dependencies of statsmodels which are not
+                      # installed automatically due to a developer policy:
+                      "pandas>=0.14", "patsy>=0.3.0",
                       ],
     ext_modules = extensions,
     entry_points={

@@ -20,14 +20,15 @@ install:
   - "python --version"
 
   # install
-  # latest version of fcswrit
-  - "pip install wheel"
-  - "pip install numpy"
-  # fcswrite
+  - "pip install --upgrade pip setuptools wheel"
+  # dependencies for statsmodels (not installed automatically)
+  - "pip install numpy scipy pandas patsy"
+  # latest version of fcswrite
   - "pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
+
   # the rest
   - "pip install ."
-  # Download ffmpeg binary
+  # Download ffmpeg binary for imageio
   - "imageio_download_bin --package-dir ffmpeg"
   - "python -m pip freeze"
 

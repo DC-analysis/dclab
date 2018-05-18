@@ -71,7 +71,7 @@ class Export(object):
                     image = ds["image"][evid]
                 except BaseException:
                     warnings.warn("Could not read image {}!".format(evid),
-                                  ImageMissingWarning)
+                                  NoImageWarning)
                     continue
                 else:
                     if np.isnan(image[0, 0]):

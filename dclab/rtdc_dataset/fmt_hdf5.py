@@ -146,7 +146,9 @@ class RTDC_HDF5(RTDCBase):
         for key in h5attrs:
             section, pname = key.split(":")
             if pname not in dfn.config_funcs[section]:
-                msg = "Unknown key {} in section [{}]!".format(key, section)
+                # Add the value as a string but issue a warning
+                config[section][pname] = h5attrs[key]
+                msg = "Unknown key '{}' in section [{}]!".format(pname, section)
                 warnings.warn(msg, UnknownKeyWarning)
             else:
                 typ = dfn.config_funcs[section][pname]

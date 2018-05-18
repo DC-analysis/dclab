@@ -14,13 +14,16 @@ from helper_methods import cleanup, retrieve_data
 def test_basic():
     h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     viol, aler, info = check_dataset(h5path)
-    # "Features: Unknown key 'ncells'"
-    # Metadata: Missing key [fluorescence] channels installed
-    # Metadata: Missing key [fluorescence] laser count
-    # Metadata: Missing key [fluorescence] lasers installed
-    # Metadata: Missing key [fluorescence] samples per event
+    # Features: Unknown key 'ncells'
+    # Metadata: Missing key [fluorescence] 'channels installed'
+    # Metadata: Missing key [fluorescence] 'laser count'
+    # Metadata: Missing key [fluorescence] 'lasers installed'
+    # Metadata: Missing key [fluorescence] 'samples per event'
+    # Metadata: Unknown key [imaging] 'exposure time'
+    # Metadata: Unknown key [imaging] 'flash current'
+    # Metadata: Unknown key [setup] 'temperature'
     # Metadata: fluorescence channel count inconsitent
-    assert len(viol) == 6
+    assert len(viol) == 9
     # Metadata: Missing key [setup] identifier'
     # Metadata: Missing section 'online_contour'
     assert len(aler) == 2

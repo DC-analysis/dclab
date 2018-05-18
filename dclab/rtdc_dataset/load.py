@@ -97,10 +97,10 @@ def check_dataset(path_or_ds):
                 pass
             elif (sec not in dfn.config_keys or
                   key not in dfn.config_keys[sec]):
-                viol.append("Metadata: Unknown key [{}] {}".format(sec, key))
+                viol.append("Metadata: Unknown key [{}] '{}'".format(sec, key))
             elif not isinstance(ds.config[sec][key],
                                 dfn.config_types[sec][key]):
-                viol.append("Metadata: Datatype of [{}] {} ".format(sec, key)
+                viol.append("Metadata: Datatype of [{}] '{}'".format(sec, key)
                             + "must be '{}'".format(dfn.config_types[sec][key])
                             )
     # check existence of meta data keys
@@ -127,7 +127,7 @@ def check_dataset(path_or_ds):
                         ecn in ds._events):
                     chc2 += 1
             if chc1 != chc2:
-                msg = "Metadata: fluorescence channel count inconsitent"
+                msg = "Metadata: fluorescence channel count inconsistent"
                 viol.append(msg)
         # check for number of lasers
         if "laser count" in ds.config["fluorescence"]:
@@ -152,14 +152,14 @@ def check_dataset(path_or_ds):
             for key in dfn.config_keys[sec]:
                 if (key in tocheck[sec] and
                         key not in ds.config[sec]):
-                    viol.append("Metadata: Missing key [{}] {}".format(sec,
-                                                                       key))
+                    viol.append("Metadata: Missing key [{}] '{}'".format(sec,
+                                                                         key))
                 elif (sec in tocheck_sec_aler and
                         key not in ds.config[sec]):
                     # Note: fluorescence is not treated here. It can be
                     # incomplete (e.g. number of channels installed may vary)
-                    aler.append("Metadata: Missing key [{}] {}".format(sec,
-                                                                       key))
+                    aler.append("Metadata: Missing key [{}] '{}'".format(sec,
+                                                                         key))
     # search again (soft)
     for sec in tocheck_sec_aler:
         if sec in tocheck:
@@ -170,8 +170,8 @@ def check_dataset(path_or_ds):
         else:
             for key in dfn.config_keys[sec]:
                 if key not in ds.config[sec]:
-                    aler.append("Metadata: Missing key [{}] {}".format(sec,
-                                                                       key))
+                    aler.append("Metadata: Missing key [{}] '{}'".format(sec,
+                                                                         key))
     # check for medium
     if "medium" in ds.config["setup"]:
         med = ds.config["setup"]["medium"]

@@ -12,6 +12,10 @@ import warnings
 from . import definitions as dfn
 
 
+class BadMethodWarning(UserWarning):
+    pass
+
+
 class Statistics(object):
     available_methods = {}
 
@@ -59,7 +63,8 @@ class Statistics(object):
             except:
                 exc = tb.format_exc().replace("\n", "\n    | ")
                 warnings.warn("Failed to compute {} for {}: {}".format(
-                              self.name, kwargs["rtdc_ds"].title, exc))
+                              self.name, kwargs["rtdc_ds"].title, exc),
+                              BadMethodWarning)
                 result = np.nan
         return result
 

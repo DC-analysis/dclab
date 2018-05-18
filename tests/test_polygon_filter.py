@@ -24,7 +24,8 @@ point00000003 = 6.150993521573982e-01 1.015706806282723e-03
 """
 
 
-@pytest.mark.filterwarnings('ignore::UserWarning')
+@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
+                            + 'FilterIdExistsWarning')
 def test_import():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=1000, keys=["area_um", "deform"])
@@ -122,6 +123,8 @@ def test_invert_copy():
     dclab.PolygonFilter.clear_all_filters()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
+                            + 'FilterIdExistsWarning')
 def test_invert_saveload():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=1234, keys=["area_um", "deform"])

@@ -8,6 +8,7 @@ import pathlib
 import shutil
 
 import numpy as np
+import pytest
 
 from dclab import new_dataset
 import dclab.rtdc_dataset.fmt_tdms.naming
@@ -24,6 +25,9 @@ def test_compatibility_minimal():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_contour.'
+                            + 'NoContourDataWarning')
 def test_compatibility_shapein201():
     ds = new_dataset(retrieve_data("rtdc_data_shapein_v2.0.1.zip"))
     assert ds.config["setup"]["channel width"] == 20
@@ -44,6 +48,9 @@ def test_contour_basic():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_contour.'
+                            + 'NoContourDataWarning')
 def test_contour_naming():
     # Test that we always find the correct contour name
     ds = new_dataset(retrieve_data(example_data_sets[0]))
@@ -102,6 +109,9 @@ def test_contour_not_initialized():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_contour.'
+                            + 'NoContourDataWarning')
 def test_fluorescence_config():
     ds1 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     assert "fluorescence" not in ds1.config
@@ -136,6 +146,9 @@ def test_image_out_of_bounds():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_large_fov():
     ds = new_dataset(retrieve_data(example_data_sets[3]))
     # initial image is missing
@@ -155,6 +168,9 @@ def test_large_fov():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_contour.'
+                            + 'NoContourDataWarning')
 def test_load_tdms_all():
     for ds in example_data_sets:
         tdms_path = retrieve_data(ds)
@@ -192,6 +208,9 @@ def test_load_tdms_simple():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_mask_basic():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert len(ds["mask"]) == 12

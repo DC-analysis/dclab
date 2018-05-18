@@ -6,6 +6,7 @@ import pathlib
 import time
 
 import numpy as np
+import pytest
 
 import dclab
 from dclab.rtdc_dataset import ancillaries
@@ -77,6 +78,9 @@ def test_area_ratio():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_brightness():
     # Brightness of the image
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
@@ -195,6 +199,9 @@ def test_emodulus_none2():
     assert "emodulus" not in ds, "emodulus model should be missing"
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_contour.'
+                            + 'NoContourDataWarning')
 def test_fl_crosstalk_2chan():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
     # simple example
@@ -301,6 +308,9 @@ def test_fl_crosstalk_priority():
     assert av2["fl3_max_ctc"].req_config == reqconf2
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_inert_ratio_cvx():
     # Brightness of the image
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
@@ -317,6 +327,9 @@ def test_inert_ratio_cvx():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_inert_ratio_raw():
     # Brightness of the image
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))

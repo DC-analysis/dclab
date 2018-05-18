@@ -30,6 +30,10 @@ import numpy as np
 from ..util import obj2str
 
 
+class BadFeatureSizeWarning(UserWarning):
+    pass
+
+
 class AncillaryFeature():
     # Holds all instances of this class
     features = []
@@ -116,12 +120,14 @@ class AncillaryFeature():
 
         if dsize > 0:
             msg = "Growing feature {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)))
+            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)),
+                          BadFeatureSizeWarning)
             data.resize(len(rtdc_ds), refcheck=False)
             data[-dsize:] = np.nan
         elif dsize < 0:
             msg = "Shrinking feature {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)))
+            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)),
+                          BadFeatureSizeWarning)
             data.resize(len(rtdc_ds), refcheck=False)
 
         if isinstance(data, np.ndarray):

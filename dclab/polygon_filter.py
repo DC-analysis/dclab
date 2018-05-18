@@ -17,6 +17,10 @@ else:
     string_classes = str
 
 
+class FilterIdExistsWarning(UserWarning):
+    pass
+
+
 class PolygonFilter(object):
     """An object for filtering RTDC data based on a polygonial area"""
     # Stuff that is done upon creation (not instantiation) of this class
@@ -171,7 +175,7 @@ class PolygonFilter(object):
             newid = max(PolygonFilter._instance_counter, unique_id+1)
             msg = "PolygonFilter with unique_id '{}' exists.".format(unique_id)
             msg += " Using new unique id '{}'.".format(newid)
-            warnings.warn(msg)
+            warnings.warn(msg, FilterIdExistsWarning)
             unique_id = newid
         
         ic = max(PolygonFilter._instance_counter, unique_id+1)

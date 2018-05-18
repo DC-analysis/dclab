@@ -12,6 +12,10 @@ import warnings
 import numpy as np
 
 
+class NoContourDataWarning(UserWarning):
+    pass
+
+
 class ContourColumn(object):
     def __init__(self, rtdc_dataset):
         """A wrapper for ContourData that takes into account event offsets
@@ -111,7 +115,7 @@ class ContourColumn(object):
                     break
             else:
                 msg = "No contour data found for {}".format(rtdc_dataset)
-                warnings.warn(msg)
+                warnings.warn(msg, NoContourDataWarning)
                 cfile = None
         return cfile
 

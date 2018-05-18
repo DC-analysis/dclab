@@ -1,3 +1,8 @@
+0.5.1
+ - Setup: add dependencies for statsmodels
+ - Tests: filter known warnings
+ - fmt_hdf5: import unknown keys such that "dclab-verify-dataset"
+   can complain about them
 0.5.0
  - BREAKING CHANGES:
    - definitions.feature_names now contains non-scalar

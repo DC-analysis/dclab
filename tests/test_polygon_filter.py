@@ -207,6 +207,8 @@ def test_remove():
         pass
 
 
+@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
+                            + 'FilterIdExistsWarning')
 def test_save():
     dclab.PolygonFilter.clear_all_filters()
 
@@ -242,6 +244,8 @@ def test_save():
         pass
 
 
+@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
+                            + 'FilterIdExistsWarning')
 def test_unique_id():
     dclab.PolygonFilter.clear_all_filters()
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
@@ -260,6 +264,8 @@ def test_unique_id():
         pass
 
 
+@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
+                            + 'FilterIdExistsWarning')
 def test_with_rtdc_data_set():
     dclab.PolygonFilter.clear_all_filters()
     ddict = example_data_dict(size=821, keys=["area_um", "deform"])

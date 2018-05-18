@@ -22,6 +22,8 @@ def test_config():
     cleanup()
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_contour_basic():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert len(ds) == 5
@@ -30,6 +32,8 @@ def test_contour_basic():
     cleanup()
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_hash():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert ds.hash == "2c436daba22d2c7397b74d53d80f8931"
@@ -37,6 +41,8 @@ def test_hash():
     cleanup()
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_image_basic():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert np.allclose(np.average(ds["image"][1]), 125.37133333333334)
@@ -44,6 +50,8 @@ def test_image_basic():
     cleanup()
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_trace():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert len(ds["trace"]) == 2

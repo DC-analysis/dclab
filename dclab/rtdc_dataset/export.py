@@ -16,6 +16,10 @@ from .. import definitions as dfn
 from .write_hdf5 import write
 
 
+class NoImageWarning(UserWarning):
+    pass
+
+
 class Export(object):
     def __init__(self, rtdc_ds):
         """Export functionalities for RT-DC datasets"""
@@ -66,7 +70,8 @@ class Export(object):
                 try:
                     image = ds["image"][evid]
                 except BaseException:
-                    warnings.warn("Could not read image {}!".format(evid))
+                    warnings.warn("Could not read image {}!".format(evid),
+                                  ImageMissingWarning)
                     continue
                 else:
                     if np.isnan(image[0, 0]):

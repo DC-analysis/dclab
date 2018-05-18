@@ -18,7 +18,7 @@ from helper_methods import example_data_dict, retrieve_data, \
     example_data_sets, cleanup
 
 
-@pytest.mark.filterwarnings('ignore::UserWarning')
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.export.NoImageWarning')
 def test_avi_export():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     edest = tempfile.mkdtemp()
@@ -30,6 +30,7 @@ def test_avi_export():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.export.NoImageWarning')
 def test_avi_override():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
 

@@ -24,6 +24,8 @@ def test_event_count():
     assert len(ds) == len(ch) + 1
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_feat_contour():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)
@@ -34,6 +36,8 @@ def test_feat_contour():
     assert np.all(ch["contour"][1] == ds["contour"][3])
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_feat_image():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)
@@ -56,6 +60,8 @@ def test_feat_mask():
     assert np.all(ch["mask"][1] == ds["mask"][3])
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
 def test_feat_trace():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)

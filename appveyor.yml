@@ -20,23 +20,23 @@ install:
   - "python --version"
 
   # install
-  - "pip install wheel"
+  - "appveyor-retry pip install wheel"
   # dependencies for statsmodels (not installed automatically)
-  - "pip install numpy scipy pandas patsy"
+  - "appveyor-retry pip install numpy scipy pandas patsy"
   # latest version of fcswrite
-  - "pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
+  - "appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
 
   # the rest
-  - "pip install ."
+  - "appveyor-retry pip install ."
   # Download ffmpeg binary for imageio
-  - "imageio_download_bin --package-dir ffmpeg"
+  - "appveyor-retry imageio_download_bin --package-dir ffmpeg"
   - "python -m pip freeze"
 
 build: off
 
 test_script:
-  - "pip install coverage"
-  - "pip install codecov"
+  - "appveyor-retry pip install coverage"
+  - "appveyor-retry pip install codecov"
   - "coverage run --source=dclab ./setup.py test"
   - "coverage report -m"
   # Allow codecov to fail

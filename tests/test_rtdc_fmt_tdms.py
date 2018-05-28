@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 import pathlib
 import shutil
+import tempfile
 
 import numpy as np
 import pytest
@@ -303,6 +304,19 @@ def test_trace_methods():
     for k in ds["trace"]:
         assert k in dclab.definitions.FLUOR_TRACES
     assert ds["trace"].__repr__().count("<loaded into memory>")
+    cleanup()
+
+
+def test_unicode_paths():
+    path = retrieve_data(example_data_sets[1])
+    path = pathlib.Path(path)
+    pp = path.parent
+    # create a unicode name
+    pp2 = pathlib.Path(tempfile.mkdtemp(prefix="dclàb_tést_asgård_únícodè"))
+    pp.rename(pp2)
+    ds = new_dataset(pp2 / path.name)
+    ds.__repr__()
+    shutil.rmtree(str(pp2), ignore_errors=True)
     cleanup()
 
 

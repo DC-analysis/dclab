@@ -5,7 +5,7 @@ Class for efficiently handling image/video data
 """
 from __future__ import division, print_function, unicode_literals
 
-import os
+import pathlib
 import sys
 import warnings
 
@@ -69,10 +69,9 @@ class ImageColumn(object):
         Returns None if no video file is found.
         """
         video = None
-        if os.path.exists(rtdc_dataset._fdir):
+        if rtdc_dataset._fdir.exists():
             # Cell images (video)
-            videos = [v for v in os.listdir(
-                rtdc_dataset._fdir) if v.endswith(".avi")]
+            videos = [v.name for v in rtdc_dataset._fdir.rglob("*.avi")]
             # Filter videos according to measurement number
             meas_id = rtdc_dataset._mid
             videos = [v for v in videos if v.split("_")[0] == meas_id]
@@ -93,7 +92,7 @@ class ImageColumn(object):
         if video is None:
             return None
         else:
-            return os.path.join(rtdc_dataset._fdir, video)
+            return rtdc_dataset._fdir / video
 
 
 class ImageMap(object):
@@ -102,7 +101,8 @@ class ImageMap(object):
 
         Initialize this class with a video file.
         """
-        if not os.path.exists(fname):
+        fname = pathlib.Path(fname)
+        if not fname.exists():
             raise OSError("file does not exist: {}".format(fname))
         self.filename = fname
         self._length = None
@@ -159,5 +159,5 @@ class ImageMap(object):
     @property
     def video_handle(self):
         if self._cap is None:
-            self._cap = imageio.get_reader(self.filename)
+            self._cap = imageio.get_reader(str(self.filename))
         return self._cap

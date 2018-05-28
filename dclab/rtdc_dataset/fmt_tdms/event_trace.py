@@ -5,9 +5,10 @@ Class for handling fluorescence trace data
 """
 from __future__ import division, print_function, unicode_literals
 
+import pathlib
+
 import nptdms
 import numpy as np
-import os
 
 from . import naming
 
@@ -83,16 +84,16 @@ class TraceColumn(object):
 
         if tname is None:
             pass
-        elif tname.endswith(".tdms"):
+        elif tname.suffix == ".tdms":
             # Again load the measurement tdms file.
             # This might increase memory usage, but it is cleaner
             # when looking at code structure.
-            mdata = nptdms.TdmsFile(mname)
+            mdata = nptdms.TdmsFile(str(mname))
             sampleids = mdata.object("Cell Track", "FL1index").data
             
             # Load the trace data. The traces file is usually larger than the
             # measurement file.
-            tdata = nptdms.TdmsFile(tname)
+            tdata = nptdms.TdmsFile(str(tname))
             for trace_key in dfn.FLUOR_TRACES:
                 group, ch = naming.tr_data_map[trace_key]
                 try:
@@ -114,11 +115,12 @@ class TraceColumn(object):
         
         Returns None if no trace file is found.
         """
+        mname = pathlib.Path(mname)
         tname = None
         
-        if os.path.exists(mname):
-            cand = mname[:-5]+"_traces.tdms"
-            if os.path.exists(cand):
+        if mname.exists():
+            cand = mname.with_name(mname.name[:-5] + "_traces.tdms")
+            if cand.exists():
                 tname = cand
             
         return tname

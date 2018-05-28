@@ -3,11 +3,8 @@
 """RT-DC .tdms file format"""
 from __future__ import division, print_function
 
-import io
-import os
 import pathlib
 import time
-import sys
 
 import numpy as np
 from nptdms import TdmsFile
@@ -39,6 +36,7 @@ class RTDC_TDMS(RTDCBase):
         # Initialize RTDCBase
         super(RTDC_TDMS, self).__init__(*args, **kwargs)
 
+        tdms_path = pathlib.Path(tdms_path)
         # Events is a simple dictionary
         self._events = {}
         self._hash = None
@@ -46,10 +44,9 @@ class RTDC_TDMS(RTDCBase):
         self.title = get_project_name_from_path(tdms_path, append_mx=True)
 
         # tdms-related convenience properties
-        self._fdir = os.path.dirname(self.path)
-        self._mid = os.path.basename(self.path).split("_")[0]
-        md, mn = os.path.split(self.path)
-        self._path_mx = os.path.join(md, mn.split("_")[0])
+        self._fdir = tdms_path.parent
+        self._mid = tdms_path.name.split("_")[0]
+        self._path_mx = str(tdms_path.with_name(self._mid))
         
         self._init_data_with_tdms(tdms_path)
 
@@ -67,7 +64,7 @@ class RTDC_TDMS(RTDCBase):
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC data set with a tdms file.
         """
-        tdms_file = TdmsFile(tdms_filename)
+        tdms_file = TdmsFile(str(tdms_filename))
         # time is always there
         table = "Cell Track"
         # Edit naming.dclab2tdms to add features
@@ -110,7 +107,7 @@ class RTDC_TDMS(RTDCBase):
 
     def _complete_config_tdms(self, residual_config={}):
         # experiment
-        gmtime = time.gmtime(os.stat(self.path).st_mtime)
+        gmtime = time.gmtime(self.path.stat().st_mtime)
         if "date" not in self.config["experiment"]:
             # Date of measurement ('YYYY-MM-DD')
             datestr = time.strftime("%Y-%m-%d", gmtime)
@@ -161,7 +158,7 @@ class RTDC_TDMS(RTDCBase):
             # Only hash _camera.ini and _para.ini
             fsh = [ self._path_mx+"_camera.ini", self._path_mx+"_para.ini" ]
             tohash = [ hashfile(f) for f in fsh ]
-            tohash.append(os.path.basename(self.path))
+            tohash.append(self.path.name)
             # Hash a maximum of ~1MB of the tdms file
             tohash.append(hashfile(self.path, blocksize=65536, count=20))
             self._hash = hashobj(tohash)
@@ -182,22 +179,23 @@ def get_project_name_from_path(path, append_mx=False):
     append_mx: bool
         append measurement number, e.g. "M1"
     """
-    if path.endswith(".tdms"):
-        dirn = os.path.dirname(path)
-        mx = os.path.basename(path).split("_")[0]
-    elif os.path.isdir(path):
+    path = pathlib.Path(path)
+    if path.suffix == ".tdms":
+        dirn = path.parent
+        mx = path.name.split("_")[0]
+    elif path.is_dir():
         dirn = path
         mx = ""
     else:
-        dirn = os.path.dirname(path)
+        dirn = path.parent
         mx = ""
 
     project = ""
     if mx:
         # check para.ini
-        para = os.path.join(dirn, mx + "_para.ini")
-        if os.path.exists(para):
-            with io.open(para) as fd:
+        para = dirn / (mx + "_para.ini")
+        if para.exists():
+            with para.open() as fd:
                 lines = fd.readlines()
             for line in lines:
                 if line.startswith("Sample Name ="):
@@ -206,9 +204,9 @@ def get_project_name_from_path(path, append_mx=False):
     
     if not project:
         # check if the directory contains data or is online
-        root1, trail1 = os.path.split(dirn)
-        root2, trail2 = os.path.split(root1)
-        _root3, trail3 = os.path.split(root2)
+        root1, trail1 = dirn.parent, dirn.name
+        root2, trail2 = root1.parent, root1.name
+        trail3 = root2.name
         
         if trail1.lower() in ["online", "offline"]:
             # /home/peter/hans/HLC12398/online/

@@ -129,10 +129,10 @@ class RTDCBase(object):
     def __repr__(self):
         repre = self.identifier
         if self.path is not "none":
-            repre += " - file: {}".format(self.path)
+            repre += " - file: {}".format(str(self.path).decode("utf-8"))
         return repre
-    
-    
+
+
     @property
     def _filter(self):
         """return the current filter boolean array"""

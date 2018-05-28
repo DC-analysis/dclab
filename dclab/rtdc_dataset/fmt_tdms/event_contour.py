@@ -5,8 +5,6 @@ Class for efficiently handling contour data
 """
 from __future__ import division, print_function, unicode_literals
 
-import io
-import os
 import warnings
 
 import numpy as np
@@ -25,7 +23,7 @@ class ContourColumn(object):
         text file.
         """
         fname = self.find_contour_file(rtdc_dataset)
-        self.identifier = fname
+        self.identifier = str(fname).decode("utf-8") if fname else None
         if fname is not None:
             self._contour_data = ContourData(fname)
             self._initialized = False
@@ -93,25 +91,24 @@ class ContourColumn(object):
         
         Returns None if no contour file is found.
         """
-        tdmsname = os.path.basename(rtdc_dataset.path)
-        cont_id = os.path.splitext(tdmsname)[0]
-        candidates = sorted(os.listdir(rtdc_dataset._fdir))
-        candidates = [ c for c in candidates if c.endswith("_contours.txt") ]
+        cont_id = rtdc_dataset.path.stem
+        cands = [c.name for c in rtdc_dataset._fdir.rglob("*_contours.txt")]
+        cands = sorted(cands)
         # Search for perfect matches, e.g.
         # - M1_0.240000ul_s.tdms
         # - M1_0.240000ul_s_contours.txt
-        for c1 in candidates:
+        for c1 in cands:
             if c1.startswith(cont_id):
-                cfile = os.path.join(rtdc_dataset._fdir, c1)
+                cfile = rtdc_dataset._fdir / c1
                 break
         else:
             # Search for M* matches with most overlap, e.g.
             # - M1_0.240000ul_s.tdms
             # - M1_contours.txt
-            for c2 in candidates:
+            for c2 in cands:
                 if (c2.split("_")[0] == rtdc_dataset._mid):
                     # Do not confuse with M10_contours.txt
-                    cfile = os.path.join(rtdc_dataset._fdir, c2)
+                    cfile = rtdc_dataset._fdir / c2
                     break
             else:
                 msg = "No contour data found for {}".format(rtdc_dataset)
@@ -159,7 +156,7 @@ class ContourData(object):
         This function populates the internal list of contours
         as strings which will be available as `self.data`.
         """
-        with io.open(self.filename) as fd:
+        with self.filename.open() as fd:
             data = fd.read()
             
         ident = "Contour in frame"

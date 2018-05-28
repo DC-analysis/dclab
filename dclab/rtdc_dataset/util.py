@@ -4,7 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 import hashlib
-import io
+import pathlib
 import sys
 
 import h5py
@@ -30,7 +30,8 @@ def hashfile(fname, blocksize=65536, count=0):
         number of blocks read from the file
     """
     hasher = hashlib.md5()
-    with io.open(fname, 'rb') as fd:
+    fname = pathlib.Path(fname)
+    with fname.open('rb') as fd:
         buf = fd.read(blocksize)
         ii = 0
         while len(buf) > 0:
@@ -51,6 +52,8 @@ def obj2str(obj):
     """String representation of an object for hashing"""
     if isinstance(obj, str_classes):
         return obj.encode("utf-8")
+    elif isinstance(obj, pathlib.Path):
+        return obj2str(str(obj))
     elif isinstance(obj, (bool, int, float)):
         return str(obj).encode("utf-8")
     elif obj is None:

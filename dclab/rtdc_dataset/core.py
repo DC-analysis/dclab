@@ -5,6 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import abc
 import random
+import sys
 
 import numpy as np
 
@@ -16,6 +17,7 @@ from .. import kde_methods
 from .ancillaries import AncillaryFeature
 from .export import Export
 from .filter import Filter
+from numpy.distutils.system_info import agg2_info
 
 
 class RTDCBase(object):
@@ -129,7 +131,10 @@ class RTDCBase(object):
     def __repr__(self):
         repre = self.identifier
         if self.path is not "none":
-            repre += " - file: {}".format(str(self.path).decode("utf-8"))
+            if sys.version_info[0] == 2:
+                repre += " - file: {}".format(str(self.path).decode("utf-8"))
+            else:
+                repre += " - file: {}".format(self.path)
         return repre
 
 

@@ -5,6 +5,7 @@ Class for efficiently handling contour data
 """
 from __future__ import division, print_function, unicode_literals
 
+import sys
 import warnings
 
 import numpy as np
@@ -23,7 +24,13 @@ class ContourColumn(object):
         text file.
         """
         fname = self.find_contour_file(rtdc_dataset)
-        self.identifier = str(fname).decode("utf-8") if fname else None
+        if fname is None:
+            self.identifier = None
+        else:
+            if sys.version_info[0] == 2:
+                self.identifier = str(fname).decode("utf-8")
+            else:
+                self.identifier = str(fname)
         if fname is not None:
             self._contour_data = ContourData(fname)
             self._initialized = False

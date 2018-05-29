@@ -68,7 +68,7 @@ def test_contour_naming():
     shutil.copy(str(contfile), str(contfileshort))
     shutil.copy(str(contfile), str(contfileexact))
     ds2 = new_dataset(dp)
-    assert ds2["contour"].identifier == str(contfileexact)
+    assert str(ds2["contour"].identifier) == str(contfileexact)
     assert not np.allclose(ds2["contour"][1], 0)
     del ds2
 
@@ -78,7 +78,7 @@ def test_contour_naming():
     contfileexact.unlink()
     contfile.rename(contfileshort)
     ds3 = new_dataset(dp)
-    assert ds3["contour"].identifier == str(contfileshort)
+    assert str(ds3["contour"].identifier) == str(contfileshort)
     del ds3
     contfileshort.rename(contfile)
 
@@ -86,7 +86,7 @@ def test_contour_naming():
     with (dn / "M10_contours.txt").open(mode="w"):
         pass
     ds4 = new_dataset(dp)
-    assert ds4["contour"].identifier == str(contfile)
+    assert str(ds4["contour"].identifier) == str(contfile)
     del ds4
 
     # Check when there is no contour file

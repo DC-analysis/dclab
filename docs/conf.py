@@ -99,6 +99,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'dclab'
+github_project = 'ZELLMECHANIK-DRESDEN/' + project
 copyright = '2015, Paul Müller'
 author = 'Paul Müller'
 

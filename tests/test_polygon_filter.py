@@ -306,7 +306,10 @@ def test_wrong_load_key():
     else:
         raise ValueError("_load should not accept unknown key!")
     dclab.PolygonFilter.clear_all_filters()
-
+    try:
+        os.remove(tf)
+    except OSError:
+        pass
 
 if __name__ == "__main__":
     # Run all tests

@@ -312,7 +312,7 @@ def test_unicode_paths():
     path = pathlib.Path(path)
     pp = path.parent
     # create a unicode name
-    pp2 = pathlib.Path(tempfile.mkdtemp(prefix="dclàb_tést_asgård_únícodè"))
+    pp2 = pathlib.Path(tempfile.mktemp(prefix="dclàb_tést_asgård_únícodè"))
     pp.rename(pp2)
     ds = new_dataset(pp2 / path.name)
     ds.__repr__()

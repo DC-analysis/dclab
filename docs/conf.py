@@ -82,6 +82,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxcontrib.bibtex',
               'sphinxarg.ext',
               'fancy_include',
+              'github_changelog',
               ]
 
 # Add any paths that contain templates here, relative to this directory.

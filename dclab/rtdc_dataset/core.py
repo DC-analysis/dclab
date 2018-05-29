@@ -17,7 +17,6 @@ from .. import kde_methods
 from .ancillaries import AncillaryFeature
 from .export import Export
 from .filter import Filter
-from numpy.distutils.system_info import agg2_info
 
 
 class RTDCBase(object):

@@ -4,7 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 from distutils.version import LooseVersion
-import os
+import pathlib
 import warnings
 
 import h5py
@@ -31,7 +31,7 @@ class UnknownKeyWarning(UserWarning):
 class H5Events(object):
     def __init__(self, h5path):
         self.path = h5path
-        self._h5 = h5py.File(h5path, mode="r")
+        self._h5 = h5py.File(str(h5path), mode="r")
 
     def __contains__(self, key):
         return key in self.keys()
@@ -105,6 +105,7 @@ class RTDC_HDF5(RTDCBase):
         """
         super(RTDC_HDF5, self).__init__(*args, **kwargs)
 
+        h5path = pathlib.Path(h5path)
         self._hash = None
         self.path = h5path
 
@@ -159,7 +160,7 @@ class RTDC_HDF5(RTDCBase):
     def hash(self):
         """Hash value based on file name and content"""
         if self._hash is None:
-            tohash = [os.path.basename(self.path)]
+            tohash = [self.path.name]
             # Hash a maximum of ~1MB of the hdf5 file
             tohash.append(hashfile(self.path, blocksize=65536, count=20))
             self._hash = hashobj(tohash)

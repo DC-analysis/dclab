@@ -6,8 +6,6 @@ of real-time deformability cytometry (RT-DC) data sets.
 """
 from __future__ import division, print_function, unicode_literals
 
-import os
-
 from . import definitions as dfn
 from . import features
 from . import isoelastics

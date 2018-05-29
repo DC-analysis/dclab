@@ -3,8 +3,6 @@
 """Export RT-DC measurement data"""
 from __future__ import division, print_function, unicode_literals
 
-import io
-import os
 import pathlib
 import warnings
 
@@ -43,19 +41,20 @@ class Export(object):
         -----
         Raises OSError if current data set does not contain image data
         """
+        path = pathlib.Path(path)
         ds = self.rtdc_ds
         # Make sure that path ends with .avi
-        if not path.endswith(".avi"):
-            path += ".avi"
+        if path.suffix != ".avi":
+            path = path.with_name(path.name + ".avi")
         # Check if file already exist
-        if not override and os.path.exists(path):
+        if not override and path.exists():
             raise OSError("File already exists: {}\n".format(
-                path.encode("ascii", "ignore")) +
+                str(path).encode("ascii", "ignore")) +
                 "Please use the `override=True` option.")
         # Start exporting
         if "image" in ds:
             # Open video for writing
-            vout = imageio.get_writer(uri=path,
+            vout = imageio.get_writer(uri=str(path),
                                       format="FFMPEG",
                                       fps=25,
                                       codec="rawvideo",
@@ -112,14 +111,15 @@ class Export(object):
         """
         features = [c.lower() for c in features]
         ds = self.rtdc_ds
-
+        
+        path = pathlib.Path(path)
         # Make sure that path ends with .fcs
-        if not path.endswith(".fcs"):
-            path += ".fcs"
+        if path.suffix != ".fcs":
+            path = path.with_name(path.name + ".fcs")
         # Check if file already exist
-        if not override and os.path.exists(path):
+        if not override and path.exists():
             raise OSError("File already exists: {}\n".format(
-                path.encode("ascii", "ignore")) +
+                str(path).encode("ascii", "ignore")) +
                 "Please use the `override=True` option.")
         # Check that features are in dfn.scalar_feature_names
         for c in features:
@@ -137,7 +137,7 @@ class Export(object):
             data = [ds[c] for c in features]
 
         data = np.array(data).transpose()
-        fcswrite.write_fcs(filename=path,
+        fcswrite.write_fcs(filename=str(path),
                            chn_names=chn_names,
                            data=data)
 
@@ -278,14 +278,15 @@ class Export(object):
             If set to `False`, raises `OSError` if ``path`` exists.
         """
         features = [c.lower() for c in features]
+        path = pathlib.Path(path)
         ds = self.rtdc_ds
         # Make sure that path ends with .tsv
-        if not path.endswith(".tsv"):
-            path += ".tsv"
+        if path.suffix != ".tsv":
+            path = path.with_name(path.name + ".tsv")
         # Check if file already exist
-        if not override and os.path.exists(path):
+        if not override and path.exists():
             raise OSError("File already exists: {}\n".format(
-                path.encode("ascii", "ignore")) +
+                str(path).encode("ascii", "ignore")) +
                 "Please use the `override=True` option.")
         # Check that features are in dfn.scalar_feature_names
         for c in features:
@@ -293,14 +294,14 @@ class Export(object):
                 raise ValueError("Unknown feature name {}".format(c))
 
         # Open file
-        with io.open(path, "w") as fd:
+        with path.open("w") as fd:
             # write header
             header1 = "\t".join([c for c in features])
             fd.write("# "+header1+"\n")
             header2 = "\t".join([dfn.feature_name2label[c] for c in features])
             fd.write("# "+header2+"\n")
 
-        with open(path, "ab") as fd:
+        with path.open("ab") as fd:
             # write data
             if filtered:
                 data = [ds[c][ds._filter] for c in features]

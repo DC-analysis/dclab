@@ -3,7 +3,6 @@
 """PolygonFilter classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
-import io
 import pathlib
 import sys
 import warnings
@@ -313,7 +312,7 @@ class PolygonFilter(object):
         closed and returned. 
         """
         if isinstance(polyfile, (string_classes, pathlib.Path)):
-            fobj = io.open(str(polyfile), "a")
+            fobj = pathlib.Path(polyfile).open("a")
         else:
             # file or tempfile._TemporaryFileWrapper
             fobj = polyfile

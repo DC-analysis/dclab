@@ -65,7 +65,7 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
 def find_data(path):
     """Find tdms and rtdc data files in a directory"""
     path = pathlib.Path(path)
-    tdmsfiles = fmt_tdms.get_tdms_files(str(path))
+    tdmsfiles = fmt_tdms.get_tdms_files(path)
     rtdcfiles = [r for r in path.rglob("*.rtdc") if r.is_file()]
     files = [pathlib.Path(ff) for ff in rtdcfiles + tdmsfiles]
     return files

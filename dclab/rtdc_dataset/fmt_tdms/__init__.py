@@ -220,7 +220,7 @@ def get_project_name_from_path(path, append_mx=False):
             project = trail1
 
     if append_mx:
-        project += " - "+mx
+        project += " - " + mx
     
     return project
 
@@ -237,7 +237,4 @@ def get_tdms_files(directory):
     tdmslist = [r for r in path.rglob("*.tdms") if r.is_file()]
     # exclude traces files
     tdmslist = [r for r in tdmslist if not r.name.endswith("_traces.tdms")]
-    # convert to strings
-    tdmslist = [str(r) for r in tdmslist]
-    tdmslist.sort()
-    return tdmslist
+    return sorted(tdmslist)

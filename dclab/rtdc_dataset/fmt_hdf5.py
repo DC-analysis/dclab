@@ -126,7 +126,8 @@ class RTDC_HDF5(RTDCBase):
                       + "dclab-tdms2rtdc / export the data again."
                 raise OldFormatNotSupportedError(msg)
 
-        self.title = self.config["experiment"]["sample"]
+        self.title = "{} - M{}".format(self.config["experiment"]["sample"],
+                                       self.config["experiment"]["run index"])
 
         # Set up filtering
         self._init_filters()

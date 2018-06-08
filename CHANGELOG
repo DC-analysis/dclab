@@ -1,5 +1,6 @@
 0.5.2
  - Migrate from os.path to pathlib (#50)
+ - fmt_hdf5: Add run index to title
 0.5.1
  - Setup: add dependencies for statsmodels
  - Tests: filter known warnings

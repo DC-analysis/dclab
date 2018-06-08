@@ -159,5 +159,5 @@ class ImageMap(object):
     @property
     def video_handle(self):
         if self._cap is None:
-            self._cap = imageio.get_reader(str(self.filename))
+            self._cap = imageio.get_reader(self.filename)
         return self._cap

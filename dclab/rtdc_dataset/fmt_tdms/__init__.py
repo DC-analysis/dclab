@@ -64,23 +64,24 @@ class RTDC_TDMS(RTDCBase):
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC data set with a tdms file.
         """
-        tdms_file = TdmsFile(str(tdms_filename))
-        # time is always there
-        table = "Cell Track"
-        # Edit naming.dclab2tdms to add features
-        for arg in naming.tdms2dclab:
-            try:
-                data = tdms_file.object(table, arg).data
-            except KeyError:
-                pass
-            else:
-                if data is None or len(data)==0:
-                    # Ignore empty features. npTDMS treats empty
-                    # features in the following way:
-                    # - in nptdms 0.8.2, `data` is `None`
-                    # - in nptdms 0.9.0, `data` is an array of length 0
-                    continue
-                self._events[naming.tdms2dclab[arg]] = data
+        with tdms_filename.open("rb") as fd:
+            tdms_file = TdmsFile(fd)
+            # time is always there
+            table = "Cell Track"
+            # Edit naming.dclab2tdms to add features
+            for arg in naming.tdms2dclab:
+                try:
+                    data = tdms_file.object(table, arg).data
+                except KeyError:
+                    pass
+                else:
+                    if data is None or len(data)==0:
+                        # Ignore empty features. npTDMS treats empty
+                        # features in the following way:
+                        # - in nptdms 0.8.2, `data` is `None`
+                        # - in nptdms 0.9.0, `data` is an array of length 0
+                        continue
+                    self._events[naming.tdms2dclab[arg]] = data
 
         # Set up configuration
         tdms_config = Configuration(files=[self._path_mx + "_para.ini",

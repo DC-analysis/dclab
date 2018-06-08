@@ -1,3 +1,5 @@
+0.5.3
+ - fix: avoid a few unicode gotchas
 0.5.2
  - Migrate from os.path to pathlib (#50)
  - fmt_hdf5: Add run index to title

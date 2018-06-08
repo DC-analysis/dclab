@@ -128,6 +128,7 @@ def test_hdf5():
     ddict = example_data_dict(size=127, keys=keys)
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5.rtdc")
@@ -153,6 +154,7 @@ def test_hdf5_filtered():
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
     ds1.filter.manual[2] = False
     ds1.apply_filter()
     fta = ds1.filter.manual.copy()
@@ -179,6 +181,7 @@ def test_hdf5_contour_image_trace():
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")

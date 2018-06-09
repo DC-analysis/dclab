@@ -181,7 +181,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
     area_um = np.array(area_um, copy=copy, dtype=float)
     # Get lut data
     lut_path = resource_filename("dclab.features", "emodulus_lut.txt")
-    with pathlib.Path(lut_path).open("r") as lufd:
+    with pathlib.Path(lut_path).open("rb") as lufd:
         lut = np.loadtxt(lufd)
     # These meta data are the simulation parameters of the lut
     lut_channel_width = 20.0

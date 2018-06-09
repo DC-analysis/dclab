@@ -7,8 +7,6 @@ import pathlib
 import time
 
 import numpy as np
-from nptdms import TdmsFile
-
 from ... import definitions as dfn
 
 from ..config import Configuration
@@ -20,7 +18,7 @@ from .event_image import ImageColumn
 from .event_mask import MaskColumn
 from .event_trace import TraceColumn
 from . import naming
-
+from .load import wrap_tdmsfile
 
 class RTDC_TDMS(RTDCBase):
     def __init__(self, tdms_path, *args, **kwargs):
@@ -46,7 +44,6 @@ class RTDC_TDMS(RTDCBase):
         # tdms-related convenience properties
         self._fdir = tdms_path.parent
         self._mid = tdms_path.name.split("_")[0]
-        self._path_mx = str(tdms_path.with_name(self._mid))
         
         self._init_data_with_tdms(tdms_path)
 
@@ -64,28 +61,28 @@ class RTDC_TDMS(RTDCBase):
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC data set with a tdms file.
         """
-        with tdms_filename.open("rb") as fd:
-            tdms_file = TdmsFile(fd)
-            # time is always there
-            table = "Cell Track"
-            # Edit naming.dclab2tdms to add features
-            for arg in naming.tdms2dclab:
-                try:
-                    data = tdms_file.object(table, arg).data
-                except KeyError:
-                    pass
-                else:
-                    if data is None or len(data)==0:
-                        # Ignore empty features. npTDMS treats empty
-                        # features in the following way:
-                        # - in nptdms 0.8.2, `data` is `None`
-                        # - in nptdms 0.9.0, `data` is an array of length 0
-                        continue
-                    self._events[naming.tdms2dclab[arg]] = data
+        tdms_file = wrap_tdmsfile(tdms_filename)
+        # time is always there
+        table = "Cell Track"
+        # Edit naming.dclab2tdms to add features
+        for arg in naming.tdms2dclab:
+            try:
+                data = tdms_file.object(table, arg).data
+            except KeyError:
+                pass
+            else:
+                if data is None or len(data)==0:
+                    # Ignore empty features. npTDMS treats empty
+                    # features in the following way:
+                    # - in nptdms 0.8.2, `data` is `None`
+                    # - in nptdms 0.9.0, `data` is an array of length 0
+                    continue
+                self._events[naming.tdms2dclab[arg]] = data
 
         # Set up configuration
-        tdms_config = Configuration(files=[self._path_mx + "_para.ini",
-                                           self._path_mx + "_camera.ini"],
+        tdms_config = Configuration(
+            files=[self.path.with_name(self._mid + "_para.ini"),
+                   self.path.with_name(self._mid + "_camera.ini")],
                                     )
         dclab_config = Configuration()
         for section in naming.configmap:
@@ -157,7 +154,8 @@ class RTDC_TDMS(RTDCBase):
         """Hash value based on file name and .ini file content"""
         if self._hash is None:
             # Only hash _camera.ini and _para.ini
-            fsh = [ self._path_mx+"_camera.ini", self._path_mx+"_para.ini" ]
+            fsh = [self.path.with_name(self._mid + "_camera.ini"),
+                   self.path.with_name(self._mid + "_para.ini")]
             tohash = [ hashfile(f) for f in fsh ]
             tohash.append(self.path.name)
             # Hash a maximum of ~1MB of the tdms file

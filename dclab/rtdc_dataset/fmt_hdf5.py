@@ -5,6 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 from distutils.version import LooseVersion
 import pathlib
+import tempfile
 import warnings
 
 import h5py
@@ -31,7 +32,7 @@ class UnknownKeyWarning(UserWarning):
 class H5Events(object):
     def __init__(self, h5path):
         self.path = h5path
-        self._h5 = h5py.File(str(h5path), mode="r")
+        self._h5 = wrap_h5file(h5path, mode="r")
 
     def __contains__(self, key):
         return key in self.keys()
@@ -135,7 +136,7 @@ class RTDC_HDF5(RTDCBase):
     @staticmethod
     def parse_config(h5path):
         """Parse the RT-DC configuration of an hdf5 file"""
-        with h5py.File(h5path, mode="r") as fh5:
+        with wrap_h5file(h5path, mode="r") as fh5:
             h5attrs = dict(fh5.attrs)
 
         # Convert byte strings to unicode strings
@@ -166,3 +167,20 @@ class RTDC_HDF5(RTDCBase):
             tohash.append(hashfile(self.path, blocksize=65536, count=20))
             self._hash = hashobj(tohash)
         return self._hash
+
+
+def wrap_h5file(path, *args, **kwargs):
+    """A unicode-safe wrapper for opening hdf5 files
+
+    h5py.File accepts a string object (not unicode-safe).
+
+    This workaround creates a temporary symlink and loads the data
+    from there.
+    """
+    path = pathlib.Path(path)
+    tpath = tempfile.mktemp(prefix="dclab_h5py_workaround_", suffix=".h5")
+    tpath = pathlib.Path(tpath)
+    tpath.symlink_to(path)
+    h5 = h5py.File(str(tpath), *args, **kwargs)
+    tpath.unlink()
+    return h5

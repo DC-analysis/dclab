@@ -213,9 +213,9 @@ def check_dataset(path_or_ds):
 def load_file(path, identifier=None):
     path = pathlib.Path(path).resolve()
     if path.suffix == ".tdms":
-        return fmt_tdms.RTDC_TDMS(str(path), identifier=identifier)
+        return fmt_tdms.RTDC_TDMS(path, identifier=identifier)
     elif path.suffix == ".rtdc":
-        return fmt_hdf5.RTDC_HDF5(str(path), identifier=identifier)
+        return fmt_hdf5.RTDC_HDF5(path, identifier=identifier)
     else:
         raise ValueError("Unknown file extension: '{}'".format(path.suffix))
 

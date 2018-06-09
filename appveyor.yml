@@ -25,7 +25,6 @@ install:
   - "appveyor-retry pip install numpy scipy pandas patsy"
   # latest version of fcswrite
   - "appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
-
   # the rest
   - "appveyor-retry pip install ."
   # Download ffmpeg binary for imageio

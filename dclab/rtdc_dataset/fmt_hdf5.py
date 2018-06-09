@@ -172,15 +172,13 @@ class RTDC_HDF5(RTDCBase):
 def wrap_h5file(path, *args, **kwargs):
     """A unicode-safe wrapper for opening hdf5 files
 
-    h5py.File accepts a string object (not unicode-safe).
-
-    This workaround creates a temporary symlink and loads the data
-    from there.
+    This can be removed once moved to Python 3.
     """
-    path = pathlib.Path(path)
-    tpath = tempfile.mktemp(prefix="dclab_h5py_workaround_", suffix=".h5")
-    tpath = pathlib.Path(tpath)
-    tpath.symlink_to(path)
-    h5 = h5py.File(str(tpath), *args, **kwargs)
-    tpath.unlink()
+    try:  # ideal case
+        h5 = h5py.File(str(path), *args, **kwargs)
+    except UnicodeDecodeError:  # probably Python 2
+        try:
+            h5 = h5py.File(unicode(path), *args, **kwargs)
+        except BaseException:  # also Python 2
+            h5 = h5py.File(unicode(path).encode("utf-8"), *args, **kwargs)
     return h5

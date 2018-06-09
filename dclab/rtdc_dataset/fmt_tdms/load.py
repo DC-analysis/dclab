@@ -1,23 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import pathlib
-import tempfile
-
 from nptdms import TdmsFile
 
+
 def wrap_tdmsfile(path):
-    """A unicode-safe wrapper for loading tdms files
+    """A unicode-safe wrapper for opening tdms files
 
-    TdmsFile accepts a string object (not unicode-safe) or an open
-    file (problems under Windows with Anaconda).
-
-    This workaround creates a temporary symlink and loads the data
-    from there.
+    This can be removed once moved to Python 3.
     """
-    path = pathlib.Path(path)
-    tpath = tempfile.mktemp(prefix="dclab_nptdms_workaround_", suffix=".tdms")
-    tpath = pathlib.Path(tpath)
-    tpath.symlink_to(path)
-    data = TdmsFile(str(tpath))
-    tpath.unlink()
+    try:  # ideal case
+        data = TdmsFile(str(path))
+    except UnicodeDecodeError:  # probably Python 2
+        try:
+            data = TdmsFile(unicode(path))
+        except BaseException:  # also Python 2
+            data = TdmsFile(unicode(path).encode("utf-8"))
     return data

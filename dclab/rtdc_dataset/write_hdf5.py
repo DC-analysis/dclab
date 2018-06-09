@@ -11,6 +11,7 @@ import numpy as np
 from .. import definitions as dfn
 from .._version import version
 
+
 if sys.version_info[0] == 2:
     h5str = unicode
 else:
@@ -252,7 +253,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
             h5mode = "w"
         else:
             h5mode = "a"
-        h5obj = h5py.File(str(path_or_h5file), mode=h5mode)
+        h5obj = wrap_h5file(path_or_h5file, mode=h5mode)
 
     # Write meta
     for sec in meta:
@@ -334,3 +335,21 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
     else:
         h5obj.close()
         return None
+
+
+def wrap_h5file(path, *args, **kwargs):
+    """A unicode-safe wrapper for opening hdf5 files
+
+    This can be removed once moved to Python 3.
+    """
+    try:  # ideal case
+        h5 = h5py.File(str(path), *args, **kwargs)
+    except UnicodeDecodeError:  # probably Python 2
+        try:
+            h5 = h5py.File(unicode(path), *args, **kwargs)
+        except BaseException:  # also Python 2
+            try:
+                h5 = h5py.File(unicode(path).encode("utf-8"), *args, **kwargs)
+            except BaseException:
+                h5 = h5py.File(str(path).decode("utf-8"), *args, **kwargs)
+    return h5

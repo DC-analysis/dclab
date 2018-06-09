@@ -5,16 +5,15 @@ from __future__ import division, print_function, unicode_literals
 
 from distutils.version import LooseVersion
 import pathlib
-import tempfile
 import warnings
 
-import h5py
 import numpy as np
 
 from dclab import definitions as dfn
 from .config import Configuration
 from .core import RTDCBase
 from .util import hashobj, hashfile
+from .write_hdf5 import wrap_h5file
 
 
 #: rtdc files exported with dclab prior to this version are not supported
@@ -168,17 +167,3 @@ class RTDC_HDF5(RTDCBase):
             self._hash = hashobj(tohash)
         return self._hash
 
-
-def wrap_h5file(path, *args, **kwargs):
-    """A unicode-safe wrapper for opening hdf5 files
-
-    This can be removed once moved to Python 3.
-    """
-    try:  # ideal case
-        h5 = h5py.File(str(path), *args, **kwargs)
-    except UnicodeDecodeError:  # probably Python 2
-        try:
-            h5 = h5py.File(unicode(path), *args, **kwargs)
-        except BaseException:  # also Python 2
-            h5 = h5py.File(unicode(path).encode("utf-8"), *args, **kwargs)
-    return h5

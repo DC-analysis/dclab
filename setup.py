@@ -48,7 +48,7 @@ setup(
                       "h5py",            # required by: hdf5 format
                       "imageio>=2.3.0",  # required by: tdms format, avi export
                       "nptdms",          # required by: tdms format
-                      "numpy>=1.5.1",
+                      "numpy>=1.12.0",   # support for pathlib
                       "pathlib",
                       "scipy>=0.12.0",
                       "statsmodels>=0.5.0",

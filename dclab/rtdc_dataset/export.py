@@ -54,7 +54,7 @@ class Export(object):
         # Start exporting
         if "image" in ds:
             # Open video for writing
-            vout = imageio.get_writer(uri=str(path),
+            vout = imageio.get_writer(uri=path,
                                       format="FFMPEG",
                                       fps=25,
                                       codec="rawvideo",

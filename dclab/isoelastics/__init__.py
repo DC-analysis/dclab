@@ -363,7 +363,7 @@ class Isoelastics(object):
         assert meta["method"] in VALID_METHODS
 
         # Load isoelasics
-        isodata = np.loadtxt(str(path))
+        isodata = np.loadtxt(path)
 
         # Slice out individual isoelastics
         emoduli = np.unique(isodata[:, 2])

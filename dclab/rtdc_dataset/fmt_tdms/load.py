@@ -14,5 +14,8 @@ def wrap_tdmsfile(path):
         try:
             data = TdmsFile(unicode(path))
         except BaseException:  # also Python 2
-            data = TdmsFile(unicode(path).encode("utf-8"))
+            try:
+                data = TdmsFile(unicode(path).encode("utf-8"))
+            except BaseException:
+                data = TdmsFile(str(path).decode("utf-8"))
     return data

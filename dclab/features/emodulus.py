@@ -3,6 +3,7 @@
 """Computation of apparent Young's modulus for RT-DC measurements"""
 from __future__ import division, print_function, unicode_literals
 
+import pathlib
 from pkg_resources import resource_filename
 
 import numpy as np
@@ -180,7 +181,8 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
     area_um = np.array(area_um, copy=copy, dtype=float)
     # Get lut data
     lut_path = resource_filename("dclab.features", "emodulus_lut.txt")
-    lut = np.loadtxt(lut_path)
+    with pathlib.Path(lut_path).open("r") as lufd:
+        lut = np.loadtxt(lufd)
     # These meta data are the simulation parameters of the lut
     lut_channel_width = 20.0
     lut_flow_rate = 0.04
@@ -232,5 +234,3 @@ def normalize(data, dmax):
     """Perform normalization inplace"""
     data /= dmax
     return data
-
-

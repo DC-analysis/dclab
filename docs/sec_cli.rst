@@ -2,6 +2,7 @@
 Command line interface
 ======================
 
+.. _sec_tdms2rtdc:
 
 tdms2rtdc
 ---------

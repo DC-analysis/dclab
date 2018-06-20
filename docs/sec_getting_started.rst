@@ -2,8 +2,8 @@
 Getting started
 ===============
 
-Installing dclab
-================
+Installation
+============
 
 Dclab depends on several other Python packages:
 
@@ -35,6 +35,44 @@ will be installed to build the required dclab extensions. If this process
 fails, please request a binary wheel for your platform (e.g. Windows 64bit)
 and Python version (e.g. 3.6) by creating a new
 `issue <https://github.com/ZellMechanik-Dresden/dclab/issues>`_.
+
+
+Use cases
+=========
+If you are a frequent user of RT-DC, you might run into problems that
+cannot (yet) be addressed with the graphical user interface
+`ShapeOut <https://github.com/ZellMechanik-Dresden/ShapeOut>`_.
+Here is a list of use cases that would motivate an installation of dclab.
+
+1. You would like to convert old .tdms-based data sets to the new .rtdc
+   file format, because of enhanced speed in ShapeOut and reduced
+   disk usage. What you are looking for is the command line program
+   :ref:`sec_tdms2rtdc` that comes with dclab. It allows to batch-convert
+   multiple measurements at a time. Note that you should keep the original
+   .tdms files backed-up somewhere, because there might be future
+   improvements or bug fixes from which you would like to benefit.
+2. You would like to apply a simple set of filters (e.g. polygon filters that you
+   exported from within ShapeOut) to every new measurement you take and
+   apply a custom data analysis pipeline to the filtered data. This is a
+   straight-forward Python coding problem with dclab. After reading the
+   basic usage section below, please have a look at the
+   :ref:`polygon filter reference <sec_ref_polygon_filter>`.
+3. You would like to do advanced statistics or combine your RT-DC
+   analysis with other fancy approaches such as machine-learning.
+   It would be too laborious to do the analysis in ShapeOut, export the
+   data as text files, and then open them in your custom Python script.
+   If your initial analysis step with ShapeOut only involves tasks
+   that can be automatized, why not use dclab from the beginning? 
+4. You simulated RT-DC data and plan to import them in ShapeOut
+   for testing. Once you have loaded your data as a numpy array, you
+   can instantiate an :class:`RTDC_Dict <dclab.rtdc_dataset.fmt_dict.RTDC_Dict`
+   class and then use the :class:`Export class <dclab.rtdc_dataset.export.Export`
+   to create an .rtdc data file.
+
+If you are still unsure about whether to use dclab or not, you might
+want to look at the :ref:`example section <sec_examples>`. If you need
+advice, do not hesitate to
+`create an issue <https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues>`_.
 
 
 Basic usage
@@ -100,3 +138,7 @@ Non-scalar features do not support fancy indexing (i.e.
         # this is equivalent to ds["bright_avg"][ii]
         bright_avg = np.mean(image[mask])
         print("average brightness of event {}: {:.1f}".format(ii, bright_avg))
+
+If you need more information to get started on your particular problem,
+you might want to check out the :ref:`examples section <sec_examples>` and the
+:ref:`advanced scripting section <sec_advanced_scripting>`.

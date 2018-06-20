@@ -6,16 +6,22 @@ Code reference
   :maxdepth: 2
 
 
-definitions
-===========
+
+
+global definitions
+==================
+These definitionas are used throughout the dclab/ShapeIn/ShapeOut ecosystem.
 
 .. automodule:: dclab.definitions
    :members:
    :undoc-members:
 
 
+low-level functionalities
+=========================
+
 downsampling
-============
+------------
 
 .. automodule:: dclab.downsampling
    :members:
@@ -23,14 +29,14 @@ downsampling
 
 
 features
-========
+--------
 
 .. automodule:: dclab.features
    :members:
    :undoc-members:
 
 isoelastics
-===========
+-----------
 
 .. automodule:: dclab.isoelastics
    :members:
@@ -38,33 +44,34 @@ isoelastics
 
 
 kde_methods
-===========
+-----------
 
 .. automodule:: dclab.kde_methods
    :members:
    :undoc-members:
 
 
+.. _sec_ref_polygon_filter:
+
 polygon_filter
-==============
+--------------
 
 .. automodule:: dclab.polygon_filter
    :members:
    :undoc-members:
 
 
-rtdc_dataset
-============
-
-.. automodule:: dclab.rtdc_dataset
-   :members:
-   :undoc-members:
-
-
 statistics
-==========
+----------
 
 .. automodule:: dclab.statistics
    :members:
    :undoc-members:
 
+
+RT-DC dataset manipulation
+==========================
+
+.. automodule:: dclab.rtdc_dataset
+   :members:
+   :undoc-members:

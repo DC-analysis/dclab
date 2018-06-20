@@ -12,11 +12,12 @@ This is the documentation of dclab version |release|.
    :caption: Contents:
 
    sec_getting_started
-   examples
    sec_cli
+   sec_examples
+   sec_advanced_scripting
    sec_code_reference
    sec_changelog
-   z_bib
+   sec_z_bib
    sec_imprint
 
 

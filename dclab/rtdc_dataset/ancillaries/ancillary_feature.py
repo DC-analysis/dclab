@@ -54,7 +54,7 @@ class AncillaryFeature():
             Required configuration parameters to compute the feature,
             e.g. ["calculation", ["emodulus model", "emodulus viscosity"]]
         req_features: list
-            Required existing features in the data set,
+            Required existing features in the dataset,
             e.g. ["area_cvx", "deform"]
         priority: int
             The priority of the feature; if there are multiple
@@ -83,12 +83,12 @@ class AncillaryFeature():
 
     @staticmethod
     def available_features(rtdc_ds):
-        """Determine available features for an RT-DC data set
+        """Determine available features for an RT-DC dataset
 
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
-            The data set to check availability for
+            The dataset to check availability for
 
         Returns
         -------
@@ -108,7 +108,7 @@ class AncillaryFeature():
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
-            The data set to compute the feature for
+            The dataset to compute the feature for
 
         Returns
         -------
@@ -172,7 +172,7 @@ class AncillaryFeature():
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
-            The data set to check availability for
+            The dataset to check availability for
 
         Returns
         -------

@@ -39,7 +39,7 @@ class Export(object):
 
         Notes
         -----
-        Raises OSError if current data set does not contain image data
+        Raises OSError if current dataset does not contain image data
         """
         path = pathlib.Path(path)
         ds = self.rtdc_ds
@@ -90,7 +90,7 @@ class Export(object):
         Parameters
         ----------
         mm: instance of dclab.RTDCBase
-            The data set that will be exported.
+            The dataset that will be exported.
         path : str
             Path to a .tsv file. The ending .tsv is added automatically.
         features : list of str
@@ -202,7 +202,7 @@ class Export(object):
             # write each feature individually
             for feat in features:
                 # event-wise, because
-                # - tdms-based data sets don't allow indexing with numpy
+                # - tdms-based datasets don't allow indexing with numpy
                 # - there might be memory issues
                 if feat == "contour":
                     cont_list = []

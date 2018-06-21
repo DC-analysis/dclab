@@ -13,7 +13,7 @@ from helper_methods import retrieve_data, cleanup
 def test_simple_bright():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     for ii in range(2, 7):
-        # This stripped data set has only 7 video frames / contours
+        # This stripped dataset has only 7 video frames / contours
         image = ds["image"][ii]
         mask = ds["mask"][ii]
         avg, std = get_bright(mask=mask, image=image, ret_data="avg,sd")

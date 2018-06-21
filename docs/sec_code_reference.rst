@@ -7,6 +7,7 @@ Code reference
 
 
 
+.. _sec_ref_definitions:
 
 global definitions
 ==================
@@ -20,6 +21,8 @@ These definitionas are used throughout the dclab/ShapeIn/ShapeOut ecosystem.
 low-level functionalities
 =========================
 
+.. _sec_ref_downsampling:
+
 downsampling
 ------------
 
@@ -28,12 +31,17 @@ downsampling
    :undoc-members:
 
 
+.. _sec_ref_features:
+
 features
 --------
 
 .. automodule:: dclab.features
    :members:
    :undoc-members:
+
+
+.. _sec_ref_isoelastics:
 
 isoelastics
 -----------
@@ -42,6 +50,8 @@ isoelastics
    :members:
    :undoc-members:
 
+
+.. _sec_ref_kde_methods:
 
 kde_methods
 -----------
@@ -61,6 +71,8 @@ polygon_filter
    :undoc-members:
 
 
+.. _sec_ref_statistics:
+
 statistics
 ----------
 
@@ -69,9 +81,17 @@ statistics
    :undoc-members:
 
 
+.. _sec_ref_rtdc_dataset:
+
 RT-DC dataset manipulation
 ==========================
 
 .. automodule:: dclab.rtdc_dataset
    :members:
    :undoc-members:
+
+   
+.. _sec_ref_rtdc_export:
+
+Export
+------

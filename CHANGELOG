@@ -85,7 +85,7 @@
 0.2.6
  - Return event images as gray scale (#17) 
  - Bugfixes:
-   - Shrink ancillary column size if it exceeds data set size
+   - Shrink ancillary column size if it exceeds dataset size
    - Generate random RTDCBase.identifier (do not use RTDCBase.hash)
      to fix problem with identical identifiers for hierarchy children
    - Correctly determine contour data files (tdms file format)
@@ -105,7 +105,7 @@
  - Add (ancilliary) computation of volume (#11)
  - Add convenience methods for `Configuration`
  - Refactoring (#8):
-   - Separate classes for .tdms, dict-based, and hierarchy data sets
+   - Separate classes for .tdms, dict-based, and hierarchy datasets
    - Introduce "_events" attribute for stored data
    - Data columns (including image, trace, contour) are accessed via
      keys instead of attributes.

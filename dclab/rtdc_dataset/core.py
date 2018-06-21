@@ -43,7 +43,7 @@ class RTDCBase(object):
         self.export = Export(self)
         # Unique identifier
         if identifier is None:
-            # Generate a unique identifier for this data set
+            # Generate a unique identifier for this dataset
             rhex = [random.choice('0123456789abcdef') for _n in range(7)]
             self._identifier = "mm-{}_{}".format(self.format, "".join(rhex))
         else:
@@ -124,7 +124,7 @@ class RTDCBase(object):
             if length:
                 return length
         else:
-            raise ValueError("Could not determine size of data set.")
+            raise ValueError("Could not determine size of dataset.")
 
 
     def __repr__(self):
@@ -174,7 +174,7 @@ class RTDCBase(object):
 
 
     def apply_filter(self, force=[]):
-        """Computes the filters for the data set"""
+        """Computes the filters for the dataset"""
         self.filter.update(force)
 
 

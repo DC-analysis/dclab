@@ -12,7 +12,7 @@ from .cfg_funcs import fbool, fint, fintlist, func_types, lcstr
 CFG_ANALYSIS = {
     # filtering parameters
     "filtering": [
-        ["hierarchy parent", str, "Hierarchy parent of the data set"],
+        ["hierarchy parent", str, "Hierarchy parent of the dataset"],
         ["remove invalid events", fbool, "Remove events with inf/nan values"],
         ["enable filters", fbool, "Enable filtering"],
         ["limit events", fint, "Upper limit for number of filtered events"],

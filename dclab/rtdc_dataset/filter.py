@@ -22,7 +22,7 @@ class Filter(object):
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
-            The RT-DC data set the filter applies to
+            The RT-DC dataset the filter applies to
         
         
         """

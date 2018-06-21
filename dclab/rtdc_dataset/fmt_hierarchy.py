@@ -106,7 +106,7 @@ class HierarchyFilter(Filter):
         """
         if self.parent_changed:
             msg = "Cannot apply filter, because parent changed: " \
-                  + "data set {}. ".format(self.rtdc_ds) \
+                  + "dataset {}. ".format(self.rtdc_ds) \
                   + "Run `RTDC_Hierarchy.apply_filter()` first!"
             raise HierarchyFilterError(msg)
         else:

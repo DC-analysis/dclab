@@ -5,7 +5,7 @@ dclab
 
 
 This is a Python library for the post-measurement analysis of
-real-time deformability cytometry (RT-DC) data sets; an essential part of
+real-time deformability cytometry (RT-DC) datasets; an essential part of
 `ShapeOut <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut>`__.
 
 Documentation

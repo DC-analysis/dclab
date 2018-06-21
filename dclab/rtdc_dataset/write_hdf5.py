@@ -123,7 +123,7 @@ def store_trace(h5group, data, compression):
         grp = h5group["trace"]
 
     for flt in data:
-        # create traces data sets
+        # create traces datasets
         if flt not in grp:
             maxshape = (None, data[flt].shape[1])
             grp.create_dataset(flt,

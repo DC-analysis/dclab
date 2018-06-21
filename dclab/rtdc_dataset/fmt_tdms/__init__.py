@@ -59,7 +59,7 @@ class RTDC_TDMS(RTDCBase):
 
 
     def _init_data_with_tdms(self, tdms_filename):
-        """Initializes the current RT-DC data set with a tdms file.
+        """Initializes the current RT-DC dataset with a tdms file.
         """
         tdms_file = wrap_tdmsfile(tdms_filename)
         # time is always there

@@ -85,7 +85,7 @@ def retrieve_data(zip_file):
 
     _tempdirs.append(edest)
 
-    # Load RT-DC Data set
+    # Load RT-DC dataset
     # find tdms files
     datafiles = find_data(edest)
 

@@ -82,7 +82,7 @@ def get_statistics(rtdc_ds, methods=None, features=None):
     Parameters
     ----------
     rtdc_ds : instance of `dclab.rtdc_dataset.RTDCBase`.
-        The data set for which to compute the statistics.
+        The dataset for which to compute the statistics.
     methods : list of str or None
         The methods wih which to compute the statistics.
         The list of available methods is given with

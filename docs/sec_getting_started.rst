@@ -44,30 +44,30 @@ cannot (yet) be addressed with the graphical user interface
 `ShapeOut <https://github.com/ZellMechanik-Dresden/ShapeOut>`_.
 Here is a list of use cases that would motivate an installation of dclab.
 
-1. You would like to convert old .tdms-based data sets to the new .rtdc
-   file format, because of enhanced speed in ShapeOut and reduced
-   disk usage. What you are looking for is the command line program
-   :ref:`sec_tdms2rtdc` that comes with dclab. It allows to batch-convert
-   multiple measurements at a time. Note that you should keep the original
-   .tdms files backed-up somewhere, because there might be future
-   improvements or bug fixes from which you would like to benefit.
-2. You would like to apply a simple set of filters (e.g. polygon filters that you
-   exported from within ShapeOut) to every new measurement you take and
-   apply a custom data analysis pipeline to the filtered data. This is a
-   straight-forward Python coding problem with dclab. After reading the
-   basic usage section below, please have a look at the
-   :ref:`polygon filter reference <sec_ref_polygon_filter>`.
-3. You would like to do advanced statistics or combine your RT-DC
-   analysis with other fancy approaches such as machine-learning.
-   It would be too laborious to do the analysis in ShapeOut, export the
-   data as text files, and then open them in your custom Python script.
-   If your initial analysis step with ShapeOut only involves tasks
-   that can be automatized, why not use dclab from the beginning? 
-4. You simulated RT-DC data and plan to import them in ShapeOut
-   for testing. Once you have loaded your data as a numpy array, you
-   can instantiate an :class:`RTDC_Dict <dclab.rtdc_dataset.fmt_dict.RTDC_Dict`
-   class and then use the :class:`Export class <dclab.rtdc_dataset.export.Export`
-   to create an .rtdc data file.
+- You would like to convert old .tdms-based datasets to the new .rtdc
+  file format, because of enhanced speed in ShapeOut and reduced
+  disk usage. What you are looking for is the command line program
+  :ref:`sec_tdms2rtdc` that comes with dclab. It allows to batch-convert
+  multiple measurements at a time. Note that you should keep the original
+  .tdms files backed-up somewhere, because there might be future
+  improvements or bug fixes from which you would like to benefit.
+- You would like to apply a simple set of filters (e.g. polygon filters that you
+  exported from within ShapeOut) to every new measurement you take and
+  apply a custom data analysis pipeline to the filtered data. This is a
+  straight-forward Python coding problem with dclab. After reading the
+  basic usage section below, please have a look at the
+  :ref:`polygon filter reference <sec_ref_polygon_filter>`.
+- You would like to do advanced statistics or combine your RT-DC
+  analysis with other fancy approaches such as machine-learning.
+  It would be too laborious to do the analysis in ShapeOut, export the
+  data as text files, and then open them in your custom Python script.
+  If your initial analysis step with ShapeOut only involves tasks
+  that can be automatized, why not use dclab from the beginning? 
+- You simulated RT-DC data and plan to import them in ShapeOut
+  for testing. Once you have loaded your data as a numpy array, you
+  can instantiate an :class:`RTDC_Dict <dclab.rtdc_dataset.fmt_dict.RTDC_Dict`
+  class and then use the :class:`Export class <dclab.rtdc_dataset.export.Export`
+  to create an .rtdc data file.
 
 If you are still unsure about whether to use dclab or not, you might
 want to look at the :ref:`example section <sec_examples>`. If you need

@@ -64,7 +64,7 @@ class ImageColumn(object):
 
     @staticmethod
     def find_video_file(rtdc_dataset):
-        """Tries to find a video file that belongs to an RTDC data set
+        """Tries to find a video file that belongs to an RTDC dataset
 
         Returns None if no video file is found.
         """
@@ -97,7 +97,7 @@ class ImageColumn(object):
 
 class ImageMap(object):
     def __init__(self, fname):
-        """Access a video file of an RT-DC data set
+        """Access a video file of an RT-DC dataset
 
         Initialize this class with a video file.
         """

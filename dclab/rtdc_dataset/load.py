@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Load and check RT-DC data sets for completeness"""
+"""Load and check RT-DC datasets for completeness"""
 from __future__ import unicode_literals
 
 import pathlib
@@ -69,7 +69,7 @@ def check_dataset(path_or_ds):
     Parameters
     ----------
     path_or_ds: str or RTDCBase
-        Full path to a data set on disk or an instance of RTDCBase
+        Full path to a dataset on disk or an instance of RTDCBase
 
     Returns
     -------
@@ -221,7 +221,7 @@ def load_file(path, identifier=None):
 
 
 def new_dataset(data, identifier=None):
-    """Initialize a new RT-DC data set
+    """Initialize a new RT-DC dataset
 
     Parameters
     ----------
@@ -233,7 +233,7 @@ def new_dataset(data, identifier=None):
         - subclass of `RTDCBase`
           (will create a hierarchy child)
     identifier: str
-        A unique identifier for this data set. If set to `None`
+        A unique identifier for this dataset. If set to `None`
         an identifier will be generated.
 
     Returns

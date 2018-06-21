@@ -19,7 +19,7 @@ def print_violation(string):
 
 
 def tdms2rtdc():
-    """Convert .tdms data sets to the hdf5-based .rtdc file format"""
+    """Convert .tdms datasets to the hdf5-based .rtdc file format"""
     parser = tdms2rtdc_parser()
     args = parser.parse_args()
 
@@ -103,7 +103,7 @@ def tdms2rtdc_parser():
 
 
 def verify_dataset():
-    """Perform checks on experimental data sets"""
+    """Perform checks on experimental datasets"""
     parser = verify_dataset_parser()
     args = parser.parse_args()
     path_in = pathlib.Path(args.path).resolve()
@@ -120,7 +120,7 @@ def verify_dataset():
 
 
 def verify_dataset_parser():
-    descr = "Check experimental data sets for completeness. Note that old " \
+    descr = "Check experimental datasets for completeness. Note that old " \
             + "measurements will most likely fail this verification step. " \
             + "This program is used to enforce data integrity with future " \
             + "implementations of RT-DC recording software (e.g. ShapeIn)."

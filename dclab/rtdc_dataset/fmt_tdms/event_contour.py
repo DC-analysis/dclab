@@ -77,7 +77,7 @@ class ContourColumn(object):
         # missing. In case of fRTDC, it is there, so we
         # might have an offset. We find out if the first
         # contour frame is missing by comparing it to
-        # the "frame" column of the rtdc data set.
+        # the "frame" column of the rtdc dataset.
         fref = self._contour_data.get_frame(0)
         f0 = self.frame[0]
         f1 = self.frame[1]
@@ -94,7 +94,7 @@ class ContourColumn(object):
 
     @staticmethod
     def find_contour_file(rtdc_dataset):
-        """Tries to find a contour file that belongs to an RTDC data set
+        """Tries to find a contour file that belongs to an RTDC dataset
         
         Returns None if no contour file is found.
         """

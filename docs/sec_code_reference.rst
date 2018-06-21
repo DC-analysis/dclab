@@ -90,8 +90,26 @@ RT-DC dataset manipulation
    :members:
    :undoc-members:
 
-   
+
+.. _sec_ref_rtdc_fmt:
+
+supported formats
+-----------------
+The new_dataset method gives easy access to all of them.
+Add a summary of all formats.
+
+.. _sec_ref_rtdc_config:
+
+config
+------
+
 .. _sec_ref_rtdc_export:
 
-Export
+export
 ------
+
+.. _sec_ref_rtdc_filter:
+
+filter
+------
+   

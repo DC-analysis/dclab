@@ -11,7 +11,7 @@ real-time deformability cytometry (RT-DC) data sets; an essential part of
 Documentation
 -------------
 
-The documentation, including the code reference and examples, is available on
+The documentation, including the code reference and examples, is available at
 `dclab.readthedocs.io <https://dclab.readthedocs.io/en/stable/>`__.
 
 

@@ -83,6 +83,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxarg.ext',
               'fancy_include',
               'github_changelog',
+              'dclab_defs',
               ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -27,8 +27,13 @@ the source code of dclab.
     feature "deformation" contains the deformation values of all events.
     There are scalar features, i.e. features that assign a single number
     to an event, and non-scalar features, such as "image" and "contour".
-    The features available in dclab are summarized in the
-    :ref:`definitions section <sec_ref_definitions>`.
+    The following features are supported by dclab:
+
+
+    .. dclab_features:: scalar
+
+
+    .. dclab_features:: non-scalar
 
 **Ancillary features**
     Not all features available in dclab are recorded online during the
@@ -40,6 +45,20 @@ the source code of dclab.
 **Filter**
     A filter can be used to gate events using features. There are
     min/max filters and 2D :ref:`polygon filters <sec_ref_polygon_filter>`.
+
+**Metadata config**
+    Every RT-DC measurement has metadata consisting of key-value-pairs.
+    The following are supported:
+
+    .. dclab_config:: metadata
+
+
+**Analysis config**
+    In addition to metadata, dclab also supports a user-defined analysis
+    configuration which is usually part of a specific analysis pipeline
+    and thus not considered to be metadata.
+
+    .. dclab_config:: analysis
 
 
 RT-DC datasets

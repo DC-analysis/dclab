@@ -5,7 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 
-from .cfg_funcs import fbool, fint, fintlist, func_types, lcstr
+from .parse_funcs import fbool, fint, fintlist, func_types, lcstr
 
 
 #: All configuration keywords editable by the user

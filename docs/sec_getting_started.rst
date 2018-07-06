@@ -18,7 +18,7 @@ Dclab depends on several other Python packages:
 In addition, dclab contains code from `OpenCV <https://opencv.org/>`_
 (computation of moments) and `scikit-image <http://scikit-image.org/>`_
 (computation of contours) to reduce the list of dependencies (these libraries
-are not required to run dclab).
+are not required by dclab).
 
 To install dclab, use one of the following methods
 (the above package dependencies will be installed automatically):
@@ -62,7 +62,7 @@ Here is a list of use cases that would motivate an installation of dclab.
   It would be too laborious to do the analysis in ShapeOut, export the
   data as text files, and then open them in your custom Python script.
   If your initial analysis step with ShapeOut only involves tasks
-  that can be automatized, why not use dclab from the beginning? 
+  that can be automated, why not use dclab from the beginning? 
 - You simulated RT-DC data and plan to import them in ShapeOut
   for testing. Once you have loaded your data as a numpy array, you
   can instantiate an :class:`RTDC_Dict <dclab.rtdc_dataset.fmt_dict.RTDC_Dict`

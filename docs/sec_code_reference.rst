@@ -13,7 +13,15 @@ global definitions
 ==================
 These definitionas are used throughout the dclab/ShapeIn/ShapeOut ecosystem.
 
+constants
+---------
 .. automodule:: dclab.definitions
+   :members:
+   :undoc-members:
+
+parse functions
+---------------
+.. automodule:: dclab.parse_funcs
    :members:
    :undoc-members:
 

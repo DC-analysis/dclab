@@ -3,3 +3,8 @@ sphinx>=1.6.4
 # sphinx-argparse 0.2.2 gave not output
 sphinx-argparse==0.2.1
 sphinxcontrib.bibtex
+numpy
+matplotlib
+h5py
+pathlib
+ipython

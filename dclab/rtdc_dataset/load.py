@@ -194,7 +194,7 @@ def check_dataset(path_or_ds):
                 if key not in imdat.attrs:
                     aler.append("HDF5: '/image': missing attribute "
                                 + "'{}'".format(key))
-                elif imdat.attrs.get(key) != val:
+                elif imdat.attrs[key] != val:
                     aler.append("HDF5: '/image': attribute '{}' ".format(key)
                                 + "should have value '{}'".format(val))
         # check length of logs

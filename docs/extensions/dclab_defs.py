@@ -46,6 +46,10 @@ class Config(Base):
             cfg = dfn.CFG_ANALYSIS
         elif which == "metadata":
             cfg = dfn.CFG_METADATA
+        else:
+            cfg = dfn.CFG_ANALYSIS.copy()
+            cfg.update(dfn.CFG_METADATA)
+            cfg = {which: cfg[which]}
 
         for key in sorted(cfg.keys()):
             rst.append("")

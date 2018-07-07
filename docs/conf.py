@@ -33,11 +33,8 @@ sys.path.append(op.abspath('extensions'))
 
 # Mock all dependencies
 install_requires=["fcswrite",
-                  "h5py",
                   "imageio",
                   "nptdms",
-                  "numpy",
-                  "pathlib",
                   "scipy",
                   "scipy.interpolate",
                   "scipy.ndimage",
@@ -58,6 +55,9 @@ sys.modules["dclab.features._skimage_measure"] = mock.Mock()
 # Order class attributes and functions in separate blocks
 autodoc_member_order = 'bysource'
 autodoc_mock_imports = install_requires
+
+# include source of matplotlib plots
+plot_include_source = True
 
 # Display link to GitHub repo instead of doc on rtfd
 rst_prolog = """
@@ -80,6 +80,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.napoleon',
               'sphinxcontrib.bibtex',
+              'matplotlib.sphinxext.plot_directive',
+              'IPython.sphinxext.ipython_directive',
               'sphinxarg.ext',
               'fancy_include',
               'github_changelog',
@@ -149,7 +151,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['data']
 
 
 # -- Options for HTMLHelp output ------------------------------------------

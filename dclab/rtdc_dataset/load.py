@@ -227,6 +227,7 @@ def new_dataset(data, identifier=None):
     ----------
     data:
         can be one of the following:
+
         - dict
         - .tdms file
         - .rtdc file
@@ -238,7 +239,7 @@ def new_dataset(data, identifier=None):
 
     Returns
     -------
-    dataset: subclass of `RTDCBase`
+    dataset: subclass of :class:`dclab.rtdc_dataset.RTDCBase`
         A new dataset instance
     """
     if isinstance(data, dict):

@@ -6,9 +6,43 @@ Visualization
 =============
 For data visualization, dclab comes with a :ref:`sec_ref_downsampling` module
 for reducing the number of plotted points while preserving regions with
-few events and a :ref:`sec_ref_kde_methods` module for colorizing  events
-according to event density. The functionalities of both modules are
-made available directly via the :class:`RTDC_Base` class.
+few events and a kernel density estimator (KDE) :ref:`sec_ref_kde_methods`
+module for colorizing  events according to event density. The
+functionalities of both modules are made available directly via the
+:class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class.
+
+**Example**: basic KDE scatter plot
+
+    .. plot::
+
+        import matplotlib.pylab as plt
+        import dclab
+        ds = dclab.new_dataset("data/example.rtdc")
+        kde = ds.get_kde_scatter(xax="area_um", yax="deform")
+
+        ax = plt.subplot(111, title="{} events".format(len(kde)))
+        ax.scatter(ds["area_um"], ds["deform"], c=kde, marker=".")
+        ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
+        ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+        plt.show()
+
+
+**Example**: scatter plot with KDE-based downsampling
+
+    .. plot::
+
+        import matplotlib.pylab as plt
+        import dclab
+        ds = dclab.new_dataset("data/example.rtdc")
+        xsamp, ysamp = ds.get_downsampled_scatter(xax="area_um", yax="deform", downsample=2000)
+        kde = ds.get_kde_scatter(xax="area_um", yax="deform", positions=(xsamp, ysamp))
+
+        ax = plt.subplot(111, title="{} events".format(len(kde)))
+        ax.scatter(xsamp, ysamp, c=kde, marker=".")
+        ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
+        ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+        plt.show()
+
 
 For data visualization, isoelasticity lines are often used to identify events
 with similar elastic moduli. Isoelasticity lines are available via the

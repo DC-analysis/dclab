@@ -22,8 +22,10 @@ class RTDC_Dict(RTDCBase):
             (e.g. "area_cvx", "deform", "image") with which the class
             will be instantiated. The configuration is set to the
             default configuration of dclab.
-        *args, **kwargs:
-            (Keyword) arguments for `RTDCBase`
+        *args:
+            Arguments for `RTDCBase`
+        **kwargs:
+            Keyword arguments for `RTDCBase`
         """
         assert ddict
         

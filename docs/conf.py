@@ -35,11 +35,6 @@ sys.path.append(op.abspath('extensions'))
 install_requires=["fcswrite",
                   "imageio",
                   "nptdms",
-                  "scipy",
-                  "scipy.interpolate",
-                  "scipy.ndimage",
-                  "scipy.spatial",
-                  "scipy.stats",
                   "statsmodels",
                   "statsmodels.nonparametric",
                   "statsmodels.nonparametric.kernel_density",
@@ -55,6 +50,7 @@ sys.modules["dclab.features._skimage_measure"] = mock.Mock()
 # Order class attributes and functions in separate blocks
 autodoc_member_order = 'bysource'
 autodoc_mock_imports = install_requires
+autoclass_content = 'both'
 
 # include source of matplotlib plots
 plot_include_source = True
@@ -82,6 +78,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxcontrib.bibtex',
               'matplotlib.sphinxext.plot_directive',
               'IPython.sphinxext.ipython_directive',
+              'IPython.sphinxext.ipython_console_highlighting',
               'sphinxarg.ext',
               'fancy_include',
               'github_changelog',

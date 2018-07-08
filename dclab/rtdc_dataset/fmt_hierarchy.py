@@ -77,6 +77,7 @@ class HierarchyFilter(Filter):
         `RTDC_Hierarchy.hparent` if there is only one child).
         This enables to keep track of the manually excluded events
         even if
+
         - the parent changes its filters,
         - the parent is a hierarchy child as well, or
         - the excluded event is filtered out in the parent.
@@ -194,8 +195,10 @@ class RTDC_Hierarchy(RTDCBase):
         ----------
         hparent : instance of RTDCBase
             The hierarchy parent.
-        *args, **kwargs:
-            (Keyword) arguments for `RTDCBase`
+        *args:
+            Arguments for `RTDCBase`
+        **kwargs:
+            Keyword arguments for `RTDCBase`
 
         Attributes
         ----------

@@ -8,3 +8,4 @@ matplotlib
 h5py
 pathlib
 ipython
+scipy

@@ -24,7 +24,6 @@ The following features are supported by dclab:
 .. dclab_features:: non-scalar
 
 **Example**: deformation vs. area plot 
-    
 
     .. plot::
         
@@ -36,6 +35,19 @@ The following features are supported by dclab:
         ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
         ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
         plt.show()
+
+**Example**: event image plot
+
+    .. plot::
+        
+        import matplotlib.pylab as plt
+        import dclab
+        ds = dclab.new_dataset("data/example_video.rtdc")
+        ax1 = plt.subplot(211, title="image")
+        ax2 = plt.subplot(212, title="mask")
+        ax1.imshow(ds["image"][6], cmap="gray")
+        ax2.imshow(ds["mask"][6])
+
 
 Ancillary features
 ------------------
@@ -90,6 +102,25 @@ Min/max filters are also defined in the *filters* section:
         plt.tight_layout()
         plt.show()
 
+
+**Example**: excluding random events
+    This is useful if you need to have a (sub-)dataset of a specified
+    size. The downsampling is reproducible (the same points are excluded).
+
+    .. plot::
+        
+        import matplotlib.pylab as plt
+        import dclab
+        ds = dclab.new_dataset("data/example.rtdc")
+        ds.config["filtering"]["limit events"] = 4000
+        ds.apply_filter()
+        fid = ds.filter.all
+        
+        ax = plt.subplot(111)
+        ax.plot(ds["area_um"][fid], ds["deform"][fid], "o", alpha=.2)
+        ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
+        ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+        plt.show()
 
 Experiment metadata
 -------------------

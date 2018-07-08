@@ -283,7 +283,7 @@ class RTDCBase(object):
 
 
     def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
-                        kde_type="none", kde_kwargs={}):
+                        kde_type="histogram", kde_kwargs={}):
         """Evaluate the kernel density estimate for scatter data
 
         

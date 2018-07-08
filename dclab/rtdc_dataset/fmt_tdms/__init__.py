@@ -26,10 +26,12 @@ class RTDC_TDMS(RTDCBase):
 
         Parameters
         ----------
-        tdms_path: str
+        tdms_path: str or pathlib.Path
             Path to a '.tdms' measurement file.
-        *args, **kwargs:
-            (Keyword) arguments for `RTDCBase`
+        *args:
+            Arguments for `RTDCBase`
+        **kwargs:
+            Keyword arguments for `RTDCBase`
         """
         # Initialize RTDCBase
         super(RTDC_TDMS, self).__init__(*args, **kwargs)

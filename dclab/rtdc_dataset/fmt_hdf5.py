@@ -98,10 +98,12 @@ class RTDC_HDF5(RTDCBase):
 
         Parameters
         ----------
-        h5path: str
+        h5path: str or pathlib.Path
             Path to a '.tdms' measurement file.
-        *args, **kwargs:
-            (Keyword) arguments for `RTDCBase`
+        *args:
+            Arguments for `RTDCBase`
+        **kwargs:
+            Keyword arguments for `RTDCBase`
         """
         super(RTDC_HDF5, self).__init__(*args, **kwargs)
 

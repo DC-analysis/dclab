@@ -124,7 +124,8 @@ class RTDCBase(object):
             if length:
                 return length
         else:
-            raise ValueError("Could not determine size of dataset.")
+            msg = "Could not determine size of dataset '{}'.".format(self)
+            raise ValueError(msg)
 
 
     def __repr__(self):

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Isoelastics management"""
+"""Isoelastics management
+
+"""
 from __future__ import division, unicode_literals
 
 import pathlib
@@ -310,6 +312,44 @@ class Isoelastics(object):
                             inplace=True)
 
         return isoel_ret
+
+
+    def get_with_rtdcbase(self, col1, col2, method, dataset,
+                          viscosity=None, add_px_err=False):
+        """Convenience method that extracts the metadata from RTDCBase
+
+        Parameters
+        ----------
+        col1: str
+            Name of the first feature of all isoelastics
+            (e.g. isoel[0][:,0])
+        col2: str
+            Name of the second feature of all isoelastics
+            (e.g. isoel[0][:,1])
+        method: str
+            The method used to compute the isoelastics
+            (must be one of `VALID_METHODS`).
+        dataset: dclab.rtdc_dataset.RTDCBase
+            The dataset from which to obtain the metadata.
+        viscosity: float or `None`
+            Viscosity of the medium in mPa*s. If set to
+            `None`, the flow rate of the imported data will
+            be used (only do this if you do not need the
+            correct values for elastic moduli).
+        add_px_err: bool
+            If True, add pixelation errors according to
+            C. Herold (2017), https://arxiv.org/abs/1704.00572
+        """
+        cfg = dataset.config
+        return self.get(col1=col1,
+                        col2=col2,
+                        method=method,
+                        channel_width=cfg["setup"]["channel width"],
+                        flow_rate=cfg["setup"]["flow rate"],
+                        viscosity=viscosity,
+                        add_px_err=add_px_err,
+                        px_um=cfg["imaging"]["pixel size"])
+        
 
     def load_data(self, path):
         """Load isoelastics from a text file

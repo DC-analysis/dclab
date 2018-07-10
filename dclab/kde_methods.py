@@ -7,13 +7,36 @@ from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, skew
 from statsmodels.nonparametric.kernel_density import KDEMultivariate
 
 from .cached import Cache
 
 
-def get_bad_vals(x,y):
+def bin_num_doane(a):
+    """Compute number of bins based on Doane's formula"""
+    bad = np.isnan(a) + np.isinf(a)
+    data = a[~bad]
+    acc = bin_width_doane(a)
+    num = np.int(np.round((data.max() - data.min()) / acc))
+    return num
+
+
+def bin_width_doane(a):
+    """Compute accuracy (bin width) based on Doane's formula"""
+    # https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width
+    # https://stats.stackexchange.com/questions/55134/doanes-formula-for-histogram-binning
+    bad = np.isnan(a) + np.isinf(a)
+    data = a[~bad]
+    n = data.size
+    g1 = skew(data)
+    sigma_g1 = np.sqrt(6 * (n - 2) / ((n + 1) * (n + 3)))
+    k = 1 + np.log2(n) + np.log2(1 + np.abs(g1) / sigma_g1)
+    acc = (data.max() - data.min()) / k
+    return acc
+
+
+def get_bad_vals(x, y):
     return np.isnan(x)+np.isinf(x)+np.isnan(y)+np.isinf(y)
 
 
@@ -94,7 +117,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
 
 @ignore_nan_inf
 @Cache
-def kde_histogram(events_x, events_y, xout=None, yout=None, bins=(47,47)):
+def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
     """ Histogram-based Kernel Density Estimation
     
     Parameters
@@ -127,7 +150,11 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=(47,47)):
     if yout is None and yout is None:
         xout = events_x
         yout = events_y
-    
+
+    if bins is None:
+        bins = (max(5, bin_num_doane(events_x)),
+                max(5, bin_num_doane(events_y)))
+
     # Compute the histogram
     hist2d, xedges, yedges = np.histogram2d(x=events_x,
                                             y=events_y,
@@ -213,9 +240,9 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
         xout = events_x
         yout = events_y
     if bw is None:
-        # Sensible default parameters
-        cpstep = lambda a: (np.nanmax(a)-np.nanmin(a))/10
-        bw = cpstep(events_x), cpstep(events_y)
+        # divide by 2 to make it comparable to histogram KDE
+        bw = (bin_width_doane(events_x) / 2,
+              bin_width_doane(events_y) / 2)
     
     positions = np.vstack([xout.flatten(), yout.flatten()])
     estimator_ly = KDEMultivariate(data=[events_x.flatten(),

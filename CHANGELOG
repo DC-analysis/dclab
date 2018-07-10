@@ -1,5 +1,6 @@
 0.5.3
  - fix: avoid a few unicode gotchas
+ - feat: use Doane's formula for kernel density estimator defaults (#42)
  - docs: usage examples, advanced scripting, and code reference update (#49)
 0.5.2
  - Migrate from os.path to pathlib (#50)

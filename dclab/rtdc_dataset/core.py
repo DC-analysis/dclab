@@ -257,15 +257,14 @@ class RTDCBase(object):
             x = self[xax]
             y = self[yax]
         
-        # sensible default values
-        cpstep = lambda a: (a.max()-a.min())/10
+        # accuracy (bin width) of KDE estimator
         if xacc is None:
-            xacc = cpstep(x)
+            xacc = kde_methods.bin_width_doane(x)
         if yacc is None:
-            yacc = cpstep(x)
+            yacc = kde_methods.bin_width_doane(y)
 
         # Ignore infs and nans
-        bad = np.isinf(x)+np.isnan(x)+np.isinf(y)+np.isnan(y)
+        bad = kde_methods.get_bad_vals(x, y)
         xc = x[~bad]
         yc = y[~bad]
         xlin = np.arange(xc.min(), xc.max(), xacc)

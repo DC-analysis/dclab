@@ -19,7 +19,6 @@ functionalities of both modules are made available directly via the
         import dclab
         ds = dclab.new_dataset("data/example.rtdc")
         kde = ds.get_kde_scatter(xax="area_um", yax="deform")
-
         ax = plt.subplot(111, title="{} events".format(len(kde)))
         ax.scatter(ds["area_um"], ds["deform"], c=kde, marker=".")
         ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
@@ -67,6 +66,4 @@ ShapeOut
 Keep in mind that in some cases, it might still be useful to make use
 of ShapeOut. For instance, you can create and export polygon filters
 in ShapeOut and then import them in dclab.
-
-
 

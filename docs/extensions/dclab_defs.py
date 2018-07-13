@@ -4,12 +4,16 @@ Usage
 -----
 Directives:
 
-   .. features::
+List of features with arguments "all", "scalar", or "non-scalar"
+
+   .. dclab_features::
+
+List of configuration keys with arguments "analysis", "metadata", or a
+configuration key section (e.g. "experiment").
+
+   .. dclab_config::
 
 """
-import io
-import re
-
 from docutils.statemachine import ViewList
 from docutils.parsers.rst import Directive
 from sphinx.util.nodes import nested_parse_with_titles

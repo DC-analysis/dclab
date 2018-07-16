@@ -23,11 +23,11 @@ class.
 
 .. ipython::
 
-        In [1]: import dclab
+    In [1]: import dclab
 
-        In [2]: ds = dclab.new_dataset("data/example.rtdc")
+    In [2]: ds = dclab.new_dataset("data/example.rtdc")
 
-        In [3]: ds.__class__.__name__
+    In [3]: ds.__class__.__name__
 
 
 Working with other data

@@ -219,14 +219,13 @@ class RTDCBase(object):
 
 
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None, yacc=None,
-                        kde_type="none", kde_kwargs={}):
+                        kde_type="histogram", kde_kwargs={}):
         """Evaluate the kernel density estimate for contours
-        
-        
+
         Parameters
         ----------
         xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform", ...)
+            Identifier for X axis (e.g. "area_um", "aspect", "deform")
         yax: str
             Identifier for Y axis
         xacc: float
@@ -237,7 +236,6 @@ class RTDCBase(object):
             The KDE method to use
         kde_kwargs: dict
             Additional keyword arguments to the KDE method 
-
 
         Returns
         -------
@@ -259,9 +257,9 @@ class RTDCBase(object):
         
         # accuracy (bin width) of KDE estimator
         if xacc is None:
-            xacc = kde_methods.bin_width_doane(x)
+            xacc = kde_methods.bin_width_doane(x) / 5
         if yacc is None:
-            yacc = kde_methods.bin_width_doane(y)
+            yacc = kde_methods.bin_width_doane(y) / 5
 
         # Ignore infs and nans
         bad = kde_methods.get_bad_vals(x, y)
@@ -286,11 +284,10 @@ class RTDCBase(object):
                         kde_type="histogram", kde_kwargs={}):
         """Evaluate the kernel density estimate for scatter data
 
-        
         Parameters
         ----------
         xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform",...)
+            Identifier for X axis (e.g. "area_um", "aspect", "deform")
         yax: str
             Identifier for Y axis
         positions: list of points
@@ -301,7 +298,6 @@ class RTDCBase(object):
             The KDE method to use
         kde_kwargs: dict
             Additional keyword arguments to the KDE method 
-
 
         Returns
         -------

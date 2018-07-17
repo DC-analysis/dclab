@@ -8,7 +8,7 @@ import copy
 from .parse_funcs import fbool, fint, fintlist, func_types, lcstr
 
 
-#: All configuration keywords editable by the user
+# All configuration keywords editable by the user
 CFG_ANALYSIS = {
     # filtering parameters
     "filtering": [

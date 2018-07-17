@@ -32,15 +32,24 @@ class RTDCBase(object):
         by the user - a boolean value of ``False`` means that the event is 
         excluded from all computations.
         """
-        # file format (derived from class name)
+        #: Dataset format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
         
         self._polygon_filter_ids = []
         # Ancillaries have the feature name as keys and a
         # tuple containing feature and hash as value.
         self._ancillaries = {}
-        # export functionalities
+        #: Configuration of the measurement
+        self.config = None
+        #: Export functionalities; instance of
+        #: :class:`dclab.rtdc_dataset.export.Export`.
         self.export = Export(self)
+        # The filtering class is initialized with self._init_filters
+        #: Filtering functionalities; instance of
+        #: :class:`dclab.rtdc_dataset.filter.Filter`.
+        self.filter = None
+        #: Title of the measurement
+        self.title = None
         # Unique identifier
         if identifier is None:
             # Generate a unique identifier for this dataset
@@ -148,19 +157,21 @@ class RTDCBase(object):
         # Plot filters is only used for plotting and does
         # not have anything to do with filtering.
         self._plot_filter = np.ones(len(self), dtype=bool)
-        
+
+        #: Filtering functionalities (this is an instance of
+        #: :class:`dclab.rtdc_dataset.filter.Filter`.
         self.filter = Filter(self)
 
 
     @property
     def identifier(self):
-        """Compute an identifier based on __hash__"""
+        """Unique (unreproducible) identifier"""
         return self._identifier
 
 
     @property
     def features(self):
-        """Return all available features"""
+        """All available features"""
         mycols = []
         for col in dfn.feature_names:
             if col in self:
@@ -171,11 +182,11 @@ class RTDCBase(object):
 
     @abc.abstractproperty
     def hash(self):
-        """Hashing property must be defined by derived classes"""
+        """Reproducible dataset hash (defined by derived classes)"""
 
 
     def apply_filter(self, force=[]):
-        """Computes the filters for the dataset"""
+        """Compute the filters for the dataset"""
         self.filter.update(force)
 
 
@@ -185,12 +196,13 @@ class RTDCBase(object):
         Parameters
         ----------
         xax: str
-            Identifier for x axis (e.g. "area_um", "aspect", "deform", ...)
+            Identifier for x axis (e.g. "area_um", "aspect", "deform")
         yax: str
             Identifier for y axis
         downsample: int or None
             Number of points to draw in the down-sampled plot.
             This number is either 
+
             - >=1: exactly downsample to this number by randomly adding
                    or removing points 
             - 0  : do not perform downsampling
@@ -220,7 +232,7 @@ class RTDCBase(object):
 
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None, yacc=None,
                         kde_type="histogram", kde_kwargs={}):
-        """Evaluate the kernel density estimate for contours
+        """Evaluate the kernel density estimate for contour plots
 
         Parameters
         ----------
@@ -282,7 +294,7 @@ class RTDCBase(object):
 
     def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
                         kde_type="histogram", kde_kwargs={}):
-        """Evaluate the kernel density estimate for scatter data
+        """Evaluate the kernel density estimate for scatter plots
 
         Parameters
         ----------

@@ -173,8 +173,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
 
     See Also
     --------
-    dclab.elast.viscosity.get_viscosity: compute viscosity for known media
-    pixcorr_deformation: perform pixelation correction with triple-exponential
+    dclab.features.emodulus_viscosity.get_viscosity: compute viscosity for known media
     """
     # copy input arrays so we can use in-place calculations
     deform = np.array(deform, copy=copy, dtype=float)

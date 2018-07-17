@@ -27,7 +27,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
 
     Notes
     -----
-    The CellCarrier A and B media are optimized for RT-DC measurements.
+    CellCarrier and CellCarrier B media are optimized for RT-DC measurements.
     """
     if medium.lower() not in ["cellcarrier", "cellcarrier b"]:
         raise ValueError("Invalid medium: {}".format(medium))

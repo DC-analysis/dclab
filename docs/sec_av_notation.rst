@@ -10,6 +10,8 @@ An event comprises all data recorded for the detection of one object
 (e.g. cell or bead) in an RT-DC measurement.
 
 
+.. _sec_features:
+
 Features
 --------
 A feature is a measurement parameter of an RT-DC measurement. For
@@ -19,7 +21,11 @@ There are scalar features, i.e. features that assign a single number
 to an event, and non-scalar features, such as "image" and "contour".
 The following features are supported by dclab:
 
+.. _sec_features_scalar:
+
 .. dclab_features:: scalar
+
+.. _sec_features_non_scalar:
 
 .. dclab_features:: non-scalar
 
@@ -122,6 +128,8 @@ Min/max filters are also defined in the *filters* section:
         ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
         plt.show()
 
+.. _sec_experiment_meta:
+
 Experiment metadata
 -------------------
 Every RT-DC measurement has metadata consisting of key-value-pairs.
@@ -139,6 +147,7 @@ The following are supported:
 
         In [3]: ds.config["experiment"]["date"], ds.config["experiment"]["time"]
 
+.. _sec_analysis_meta:
 
 Analysis metadata
 -----------------

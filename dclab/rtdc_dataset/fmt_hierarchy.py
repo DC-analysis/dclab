@@ -177,23 +177,25 @@ class HierarchyFilter(Filter):
 
 class RTDC_Hierarchy(RTDCBase):
     def __init__(self, hparent, *args, **kwargs):
-        """A hierarchy child of a subclass of RTDCBase
+        """Hierarchy dataset (filtered from RTDCBase)
 
         A few words on hierarchies:
-        The idea is that a subclass of RTDCBase can use the filtered data of another
-        subclass of RTDCBase and interpret these data as unfiltered events. This comes
-        in handy e.g. when the percentage of different subpopulations need to
-        be distinguished without the noise in the original data.
+        The idea is that a subclass of RTDCBase can use the filtered
+        data of another subclass of RTDCBase and interpret these data
+        as unfiltered events. This comes in handy e.g. when the
+        percentage of different subpopulations need to be distinguished
+        without the noise in the original data.
 
-        Children in hierarchies always update their data according to the
-        filtered event data from their parent when `apply_filter` is called.
-        This makes it easier to save and load hierarchy children with e.g.
-        ShapeOut and it makes the handling of hierarchies more intuitive
-        (when the parent changes, the child changes as well).
+        Children in hierarchies always update their data according to
+        the filtered event data from their parent when `apply_filter`
+        is called. This makes it easier to save and load hierarchy
+        children with e.g. ShapeOut and it makes the handling of
+        hierarchies more intuitive (when the parent changes,
+        the child changes as well).
 
         Parameters
         ----------
-        hparent : instance of RTDCBase
+        hparent: instance of RTDCBase
             The hierarchy parent.
         *args:
             Arguments for `RTDCBase`
@@ -202,8 +204,8 @@ class RTDC_Hierarchy(RTDCBase):
 
         Attributes
         ----------
-        hparent : instance of RTDCBase
-            Only hierarchy children have this attribute
+        hparent: RTDCBase
+            Hierarchy parent of this instance
         """
         super(RTDC_Hierarchy, self).__init__(*args, **kwargs)
 
@@ -250,11 +252,11 @@ class RTDC_Hierarchy(RTDCBase):
         return np.sum(self.hparent._filter)
 
     def _init_filters(self):
-        if hasattr(self, "filter"):
+        if self.filter is None:
+            manual_pidx = []
+        else:
             # get manual filters
             manual_pidx = self.filter.retrieve_manual_indices()
-        else:
-            manual_pidx = []
         # clear filters
         super(RTDC_Hierarchy, self)._init_filters()
         # override standard filter
@@ -266,7 +268,7 @@ class RTDC_Hierarchy(RTDCBase):
 
     def apply_filter(self, *args, **kwargs):
         """Overridden `apply_filter` to perform tasks for hierarchy child"""
-        if hasattr(self, "filter"):
+        if self.filter is not None:
             # make sure self.filter knows about root manual indices
             self.filter.retrieve_manual_indices()
 

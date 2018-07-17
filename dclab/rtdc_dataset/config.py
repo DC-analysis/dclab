@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-RT-DC dataset configuration
-"""
+"""RT-DC dataset configuration"""
 from __future__ import division, print_function, unicode_literals
 
 import copy
@@ -56,11 +54,21 @@ class CaseInsensitiveDict(dict):
             self.__setitem__(k, v)
 
 
-
 class Configuration(object):
     def __init__(self, files=[], cfg={}):
-        """Configuration of an RT-DC dataset
-        
+        """Configuration class for RT-DC datasets
+
+        This class has a dictionary-like interface to access
+        and set configuration values, e.g.
+
+        .. code::
+
+            cfg = load_from_file("/path/to/config.txt")
+            # access the channel width
+            cfg["setup"]["channel width"]
+            # modify the channel width
+            cfg["setup"]["channel width"] = 30
+
         Parameters
         ----------
         files: list of files
@@ -146,6 +154,7 @@ class Configuration(object):
 
 
     def keys(self):
+        """Return the configuration keys (sections)"""
         return self._cfg.keys()
 
 
@@ -172,7 +181,7 @@ class Configuration(object):
 
 
     def update(self, newcfg):
-        """Update current config with new dictionary"""
+        """Update current config with a dictionary"""
         for key in newcfg.keys():
             if not key in self._cfg:
                 self._cfg[key] = CaseInsensitiveDict()
@@ -230,7 +239,6 @@ def load_from_file(cfg_file):
 def keyval_str2typ(var, val):
     """Convert a variable from a string to its correct type
 
-    
     Parameters
     ----------
     var: str
@@ -249,7 +257,6 @@ def keyval_str2typ(var, val):
     -----
     This method is heuristic and is only intended for usage in
     dclab.
-    
     
     See Also
     --------
@@ -289,7 +296,6 @@ def keyval_str2typ(var, val):
 def keyval_typ2str(var, val):
     """Convert a variable to a string
 
-    
     Parameters
     ----------
     var: str
@@ -303,7 +309,7 @@ def keyval_typ2str(var, val):
         Stripped lowercase `var`
     valout: any type
         The value converted to a useful string representation
-    
+
     See Also
     --------
     keyval_str2typ: the opposite

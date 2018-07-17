@@ -19,11 +19,63 @@ global definitions
 ==================
 These definitionas are used throughout the dclab/ShapeIn/ShapeOut ecosystem.
 
-constants
----------
-.. automodule:: dclab.definitions
-   :members:
-   :undoc-members:
+configuration
+-------------
+Valid configuration sections and keys are described in:
+:ref:`sec_analysis_meta` and :ref:`sec_experiment_meta`.
+
+
+.. data:: dclab.dfn.CFG_ANALYSIS
+
+    User-editable configuration for data analysis.
+    
+.. data:: dclab.dfn.CFG_METADATA
+
+    Measurement-specific metadata.
+
+.. data:: dclab.dfn.config_funcs
+
+    Dictionary of dictionaries containing functions to convert input data
+    to the predefined data type
+
+.. data:: dclab.dfn.config_keys
+
+    Dictionary with sections as keys and configuration parameter
+    names as values
+
+.. data:: dclab.dfn.config_types
+
+    Dictionary of dictionaries containing the data type of each
+    configuration parameter
+
+
+features
+--------
+Features are discussed in more detail in: :ref:`sec_features`.
+
+.. data:: dclab.dfn.FEATURES_SCALAR
+
+    Scalar features
+
+.. data:: dclab.dfn.FEATURES_NON_SCALAR
+
+    Non-scalar features
+
+.. data:: dclab.dfn.feature_names
+
+    List of valid feature names
+
+.. data:: dclab.dfn.feature_labels
+
+    List of human-readable labels for each valid feature
+
+.. data:: dclab.dfn.feature_name2label
+
+    Dictionary that maps feature names to feature labels
+
+.. data:: dclab.dfn.scalar_feature_names
+
+    List of valid scalar feature names
 
 parse functions
 ---------------
@@ -35,39 +87,65 @@ parse functions
 RT-DC dataset manipulation
 ==========================
 
+Base class
+----------
+
 .. autoclass:: dclab.rtdc_dataset.RTDCBase
+    :members:
+
+Dictionary format
+-----------------
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_Dict
 
+HDF5 (.rtdc) format
+-------------------
+
 .. autoclass:: dclab.rtdc_dataset.RTDC_HDF5
+    :members: parse_config
+
+.. autodata:: dclab.rtdc_dataset.fmt_hdf5.MIN_DCLAB_EXPORT_VERSION
+
+
+Hierarchy format
+----------------
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_Hierarchy
 
+TDMS format
+-----------
+
 .. autoclass:: dclab.rtdc_dataset.RTDC_TDMS
 
+.. autofunction:: dclab.rtdc_dataset.fmt_tdms.get_project_name_from_path
 
-.. _sec_ref_rtdc_fmt:
-
-supported formats
------------------
-The new_dataset method gives easy access to all of them.
-Add a summary of all formats.
+.. autofunction:: dclab.rtdc_dataset.fmt_tdms.get_tdms_files
 
 .. _sec_ref_rtdc_config:
 
 config
 ------
+.. autoclass:: dclab.rtdc_dataset.config.Configuration
+    :members:
+
+.. autofunction:: dclab.rtdc_dataset.config.load_from_file
 
 .. _sec_ref_rtdc_export:
 
 export
 ------
+.. autoexception:: dclab.rtdc_dataset.export.NoImageWarning
+
+.. autoclass:: dclab.rtdc_dataset.export.Export
+    :members:
+
 
 .. _sec_ref_rtdc_filter:
 
 filter
 ------
-   
+.. autoclass:: dclab.rtdc_dataset.filter.Filter
+    :members:
 
 
 low-level functionalities
@@ -88,9 +166,24 @@ downsampling
 features
 --------
 
-.. automodule:: dclab.features
-   :members:
-   :undoc-members:
+.. autofunction:: dclab.features.contour.get_contour
+
+.. autofunction:: dclab.features.bright.get_bright
+
+.. autofunction:: dclab.features.emodulus.get_emodulus
+
+.. autofunction:: dclab.features.emodulus_viscosity.get_viscosity
+
+.. autofunction:: dclab.features.fl_crosstalk.correct_crosstalk
+
+.. autofunction:: dclab.features.fl_crosstalk.get_compensation_matrix
+
+.. autofunction:: dclab.features.inert_ratio.get_inert_ratio_cvx
+
+.. autofunction:: dclab.features.inert_ratio.get_inert_ratio_raw
+
+.. autofunction:: dclab.features.volume.get_volume
+
 
 
 .. _sec_ref_isoelastics:

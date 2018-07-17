@@ -28,12 +28,12 @@ class Export(object):
 
         Parameters
         ----------
-        path : str
+        path: str
             Path to a .tsv file. The ending .tsv is added automatically.
-        filtered : bool
+        filtered: bool
             If set to `True`, only the filtered data (index in ds._filter)
             are used.
-        override : bool
+        override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
 
@@ -91,16 +91,16 @@ class Export(object):
         ----------
         mm: instance of dclab.RTDCBase
             The dataset that will be exported.
-        path : str
+        path: str
             Path to a .tsv file. The ending .tsv is added automatically.
-        features : list of str
+        features: list of str
             The features in the resulting .tsv file. These are strings
             that are defined in `dclab.definitions.scalar_feature_names`,
-             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
-        filtered : bool
+            e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
+        filtered: bool
             If set to `True`, only the filtered data (index in ds._filter)
             are used.
-        override : bool
+        override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
 
@@ -238,7 +238,7 @@ class Export(object):
                     # write rest
                     if jj:
                         write(h5obj,
-                              data={feat: imstack[:jj, :, :]},
+                              data={feat: imstack[:jj,:,:]},
                               mode="append",
                               compression=compression)
                 elif feat == "trace":
@@ -264,16 +264,16 @@ class Export(object):
 
         Parameters
         ----------
-        path : str
+        path: str
             Path to a .tsv file. The ending .tsv is added automatically.
-        features : list of str
+        features: list of str
             The features in the resulting .tsv file. These are strings
             that are defined in `dclab.definitions.scalar_feature_names`,
-             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
-        filtered : bool
+            e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
+        filtered: bool
             If set to `True`, only the filtered data (index in ds._filter)
             are used.
-        override : bool
+        override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
         """

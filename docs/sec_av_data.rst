@@ -151,7 +151,8 @@ These are the available statistics methods:
 
 Export
 ======
-The :class:`RTDC_Base` class has the attribute :class:`RTDC_Base.export`
+The :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class has the attribute
+:attr:`RTDCBase.export <dclab.rtdc_dataset.RTDCBase.export>`
 which allows to export event data to several data file formats. See
 :ref:`sec_ref_rtdc_export` for more information.
 

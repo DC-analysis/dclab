@@ -9,10 +9,8 @@ import numpy as np
 
 from dclab import definitions as dfn
 
-
 from .. import downsampling
 from ..polygon_filter import PolygonFilter
-
 
 
 class Filter(object):
@@ -23,19 +21,18 @@ class Filter(object):
         ----------
         rtdc_ds: instance of RTDCBase
             The RT-DC dataset the filter applies to
-        
-        
         """
+        #: Instance of RTDCBase the filter applies to
         self.rtdc_ds = rtdc_ds
         self._filters = {}
 
-        # All filters combined (see `self.update`)
+        #: All filters combined (see :func:`Filter.update`)
         self.all = np.ones(len(rtdc_ds), dtype=bool)
-        # invalid (nan/inf) events
+        #: Invalid (nan/inf) events
         self.invalid = np.ones(len(rtdc_ds), dtype=bool)
-        # reserved for manual filtering
+        #: Reserved for manual filtering
         self.manual = np.ones(len(rtdc_ds), dtype=bool)
-        # polygon filters
+        #: Polygon filters
         self.polygon = np.ones(len(rtdc_ds), dtype=bool)
         # old filter configuration of `rtdc_ds`
         self._old_config = {}

@@ -32,6 +32,11 @@ class RTDC_TDMS(RTDCBase):
             Arguments for `RTDCBase`
         **kwargs:
             Keyword arguments for `RTDCBase`
+
+        Attributes
+        ----------
+        path: pathlib.Path
+            Path to the experimental dataset (main .tdms file)
         """
         # Initialize RTDCBase
         super(RTDC_TDMS, self).__init__(*args, **kwargs)
@@ -227,7 +232,7 @@ def get_project_name_from_path(path, append_mx=False):
 
 
 def get_tdms_files(directory):
-    """ Recursively find projects based on '.tdms' file endings
+    """Recursively find projects based on '.tdms' file endings
     
     Searches the `directory` recursively and return a sorted list
     of all found '.tdms' project files, except fluorescence

@@ -104,6 +104,11 @@ class RTDC_HDF5(RTDCBase):
             Arguments for `RTDCBase`
         **kwargs:
             Keyword arguments for `RTDCBase`
+
+        Attributes
+        ----------
+        path: pathlib.Path
+            Path to the experimental HDF5 (.rtdc) file
         """
         super(RTDC_HDF5, self).__init__(*args, **kwargs)
 

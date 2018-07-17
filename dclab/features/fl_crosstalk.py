@@ -78,7 +78,7 @@ def correct_crosstalk(fl1, fl2, fl3, fl_channel,
 
     See Also
     --------
-    get_inversion_matrix: compute the inverse crosstalk matrix
+    get_compensation_matrix: compute the inverse crosstalk matrix
 
     Notes
     -----

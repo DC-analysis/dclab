@@ -203,8 +203,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'dclab', 'dclab Documentation',
-     author, 'dclab', 'One line description of project.',
-     'Miscellaneous'),
+     author, 'dclab', 'post-measurement analysis of RT-DC data sets',
+     'Scientific'),
 ]
 
 

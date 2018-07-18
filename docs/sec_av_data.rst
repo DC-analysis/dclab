@@ -139,14 +139,29 @@ methods to compute simple feature statistics.
        ...:                                         methods=["Mode", "Mean", "SD"])
        ...:
 
-    In [3]: dict(zip(*stats))
+    In [4]: dict(zip(*stats))
+
+Note that the statistics take into account the applied filters:
+
+.. ipython::
+
+    In [5]: ds.config["filtering"]["deform max"] = .1
+
+    In [6]: ds.apply_filter()
+
+    In [7]: stats2 = dclab.statistics.get_statistics(ds,
+       ...:                                          features=["deform", "aspect"],
+       ...:                                          methods=["Mode", "Mean", "SD"])
+       ...:
+
+    In [8]: dict(zip(*stats2))
 
 
 These are the available statistics methods:
 
 .. ipython::
 
-    In [4]: dclab.statistics.Statistics.available_methods.keys()
+    In [9]: dclab.statistics.Statistics.available_methods.keys()
 
 
 Export
@@ -156,10 +171,56 @@ The :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class has the attribute
 which allows to export event data to several data file formats. See
 :ref:`sec_ref_rtdc_export` for more information.
 
+.. ipython::
+
+    In [9]: ds.export.tsv(path="export_example.tsv",
+       ...:               features=["area_um", "deform"],
+       ...:               filtered=True,
+       ...:               override=True)
+       ...:
+
+    In [9]: ds.export.hdf5(path="export_example.rtdc",
+       ...:                features=["area_um", "aspect", "deform"],
+       ...:                filtered=True,
+       ...:                override=True)
+       ...:
+
+Note that data exported as HDF5 files can be loaded with dclab
+(reproducing the previously computed statistics).
+
+.. ipython::
+
+    In [12]: ds2 = dclab.new_dataset("export_example.rtdc")
+
+    In [13]: ds2["deform"].mean()
 
 ShapeOut
 ========
 Keep in mind that in some cases, it might still be useful to make use
-of ShapeOut. For instance, you can create and export polygon filters
+of ShapeOut. For instance, you can create and export
+:ref:`polygon filters <sec_ref_polygon_filter>`
 in ShapeOut and then import them in dclab.
 
+
+.. plot::
+
+    import matplotlib.pylab as plt
+    import dclab
+    ds = dclab.new_dataset("data/example.rtdc")
+    kde = ds.get_kde_scatter(xax="area_um", yax="deform")
+    # load and apply polygon filter from file
+    pf = dclab.PolygonFilter(filename="data/example.poly")
+    ds.polygon_filter_add(pf)
+    ds.apply_filter()
+    # valid events
+    val = ds.filter.all
+
+    ax = plt.subplot(111, title="polygon filtering")
+    ax.scatter(ds["area_um"][~val], ds["deform"][~val], c="lightgray", marker=".")
+    sc = ax.scatter(ds["area_um"][val], ds["deform"][val], c=kde[val], marker=".")
+    ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
+    ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    ax.set_xlim(0, 150)
+    ax.set_ylim(0.01, 0.12)
+    plt.colorbar(sc, label="kernel density estimate [a.u]")
+    plt.show()

@@ -56,6 +56,8 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+docs/export_example.rtdc
+docs/export_example.tsv
 
 *.md~
 *.txt~

@@ -23,7 +23,7 @@ class Export(object):
         """Export functionalities for RT-DC datasets"""
         self.rtdc_ds = rtdc_ds
 
-    def avi(self, path, override=False):
+    def avi(self, path, filtered=True, override=False):
         """Exports filtered event images to an avi file
 
         Parameters
@@ -64,7 +64,7 @@ class Export(object):
             # write the filtered frames to avi file
             for evid in np.arange(len(ds)):
                 # skip frames that were filtered out
-                if not ds._filter[evid]:
+                if filtered and not ds._filter[evid]:
                     continue
                 try:
                     image = ds["image"][evid]

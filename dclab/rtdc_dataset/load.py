@@ -235,7 +235,7 @@ def new_dataset(data, identifier=None):
           (will create a hierarchy child)
     identifier: str
         A unique identifier for this dataset. If set to `None`
-        an identifier will be generated.
+        an identifier is generated.
 
     Returns
     -------

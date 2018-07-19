@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""PolygonFilter classes and methods"""
 from __future__ import division, print_function, unicode_literals
 
 import pathlib
@@ -21,7 +20,6 @@ class FilterIdExistsWarning(UserWarning):
 
 
 class PolygonFilter(object):
-    """An object for filtering RTDC data based on a polygonial area"""
     # Stuff that is done upon creation (not instantiation) of this class
     instances = []
     _instance_counter = 0
@@ -29,7 +27,7 @@ class PolygonFilter(object):
     def __init__(self, axes=None, points=None, inverted=False,
                  name=None, filename=None, fileid=0,
                  unique_id=None):
-        """Instantiate a polygon filter
+        """An object for filtering RTDC data based on a polygonial area
         
         Parameters
         ----------

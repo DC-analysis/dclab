@@ -7,7 +7,7 @@ from __future__ import division, print_function, unicode_literals
 def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
                   temperature=23.0):
     """Returns the viscosity for RT-DC-specific media
-    
+
     Parameters
     ----------
     medium: str

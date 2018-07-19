@@ -65,9 +65,9 @@ Here is a list of use cases that would motivate an installation of dclab.
   that can be automated, why not use dclab from the beginning? 
 - You simulated RT-DC data and plan to import them in ShapeOut
   for testing. Once you have loaded your data as a numpy array, you
-  can instantiate an :class:`RTDC_Dict <dclab.rtdc_dataset.fmt_dict.RTDC_Dict`
-  class and then use the :class:`Export class <dclab.rtdc_dataset.export.Export`
-  to create an .rtdc data file.
+  can instantiate an :class:`RTDC_Dict <dclab.rtdc_dataset.RTDC_Dict>`
+  class and then use the :class:`Export <dclab.rtdc_dataset.export.Export>`
+  class to create an .rtdc data file.
 
 If you are still unsure about whether to use dclab or not, you might
 want to look at the :ref:`example section <sec_examples>`. If you need
@@ -100,7 +100,7 @@ available features, use:
 
 This will list all scalar features (e.g. "area_um" and "deform") and all
 non-scalar features (e.g. "contour" and "image"). Scalar features can be
-filtered by editing the configuration of `ds` and calling `ds.apply_filter()`:
+filtered by editing the configuration of ``ds`` and calling ``ds.apply_filter()``:
 
 .. code-block:: python
 
@@ -110,7 +110,7 @@ filtered by editing the configuration of `ds` and calling `ds.apply_filter()`:
     ds.config["filtering"]["area_um max"] = amax
     ds.apply_filter()  # this step is important!
 
-This will update the binary array `ds.filter.all` which can be used to
+This will update the binary array ``ds.filter.all`` which can be used to
 extract the filtered data:
 
 .. code-block:: python
@@ -124,11 +124,11 @@ only contains the filtered data.
 
     ds_child = dclab.new_dataset(ds)
 
-The hierarchy child `ds_child` is dynamic, i.e. when the filters in `ds`
-change, then `ds_child` also changes after calling `ds_child.apply_filter()`.
+The hierarchy child ``ds_child`` is dynamic, i.e. when the filters in ``ds``
+change, then ``ds_child`` also changes after calling ``ds_child.apply_filter()``.
 
 Non-scalar features do not support fancy indexing (i.e.
-`ds["image"][ds.filter.all]` will not work. Use a for-loop to extract them.
+``ds["image"][ds.filter.all]`` will not work. Use a for-loop to extract them.
 
 .. code-block:: python
 

@@ -19,15 +19,7 @@ def convert(area_um, deform, emodulus,
             inplace=False):
     """convert area-deformation-emodulus triplet
 
-    The conversion formula is described in
-
-        Extracting Cell Stiffness from Real-Time Deformability
-        Cytometry: Theory and Experiment
-        A. Mietke, O. Otto, S. Girardo, P. Rosendahl,
-        A. Taubenberger, S. Golfier, E. Ulbricht,
-        S. Aland, J. Guck, E. Fischer-Friedrich
-        Biophysical Journal 109(10) 2015
-        DOI: 10.1016/j.bpj.2015.09.006
+    The conversion formula is described in :cite:`Mietke2015`.
 
     Parameters
     ----------
@@ -87,12 +79,7 @@ def corrpix_deform_delta(area_um, px_um=0.34):
     pixelated grid. Due to sampling problems, the measured
     deformation is overestimated and must be corrected.
 
-    The correction formula is described in:
-
-        Mapping of Deformation to Apparent Young's Modulus
-        in Real-Time Deformability Cytometry
-        Christoph Herold, arXiv:1704.00572 [cond-mat.soft] (2017)
-        https://arxiv.org/abs/1704.00572
+    The correction formula is described in :cite:`Herold2017`.
 
     Parameters
     ----------
@@ -133,12 +120,12 @@ def corrpix_deform_delta(area_um, px_um=0.34):
 def get_emodulus(area_um, deform, medium="CellCarrier",
                  channel_width=20.0, flow_rate=0.16, px_um=0.34,
                  temperature=23.0, copy=True):
-    """Compute apparent Young's modulus
+    """Compute apparent Young's modulus using a look-up table
 
     Parameters
     ----------
     area_um: float or ndarray
-        Apparent (2D image) area in µm² of the event(s)
+        Apparent (2D image) area [µm²] of the event(s)
     deform: float or ndarray
         The deformation (1-circularity) of the event(s)
     medium: str or float
@@ -147,14 +134,14 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
         will be computed. If a float is given, this value will be
         used as the viscosity in mPa*s.
     channel_width: float
-        The channel width in µm
+        The channel width [µm]
     flow_rate: float
-        Flow rate in µl/s
+        Flow rate [µl/s]
     px_um: float
-        The detector pixel size in µm. Set this value to zero
-        to disable pixelation correction.
+        The detector pixel size [µm] used for pixelation correction.
+        Set to zero to disable.
     temperature: float or ndarray
-        Temperature in °C of the event(s)
+        Temperature [°C] of the event(s)
     copy: bool
         Copy input arrays. If set to false, input arrays are
         overridden.
@@ -166,14 +153,18 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
 
     Notes
     -----
-    The computation of the elasticity takes into account corrections for
-    the viscosity (medium, channel width, flow rate, and temperature) and
-    corrections for pixelation of the area and the deformation which are
-    computed from a (pixelated) image.
+    - The look-up table used was computed with finite elements methods
+      according to :cite:`Mokbel2017`.
+    - The computation of the Young's modulus takes into account
+      corrections for the viscosity (medium, channel width, flow rate,
+      and temperature) :cite:`Mietke2015` and corrections for
+      pixelation of the area and the deformation which are computed
+      from a (pixelated) image :cite:`Herold2017`.
 
     See Also
     --------
-    dclab.features.emodulus_viscosity.get_viscosity: compute viscosity for known media
+    dclab.features.emodulus_viscosity.get_viscosity: compute viscosity
+        for known media
     """
     # copy input arrays so we can use in-place calculations
     deform = np.array(deform, copy=copy, dtype=float)

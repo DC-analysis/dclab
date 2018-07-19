@@ -84,6 +84,8 @@ parse functions
    :undoc-members:
 
 
+.. _sec_ref_rtdc_dataset:
+
 RT-DC dataset manipulation
 ==========================
 
@@ -224,8 +226,5 @@ statistics
 .. automodule:: dclab.statistics
    :members:
    :undoc-members:
-
-
-.. _sec_ref_rtdc_dataset:
 
 

@@ -16,7 +16,7 @@ Features
 --------
 A feature is a measurement parameter of an RT-DC measurement. For
 instance, the feature "index" enumerates all recorded events, the
-feature "deformation" contains the deformation values of all events.
+feature "deform" contains the deformation values of all events.
 There are scalar features, i.e. features that assign a single number
 to an event, and non-scalar features, such as "image" and "contour".
 The following features are supported by dclab:

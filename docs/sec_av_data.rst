@@ -14,7 +14,8 @@ KDE scatter plot
 ----------------
 The KDE of the events in a 2D scatter plot can be used to
 colorize events according to event density using the
-:func:`RTDCBase.get_kde_scatter` function.
+:func:`RTDCBase.get_kde_scatter <dclab.rtdc_dataset.RTDCBase.get_kde_scatter>`
+function.
 
 .. plot::
 
@@ -94,7 +95,8 @@ Contour plot
 ------------
 Contour plots are commonly used to compare the kernel density
 between measurements. Kernel density estimates (on a grid) for contour
-plots can be computed with the function :func:`RTDCBase.get_kde_scatter`.
+plots can be computed with the function
+:func:`RTDCBase.get_kde_contour <dclab.rtdc_dataset.RTDCBase.get_kde_contour>`.
 
 .. plot::
 
@@ -186,7 +188,7 @@ which allows to export event data to several data file formats. See
        ...:
 
 Note that data exported as HDF5 files can be loaded with dclab
-(reproducing the previously computed statistics).
+(reproducing the previously computed statistics - without filters).
 
 .. ipython::
 
@@ -196,8 +198,8 @@ Note that data exported as HDF5 files can be loaded with dclab
 
 ShapeOut
 ========
-Keep in mind that in some cases, it might still be useful to make use
-of ShapeOut. For instance, you can create and export
+Keep in mind that you can combine your dclab analysis pipeline with
+:ref:`ShapeOut <shapeout:index>`. For instance, you can create and export
 :ref:`polygon filters <sec_ref_polygon_filter>`
 in ShapeOut and then import them in dclab.
 

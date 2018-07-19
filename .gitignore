@@ -58,6 +58,7 @@ coverage.xml
 docs/_build/
 docs/export_example.rtdc
 docs/export_example.tsv
+docs/dclab.bib.sav
 
 *.md~
 *.txt~

@@ -7,6 +7,9 @@ notifications:
     on_build_status_changed: false
 
 environment:
+  PYPI_PWD:
+    secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
+  PYPI_USR: ci_zmdd
   matrix:
     - PYTHON: "C:\\Python27"
     - PYTHON: "C:\\Python27-x64"
@@ -42,6 +45,7 @@ test_script:
   - "codecov || exit 0"
 
 after_test:
+  - "appveyor-retry pip install twine wheel"
   # If tests are successful, create a whl package for the project.
   - "python setup.py bdist_wheel"
   - ps: "ls dist"
@@ -50,3 +54,5 @@ artifacts:
   # Archive the generated wheel package in the ci.appveyor.com build report.
   - path: dist\*
 
+on_success:
+  - cmd: "if [%APPVEYOR_REPO_TAG%]==[true] twine upload dist\\*.whl"

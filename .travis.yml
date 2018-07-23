@@ -33,6 +33,6 @@ deploy:
     secure: "QBTWMuoYKw5SwIBPrB10NPvUiBO36rWrQmu/gz64GAcYKLxucDoY7xnUNIY2zqpXqyrK3iUW/EKNgh9pqd516TyY016MTb2/e1p1Ktp5RF4zDomUZS2TSzxmFn9mvyJOH1mhIGHThP6GWwiKIZeU1kdvTenwEMGFPPStVye5HjzN1RcoK/oBcLL+A5GV/M+g4Edy+KXCLPM/uql1gChIePBuRNCiJ+tDTc1d8EpXLKkIwooKfFiwPBU1F8F+w65NdPIxJuoV5pUmoluJmEiAvJZE2Leu8kRp+bRUj3l4F4PdDVHV7sSlv/Bx8ucTXu+Jz7WAV8jVUxOMAT8TymKimMhQ5KNfTWBJa+1wZ5ljBSsYMerPgpNKd9EYdPX7VgBz1DHyjgBLCrRCDFMa1Ghbdb5TG3/Clf6IZ5fKpJ0qaJlK0fNF15oekt1AYlKRpbHMelP0NgmRdgc+sNsjrftBEhpIP3bs3vF8Ts3UsMGrm6+UEZns3UrDjI+yrYX2PRUOH1Yw1h1ZoIA95Fso7euFFDYYWAxKppGg7YpxWyC8b6z492nQJk+6Y1ViXI8bXEJWG1Sygc8n2I017VAOIPecCHc+kIxFuA/xGG+ee0n2ztjPMb17L5AgH2PnzJxfSkCkfAmnrZJd9Mr7VCFtJpMcErk0EMh8uAXpVX4/5WKk9SM="
   on:
     tags: true
-    # limit to one version to avoid upload errors
-    python: 3.6
   distributions: "sdist"
+  skip_cleanup: true
+  skip_existing: true

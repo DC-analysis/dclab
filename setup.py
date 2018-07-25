@@ -44,10 +44,10 @@ setup(
     license="GPL v2",
     description=description,
     long_description=open('README.rst').read() if exists('README.rst') else '',
-    install_requires=["fcswrite",        # required by: fcs export
-                      "h5py>=2.8.0",     # required by: rtdc format
-                      "imageio>=2.3.0",  # required by: tdms format, avi export
-                      "nptdms",          # required by: tdms format
+    install_requires=["fcswrite>=0.4.1",  # required by: fcs export
+                      "h5py>=2.8.0",      # required by: rtdc format
+                      "imageio>=2.3.0",   # required by: tdms format, avi export
+                      "nptdms",           # required by: tdms format
                       "numpy>=1.9.0",
                       "pathlib",
                       "scipy>=0.12.0",

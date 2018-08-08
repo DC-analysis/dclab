@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 import pathlib
 import shutil
+import sys
 import tempfile
 
 import numpy as np
@@ -26,6 +27,8 @@ def test_compatibility_minimal():
     cleanup()
 
 
+@pytest.mark.skipif(sys.version_info < (3,6),
+                    reason="requires python3.6 or higher")
 def test_compatibility_channel_width():
     # At some point, "Channel width" was repleaced by "Channel width [um]"
     path = retrieve_data("rtdc_data_minimal.zip")

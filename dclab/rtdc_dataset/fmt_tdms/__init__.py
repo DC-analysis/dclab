@@ -142,7 +142,7 @@ class RTDC_TDMS(RTDCBase):
         if "channel width" not in self.config["setup"]:
             if "channel width" in residual_config["general"]:
                 channel_width = residual_config["general"]["channel width"]
-            if self.config["setup"]["flow rate"] < 0.16:
+            elif self.config["setup"]["flow rate"] < 0.16:
                 channel_width = 20.
             else:
                 channel_width = 30.

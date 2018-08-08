@@ -26,6 +26,18 @@ def test_compatibility_minimal():
     cleanup()
 
 
+def test_compatibility_channel_width():
+    # At some point, "Channel width" was repleaced by "Channel width [um]"
+    path = retrieve_data("rtdc_data_minimal.zip")
+    para = path.parent / "M1_para.ini"
+    pardata = para.read_text()
+    pardata = pardata.replace("Channel width = 20\n", "Channel width = 34\n")
+    para.write_text(pardata)
+    ds = new_dataset(path)
+    assert ds.config["setup"]["channel width"] == 34
+    cleanup()
+
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.event_contour.'
                             + 'NoContourDataWarning')

@@ -62,7 +62,7 @@ methods for your code and put them in the ``tests`` directory.
 
 Incrementing version
 ~~~~~~~~~~~~~~~~~~~~
-dclab currently gets its version from the latest git tag.
+Dclab currently gets its version from the latest git tag.
 If you think that a new version should be published,
 create a tag on the master branch (if you have the necessary
 permissions to do so):
@@ -72,11 +72,8 @@ permissions to do so):
 	git tag -a "0.1.3"
 	git push --tags origin
 
-
-Uploading to PyPI
-~~~~~~~~~~~~~~~~~
-If this is not automated yet, only @paulmueller can upload
-a new version of dclab to the Python Package Index.
+Appveyor and TravisCI will then automatically build source package and wheels 
+and publish them on PyPI.
 
 
 Notes on `ShapeOut <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/>`__

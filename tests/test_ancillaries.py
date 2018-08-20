@@ -330,6 +330,24 @@ def test_inert_ratio_cvx():
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
+def test_inert_ratio_prnc():
+    # Brightness of the image
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    # This will cause a zero-padding warning:
+    prnc = ds["inert_ratio_prnc"]
+    raw = ds["inert_ratio_raw"]
+    idcompare = ~np.isnan(prnc)
+    # ignore first event (no image data)
+    idcompare[0] = False
+    diff = (prnc - raw)[idcompare]
+    # only compare the first valid event which seems to be quite close
+    assert np.allclose(diff[0], 0, atol=1.2e-3, rtol=0)
+    cleanup()
+
+
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_inert_ratio_raw():
     # Brightness of the image
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))

@@ -179,9 +179,10 @@ FEATURES_SCALAR = [
     ["fl3_width", "FL-3 width [µs]"],
     ["frame", "Video frame number"],
     # The inertia ratios of the event contours are defined by the
-    # central second order moments of area.
-    ["inert_ratio_cvx", "Inertia ratio of convex contour sqrt(m20/m02)"],
-    ["inert_ratio_raw", "Inertia ratio of raw contour sqrt(m20/m02)"],
+    # central second order moments of area (sqrt(m20/m02).
+    ["inert_ratio_cvx", "Inertia ratio of convex contour"],
+    ["inert_ratio_prnc", "Principal inertia ratio of raw contour"],
+    ["inert_ratio_raw", "Inertia ratio of raw contour"],
     ["index", "Event index"],
     ["nevents", "Total number of events in the same image"],
     ["pc1", "Principal component 1"],

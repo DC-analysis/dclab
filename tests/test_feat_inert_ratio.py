@@ -44,6 +44,46 @@ def test_inert_ratio_prnc():
                 assert np.allclose(raw, prnc, rtol=0, atol=1e-10)
 
 
+def test_inert_ratio_prnc_simple_1():
+    c = np.array([[0, 0],
+                  [0, 1],
+                  [0, 2],
+                  [1, 2],
+                  [2, 2],
+                  [3, 2],
+                  [3, 1],
+                  [3, 0],
+                  [2, 0],
+                  [1, 0],
+                  [0, 0]])
+    raw = ir.get_inert_ratio_raw(c)
+    prnc = ir.get_inert_ratio_prnc(c)
+    tilt = ir.get_tilt(c)
+    assert np.allclose(raw, 1.5)
+    assert np.allclose(prnc, 1.5)
+    assert np.allclose(tilt, 0)
+
+
+def test_inert_ratio_prnc_simple_2():
+    c = np.array([[0, 0],
+                  [1, 1],
+                  [2, 2],
+                  [3, 3],
+                  [4, 2],
+                  [5, 1],
+                  [4, 0],
+                  [3, -1],
+                  [2, -2],
+                  [1, -1],
+                  [0, 0]])
+    raw = ir.get_inert_ratio_raw(c)
+    prnc = ir.get_inert_ratio_prnc(c)
+    tilt = ir.get_tilt(c)
+    assert np.allclose(raw, 1)
+    assert np.allclose(prnc, 1.5)
+    assert np.allclose(tilt, np.pi/4)
+
+
 def test_tilt():
     t = np.linspace(0, 2*np.pi, 300)
 

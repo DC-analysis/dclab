@@ -31,9 +31,7 @@ def compute_inert_ratio_cvx(mm):
     return features.inert_ratio.get_inert_ratio_cvx(cont=mm["contour"])
 
 def compute_inert_ratio_prnc(mm):
-    return features.inert_ratio.get_inert_ratio_prnc(cont=mm["contour"],
-                                                     pos_x=mm["pos_x"],
-                                                     pos_y=mm["pos_y"])
+    return features.inert_ratio.get_inert_ratio_prnc(cont=mm["contour"])
 
 def compute_inert_ratio_raw(mm):
     return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
@@ -69,7 +67,7 @@ def register():
 
     AncillaryFeature(feature_name="inert_ratio_prnc",
                      method=compute_inert_ratio_prnc,
-                     req_features=["contour", "pos_x", "pos_y"])
+                     req_features=["contour"])
 
     AncillaryFeature(feature_name="inert_ratio_raw",
                      method=compute_inert_ratio_raw,

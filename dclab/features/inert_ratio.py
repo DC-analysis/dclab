@@ -170,7 +170,7 @@ def get_inert_ratio_cvx(cont):
     return inert_ratio_cvx
 
 
-def get_inert_ratio_prnc(cont, pos_x, pos_y):
+def get_inert_ratio_prnc(cont):
     """Compute principal inertia ratio of a contour
 
     The principal inertia ratio is rotation-invariant, which
@@ -184,12 +184,6 @@ def get_inert_ratio_prnc(cont, pos_x, pos_y):
         e.g. obtained using `mm.contour` where  `mm` is an instance
         of `RTDCBase`. The first and second columns of `cont`
         correspond to the x- and y-coordinates of the contour.
-    pos_x: float or ndarray of length N
-        The x coordinate(s) of the centroid of the event(s) [µm]
-        e.g. obtained using `mm.pos_x`
-    pos_y: float or ndarray of length N
-        The y coordinate(s) of the centroid of the event(s) [µm]
-        e.g. obtained using `mm.pos_y`
 
     Returns
     -------
@@ -204,16 +198,6 @@ def get_inert_ratio_prnc(cont, pos_x, pos_y):
     else:
         ret_list = True
 
-    # Convert input to 1D arrays
-    pos_x = np.atleast_1d(pos_x)
-    pos_y = np.atleast_1d(pos_y)
-
-    if pos_x.size != pos_y.size:
-        raise ValueError("Size of `pos_x` and `pos_y` must match!")
-
-    if pos_x.size > 1 and len(cont) <= 1:
-        raise ValueError("Number of given contours too small!")
-
     length = len(cont)
 
     inert_ratio_prnc = np.zeros(length, dtype=float) * np.nan
@@ -224,10 +208,8 @@ def get_inert_ratio_prnc(cont, pos_x, pos_y):
             # orientation of the contour
             orient = 0.5 * np.arctan2(2 * moments['mu11'],
                                       moments['mu02'] - moments['mu20'])
-            # center contour
-            cc = np.array(cont[ii], dtype=float, copy=True)
-            cc[:, 0] -= pos_x[ii]
-            cc[:, 1] -= pos_y[ii]
+            # require floating point array (only copy if necessary)
+            cc = np.array(cont[ii], dtype=float, copy=False)
             # rotate contour
             rho = np.sqrt(cc[:, 0]**2 + cc[:, 1]**2)
             phi = np.arctan2(cc[:, 1], cc[:, 0]) + orient + np.pi / 2

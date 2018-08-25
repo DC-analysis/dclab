@@ -31,7 +31,7 @@ def test_inert_ratio_prnc():
     phi = np.arctan2(y1, x1)
     rho = np.sqrt(x1**2 + y1**2)
 
-    for theta in np.linspace(0, 2*np.pi, 14):  # arbitrary rotation
+    for theta in np.linspace(0.1, 2*np.pi, 14):  # arbitrary rotation
         for pos_x in np.linspace(-5, 20, 8):  # arbitrary x shift
             for pos_y in np.linspace(-4.6, 17, 4):  # arbitrary y shift
                 x2 = rho * np.cos(phi + theta) + pos_x
@@ -39,9 +39,9 @@ def test_inert_ratio_prnc():
 
                 c2 = np.dstack((x2, y2))[0]
                 raw = ir.get_inert_ratio_raw(c1)
-                prnc = ir.get_inert_ratio_prnc(c2, pos_x=pos_x, pos_y=pos_y)
+                prnc = ir.get_inert_ratio_prnc(c2)
 
-                assert np.allclose(raw, prnc, rtol=0, atol=1e-14)
+                assert np.allclose(raw, prnc, rtol=0, atol=1e-10)
 
 
 def test_tilt():

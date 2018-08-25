@@ -293,3 +293,51 @@ def get_inert_ratio_raw(cont):
         inert_ratio_raw = inert_ratio_raw[0]
 
     return inert_ratio_raw
+
+
+def get_tilt(cont):
+    """Compute tilt of raw contour relative to channel axis
+
+    Parameters
+    ----------
+    cont: ndarray or list of ndarrays of shape (N,2)
+        A 2D array that holds the contour of an event (in pixels)
+        e.g. obtained using `mm.contour` where  `mm` is an instance
+        of `RTDCBase`. The first and second columns of `cont`
+        correspond to the x- and y-coordinates of the contour.
+
+    Returns
+    -------
+    tilt: float or ndarray of size N
+        Tilt of the contour in the interval [0, PI/2]
+    """
+    if isinstance(cont, np.ndarray):
+        # If cont is an array, it is not a list of contours,
+        # because contours can have different lengths.
+        cont = [cont]
+        ret_list = False
+    else:
+        ret_list = True
+
+    length = len(cont)
+
+    tilt = np.zeros(length, dtype=float) * np.nan
+
+    for ii in range(length):
+        moments = cont_moments_cv(cont[ii])
+        if moments is not None:
+            # orientation of the contour
+            oii = 0.5 * np.arctan2(2 * moments['mu11'],
+                                   moments['mu02'] - moments['mu20'])
+            # +PI/2 because relative to channel axis
+            tilt[ii] = oii + np.pi/2
+
+    # restrict to interval [0,PI/2]
+    tilt = np.mod(tilt, np.pi)
+    tilt[tilt > np.pi/2] -= np.pi
+    tilt = np.abs(tilt)
+
+    if not ret_list:
+        tilt = tilt[0]
+
+    return tilt

@@ -26,22 +26,44 @@ def test_inert_ratio_prnc():
 
     x1 = 1.7 * np.cos(t)
     y1 = 1.1 * np.sin(t)
-    c1 = np.dstack((x1,y1))[0]
+    c1 = np.dstack((x1, y1))[0]
 
     phi = np.arctan2(y1, x1)
     rho = np.sqrt(x1**2 + y1**2)
 
-    for theta in np.linspace(0, 2*np.pi, 13):  # arbitrary rotation
-        for pos_x in np.linspace(-5, 20, 7):  # arbitrary x shift
-            for pos_y in np.linspace(-4.6, 17, 5):  # arbitrary y shift
+    for theta in np.linspace(0, 2*np.pi, 14):  # arbitrary rotation
+        for pos_x in np.linspace(-5, 20, 8):  # arbitrary x shift
+            for pos_y in np.linspace(-4.6, 17, 4):  # arbitrary y shift
                 x2 = rho * np.cos(phi + theta) + pos_x
                 y2 = rho * np.sin(phi + theta) + pos_y
 
-                c2 = np.dstack((x2,y2))[0]
+                c2 = np.dstack((x2, y2))[0]
                 raw = ir.get_inert_ratio_raw(c1)
                 prnc = ir.get_inert_ratio_prnc(c2, pos_x=pos_x, pos_y=pos_y)
 
                 assert np.allclose(raw, prnc, rtol=0, atol=1e-14)
+
+
+def test_tilt():
+    t = np.linspace(0, 2*np.pi, 300)
+
+    x1 = 1.7 * np.cos(t)
+    y1 = 1.1 * np.sin(t)
+
+    phi = np.arctan2(y1, x1)
+    rho = np.sqrt(x1**2 + y1**2)
+
+    for theta in np.linspace(-.3, 2.2*np.pi, 32):  # arbitrary rotation
+        x2 = rho * np.cos(phi + theta)
+        y2 = rho * np.sin(phi + theta)
+
+        c2 = np.dstack((x2, y2))[0]
+        tilt = ir.get_tilt(c2)
+
+        th = np.mod(theta, np.pi)
+        if th > np.pi/2:
+            th = np.pi - th
+        assert np.allclose(tilt, th)
 
 
 if __name__ == "__main__":

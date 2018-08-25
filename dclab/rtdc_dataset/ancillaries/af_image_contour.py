@@ -38,6 +38,8 @@ def compute_inert_ratio_prnc(mm):
 def compute_inert_ratio_raw(mm):
     return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
 
+def compute_tilt(mm):
+    return features.inert_ratio.get_tilt(cont=mm["contour"])
 
 def compute_volume(mm):
     vol = features.volume.get_volume(
@@ -71,6 +73,10 @@ def register():
 
     AncillaryFeature(feature_name="inert_ratio_raw",
                      method=compute_inert_ratio_raw,
+                     req_features=["contour"])
+
+    AncillaryFeature(feature_name="tilt",
+                     method=compute_tilt,
                      req_features=["contour"])
 
     AncillaryFeature(feature_name="volume",

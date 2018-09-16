@@ -147,7 +147,7 @@ FEATURES_SCALAR = [
     ["area_um", "Area [µm²]"],
     ["aspect", "Aspect ratio of bounding box"],
     ["bright_avg", "Brightness average within contour [a.u.]"],
-    ["bright_sd", "Brightness SD  within contour [a.u.]"],
+    ["bright_sd", "Brightness SD within contour [a.u.]"],
     ["circ", "Circularity"],
     ["deform", "Deformation"],
     ["emodulus", "Young's Modulus [kPa]"],

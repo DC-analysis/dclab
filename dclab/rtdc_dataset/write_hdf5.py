@@ -199,7 +199,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
                    (default)
     compression: str
         Compression method for "contour", "image", and "trace" data
-        as well as and logs; one of [None, "lzf", "gzip", "szip"].
+        as well as logs; one of [None, "lzf", "gzip", "szip"].
 
     Notes
     -----

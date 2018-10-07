@@ -161,7 +161,8 @@ class Export(object):
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
         compression: str or None
-            Compression method used by h5py
+            Compression method for "contour", "image", and "trace" data
+            as well as logs; one of [None, "lzf", "gzip", "szip"].
         """
         path = pathlib.Path(path)
         # Make sure that path ends with .rtdc

@@ -41,5 +41,10 @@ PP="/Library/Frameworks/Python.framework/Versions/${MPV::3}/bin/python${MPV::3}"
 python -m virtualenv --no-site-packages -p $PP .env
 source .env/bin/activate
 
+# install ca certificates
+# (resolves [SSL: CERTIFICATE_VERIFY_FAILED])
+pip install certifi
+/Applications/Python\ ${MPV::3}/Install\ Certificates.command
+
 # go back
 cd $OLD

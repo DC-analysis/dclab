@@ -24,7 +24,7 @@ mkdir -p $DLD
 
 # download MacPython
 PKG="python-${MPV}-macosx10.6.pkg"
-wget -c -P ${DLD} https://www.python.org/ftp/python/${MPV}/${PKG}
+curl https://www.python.org/ftp/python/${MPV}/${PKG} > ${DLD}/${PKG}
 
 # install MacPython
 sudo installer -pkg ${DLD}/${PKG} -target /

@@ -1,6 +1,7 @@
 0.7.0
  - feat: add new ancillary feature: principal inertia ratio (#46)
  - feat: add new ancillary feature: absolute tilt (#53)
+ - feat: add computation of viscosity for water (#52)
 0.6.3
  - fix: channel width not correctly identified for old tdms files
 0.6.2

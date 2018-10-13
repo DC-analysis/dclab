@@ -10,7 +10,7 @@ from .cached import Cache
 
 def downsample_rand(a, samples, remove_invalid=True, retidx=False):
     """Downsampling by randomly removing points
-    
+
     Parameters
     ----------
     a: 1d ndarray
@@ -32,17 +32,17 @@ def downsample_rand(a, samples, remove_invalid=True, retidx=False):
     """
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
-    
+
     if not remove_invalid:
         raise ValueError("Downsampling cannot handle inf/nan yet!")
-    
+
     samples = int(samples)
-    
+
     if remove_invalid:
         # slice out nans and infs
-        bad = np.isnan(a)+np.isinf(a)
+        bad = np.isnan(a) | np.isinf(a)
         a = a[~bad]
-    
+
     if samples and (samples < a.shape[0]):
         keep = np.zeros_like(a, dtype=bool)
         np.random.set_state(rs)
@@ -69,7 +69,7 @@ def downsample_rand(a, samples, remove_invalid=True, retidx=False):
 @Cache
 def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
     """Content-based downsampling for faster visualization
-    
+
     The arrays `a` and `b` make up a 2D scatter plot with high
     and low density values. This method takes out points at
     indices with high density.
@@ -98,22 +98,22 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
     """
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
-    
+
     if not remove_invalid:
         raise ValueError("Downsampling cannot handle inf/nan yet!")
-    
+
     samples = int(samples)
-    
+
     if remove_invalid:
         # slice out nans and infs
-        bad = np.isnan(a)+np.isinf(a)+np.isnan(b)+np.isinf(b)
+        bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
         a = a[~bad]
         b = b[~bad]
 
     if samples and samples < a.shape[0]:
         # The events to keep
         keep = np.zeros(a.shape, dtype=bool)
-    
+
         # 1. Produce evenly distributed samples
         # Choosing grid-size:
         # - large numbers tend to show actual structures of the sample,
@@ -123,28 +123,27 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
         #   upsampled again.
         # 300 is about the size of the plot in marker sizes and yields
         # good results.
-        grid_size=300
+        grid_size = 300
         xpx = (a-a.min())/(a.max()-a.min()) * grid_size
-        ypx = (b-b.min())/(b.max()-b.min()) * grid_size    
+        ypx = (b-b.min())/(b.max()-b.min()) * grid_size
         # The events on the grid to process
         toproc = np.ones((grid_size, grid_size), dtype=bool)
-    
+
         for ii in range(xpx.shape[0]):
             xi = xpx[ii]
             yi = ypx[ii]
-            ## first filter for exactly overlapping events
+            # first filter for exactly overlapping events
             if toproc[int(xi-1), int(yi-1)]:
                 toproc[int(xi-1), int(yi-1)] = False
-                ## second filter for multiple overlay
+                # second filter for multiple overlay
                 keep[ii] = True
 
-        
         # 2. Make sure that we reach `samples` by adding or
-        # removing events.        
+        # removing events.
         diff = np.sum(keep) - samples
         if diff > 0:
             # Too many samples
-            rem_indices = np.where(keep==True)[0]
+            rem_indices = np.where(keep)[0]
             np.random.set_state(rs)
             rem = np.random.choice(rem_indices,
                                    size=diff,
@@ -152,14 +151,14 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
             keep[rem] = False
         elif diff < 0:
             # Not enough samples
-            add_indices = np.where(keep==False)[0]
+            add_indices = np.where(~keep)[0]
             np.random.set_state(rs)
             add = np.random.choice(add_indices,
                                    size=abs(diff),
                                    replace=False)
-            keep[add] = True    
+            keep[add] = True
 
-        assert np.sum(keep) == samples    
+        assert np.sum(keep) == samples
         asd = a[keep]
         bsd = b[keep]
     else:
@@ -171,7 +170,7 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
         # translate the kept values back to the original array
         keep_inv = np.zeros_like(bad)
         keep_inv[~bad] = keep
-        
+
     if retidx:
         return asd, bsd, keep_inv
     else:

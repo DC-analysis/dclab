@@ -77,7 +77,7 @@ class Statistics(object):
             x = ds[feat][ds._filter]
         else:
             x = ds[feat]
-        bad = np.isnan(x) ^ np.isinf(x)
+        bad = np.isnan(x) | np.isinf(x)
         xout = x[~bad]
         return xout
 

@@ -15,7 +15,7 @@ from .cached import Cache
 
 def bin_num_doane(a):
     """Compute number of bins based on Doane's formula"""
-    bad = np.isnan(a) + np.isinf(a)
+    bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
     acc = bin_width_doane(a)
     num = np.int(np.round((data.max() - data.min()) / acc))
@@ -26,7 +26,7 @@ def bin_width_doane(a):
     """Compute accuracy (bin width) based on Doane's formula"""
     # https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width
     # https://stats.stackexchange.com/questions/55134/doanes-formula-for-histogram-binning
-    bad = np.isnan(a) + np.isinf(a)
+    bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
     n = data.size
     g1 = skew(data)
@@ -37,7 +37,7 @@ def bin_width_doane(a):
 
 
 def get_bad_vals(x, y):
-    return np.isnan(x)+np.isinf(x)+np.isnan(y)+np.isinf(y)
+    return np.isnan(x) | np.isinf(x) | np.isnan(y) | np.isinf(y) 
 
 
 def ignore_nan_inf(kde_method):

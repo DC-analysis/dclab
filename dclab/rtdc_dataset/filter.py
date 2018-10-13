@@ -142,7 +142,7 @@ class Filter(object):
             for col in dfn.scalar_feature_names:
                 if col in self.rtdc_ds:
                     data = self.rtdc_ds[col]
-                    invalid = np.isinf(data)+np.isnan(data)
+                    invalid = np.isinf(data) | np.isnan(data)
                     self.invalid *= ~invalid
 
         # 4. Finally combine all filters

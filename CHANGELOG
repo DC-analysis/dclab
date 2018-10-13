@@ -1,3 +1,5 @@
+0.7.1
+ - fix: usage of "xor" (^) instead of "or" (|) in statistics
 0.7.0
  - feat: add new ancillary feature: principal inertia ratio (#46)
  - feat: add new ancillary feature: absolute tilt (#53)

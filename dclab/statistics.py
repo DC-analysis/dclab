@@ -20,8 +20,8 @@ class Statistics(object):
     available_methods = {}
 
     def __init__(self, name, method, req_feature=False):
-        """ A helper class for statistics.
-        
+        """A helper class for computing statistics
+
         All statistical methods are registered in the dictionary
         `Statistics.available_methods`.
         """
@@ -30,88 +30,104 @@ class Statistics(object):
         self.req_feature = req_feature
         Statistics.available_methods[name] = self
 
-    def get_feature(self, rtdc_ds, axis):
-        axis = axis.lower()
-        if rtdc_ds.config["filtering"]["enable filters"]:
-            x = rtdc_ds[axis][rtdc_ds._filter]
-        else:
-            x = rtdc_ds[axis]
-        bad = np.isnan(x)^np.isinf(x)
-        xout = x[~bad]
-        return xout
-    
-    def get_data(self, kwargs):
-        if "rtdc_ds" not in kwargs:
-            raise ValueError("Keyword argument 'rtdc_ds' missing.")
-        
-        rtdc_ds = kwargs["rtdc_ds"]
-
-        if self.req_feature:
-            if "feature" not in kwargs:
-                raise ValueError("Keyword argument 'feature' missing.")
-            return self.get_feature(rtdc_ds, kwargs["feature"])
-        else:
-            return rtdc_ds
-
     def __call__(self, **kwargs):
-        data = self.get_data(kwargs)
+        data = self._get_data(kwargs)
         if len(data) == 0:
             result = np.nan
         else:
             try:
                 result = self.method(data)
-            except:
+            except BaseException:
                 exc = tb.format_exc().replace("\n", "\n    | ")
                 warnings.warn("Failed to compute {} for {}: {}".format(
-                              self.name, kwargs["rtdc_ds"].title, exc),
+                              self.name, kwargs["ds"].title, exc),
                               BadMethodWarning)
                 result = np.nan
         return result
 
+    def _get_data(self, kwargs):
+        """Convenience wrapper to get statistics data"""
+        if "ds" not in kwargs:
+            raise ValueError("Keyword argument 'ds' missing.")
 
-def flow_rate(mm):
-    conf = mm.config["setup"]
+        ds = kwargs["ds"]
+
+        if self.req_feature:
+            if "feature" not in kwargs:
+                raise ValueError("Keyword argument 'feature' missing.")
+            return self.get_feature(ds, kwargs["feature"])
+        else:
+            return ds
+
+    def get_feature(self, ds, feat):
+        """Return filtered feature data
+
+        The features are filtered according to the user-defined filters,
+        using the information in `ds._filter`. In addition, all
+        `nan` and `inf` values are purged.
+
+        Parameters
+        ----------
+        ds: dclab.rtdc_dataset.RTDCBase
+            The dataset containing the feature
+        feat: str
+            The name of the feature; must be a scalar feature
+        """
+        if ds.config["filtering"]["enable filters"]:
+            x = ds[feat][ds._filter]
+        else:
+            x = ds[feat]
+        bad = np.isnan(x) ^ np.isinf(x)
+        xout = x[~bad]
+        return xout
+
+
+def flow_rate(ds):
+    """Return the flow rate of an RT-DC dataset"""
+    conf = ds.config["setup"]
     if "flow rate" in conf:
         return conf["flow rate"]
     else:
         return np.nan
 
-    
-def get_statistics(rtdc_ds, methods=None, features=None):
-    """
+
+def get_statistics(ds, methods=None, features=None):
+    """Compute statistics for an RT-DC dataset
+
     Parameters
     ----------
-    rtdc_ds : instance of `dclab.rtdc_dataset.RTDCBase`.
+    ds: dclab.rtdc_dataset.RTDCBase
         The dataset for which to compute the statistics.
-    methods : list of str or None
+    methods: list of str or None
         The methods wih which to compute the statistics.
         The list of available methods is given with
         `dclab.statistics.Statistics.available_methods.keys()`
         If set to `None`, statistics for all methods are computed.
-    features : list of str
+    features: list of str
         Feature name identifiers are defined in
         `dclab.definitions.scalar_feature_names`.
-        If set to `None`, statistics for all axes are computed. 
-    
+        If set to `None`, statistics for all axes are computed.
+
     Returns
     -------
-    header : list of str
+    header: list of str
         The header (feature + method names) of the computed statistics.
-    values : list of float
+    values: list of float
         The computed statistics.
     """
     if methods is None:
         cls = list(Statistics.available_methods.keys())
         # sort the features in a usable way
-        me1 = [ m for m in cls if not Statistics.available_methods[m].req_feature ]
-        me2 = [ m for m in cls if Statistics.available_methods[m].req_feature ]
+        avm = Statistics.available_methods
+        me1 = [m for m in cls if not avm[m].req_feature]
+        me2 = [m for m in cls if avm[m].req_feature]
         methods = me1 + me2
 
     if features is None:
         features = dfn.scalar_feature_names
     else:
         features = [a.lower() for a in features]
-    
+
     header = []
     values = []
 
@@ -122,36 +138,36 @@ def get_statistics(rtdc_ds, methods=None, features=None):
         for mt in methods:
             meth = Statistics.available_methods[mt]
             if meth.req_feature:
-                if ft in rtdc_ds:
-                    values.append(meth(rtdc_ds=rtdc_ds, feature=ft))
+                if ft in ds:
+                    values.append(meth(ds=ds, feature=ft))
                 else:
                     values.append(np.nan)
                 header.append(" ".join([mt, dfn.feature_name2label[ft]]))
             else:
                 # Prevent multiple entries of this method.
                 if not header.count(mt):
-                    values.append(meth(rtdc_ds=rtdc_ds))
+                    values.append(meth(ds=ds))
                     header.append(mt)
 
     return header, values
 
 
 def mode(data):
-    """ Compute an intelligent value for the mode
-    
+    """Compute an intelligent value for the mode
+
     The most common value in experimental is not very useful if there
     are a lot of digits after the comma. This method approaches this
     issue by rounding to bin size that is determined by the
     Freedman–Diaconis rule.
-    
+
     Parameters
     ----------
-    data : 1d ndarray
+    data: 1d ndarray
         The data for which the mode should be computed.
-    
+
     Returns
     -------
-    mode : float
+    mode: float
         The mode computed with the Freedman-Diaconis rule.
     """
     # size
@@ -160,20 +176,20 @@ def mode(data):
     iqr = np.percentile(data, 75)-np.percentile(data, 25)
     # Freedman–Diaconis
     bin_size = 2 * iqr / n**(1/3)
-    
+
     if bin_size == 0:
         return np.nan
-    
+
     # Add bin_size/2, because we want the center of the bin and
     # not the left corner of the bin.
     databin = np.round(data/bin_size)*bin_size + bin_size/2
     u, indices = np.unique(databin, return_inverse=True)
     mode = u[np.argmax(np.bincount(indices))]
-    
+
     return mode
 
 
-## Register all the methods
+# Register all the methods
 # Methods that require an axis
 Statistics(name="Mean",   req_feature=True, method=np.average)
 Statistics(name="Median", req_feature=True, method=np.median)

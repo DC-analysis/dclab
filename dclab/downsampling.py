@@ -8,7 +8,7 @@ import numpy as np
 from .cached import Cache
 
 
-def downsample_rand(a, samples, remove_invalid=True, retidx=False):
+def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
     """Downsampling by randomly removing points
 
     Parameters
@@ -19,55 +19,57 @@ def downsample_rand(a, samples, remove_invalid=True, retidx=False):
         The desired number of samples
     remove_invalid: bool
         Remove nan and inf values before downsampling
-    retidx: bool
+    ret_idx: bool
         Also return a boolean array that corresponds to the
         downsampled indices in `a`.
 
     Returns
     -------
-    dsa, dsb: 1d ndarrays of shape (samples,)
-        The pseudo-randomly downsampled arrays `a` and `b`
-    [idx]: 1d boolean array with same shape as `a`
-        A boolean array such that `a[idx] == dsa` is all true
+    dsa: 1d ndarray of size `samples`
+        The pseudo-randomly downsampled array `a`
+    idx: 1d boolean array with same shape as `a`
+        Only returned if `ret_idx` is True.
+        A boolean array such that `a[idx] == dsa`
     """
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
-
-    if not remove_invalid:
-        raise ValueError("Downsampling cannot handle inf/nan yet!")
+    np.random.set_state(rs)
 
     samples = int(samples)
 
     if remove_invalid:
         # slice out nans and infs
         bad = np.isnan(a) | np.isinf(a)
-        a = a[~bad]
+        pool = a[~bad]
+    else:
+        pool = a
 
-    if samples and (samples < a.shape[0]):
-        keep = np.zeros_like(a, dtype=bool)
-        np.random.set_state(rs)
-        keep_ids = np.random.choice(np.arange(a.shape[0]),
+    if samples and (samples < pool.shape[0]):
+        keep = np.zeros_like(pool, dtype=bool)
+        keep_ids = np.random.choice(np.arange(pool.size),
                                     size=samples,
                                     replace=False)
         keep[keep_ids] = True
-        dsa = a[keep]
+        dsa = pool[keep]
     else:
-        keep = np.ones_like(a, dtype=bool)
-        dsa = a
+        keep = np.ones_like(pool, dtype=bool)
+        dsa = pool
 
     if remove_invalid:
         # translate the kept values back to the original array
-        keep_inv = np.zeros_like(bad)
-        keep_inv[~bad] = keep
+        idx = np.zeros(a.size, dtype=bool)
+        idx[~bad] = keep
+    else:
+        idx = keep
 
-    if retidx:
-        return dsa, keep_inv
+    if ret_idx:
+        return dsa, idx
     else:
         return dsa
 
 
 @Cache
-def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
+def downsample_grid(a, b, samples, ret_idx=False):
     """Content-based downsampling for faster visualization
 
     The arrays `a` and `b` make up a 2D scatter plot with high
@@ -82,7 +84,7 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
         The desired number of samples
     remove_invalid: bool
         Remove nan and inf values before downsampling
-    retidx: bool
+    ret_idx: bool
         Also return a boolean array that corresponds to the
         downsampled indices in `a` and `b`.
 
@@ -92,23 +94,19 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
         The arrays `a` and `b` downsampled by evenly selecting
         points and pseudo-randomly adding or removing points
         to match `samples`.
-    [idx]: 1d boolean array with same shape as `a`
-        A boolean array such that `a[idx] == dsa` is all true
-
+    idx: 1d boolean array with same shape as `a`
+        Only returned if `ret_idx` is True.
+        A boolean array such that `a[idx] == dsa`
     """
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
 
-    if not remove_invalid:
-        raise ValueError("Downsampling cannot handle inf/nan yet!")
-
     samples = int(samples)
 
-    if remove_invalid:
-        # slice out nans and infs
-        bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
-        a = a[~bad]
-        b = b[~bad]
+    # find valid data points
+    bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
+    a = a[~bad]
+    b = b[~bad]
 
     if samples and samples < a.shape[0]:
         # The events to keep
@@ -166,12 +164,10 @@ def downsample_grid(a, b, samples, remove_invalid=True, retidx=False):
         asd = a
         bsd = b
 
-    if remove_invalid:
-        # translate the kept values back to the original array
-        keep_inv = np.zeros_like(bad)
-        keep_inv[~bad] = keep
-
-    if retidx:
-        return asd, bsd, keep_inv
+    if ret_idx:
+        # translate the kept values back to the original array (size of `bad`)
+        idx = np.zeros_like(bad, dtype=bool)
+        idx[~bad] = keep
+        return asd, bsd, idx
     else:
         return asd, bsd

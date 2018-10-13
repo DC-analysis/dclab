@@ -5,78 +5,56 @@ from __future__ import print_function
 
 import numpy as np
 
-import dclab
-
-from helper_methods import example_data_dict
+from dclab import downsampling
 
 
-def test_downsample_none():
-    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
-    ddict = example_data_dict(size=8472, keys=keys)
-    ds = dclab.new_dataset(ddict)
+def test_basic():
+    a = np.arange(100)
+    b, idx = downsampling.downsample_rand(a=a,
+                                          samples=5,
+                                          ret_idx=True)
+    assert np.all(a[idx] == b)
 
-    assert np.sum(ds._plot_filter) == 8472
-    ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=0)
-    assert np.sum(ds._plot_filter) == 8472
-
-
-def test_downsample_none2():
-    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
-    ddict = example_data_dict(size=8472, keys=keys)
-    ds = dclab.new_dataset(ddict)
-
-    assert np.sum(ds._plot_filter) == 8472
-
-    filtflt = {"enable filters": False}
-
-    cfg = {"filtering": filtflt}
-    ds.config.update(cfg)
-    ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=100)
-
-    assert np.sum(ds._plot_filter) == 100
-    assert np.sum(ds._filter) == 8472
-
-    filtflt["enable filters"] = True
-    ds.config.update(cfg)
-    ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=100)
-
-    assert np.sum(ds._plot_filter) == 100
-    assert np.sum(ds._filter) == 8472
+    b2 = downsampling.downsample_rand(a=a,
+                                      samples=5,
+                                      ret_idx=False)
+    assert np.all(b2 == b)
 
 
-def test_downsample_yes():
-    """ Simple downsampling test.
-    """
-    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
-    ddict = example_data_dict(size=8472, keys=keys)
-    ds = dclab.new_dataset(ddict)
+def test_basic_grid():
+    a = np.arange(100)
+    b = np.arange(50, 150)
+    ads, bds, idx = downsampling.downsample_grid(a=a,
+                                                 b=b,
+                                                 samples=5,
+                                                 ret_idx=True)
+    assert np.all(a[idx] == ads)
+    assert np.all(b[idx] == bds)
 
-    assert np.sum(ds._plot_filter) == 8472
+    ads2, bds2 = downsampling.downsample_grid(a=a,
+                                              b=b,
+                                              samples=5,
+                                              ret_idx=False)
+    assert np.all(ads2 == ads)
+    assert np.all(bds2 == bds)
 
-    ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=100)
-    assert np.sum(ds._plot_filter) == 100
-    ds.get_downsampled_scatter(downsample=100)
 
+def test_nan():
+    a = np.arange(100, dtype=float)
+    a[50:] = np.nan
+    b, idx = downsampling.downsample_rand(a=a,
+                                          samples=5,
+                                          ret_idx=True,
+                                          remove_invalid=False)
+    assert np.allclose(a[idx], b, atol=1e-14, rtol=0, equal_nan=True)
+    assert np.sum(np.isnan(b)) == 4
 
-def test_downsample_up():
-    """
-    Likely causes removal of too many points and requires
-    re-inserting them.
-    """
-    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
-    ddict = example_data_dict(size=10000, keys=keys)
-    ds = dclab.new_dataset(ddict)
-
-    assert np.sum(ds._plot_filter) == 10000
-
-    ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=9999)
-    assert np.sum(ds._plot_filter) == 9999
-    ds.get_downsampled_scatter(downsample=9999)
+    b2, idx2 = downsampling.downsample_rand(a=a,
+                                            samples=5,
+                                            ret_idx=True,
+                                            remove_invalid=True)
+    assert np.allclose(a[idx2], b2, atol=1e-14, rtol=0, equal_nan=True)
+    assert np.sum(np.isnan(b2)) == 0
 
 
 if __name__ == "__main__":

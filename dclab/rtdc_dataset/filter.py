@@ -165,7 +165,7 @@ class Filter(object):
                 sub = self.all[self.all]
                 _f, idx = downsampling.downsample_rand(sub,
                                                        samples=limit,
-                                                       retidx=True)
+                                                       ret_idx=True)
                 sub[~idx] = False
                 self.all[self.all] = sub
 

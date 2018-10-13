@@ -1,5 +1,15 @@
-0.7.1
+0.8.0
  - fix: usage of "xor" (^) instead of "or" (|) in statistics
+ - feat: support `remove_invalid=False` in downsampling.downsample_rand (#27)
+ - BREAKING CHANGE: low-level downsampling methods refactored
+   - downsampling.downsample_grid: removed keyword argument
+     `remove_invalid`, because setting it to `False` makes no sense
+     in this context
+   - downsampling.downsample_rand: changed default value of `remove_invalid`
+     to `False`, because this is more objective
+   - rename keyword argument `retidx` to `ret_idx`
+   - these changes do not affect any other higher level functionalities
+     in `dclab.rtdc_dataset` or in ShapeOut
 0.7.0
  - feat: add new ancillary feature: principal inertia ratio (#46)
  - feat: add new ancillary feature: absolute tilt (#53)

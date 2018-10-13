@@ -190,7 +190,8 @@ class RTDCBase(object):
         self.filter.update(force)
 
 
-    def get_downsampled_scatter(self, xax="area_um", yax="deform", downsample=0):
+    def get_downsampled_scatter(self, xax="area_um", yax="deform",
+                                downsample=0):
         """Downsampling by removing points at dense locations
         
         Parameters
@@ -213,7 +214,7 @@ class RTDCBase(object):
         """
         if downsample < 0:
             raise ValueError("`downsample` must be zero or positive!")
-        
+
         downsample = int(downsample)
         xax = xax.lower()
         yax = yax.lower()
@@ -224,7 +225,7 @@ class RTDCBase(object):
 
         xsd, ysd, idx = downsampling.downsample_grid(x, y,
                                                      samples=downsample,
-                                                     retidx=True)
+                                                     ret_idx=True)
         self._plot_filter = idx
         assert np.alltrue(x[idx] == xsd) 
         return xsd, ysd

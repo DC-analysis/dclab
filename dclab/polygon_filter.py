@@ -28,7 +28,7 @@ class PolygonFilter(object):
                  name=None, filename=None, fileid=0,
                  unique_id=None):
         """An object for filtering RTDC data based on a polygonial area
-        
+
         Parameters
         ----------
         axes: tuple of str
@@ -50,7 +50,7 @@ class PolygonFilter(object):
             Which filter to import from the file (starting at 0).
         unique_id: int
             An integer defining the unique id of the new instance.
-        
+
         Notes
         -----
         The minimal arguments to this class are either `filename` OR
@@ -83,19 +83,17 @@ class PolygonFilter(object):
         self._check_data()
         # if everything worked out, add to instances
         PolygonFilter.instances.append(self)
-    
-    
+
     def __eq__(self, pf):
         if (isinstance(pf, PolygonFilter) and
             self.inverted == pf.inverted and
             np.allclose(self.points, pf.points) and
-            list(self.axes) == list(pf.axes)):
+                list(self.axes) == list(pf.axes)):
             eq = True
         else:
             eq = False
         return eq
 
-    
     def _check_data(self):
         """Check if the data given is valid"""
         if self.axes is None:
@@ -110,7 +108,6 @@ class PolygonFilter(object):
         if not isinstance(self.inverted, bool):
             raise PolygonFilterError("`inverted` must be boolean.")
 
-
     def _load(self, filename):
         """Import all filters from a text file"""
         filename = pathlib.Path(filename)
@@ -118,22 +115,22 @@ class PolygonFilter(object):
             data = fd.readlines()
 
         # Get the strings that correspond to self.fileid
-        bool_head = [ l.strip().startswith("[") for l in data ]
-        
+        bool_head = [l.strip().startswith("[") for l in data]
+
         int_head = np.squeeze(np.where(bool_head))
         int_head = np.atleast_1d(int_head)
-        
+
         start = int_head[self.fileid]+1
-        
+
         if len(int_head) > self.fileid+1:
             end = int_head[self.fileid+1]
         else:
             end = len(data)
-        
+
         subdata = data[start:end]
-        
+
         # separate all elements and strip them
-        subdata = [ [ it.strip() for it in l.split("=") ] for l in subdata ]
+        subdata = [[it.strip() for it in l.split("=")] for l in subdata]
 
         points = []
 
@@ -157,12 +154,11 @@ class PolygonFilter(object):
         # sort points
         points.sort()
         # get only coordinates from points
-        self.points = np.array([ p[1] for p in points ])
-        
+        self.points = np.array([p[1] for p in points])
+
         # overwrite unique id
         unique_id = int(data[start-1].strip().strip("Polygon []"))
         self._set_unique_id(unique_id)
-
 
     def _set_unique_id(self, unique_id):
         """Define a unique id"""
@@ -174,22 +170,20 @@ class PolygonFilter(object):
             msg += " Using new unique id '{}'.".format(newid)
             warnings.warn(msg, FilterIdExistsWarning)
             unique_id = newid
-        
+
         ic = max(PolygonFilter._instance_counter, unique_id+1)
         PolygonFilter._instance_counter = ic
         self.unique_id = unique_id
-
 
     @staticmethod
     def clear_all_filters():
         """Remove all filters and reset instance counter"""
         PolygonFilter.instances = []
         PolygonFilter._instance_counter = 0
-        
-    
+
     def copy(self, invert=False):
         """Return a copy of the current instance
-        
+
         Parameters
         ----------
         invert: bool
@@ -199,25 +193,23 @@ class PolygonFilter(object):
             inverted = not self.inverted
         else:
             inverted = self.inverted
-        
+
         return PolygonFilter(axes=self.axes,
                              points=self.points,
                              name=self.name,
                              inverted=inverted)
 
-
     def filter(self, datax, datay):
         """Filter a set of datax and datay according to `self.points`"""
         f = np.ones(datax.shape, dtype=bool)
-        for i, (x,y) in enumerate(zip(datax, datay)):
+        for i, (x, y) in enumerate(zip(datax, datay)):
             f[i] = PolygonFilter.point_in_poly(x, y, self.points)
-        
+
         if self.inverted:
-            np.invert(f,f)
+            np.invert(f, f)
 
         return f
-    
-    
+
     @staticmethod
     def get_instance_from_id(unique_id):
         """Get an instance of the `PolygonFilter` using a unique id"""
@@ -228,11 +220,10 @@ class PolygonFilter(object):
         raise KeyError("PolygonFilter with unique_id {} not found.".
                        format(unique_id))
 
-
     @staticmethod
     def import_all(path):
         """Import all polygons from a .poly file.
-        
+
         Returns a list of the imported polygon filters
         """
         plist = []
@@ -246,7 +237,6 @@ class PolygonFilter(object):
                 break
         return plist
 
-
     @staticmethod
     def instace_exists(unique_id):
         """Determine whether an instance with this unique id exists"""
@@ -256,12 +246,11 @@ class PolygonFilter(object):
             return False
         else:
             return True
-    
 
     @staticmethod
     def point_in_poly(x, y, poly):
         """Determine whether a point is within a polygon area
-        
+
         Parameters
         ----------
         x, y: float
@@ -277,17 +266,17 @@ class PolygonFilter(object):
         n = len(poly)
         inside = False
 
-        p1x,p1y = poly[0]
+        p1x, p1y = poly[0]
         for i in range(n+1):
-            p2x,p2y = poly[i % n]
-            if y > min(p1y,p2y):
-                if y <= max(p1y,p2y):
-                    if x <= max(p1x,p2x):
+            p2x, p2y = poly[i % n]
+            if y > min(p1y, p2y):
+                if y <= max(p1y, p2y):
+                    if x <= max(p1x, p2x):
                         if p1y != p2y:
                             xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
                         if p1x == p2x or x <= xints:
                             inside = not inside
-            p1x,p1y = p2x,p2y
+            p1x, p1y = p2x, p2y
 
         return inside
 
@@ -297,17 +286,16 @@ class PolygonFilter(object):
         for p in PolygonFilter.instances:
             if p.unique_id == unique_id:
                 PolygonFilter.instances.remove(p)
-        
-    
+
     def save(self, polyfile, ret_fobj=False):
         """Save all data to a text file (appends data if file exists).
-        
+
         Polyfile can be either a path to a file or a file object that
         was opened with the write "w" parameter. By using the file
         object, multiple instances of this class can write their data.
-        
+
         If `ret_fobj` is `True`, then the file object will not be
-        closed and returned. 
+        closed and returned.
         """
         if isinstance(polyfile, (string_classes, pathlib.Path)):
             fobj = pathlib.Path(polyfile).open("a")
@@ -324,20 +312,20 @@ class PolygonFilter(object):
         data2write.append("Inverted = {}".format(self.inverted))
         for i, point in enumerate(self.points):
             data2write.append("point{:08d} = {:.15e} {:.15e}".format(i,
-                                                            point[0],
-                                                            point[1]))
+                                                                     point[0],
+                                                                     point[1]))
         # Add new lines
         for i in range(len(data2write)):
             data2write[i] += "\n"
 
-        # begin writing to fobj        
+        # begin writing to fobj
         fobj.writelines(data2write)
-        
+
         if ret_fobj:
             return fobj
         else:
             fobj.close()
-    
+
     @staticmethod
     def save_all(polyfile):
         """Save all polygon filters"""
@@ -361,4 +349,3 @@ def get_polygon_filter_names():
     for p in PolygonFilter.instances:
         names.append(p.name)
     return names
-

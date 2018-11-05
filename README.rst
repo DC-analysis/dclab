@@ -6,7 +6,7 @@ dclab
 
 This is a Python library for the post-measurement analysis of
 real-time deformability cytometry (RT-DC) datasets; an essential part of
-`ShapeOut <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut>`__.
+`Shape-Out <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut>`__.
 
 Documentation
 -------------
@@ -76,13 +76,13 @@ Appveyor and TravisCI will then automatically build source package and wheels
 and publish them on PyPI.
 
 
-Notes on `ShapeOut <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/>`__
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The `appveyor ShapeOut build <https://ci.appveyor.com/project/paulmueller/ShapeOut>`__
-is automatically triggered after each commit to the ShapeOut repository. At each build,
-the master branch of dclab is checked out and the ShapeOut installer is built with it.
+Notes on `Shape-Out <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/>`__
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `appveyor Shape-Out build <https://ci.appveyor.com/project/paulmueller/ShapeOut>`__
+is automatically triggered after each commit to the Shape-Out repository. At each build,
+the master branch of dclab is checked out and the Shape-Out installer is built with it.
 Therefore, it is not necessary to bump the version of dclab or to upload the latest
-version of dclab to PyPI in order to get your new code into ShapeOut.
+version of dclab to PyPI in order to get your new code into Shape-Out.
 
 
 .. |PyPI Version| image:: http://img.shields.io/pypi/v/dclab.svg

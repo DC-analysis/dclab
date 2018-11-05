@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Class for handling fluorescence trace data
-"""
+"""Handling fluorescence trace data"""
 from __future__ import division, print_function, unicode_literals
 
 import pathlib
@@ -20,7 +18,7 @@ class TraceColumn(object):
         
         The trace data is loaded when __getitem__, __len__, or __iter__
         are called. This saves time and memory when the trace data is
-        not needed at all, e.g. for batch processing with ShapeOut. 
+        not needed at all, e.g. for batch processing with Shape-Out. 
         """
         self._trace = None
         self.mname = rtdc_dataset.path

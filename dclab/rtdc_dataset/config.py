@@ -229,7 +229,7 @@ def load_from_file(cfg_file):
                 # standard parameter with known type
                 val = dfn.config_funcs[section][var](val)
             else:
-                # unknown parameter (e.g. plotting in ShapeOut), guess type
+                # unknown parameter (e.g. plotting in Shape-Out), guess type
                 var, val = keyval_str2typ(var, val)
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[section][var] = val

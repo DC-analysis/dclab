@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Testing script for volume.py
-An ellipse is created and the analytical and numerical solution are compared
-"""
 from __future__ import division
 
 import pathlib
@@ -83,7 +79,7 @@ def test_convert():
                          viscosity_in=15,
                          viscosity_out=15)
     # These values were taken from previous isoelasticity files
-    # used in ShapeOut.
+    # used in Shape-Out.
     assert np.allclose(isoel15[0][:, 2], 7.11111111e-01)
     assert np.allclose(isoel15[1][:, 2], 9.48148148e-01)
     # area_um

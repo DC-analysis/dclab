@@ -17,7 +17,7 @@ module-level methods
 
 global definitions
 ==================
-These definitionas are used throughout the dclab/ShapeIn/ShapeOut ecosystem.
+These definitionas are used throughout the dclab/Shape-In/Shape-Out ecosystem.
 
 configuration
 -------------

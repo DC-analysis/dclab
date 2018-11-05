@@ -196,12 +196,12 @@ Note that data exported as HDF5 files can be loaded with dclab
 
     In [13]: ds2["deform"].mean()
 
-ShapeOut
-========
+Shape-Out
+=========
 Keep in mind that you can combine your dclab analysis pipeline with
-:ref:`ShapeOut <shapeout:index>`. For instance, you can create and export
+:ref:`Shape-Out <shapeout:index>`. For instance, you can create and export
 :ref:`polygon filters <sec_ref_polygon_filter>`
-in ShapeOut and then import them in dclab.
+in Shape-Out and then import them in dclab.
 
 
 .. plot::

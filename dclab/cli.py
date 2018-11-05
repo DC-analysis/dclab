@@ -86,7 +86,7 @@ def tdms2rtdc_parser():
                         help='Compute features, such as volume or emodulus, '
                              + 'that are otherwise computed on-the-fly. '
                              + 'Use this if you want to minimize analysis '
-                             + 'time in e.g. ShapeOut. CAUTION: ancillary '
+                             + 'time in e.g. Shape-Out. CAUTION: ancillary '
                              + 'feature recipes might be subject to change '
                              + '(e.g. if an error is found in the recipe). '
                              + 'Disabling this option maximizes '

@@ -142,6 +142,14 @@ def get_inert_ratio_cvx(cont):
     See Also
     --------
     get_inert_ratio_raw: Compute inertia ratio of a raw contour
+
+
+    References
+    ----------
+    - `<https://en.wikipedia.org/wiki/Image_moment#Central_moments>`__
+    - `<https://github.com/opencv/opencv/blob/
+      f81370232a651bdac5042efe907bcaa50a66c487/modules/imgproc/src/
+      moments.cpp#L93>`__
     """
     if isinstance(cont, np.ndarray):
         # If cont is an array, it is not a list of contours,
@@ -253,6 +261,13 @@ def get_inert_ratio_raw(cont):
     --------
     get_inert_ratio_cvx: Compute inertia ratio of the convex hull of
                          a contour
+
+    References
+    ----------
+    - `<https://en.wikipedia.org/wiki/Image_moment#Central_moments>`__
+    - `<https://github.com/opencv/opencv/blob/
+      f81370232a651bdac5042efe907bcaa50a66c487/modules/imgproc/src/
+      moments.cpp#L93>`__
     """
     if isinstance(cont, np.ndarray):
         # If cont is an array, it is not a list of contours,
@@ -292,6 +307,10 @@ def get_tilt(cont):
     -------
     tilt: float or ndarray of size N
         Tilt of the contour in the interval [0, PI/2]
+
+    References
+    ----------
+    - `<https://en.wikipedia.org/wiki/Image_moment#Examples_2>`__
     """
     if isinstance(cont, np.ndarray):
         # If cont is an array, it is not a list of contours,

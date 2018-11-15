@@ -11,9 +11,9 @@ def get_compensation_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
 
     The spillover matrix is
 
-    | c11 c12 c13 |
-    | c21 c22 c23 |
-    | c31 c32 c33 |
+    | | c11 c12 c13 |
+    | | c21 c22 c23 |
+    | | c31 c32 c33 |
 
     The diagonal elements are set to 1, i.e.
 

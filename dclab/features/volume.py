@@ -13,9 +13,6 @@ def get_volume(cont, pos_x, pos_y, pix):
     Green`s theorem and the Gaussian divergence theorem allow to
     formulate the volume as a line integral.
 
-    This is a translation from a Matlab script by Geoff Olynyk:
-    http://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve
-
     Parameters
     ----------
     cont: ndarray or list of ndarrays of shape (N,2)
@@ -41,9 +38,8 @@ def get_volume(cont, pos_x, pos_y, pix):
     Notes
     -----
     The computation of the volume is based on a full rotation of the
-    upper half of the contour to obtain the volume. Similarly,
-    the lower part of the contour is rotated. Both volumes are then
-    averaged.
+    upper and the lower halves of the contour from which the
+    average is then used.
 
     The volume is computed radially from the the center position
     given by (`pos_x`, `pos_y`). For sufficiently smooth contours,
@@ -54,10 +50,10 @@ def get_volume(cont, pos_x, pos_y, pix):
 
     References
     ----------
-    Advanced Mathematics and Mechanics Applications with MATLAB 3rd ed.
-    by H.B. Wilson, L.H. Turcotte, and D. Halpern, Chapman & Hall
-    CRC Press, 2002, e-ISBN 978-1-4200-3544-5.
-    See Chapter 5, Section 5.4, doi: 10.1201/9781420035445.ch5
+    - Halpern et al. :cite:`Halpern2002`, chapter 5, Section 5.4
+    - This is a translation from a `Matlab script
+      <http://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve>`_
+      by Geoff Olynyk.
     """
     if np.isscalar(pos_x):
         cont = [cont]

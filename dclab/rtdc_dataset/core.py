@@ -6,6 +6,7 @@ from __future__ import division, print_function, unicode_literals
 import abc
 import random
 import sys
+import warnings
 
 import numpy as np
 
@@ -17,6 +18,10 @@ from .. import kde_methods
 from .ancillaries import AncillaryFeature
 from .export import Export
 from .filter import Filter
+
+
+class LogTransformWarning(UserWarning):
+    pass
 
 
 class RTDCBase(object):
@@ -147,6 +152,45 @@ class RTDCBase(object):
         return repre
 
 
+    def _apply_scale(self, a, scale, feat):
+        """Helper function for transforming an aray to log-scale
+
+        Parameters
+        ----------
+        a: np.ndarray
+            Input array
+        scale:
+            If set to "log", take the logarithm of `a`; if set to
+            "linear" return `a` unchanged.
+
+        Returns
+        -------
+        b: np.ndarray
+            The scaled array
+
+        Notes
+        -----
+        If the scale is not "linear", then a new array is returned.
+        All warnings are suppressed when computing `np.log(a)`, as
+        `a` may have negative or nan values.
+        """
+        if scale == "linear":
+            b = a
+        elif scale == "log":
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                b = np.log(a)
+                if len(w):
+                    # Tell the user that the log-transformation issued
+                    # a warning.
+                    warnings.warn("Invalid values encounterd in np.log "
+                                  "while scaling feature '{}'!".format(feat))
+        else:
+            raise ValueError("`scale` must be either 'linear' or 'log', "
+                             + "got '{}'!".format(scale))
+        return b
+
+
     @property
     def _filter(self):
         """return the current filter boolean array"""
@@ -191,7 +235,8 @@ class RTDCBase(object):
 
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform",
-                                downsample=0):
+                                downsample=0, xscale="linear",
+                                yscale="linear"):
         """Downsampling by removing points at dense locations
         
         Parameters
@@ -200,13 +245,19 @@ class RTDCBase(object):
             Identifier for x axis (e.g. "area_um", "aspect", "deform")
         yax: str
             Identifier for y axis
-        downsample: int or None
+        downsample: int
             Number of points to draw in the down-sampled plot.
             This number is either 
 
             - >=1: exactly downsample to this number by randomly adding
                    or removing points 
             - 0  : do not perform downsampling
+        xscale: str
+            If set to "log", take the logarithm of the x-values before
+            performing downsampling. This is useful when data are are
+            displayed on a log-scale. Defaults to "linear".
+        yscale: str
+            See `xscale`.
 
         Returns
         -------
@@ -219,20 +270,24 @@ class RTDCBase(object):
         xax = xax.lower()
         yax = yax.lower()
 
-        # Get axes
+        # Get data
         x = self[xax][self.filter.all]
         y = self[yax][self.filter.all]
 
-        xsd, ysd, idx = downsampling.downsample_grid(x, y,
-                                                     samples=downsample,
-                                                     ret_idx=True)
+        # Apply scale (no change for linear scale)
+        xs = self._apply_scale(x, xscale, xax)
+        ys = self._apply_scale(y, yscale, yax)
+
+        _, _, idx = downsampling.downsample_grid(xs, ys,
+                                                 samples=downsample,
+                                                 ret_idx=True)
         self._plot_filter = idx
-        assert np.alltrue(x[idx] == xsd) 
-        return xsd, ysd
+        return x[idx], y[idx]
 
 
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None, yacc=None,
-                        kde_type="histogram", kde_kwargs={}):
+                        kde_type="histogram", kde_kwargs={}, xscale="linear",
+                        yscale="linear"):
         """Evaluate the kernel density estimate for contour plots
 
         Parameters
@@ -249,6 +304,12 @@ class RTDCBase(object):
             The KDE method to use
         kde_kwargs: dict
             Additional keyword arguments to the KDE method 
+        xscale: str
+            If set to "log", take the logarithm of the x-values before
+            computing the KDE. This is useful when data are are
+            displayed on a log-scale. Defaults to "linear".
+        yscale: str
+            See `xscale`.
 
         Returns
         -------
@@ -261,40 +322,48 @@ class RTDCBase(object):
         if kde_type not in kde_methods.methods:
             raise ValueError("Not a valid kde type: {}!".format(kde_type))
 
-        if self.config["filtering"]["enable filters"]:
-            x = self[xax][self._filter]
-            y = self[yax][self._filter]
-        else:
-            x = self[xax]
-            y = self[yax]
-        
+        # Get data
+        x = self[xax][self.filter.all]
+        y = self[yax][self.filter.all]
+
+        # Apply scale (no change for linear scale)
+        xs = self._apply_scale(x, xscale, xax)
+        ys = self._apply_scale(y, yscale, yax)
+
         # accuracy (bin width) of KDE estimator
         if xacc is None:
-            xacc = kde_methods.bin_width_doane(x) / 5
+            xacc = kde_methods.bin_width_doane(xs) / 5
         if yacc is None:
-            yacc = kde_methods.bin_width_doane(y) / 5
+            yacc = kde_methods.bin_width_doane(ys) / 5
 
         # Ignore infs and nans
-        bad = kde_methods.get_bad_vals(x, y)
-        xc = x[~bad]
-        yc = y[~bad]
+        bad = kde_methods.get_bad_vals(xs, ys)
+        xc = xs[~bad]
+        yc = ys[~bad]
         xlin = np.arange(xc.min(), xc.max(), xacc)
         ylin = np.arange(yc.min(), yc.max(), yacc)
         xmesh, ymesh = np.meshgrid(xlin,ylin)
 
         kde_fct = kde_methods.methods[kde_type]
         if len(x):
-            density = kde_fct(events_x=x, events_y=y,
+            density = kde_fct(events_x=xs, events_y=ys,
                               xout=xmesh, yout=ymesh,
                               **kde_kwargs)
         else:
             density = []
-            
+
+        # Convert mesh back to linear scale if applicable
+        if xscale == "log":
+            xmesh = np.exp(xmesh)
+        if yscale == "log":
+            ymesh = np.exp(ymesh)
+
         return xmesh, ymesh, density
 
 
     def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
-                        kde_type="histogram", kde_kwargs={}):
+                        kde_type="histogram", kde_kwargs={}, xscale="linear",
+                        yscale="linear"):
         """Evaluate the kernel density estimate for scatter plots
 
         Parameters
@@ -306,11 +375,17 @@ class RTDCBase(object):
         positions: list of points
             The positions where the KDE will be computed. Note that
             the KDE estimate is computed from the the points that
-            are set in `self._filter`.
+            are set in `self.filter.all`.
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
             Additional keyword arguments to the KDE method 
+        xscale: str
+            If set to "log", take the logarithm of the x-values before
+            computing the KDE. This is useful when data are are
+            displayed on a log-scale. Defaults to "linear".
+        yscale: str
+            See `xscale`.
 
         Returns
         -------
@@ -322,13 +397,14 @@ class RTDCBase(object):
         kde_type = kde_type.lower()
         if kde_type not in kde_methods.methods:
             raise ValueError("Not a valid kde type: {}!".format(kde_type))
-        
-        if self.config["filtering"]["enable filters"]:
-            x = self[xax][self._filter]
-            y = self[yax][self._filter]
-        else:
-            x = self[xax]
-            y = self[yax]
+
+        # Get data
+        x = self[xax][self.filter.all]
+        y = self[yax][self.filter.all]
+
+        # Apply scale (no change for linear scale)
+        xs = self._apply_scale(x, xscale, xax)
+        ys = self._apply_scale(y, yscale, yax)
 
         if positions is None:
             posx = None
@@ -339,12 +415,12 @@ class RTDCBase(object):
 
         kde_fct = kde_methods.methods[kde_type]
         if len(x):
-            density = kde_fct(events_x=x, events_y=y,
+            density = kde_fct(events_x=xs, events_y=ys,
                               xout=posx, yout=posy,
                               **kde_kwargs)
         else:
             density = []
-        
+
         return density
 
 

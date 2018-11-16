@@ -311,6 +311,7 @@ def test_wrong_load_key():
     except OSError:
         pass
 
+
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

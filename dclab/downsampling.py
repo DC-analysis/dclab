@@ -103,14 +103,9 @@ def downsample_grid(a, b, samples, ret_idx=False):
 
     samples = int(samples)
 
-    # find valid data points
-    bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
-    a = a[~bad]
-    b = b[~bad]
-
-    if samples and samples < a.shape[0]:
+    if samples and samples < a.size:
         # The events to keep
-        keep = np.zeros(a.shape, dtype=bool)
+        keep = np.zeros_like(a, dtype=bool)
 
         # 1. Produce evenly distributed samples
         # Choosing grid-size:
@@ -122,18 +117,18 @@ def downsample_grid(a, b, samples, ret_idx=False):
         # 300 is about the size of the plot in marker sizes and yields
         # good results.
         grid_size = 300
-        xpx = (a-a.min())/(a.max()-a.min()) * grid_size
-        ypx = (b-b.min())/(b.max()-b.min()) * grid_size
+        xpx = norm(a, a, b) * grid_size
+        ypx = norm(b, b, a) * grid_size
         # The events on the grid to process
         toproc = np.ones((grid_size, grid_size), dtype=bool)
 
-        for ii in range(xpx.shape[0]):
+        for ii in range(xpx.size):
             xi = xpx[ii]
             yi = ypx[ii]
             # first filter for exactly overlapping events
-            if toproc[int(xi-1), int(yi-1)]:
+            if valid(xi, yi) and toproc[int(xi-1), int(yi-1)]:
                 toproc[int(xi-1), int(yi-1)] = False
-                # second filter for multiple overlay
+                # find closest matching index
                 keep[ii] = True
 
         # 2. Make sure that we reach `samples` by adding or
@@ -156,18 +151,27 @@ def downsample_grid(a, b, samples, ret_idx=False):
                                    replace=False)
             keep[add] = True
 
-        assert np.sum(keep) == samples
+        assert np.sum(keep) == samples, "sanity check"
         asd = a[keep]
         bsd = b[keep]
+        assert np.allclose(a[keep], asd, equal_nan=True), "sanity check"
+        assert np.allclose(b[keep], bsd, equal_nan=True), "sanity check"
     else:
         keep = np.ones_like(a, dtype=bool)
         asd = a
         bsd = b
 
     if ret_idx:
-        # translate the kept values back to the original array (size of `bad`)
-        idx = np.zeros_like(bad, dtype=bool)
-        idx[~bad] = keep
-        return asd, bsd, idx
+        return asd, bsd, keep
     else:
         return asd, bsd
+
+
+def valid(a, b):
+    return ~(np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b))
+
+
+def norm(a, ref1, ref2):
+    """normalization"""
+    ref = ref1[valid(ref1, ref2)]
+    return (a-ref.min())/(ref.max()-ref.min())

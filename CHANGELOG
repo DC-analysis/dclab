@@ -1,6 +1,10 @@
 0.8.0
  - fix: usage of "xor" (^) instead of "or" (|) in statistics
  - feat: support `remove_invalid=False` in downsampling.downsample_rand (#27)
+ - feat: add keyword arguments `xscale` and `yscale` to improve data
+   visualization in `RTDCBase.get_downsampled_scatter`,
+   `RTDCBase.get_kde_contour`, and `RTDCBase.get_kde_scatter` (#55) 
+ - enh: make downsampling code more transparent
  - BREAKING CHANGE: low-level downsampling methods refactored
    - downsampling.downsample_grid: removed keyword argument
      `remove_invalid`, because setting it to `False` makes no sense

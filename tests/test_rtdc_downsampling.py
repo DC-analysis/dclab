@@ -10,6 +10,44 @@ import dclab
 from helper_methods import example_data_dict
 
 
+def test_downsample_log():
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    ds = dclab.new_dataset(ddict)
+
+    ds.apply_filter()
+    xlin, ylin = ds.get_downsampled_scatter(downsample=100,
+                                            xscale="linear",
+                                            yscale="linear")
+    xlog, ylog = ds.get_downsampled_scatter(downsample=100,
+                                            xscale="log",
+                                            yscale="log")
+    assert not np.all(xlin == xlog)
+    assert not np.all(ylin == ylog)
+    for x in xlog:
+        assert x in ds["area_um"]
+    for y in ylog:
+        assert y in ds["deform"]
+
+
+def test_downsample_log_invalid():
+    ddict = {"area_um": np.linspace(-2, 10, 100),
+             "deform": np.linspace(.1, .5, 100)}
+    ds = dclab.new_dataset(ddict)
+    ds.apply_filter()
+    xlog, ylog = ds.get_downsampled_scatter(downsample=99,
+                                            xscale="log",
+                                            yscale="log")
+    for x in xlog:
+        assert x in ds["area_um"]
+    for y in ylog:
+        assert y in ds["deform"]
+
+    assert xlog.size == 99
+    assert ylog.size == 99
+    assert xlog.min() < 0
+
+
 def test_downsample_none():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=8472, keys=keys)

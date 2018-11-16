@@ -125,10 +125,10 @@ def downsample_grid(a, b, samples, ret_idx=False):
         for ii in range(xpx.size):
             xi = xpx[ii]
             yi = ypx[ii]
-            # first filter for exactly overlapping events
+            # filter for overlapping events
             if valid(xi, yi) and toproc[int(xi-1), int(yi-1)]:
                 toproc[int(xi-1), int(yi-1)] = False
-                # find closest matching index
+                # include event
                 keep[ii] = True
 
         # 2. Make sure that we reach `samples` by adding or
@@ -168,10 +168,13 @@ def downsample_grid(a, b, samples, ret_idx=False):
 
 
 def valid(a, b):
+    """Check whether `a` and `b` are not inf or nan"""
     return ~(np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b))
 
 
 def norm(a, ref1, ref2):
-    """normalization"""
+    """
+    Normalize `a` with min/max values of `ref1`, using all elements of
+    `ref1` where the `ref1` and `ref2` are not nan or inf"""
     ref = ref1[valid(ref1, ref2)]
     return (a-ref.min())/(ref.max()-ref.min())

@@ -59,6 +59,41 @@ visualization is almost indistinguishable from the one above.
     plt.show()
 
 
+KDE estimate on a log-scale
+---------------------------
+Frequently, data is visualized on logarithmic scales. If the KDE
+is computed on a linear scale, then the result will look unaesthetic
+when plotted on a logarithmic scale. Therefore, the methods
+:func:`get_downsampled_scatter <dclab.rtdc_dataset.RTDCBase.get_downsampled_scatter>`,
+:func:`get_kde_contour <dclab.rtdc_dataset.RTDCBase.get_kde_contour>`, and
+:func:`get_kde_scatter <dclab.rtdc_dataset.RTDCBase.get_kde_scatter>`
+offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
+"log" for prettier plots.
+
+.. plot::
+
+    import matplotlib.pylab as plt
+    import dclab
+    ds = dclab.new_dataset("data/example.rtdc")
+    kde_lin = ds.get_kde_scatter(xax="area_um", yax="deform", yscale="linear")
+    kde_log = ds.get_kde_scatter(xax="area_um", yax="deform", yscale="log")
+
+    ax1 = plt.subplot(121, title="KDE with linear y-scale")
+    sc1 = ax1.scatter(ds["area_um"], ds["deform"], c=kde_lin, marker=".")
+
+    ax2 = plt.subplot(122, title="KDE with logarithmic y-scale")
+    sc2 = ax2.scatter(ds["area_um"], ds["deform"], c=kde_log, marker=".")
+
+    ax1.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    for ax in [ax1, ax2]:
+        ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
+        ax.set_xlim(0, 150)
+        ax.set_ylim(6e-3, 3e-1)
+        ax.set_yscale("log")
+
+    plt.show()
+
+
 Isoelasticity lines
 -------------------
 In addition, dclab comes with predefined isoelasticity lines that

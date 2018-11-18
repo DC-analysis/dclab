@@ -8,6 +8,14 @@ import dclab
 from helper_methods import example_data_dict
 
 
+def test_kde_empty():
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
+    ds = dclab.new_dataset(ddict)
+    ds._filter[:] = 0
+    a = ds.get_kde_scatter()
+    assert len(a) == 0
+
+
 def test_kde_general():
     # Download and extract data
     ddict = example_data_dict()
@@ -22,6 +30,51 @@ def test_kde_general():
     for ii in range(1, len(dcont) - 1):
         assert not np.allclose(dcont[ii], dcont[0])
         assert not np.allclose(dscat[ii], dscat[0])
+
+
+def test_kde_linear_scatter():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ddict["deform"][:20] = .1
+    ddict["area_um"][:20] = .5
+    ds = dclab.new_dataset(ddict)
+    a = ds.get_kde_scatter(yscale="linear")
+    assert np.all(a[:20] == a[0])
+
+
+def test_kde_log_contour():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ddict["deform"][:20] = .1
+    ddict["area_um"][:20] = .5
+    ds = dclab.new_dataset(ddict)
+    xm, ym, _ = ds.get_kde_contour(yscale="log")
+    dx = np.diff(xm[0])
+    dy = np.diff(np.log(ym[:, 0]))
+    assert np.allclose(dx, dx[0])
+    assert np.allclose(dy, dy[0])
+
+
+def test_kde_log_scatter():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ddict["deform"][:20] = .1
+    ddict["area_um"][:20] = .5
+    ds = dclab.new_dataset(ddict)
+    a = ds.get_kde_scatter(yscale="log")
+    assert np.all(a[:20] == a[0])
+
+
+def test_kde_log_scatter_invalid():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ddict["deform"][:20] = .1
+    ddict["area_um"][:20] = .5
+    ddict["deform"][21] = np.nan
+    ddict["deform"][22] = np.inf
+    ddict["deform"][23] = -.1
+    ds = dclab.new_dataset(ddict)
+    a = ds.get_kde_scatter(yscale="log")
+    assert np.all(a[:20] == a[0])
+    assert np.isnan(a[21])
+    assert np.isnan(a[22])
+    assert np.isnan(a[23])
 
 
 def test_kde_none():
@@ -53,14 +106,6 @@ def test_kde_positions():
     sc2 = ds.get_kde_scatter(xax="area_um", yax="deform",
                              positions=(ds["area_um"], ds["deform"]))
     assert np.all(sc == sc2)
-
-
-def test_empty_kde():
-    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
-    ds = dclab.new_dataset(ddict)
-    ds._filter[:] = 0
-    a = ds.get_kde_scatter()
-    assert len(a) == 0
 
 
 if __name__ == "__main__":

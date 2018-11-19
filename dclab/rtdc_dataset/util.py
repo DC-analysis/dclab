@@ -14,11 +14,11 @@ if sys.version_info[0] == 2:
     str_classes = (str, unicode)
 else:
     str_classes = str
-    
+
 
 def hashfile(fname, blocksize=65536, count=0):
     """Compute md5 hex-hash of a file
-    
+
     Parameters
     ----------
     fname: str
@@ -38,7 +38,7 @@ def hashfile(fname, blocksize=65536, count=0):
             hasher.update(buf)
             buf = fd.read(blocksize)
             ii += 1
-            if count and ii==count:
+            if count and ii == count:
                 break
     return hasher.hexdigest()
 

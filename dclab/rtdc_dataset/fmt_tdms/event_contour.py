@@ -18,7 +18,7 @@ class NoContourDataWarning(UserWarning):
 class ContourColumn(object):
     def __init__(self, rtdc_dataset):
         """A wrapper for ContourData that takes into account event offsets
-        
+
         Event offsets appear when the first event that is recorded in the
         tdms files does not have a corresponding contour in the contour
         text file.
@@ -40,31 +40,28 @@ class ContourColumn(object):
             self._initialized = True
         self.frame = rtdc_dataset["frame"]
         self.event_offset = 0
-        
-    
+
     def __getitem__(self, idx):
         if not self._initialized:
             self.determine_offset()
         idnew = idx-self.event_offset
         if idnew < 0:
-            cdata = np.zeros((2,2), dtype=int)
+            cdata = np.zeros((2, 2), dtype=int)
         else:
             cdata = self._contour_data[idnew]
         return cdata
-
 
     def __len__(self):
         length = len(self._contour_data)
         if length:
             self.determine_offset()
-            length += self.event_offset 
+            length += self.event_offset
         return length
-
 
     def determine_offset(self):
         """Determines the offset of the contours w.r.t. other data columns
-        
-        
+
+
         Notes
         -----
         - the "frame" column of `rtdc_dataset` is compared to
@@ -91,11 +88,10 @@ class ContourColumn(object):
             raise IndexError(msg)
         self._initialized = True
 
-
     @staticmethod
     def find_contour_file(rtdc_dataset):
         """Tries to find a contour file that belongs to an RTDC dataset
-        
+
         Returns None if no contour file is found.
         """
         cont_id = rtdc_dataset.path.stem
@@ -124,18 +120,16 @@ class ContourColumn(object):
         return cfile
 
 
-
 class ContourData(object):
     def __init__(self, fname):
         """Access an MX_contour.txt as a dictionary
-        
+
         Initialize this class with a *_contour.txt file.
         The individual contours can be accessed like a
         list (enumerated from 0 on).
         """
         self._initialized = False
         self.filename = fname
-
 
     def __getitem__(self, idx):
         cont = self.data[idx]
@@ -149,27 +143,24 @@ class ContourData(object):
         if len(cont) > 1:
             _frame, cont = cont.split(" ", 1)
             cont = cont.strip(" ,")
-            data = np.fromstring(cont, sep = ",", dtype=np.uint16).reshape(-1, 2)
+            data = np.fromstring(cont, sep=",", dtype=np.uint16).reshape(-1, 2)
             return data
-        
 
     def __len__(self):
         return len(self.data)
-    
 
     def _index_file(self):
         """Open and index the contour file
-        
+
         This function populates the internal list of contours
         as strings which will be available as `self.data`.
         """
         with self.filename.open() as fd:
             data = fd.read()
-            
+
         ident = "Contour in frame"
         self._data = data.split(ident)[1:]
         self._initialized = True
-        
 
     @property
     def data(self):
@@ -180,7 +171,6 @@ class ContourData(object):
         if not self._initialized:
             self._index_file()
         return self._data
-
 
     def get_frame(self, idx):
         """Return the frame number of a contour"""

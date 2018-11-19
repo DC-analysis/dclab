@@ -10,11 +10,10 @@ from .core import RTDCBase
 from .util import hashobj
 
 
-
 class RTDC_Dict(RTDCBase):
     def __init__(self, ddict, *args, **kwargs):
         """Dictionary-based RT-DC dataset 
-        
+
         Parameters
         ----------
         ddict: dict
@@ -28,18 +27,18 @@ class RTDC_Dict(RTDCBase):
             Keyword arguments for `RTDCBase`
         """
         assert ddict
-        
+
         super(RTDC_Dict, self).__init__(*args, **kwargs)
 
         t = time.localtime()
-        
+
         # Get an identifying string
         keys = list(ddict.keys())
         keys.sort()
         ids = hashobj(ddict[keys[0]])
         self._ids = ids
         self.path = "none"
-        self.title = "{}_{:02d}_{:02d}/{}.dict".format(t[0], t[1], t[2],ids)
+        self.title = "{}_{:02d}_{:02d}/{}.dict".format(t[0], t[1], t[2], ids)
 
         # Populate events
         self._events = {}
@@ -52,7 +51,6 @@ class RTDC_Dict(RTDCBase):
         self.config["experiment"]["event count"] = event_count
         # Set up filtering
         self._init_filters()
-
 
     @property
     def hash(self):

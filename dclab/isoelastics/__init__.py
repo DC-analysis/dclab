@@ -101,7 +101,6 @@ class Isoelastics(object):
                 iso_circ.append(iso)
             self._add(iso_circ, col1c, col2c, method, meta)
 
-    
     @staticmethod
     def add_px_err(isoel, col1, col2, px_um, inplace=False):
         """Undo pixelation correction
@@ -144,7 +143,7 @@ class Isoelastics(object):
         else:
             area_ax = 1
             deci_ax = 0
-        
+
         new_isoel = []
         for iso in isoel:
             iso = np.array(iso, copy=not inplace)
@@ -153,7 +152,6 @@ class Isoelastics(object):
             iso[:, deci_ax] += sign * ddeci
             new_isoel.append(iso)
         return new_isoel
-
 
     @staticmethod
     def check_col12(col1, col2):
@@ -165,7 +163,6 @@ class Isoelastics(object):
         if "area_um" not in [col1, col2]:
             # avoid [circ, deform]
             raise ValueError("One column must be set to 'area_um'!")
-
 
     @staticmethod
     def convert(isoel, col1, col2,
@@ -232,7 +229,6 @@ class Isoelastics(object):
                               inplace=True)
             new_isoel.append(iso)
         return new_isoel
-
 
     def get(self, col1, col2, method, channel_width, flow_rate=None,
             viscosity=None, add_px_err=False, px_um=None):
@@ -313,7 +309,6 @@ class Isoelastics(object):
 
         return isoel_ret
 
-
     def get_with_rtdcbase(self, col1, col2, method, dataset,
                           viscosity=None, add_px_err=False):
         """Convenience method that extracts the metadata from RTDCBase
@@ -349,7 +344,6 @@ class Isoelastics(object):
                         viscosity=viscosity,
                         add_px_err=add_px_err,
                         px_um=cfg["imaging"]["pixel size"])
-        
 
     def load_data(self, path):
         """Load isoelastics from a text file

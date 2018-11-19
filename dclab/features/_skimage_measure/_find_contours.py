@@ -112,9 +112,9 @@ def find_contours(array, level,
         raise ValueError('Only 2D arrays are supported.')
     level = float(level)
     if (fully_connected not in _param_options or
-       positive_orientation not in _param_options):
+            positive_orientation not in _param_options):
         raise ValueError('Parameters "fully_connected" and'
-        ' "positive_orientation" must be either "high" or "low".')
+                         ' "positive_orientation" must be either "high" or "low".')
     point_list = _find_contours_cy.iterate_and_store(array, level,
                                                      fully_connected == 'high')
     contours = _assemble_contours(_take_2(point_list))
@@ -213,4 +213,3 @@ def _assemble_contours(points_iterator):
     # end iteration over from_ and to_ points
 
     return [np.array(contour) for (num, contour) in sorted(contours.items())]
-

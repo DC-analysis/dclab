@@ -16,18 +16,19 @@ MAX_SIZE = 100
 class Cache(object):
     _cache = {}
     _keys = []
+
     def __init__(self, func):
         """
         A cache that can be used to decorate methods that accept
         numpy ndarrays as arguments.
-        
+
         - cache is based on dictionary
         - md5 hashes of method arguments are the dictionary keys
         - applicable decorator for all methods in a module
         - applicable to methods with the same name in different source files
         - set cache size with `cached.MAX_SIZE`
         - only one global cache is generated, there are no instances of `Cache`
-    
+
         Notes
         -----
         If you are using other decorators with this decorator, please make sure
@@ -39,14 +40,13 @@ class Cache(object):
         """
         self.func = func
 
-    
     def __call__(self, *args, **kwargs):
         self.ahash = hashlib.md5()
 
         # hash arguments
         for arg in args:
             self._update_hash(arg)
-        
+
         # hash keyword arguments
         kwds = list(kwargs.keys())
         kwds.sort()
@@ -58,7 +58,7 @@ class Cache(object):
         self._update_hash(self.func.__name__)
         self._update_hash(self.func.__doc__)
         self._update_hash(self.func.__code__.co_filename)
-        
+
         ref = self.ahash.hexdigest()
 
         if ref in Cache._cache:
@@ -72,11 +72,9 @@ class Cache(object):
                 Cache._cache.pop(delref)
             return data
 
-
     @property
     def __doc__(self):
         return self.func.__doc__
-    
 
     def _update_hash(self, arg):
         """ Takes an argument and updates the hash.
@@ -86,10 +84,9 @@ class Cache(object):
         if isinstance(arg, np.ndarray):
             self.ahash.update(arg.view(np.uint8))
         elif isinstance(arg, list):
-            [ self._update_hash(a) for a in arg ]
+            [self._update_hash(a) for a in arg]
         else:
             self.ahash.update(str(arg).encode('utf-8'))
-
 
     @staticmethod
     def clear_cache():
@@ -99,6 +96,6 @@ class Cache(object):
             it = Cache._cache.pop(k)
             del it
         del Cache._cache
-        Cache._keys=[]
-        Cache._cache={}
+        Cache._keys = []
+        Cache._cache = {}
         gc.collect()

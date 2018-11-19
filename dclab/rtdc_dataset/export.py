@@ -111,7 +111,7 @@ class Export(object):
         """
         features = [c.lower() for c in features]
         ds = self.rtdc_ds
-        
+
         path = pathlib.Path(path)
         # Make sure that path ends with .fcs
         if path.suffix != ".fcs":
@@ -239,7 +239,7 @@ class Export(object):
                     # write rest
                     if jj:
                         write(h5obj,
-                              data={feat: imstack[:jj,:,:]},
+                              data={feat: imstack[:jj, :, :]},
                               mode="append",
                               compression=compression)
                 elif feat == "trace":

@@ -246,6 +246,31 @@ def test_save():
 
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
                             + 'FilterIdExistsWarning')
+def test_save_multiple():
+    dclab.PolygonFilter.clear_all_filters()
+
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
+
+    # Add polygon filter
+    pf = dclab.PolygonFilter(filename=tf)
+
+    _fd, tf2 = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf2, "a") as fd:
+        pf.save(fd)
+        pf2 = dclab.PolygonFilter(filename=tf2)
+        assert np.allclose(pf.points, pf2.points)
+
+    try:
+        os.remove(tf)
+        os.remove(tf2)
+    except OSError:
+        pass
+
+
+@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
+                            + 'FilterIdExistsWarning')
 def test_unique_id():
     dclab.PolygonFilter.clear_all_filters()
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")

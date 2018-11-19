@@ -6,7 +6,11 @@ from __future__ import division, print_function
 import pathlib
 import time
 
+
+from nptdms import TdmsFile
 import numpy as np
+
+from ...compat import path_to_str
 from ... import definitions as dfn
 
 from ..config import Configuration
@@ -18,7 +22,7 @@ from .event_image import ImageColumn
 from .event_mask import MaskColumn
 from .event_trace import TraceColumn
 from . import naming
-from .load import wrap_tdmsfile
+
 
 class RTDC_TDMS(RTDCBase):
     def __init__(self, tdms_path, *args, **kwargs):
@@ -51,7 +55,7 @@ class RTDC_TDMS(RTDCBase):
         # tdms-related convenience properties
         self._fdir = tdms_path.parent
         self._mid = tdms_path.name.split("_")[0]
-        
+
         self._init_data_with_tdms(tdms_path)
 
         # Add additional features
@@ -64,11 +68,10 @@ class RTDC_TDMS(RTDCBase):
         # event traces
         self._events["trace"] = TraceColumn(self)
 
-
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC dataset with a tdms file.
         """
-        tdms_file = wrap_tdmsfile(tdms_filename)
+        tdms_file = TdmsFile(path_to_str(tdms_filename))
         # time is always there
         table = "Cell Track"
         # Edit naming.dclab2tdms to add features
@@ -78,7 +81,7 @@ class RTDC_TDMS(RTDCBase):
             except KeyError:
                 pass
             else:
-                if data is None or len(data)==0:
+                if data is None or len(data) == 0:
                     # Ignore empty features. npTDMS treats empty
                     # features in the following way:
                     # - in nptdms 0.8.2, `data` is `None`
@@ -90,7 +93,7 @@ class RTDC_TDMS(RTDCBase):
         tdms_config = Configuration(
             files=[self.path.with_name(self._mid + "_para.ini"),
                    self.path.with_name(self._mid + "_camera.ini")],
-                                    )
+        )
         dclab_config = Configuration()
         for section in naming.configmap:
             for pname in naming.configmap[section]:
@@ -108,7 +111,6 @@ class RTDC_TDMS(RTDCBase):
         self._complete_config_tdms(tdms_config)
 
         self._init_filters()
-
 
     def _complete_config_tdms(self, residual_config={}):
         # experiment
@@ -155,7 +157,6 @@ class RTDC_TDMS(RTDCBase):
                 self.config["setup"]["medium"].lower() == "cellcarrier b"):
             self.config["setup"]["medium"] = "CellCarrierB"
 
-
     @property
     def hash(self):
         """Hash value based on file name and .ini file content"""
@@ -163,7 +164,7 @@ class RTDC_TDMS(RTDCBase):
             # Only hash _camera.ini and _para.ini
             fsh = [self.path.with_name(self._mid + "_camera.ini"),
                    self.path.with_name(self._mid + "_para.ini")]
-            tohash = [ hashfile(f) for f in fsh ]
+            tohash = [hashfile(f) for f in fsh]
             tohash.append(self.path.name)
             # Hash a maximum of ~1MB of the tdms file
             tohash.append(hashfile(self.path, blocksize=65536, count=20))
@@ -173,11 +174,11 @@ class RTDC_TDMS(RTDCBase):
 
 def get_project_name_from_path(path, append_mx=False):
     """Get the project name from a path.
-    
+
     For a path "/home/peter/hans/HLC12398/online/M1_13.tdms" or
     For a path "/home/peter/hans/HLC12398/online/data/M1_13.tdms" or
     without the ".tdms" file, this will return always "HLC12398".
-    
+
     Parameters
     ----------
     path: str
@@ -207,18 +208,18 @@ def get_project_name_from_path(path, append_mx=False):
                 if line.startswith("Sample Name ="):
                     project = line.split("=")[1].strip()
                     break
-    
+
     if not project:
         # check if the directory contains data or is online
         root1, trail1 = dirn.parent, dirn.name
         root2, trail2 = root1.parent, root1.name
         trail3 = root2.name
-        
+
         if trail1.lower() in ["online", "offline"]:
             # /home/peter/hans/HLC12398/online/
             project = trail2
-        elif ( trail1.lower() == "data" and 
-               trail2.lower() in ["online", "offline"] ):
+        elif (trail1.lower() == "data" and
+              trail2.lower() in ["online", "offline"]):
             # this is olis new folder sctructure
             # /home/peter/hans/HLC12398/online/data/
             project = trail3
@@ -227,13 +228,13 @@ def get_project_name_from_path(path, append_mx=False):
 
     if append_mx:
         project += " - " + mx
-    
+
     return project
 
 
 def get_tdms_files(directory):
     """Recursively find projects based on '.tdms' file endings
-    
+
     Searches the `directory` recursively and return a sorted list
     of all found '.tdms' project files, except fluorescence
     data trace files which end with `_traces.tdms`.

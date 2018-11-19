@@ -37,12 +37,12 @@ def bin_width_doane(a):
 
 
 def get_bad_vals(x, y):
-    return np.isnan(x) | np.isinf(x) | np.isnan(y) | np.isinf(y) 
+    return np.isnan(x) | np.isinf(x) | np.isnan(y) | np.isinf(y)
 
 
 def ignore_nan_inf(kde_method):
     """Ignores nans and infs from the input data
-    
+
     Invalid positions in the resulting density are set to nan.
     """
     def new_kde_method(events_x, events_y, xout=None, yout=None, *args, **kwargs):
@@ -65,8 +65,8 @@ def ignore_nan_inf(kde_method):
         density[bad_out] = np.nan
         return density
 
-    doc_add = "\n    Notes\n"+\
-              "    -----\n"+\
+    doc_add = "\n    Notes\n" +\
+              "    -----\n" +\
               "    This is a wrapped version that ignores nan and inf values."
     new_kde_method.__doc__ = kde_method.__doc__ + doc_add
 
@@ -77,7 +77,7 @@ def ignore_nan_inf(kde_method):
 @Cache
 def kde_gauss(events_x, events_y, xout=None, yout=None):
     """ Gaussian Kernel Density Estimation
-    
+
     Parameters
     ----------
     events_x, events_y: 1D ndarray
@@ -86,7 +86,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
     xout, yout: ndarray
         The coordinates at which the KDE should be computed.
         If set to none, input coordinates are used.
-    
+
     Returns
     -------
     density: ndarray, same shape as `xout`
@@ -101,11 +101,11 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
                    )
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
-    
+
     if yout is None and yout is None:
         xout = events_x
         yout = events_y
-    
+
     try:
         estimator = gaussian_kde([events_x.flatten(), events_y.flatten()])
         density = estimator.evaluate([xout.flatten(), yout.flatten()])
@@ -119,7 +119,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
 @Cache
 def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
     """ Histogram-based Kernel Density Estimation
-    
+
     Parameters
     ----------
     events_x, events_y: 1D ndarray
@@ -130,7 +130,7 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
         If set to none, input coordinates are used.
     bins: tuple (binsx, binsy)
         The number of bins to use for the histogram.
-    
+
     Returns
     -------
     density: ndarray, same shape as `xout`
@@ -162,17 +162,17 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
                                             normed=True)
     xip = xedges[1:]-(xedges[1]-xedges[0])/2
     yip = yedges[1:]-(yedges[1]-yedges[0])/2
-    
+
     estimator = RectBivariateSpline(x=xip, y=yip, z=hist2d)
     density = estimator.ev(xout, yout)
-    density[density<0] = 0
-    
+    density[density < 0] = 0
+
     return density.reshape(xout.shape)
 
 
 def kde_none(events_x, events_y, xout=None, yout=None):
     """ No Kernel Density Estimation
-    
+
     Parameters
     ----------
     events_x, events_y: 1D ndarray
@@ -181,7 +181,7 @@ def kde_none(events_x, events_y, xout=None, yout=None):
     xout, yout: ndarray
         The coordinates at which the KDE should be computed.
         If set to none, input coordinates are used.
-    
+
     Returns
     -------
     density: ndarray, same shape as `xout`
@@ -201,7 +201,7 @@ def kde_none(events_x, events_y, xout=None, yout=None):
     if yout is None and yout is None:
         xout = events_x
         yout = events_y
-    
+
     return np.ones(xout.shape)
 
 
@@ -209,7 +209,7 @@ def kde_none(events_x, events_y, xout=None, yout=None):
 @Cache
 def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     """ Multivariate Kernel Density Estimation
-    
+
     Parameters
     ----------
     events_x, events_y: 1D ndarray
@@ -243,7 +243,7 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
         # divide by 2 to make it comparable to histogram KDE
         bw = (bin_width_doane(events_x) / 2,
               bin_width_doane(events_y) / 2)
-    
+
     positions = np.vstack([xout.flatten(), yout.flatten()])
     estimator_ly = KDEMultivariate(data=[events_x.flatten(),
                                          events_y.flatten()],

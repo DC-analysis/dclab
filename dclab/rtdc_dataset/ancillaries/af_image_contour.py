@@ -30,14 +30,18 @@ def compute_bright_sd(mm):
 def compute_inert_ratio_cvx(mm):
     return features.inert_ratio.get_inert_ratio_cvx(cont=mm["contour"])
 
+
 def compute_inert_ratio_prnc(mm):
     return features.inert_ratio.get_inert_ratio_prnc(cont=mm["contour"])
+
 
 def compute_inert_ratio_raw(mm):
     return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
 
+
 def compute_tilt(mm):
     return features.inert_ratio.get_tilt(cont=mm["contour"])
+
 
 def compute_volume(mm):
     vol = features.volume.get_volume(

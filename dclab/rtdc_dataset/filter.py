@@ -16,7 +16,7 @@ from ..polygon_filter import PolygonFilter
 class Filter(object):
     def __init__(self, rtdc_ds):
         """Boolean filter arrays for RT-DC measurements
-        
+
         Parameters
         ----------
         rtdc_ds: instance of RTDCBase
@@ -37,16 +37,14 @@ class Filter(object):
         # old filter configuration of `rtdc_ds`
         self._old_config = {}
 
-
     def __getitem__(self, key):
         """Return the filter for a feature of `self.rtdc_ds`"""
         if key in self.rtdc_ds:
             if (key not in self._filters and
-                key in dfn.scalar_feature_names):
+                    key in dfn.scalar_feature_names):
                 # Generate filters on-the-fly
                 self._filters[key] = np.ones(len(self.rtdc_ds), dtype=bool)
         return self._filters[key]
-
 
     def update(self, force=[]):
         """Update the filters according to `self.rtdc_ds.config["filtering"]`
@@ -66,7 +64,7 @@ class Filter(object):
         cfg_cur = self.rtdc_ds.config["filtering"]
         cfg_old = self._old_config
 
-        ## Determine which data was updated        
+        # Determine which data was updated
         for skey in list(cfg_cur.keys()):
             if not skey in cfg_old:
                 cfg_old[skey] = None
@@ -83,7 +81,6 @@ class Filter(object):
             if k[:-4] in dfn.scalar_feature_names:
                 col2filter.append(k[:-4])
 
-
         for f in force:
             # Manually add forced features
             if f in dfn.scalar_feature_names:
@@ -91,7 +88,7 @@ class Filter(object):
             else:
                 # Make sure the feature name is valid.
                 raise ValueError("Unknown feature name {}".format(f))
-        
+
         col2filter = np.unique(col2filter)
 
         for col in col2filter:
@@ -103,7 +100,7 @@ class Filter(object):
                 # If min and max exist and if they are not identical:
                 if (fstart in cfg_cur and
                     fend in cfg_cur and
-                    cfg_cur[fstart] != cfg_cur[fend]):
+                        cfg_cur[fstart] != cfg_cur[fend]):
                     # TODO: speedup
                     # Here one could check for smaller values in the
                     # lists oldvals/newvals that we defined above.
@@ -118,7 +115,7 @@ class Filter(object):
                     col_filt[:] = (ivalstart <= data)*(data <= ivalend)
                 else:
                     col_filt[:] = True
-        
+
         # 2. Filter with polygon filters
         # check if something has changed
         pf_id = "polygon filters"
@@ -138,7 +135,7 @@ class Filter(object):
 
         # 3. Invalid filters
         self.invalid[:] = True
-        if cfg_cur["remove invalid events"]:            
+        if cfg_cur["remove invalid events"]:
             for col in dfn.scalar_feature_names:
                 if col in self.rtdc_ds:
                     data = self.rtdc_ds[col]
@@ -152,11 +149,11 @@ class Filter(object):
         if cfg_cur["enable filters"]:
             for col in self._filters:
                 self.all[:] *= self._filters[col]
-            
+
             self.all[:] *= self.invalid
             self.all[:] *= self.manual
             self.all[:] *= self.polygon
-    
+
             # Filter with configuration keyword argument "Limit Events".
             # This additional step limits the total number of events in
             # self.all.
@@ -169,6 +166,5 @@ class Filter(object):
                 sub[~idx] = False
                 self.all[self.all] = sub
 
-        
-        # Actual filtering is then done during plotting            
+        # Actual filtering is then done during plotting
         self._old_config = self.rtdc_ds.config.copy()["filtering"]

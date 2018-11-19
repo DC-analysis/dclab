@@ -16,38 +16,50 @@ else:
     str_types = str
 
 
-
 class CaseInsensitiveDict(dict):
     @classmethod
     def _k(cls, key):
         return key.lower() if isinstance(key, str_types) else key
+
     def __init__(self, *args, **kwargs):
         super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
         self._convert_keys()
+
     def __getitem__(self, key):
         return super(CaseInsensitiveDict, self).__getitem__(self.__class__._k(key))
+
     def __setitem__(self, key, value):
-        super(CaseInsensitiveDict, self).__setitem__(self.__class__._k(key), value)
+        super(CaseInsensitiveDict, self).__setitem__(
+            self.__class__._k(key), value)
+
     def __delitem__(self, key):
         return super(CaseInsensitiveDict, self).__delitem__(self.__class__._k(key))
+
     def __contains__(self, key):
         return super(CaseInsensitiveDict, self).__contains__(self.__class__._k(key))
+
     def has_key(self, key):
         return super(CaseInsensitiveDict, self).has_key(self.__class__._k(key))
+
     def items(self):
         keys = list(self.keys())
         keys.sort()
-        out = [(k,self[k]) for k in keys]
+        out = [(k, self[k]) for k in keys]
         return out
+
     def pop(self, key, *args, **kwargs):
         return super(CaseInsensitiveDict, self).pop(self.__class__._k(key), *args, **kwargs)
+
     def get(self, key, *args, **kwargs):
         return super(CaseInsensitiveDict, self).get(self.__class__._k(key), *args, **kwargs)
+
     def setdefault(self, key, *args, **kwargs):
         return super(CaseInsensitiveDict, self).setdefault(self.__class__._k(key), *args, **kwargs)
+
     def update(self, E={}, **F):
         super(CaseInsensitiveDict, self).update(self.__class__(E))
         super(CaseInsensitiveDict, self).update(self.__class__(**F))
+
     def _convert_keys(self):
         for k in list(self.keys()):
             v = super(CaseInsensitiveDict, self).pop(k)
@@ -80,7 +92,7 @@ class Configuration(object):
 
         # set initial default values
         self._init_default_values()
-        
+
         # Update with additional dictionary
         self.update(cfg)
 
@@ -88,10 +100,8 @@ class Configuration(object):
         for f in files:
             self.update(load_from_file(f))
 
-
     def __contains__(self, key):
         return self._cfg.__contains__(key)
-
 
     def __getitem__(self, idx):
         if idx not in self and idx in dfn.config_keys:
@@ -101,15 +111,12 @@ class Configuration(object):
             item = item.lower()
         return item
 
-
     def __iter__(self):
         return self._cfg.__iter__()
 
-
     def __len__(self):
         return len(self._cfg)
-    
-    
+
     def __repr__(self):
         rep = ""
         keys = sorted(list(self.keys()))
@@ -120,14 +127,12 @@ class Configuration(object):
                 rep += "   {}: {}\n".format(subkey, self[key][subkey])
         return rep
 
-
     def __setitem__(self, *args):
         self._cfg.__setitem__(*args)
 
-
     def _init_default_values(self):
         """Set default initial values
-        
+
         The default values are hard-coded for backwards compatibility
         and for several functionalities in dclab.
         """
@@ -147,16 +152,13 @@ class Configuration(object):
             for a in appends:
                 self["filtering"][item + a] = 0
 
-
     def copy(self):
         """Return copy of current configuration"""
         return Configuration(cfg=copy.deepcopy(self._cfg))
 
-
     def keys(self):
         """Return the configuration keys (sections)"""
         return self._cfg.keys()
-
 
     def save(self, filename):
         """Save the configuration to a file"""
@@ -179,7 +181,6 @@ class Configuration(object):
                 out[i] = out[i]+"\n"
             f.writelines(out)
 
-
     def update(self, newcfg):
         """Update current config with a dictionary"""
         for key in newcfg.keys():
@@ -192,13 +193,13 @@ class Configuration(object):
 def load_from_file(cfg_file):
     """Load the configuration from a file
 
-    
+
     Parameters
     ----------
     cfg_file: str
         Path to configuration file
 
-    
+
     Returns
     -------
     cfg : CaseInsensitiveDict
@@ -225,7 +226,7 @@ def load_from_file(cfg_file):
             val = val.strip("' ").strip('" ').strip()
             # convert parameter value to correct type
             if (section in dfn.config_funcs and
-                var in dfn.config_funcs[section]):
+                    var in dfn.config_funcs[section]):
                 # standard parameter with known type
                 val = dfn.config_funcs[section][var](val)
             else:
@@ -245,24 +246,24 @@ def keyval_str2typ(var, val):
         The variable name
     val: str
         The value of the variable represented as a string
-    
+
     Returns
     -------
     varout: str
         Stripped lowercase `var`
     valout: any type
         The value converted from string to its presumed type
-    
+
     Notes
     -----
     This method is heuristic and is only intended for usage in
     dclab.
-    
+
     See Also
     --------
     keyval_typ2str: the opposite
     """
-    if not ( isinstance(val, str_types) ):
+    if not (isinstance(val, str_types)):
         # already a type:
         return var.strip(), val
     var = var.strip().lower()
@@ -288,7 +289,7 @@ def keyval_str2typ(var, val):
             return var, val
         else:
             try:
-                return var, float(val.replace(",","."))
+                return var, float(val.replace(",", "."))
             except ValueError:
                 return var, val
 
@@ -302,7 +303,7 @@ def keyval_typ2str(var, val):
         The variable name
     val: any type
         The value of the variable
-    
+
     Returns
     -------
     varout: str

@@ -3,16 +3,11 @@
 from __future__ import division, print_function, unicode_literals
 
 import pathlib
-import sys
 import warnings
 
 import numpy as np
 
-
-if sys.version_info[0] == 2:
-    string_classes = (str, unicode)
-else:
-    string_classes = str
+from .compat import is_file_obj
 
 
 class FilterIdExistsWarning(UserWarning):
@@ -297,11 +292,11 @@ class PolygonFilter(object):
         If `ret_fobj` is `True`, then the file object will not be
         closed and returned.
         """
-        if isinstance(polyfile, (string_classes, pathlib.Path)):
-            fobj = pathlib.Path(polyfile).open("a")
-        else:
-            # file or tempfile._TemporaryFileWrapper
+        if is_file_obj(polyfile):
             fobj = polyfile
+        else:
+            fobj = pathlib.Path(polyfile).open("a")
+
         # Who the hell would use more then 10 million polygons or
         # polygon points? -> 08d (easier if other people want to import)
         data2write = []

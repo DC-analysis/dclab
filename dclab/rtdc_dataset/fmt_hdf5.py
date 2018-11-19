@@ -71,6 +71,7 @@ class H5ContourEvent(object):
 
 class H5MaskEvent(object):
     """Cast uint8 masks to boolean"""
+
     def __init__(self, h5group):
         self.h5group = h5group
         # identifier required because "mask" is used for computation
@@ -157,7 +158,8 @@ class RTDC_HDF5(RTDCBase):
             if pname not in dfn.config_funcs[section]:
                 # Add the value as a string but issue a warning
                 config[section][pname] = h5attrs[key]
-                msg = "Unknown key '{}' in section [{}]!".format(pname, section)
+                msg = "Unknown key '{}' in section [{}]!".format(
+                    pname, section)
                 warnings.warn(msg, UnknownKeyWarning)
             else:
                 typ = dfn.config_funcs[section][pname]
@@ -173,4 +175,3 @@ class RTDC_HDF5(RTDCBase):
             tohash.append(hashfile(self.path, blocksize=65536, count=20))
             self._hash = hashobj(tohash)
         return self._hash
-

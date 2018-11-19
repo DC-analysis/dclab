@@ -26,10 +26,10 @@ class LogTransformWarning(UserWarning):
 
 class RTDCBase(object):
     __metaclass__ = abc.ABCMeta
-    
+
     def __init__(self, identifier=None):
         """RT-DC measurement base class
-        
+
         Notes
         -----
         Besides the filter arrays for each data feature, there is a manual
@@ -39,7 +39,7 @@ class RTDCBase(object):
         """
         #: Dataset format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
-        
+
         self._polygon_filter_ids = []
         # Ancillaries have the feature name as keys and a
         # tuple containing feature and hash as value.
@@ -63,13 +63,12 @@ class RTDCBase(object):
         else:
             self._identifier = identifier
 
-
     def __contains__(self, key):
         ct = False
         if key in self._events:
             if (self.format == "tdms" and
                 key in ["contour", "image", "trace"]
-                and self._events[key]):
+                    and self._events[key]):
                 # Take into account special cases of the tdms file format:
                 # tdms features "image", "trace", "contour" are True if
                 # the data exist on disk
@@ -92,12 +91,11 @@ class RTDCBase(object):
                         break
         return ct
 
-
     def __getitem__(self, key):
         if key in self._events:
             data = self._events[key]
-            if not np.all(data==0):
-                return data 
+            if not np.all(data == 0):
+                return data
         # Try to find the feature in the ancillary features
         # (see ancillaries submodule for more information).
         # These features are cached in `self._ancillaries`.
@@ -105,8 +103,8 @@ class RTDCBase(object):
         if key in ancol:
             # The feature is available.
             anhash = ancol[key].hash(self)
-            if (key in self._ancillaries and 
-                self._ancillaries[key][0] == anhash):
+            if (key in self._ancillaries and
+                    self._ancillaries[key][0] == anhash):
                 # Use cached value
                 data = self._ancillaries[key][1]
             else:
@@ -118,7 +116,6 @@ class RTDCBase(object):
         else:
             raise KeyError("Feature '{}' does not exist!".format(key))
 
-
     def __iter__(self):
         """An iterator over all valid scalar features"""
         mycols = []
@@ -128,7 +125,6 @@ class RTDCBase(object):
         mycols.sort()
         for col in mycols:
             yield col
-
 
     def __len__(self):
         keys = list(self._events.keys())
@@ -141,7 +137,6 @@ class RTDCBase(object):
             msg = "Could not determine size of dataset '{}'.".format(self)
             raise ValueError(msg)
 
-
     def __repr__(self):
         repre = self.identifier
         if self.path is not "none":
@@ -150,7 +145,6 @@ class RTDCBase(object):
             else:
                 repre += " - file: {}".format(self.path)
         return repre
-
 
     def _apply_scale(self, a, scale, feat):
         """Helper function for transforming an aray to log-scale
@@ -190,12 +184,10 @@ class RTDCBase(object):
                              + "got '{}'!".format(scale))
         return b
 
-
     @property
     def _filter(self):
         """return the current filter boolean array"""
         return self.filter.all
-
 
     def _init_filters(self):
         # Plot filters is only used for plotting and does
@@ -206,12 +198,10 @@ class RTDCBase(object):
         #: :class:`dclab.rtdc_dataset.filter.Filter`.
         self.filter = Filter(self)
 
-
     @property
     def identifier(self):
         """Unique (unreproducible) identifier"""
         return self._identifier
-
 
     @property
     def features(self):
@@ -223,22 +213,19 @@ class RTDCBase(object):
         mycols.sort()
         return mycols
 
-
     @abc.abstractproperty
     def hash(self):
         """Reproducible dataset hash (defined by derived classes)"""
-
 
     def apply_filter(self, force=[]):
         """Compute the filters for the dataset"""
         self.filter.update(force)
 
-
     def get_downsampled_scatter(self, xax="area_um", yax="deform",
                                 downsample=0, xscale="linear",
                                 yscale="linear"):
         """Downsampling by removing points at dense locations
-        
+
         Parameters
         ----------
         xax: str
@@ -283,7 +270,6 @@ class RTDCBase(object):
                                                  ret_idx=True)
         self._plot_filter = idx
         return x[idx], y[idx]
-
 
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None, yacc=None,
                         kde_type="histogram", kde_kwargs={}, xscale="linear",
@@ -342,7 +328,7 @@ class RTDCBase(object):
         yc = ys[~bad]
         xlin = np.arange(xc.min(), xc.max(), xacc)
         ylin = np.arange(yc.min(), yc.max(), yacc)
-        xmesh, ymesh = np.meshgrid(xlin,ylin)
+        xmesh, ymesh = np.meshgrid(xlin, ylin)
 
         kde_fct = kde_methods.methods[kde_type]
         if len(x):
@@ -359,7 +345,6 @@ class RTDCBase(object):
             ymesh = np.exp(ymesh)
 
         return xmesh, ymesh, density
-
 
     def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
                         kde_type="histogram", kde_kwargs={}, xscale="linear",
@@ -423,11 +408,9 @@ class RTDCBase(object):
 
         return density
 
-
-
     def polygon_filter_add(self, filt):
         """Associate a Polygon Filter with this instance
-        
+
         Parameters
         ----------
         filt: int or instance of `PolygonFilter`
@@ -436,14 +419,13 @@ class RTDCBase(object):
         if not isinstance(filt, (PolygonFilter, int, float)):
             msg = "`filt` must be a number or instance of PolygonFilter!"
             raise ValueError(msg)
-        
+
         if isinstance(filt, PolygonFilter):
-            uid=filt.unique_id
+            uid = filt.unique_id
         else:
-            uid=int(filt)
+            uid = int(filt)
         # append item
         self.config["filtering"]["polygon filters"].append(uid)
-
 
     def polygon_filter_rm(self, filt):
         """Remove a polygon filter from this instance
@@ -456,7 +438,7 @@ class RTDCBase(object):
         if not isinstance(filt, (PolygonFilter, int, float)):
             msg = "`filt` must be a number or instance of PolygonFilter!"
             raise ValueError(msg)
-        
+
         if isinstance(filt, PolygonFilter):
             uid = filt.unique_id
         else:

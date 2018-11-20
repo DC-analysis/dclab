@@ -2,12 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, unicode_literals
 
-import sys
-
-if sys.version_info[0] == 2:
-    str_types = (str, unicode)
-else:
-    str_types = str
+from .compat import str_types
 
 
 def fbool(value):

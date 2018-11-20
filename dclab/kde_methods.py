@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Kernel Density Estimation methods
-"""
+"""Kernel Density Estimation methods"""
 from __future__ import division, print_function, unicode_literals
 
 import numpy as np
@@ -23,9 +21,14 @@ def bin_num_doane(a):
 
 
 def bin_width_doane(a):
-    """Compute accuracy (bin width) based on Doane's formula"""
-    # https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width
-    # https://stats.stackexchange.com/questions/55134/doanes-formula-for-histogram-binning
+    """Compute accuracy (bin width) based on Doane's formula
+
+    References
+    ----------
+    - `<https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width>`_
+    - `<https://stats.stackexchange.com/questions/55134/
+      doanes-formula-for-histogram-binning>`_
+    """
     bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
     n = data.size
@@ -45,7 +48,8 @@ def ignore_nan_inf(kde_method):
 
     Invalid positions in the resulting density are set to nan.
     """
-    def new_kde_method(events_x, events_y, xout=None, yout=None, *args, **kwargs):
+    def new_kde_method(events_x, events_y, xout=None, yout=None,
+                       *args, **kwargs):
         bad_in = get_bad_vals(events_x, events_y)
         if xout is None:
             density = np.zeros_like(events_x, dtype=float)

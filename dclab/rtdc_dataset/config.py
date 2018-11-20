@@ -5,15 +5,9 @@ from __future__ import division, print_function, unicode_literals
 
 import copy
 import pathlib
-import sys
 
+from ..compat import str_types
 from .. import definitions as dfn
-
-
-if sys.version_info[0] == 2:
-    str_types = (str, unicode)
-else:
-    str_types = str
 
 
 class CaseInsensitiveDict(dict):
@@ -26,20 +20,23 @@ class CaseInsensitiveDict(dict):
         self._convert_keys()
 
     def __getitem__(self, key):
-        return super(CaseInsensitiveDict, self).__getitem__(self.__class__._k(key))
+        return super(CaseInsensitiveDict,
+                     self).__getitem__(self.__class__._k(key))
 
     def __setitem__(self, key, value):
         super(CaseInsensitiveDict, self).__setitem__(
             self.__class__._k(key), value)
 
     def __delitem__(self, key):
-        return super(CaseInsensitiveDict, self).__delitem__(self.__class__._k(key))
+        return super(CaseInsensitiveDict,
+                     self).__delitem__(self.__class__._k(key))
 
     def __contains__(self, key):
-        return super(CaseInsensitiveDict, self).__contains__(self.__class__._k(key))
+        return super(CaseInsensitiveDict,
+                     self).__contains__(self.__class__._k(key))
 
     def has_key(self, key):
-        return super(CaseInsensitiveDict, self).has_key(self.__class__._k(key))
+        return self.__class__._k(key) in super(CaseInsensitiveDict, self)
 
     def items(self):
         keys = list(self.keys())
@@ -48,13 +45,16 @@ class CaseInsensitiveDict(dict):
         return out
 
     def pop(self, key, *args, **kwargs):
-        return super(CaseInsensitiveDict, self).pop(self.__class__._k(key), *args, **kwargs)
+        return super(CaseInsensitiveDict,
+                     self).pop(self.__class__._k(key), *args, **kwargs)
 
     def get(self, key, *args, **kwargs):
-        return super(CaseInsensitiveDict, self).get(self.__class__._k(key), *args, **kwargs)
+        return super(CaseInsensitiveDict,
+                     self).get(self.__class__._k(key), *args, **kwargs)
 
     def setdefault(self, key, *args, **kwargs):
-        return super(CaseInsensitiveDict, self).setdefault(self.__class__._k(key), *args, **kwargs)
+        return super(CaseInsensitiveDict,
+                     self).setdefault(self.__class__._k(key), *args, **kwargs)
 
     def update(self, E={}, **F):
         super(CaseInsensitiveDict, self).update(self.__class__(E))
@@ -184,7 +184,7 @@ class Configuration(object):
     def update(self, newcfg):
         """Update current config with a dictionary"""
         for key in newcfg.keys():
-            if not key in self._cfg:
+            if key not in self._cfg:
                 self._cfg[key] = CaseInsensitiveDict()
             for skey in newcfg[key]:
                 self._cfg[key][skey] = newcfg[key][skey]
@@ -218,7 +218,7 @@ def load_from_file(cfg_file):
         if len(line) != 0:
             if line.startswith("[") and line.endswith("]"):
                 section = line[1:-1].lower()
-                if not section in cfg:
+                if section not in cfg:
                     cfg[section] = CaseInsensitiveDict()
                 continue
             var, val = line.split("=", 1)

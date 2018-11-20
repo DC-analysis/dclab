@@ -66,7 +66,7 @@ class Filter(object):
 
         # Determine which data was updated
         for skey in list(cfg_cur.keys()):
-            if not skey in cfg_old:
+            if skey not in cfg_old:
                 cfg_old[skey] = None
             if cfg_cur[skey] != cfg_old[skey]:
                 newkeys.append(skey)
@@ -120,7 +120,7 @@ class Filter(object):
         # check if something has changed
         pf_id = "polygon filters"
         if (
-            (pf_id in cfg_cur and not pf_id in cfg_old) or
+            (pf_id in cfg_cur and pf_id not in cfg_old) or
             (pf_id in cfg_cur and pf_id in cfg_old and
              cfg_cur[pf_id] != cfg_old[pf_id])):
             self.polygon[:] = True

@@ -5,15 +5,11 @@ from __future__ import division, print_function, unicode_literals
 
 import hashlib
 import pathlib
-import sys
 
 import h5py
 import numpy as np
 
-if sys.version_info[0] == 2:
-    str_classes = (str, unicode)
-else:
-    str_classes = str
+from ..compat import str_types
 
 
 def hashfile(fname, blocksize=65536, count=0):
@@ -50,7 +46,7 @@ def hashobj(obj):
 
 def obj2str(obj):
     """String representation of an object for hashing"""
-    if isinstance(obj, str_classes):
+    if isinstance(obj, str_types):
         return obj.encode("utf-8")
     elif isinstance(obj, pathlib.Path):
         return obj2str(str(obj))

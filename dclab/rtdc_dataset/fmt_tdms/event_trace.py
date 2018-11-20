@@ -20,7 +20,7 @@ class TraceColumn(object):
 
         The trace data is loaded when __getitem__, __len__, or __iter__
         are called. This saves time and memory when the trace data is
-        not needed at all, e.g. for batch processing with Shape-Out. 
+        not needed at all, e.g. for batch processing with Shape-Out.
         """
         self._trace = None
         self.mname = rtdc_dataset.path

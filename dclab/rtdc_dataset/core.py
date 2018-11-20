@@ -34,7 +34,7 @@ class RTDCBase(object):
         -----
         Besides the filter arrays for each data feature, there is a manual
         boolean filter array ``RTDCBase.filter.manual`` that can be edited
-        by the user - a boolean value of ``False`` means that the event is 
+        by the user - a boolean value of ``False`` means that the event is
         excluded from all computations.
         """
         #: Dataset format (derived from class name)
@@ -75,7 +75,7 @@ class RTDCBase(object):
                 ct = True
             else:
                 ct = True
-        if ct == False:
+        if ct is False:
             # Check ancillary features data
             if key in self._ancillaries:
                 # already computed
@@ -234,10 +234,10 @@ class RTDCBase(object):
             Identifier for y axis
         downsample: int
             Number of points to draw in the down-sampled plot.
-            This number is either 
+            This number is either
 
             - >=1: exactly downsample to this number by randomly adding
-                   or removing points 
+                   or removing points
             - 0  : do not perform downsampling
         xscale: str
             If set to "log", take the logarithm of the x-values before
@@ -271,9 +271,9 @@ class RTDCBase(object):
         self._plot_filter = idx
         return x[idx], y[idx]
 
-    def get_kde_contour(self, xax="area_um", yax="deform", xacc=None, yacc=None,
-                        kde_type="histogram", kde_kwargs={}, xscale="linear",
-                        yscale="linear"):
+    def get_kde_contour(self, xax="area_um", yax="deform", xacc=None,
+                        yacc=None, kde_type="histogram", kde_kwargs={},
+                        xscale="linear", yscale="linear"):
         """Evaluate the kernel density estimate for contour plots
 
         Parameters
@@ -289,7 +289,7 @@ class RTDCBase(object):
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
-            Additional keyword arguments to the KDE method 
+            Additional keyword arguments to the KDE method
         xscale: str
             If set to "log", take the logarithm of the x-values before
             computing the KDE. This is useful when data are are
@@ -364,7 +364,7 @@ class RTDCBase(object):
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
-            Additional keyword arguments to the KDE method 
+            Additional keyword arguments to the KDE method
         xscale: str
             If set to "log", take the logarithm of the x-values before
             computing the KDE. This is useful when data are are

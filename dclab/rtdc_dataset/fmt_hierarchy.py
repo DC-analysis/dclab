@@ -372,7 +372,7 @@ def map_indices_parent2child(child, parent_indices):
     Returns
     -------
     child_indices: 1d ndarray
-        child indices    
+        child indices
     """
     parent = child.hparent
     # filters
@@ -406,7 +406,7 @@ def map_indices_root2child(child, root_indices):
     Returns
     -------
     child_indices: 1d ndarray
-        child indices    
+        child indices
     """
     # construct hierarchy tree containing only RTDC_Hierarchy instances
     hierarchy = [child]

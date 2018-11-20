@@ -12,7 +12,7 @@ from .util import hashobj
 
 class RTDC_Dict(RTDCBase):
     def __init__(self, ddict, *args, **kwargs):
-        """Dictionary-based RT-DC dataset 
+        """Dictionary-based RT-DC dataset
 
         Parameters
         ----------

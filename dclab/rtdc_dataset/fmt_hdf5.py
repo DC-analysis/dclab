@@ -7,13 +7,13 @@ from distutils.version import LooseVersion
 import pathlib
 import warnings
 
+import h5py
 import numpy as np
 
 from dclab import definitions as dfn
 from .config import Configuration
 from .core import RTDCBase
 from .util import hashobj, hashfile
-from .write_hdf5 import wrap_h5file
 
 
 #: rtdc files exported with dclab prior to this version are not supported
@@ -31,7 +31,7 @@ class UnknownKeyWarning(UserWarning):
 class H5Events(object):
     def __init__(self, h5path):
         self.path = h5path
-        self._h5 = wrap_h5file(h5path, mode="r")
+        self._h5 = h5py.File(h5path, mode="r")
 
     def __contains__(self, key):
         return key in self.keys()
@@ -143,7 +143,7 @@ class RTDC_HDF5(RTDCBase):
     @staticmethod
     def parse_config(h5path):
         """Parse the RT-DC configuration of an hdf5 file"""
-        with wrap_h5file(h5path, mode="r") as fh5:
+        with h5py.File(h5path, mode="r") as fh5:
             h5attrs = dict(fh5.attrs)
 
         # Convert byte strings to unicode strings

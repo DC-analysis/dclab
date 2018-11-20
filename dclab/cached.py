@@ -25,18 +25,20 @@ class Cache(object):
         - cache is based on dictionary
         - md5 hashes of method arguments are the dictionary keys
         - applicable decorator for all methods in a module
-        - applicable to methods with the same name in different source files
+        - applicable to methods with the same name in different
+          source files
         - set cache size with `cached.MAX_SIZE`
-        - only one global cache is generated, there are no instances of `Cache`
+        - only one global cache is generated, there are no instances
+          of `Cache`
 
         Notes
         -----
-        If you are using other decorators with this decorator, please make sure
-        to apply the `Cache` first (first line before method definition). This
-        wrapper uses name, doc, and filename of the method to identify it. If
-        another wrapper does not implement a unique `__doc__` and is applied to
-        multiple methods, then `Cached` might return values of the wrong method.
-
+        If you are using other decorators with this decorator, please
+        make sure to apply the `Cache` first (first line before method
+        definition). This wrapper uses name, doc, and filename of the
+        method to identify it. If another wrapper does not implement
+        a unique `__doc__` and is applied to multiple methods, then
+        `Cached` might return values of the wrong method.
         """
         self.func = func
 

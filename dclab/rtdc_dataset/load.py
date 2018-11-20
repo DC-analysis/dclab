@@ -4,20 +4,14 @@
 from __future__ import unicode_literals
 
 import pathlib
-import sys
 
 import h5py
 
 from .core import RTDCBase
 from . import fmt_dict, fmt_hdf5, fmt_tdms, fmt_hierarchy
 
+from ..compat import str_types
 from .. import definitions as dfn
-
-
-if sys.version_info[0] == 2:
-    str_classes = (str, unicode)
-else:
-    str_classes = str
 
 
 #: keys that must be present for every measurement
@@ -244,7 +238,7 @@ def new_dataset(data, identifier=None):
     """
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier)
-    elif isinstance(data, (str_classes)) or isinstance(data, pathlib.Path):
+    elif isinstance(data, (str_types)) or isinstance(data, pathlib.Path):
         return load_file(data, identifier=identifier)
     elif isinstance(data, RTDCBase):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier)

@@ -5,22 +5,29 @@ matrix:
  include:
  - os: osx
    language: generic
-   env: MAC_PYTHON_VERSION=2.7
+   env: MAC_PYTHON_VERSION=2.7 TEST="PYTEST"
  - os: osx
    language: generic
-   env: MAC_PYTHON_VERSION=3.6
+   env: MAC_PYTHON_VERSION=3.6 TEST="PYTEST"
  - os: osx
    language: generic
-   env: MAC_PYTHON_VERSION=3.7
+   env: MAC_PYTHON_VERSION=3.7 TEST="PYTEST"
  - os: linux
    language: python
    python: 2.7
+   env: TEST="PYTEST"
  - os: linux
    language: python
    python: 3.5
+   env: TEST="PYTEST"
  - os: linux
    language: python
    python: 3.6
+   env: TEST="PYTEST"
+ - os: linux
+   language: python
+   python: 3.6
+   env: TEST="FLAKE8"
 before_install:
 # install other dependencies
 - source ./.travis/${TRAVIS_OS_NAME}_setup_python.sh $MAC_PYTHON_VERSION
@@ -38,11 +45,18 @@ install:
 - travis_retry imageio_download_bin --package-dir ffmpeg
 - travis_retry pip install -e .
 # for tests:
-- travis_retry pip install codecov coverage
+- travis_retry pip install codecov coverage flake8
 - pip freeze
 script:
-- coverage run --source=dclab ./setup.py test
-- coverage report -m
+- if [ "${TEST}" == "PYTEST" ]; then
+       coverage run --source=dclab setup.py test;
+       coverage report -m;
+       codecov;
+  else
+       flake8 dclab;
+       flake8 examples;
+       flake8 tests;
+  fi;
 after_success:
 - codecov
 before_deploy:

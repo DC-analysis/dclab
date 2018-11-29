@@ -35,9 +35,6 @@ class CaseInsensitiveDict(dict):
         return super(CaseInsensitiveDict,
                      self).__contains__(self.__class__._k(key))
 
-    def has_key(self, key):
-        return self.__class__._k(key) in super(CaseInsensitiveDict, self)
-
     def items(self):
         keys = list(self.keys())
         keys.sort()

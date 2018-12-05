@@ -26,7 +26,7 @@ def get_compensation_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
 
     Returns
     -------
-    inv: np.matrix
+    inv: np.ndarray
         Compensation matrix (inverted spillover matrix)
     """
     ct11 = 1
@@ -51,11 +51,11 @@ def get_compensation_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
     if ct23 < 0:
         raise ValueError("ct23 matrix element must not be negative!")
 
-    crosstalk = np.matrix([[ct11, ct12, ct13],
-                           [ct21, ct22, ct23],
-                           [ct31, ct32, ct33],
-                           ])
-    return crosstalk.getI()
+    crosstalk = np.array([[ct11, ct12, ct13],
+                          [ct21, ct22, ct23],
+                          [ct31, ct32, ct33],
+                          ])
+    return np.array(np.matrix(crosstalk).getI())
 
 
 def correct_crosstalk(fl1, fl2, fl3, fl_channel,
@@ -93,6 +93,6 @@ def correct_crosstalk(fl1, fl2, fl3, fl_channel,
     minv = get_compensation_matrix(ct21=ct21, ct31=ct31, ct12=ct12,
                                    ct32=ct32, ct13=ct13, ct23=ct23)
 
-    col = np.array(minv[:, fl_channel - 1]).flatten()
+    col = minv[:, fl_channel - 1].flatten()
     flout = col[0] * fl1 + col[1] * fl2 + col[2] * fl3
     return flout

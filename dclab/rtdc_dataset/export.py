@@ -171,7 +171,7 @@ class Export(object):
         # Check if file already exist
         if not override and path.exists():
             raise OSError("File already exists: {}\n".format(
-                          str(path).encode("ascii", "ignore")) +
+                          str(path).decode("ascii", "ignore")) +
                           "Please use the `override=True` option.")
         elif path.exists():
             path.unlink()

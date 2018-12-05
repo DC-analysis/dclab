@@ -55,7 +55,7 @@ def get_compensation_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
                           [ct21, ct22, ct23],
                           [ct31, ct32, ct33],
                           ])
-    return np.array(np.matrix(crosstalk).getI())
+    return np.linalg.inv(crosstalk)
 
 
 def correct_crosstalk(fl1, fl2, fl3, fl_channel,

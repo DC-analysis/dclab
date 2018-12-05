@@ -170,9 +170,8 @@ class Export(object):
             path = path.parent / (path.name + ".rtdc")
         # Check if file already exist
         if not override and path.exists():
-            raise OSError("File already exists: {}\n".format(
-                          str(path).decode("ascii", "ignore")) +
-                          "Please use the `override=True` option.")
+            raise OSError("File already exists: {}\n".format(path)
+                          + "Please use the `override=True` option.")
         elif path.exists():
             path.unlink()
 

@@ -10,7 +10,6 @@ import time
 from nptdms import TdmsFile
 import numpy as np
 
-from ...compat import path_to_str
 from ... import definitions as dfn
 
 from ..config import Configuration
@@ -71,7 +70,7 @@ class RTDC_TDMS(RTDCBase):
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC dataset with a tdms file.
         """
-        tdms_file = TdmsFile(path_to_str(tdms_filename))
+        tdms_file = TdmsFile(str(tdms_filename))
         # time is always there
         table = "Cell Track"
         # Edit naming.dclab2tdms to add features

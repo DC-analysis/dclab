@@ -8,7 +8,6 @@ import pathlib
 from nptdms import TdmsFile
 import numpy as np
 
-from ...compat import path_to_str
 from ... import definitions as dfn
 
 from . import naming
@@ -81,12 +80,12 @@ class TraceColumn(object):
             # Again load the measurement tdms file.
             # This might increase memory usage, but it is cleaner
             # when looking at code structure.
-            mdata = TdmsFile(path_to_str(mname))
+            mdata = TdmsFile(str(mname))
             sampleids = mdata.object("Cell Track", "FL1index").data
 
             # Load the trace data. The traces file is usually larger than the
             # measurement file.
-            tdata = TdmsFile(path_to_str(tname))
+            tdata = TdmsFile(str(tname))
             for trace_key in dfn.FLUOR_TRACES:
                 group, ch = naming.tr_data_map[trace_key]
                 try:

@@ -50,7 +50,7 @@ setup(
                       "nptdms",           # required by: tdms format
                       "numpy>=1.10.0",
                       "pathlib",
-                      "scipy>=0.12.0",
+                      "scipy>=0.13.0",
                       "statsmodels>=0.5.0",
                       # Additional dependencies of statsmodels which are not
                       # installed automatically due to a developer policy:

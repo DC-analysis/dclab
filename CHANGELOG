@@ -1,6 +1,7 @@
 0.8.1
  - ref: remove unused `has_key` function in
    `rtdc_dataset.config.CaseInsensitiveDict`
+ - setup: require numpy>=1.10.0 because of `equal_nan` argument in `allclose`
 0.8.0
  - fix: usage of "xor" (^) instead of "or" (|) in statistics
  - feat: support `remove_invalid=False` in downsampling.downsample_rand (#27)

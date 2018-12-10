@@ -48,7 +48,7 @@ setup(
                       "h5py>=2.8.0",      # required by: rtdc format
                       "imageio>=2.3.0",   # required by: tdms format, avi export
                       "nptdms",           # required by: tdms format
-                      "numpy>=1.9.0",
+                      "numpy>=1.10.0",
                       "pathlib",
                       "scipy>=0.12.0",
                       "statsmodels>=0.5.0",

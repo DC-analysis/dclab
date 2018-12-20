@@ -49,7 +49,7 @@ setup(
                       "imageio>=2.3.0",   # required by: tdms format, avi export
                       "nptdms",           # required by: tdms format
                       "numpy>=1.10.0",
-                      "pathlib",
+                      "pathlib;python_version<='3.4'",
                       "scipy>=0.13.0",
                       "statsmodels>=0.5.0",
                       # Additional dependencies of statsmodels which are not

@@ -178,6 +178,7 @@ methods to compute simple feature statistics.
 
     In [4]: dict(zip(*stats))
 
+
 Note that the statistics take into account the applied filters:
 
 .. ipython::

@@ -178,6 +178,7 @@ FEATURES_SCALAR = [
     ["fl3_pos", "FL-3 position of peak [µs]"],
     ["fl3_width", "FL-3 width [µs]"],
     ["frame", "Video frame number"],
+    ["g_force", "Gravitational force in multiples of g"],
     # The inertia ratios of the event contours are defined by the
     # central second order moments of area (sqrt(m20/m02).
     ["index", "Event index"],

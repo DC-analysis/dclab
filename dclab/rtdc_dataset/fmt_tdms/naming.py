@@ -24,6 +24,7 @@ dclab2tdms = {
     "fl3_npeaks": "FL3npeaks",
     "fl3_pos": "FL3pos",
     "fl3_width": "FL3width",
+    "g_force": "gValue",
     "frame": "time",  # [sic]
     "inert_ratio_cvx": "InertiaRatio",
     "inert_ratio_raw": "InertiaRatioRaw",

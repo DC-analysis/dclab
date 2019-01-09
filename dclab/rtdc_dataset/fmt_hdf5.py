@@ -47,7 +47,7 @@ class H5Events(object):
         elif key == "mask":
             return H5MaskEvent(data)
         else:
-            return data.value
+            return data[...]
 
     def keys(self):
         return sorted(list(self._h5["events"].keys()))
@@ -56,10 +56,10 @@ class H5Events(object):
 class H5ContourEvent(object):
     def __init__(self, h5group):
         self.h5group = h5group
-        self.identifier = h5group["0"].value
+        self.identifier = h5group["0"][...]
 
     def __getitem__(self, key):
-        return self.h5group[str(key)].value
+        return self.h5group[str(key)][...]
 
     def __iter__(self):
         for idx in range(len(self)):

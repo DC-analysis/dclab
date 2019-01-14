@@ -195,6 +195,9 @@ FEATURES_SCALAR = [
     ["tilt", "Absolute tilt of raw contour"],
     ["time", "Event time [s]"],
     ["volume", "Volume [µm³]"],
+    ["temp", "Sample Temperature [°C]"],
+    ["amb_temp", "Ambient Temperature [°C]"],
+    
 ]
 # Add userdef features
 for _i in range(10):

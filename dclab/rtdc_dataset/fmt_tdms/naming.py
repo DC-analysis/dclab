@@ -36,7 +36,7 @@ dclab2tdms = {
     "size_x": "ax2",
     "size_y": "ax1",
     "temp": "temp",
-    "amb_temp": "amb_temp",
+    "temp_amb": "temp_amb",
 }
 
 # Add lower-case userdef features

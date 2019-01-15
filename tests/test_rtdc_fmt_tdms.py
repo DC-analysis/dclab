@@ -255,6 +255,11 @@ def test_mask_img_shape():
     assert len(ds["mask"]) == 0
 
 
+def test_naming_valud():
+    for key in dclab.rtdc_dataset.fmt_tdms.naming.dclab2tdms:
+        assert key in dclab.definitions.feature_names
+
+
 def test_pixel_size():
     path = retrieve_data("rtdc_data_minimal.zip")
     para = path.parent / "M1_para.ini"

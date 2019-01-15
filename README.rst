@@ -85,9 +85,9 @@ Therefore, it is not necessary to bump the version of dclab or to upload the lat
 version of dclab to PyPI in order to get your new code into Shape-Out.
 
 
-.. |PyPI Version| image:: http://img.shields.io/pypi/v/dclab.svg
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
-.. |Build Status Unix| image:: http://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg?label=build_linux_osx
+.. |Build Status Unix| image:: https://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg?label=build_linux_osx
    :target: https://travis-ci.org/ZELLMECHANIK-DRESDEN/dclab
 .. |Build Status Win| image:: https://img.shields.io/appveyor/ci/paulmueller/dclab/master.svg?label=build_win
    :target: https://ci.appveyor.com/project/paulmueller/dclab

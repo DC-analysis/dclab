@@ -192,12 +192,11 @@ FEATURES_SCALAR = [
     ["pos_y", "Position lateral in channel [µm]"],
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
+    ["temp", "Sample Temperature [°C]"],
+    ["temp_amb", "Ambient Temperature [°C]"],
     ["tilt", "Absolute tilt of raw contour"],
     ["time", "Event time [s]"],
-    ["volume", "Volume [µm³]"],
-    ["temp", "Sample Temperature [°C]"],
-    ["amb_temp", "Ambient Temperature [°C]"],
-    
+    ["volume", "Volume [µm³]"],    
 ]
 # Add userdef features
 for _i in range(10):

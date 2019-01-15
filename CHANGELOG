@@ -1,6 +1,5 @@
 0.8.1
- - feat: add new feature: gravitational force
-         add new features: temperature and ambient temperature
+ - feat: add new feature: gravitational force, temperature and ambient temperature
  - ref: remove unused `has_key` function in
    `rtdc_dataset.config.CaseInsensitiveDict`
  - setup: require numpy>=1.10.0 because of `equal_nan` argument in `allclose`

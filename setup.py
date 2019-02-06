@@ -46,7 +46,7 @@ setup(
     long_description=open('README.rst').read() if exists('README.rst') else '',
     install_requires=["fcswrite>=0.4.1",  # required by: fcs export
                       "h5py>=2.8.0",      # required by: rtdc format
-                      "imageio>=2.3.0",   # required by: tdms format, avi export
+                      "imageio>=2.3.0,<2.5.0",   # required by: tdms format, avi export
                       "nptdms",           # required by: tdms format
                       "numpy>=1.10.0",
                       "pathlib;python_version<='3.4'",

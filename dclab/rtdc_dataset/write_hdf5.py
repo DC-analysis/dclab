@@ -45,11 +45,13 @@ def store_image(h5group, data, compression):
                                       chunks=True,
                                       fletcher32=True,
                                       compression=compression)
-        # Create and Set image attributes
-        # HDFView recognizes this as a series of images
-        dset.attrs.create('CLASS', b'IMAGE')
-        dset.attrs.create('IMAGE_VERSION', b'1.2')
-        dset.attrs.create('IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE')
+        # Create and Set image attributes:
+        # HDFView recognizes this as a series of images.
+        # Use np.string_ as per
+        # http://docs.h5py.org/en/stable/strings.html#compatibility
+        dset.attrs.create('CLASS', np.string_('IMAGE'))
+        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
+        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
     else:
         dset = h5group["image"]
         oldsize = dset.shape[0]

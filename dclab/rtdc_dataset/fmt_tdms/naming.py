@@ -76,12 +76,20 @@ configmap = {
     "fluorescence": {
         "bit depth": ("FLUOR", "Bitdepthraw"),
         "channel count": ("FLUOR", "FL-Channels"),
+        "channel 1 name": ("FLUOR", "Channel 1 Name"),
+        "channel 2 name": ("FLUOR", "Channel 2 Name"),
+        "channel 3 name": ("FLUOR", "Channel 3 Name"),
+        "channels installed": ("FLUOR", "Channels Installed"),
         "laser 1 power": ("FLUOR", "Laser1 488 nm Power [%]"),
         "laser 2 power": ("FLUOR", "Laser2 561 nm Power [%]"),
         "laser 3 power": ("FLUOR", "Laser3 640 nm Power [%]"),
+        "laser count": ("FLUOR", "Laser Count"),
+        "lasers installed": ("FLUOR", "Lasers Installed"),
         "sample rate": ("FLUOR", "Samplerate [sps]"),
+        "samples per event": ("FLUOR", "Samples Per Event"),
         "signal max": ("FLUOR", "ADCmax [V]"),
         "signal min": ("FLUOR", "ADCmin [V]"),
+        "trace median": ("FLUOR", "Trace Median"),
     },
     # All tdms-related parameters
     "fmt_tdms": {
@@ -120,6 +128,7 @@ configmap = {
         "flow rate": ("General", "Flow Rate [ul/s]"),
         "flow rate sample": ("General", "Sample Flow Rate [ul/s]"),
         "flow rate sheath": ("General", "Sheath Flow Rate [ul/s]"),
+        "identifier": ("General", "Identifier"),
         "medium": ("General", "Buffer Medium"),
         "module composition": ("Image", "Setup"),
         "software version": ("General", "Software Version"),

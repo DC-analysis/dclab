@@ -22,11 +22,14 @@ def test_basic():
     # Metadata: Unknown key [imaging] 'exposure time'
     # Metadata: Unknown key [imaging] 'flash current'
     # Metadata: Unknown key [setup] 'temperature'
-    # Metadata: fluorescence channel count inconsitent
+    # Metadata: fluorescence channel count inconsistent
     assert len(viol) == 9
     # Metadata: Missing key [setup] identifier'
     # Metadata: Missing section 'online_contour'
-    assert len(aler) == 2
+    # "HDF5: '/image': attribute 'CLASS' should be fixed-length ASCII string",
+    # "HDF5: '/image': attribute 'IMAGE_SUBCLASS' should be fixed-length ...",
+    # "HDF5: '/image': attribute 'IMAGE_VERSION' should be fixed-length ...",
+    assert len(aler) == 5
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     cleanup()

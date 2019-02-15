@@ -1,3 +1,9 @@
+0.9.1
+ - fix: all-zero features were treated as non-existent due to relic
+   from pre-0.3.3 era
+ - enh: add configuration key mapping for tdms-based format to simplify
+   conversion to hdf5-based format (see ``fmt_tdms.naming``)
+ - enh: dclab-verify-dataset checks for image attribute dtype
 0.9.0
  - feat: add new feature: gravitational force, temperature,
    and ambient temperature

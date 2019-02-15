@@ -94,8 +94,7 @@ class RTDCBase(object):
     def __getitem__(self, key):
         if key in self._events:
             data = self._events[key]
-            if not np.all(data == 0):
-                return data
+            return data
         # Try to find the feature in the ancillary features
         # (see ancillaries submodule for more information).
         # These features are cached in `self._ancillaries`.

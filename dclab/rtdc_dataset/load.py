@@ -136,6 +136,14 @@ def check_dataset(path_or_ds):
             if lsc1 != lsc2:
                 msg = "Metadata: fluorescence laser count inconsistent"
                 viol.append(msg)
+        # check for samples per event
+        if "samples per event" in ds.config["fluorescence"]:
+            spe = ds.config["fluorescence"]["samples per event"]
+            for key in ds["trace"].keys():
+                if ds["trace"][key][0].size != spe:
+                    msg = "Metadata: wrong number of samples per event: " \
+                          + "{}".format(key)
+                    viol.append(msg)
     else:
         info.append("Fluorescence: False")
     # search for missing keys (hard)
@@ -182,12 +190,15 @@ def check_dataset(path_or_ds):
         # check meta data of images
         if "image" in ds._events:
             imdat = ds["image"]
-            for key, val in [['CLASS', 'IMAGE'],
-                             ['IMAGE_VERSION', '1.2'],
-                             ['IMAGE_SUBCLASS', 'IMAGE_GRAYSCALE']]:
+            for key, val in [['CLASS', b'IMAGE'],
+                             ['IMAGE_VERSION', b'1.2'],
+                             ['IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE']]:
                 if key not in imdat.attrs:
                     aler.append("HDF5: '/image': missing attribute "
                                 + "'{}'".format(key))
+                elif not isinstance(imdat.attrs[key], bytes):
+                    aler.append("HDF5: '/image': attribute '{}' ".format(key)
+                                + "should be fixed-length ASCII string")
                 elif imdat.attrs[key] != val:
                     aler.append("HDF5: '/image': attribute '{}' ".format(key)
                                 + "should have value '{}'".format(val))

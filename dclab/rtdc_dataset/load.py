@@ -140,9 +140,10 @@ def check_dataset(path_or_ds):
         if "samples per event" in ds.config["fluorescence"]:
             spe = ds.config["fluorescence"]["samples per event"]
             for key in ds["trace"].keys():
-                if ds["trace"][key][0].size != spe:
+                spek = ds["trace"][key][0].size
+                if spek != spe:
                     msg = "Metadata: wrong number of samples per event: " \
-                          + "{}".format(key)
+                          + "{} (expected {}, got {}".format(key, spe, spek)
                     viol.append(msg)
     else:
         info.append("Fluorescence: False")

@@ -250,14 +250,24 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
             h5mode = "a"
         h5obj = h5py.File(path_or_h5file, mode=h5mode)
 
+    # update version
+    # - if it is not already in the hdf5 file (prevent override)
+    # - if it is explicitly given in meta (append to old version string)
+    if ("setup:software version" not in h5obj.attrs
+            or ("setup" in meta and "software version" in meta["setup"])):
+        thisver = "dclab {}".format(version)
+        if "setup" in meta and "software version" in meta["setup"]:
+            oldver = meta["setup"]["software version"]
+            thisver = "{} | {}".format(oldver, thisver)
+        if "setup" not in meta:
+            meta["setup"] = {}
+        meta["setup"]["software version"] = thisver
     # Write meta
     for sec in meta:
         for ck in meta[sec]:
             idk = "{}:{}".format(sec, ck)
             conffunc = dfn.config_funcs[sec][ck]
             h5obj.attrs[idk] = conffunc(meta[sec][ck])
-    # write version
-    h5obj.attrs["setup:software version"] = "dclab {}".format(version)
 
     # Write data
     # create events group

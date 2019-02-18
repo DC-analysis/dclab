@@ -1,9 +1,15 @@
 0.9.1
  - fix: all-zero features were treated as non-existent due to relic
    from pre-0.3.3 era
- - enh: add configuration key mapping for tdms-based format to simplify
-   conversion to hdf5-based format (see ``fmt_tdms.naming``)
+ - fix: correct extraction of start time from tdms format
+   (1h offset from local time and measurement duration offset)
+ - fix: correct extraction of module composition from tdms format
+   (replace "+" with ",")
+ - enh: add configuration key mapping for tdms format to simplify
+   conversion to hdf5 format (see ``fmt_tdms.naming``)
+ - enh: do not add laser info for unused lasers for tdms format
  - enh: dclab-verify-dataset checks for image attribute dtype
+ - enh: include original software version when exporting to rtdc format
 0.9.0
  - feat: add new feature: gravitational force, temperature,
    and ambient temperature

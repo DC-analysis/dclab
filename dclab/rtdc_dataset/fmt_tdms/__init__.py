@@ -6,7 +6,6 @@ from __future__ import division, print_function
 import pathlib
 import time
 
-
 from nptdms import TdmsFile
 import numpy as np
 
@@ -113,10 +112,11 @@ class RTDC_TDMS(RTDCBase):
 
     def _complete_config_tdms(self, residual_config={}):
         # experiment
-        gmtime = time.gmtime(self.path.stat().st_mtime)
+        tse = self.path.stat().st_mtime - self["time"][-1]
+        loct = time.localtime(tse)
         if "date" not in self.config["experiment"]:
             # Date of measurement ('YYYY-MM-DD')
-            datestr = time.strftime("%Y-%m-%d", gmtime)
+            datestr = time.strftime("%Y-%m-%d", loct)
             self.config["experiment"]["date"] = datestr
         if "event count" not in self.config["experiment"]:
             # Number of recorded events
@@ -127,13 +127,16 @@ class RTDC_TDMS(RTDCBase):
             self.config["experiment"]["sample"] = sample
         if "time" not in self.config["experiment"]:
             # Start time of measurement ('HH:MM:SS')
-            timestr = time.strftime("%H:%M:%S", gmtime)
+            timestr = time.strftime("%H:%M:%S", loct)
             self.config["experiment"]["time"] = timestr
         # fluorescence
         if "fluorescence" in self.config:
-            self.config["fluorescence"]["laser 1 lambda"] = 488.
-            self.config["fluorescence"]["laser 2 lambda"] = 561.
-            self.config["fluorescence"]["laser 3 lambda"] = 640.
+            if "laser 1 power" in self.config["fluorescence"]:
+                self.config["fluorescence"]["laser 1 lambda"] = 488.
+            if "laser 2 power" in self.config["fluorescence"]:
+                self.config["fluorescence"]["laser 2 lambda"] = 561.
+            if "laser 3 power" in self.config["fluorescence"]:
+                self.config["fluorescence"]["laser 3 lambda"] = 640.
         # fmt_tdms
         if "video frame offset" not in self.config["fmt_tdms"]:
             self.config["fmt_tdms"]["video frame offset"] = 1
@@ -155,6 +158,12 @@ class RTDC_TDMS(RTDCBase):
         if ("medium" in self.config["setup"] and
                 self.config["setup"]["medium"].lower() == "cellcarrier b"):
             self.config["setup"]["medium"] = "CellCarrierB"
+        # replace "+" with ","
+        if "module composition" in self.config["setup"]:
+            mc = self.config["setup"]["module composition"]
+            if mc.count("+"):
+                mc2 = ", ".join([m.strip() for m in mc.split("+")])
+                self.config["setup"]["module composition"] = mc2
 
     @property
     def hash(self):

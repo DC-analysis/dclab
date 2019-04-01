@@ -36,7 +36,7 @@ for mod_name in install_requires:
     sys.modules[mod_name] = mock.Mock()
 
 # included external libs
-sys.modules["dclab.features._skimage_measure"] = mock.Mock()
+sys.modules["dclab.external.skimage.measure"] = mock.Mock()
 
 # http://www.sphinx-doc.org/en/stable/ext/autodoc.html#confval-autodoc_member_order
 # Order class attributes and functions in separate blocks

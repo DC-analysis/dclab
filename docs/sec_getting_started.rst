@@ -13,7 +13,6 @@ Dclab depends on several other Python packages:
  - `nptdms <http://nptdms.readthedocs.io/en/latest/>`_ (.tdms file support),
  - `numpy <https://docs.scipy.org/doc/numpy/>`_,
  - `scipy <https://docs.scipy.org/doc/scipy/reference/>`_,
- - `statsmodels <http://www.statsmodels.org/stable/index.html>`_.
 
 In addition, dclab contains code from `OpenCV <https://opencv.org/>`_
 (computation of moments) and `scikit-image <http://scikit-image.org/>`_

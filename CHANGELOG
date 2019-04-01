@@ -1,3 +1,5 @@
+0.9.2
+ - ref: move external code to separate submodule
 0.9.1
  - fix: all-zero features were treated as non-existent due to relic
    from pre-0.3.3 era

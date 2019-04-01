@@ -26,8 +26,8 @@ except ImportError:
           "with this setup script will not work:", sys.exc_info())
     extensions = []
 else:
-    extensions = [Extension("dclab.features._skimage_measure._find_contours_cy",
-                            sources=["dclab/features/_skimage_measure/_find_contours_cy.pyx"],
+    extensions = [Extension("dclab.external.skimage._find_contours_cy",
+                            sources=["dclab/external/skimage/_find_contours_cy.pyx"],
                             include_dirs=[np.get_include()]
                             )
                  ]

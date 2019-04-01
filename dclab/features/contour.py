@@ -7,7 +7,7 @@ import numpy as np
 
 # equivalent to
 # from skimage.measure import find_contours
-from ._skimage_measure import find_contours
+from ..external.skimage.measure import find_contours
 
 
 def get_contour(mask):

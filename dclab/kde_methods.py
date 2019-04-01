@@ -6,7 +6,7 @@ from __future__ import division, print_function, unicode_literals
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
 from scipy.stats import gaussian_kde, skew
-from statsmodels.nonparametric.kernel_density import KDEMultivariate
+from external.statsmodels.nonparametric.kernel_density import KDEMultivariate
 
 from .cached import Cache
 

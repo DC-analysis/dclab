@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Statistics computation for RT-DC dataset instances
-"""
+"""Statistics computation for RT-DC dataset instances"""
 from __future__ import division, print_function, unicode_literals
 
 import numpy as np

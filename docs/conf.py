@@ -30,9 +30,6 @@ sys.path.append(op.abspath('extensions'))
 install_requires=["fcswrite",
                   "imageio",
                   "nptdms",
-                  "statsmodels",
-                  "statsmodels.nonparametric",
-                  "statsmodels.nonparametric.kernel_density",
                   ]
 
 for mod_name in install_requires:

@@ -24,8 +24,6 @@ install:
 
   # install
   - "appveyor-retry pip install wheel"
-  # dependencies for statsmodels (not installed automatically)
-  - "appveyor-retry pip install numpy scipy pandas patsy"
   # latest version of fcswrite
   - "appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest

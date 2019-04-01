@@ -51,10 +51,6 @@ setup(
                       "numpy>=1.10.0",
                       "pathlib;python_version<='3.4'",
                       "scipy>=0.13.0",
-                      "statsmodels>=0.5.0",
-                      # Additional dependencies of statsmodels which are not
-                      # installed automatically due to a developer policy:
-                      "pandas>=0.14", "patsy>=0.3.0",
                       ],
     ext_modules = extensions,
     entry_points={

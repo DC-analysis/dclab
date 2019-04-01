@@ -1,5 +1,7 @@
 0.9.2
- - ref: move external code to separate submodule
+ - ref: move skimage code to separate submodule "external"
+ - ref: drop dependency on statsmodels and move relevant code
+   to submodule "external"
 0.9.1
  - fix: all-zero features were treated as non-existent due to relic
    from pre-0.3.3 era

@@ -138,7 +138,7 @@ class RTDCBase(object):
 
     def __repr__(self):
         repre = self.identifier
-        if self.path is not "none":
+        if self.path != "none":
             if sys.version_info[0] == 2:
                 repre += " - file: {}".format(str(self.path).decode("utf-8"))
             else:

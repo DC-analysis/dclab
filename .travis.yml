@@ -5,29 +5,25 @@ matrix:
  include:
  - os: osx
    language: generic
-   env: MAC_PYTHON_VERSION=2.7 TEST="PYTEST"
+   env: MAC_PYTHON_VERSION=2.7
  - os: osx
    language: generic
-   env: MAC_PYTHON_VERSION=3.6 TEST="PYTEST"
+   env: MAC_PYTHON_VERSION=3.6
  - os: osx
    language: generic
-   env: MAC_PYTHON_VERSION=3.7 TEST="PYTEST"
+   env: MAC_PYTHON_VERSION=3.7
  - os: linux
    language: python
    python: 2.7
-   env: TEST="PYTEST"
  - os: linux
    language: python
    python: 3.5
-   env: TEST="PYTEST"
  - os: linux
    language: python
    python: 3.6
-   env: TEST="PYTEST"
  - os: linux
    language: python
    python: 3.6
-   env: TEST="FLAKE8"
 before_install:
 # install other dependencies
 - source ./.travis/${TRAVIS_OS_NAME}_setup_python.sh $MAC_PYTHON_VERSION
@@ -45,15 +41,12 @@ install:
 - travis_retry pip install codecov coverage flake8
 - pip freeze
 script:
-- if [ "${TEST}" == "PYTEST" ]; then
-       coverage run --source=dclab setup.py test;
-       coverage report -m;
-       codecov;
-  else
-       flake8 dclab;
-       flake8 examples;
-       flake8 tests;
-  fi;
+- coverage run --source=dclab setup.py test
+- coverage report -m
+- codecov
+- flake8 dclab
+- flake8 examples
+- flake8 tests
 after_success:
 - codecov
 before_deploy:

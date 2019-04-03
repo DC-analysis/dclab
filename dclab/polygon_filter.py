@@ -277,9 +277,9 @@ class PolygonFilter(object):
                 and y <= poly[:, 1].max() and y > poly[:, 1].min()):
             # The point is within the coarse bounding box.
             p1x, p1y = poly[0]  # point i in contour
-            for ii in range(n):  # n+1 to also cover (n, 0) (circular)
-                p2x, p2y = poly[(ii+1) % n]  # point i+1 in contour (circular)
-                # Fine bounding-ray exclusion.
+            for ii in range(n):  # also covers (n-1, 0) (circular)
+                p2x, p2y = poly[(ii+1) % n]  # point ii+1 in contour (circular)
+                # Edge-wise fine bounding-ray exclusion.
                 # Determine whether point is in the current ray,
                 # defined by the y-range of p1 and p2 and whether
                 # it is left of p1 and p2.
@@ -287,14 +287,15 @@ class PolygonFilter(object):
                         and x <= max(p1x, p2x)):  # left of p1 and p2
                     # Note that always p1y!=p2y due to the above test.
                     # Only Compute the x-coordinate of the intersection
-                    # between line p1-p2 and the horizontal ray, if x is
-                    # not already known to be left of it (p1x==p2x in
-                    # combination with the above test).
+                    # between line p1-p2 and the horizontal ray,
+                    # ((y-p1y)*(p2x-p1x)/(p2y-p1y) + p1x),
+                    # if x is not already known to be left of it
+                    # (p1x==p2x in combination with x<=max(p1x, p2x) above).
                     if p1x == p2x or x <= (y-p1y)*(p2x-p1x)/(p2y-p1y) + p1x:
                         # Toggle `inside` if the ray intersects
                         # with the current edge.
                         inside = not inside
-                # Move on to the next point.
+                # Move on to the next edge of the polygon.
                 p1x, p1y = p2x, p2y
 
         return inside

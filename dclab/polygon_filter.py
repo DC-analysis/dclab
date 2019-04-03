@@ -197,8 +197,8 @@ class PolygonFilter(object):
     def filter(self, datax, datay):
         """Filter a set of datax and datay according to `self.points`"""
         f = np.ones(datax.shape, dtype=bool)
-        for i, (x, y) in enumerate(zip(datax, datay)):
-            f[i] = PolygonFilter.point_in_poly(x, y, self.points)
+        for i, p in enumerate(zip(datax, datay)):
+            f[i] = PolygonFilter.point_in_poly(p, self.points)
 
         if self.inverted:
             np.invert(f, f)
@@ -243,35 +243,59 @@ class PolygonFilter(object):
             return True
 
     @staticmethod
-    def point_in_poly(x, y, poly):
+    def point_in_poly(p, poly):
         """Determine whether a point is within a polygon area
+
+        Uses the ray casting algorithm.
 
         Parameters
         ----------
-        x, y: float
-            The coordinates of the point
-        poly: list-like
-            The polygon (`PolygonFilter.points`)
+        p: float
+            Coordinates of the point
+        poly: array_like of shape (N, 2)
+            Polygon (`PolygonFilter.points`)
 
         Returns
         -------
         inside: bool
             `True`, if point is inside.
-        """
-        n = len(poly)
-        inside = False
 
-        p1x, p1y = poly[0]
-        for i in range(n+1):
-            p2x, p2y = poly[i % n]
-            if y > min(p1y, p2y):
-                if y <= max(p1y, p2y):
-                    if x <= max(p1x, p2x):
-                        if p1y != p2y:
-                            xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
-                        if p1x == p2x or x <= xints:
-                            inside = not inside
-            p1x, p1y = p2x, p2y
+        Notes
+        -----
+        If `p` lies on a side of the polygon, it is defined as
+
+        - "inside" if it is on the top or right
+        - "outside" if it is on the lower or left
+        """
+        poly = np.array(poly)
+        n = poly.shape[0]
+        inside = False
+        x, y = p
+
+        # Coarse bounding box exclusion:
+        if (x <= poly[:, 0].max() and x > poly[:, 0].min()
+                and y <= poly[:, 1].max() and y > poly[:, 1].min()):
+            # The point is within the coarse bounding box.
+            p1x, p1y = poly[0]  # point i in contour
+            for ii in range(n):  # n+1 to also cover (n, 0) (circular)
+                p2x, p2y = poly[(ii+1) % n]  # point i+1 in contour (circular)
+                # Fine bounding-ray exclusion.
+                # Determine whether point is in the current ray,
+                # defined by the y-range of p1 and p2 and whether
+                # it is left of p1 and p2.
+                if (y > min(p1y, p2y) and y <= max(p1y, p2y)  # in y-range
+                        and x <= max(p1x, p2x)):  # left of p1 and p2
+                    # Note that always p1y!=p2y due to the above test.
+                    # Only Compute the x-coordinate of the intersection
+                    # between line p1-p2 and the horizontal ray, if x is
+                    # not already known to be left of it (p1x==p2x in
+                    # combination with the above test).
+                    if p1x == p2x or x <= (y-p1y)*(p2x-p1x)/(p2y-p1y) + p1x:
+                        # Toggle `inside` if the ray intersects
+                        # with the current edge.
+                        inside = not inside
+                # Move on to the next point.
+                p1x, p1y = p2x, p2y
 
         return inside
 

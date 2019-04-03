@@ -11,7 +11,6 @@ from .cached import Cache
 from .external.statsmodels.nonparametric.kernel_density import KDEMultivariate
 
 
-
 def bin_num_doane(a):
     """Compute number of bins based on Doane's formula"""
     bad = np.isnan(a) | np.isinf(a)

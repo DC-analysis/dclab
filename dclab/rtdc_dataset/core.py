@@ -325,8 +325,10 @@ class RTDCBase(object):
         bad = kde_methods.get_bad_vals(xs, ys)
         xc = xs[~bad]
         yc = ys[~bad]
+
         xlin = np.arange(xc.min(), xc.max(), xacc)
         ylin = np.arange(yc.min(), yc.max(), yacc)
+
         xmesh, ymesh = np.meshgrid(xlin, ylin)
 
         kde_fct = kde_methods.methods[kde_type]
@@ -356,7 +358,7 @@ class RTDCBase(object):
             Identifier for X axis (e.g. "area_um", "aspect", "deform")
         yax: str
             Identifier for Y axis
-        positions: list of points
+        positions: list of two 1d ndarrays or ndarray of shape (2, N)
             The positions where the KDE will be computed. Note that
             the KDE estimate is computed from the the points that
             are set in `self.filter.all`.
@@ -394,8 +396,8 @@ class RTDCBase(object):
             posx = None
             posy = None
         else:
-            posx = positions[0]
-            posy = positions[1]
+            posx = self._apply_scale(positions[0], xscale, xax)
+            posy = self._apply_scale(positions[1], yscale, yax)
 
         kde_fct = kde_methods.methods[kde_type]
         if len(x):

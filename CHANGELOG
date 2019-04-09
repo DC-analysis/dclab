@@ -1,4 +1,6 @@
 0.9.2
+ - fix: `positions` keyword argument in `RTDCBase.get_kde_scatter`
+   was not correctly scaled in the logarithmic case
  - ref: cleanup and document PolygonFilter.point_in_poly
  - ref: move skimage code to separate submodule "external"
  - ref: drop dependency on statsmodels and move relevant code

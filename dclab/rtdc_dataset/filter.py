@@ -154,7 +154,7 @@ class Filter(object):
             self.all[:] *= self.manual
             self.all[:] *= self.polygon
 
-            # Filter with configuration keyword argument "Limit Events".
+            # Filter with configuration keyword argument "limit events".
             # This additional step limits the total number of events in
             # self.all.
             if cfg_cur["limit events"] > 0:

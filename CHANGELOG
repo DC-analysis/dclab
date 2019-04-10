@@ -1,6 +1,8 @@
 0.10.0
  - BREAKING CHANGE: Change np.meshgrid indexing in
    `RTDCBase.get_kde_contour` from "xy" to "ij"
+ - feat: new submodule `kde_contours` for computing kernel density
+   contour lines at specific data percentiles
  - fix: range for contour KDE computation did not always contain end
    value (`RTDCBase.get_kde_contour`)
  - fix: `positions` keyword argument in `RTDCBase.get_kde_scatter`

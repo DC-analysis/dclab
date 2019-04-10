@@ -9,6 +9,8 @@ from __future__ import division, print_function, unicode_literals
 from . import definitions as dfn  # noqa: F401
 from . import features  # noqa: F401
 from . import isoelastics  # noqa: F401
+from . import kde_contours  # noqa: F401
+from . import kde_methods  # noqa: F401
 from .polygon_filter import PolygonFilter  # noqa: F401
 from . import rtdc_dataset  # noqa: F401
 from .rtdc_dataset import new_dataset  # noqa: F401

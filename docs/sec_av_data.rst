@@ -126,12 +126,15 @@ Isoelasticity lines are available via the
     plt.show()
 
 
-Contour plot
-------------
+Contour plot with percentiles
+-----------------------------
 Contour plots are commonly used to compare the kernel density
 between measurements. Kernel density estimates (on a grid) for contour
 plots can be computed with the function
 :func:`RTDCBase.get_kde_contour <dclab.rtdc_dataset.RTDCBase.get_kde_contour>`.
+In addition, it is possible to compute contours at data
+`percentiles <https://en.wikipedia.org/wiki/Percentile>`_
+using :func:`dclab.kde_contours.get_quantile_levels`.
 
 .. plot::
 
@@ -140,11 +143,19 @@ plots can be computed with the function
     ds = dclab.new_dataset("data/example.rtdc")
     X, Y, Z = ds.get_kde_contour(xax="area_um", yax="deform")
     Z /= Z.max()
+    quantiles = [.1, .5, .75]
+    levels = dclab.kde_contours.get_quantile_levels(density=Z,
+                                                    x=X,
+                                                    y=Y,
+                                                    xp=ds["area_um"],
+                                                    yp=ds["deform"],
+                                                    q=quantiles,
+                                                    )
 
     ax = plt.subplot(111, title="contour lines")
     sc = ax.scatter(ds["area_um"], ds["deform"], c="lightgray", marker=".", zorder=1)
     cn = ax.contour(X, Y, Z,
-                    levels=[.03, .2, .75],
+                    levels=levels,
                     linestyles=["--", "-", "-"],
                     colors=["blue", "blue", "darkblue"],
                     linewidths=[2, 2, 3],
@@ -154,9 +165,15 @@ plots can be computed with the function
     ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
     ax.set_xlim(0, 150)
     ax.set_ylim(0.01, 0.12)
-    plt.clabel(cn, fmt="%.2f")
+    # label contour lines with percentiles
+    fmt = {}
+    for l, q in zip(levels, quantiles):
+        fmt[l] = "{:.0f}th".format(q*100)
+    plt.clabel(cn, fmt=fmt)
     plt.show()
 
+Note that you may compute (and plot) the contour lines directly
+yourself using the function :func:`dclab.kde_contours.find_contours_level`.
 
 
 Statistics

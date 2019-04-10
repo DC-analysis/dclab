@@ -198,6 +198,17 @@ isoelastics
    :undoc-members:
 
 
+
+.. _sec_ref_kde_contours:
+
+kde_contours
+------------
+
+.. automodule:: dclab.kde_contours
+   :members:
+   :undoc-members:
+
+
 .. _sec_ref_kde_methods:
 
 kde_methods

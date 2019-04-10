@@ -104,7 +104,7 @@ def test_kde_nofilt():
     assert sc.shape[0] == 100
     # This will fail if the default contour accuracy is changed
     # in `get_kde_contour`.
-    assert cc[0].shape == (41, 43)
+    assert cc[0].shape == (43, 41)
 
 
 def test_kde_positions():

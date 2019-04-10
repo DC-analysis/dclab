@@ -50,7 +50,7 @@ setup(
                       "nptdms",           # required by: tdms format
                       "numpy>=1.10.0",
                       "pathlib;python_version<='3.4'",
-                      "scipy>=0.13.0",
+                      "scipy>=0.14.0",
                       ],
     ext_modules = extensions,
     entry_points={

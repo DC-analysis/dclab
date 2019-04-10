@@ -329,7 +329,7 @@ class RTDCBase(object):
         xlin = np.arange(xc.min(), xc.max(), xacc)
         ylin = np.arange(yc.min(), yc.max(), yacc)
 
-        xmesh, ymesh = np.meshgrid(xlin, ylin)
+        xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
 
         kde_fct = kde_methods.methods[kde_type]
         if len(x):

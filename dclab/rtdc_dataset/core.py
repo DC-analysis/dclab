@@ -326,8 +326,11 @@ class RTDCBase(object):
         xc = xs[~bad]
         yc = ys[~bad]
 
-        xlin = np.arange(xc.min(), xc.max(), xacc)
-        ylin = np.arange(yc.min(), yc.max(), yacc)
+        xnum = int(np.ceil((xc.max() - xc.min()) / xacc))
+        ynum = int(np.ceil((yc.max() - yc.min()) / yacc))
+
+        xlin = np.linspace(xc.min(), xc.max(), xnum, endpoint=True)
+        ylin = np.linspace(yc.min(), yc.max(), ynum, endpoint=True)
 
         xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
 

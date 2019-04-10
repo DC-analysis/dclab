@@ -1,6 +1,8 @@
 0.10.0
  - BREAKING CHANGE: Change np.meshgrid indexing in
-   `RTDCBase.get_kde_contour` from "xy" to "ij".
+   `RTDCBase.get_kde_contour` from "xy" to "ij"
+ - fix: range for contour KDE computation did not always contain end
+   value (`RTDCBase.get_kde_contour`)
  - fix: `positions` keyword argument in `RTDCBase.get_kde_scatter`
    was not correctly scaled in the logarithmic case
  - ref: cleanup and document PolygonFilter.point_in_poly

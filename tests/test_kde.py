@@ -68,7 +68,7 @@ def test_kde_log_scatter_points():
     a = ds.get_kde_scatter(yscale="log")
     b = ds.get_kde_scatter(yscale="log",
                            positions=[ds["area_um"], ds["deform"]])
-    
+
     assert np.all(a == b)
 
 

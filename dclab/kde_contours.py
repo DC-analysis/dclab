@@ -1,3 +1,5 @@
+from __future__ import division
+
 import numpy as np
 
 from .external.skimage.measure import find_contours

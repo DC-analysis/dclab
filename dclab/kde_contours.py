@@ -6,6 +6,8 @@ from .external.skimage.measure import find_contours
 from .polygon_filter import PolygonFilter
 import scipy.interpolate as spint
 
+from .kde_methods import get_bad_vals
+
 
 def find_contours_level(density, x, y, level, closed=False):
     """Find iso-valued density contours for a given level value
@@ -98,6 +100,9 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
     level: float
         Contours level corresponding to the given quantile
 
+    Notes
+    -----
+    NaN-values events in `xp` and `yp` are ignored.
     """
     # xy coordinates
     if len(x.shape) == 2:
@@ -106,6 +111,11 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
     if len(y.shape) == 2:
         assert np.all(y[0, :] == y[1, :])
         y = y[0, :]
+
+    # remove bad events
+    bad = get_bad_vals(xp, yp)
+    xp = xp[~bad]
+    yp = yp[~bad]
 
     # Normalize interpolation data such that the spacing for
     # x and y is about the same during interpolation.
@@ -167,6 +177,7 @@ def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
     -----
     A much more faster method (using interpolation) is implemented in
     :func:`get_quantile_levels`.
+    NaN-values events in `xp` and `yp` are ignored.
 
     See Also
     --------
@@ -174,6 +185,11 @@ def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
     """
     if quantile >= 1 or quantile <= 0:
         raise ValueError("Invalid value for `quantile`: {}".format(quantile))
+
+    # remove bad events
+    bad = get_bad_vals(xp, yp)
+    xp = xp[~bad]
+    yp = yp[~bad]
 
     # initial guess
     level = quantile

@@ -1,3 +1,6 @@
+0.10.1
+ - fix: support nan-valued events when computing quantile levels
+   in submodule `kde_contours`
 0.10.0
  - BREAKING CHANGE: Change np.meshgrid indexing in
    `RTDCBase.get_kde_contour` from "xy" to "ij"

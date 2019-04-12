@@ -146,6 +146,31 @@ def test_hdf5():
     shutil.rmtree(edest, ignore_errors=True)
 
 
+def test_hdf5_contour_image_trace():
+    N = 65
+    keys = ["contour", "image", "trace"]
+    ddict = example_data_dict(size=N, keys=keys)
+
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
+    ds1.export.hdf5(f1, keys, filtered=False)
+    ds2 = dclab.new_dataset(f1)
+
+    for ii in range(N):
+        assert np.all(ds1["image"][ii] == ds2["image"][ii])
+        assert np.all(ds1["contour"][ii] == ds2["contour"][ii])
+
+    for key in dfn.FLUOR_TRACES:
+        assert np.all(ds1["trace"][key] == ds2["trace"][key])
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
 def test_hdf5_filtered():
     N = 10
     keys = ["area_um", "image"]
@@ -174,26 +199,27 @@ def test_hdf5_filtered():
     shutil.rmtree(edest, ignore_errors=True)
 
 
-def test_hdf5_contour_image_trace():
-    N = 65
-    keys = ["contour", "image", "trace"]
+def test_hdf5_filtered_index():
+    """Make sure that exported index is always re-enumerated"""
+    N = 10
+    keys = ["area_um", "deform"]
     ddict = example_data_dict(size=N, keys=keys)
+    ddict["index"] = np.arange(1, N+1)
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
     ds1.config["experiment"]["run index"] = 1
+    ds1.filter.manual[2] = False
+    ds1.apply_filter()
 
     edest = tempfile.mkdtemp()
-    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
-    ds1.export.hdf5(f1, keys, filtered=False)
+    f1 = join(edest, "dclab_test_export_hdf5_filtered.rtdc")
+    ds1.export.hdf5(f1, keys)
+
     ds2 = dclab.new_dataset(f1)
 
-    for ii in range(N):
-        assert np.all(ds1["image"][ii] == ds2["image"][ii])
-        assert np.all(ds1["contour"][ii] == ds2["contour"][ii])
-
-    for key in dfn.FLUOR_TRACES:
-        assert np.all(ds1["trace"][key] == ds2["trace"][key])
+    assert len(ds2) == N - 1
+    assert np.all(ds2["index"] == np.arange(1, N))
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)

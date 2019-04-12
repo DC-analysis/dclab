@@ -184,11 +184,6 @@ class Export(object):
                 continue
             if sec in self.rtdc_ds.config:
                 meta[sec] = self.rtdc_ds.config[sec].copy()
-        # update number of events
-        if filtered:
-            meta["experiment"]["event count"] = np.sum(self.rtdc_ds.filter.all)
-        else:
-            meta["experiment"]["event count"] = self.rtdc_ds.filter.all.size
 
         if filtered:
             filtarr = self.rtdc_ds.filter.all
@@ -196,6 +191,9 @@ class Export(object):
         else:
             nev = len(self.rtdc_ds)
             filtarr = np.ones(nev, dtype=bool)
+
+        # update number of events
+        meta["experiment"]["event count"] = nev
 
         # write meta data
         with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
@@ -254,6 +252,11 @@ class Export(object):
                               data={"trace": {tr: trdat}},
                               mode="append",
                               compression=compression)
+                elif feat == "index" and filtered:
+                    # re-enumerate data index feature (filtered data)
+                    write(h5obj,
+                          data={"index": np.arange(1, nev+1)},
+                          mode="append")
                 else:
                     write(h5obj,
                           data={feat: self.rtdc_ds[feat][filtarr]},

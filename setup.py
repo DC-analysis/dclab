@@ -32,6 +32,7 @@ else:
                             )
                  ]
 
+
 setup(
     name=name,
     author=author,
@@ -53,6 +54,8 @@ setup(
                       "scipy>=0.14.0",
                       ],
     ext_modules = extensions,
+    setup_requires=['cython', 'numpy', 'pytest-runner'],
+    tests_require=["pytest", "urllib3"],
     entry_points={
        "console_scripts": [
            "dclab-verify-dataset = dclab.cli:verify_dataset",
@@ -60,8 +63,6 @@ setup(
             ],
        },
     keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],
-    setup_requires=['cython', 'numpy', 'pytest-runner'],
-    tests_require=["pytest", "urllib3"],
     classifiers= ['Operating System :: OS Independent',
                   'Programming Language :: Python :: 2.7',
                   'Programming Language :: Python :: 3.6',

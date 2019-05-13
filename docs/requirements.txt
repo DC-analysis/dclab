@@ -7,6 +7,5 @@ sphinxcontrib.bibtex
 numpy
 matplotlib
 h5py
-pathlib
 ipython
 scipy

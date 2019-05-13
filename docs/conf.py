@@ -21,7 +21,7 @@ import os.path as op
 import sys
 # include parent directory
 pdir = op.dirname(op.dirname(op.abspath(__file__)))
-# include extenstions
+# include extensions
 sys.path.append(op.abspath('extensions'))
 
 # http://www.sphinx-doc.org/en/stable/ext/autodoc.html#confval-autodoc_member_order

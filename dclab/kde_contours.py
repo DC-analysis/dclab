@@ -17,12 +17,12 @@ def find_contours_level(density, x, y, level, closed=False):
     density: 2d ndarray of shape (M, N)
         Kernel density estimate for which to compute the contours
     x: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        X-values corresponding to `kde`
+        X-values corresponding to `density`
     y: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        Y-values corresponding to `kde`
+        Y-values corresponding to `density`
     level: float between 0 and 1
-        Value along which to find contours in `kde` relative
-        to its maximum kde
+        Value along which to find contours in `density` relative
+        to its maximum
 
     Returns
     -------
@@ -81,15 +81,15 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
     density: 2d ndarray of shape (M, N)
         Kernel density estimate for which to compute the contours
     x: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        X-values corresponding to `kde`
+        X-values corresponding to `density`
     y: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        Y-values corresponding to `kde`
+        Y-values corresponding to `density`
     xp: 1d ndarray of size D
         Event x-data from which to compute the quantile
     yp: 1d ndarray of size D
         Event y-data from which to compute the quantile
     q: array_like or float between 0 and 1
-        Quantile along which to find contours in `kde` relative
+        Quantile along which to find contours in `density` relative
         to its maximum
     normalize: bool
         Whether output levels should be normalized to the maximum
@@ -152,15 +152,15 @@ def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
     density: 2d ndarray of shape (M, N)
         Kernel density estimate for which to compute the contours
     x: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        X-values corresponding to `kde`
+        X-values corresponding to `density`
     y: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        Y-values corresponding to `kde`
+        Y-values corresponding to `density`
     xp: 1d ndarray of size D
         Event x-data from which to compute the quantile
     yp: 1d ndarray of size D
         Event y-data from which to compute the quantile
     quantile: float between 0 and 1
-        Quantile along which to find contours in `kde` relative
+        Quantile along which to find contours in `density` relative
         to its maximum
     acc: float
         Desired absolute accuracy (stopping criterion) of the

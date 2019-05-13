@@ -60,7 +60,7 @@ setup(
             ],
        },
     keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],
-    setup_requires=['cython', 'pytest-runner'],
+    setup_requires=['cython', 'numpy', 'pytest-runner'],
     tests_require=["pytest", "urllib3"],
     classifiers= ['Operating System :: OS Independent',
                   'Programming Language :: Python :: 2.7',

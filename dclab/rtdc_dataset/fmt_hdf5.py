@@ -19,6 +19,14 @@ from .util import hashobj, hashfile
 #: rtdc files exported with dclab prior to this version are not supported
 MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 
+#: dictionary of defective features, defined by HDF5 attributes;
+#: if a value matches the given HDF5 attribute, the feature is
+#: considered defective
+DEFECTIVE_FEATURES = {
+    # feature: [HDF5_attribute, matching_value]
+    "aspect": ["setup:software version", "ShapeIn 2.0.6"],
+    }
+
 
 class OldFormatNotSupportedError(BaseException):
     pass
@@ -32,9 +40,14 @@ class H5Events(object):
     def __init__(self, h5path):
         self.path = h5path
         self._h5 = h5py.File(h5path, mode="r")
+        self._features = sorted(self._h5["events"].keys())
 
     def __contains__(self, key):
-        return key in self.keys()
+        if self._is_defective_feature(key):
+            contained = False
+        else:
+            contained = key in self._features
+        return contained
 
     def __getitem__(self, key):
         # user-level checking is done in core.py
@@ -47,19 +60,36 @@ class H5Events(object):
         elif key == "mask":
             return H5MaskEvent(data)
         else:
-            return data[...]
+            return data[:]
+
+    def _is_defective_feature(self, key):
+        """Whether or not the stored feature is defective"""
+        defective = False
+        if key in self._features:
+            # feature exists in the HDF5 file
+            if key in DEFECTIVE_FEATURES:
+                # workaround machinery for sorting out defective features
+                attr, value = DEFECTIVE_FEATURES[key]
+                if attr in self._h5.attrs:
+                    defective = self._h5.attrs[attr] == value
+        return defective
 
     def keys(self):
-        return sorted(list(self._h5["events"].keys()))
+        features = []
+        for key in self._features:
+            # check for defective features
+            if not self._is_defective_feature(key):
+                features.append(key)
+        return features
 
 
 class H5ContourEvent(object):
     def __init__(self, h5group):
         self.h5group = h5group
-        self.identifier = h5group["0"][...]
+        self.identifier = h5group["0"][:]
 
     def __getitem__(self, key):
-        return self.h5group[str(key)][...]
+        return self.h5group[str(key)][:]
 
     def __iter__(self):
         for idx in range(len(self)):

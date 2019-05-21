@@ -1,5 +1,7 @@
 0.10.4
- - enh: ignore defective feature "aspect" from ShapeIn 2.0.6
+ - enh: ignore defective feature "aspect" from Shape-In 2.0.6
+ - enh: support loading HDF5 data using the 'with' statement
+   (e.g. `with dclab.new_dataset(rtdc_path) as ds:`)
 0.10.3
  - fix: add numpy build dependency (setup_requires)
 0.10.2

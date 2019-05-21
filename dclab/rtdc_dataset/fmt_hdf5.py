@@ -24,6 +24,8 @@ MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 #: considered defective
 DEFECTIVE_FEATURES = {
     # feature: [HDF5_attribute, matching_value]
+    # In Shape-In 2.0.6, there was a wrong variable cast for the
+    # feature "aspect".
     "aspect": ["setup:software version", "ShapeIn 2.0.6"],
     }
 
@@ -169,6 +171,13 @@ class RTDC_HDF5(RTDCBase):
 
         # Set up filtering
         self._init_filters()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        # close the HDF5 file
+        self._events._h5.close()
 
     @staticmethod
     def parse_config(h5path):

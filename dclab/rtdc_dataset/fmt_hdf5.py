@@ -26,7 +26,9 @@ DEFECTIVE_FEATURES = {
     # feature: [HDF5_attribute, matching_value]
     # In Shape-In 2.0.6, there was a wrong variable cast for the
     # feature "aspect".
-    "aspect": ["setup:software version", "ShapeIn 2.0.6"],
+    "aspect": [["setup:software version", "ShapeIn 2.0.6"],
+               ["setup:software version", "ShapeIn 2.0.7"],
+               ]
     }
 
 
@@ -71,9 +73,11 @@ class H5Events(object):
             # feature exists in the HDF5 file
             if key in DEFECTIVE_FEATURES:
                 # workaround machinery for sorting out defective features
-                attr, value = DEFECTIVE_FEATURES[key]
-                if attr in self._h5.attrs:
-                    defective = self._h5.attrs[attr] == value
+                for attr, value in DEFECTIVE_FEATURES[key]:
+                    if attr in self._h5.attrs:
+                        defective = self._h5.attrs[attr] == value
+                    if defective:
+                        break
         return defective
 
     def keys(self):

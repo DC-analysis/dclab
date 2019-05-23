@@ -1,3 +1,5 @@
+0.10.5
+ - setup: migrate to PEP 517 (pyproject.toml)
 0.10.4
  - enh: ignore defective feature "aspect" from Shape-In 2.0.6 and 2.0.7
  - enh: support loading HDF5 data using the 'with' statement

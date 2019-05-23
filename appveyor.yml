@@ -23,7 +23,7 @@ install:
   - "python --version"
 
   # install
-  - "appveyor-retry pip install --user -U wheel pip"
+  - "appveyor-retry pip install wheel"
   # latest version of fcswrite
   - "appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest

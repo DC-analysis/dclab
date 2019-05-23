@@ -1,6 +1,7 @@
 include CHANGELOG
 include LICENSE
 include README.rst
+include pyproject.toml
 recursive-include dclab *.txt *.md
 recursive-include docs *.py *.md *.txt *.rst *.bib *.gif *.jpg
 recursive-include examples *.py *.jpg *.npy *.npz

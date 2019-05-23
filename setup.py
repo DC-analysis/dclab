@@ -4,6 +4,9 @@ from os.path import exists, dirname, realpath
 from setuptools import setup, Extension, find_packages
 import sys
 
+# numpy and cython are installed via pyproject.toml [build-system]
+import numpy as np
+
 author = u"Paul Müller"
 authors = [author]
 description = 'Library for real-time deformability cytometry (RT-DC)'
@@ -16,21 +19,6 @@ try:
     from _version import version  # @UnresolvedImport
 except:
     version = "unknown"
-
-
-# We don't need to cythonize if a .whl package is available.
-try:
-    import numpy as np
-except ImportError:
-    print("NumPy not available. Building extensions "+
-          "with this setup script will not work:", sys.exc_info())
-    extensions = []
-else:
-    extensions = [Extension("dclab.external.skimage._find_contours_cy",
-                            sources=["dclab/external/skimage/_find_contours_cy.pyx"],
-                            include_dirs=[np.get_include()]
-                            )
-                 ]
 
 
 setup(
@@ -53,8 +41,13 @@ setup(
                       "pathlib;python_version<='3.4'",
                       "scipy>=0.14.0",
                       ],
-    ext_modules = extensions,
-    setup_requires=['cython', 'numpy', 'pytest-runner'],
+    ext_modules = [Extension("dclab.external.skimage._find_contours_cy",
+                        sources=["dclab/external/skimage/_find_contours_cy.pyx"],
+                        include_dirs=[np.get_include()]
+                        )
+                   ],
+    # not to be confused with definitions in pyproject.toml [build-system]
+    setup_requires=["pytest-runner"],
     tests_require=["pytest", "urllib3"],
     entry_points={
        "console_scripts": [

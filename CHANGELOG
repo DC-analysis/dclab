@@ -1,3 +1,5 @@
+0.11.0
+ - feat: compute contours lazily (#61)
 0.10.5
  - setup: migrate to PEP 517 (pyproject.toml)
 0.10.4

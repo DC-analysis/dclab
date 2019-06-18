@@ -2,13 +2,49 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import time
+
 import numpy as np
 
+import dclab
 from dclab import new_dataset
-from dclab.features.contour import get_contour
+from dclab.features.contour import get_contour, get_contour_lazily
 from dclab.features.volume import get_volume
 
 from helper_methods import retrieve_data, cleanup
+
+
+def test_lazy_contour_basic():
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    masks = ds["mask"][:]
+    cont1 = get_contour_lazily(masks)
+    cont2 = get_contour(masks)
+    for ii in range(len(ds)):
+        assert np.all(cont1[ii] == cont2[ii])
+    cleanup()
+
+
+def test_lazy_contour_timing():
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    masks = ds["mask"][:]
+    t0 = time.time()
+    get_contour_lazily(masks)
+    t1 = time.time()
+    get_contour(masks)
+    t2 = time.time()
+    assert (t2-t1) > 100*(t1-t0)
+    cleanup()
+
+
+def test_lazy_contour_type():
+    ds1 = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    c1 = ds1["contour"]
+    # force computation of contour data
+    ds1._events._features.remove("contour")
+    c2 = ds1["contour"]
+    assert isinstance(c1, dclab.rtdc_dataset.fmt_hdf5.H5ContourEvent)
+    assert isinstance(c2, dclab.features.contour.LazyContourList)
+    cleanup()
 
 
 def test_simple_contour():

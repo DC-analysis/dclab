@@ -7,7 +7,7 @@ from .ancillary_feature import AncillaryFeature
 
 
 def compute_contour(mm):
-    cont = features.contour.get_contour(mask=mm["mask"])
+    cont = features.contour.get_contour_lazily(mask=mm["mask"])
     return cont
 
 

@@ -26,13 +26,16 @@ def test_lazy_contour_basic():
 
 def test_lazy_contour_timing():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    wait = .001
     masks = ds["mask"][:]
     t0 = time.time()
     get_contour_lazily(masks)
+    time.sleep(wait)
     t1 = time.time()
     get_contour(masks)
+    time.sleep(wait)
     t2 = time.time()
-    assert (t2-t1) > 100*(t1-t0)
+    assert t2-t1-wait > 10*(t1-t0-wait)
     cleanup()
 
 

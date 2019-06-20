@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import sys
 import time
 
 import numpy as np
+import pytest
 
 import dclab
 from dclab import new_dataset
@@ -24,18 +26,17 @@ def test_lazy_contour_basic():
     cleanup()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6),
+                    reason="requires python3.6 or higher")
 def test_lazy_contour_timing():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
-    wait = .001
     masks = ds["mask"][:]
     t0 = time.time()
     get_contour_lazily(masks)
-    time.sleep(wait)
     t1 = time.time()
     get_contour(masks)
-    time.sleep(wait)
     t2 = time.time()
-    assert t2-t1-wait > 10*(t1-t0-wait)
+    assert t2-t1 > 10*(t1-t0)
     cleanup()
 
 

@@ -15,8 +15,8 @@ or derived from other RT-DC datasets
 (:class:`RTDC_Hierarchy <dclab.rtdc_dataset.RTDC_Hierarchy>`).
 
 
-Loading data from disk
-======================
+Basic usage
+===========
 The convenience function :func:`dclab.new_dataset` takes care of determining
 the data file format (tdms or hdf5) and returns the corresponding derived
 class.
@@ -107,3 +107,79 @@ Here are a few useful functionalities for scripting with dclab.
 
     # determine the identifier of the hierarchy parent
     In [22]: child.config["filtering"]["hierarchy parent"]
+
+    
+
+Statistics
+==========
+The :ref:`sec_ref_statistics` module comes with a predefined set of
+methods to compute simple feature statistics. 
+
+
+.. ipython::
+
+    In [1]: import dclab
+
+    In [2]: ds = dclab.new_dataset("data/example.rtdc")
+
+    In [3]: stats = dclab.statistics.get_statistics(ds,
+       ...:                                         features=["deform", "aspect"],
+       ...:                                         methods=["Mode", "Mean", "SD"])
+       ...:
+
+    In [4]: dict(zip(*stats))
+
+
+Note that the statistics take into account the applied filters:
+
+.. ipython::
+
+    In [5]: ds.config["filtering"]["deform max"] = .1
+
+    In [6]: ds.apply_filter()
+
+    In [7]: stats2 = dclab.statistics.get_statistics(ds,
+       ...:                                          features=["deform", "aspect"],
+       ...:                                          methods=["Mode", "Mean", "SD"])
+       ...:
+
+    In [8]: dict(zip(*stats2))
+
+
+These are the available statistics methods:
+
+.. ipython::
+
+    In [9]: dclab.statistics.Statistics.available_methods.keys()
+
+
+Export
+======
+The :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class has the attribute
+:attr:`RTDCBase.export <dclab.rtdc_dataset.RTDCBase.export>`
+which allows to export event data to several data file formats. See
+:ref:`sec_ref_rtdc_export` for more information.
+
+.. ipython::
+
+    In [9]: ds.export.tsv(path="export_example.tsv",
+       ...:               features=["area_um", "deform"],
+       ...:               filtered=True,
+       ...:               override=True)
+       ...:
+
+    In [9]: ds.export.hdf5(path="export_example.rtdc",
+       ...:                features=["area_um", "aspect", "deform"],
+       ...:                filtered=True,
+       ...:                override=True)
+       ...:
+
+Note that data exported as HDF5 files can be loaded with dclab
+(reproducing the previously computed statistics - without filters).
+
+.. ipython::
+
+    In [11]: ds2 = dclab.new_dataset("export_example.rtdc")
+
+    In [12]: ds2["deform"].mean()
+

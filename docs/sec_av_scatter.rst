@@ -2,8 +2,6 @@
 Scatter plots
 =============
 
-Visualization
-=============
 For data visualization, dclab comes with predefined 
 :ref:`kernel density estimators (KDEs) <sec_ref_kde_methods>` and
 an :ref:`event downsampling <sec_ref_downsampling>` module.
@@ -177,8 +175,8 @@ yourself using the function :func:`dclab.kde_contours.find_contours_level`.
 
 
 
-Shape-Out
-=========
+Polygon filters / Shape-Out
+---------------------------
 Keep in mind that you can combine your dclab analysis pipeline with
 :ref:`Shape-Out <shapeout:index>`. For instance, you can create and export
 :ref:`polygon filters <sec_ref_polygon_filter>`

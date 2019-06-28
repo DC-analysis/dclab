@@ -12,7 +12,10 @@ if sys.version_info[0] == 2:
         return isinstance(obj, file)  # noqa: F821
 
 else:
-    PyImportError = ModuleNotFoundError
+    if sys.version_info[1] <= 5:
+        PyImportError = ImportError
+    else:
+        PyImportError = ModuleNotFoundError  # noqa: F821
     str_types = str
     hdf5_str = str
 

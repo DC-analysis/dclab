@@ -40,9 +40,15 @@ class ImageColumn(object):
             # No data - show a dummy image instead
             cdata = self.dummy
         else:
+            if hasattr(imageio.plugins.ffmpeg, "CannotReadFrameError"):
+                # imageio<2.5.0
+                UsedException = imageio.plugins.ffmpeg.CannotReadFrameError
+            else:
+                # imageio>=2.5.0
+                UsedException = IndexError
             try:
                 cdata = self._image_data[idnew]
-            except imageio.plugins.ffmpeg.CannotReadFrameError:
+            except UsedException:
                 # The avi is corrupt. Return a dummy image.
                 msg = "Frame {} in {} is corrupt!".format(idnew,
                                                           self.identifier)
@@ -53,7 +59,7 @@ class ImageColumn(object):
     def __len__(self):
         length = len(self._image_data)
         if length:
-            length = length+self.event_offset
+            length = length + self.event_offset
         return length
 
     @property
@@ -139,7 +145,10 @@ class ImageMap(object):
         """
         if self._length is None:
             cap = self.video_handle
-            length = len(cap)
+            if hasattr(cap, "count_frames"):  # imageio>=2.5.0
+                length = cap.count_frames()
+            else:  # imageio<2.5.0
+                length = len(cap)
             self._length = length
         return self._length
 

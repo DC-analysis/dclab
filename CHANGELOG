@@ -1,6 +1,10 @@
 0.11.1
  - docs: add example for fluorescence trace visualization
  - docs: restructure advanced usage section
+ - ref: make dclab in principle compatible with imageio>=2.5.0;
+   Dependencies are pinned due to segfaults during testing
+ - setup: make tdms format support and data export dependency optional;
+   To get the previous behavior, use `pip install dclab[all]`
 0.11.0
  - feat: compute contours lazily (#61)
 0.10.5

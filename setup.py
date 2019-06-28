@@ -21,6 +21,26 @@ except:
     version = "unknown"
 
 
+extras_require = {
+        "tdms": ["nptdms",  # read tdms files
+                 #"imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
+                 #"imageio[ffmpeg]>=2.5.0;python_version>='3.4'",  # avi (new)
+                 # Currently, the above option of using imageio>=2.5.0 makes
+                 # the tdms tests fail (SegFault at the end).
+                 # Related to https://github.com/imageio/imageio-ffmpeg/issues/20
+                 # Workaround for now:
+                 "imageio>=2.3.0,<2.5.0",  # read tdms avi data
+                 ],
+        "export": ["fcswrite>=0.4.1",  # fcs export
+                   "imageio",  # avi export
+                   ],
+        }
+# all of the requirements above
+extras_require['all']= list(
+    set([val for k, v in extras_require.items() for val in v])
+    )
+
+
 setup(
     name=name,
     author=author,
@@ -33,10 +53,7 @@ setup(
     license="GPL v2",
     description=description,
     long_description=open('README.rst').read() if exists('README.rst') else '',
-    install_requires=["fcswrite>=0.4.1",  # required by: fcs export
-                      "h5py>=2.8.0",      # required by: rtdc format
-                      "imageio>=2.3.0,<2.5.0",   # required by: tdms format, avi export
-                      "nptdms",           # required by: tdms format
+    install_requires=["h5py>=2.8.0",
                       "numpy>=1.10.0",
                       "pathlib;python_version<='3.4'",
                       "scipy>=0.14.0",
@@ -48,11 +65,12 @@ setup(
                    ],
     # not to be confused with definitions in pyproject.toml [build-system]
     setup_requires=["pytest-runner"],
-    tests_require=["pytest", "urllib3"],
+    tests_require=["pytest", "urllib3"] + extras_require["all"],
+    extras_require=extras_require,
     entry_points={
        "console_scripts": [
-           "dclab-verify-dataset = dclab.cli:verify_dataset",
-           "dclab-tdms2rtdc = dclab.cli:tdms2rtdc",
+           "dclab-verify-dataset = dclab.cli:verify_dataset [tdms]",
+           "dclab-tdms2rtdc = dclab.cli:tdms2rtdc [tdms]",
             ],
        },
     keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],

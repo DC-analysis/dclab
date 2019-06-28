@@ -6,7 +6,21 @@ from __future__ import division, print_function
 import pathlib
 import time
 
-from nptdms import TdmsFile
+
+from ...compat import PyImportError
+
+try:
+    import nptdms
+except PyImportError:
+    NPTDMS_AVAILABLE = False
+else:
+    NPTDMS_AVAILABLE = True
+    from .event_contour import ContourColumn
+    from .event_image import ImageColumn
+    from .event_mask import MaskColumn
+    from .event_trace import TraceColumn
+    from . import naming
+
 import numpy as np
 
 from ... import definitions as dfn
@@ -14,12 +28,6 @@ from ... import definitions as dfn
 from ..config import Configuration
 from ..core import RTDCBase
 from ..util import hashobj, hashfile
-
-from .event_contour import ContourColumn
-from .event_image import ImageColumn
-from .event_mask import MaskColumn
-from .event_trace import TraceColumn
-from . import naming
 
 
 class RTDC_TDMS(RTDCBase):
@@ -40,6 +48,8 @@ class RTDC_TDMS(RTDCBase):
         path: pathlib.Path
             Path to the experimental dataset (main .tdms file)
         """
+        if not NPTDMS_AVAILABLE:
+            raise PyImportError("Package `nptdms` required for TDMS format!")
         # Initialize RTDCBase
         super(RTDC_TDMS, self).__init__(*args, **kwargs)
 
@@ -69,7 +79,7 @@ class RTDC_TDMS(RTDCBase):
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC dataset with a tdms file.
         """
-        tdms_file = TdmsFile(str(tdms_filename))
+        tdms_file = nptdms.TdmsFile(str(tdms_filename))
         # time is always there
         table = "Cell Track"
         # Edit naming.dclab2tdms to add features

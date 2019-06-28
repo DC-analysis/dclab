@@ -6,8 +6,23 @@ from __future__ import division, print_function, unicode_literals
 import pathlib
 import warnings
 
-import imageio
-import fcswrite
+
+from ..compat import PyImportError
+
+try:
+    import imageio
+except PyImportError:
+    IMAGEIO_AVAILABLE = False
+else:
+    IMAGEIO_AVAILABLE = True
+
+try:
+    import fcswrite
+except PyImportError:
+    FCSWRITE_AVAILABLE = False
+else:
+    FCSWRITE_AVAILABLE = True
+
 import numpy as np
 
 from .. import definitions as dfn
@@ -41,6 +56,8 @@ class Export(object):
         -----
         Raises OSError if current dataset does not contain image data
         """
+        if not IMAGEIO_AVAILABLE:
+            raise PyImportError("Package `imageio` required for avi export!")
         path = pathlib.Path(path)
         ds = self.rtdc_ds
         # Make sure that path ends with .avi
@@ -109,6 +126,8 @@ class Export(object):
         Due to incompatibility with the .fcs file format, all events with
         NaN-valued features are not exported.
         """
+        if not FCSWRITE_AVAILABLE:
+            raise PyImportError("Package `fcswrite` required for fcs export!")
         features = [c.lower() for c in features]
         ds = self.rtdc_ds
 

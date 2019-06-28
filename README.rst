@@ -21,8 +21,8 @@ To install the latest release, simply run
 
 ::
 
-	pip install dclab  # for a minimal install
-	pip install dclab[tdms]  # if you are also working with tdms files
+    pip install dclab  # for a minimal install
+    pip install dclab[tdms]  # if you are also working with tdms files
     pip install dclab[export]  # if you need avi and fcs export
     pip install dclab[all]  # for all of the above
 

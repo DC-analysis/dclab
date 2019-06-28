@@ -34,11 +34,11 @@ extras_require = {
         "export": ["fcswrite>=0.4.1",  # fcs export
                    "imageio",  # avi export
                    ],
+        "all": ["fcswrite>=0.4.1",
+                "imageio>=2.3.0,<2.5.0",
+                "nptdms",
+                ]
         }
-# all of the requirements above
-extras_require['all']= list(
-    set([val for k, v in extras_require.items() for val in v])
-    )
 
 
 setup(

@@ -30,7 +30,7 @@ install:
 # install fcswrite
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 # install all other dependencies
-- travis_retry pip install .[all]
+- travis_retry pip install -e .[all]
 # download ffmpeg (required by imageio)
 - travis_retry imageio_download_bin --package-dir ffmpeg
 # for tests:

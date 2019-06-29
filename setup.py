@@ -70,7 +70,7 @@ setup(
     extras_require=extras_require,
     entry_points={
        "console_scripts": [
-           "dclab-verify-dataset = dclab.cli:verify_dataset [tdms]",
+           "dclab-verify-dataset = dclab.cli:verify_dataset",
            "dclab-tdms2rtdc = dclab.cli:tdms2rtdc [tdms]",
             ],
        },

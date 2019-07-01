@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import pathlib
 import time
+import sys
 
 import numpy as np
 import pytest
@@ -133,6 +134,8 @@ def test_deform():
     assert np.allclose(ds["deform"], 1 - ds["circ"])
 
 
+@pytest.mark.skipif(sys.version_info < (3, 3),
+                    reason="perf_counter requires python3.3 or higher")
 def test_emodulus():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -145,13 +148,13 @@ def test_emodulus():
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
-    t1 = time.time()
+    t1 = time.perf_counter()
     assert "emodulus" in ds
-    t2 = time.time()
+    t2 = time.perf_counter()
 
-    t3 = time.time()
+    t3 = time.perf_counter()
     ds["emodulus"]
-    t4 = time.time()
+    t4 = time.perf_counter()
     assert t4 - t3 > t2 - t1
 
 

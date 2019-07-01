@@ -26,16 +26,16 @@ def test_lazy_contour_basic():
     cleanup()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6),
-                    reason="requires python3.6 or higher")
+@pytest.mark.skipif(sys.version_info < (3, 3),
+                    reason="perf_counter requires python3.3 or higher")
 def test_lazy_contour_timing():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
     masks = ds["mask"][:]
-    t0 = time.time()
+    t0 = time.perf_counter()
     get_contour_lazily(masks)
-    t1 = time.time()
+    t1 = time.perf_counter()
     get_contour(masks)
-    t2 = time.time()
+    t2 = time.perf_counter()
     assert t2-t1 > 10*(t1-t0)
     cleanup()
 

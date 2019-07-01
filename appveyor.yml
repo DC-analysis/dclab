@@ -21,7 +21,7 @@ install:
   # Check that we have the expected version and architecture for Python
   - "python --version"
   # upgrade pip
-  - "appveyor-retry pip install --user --upgrade pip"
+  - "appveyor-retry python -m pip install --upgrade pip"
   # install
   - "appveyor-retry pip install wheel"
   # latest version of fcswrite

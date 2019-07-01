@@ -18,10 +18,10 @@ environment:
 
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-
   # Check that we have the expected version and architecture for Python
   - "python --version"
-
+  # upgrade pip
+  - "appveyor-retry pip install --upgrade pip"
   # install
   - "appveyor-retry pip install wheel"
   # latest version of fcswrite

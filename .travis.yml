@@ -23,7 +23,8 @@ before_install:
 - source ./.travis/${TRAVIS_OS_NAME}_setup_python.sh $MAC_PYTHON_VERSION
 install:
 # install binary packages
-- travis_retry pip install --upgrade pip setuptools wheel
+- travis_retry pip install --upgrade pip
+- travis_retry pip install setuptools wheel
 # install fcswrite
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 # install all other dependencies

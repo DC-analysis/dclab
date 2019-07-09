@@ -61,7 +61,7 @@ def obj2str(obj):
     elif isinstance(obj, list):
         return b"".join(obj2str(o) for o in obj)
     elif isinstance(obj, dict):
-        return obj2str(list(obj.items()))
+        return obj2str(sorted(obj.items()))
     elif hasattr(obj, "identifier"):
         return obj2str(obj.identifier)
     elif isinstance(obj, h5py.Dataset):

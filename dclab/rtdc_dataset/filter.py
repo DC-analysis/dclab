@@ -26,11 +26,14 @@ class Filter(object):
         self.rtdc_ds = rtdc_ds
         self._filters = {}
 
-        #: All filters combined (see :func:`Filter.update`)
+        #: All filters combined (see :func:`Filter.update`);
+        #: Use this property to filter the features of
+        #: :class:`dclab.rtdc_dataset.RTDCBase` instances
         self.all = np.ones(len(rtdc_ds), dtype=bool)
         #: Invalid (nan/inf) events
         self.invalid = np.ones(len(rtdc_ds), dtype=bool)
-        #: Reserved for manual filtering
+        #: 1D boolean array for manually excluding events; `False` values
+        #: are excluded.
         self.manual = np.ones(len(rtdc_ds), dtype=bool)
         #: Polygon filters
         self.polygon = np.ones(len(rtdc_ds), dtype=bool)
@@ -54,6 +57,12 @@ class Filter(object):
         force : list
             A list of feature names that must be refiltered with
             min/max values.
+
+        Notes
+        -----
+        This function is called when
+        :func:`ds.apply_filter <dclab.rtdc_dataset.RTDCBase.apply_filter>`
+        is called.
         """
 
         # These lists may help us become very fast in the future

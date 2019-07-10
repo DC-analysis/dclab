@@ -45,6 +45,29 @@ It is also possible to load other data into dclab from a dictionary.
     In [6]: ds_dict.__class__.__name__
 
 
+Using filters
+-------------
+Filters are used to mask e.g. debris or doublets from a dataset.
+
+.. ipython::
+
+    # Restrict the deformation to 0.15
+    In [7]: ds.config["filtering"]["deform max"] = .15
+
+    # Manually excluding events using array indices is also possible:
+    # `ds.filter.manual` is a 1D boolean array of size `len(ds)`
+    # where `False` values mean that the events are excluded.
+    In [8]: ds.filter.manual[[0, 400, 345, 1000]] = False
+
+    In [9]: ds.apply_filter()
+
+    # The boolean array `ds.filter.all` represents the applied filter
+    # and can be used for indexing.
+    In [9]: ds["deform"].mean(), ds["deform"][ds.filter.all].mean()
+
+Note that `ds.apply_filter()` must be called, otherwise
+`ds.filter.all` will not be updated.
+
 Creating hierarchies
 --------------------
 When applying filtering operations, it is sometimes helpful to
@@ -54,11 +77,9 @@ use hierarchies for keeping track of the individual filtering steps.
 
     In [7]: child = dclab.new_dataset(ds)
 
+    In [8]: child.config["filtering"]["area_um max"] = 80
+
     In [8]: grandchild = dclab.new_dataset(child)
-
-    In [9]: ds.config["filtering"]["deform max"] = .15
-
-    In [10]: child.config["filtering"]["area_um max"] = 80
 
     In [11]: grandchild.apply_filter()
 
@@ -67,8 +88,8 @@ use hierarchies for keeping track of the individual filtering steps.
     In [13]: ds.filter.all.sum(), child.filter.all.sum(), grandchild.filter.all.sum()
 
 
-Note that calling ``ds1_b.apply_filter()`` automatically calls
-``ds1_a.apply_filter()`` and ``ds1.apply_filter()``. Also note that,
+Note that calling ``grandchild.apply_filter()`` automatically calls
+``child.apply_filter()`` and ``ds.apply_filter()``. Also note that,
 as expected, the size of each hierarchy child is identical to the sum of the
 boolean filtering array from its hierarchy parent.
 

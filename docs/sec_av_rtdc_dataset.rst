@@ -65,8 +65,8 @@ Filters are used to mask e.g. debris or doublets from a dataset.
     # and can be used for indexing.
     In [9]: ds["deform"].mean(), ds["deform"][ds.filter.all].mean()
 
-Note that `ds.apply_filter()` must be called, otherwise
-`ds.filter.all` will not be updated.
+Note that ``ds.apply_filter()`` must be called, otherwise
+``ds.filter.all`` will not be updated.
 
 Creating hierarchies
 --------------------

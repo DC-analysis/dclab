@@ -164,10 +164,20 @@ class Configuration(object):
         with filename.open("w") as f:
             f.write(out_str)
 
-    def tostring(self):
-        """Convert the configuration to its string representation"""
+    def tostring(self, sections=None):
+        """Convert the configuration to its string representation
+
+        The optional argument `sections` allows to export only
+        specific sections of the configuration, i.e.
+        `sections=dclab.dfn.CFG_METADATA` will only export
+        configuration data from the original measurement and no
+        filtering data.
+        """
         out = []
-        keys = sorted(list(self.keys()))
+        if sections is None:
+            keys = sorted(list(self.keys()))
+        else:
+            keys = sorted([k for k in sections if k in self.keys()])
         for key in keys:
             out.append("[{}]".format(key))
             section = self[key]

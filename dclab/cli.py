@@ -1,16 +1,39 @@
 """command line interface"""
 import argparse
 import datetime
+import hashlib
+import json
 import pathlib
 import sys
 
 import h5py
 import numpy as np
 
-from .rtdc_dataset import export, fmt_tdms, load, write_hdf5
-
+from .rtdc_dataset import export, fmt_tdms, load, util, write_hdf5
 from . import definitions as dfn
+
 from ._version import version
+
+
+def get_command_log(paths):
+    data = {
+        "date": datetime.datetime.now().strftime("%Y-%m-%d"),
+        "time": datetime.datetime.now().strftime("%H:%M:%S"),
+        "platform": sys.platform,
+        "python": sys.version.replace("\n", ""),
+        "dclab": version,
+        "h5py": h5py.__version__,
+        "numpy": np.__version__,
+        "files": [],
+    }
+    for ii, pp in enumerate(paths):
+        fdict = {"name": pathlib.Path(pp).name,
+                 "sha256": util.hashfile(pp, hasher_class=hashlib.sha256),
+                 "index": ii+1
+                 }
+        data["files"].append(fdict)
+    dump = json.dumps(data, sort_keys=True, indent=2).split("\n")
+    return dump
 
 
 def print_info(string):
@@ -74,28 +97,17 @@ def join(path_out=None, paths_in=None):
         meta = {"experiment": {"event count": len(dsf),
                                "run index": 1}}
 
-    # Log for joining
-    join_log = [
-        "This file was created using dclab-join.",
-        datetime.datetime.now().strftime("Date: %Y-%m-%d_%H:%M:%S"),
-        "",
-        "System:",
-        "- Platform: {}".format(sys.platform),
-        "- Python: {}".format(sys.version),
-        "",
-        "Used libraries:",
-        "- dclab {}".format(version),
-        "- h5py {}".format(h5py.__version__),
-        "- numpy {}".format(np.__version__),
-        "",
-        "This file was created from these files in this order:",
-        ]
-    for ii, pp in enumerate(sorted_paths):
-        join_log.append("- {}: {}".format(ii+1, pp))
-
-    # Append logs from source files
+    # Logs and configs from source files
     logs = {}
-    logs["dclab-join"] = join_log
+    logs["dclab-join"] = get_command_log(paths=sorted_paths)
+    for ii, pp in enumerate(sorted_paths):
+        with load.new_dataset(pp) as ds:
+            # data file logs
+            for ll in ds.logs:
+                logs["src-#{}_{}".format(ii+1, ll)] = ds.logs[ll]
+            # configuration
+            cfg = ds.config.tostring(sections=dfn.CFG_METADATA).split("\n")
+            logs["cfg-#{}".format(ii+1)] = cfg
 
     # Write missing meta data
     with write_hdf5.write(path_out,
@@ -151,31 +163,34 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False):
 
         print_info("Converting {:d}/{:d}: {}".format(
             ii + 1, len(files_tdms), ff))
-        # load dataset
-        ds = load.load_file(ff)
         # create directory
         if not fr.parent.exists():
             fr.parent.mkdir(parents=True)
-        # determine features to export
-        features = []
-        if compute_features:
-            tocomp = dfn.feature_names
-        else:
-            tocomp = ds._events
-        for feat in tocomp:
-            if feat not in dfn.scalar_feature_names:
-                if not ds[feat]:
-                    # ignore non-existent contour, image, mask, or trace
-                    continue
-            elif feat not in ds:
-                # ignore non-existent feature
-                continue
-            features.append(feat)
-        # export as hdf5
-        ds.export.hdf5(path=fr,
-                       features=features,
-                       filtered=False,
-                       override=True)
+        # load and export dataset
+        with load.load_file(ff) as ds:
+            # determine features to export
+            if compute_features:
+                features = ds.features
+            else:
+                # consider special case for "image", "trace", and "contour"
+                # (This will export both "mask" and "contour".
+                # The "mask" is computed from "contour" and it is needed
+                # by dclab for other ancillary features. We still keep
+                # "contour" because it is original data.
+                features = [f for f in ds._events if f in ds]
+
+            # export as hdf5
+            ds.export.hdf5(path=fr,
+                           features=features,
+                           filtered=False,
+                           override=True)
+
+            # write logs
+            logs = {}
+            logs["dclab-tdms2rtdc"] = get_command_log(paths=[ff])
+            logs.update(ds.logs)
+            with write_hdf5.write(fr, logs=logs, mode="append"):
+                pass
 
 
 def tdms2rtdc_parser():

@@ -53,6 +53,9 @@ class RTDCBase(object):
         #: Filtering functionalities; instance of
         #: :class:`dclab.rtdc_dataset.filter.Filter`.
         self.filter = None
+        #: Dictionary of log files. Each log file is a list of strings
+        #: (one string per line).
+        self.logs = {}
         #: Title of the measurement
         self.title = None
         # Unique identifier
@@ -66,13 +69,12 @@ class RTDCBase(object):
     def __contains__(self, key):
         ct = False
         if key in self._events:
-            if (self.format == "tdms" and
-                key in ["contour", "image", "trace"]
-                    and self._events[key]):
+            if self.format == "tdms" and key in ["contour", "image", "trace"]:
                 # Take into account special cases of the tdms file format:
                 # tdms features "image", "trace", "contour" are True if
                 # the data exist on disk
-                ct = True
+                if self._events[key]:
+                    ct = True
             else:
                 ct = True
         if ct is False:

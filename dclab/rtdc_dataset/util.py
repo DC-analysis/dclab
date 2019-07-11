@@ -12,7 +12,7 @@ import numpy as np
 from ..compat import str_types
 
 
-def hashfile(fname, blocksize=65536, count=0):
+def hashfile(fname, blocksize=65536, count=0, hasher_class=hashlib.md5):
     """Compute md5 hex-hash of a file
 
     Parameters
@@ -25,7 +25,7 @@ def hashfile(fname, blocksize=65536, count=0):
     count: int
         number of blocks read from the file
     """
-    hasher = hashlib.md5()
+    hasher = hasher_class()
     fname = pathlib.Path(fname)
     with fname.open('rb') as fd:
         buf = fd.read(blocksize)

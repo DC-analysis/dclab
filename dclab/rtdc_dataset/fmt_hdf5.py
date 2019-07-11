@@ -29,7 +29,7 @@ DEFECTIVE_FEATURES = {
     "aspect": [["setup:software version", "ShapeIn 2.0.6"],
                ["setup:software version", "ShapeIn 2.0.7"],
                ]
-    }
+}
 
 
 class OldFormatNotSupportedError(BaseException):
@@ -38,6 +38,22 @@ class OldFormatNotSupportedError(BaseException):
 
 class UnknownKeyWarning(UserWarning):
     pass
+
+
+class H5ContourEvent(object):
+    def __init__(self, h5group):
+        self.h5group = h5group
+        self.identifier = h5group["0"][:]
+
+    def __getitem__(self, key):
+        return self.h5group[str(key)][:]
+
+    def __iter__(self):
+        for idx in range(len(self)):
+            yield self[idx]
+
+    def __len__(self):
+        return len(self.h5group)
 
 
 class H5Events(object):
@@ -88,20 +104,21 @@ class H5Events(object):
         return features
 
 
-class H5ContourEvent(object):
-    def __init__(self, h5group):
-        self.h5group = h5group
-        self.identifier = h5group["0"][:]
+class H5Logs(object):
+    def __init__(self, h5):
+        self._h5 = h5
 
     def __getitem__(self, key):
-        return self.h5group[str(key)][:]
+        return list(self._h5["logs"][key])
 
     def __iter__(self):
-        for idx in range(len(self)):
-            yield self[idx]
+        # dict-like behavior
+        for key in self.keys():
+            yield key
 
-    def __len__(self):
-        return len(self.h5group)
+    def keys(self):
+        names = sorted(self._h5["logs"].keys())
+        return names
 
 
 class H5MaskEvent(object):
@@ -158,6 +175,9 @@ class RTDC_HDF5(RTDCBase):
 
         # Parse configuration
         self.config = RTDC_HDF5.parse_config(h5path)
+
+        # Override logs property with HDF5 data
+        self.logs = H5Logs(self._h5)
 
         # check version
         rtdc_soft = self.config["setup"]["software version"]

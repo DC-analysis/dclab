@@ -76,6 +76,12 @@ class RTDC_TDMS(RTDCBase):
         # event traces
         self._events["trace"] = TraceColumn(self)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        del self._events["image"]._image_data
+
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC dataset with a tdms file.
         """
@@ -98,10 +104,9 @@ class RTDC_TDMS(RTDCBase):
                 self._events[naming.tdms2dclab[arg]] = data
 
         # Set up configuration
-        tdms_config = Configuration(
-            files=[self.path.with_name(self._mid + "_para.ini"),
-                   self.path.with_name(self._mid + "_camera.ini")],
-        )
+        config_paths = [self.path.with_name(self._mid + "_para.ini"),
+                        self.path.with_name(self._mid + "_camera.ini")]
+        tdms_config = Configuration(files=config_paths)
         dclab_config = Configuration()
         for section in naming.configmap:
             for pname in naming.configmap[section]:
@@ -119,6 +124,19 @@ class RTDC_TDMS(RTDCBase):
         self._complete_config_tdms(tdms_config)
 
         self._init_filters()
+
+        # Load log files
+        log_files = config_paths
+        for name in [self._mid + "_log.ini",
+                     "FG_Config.mcf",
+                     "parameters.txt"]:
+            pl = self.path.with_name(name)
+            if pl.exists():
+                log_files.append(pl)
+        for pp in log_files:
+            with pp.open('r') as f:
+                cfg = [l.strip() for l in f.readlines()]
+            self.logs[pp.name] = cfg
 
     def _complete_config_tdms(self, residual_config={}):
         # experiment

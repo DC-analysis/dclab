@@ -7,6 +7,7 @@
  - enh: support loading TDMS data using the 'with' statement
  - docs: add example for joining measurements
  - docs: other minor improvements
+ - setup: add Python 3.7 wheels for Windows (#62)
 0.11.1
  - docs: add example for fluorescence trace visualization
  - docs: restructure advanced usage section

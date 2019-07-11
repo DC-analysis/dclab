@@ -1,9 +1,16 @@
 """command line interface"""
 import argparse
+import datetime
 import pathlib
+import sys
 
-from .rtdc_dataset import fmt_tdms, load
+import h5py
+import numpy as np
+
+from .rtdc_dataset import export, fmt_tdms, load, write_hdf5
+
 from . import definitions as dfn
+from ._version import version
 
 
 def print_info(string):
@@ -18,13 +25,109 @@ def print_violation(string):
     print_info("\033[31m{}".format(string))
 
 
-def tdms2rtdc():
-    """Convert .tdms datasets to the hdf5-based .rtdc file format"""
-    parser = tdms2rtdc_parser()
-    args = parser.parse_args()
+def join(path_out=None, paths_in=None):
+    """Join multiple RT-DC measurements into a single .rtdc file"""
+    if path_out is None or paths_in is None:
+        parser = join_parser()
+        args = parser.parse_args()
+        paths_in = args.input
+        path_out = args.output
 
-    path_tdms = pathlib.Path(args.tdms_path).resolve()
-    path_rtdc = pathlib.Path(args.rtdc_path)
+    if len(paths_in) < 2:
+        raise ValueError("At least two input files must be specified!")
+
+    if pathlib.Path(path_out).exists():
+        raise ValueError("Output file '{}' already exists!".format(path_out))
+
+    # Determine input file order
+    key_paths = []
+    for pp in paths_in:
+        ds = load.new_dataset(pp)
+        key = "_".join([ds.config["experiment"]["date"],
+                        ds.config["experiment"]["time"],
+                        str(ds.config["experiment"]["run index"])
+                        ])
+        key_paths.append((key, pp))
+        del ds
+    sorted_paths = [p[1] for p in sorted(key_paths, key=lambda x: x[0])]
+
+    # Create initial output file
+    ds0 = load.new_dataset(sorted_paths[0])
+    features = sorted(ds0._events.keys())
+    ds0.export.hdf5(path=path_out,
+                    features=features,
+                    filtered=False,
+                    compression="gzip")
+
+    with write_hdf5.write(path_out, mode="append") as h5obj:
+        # Append data from other files
+        for pi in sorted_paths[1:]:
+            dsi = load.new_dataset(pi)
+            for feat in features:
+                export.hdf5_append(h5obj=h5obj,
+                                   rtdc_ds=dsi,
+                                   feat=feat,
+                                   compression="gzip")
+
+    with load.new_dataset(path_out) as dsf:
+        # Important keyword arguments
+        meta = {"experiment": {"event count": len(dsf),
+                               "run index": 1}}
+
+    # Log for joining
+    join_log = [
+        "This file was created using dclab-join.",
+        datetime.datetime.now().strftime("Date: %Y-%m-%d_%H:%M:%S"),
+        "",
+        "System:",
+        "- Platform: {}".format(sys.platform),
+        "- Python: {}".format(sys.version),
+        "",
+        "Used libraries:",
+        "- dclab {}".format(version),
+        "- h5py {}".format(h5py.__version__),
+        "- numpy {}".format(np.__version__),
+        "",
+        "This file was created from these files in this order:",
+        ]
+    for ii, pp in enumerate(sorted_paths):
+        join_log.append("- {}: {}".format(ii+1, pp))
+
+    # Append logs from source files
+    logs = {}
+    logs["dclab-join"] = join_log
+
+    # Write missing meta data
+    with write_hdf5.write(path_out,
+                          logs=logs,
+                          meta=meta,
+                          mode="append") as h5obj:
+        pass
+
+
+def join_parser():
+    descr = "Join two or more RT-DC measurements. This will produce " \
+            + "one larger .rtdc file. The meta data of the dataset " \
+            + "that was recorded earliest will be used in the output " \
+            + "file. Please only join datasets that were recorded" \
+            + "in the same measurement run."
+    parser = argparse.ArgumentParser(description=descr)
+    parser.add_argument('input', nargs="*", type=str,
+                        help='Input path (.tdms or .rtdc files)')
+    parser.add_argument('-o', '--output', type=str,
+                        help='Output path (.rtdc file)')
+    return parser
+
+
+def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False):
+    """Convert .tdms datasets to the hdf5-based .rtdc file format"""
+    if path_tdms is None or path_rtdc is None:
+        parser = tdms2rtdc_parser()
+        args = parser.parse_args()
+
+        path_tdms = pathlib.Path(args.tdms_path).resolve()
+        path_rtdc = pathlib.Path(args.rtdc_path)
+        compute_features = args.compute_features
 
     # Determine whether input path is a tdms file or a directory
     if path_tdms.is_dir():
@@ -55,7 +158,7 @@ def tdms2rtdc():
             fr.parent.mkdir(parents=True)
         # determine features to export
         features = []
-        if args.compute_features:
+        if compute_features:
             tocomp = dfn.feature_names
         else:
             tocomp = ds._events

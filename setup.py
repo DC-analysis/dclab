@@ -70,8 +70,9 @@ setup(
     extras_require=extras_require,
     entry_points={
        "console_scripts": [
-           "dclab-verify-dataset = dclab.cli:verify_dataset",
+           "dclab-join = dclab.cli:join",
            "dclab-tdms2rtdc = dclab.cli:tdms2rtdc [tdms]",
+           "dclab-verify-dataset = dclab.cli:verify_dataset",
             ],
        },
     keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],

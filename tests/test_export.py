@@ -202,7 +202,7 @@ def test_hdf5_filtered():
 def test_hdf5_filtered_index():
     """Make sure that exported index is always re-enumerated"""
     N = 10
-    keys = ["area_um", "deform"]
+    keys = ["area_um", "deform", "index"]
     ddict = example_data_dict(size=N, keys=keys)
     ddict["index"] = np.arange(1, N+1)
 
@@ -220,6 +220,7 @@ def test_hdf5_filtered_index():
 
     assert len(ds2) == N - 1
     assert np.all(ds2["index"] == np.arange(1, N))
+    assert ds2.config["experiment"]["event count"] == N - 1
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)

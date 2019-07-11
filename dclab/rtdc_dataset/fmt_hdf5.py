@@ -41,9 +41,8 @@ class UnknownKeyWarning(UserWarning):
 
 
 class H5Events(object):
-    def __init__(self, h5path):
-        self.path = h5path
-        self._h5 = h5py.File(h5path, mode="r")
+    def __init__(self, h5):
+        self._h5 = h5
         self._features = sorted(self._h5["events"].keys())
 
     def __contains__(self, key):
@@ -154,7 +153,8 @@ class RTDC_HDF5(RTDCBase):
         self.path = h5path
 
         # Setup events
-        self._events = H5Events(h5path)
+        self._h5 = h5py.File(h5path, mode="r")
+        self._events = H5Events(self._h5)
 
         # Parse configuration
         self.config = RTDC_HDF5.parse_config(h5path)
@@ -181,7 +181,7 @@ class RTDC_HDF5(RTDCBase):
 
     def __exit__(self, type, value, tb):
         # close the HDF5 file
-        self._events._h5.close()
+        self._h5.close()
 
     @staticmethod
     def parse_config(h5path):

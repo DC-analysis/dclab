@@ -187,7 +187,7 @@ class Export(object):
         # Make sure that path ends with .rtdc
         if not path.suffix == ".rtdc":
             path = path.parent / (path.name + ".rtdc")
-        # Check if file already exist
+        # Check if file already exists
         if not override and path.exists():
             raise OSError("File already exists: {}\n".format(path)
                           + "Please use the `override=True` option.")
@@ -211,75 +211,16 @@ class Export(object):
             nev = len(self.rtdc_ds)
             filtarr = np.ones(nev, dtype=bool)
 
-        # update number of events
         meta["experiment"]["event count"] = nev
-
         # write meta data
         with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
             # write each feature individually
             for feat in features:
-                # event-wise, because
-                # - tdms-based datasets don't allow indexing with numpy
-                # - there might be memory issues
-                if feat == "contour":
-                    cont_list = []
-                    cmax = 0
-                    for ii in range(len(self.rtdc_ds)):
-                        if filtarr[ii]:
-                            dat = self.rtdc_ds["contour"][ii]
-                            cont_list.append(dat)
-                            cmax = max(cmax, dat.max())
-                    write(h5obj,
-                          data={"contour": cont_list},
-                          mode="append",
-                          compression=compression)
-                elif feat in ["mask", "image"]:
-                    # store image stacks (reduced file size and save time)
-                    m = 64
-                    im0 = self.rtdc_ds[feat][0]
-                    imstack = np.zeros((m, im0.shape[0], im0.shape[1]),
-                                       dtype=im0.dtype)
-                    jj = 0
-                    for ii in range(len(self.rtdc_ds)):
-                        if filtarr[ii]:
-                            dat = self.rtdc_ds[feat][ii]
-                            imstack[jj] = dat
-                            if (jj + 1) % m == 0:
-                                jj = 0
-                                write(h5obj,
-                                      data={feat: imstack},
-                                      mode="append",
-                                      compression=compression)
-                            else:
-                                jj += 1
-                    # write rest
-                    if jj:
-                        write(h5obj,
-                              data={feat: imstack[:jj, :, :]},
-                              mode="append",
-                              compression=compression)
-                elif feat == "trace":
-                    for tr in self.rtdc_ds["trace"].keys():
-                        tr0 = self.rtdc_ds["trace"][tr][0]
-                        trdat = np.zeros((nev, tr0.size), dtype=tr0.dtype)
-                        jj = 0
-                        for ii in range(len(self.rtdc_ds)):
-                            if filtarr[ii]:
-                                trdat[jj] = self.rtdc_ds["trace"][tr][ii]
-                                jj += 1
-                        write(h5obj,
-                              data={"trace": {tr: trdat}},
-                              mode="append",
-                              compression=compression)
-                elif feat == "index" and filtered:
-                    # re-enumerate data index feature (filtered data)
-                    write(h5obj,
-                          data={"index": np.arange(1, nev+1)},
-                          mode="append")
-                else:
-                    write(h5obj,
-                          data={feat: self.rtdc_ds[feat][filtarr]},
-                          mode="append")
+                hdf5_append(h5obj=h5obj,
+                            rtdc_ds=self.rtdc_ds,
+                            feat=feat,
+                            compression=compression,
+                            filtarr=filtarr)
 
     def tsv(self, path, features, filtered=True, override=False):
         """Export the data of the current instance to a .tsv file
@@ -334,3 +275,98 @@ class Export(object):
                        np.array(data).transpose(),
                        fmt=str("%.10e"),
                        delimiter="\t")
+
+
+def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None):
+    """Append feature data to an HDF5 file
+
+    Parameters
+    ----------
+    h5obj: h5py.File
+        Opened HDF5 file
+    rtdc_ds: dclab.rtdc_dataset.RTDCBase
+        Instance from which to obtain the data
+    feat: str
+        Valid feature name in `rtdc_ds`
+    compression: str or None
+        Compression method for "contour", "image", and "trace" data
+        as well as logs; one of [None, "lzf", "gzip", "szip"].
+    filtarr: None or 1d boolean np.ndarray
+        Optional boolean array used for filtering. If set to
+        `None`, all events are saved.
+
+    Notes
+    -----
+    Please update the "experiment::event count" attribute manually.
+    """
+    # optional array for filtering events
+    if filtarr is None:
+        filtarr = np.ones(len(rtdc_ds), dtype=bool)
+    # total number of new events
+    nev = np.sum(filtarr)
+    # event-wise, because
+    # - tdms-based datasets don't allow indexing with numpy
+    # - there might be memory issues
+    if feat == "contour":
+        cont_list = []
+        cmax = 0
+        for ii in range(len(rtdc_ds)):
+            if filtarr[ii]:
+                dat = rtdc_ds["contour"][ii]
+                cont_list.append(dat)
+                cmax = max(cmax, dat.max())
+        write(h5obj,
+              data={"contour": cont_list},
+              mode="append",
+              compression=compression)
+    elif feat in ["mask", "image"]:
+        # store image stacks (reduced file size and save time)
+        m = 64
+        im0 = rtdc_ds[feat][0]
+        imstack = np.zeros((m, im0.shape[0], im0.shape[1]),
+                           dtype=im0.dtype)
+        jj = 0
+        for ii in range(len(rtdc_ds)):
+            if filtarr[ii]:
+                dat = rtdc_ds[feat][ii]
+                imstack[jj] = dat
+                if (jj + 1) % m == 0:
+                    jj = 0
+                    write(h5obj,
+                          data={feat: imstack},
+                          mode="append",
+                          compression=compression)
+                else:
+                    jj += 1
+        # write rest
+        if jj:
+            write(h5obj,
+                  data={feat: imstack[:jj, :, :]},
+                  mode="append",
+                  compression=compression)
+    elif feat == "trace":
+        for tr in rtdc_ds["trace"].keys():
+            tr0 = rtdc_ds["trace"][tr][0]
+            trdat = np.zeros((nev, tr0.size), dtype=tr0.dtype)
+            jj = 0
+            for ii in range(len(rtdc_ds)):
+                if filtarr[ii]:
+                    trdat[jj] = rtdc_ds["trace"][tr][ii]
+                    jj += 1
+            write(h5obj,
+                  data={"trace": {tr: trdat}},
+                  mode="append",
+                  compression=compression)
+    elif feat == "index":
+        # re-enumerate data index feature (filtered data)
+        if "events/index" in h5obj:
+            nev0 = len(h5obj["events/index"])
+        else:
+            nev0 = 0
+        write(h5obj,
+              data={"index": np.arange(nev0+1, nev0+nev+1)},
+              mode="append")
+    else:
+        write(h5obj,
+              data={feat: rtdc_ds[feat][filtarr]},
+              mode="append")

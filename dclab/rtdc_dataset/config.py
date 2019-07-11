@@ -160,6 +160,12 @@ class Configuration(object):
     def save(self, filename):
         """Save the configuration to a file"""
         filename = pathlib.Path(filename)
+        out_str = self.tostring()
+        with filename.open("w") as f:
+            f.write(out_str)
+
+    def tostring(self):
+        """Convert the configuration to its string representation"""
         out = []
         keys = sorted(list(self.keys()))
         for key in keys:
@@ -172,11 +178,11 @@ class Configuration(object):
                 out.append("{} = {}".format(var, val))
             out.append("")
 
-        with filename.open("w") as f:
-            for i in range(len(out)):
-                # win-like line endings
-                out[i] = out[i]+"\n"
-            f.writelines(out)
+        out_str = ""
+        for i in range(len(out)):
+            # win-like line endings
+            out_str += out[i]+"\n"
+        return out_str
 
     def update(self, newcfg):
         """Update current config with a dictionary"""

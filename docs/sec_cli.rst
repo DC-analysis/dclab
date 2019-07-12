@@ -5,8 +5,8 @@ Command-line interface
 
 .. _sec_join:
 
-join
-----
+dclab-join
+----------
 
 .. simple_argparse::
    :module: dclab.cli
@@ -16,8 +16,8 @@ join
 
 .. _sec_tdms2rtdc:
 
-tdms2rtdc
----------
+dclab-tdms2rtdc
+---------------
 
 .. simple_argparse::
    :module: dclab.cli
@@ -27,8 +27,8 @@ tdms2rtdc
 
 .. _sec_verify_dataset:
 
-verify-dataset
---------------
+dclab-verify-dataset
+--------------------
 
 .. simple_argparse::
    :module: dclab.cli

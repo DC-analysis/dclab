@@ -76,7 +76,8 @@ def join(path_out=None, paths_in=None):
 
     # Create initial output file
     ds0 = load.new_dataset(sorted_paths[0])
-    features = sorted(ds0._events.keys())
+    # Check for features existence (fmt_tdms may have empty "image", ...)
+    features = sorted([f for f in ds0._events if f in ds0])
     ds0.export.hdf5(path=path_out,
                     features=features,
                     filtered=False,
@@ -131,7 +132,8 @@ def join_parser():
     return parser
 
 
-def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False):
+def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
+              verbose=False):
     """Convert .tdms datasets to the hdf5-based .rtdc file format"""
     if path_tdms is None or path_rtdc is None:
         parser = tdms2rtdc_parser()
@@ -140,6 +142,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False):
         path_tdms = pathlib.Path(args.tdms_path).resolve()
         path_rtdc = pathlib.Path(args.rtdc_path)
         compute_features = args.compute_features
+        verbose = True
 
     # Determine whether input path is a tdms file or a directory
     if path_tdms.is_dir():
@@ -161,8 +164,9 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False):
         ff = pathlib.Path(files_tdms[ii])
         fr = pathlib.Path(files_rtdc[ii])
 
-        print_info("Converting {:d}/{:d}: {}".format(
-            ii + 1, len(files_tdms), ff))
+        if verbose:
+            print_info("Converting {:d}/{:d}: {}".format(
+                ii + 1, len(files_tdms), ff))
         # create directory
         if not fr.parent.exists():
             fr.parent.mkdir(parents=True)

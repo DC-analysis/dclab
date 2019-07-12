@@ -81,6 +81,11 @@ class H5Events(object):
         else:
             return data[:]
 
+    def __iter__(self):
+        # dict-like behavior
+        for key in self.keys():
+            yield key
+
     def _is_defective_feature(self, key):
         """Whether or not the stored feature is defective"""
         defective = False

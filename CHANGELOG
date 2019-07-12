@@ -2,8 +2,9 @@
  - feat: add command line script for joining measurements "dclab-join"
  - feat: make log files available as `RTDCBase.logs`
  - feat: include log data in "dclab-join" and "dclab-tdms2rtdc"
- - fix: `features` property for tdms file format falsely contained
-   the keys `trace`, `image`, and `contour` when they were not present.
+ - fix: `features` property for tdms file format falsely contains
+   the keys "contour", "image", "mask", and "trace" when they are
+   actually not available.
  - enh: support loading TDMS data using the 'with' statement
  - docs: add example for joining measurements
  - docs: other minor improvements

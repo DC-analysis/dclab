@@ -56,6 +56,26 @@ def test_compatibility_shapein201():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_contour.'
+                            + 'NoContourDataWarning')
+def test_contains_non_scalar():
+    ds1 = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    assert "contour" in ds1
+    assert "image" in ds1
+    assert "mask" in ds1
+    assert "trace" in ds1
+    ds2 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    assert "image" not in ds2
+    assert "trace" not in ds2
+    ds3 = new_dataset(retrieve_data("rtdc_data_shapein_v2.0.1.zip"))
+    assert "contour" not in ds3
+    assert "image" not in ds3
+    assert "mask" not in ds3
+    assert "trace" not in ds3
+    cleanup()
+
+
 def test_contour_basic():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert len(ds["contour"]) == 12

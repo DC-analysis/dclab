@@ -76,6 +76,18 @@ class RTDC_TDMS(RTDCBase):
         # event traces
         self._events["trace"] = TraceColumn(self)
 
+    def __contains__(self, key):
+        ct = False
+        if key in ["contour", "image", "mask", "trace"]:
+            # Take into account special cases of the tdms file format:
+            # tdms features "image", "trace", "contour", and "mask"
+            # evaluate to True (len()!=0) if the data exist on disk
+            if key in self._events and self._events[key]:
+                ct = True
+        else:
+            ct = super(RTDC_TDMS, self).__contains__(key)
+        return ct
+
     def __enter__(self):
         return self
 
@@ -127,7 +139,9 @@ class RTDC_TDMS(RTDCBase):
 
         # Load log files
         log_files = config_paths
-        for name in [self._mid + "_log.ini",
+        for name in [self._mid + "_events.txt",
+                     self._mid + "_log.ini",
+                     self._mid + "_SoftwareSettings.ini",
                      "FG_Config.mcf",
                      "parameters.txt"]:
             pl = self.path.with_name(name)

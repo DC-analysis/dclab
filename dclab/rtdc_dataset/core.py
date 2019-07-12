@@ -69,15 +69,8 @@ class RTDCBase(object):
     def __contains__(self, key):
         ct = False
         if key in self._events:
-            if self.format == "tdms" and key in ["contour", "image", "trace"]:
-                # Take into account special cases of the tdms file format:
-                # tdms features "image", "trace", "contour" are True if
-                # the data exist on disk
-                if self._events[key]:
-                    ct = True
-            else:
-                ct = True
-        if ct is False:
+            ct = True
+        else:
             # Check ancillary features data
             if key in self._ancillaries:
                 # already computed

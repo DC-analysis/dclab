@@ -171,7 +171,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         if not fr.parent.exists():
             fr.parent.mkdir(parents=True)
         # load and export dataset
-        with load.load_file(ff) as ds:
+        with load.new_dataset(ff) as ds:
             # determine features to export
             if compute_features:
                 features = ds.features

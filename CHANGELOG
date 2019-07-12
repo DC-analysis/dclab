@@ -9,6 +9,7 @@
  - docs: add example for joining measurements
  - docs: other minor improvements
  - setup: add Python 3.7 wheels for Windows (#62)
+ - setup: remove Python 2 wheels for macOS
 0.11.1
  - docs: add example for fluorescence trace visualization
  - docs: restructure advanced usage section

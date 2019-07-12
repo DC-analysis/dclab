@@ -5,9 +5,6 @@ matrix:
  include:
  - os: osx
    language: generic
-   env: MAC_PYTHON_VERSION=2.7
- - os: osx
-   language: generic
    env: MAC_PYTHON_VERSION=3.6
  - os: osx
    language: generic
@@ -25,8 +22,6 @@ before_install:
 # install other dependencies
 - source ./.travis/${TRAVIS_OS_NAME}_setup_python.sh $MAC_PYTHON_VERSION
 install:
-# workaround: The path variable is not set automatically with Python 2
-- export PATH=/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH
 # install binary packages
 - travis_retry pip install --upgrade pip
 - travis_retry pip install setuptools wheel

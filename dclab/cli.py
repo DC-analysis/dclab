@@ -125,7 +125,7 @@ def join_parser():
             + "file. Please only join datasets that were recorded" \
             + "in the same measurement run."
     parser = argparse.ArgumentParser(description=descr)
-    parser.add_argument('input', nargs="*", type=str,
+    parser.add_argument('input', metavar="INPUT", nargs="*", type=str,
                         help='Input path (.tdms or .rtdc files)')
     parser.add_argument('-o', '--output', type=str,
                         help='Output path (.rtdc file)')
@@ -215,10 +215,10 @@ def tdms2rtdc_parser():
                              + 'compatibility with future versions and '
                              + 'allows to isolate the original data.')
     parser.set_defaults(compute_features=False)
-    parser.add_argument('tdms_path', metavar='tdms-path', type=str,
+    parser.add_argument('tdms_path', metavar="TDMS_PATH", type=str,
                         help='Input path (tdms file or folder containing '
                              + 'tdms files)')
-    parser.add_argument('rtdc_path', metavar='rtdc-path', type=str,
+    parser.add_argument('rtdc_path', metavar="RTDC_PATH", type=str,
                         help='Output path (file or folder), existing data '
                              + 'will be overridden')
     return parser
@@ -247,6 +247,6 @@ def verify_dataset_parser():
             + "This program is used to enforce data integrity with future " \
             + "implementations of RT-DC recording software (e.g. ShapeIn)."
     parser = argparse.ArgumentParser(description=descr)
-    parser.add_argument('path', metavar='path', type=str,
+    parser.add_argument('path', metavar='PATH', type=str,
                         help='Path to experimental dataset')
     return parser

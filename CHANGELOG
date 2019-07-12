@@ -1,5 +1,5 @@
 0.12.0
- - feat: add command line script for joining measurements "dclab-join"
+ - feat: add command line script for joining measurements "dclab-join" (#57)
  - feat: make log files available as `RTDCBase.logs`
  - feat: include log data in "dclab-join" and "dclab-tdms2rtdc"
  - fix: `features` property for tdms file format falsely contains

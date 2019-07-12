@@ -122,11 +122,11 @@ def join_parser():
     descr = "Join two or more RT-DC measurements. This will produce " \
             + "one larger .rtdc file. The meta data of the dataset " \
             + "that was recorded earliest will be used in the output " \
-            + "file. Please only join datasets that were recorded" \
+            + "file. Please only join datasets that were recorded " \
             + "in the same measurement run."
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('input', metavar="INPUT", nargs="*", type=str,
-                        help='Input path (.tdms or .rtdc files)')
+                        help='Input paths (.tdms or .rtdc files)')
     parser.add_argument('-o', '--output', type=str,
                         help='Output path (.rtdc file)')
     return parser
@@ -245,7 +245,7 @@ def verify_dataset_parser():
     descr = "Check experimental datasets for completeness. Note that old " \
             + "measurements will most likely fail this verification step. " \
             + "This program is used to enforce data integrity with future " \
-            + "implementations of RT-DC recording software (e.g. ShapeIn)."
+            + "implementations of RT-DC recording software (e.g. Shape-In)."
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('path', metavar='PATH', type=str,
                         help='Path to experimental dataset')

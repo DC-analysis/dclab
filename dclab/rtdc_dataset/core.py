@@ -217,7 +217,7 @@ class RTDCBase(object):
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform",
                                 downsample=0, xscale="linear",
-                                yscale="linear"):
+                                yscale="linear", remove_invalid=False):
         """Downsampling by removing points at dense locations
 
         Parameters
@@ -239,6 +239,11 @@ class RTDCBase(object):
             displayed on a log-scale. Defaults to "linear".
         yscale: str
             See `xscale`.
+        remove_invalid: bool
+            Remove nan and inf values before downsampling; if set to
+            `True`, the actual number of samples returned might be
+            smaller than `downsample` due to infinite or nan values
+            (e.g. due to logarithmic scaling).
 
         Returns
         -------
@@ -261,6 +266,7 @@ class RTDCBase(object):
 
         _, _, idx = downsampling.downsample_grid(xs, ys,
                                                  samples=downsample,
+                                                 remove_invalid=remove_invalid,
                                                  ret_idx=True)
         self._plot_filter = idx
         return x[idx], y[idx]

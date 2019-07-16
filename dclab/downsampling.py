@@ -69,7 +69,7 @@ def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
 
 
 @Cache
-def downsample_grid(a, b, samples, ret_idx=False):
+def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
     """Content-based downsampling for faster visualization
 
     The arrays `a` and `b` make up a 2D scatter plot with high
@@ -83,7 +83,9 @@ def downsample_grid(a, b, samples, ret_idx=False):
     samples: int
         The desired number of samples
     remove_invalid: bool
-        Remove nan and inf values before downsampling
+        Remove nan and inf values before downsampling; if set to
+        `True`, the actual number of samples returned might be
+        smaller than `samples` due to infinite or nan values.
     ret_idx: bool
         Also return a boolean array that corresponds to the
         downsampled indices in `a` and `b`.
@@ -101,11 +103,26 @@ def downsample_grid(a, b, samples, ret_idx=False):
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
 
+    if remove_invalid:
+        # Remove nan and inf values straight from the beginning.
+        # This might results in arrays smaller than `samples`,
+        # but it makes sure that no inf/nan values will be plotted.
+        bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
+        ad = a[~bad]
+        bd = b[~bad]
+    else:
+        bad = np.zeros_like(a, dtype=bool)
+        ad = a
+        bd = b
+
+    keep = np.ones_like(a, dtype=bool)
+    keep[bad] = False
+
     samples = int(samples)
 
-    if samples and samples < a.size:
+    if samples and samples < ad.size:
         # The events to keep
-        keep = np.zeros_like(a, dtype=bool)
+        keepd = np.zeros_like(ad, dtype=bool)
 
         # 1. Produce evenly distributed samples
         # Choosing grid-size:
@@ -117,8 +134,8 @@ def downsample_grid(a, b, samples, ret_idx=False):
         # 300 is about the size of the plot in marker sizes and yields
         # good results.
         grid_size = 300
-        xpx = norm(a, a, b) * grid_size
-        ypx = norm(b, b, a) * grid_size
+        xpx = norm(ad, ad, bd) * grid_size
+        ypx = norm(bd, bd, ad) * grid_size
         # The events on the grid to process
         toproc = np.ones((grid_size, grid_size), dtype=bool)
 
@@ -126,40 +143,44 @@ def downsample_grid(a, b, samples, ret_idx=False):
             xi = xpx[ii]
             yi = ypx[ii]
             # filter for overlapping events
+            # Note that `valid` is used here to promote only valid
+            # events in this step. However, in step 2, invalid events
+            # could be added back. To avoid this scenario, the
+            # parameter `remove_invalid` should be set to True.
             if valid(xi, yi) and toproc[int(xi-1), int(yi-1)]:
                 toproc[int(xi-1), int(yi-1)] = False
                 # include event
-                keep[ii] = True
+                keepd[ii] = True
 
         # 2. Make sure that we reach `samples` by adding or
         # removing events.
-        diff = np.sum(keep) - samples
+        diff = np.sum(keepd) - samples
         if diff > 0:
             # Too many samples
-            rem_indices = np.where(keep)[0]
+            rem_indices = np.where(keepd)[0]
             np.random.set_state(rs)
             rem = np.random.choice(rem_indices,
                                    size=diff,
                                    replace=False)
-            keep[rem] = False
+            keepd[rem] = False
         elif diff < 0:
             # Not enough samples
-            add_indices = np.where(~keep)[0]
+            add_indices = np.where(~keepd)[0]
             np.random.set_state(rs)
             add = np.random.choice(add_indices,
                                    size=abs(diff),
                                    replace=False)
-            keep[add] = True
+            keepd[add] = True
 
-        assert np.sum(keep) == samples, "sanity check"
-        asd = a[keep]
-        bsd = b[keep]
-        assert np.allclose(a[keep], asd, equal_nan=True), "sanity check"
-        assert np.allclose(b[keep], bsd, equal_nan=True), "sanity check"
+        assert np.sum(keepd) == samples, "sanity check"
+        asd = ad[keepd]
+        bsd = bd[keepd]
+        assert np.allclose(ad[keepd], asd, equal_nan=True), "sanity check"
+        assert np.allclose(bd[keepd], bsd, equal_nan=True), "sanity check"
+        keep[~bad] = keepd
     else:
-        keep = np.ones_like(a, dtype=bool)
-        asd = a
-        bsd = b
+        asd = ad
+        bsd = bd
 
     if ret_idx:
         return asd, bsd, keep

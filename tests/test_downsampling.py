@@ -21,7 +21,7 @@ def test_basic():
     assert np.all(b2 == b)
 
 
-def test_basic_grid():
+def test_grid_basic():
     a = np.arange(100)
     b = np.arange(50, 150)
     ads, bds, idx = downsampling.downsample_grid(a=a,
@@ -39,7 +39,40 @@ def test_basic_grid():
     assert np.all(bds2 == bds)
 
 
-def test_nan():
+def test_grid_nan():
+    a = np.arange(100, dtype=float)
+    a[50:] = np.nan
+    b = np.arange(50, 150, dtype=float)
+    ads, bds, idx = downsampling.downsample_grid(a=a,
+                                                 b=b,
+                                                 samples=50,
+                                                 ret_idx=True,
+                                                 remove_invalid=False)
+    assert np.allclose(a[idx], ads, atol=1e-14, rtol=0, equal_nan=True)
+    assert np.allclose(b[idx], bds, atol=1e-14, rtol=0, equal_nan=True)
+    assert np.sum(np.isnan(ads)) == 1, "depends on random state"
+
+    ads2, bds2 = downsampling.downsample_grid(a=a,
+                                              b=b,
+                                              samples=50,
+                                              ret_idx=False,
+                                              remove_invalid=True)
+    assert np.sum(np.isnan(ads2)) == 0
+    assert np.all(ads2 == a[:50])
+    assert np.all(bds2 == b[:50])
+
+    ads3, bds3, idx3 = downsampling.downsample_grid(a=a,
+                                                    b=b,
+                                                    samples=60,
+                                                    ret_idx=True,
+                                                    remove_invalid=True)
+    assert np.sum(np.isnan(bds3)) == 0
+    assert ads3.size == 50, "only 50 valid values"
+    assert np.all(ads3 == a[idx3])
+    assert np.all(bds3 == b[idx3])
+
+
+def test_rand_nan():
     a = np.arange(100, dtype=float)
     a[50:] = np.nan
     b, idx = downsampling.downsample_rand(a=a,

@@ -1,3 +1,6 @@
+0.13.0
+ - feat: allow to force-exclude invalid (inf/nan) events when downsampling
+   using the `remove_invalid` keyword argument
 0.12.0
  - feat: add command line script for joining measurements "dclab-join" (#57)
  - feat: make log files available as `RTDCBase.logs`

@@ -37,7 +37,9 @@ def test_downsample_log_invalid():
     ds.apply_filter()
     xlog, ylog = ds.get_downsampled_scatter(downsample=99,
                                             xscale="log",
-                                            yscale="log")
+                                            yscale="log",
+                                            remove_invalid=False,
+                                            )
     for x in xlog:
         assert x in ds["area_um"]
     for y in ylog:
@@ -46,6 +48,22 @@ def test_downsample_log_invalid():
     assert xlog.size == 99
     assert ylog.size == 99
     assert xlog.min() < 0
+
+
+def test_downsample_log_invalid_removed():
+    ddict = {"area_um": np.array([-100, 0, 100, 200, 300, 400, 500]),
+             "deform": np.array([.1, .2, .3, .4, .5, 6, np.nan])}
+    ds = dclab.new_dataset(ddict)
+    ds.apply_filter()
+    xlog, ylog = ds.get_downsampled_scatter(downsample=6,
+                                            xscale="log",
+                                            yscale="log",
+                                            remove_invalid=True,
+                                            )
+    assert xlog.size == 4
+    assert ylog.size == 4
+    assert np.all(xlog == np.array([100, 200, 300, 400]))
+    assert np.all(ylog == np.array([.3, .4, .5, 6]))
 
 
 def test_downsample_none():

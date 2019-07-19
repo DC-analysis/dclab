@@ -217,7 +217,8 @@ class RTDCBase(object):
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform",
                                 downsample=0, xscale="linear",
-                                yscale="linear", remove_invalid=False):
+                                yscale="linear", remove_invalid=False,
+                                ret_mask=False):
         """Downsampling by removing points at dense locations
 
         Parameters
@@ -244,10 +245,18 @@ class RTDCBase(object):
             `True`, the actual number of samples returned might be
             smaller than `downsample` due to infinite or nan values
             (e.g. due to logarithmic scaling).
+        ret_mask: bool
+            If set to `True`, returns a boolean array of length
+            `len(self)` where `True` values identify the filtered
+            data.
 
         Returns
         -------
-        xnew, xnew: filtered x and y
+        xnew, xnew: 1d ndarray of lenght `N`
+            Filtered data; `N` is either identical to `downsample`
+            or smaller (if `remove_invalid==True`)
+        mask: 1d boolean array of length `len(RTDCBase)`
+            Array for identifying the downsampled data points
         """
         if downsample < 0:
             raise ValueError("`downsample` must be zero or positive!")
@@ -269,7 +278,10 @@ class RTDCBase(object):
                                                  remove_invalid=remove_invalid,
                                                  ret_idx=True)
         self._plot_filter = idx
-        return x[idx], y[idx]
+        if ret_mask:
+            return x[idx], y[idx], idx
+        else:
+            return x[idx], y[idx]
 
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None,
                         yacc=None, kde_type="histogram", kde_kwargs={},

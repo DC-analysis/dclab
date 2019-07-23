@@ -151,12 +151,9 @@ class RTDC_TDMS(RTDCBase):
             p2 = None
             p3 = None
             for line in parlines:
-                if line.startswith("samplesperframe"):
-                    spe = int(line.split()[1])
-                    dclab_config["fluorescence"]["samples per event"] = spe
-                elif line.startswith("samplerate"):
-                    sr = float(line.split()[1])
-                    dclab_config["fluorescence"]["sample rate"] = sr
+                if line.startswith("pulse_led"):
+                    fdur = float(line.split()[1])
+                    dclab_config["imaging"]["flash duration"] = fdur
                 elif line.startswith("numberofchannels"):
                     nc = int(line.split()[1])
                     dclab_config["fluorescence"]["channel count"] = nc
@@ -172,12 +169,21 @@ class RTDC_TDMS(RTDCBase):
                     p3 = float(line.split()[1])
                     dclab_config["fluorescence"]["laser 3 lambda"] = 640
                     dclab_config["fluorescence"]["laser 3 power"] = p3
+                elif line.startswith("samplerate"):
+                    sr = float(line.split()[1])
+                    dclab_config["fluorescence"]["sample rate"] = sr
+                elif line.startswith("samplesperframe"):
+                    spe = int(line.split()[1])
+                    dclab_config["fluorescence"]["samples per event"] = spe
                 elif line.startswith("Vmin"):
                     vmin = float(line.split()[1])
                     dclab_config["fluorescence"]["signal min"] = vmin
                 elif line.startswith("Vmax"):
                     vmax = float(line.split()[1])
                     dclab_config["fluorescence"]["signal max"] = vmax
+                elif line.startswith("median_pmt"):
+                    mfs = int(line.split()[1])
+                    dclab_config["fluorescence"]["trace median"] = mfs
             # Add generic channel names
             for ii, pi, ci in [(1, p1, "488"), (2, p2, "561"), (3, p3, "640")]:
                 if pi is not None and pi != 0:

@@ -119,6 +119,7 @@ class RTDC_TDMS(RTDCBase):
         config_paths = [self.path.with_name(self._mid + "_para.ini"),
                         self.path.with_name(self._mid + "_camera.ini")]
         tdms_config = Configuration(files=config_paths)
+
         dclab_config = Configuration()
         for section in naming.configmap:
             for pname in naming.configmap[section]:
@@ -131,6 +132,63 @@ class RTDC_TDMS(RTDCBase):
                         dclab_config[section][pname] = typ(val)
                 else:
                     dclab_config[section][pname] = typ(meta)
+
+        # Additional information from log file
+        rtfdc_log = self.path.with_name(self._mid + "_log.ini")
+        if rtfdc_log.exists():
+            with rtfdc_log.open() as fd:
+                loglines = fd.readlines()
+            for line in loglines:
+                if line.startswith("[EVENT LOG]"):
+                    sv = line.split("]")[1].strip()
+                    if sv:
+                        dclab_config["setup"]["software version"] = sv
+        rtfdc_parm = self.path.with_name("parameters.txt")
+        if rtfdc_parm.exists():
+            with rtfdc_parm.open() as fd:
+                parlines = fd.readlines()
+            p1 = None
+            p2 = None
+            p3 = None
+            for line in parlines:
+                if line.startswith("samplesperframe"):
+                    spe = int(line.split()[1])
+                    dclab_config["fluorescence"]["samples per event"] = spe
+                elif line.startswith("samplerate"):
+                    sr = float(line.split()[1])
+                    dclab_config["fluorescence"]["sample rate"] = sr
+                elif line.startswith("numberofchannels"):
+                    nc = int(line.split()[1])
+                    dclab_config["fluorescence"]["channel count"] = nc
+                elif line.startswith("laser488"):
+                    p1 = float(line.split()[1])
+                    dclab_config["fluorescence"]["laser 1 lambda"] = 488
+                    dclab_config["fluorescence"]["laser 1 power"] = p1
+                elif line.startswith("laser561"):
+                    p2 = float(line.split()[1])
+                    dclab_config["fluorescence"]["laser 2 lambda"] = 561
+                    dclab_config["fluorescence"]["laser 2 power"] = p2
+                elif line.startswith("laser640"):
+                    p3 = float(line.split()[1])
+                    dclab_config["fluorescence"]["laser 3 lambda"] = 640
+                    dclab_config["fluorescence"]["laser 3 power"] = p3
+                elif line.startswith("Vmin"):
+                    vmin = float(line.split()[1])
+                    dclab_config["fluorescence"]["signal min"] = vmin
+                elif line.startswith("Vmax"):
+                    vmax = float(line.split()[1])
+                    dclab_config["fluorescence"]["signal max"] = vmax
+            # Add generic channel names
+            for ii, pi, ci in [(1, p1, "488"), (2, p2, "561"), (3, p3, "640")]:
+                if pi is not None and pi != 0:
+                    chn = "channel {} name".format(ii)
+                    if chn not in dclab_config["fluorescence"]:
+                        dclab_config["fluorescence"][chn] = ci
+            lc = bool(p1) + bool(p2) + bool(p3)
+            dclab_config["fluorescence"]["laser count"] = lc
+            li = (p1 is not None) + (p2 is not None) + (p3 is not None)
+            dclab_config["fluorescence"]["lasers installed"] = li
+            dclab_config["fluorescence"]["channels installed"] = 3
 
         self.config = dclab_config
         self._complete_config_tdms(tdms_config)
@@ -173,6 +231,9 @@ class RTDC_TDMS(RTDCBase):
             self.config["experiment"]["time"] = timestr
         # fluorescence
         if "fluorescence" in self.config:
+            if "bit depth" not in self.config["fluorescence"]:
+                # hardware-defined (always the same)
+                self.config["fluorescence"]["bit depth"] = 16
             if "laser 1 power" in self.config["fluorescence"]:
                 self.config["fluorescence"]["laser 1 lambda"] = 488.
             if "laser 2 power" in self.config["fluorescence"]:

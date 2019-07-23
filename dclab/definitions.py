@@ -47,11 +47,18 @@ CFG_METADATA = {
     # This section should not be present for regular RT-DC measurements.
     "fluorescence": [
         ["bit depth", fint, "Trace bit depth"],
+        # If a fluorescence channel is used, a channel name *must* be
+        # present. If a channel is not used, the channel name *must not*
+        # be present. E.g. if only channels 1 and 2 are used, but there
+        # are three channels present, then `channel count` is two,
+        # `channels installed` is three, and `channel 3 name` is not set.
         ["channel 1 name", str, "FL1 description"],
         ["channel 2 name", str, "FL2 description"],
         ["channel 3 name", str, "FL3 description"],
         ["channel count", fint, "Number of active channels"],
         ["channels installed", fint, "Number of available channels"],
+        # In contrast to `channel ? name`, the laser power *may*
+        # be present (but must be set to 0), if a laser line is not used.
         ["laser 1 lambda", float, "Laser 1 wavelength [nm]"],
         ["laser 1 power", float, "Laser 1 output power [%]"],
         ["laser 2 lambda", float, "Laser 2 wavelength [nm]"],

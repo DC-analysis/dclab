@@ -131,7 +131,8 @@ def check_dataset(path_or_ds):
                 kl = "laser {} lambda".format(ii)
                 kp = "laser {} power".format(ii)
                 if (kl in ds.config["fluorescence"] and
-                        kp in ds.config["fluorescence"]):
+                        kp in ds.config["fluorescence"] and
+                        ds.config["fluorescence"][kp] != 0):
                     lsc2 += 1
             if lsc1 != lsc2:
                 msg = "Metadata: fluorescence laser count inconsistent"
@@ -139,12 +140,14 @@ def check_dataset(path_or_ds):
         # check for samples per event
         if "samples per event" in ds.config["fluorescence"]:
             spe = ds.config["fluorescence"]["samples per event"]
-            for key in ds["trace"].keys():
-                spek = ds["trace"][key][0].size
-                if spek != spe:
-                    msg = "Metadata: wrong number of samples per event: " \
-                          + "{} (expected {}, got {}".format(key, spe, spek)
-                    viol.append(msg)
+            if "trace" in ds:
+                for key in ds["trace"].keys():
+                    spek = ds["trace"][key][0].size
+                    if spek != spe:
+                        msg = "Metadata: wrong number of samples per event: " \
+                              + "{} (expected {}, got {})".format(key, spe,
+                                                                  spek)
+                        viol.append(msg)
     else:
         info.append("Fluorescence: False")
     # search for missing keys (hard)

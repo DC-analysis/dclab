@@ -92,7 +92,8 @@ class RTDC_TDMS(RTDCBase):
         return self
 
     def __exit__(self, type, value, tb):
-        del self._events["image"]._image_data
+        if "image" in self:
+            del self._events["image"]._image_data
 
     def _init_data_with_tdms(self, tdms_filename):
         """Initializes the current RT-DC dataset with a tdms file.

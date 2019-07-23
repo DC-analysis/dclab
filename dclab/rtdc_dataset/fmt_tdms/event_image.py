@@ -108,12 +108,13 @@ class ImageMap(object):
         Initialize this class with a video file.
         """
         fname = pathlib.Path(fname)
-        if not fname.exists():
-            raise OSError("file does not exist: {}".format(fname))
-        self.filename = fname
         self._length = None
         # video handle:
         self._cap = None
+        # filename
+        if not fname.exists():
+            raise OSError("file does not exist: {}".format(fname))
+        self.filename = fname
 
     def __del__(self):
         if self._cap is not None:

@@ -77,7 +77,7 @@ class ImageColumn(object):
         video = None
         if rtdc_dataset._fdir.exists():
             # Cell images (video)
-            videos = [v.name for v in rtdc_dataset._fdir.rglob("*.avi")]
+            videos = [v.name for v in rtdc_dataset._fdir.glob("*.avi")]
             # Filter videos according to measurement number
             meas_id = rtdc_dataset._mid
             videos = [v for v in videos if v.split("_")[0] == meas_id]

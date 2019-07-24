@@ -95,7 +95,7 @@ class ContourColumn(object):
         Returns None if no contour file is found.
         """
         cont_id = rtdc_dataset.path.stem
-        cands = [c.name for c in rtdc_dataset._fdir.rglob("*_contours.txt")]
+        cands = [c.name for c in rtdc_dataset._fdir.glob("*_contours.txt")]
         cands = sorted(cands)
         # Search for perfect matches, e.g.
         # - M1_0.240000ul_s.tdms

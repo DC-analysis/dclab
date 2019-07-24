@@ -218,7 +218,10 @@ class RTDC_TDMS(RTDCBase):
 
     def _complete_config_tdms(self, residual_config={}):
         # experiment
-        tse = self.path.stat().st_mtime - self["time"][-1]
+        tse = self.path.stat().st_mtime
+        if "time" in self:
+            # correct for duration of experiment
+            tse -= self["time"][-1]
         loct = time.localtime(tse)
         if "date" not in self.config["experiment"]:
             # Date of measurement ('YYYY-MM-DD')

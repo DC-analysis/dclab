@@ -206,12 +206,10 @@ class Configuration(object):
 def load_from_file(cfg_file):
     """Load the configuration from a file
 
-
     Parameters
     ----------
     cfg_file: str
         Path to configuration file
-
 
     Returns
     -------

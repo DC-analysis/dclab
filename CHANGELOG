@@ -4,6 +4,7 @@
  - feat: allow to force-exclude invalid (inf/nan) events when downsampling
    using the `remove_invalid` keyword argument
  - enh: improved tdms meta data import (also affects dclab-tdms2rtdc)
+ - enh: update channel count and samples per event when writing hdf5 data
  - fix: ignore empty configuration values when loading tdms data
  - fix: image/contour files were searched recursively instead of
    only in the directory of the tdms file

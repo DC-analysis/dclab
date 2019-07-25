@@ -23,6 +23,8 @@ def test_join_tdms():
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert len(dsj)
         assert len(dsj) == 2*len(ds0)
+        assert len(ds0) == ds0.config["experiment"]["event count"]
+        assert len(dsj) == dsj.config["experiment"]["event count"]
         assert np.all(dsj["circ"][:100] == ds0["circ"][:100])
         assert np.all(dsj["circ"][len(ds0):len(ds0)+100] == ds0["circ"][:100])
         assert set(dsj.features) == set(ds0.features)

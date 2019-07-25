@@ -92,11 +92,10 @@ def join(path_out=None, paths_in=None):
                                    rtdc_ds=dsi,
                                    feat=feat,
                                    compression="gzip")
+        export.hdf5_autocomplete_config(h5obj)
 
-    with load.new_dataset(path_out) as dsf:
-        # Important keyword arguments
-        meta = {"experiment": {"event count": len(dsf),
-                               "run index": 1}}
+    # Meta data
+    meta = {"experiment": {"run index": 1}}
 
     # Logs and configs from source files
     logs = {}

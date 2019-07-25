@@ -6,6 +6,7 @@ from __future__ import division, print_function, unicode_literals
 import pathlib
 import warnings
 
+import h5py
 
 from ..compat import PyImportError
 
@@ -206,12 +207,10 @@ class Export(object):
 
         if filtered:
             filtarr = self.rtdc_ds.filter.all
-            nev = np.sum(filtarr)
         else:
             nev = len(self.rtdc_ds)
             filtarr = np.ones(nev, dtype=bool)
 
-        meta["experiment"]["event count"] = nev
         # write meta data
         with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
             # write each feature individually
@@ -221,6 +220,9 @@ class Export(object):
                             feat=feat,
                             compression=compression,
                             filtarr=filtarr)
+            # update configuration
+            hdf5_autocomplete_config(h5obj)
+
 
     def tsv(self, path, features, filtered=True, override=False):
         """Export the data of the current instance to a .tsv file
@@ -298,6 +300,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None):
     Notes
     -----
     Please update the "experiment::event count" attribute manually.
+    You may use :func:`hdf5_autocomplete_config` for that.
     """
     # optional array for filtering events
     if filtarr is None:
@@ -370,3 +373,50 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None):
         write(h5obj,
               data={feat: rtdc_ds[feat][filtarr]},
               mode="append")
+
+
+def hdf5_autocomplete_config(path_or_h5obj):
+    """"Autocompletes the configuration of the RTDC-measurement
+
+    The following configuration keys are updated:
+
+    - experiment:event count
+
+    The following configuration keys are added if not present:
+
+    - fluorescence:samples per event
+    - fluorescence:channel count
+
+    Parameters
+    ----------
+    path: pathlib.Path or str or h5py.File
+        Path to or opened RT-DC measurement
+
+    """
+    if not isinstance(path_or_h5obj, h5py.File):
+        close = True
+        h5obj = h5py.File(path_or_h5obj, "a")
+    else:
+        close = False
+        h5obj = path_or_h5obj
+
+    # set event count
+    feats = sorted(h5obj["events"].keys())
+    if feats:
+        h5obj.attrs["experiment:event count"] = len(h5obj["events"][feats[0]])
+    else:
+        raise ValueError("No features in '{}'!".format(path_or_h5obj))
+    # set samples per event
+    if "trace" in feats:
+        if "fluorescence:samples per event" not in h5obj.attrs:
+            traces = list(h5obj["events"]["trace"].keys())
+            trsize = h5obj["events"]["trace"][traces[0]].shape[1]
+            h5obj.attrs["fluorescence:samples per event"] = trsize
+    # set channel count
+    chcount = sum(["fl1_max" in feats, "fl2_max" in feats, "fl3_max" in feats])
+    if chcount:
+        if "fluorescence:channel count" not in h5obj.attrs:
+            h5obj.attrs["fluorescence:channel count"] = chcount
+
+    if close:
+        h5obj.close()

@@ -15,7 +15,18 @@ from . import definitions as dfn
 from ._version import version
 
 
-def get_command_log(paths):
+def get_command_log(paths, custom_dict={}):
+    """Return a json dump of system parameters
+
+    Parameters
+    ----------
+    paths: list of pathlib.Path or str
+        paths of related measurement files; they are hashed
+        and included in the "files" key
+    custom_dict: dict
+        additional user-defined entries; must contain simple
+        Python objects (json.dumps must still work)
+    """
     data = {
         "date": datetime.datetime.now().strftime("%Y-%m-%d"),
         "time": datetime.datetime.now().strftime("%H:%M:%S"),
@@ -32,7 +43,10 @@ def get_command_log(paths):
                  "index": ii+1
                  }
         data["files"].append(fdict)
-    dump = json.dumps(data, sort_keys=True, indent=2).split("\n")
+    final_data = {}
+    final_data.update(custom_dict)
+    final_data.update(data)
+    dump = json.dumps(final_data, sort_keys=True, indent=2).split("\n")
     return dump
 
 
@@ -189,8 +203,16 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                            override=True)
 
             # write logs
+            custom_dict = {}
+            cfeats = [f for f in features if f not in ds._events]
+            if "mask" in features:
+                # Mask is always computed from contour data
+                cfeats.append("mask")
+            custom_dict["ancillary features"] = sorted(cfeats)
+
             logs = {}
-            logs["dclab-tdms2rtdc"] = get_command_log(paths=[ff])
+            logs["dclab-tdms2rtdc"] = get_command_log(paths=[ff],
+                                                      custom_dict=custom_dict)
             logs.update(ds.logs)
             with write_hdf5.write(fr, logs=logs, mode="append"):
                 pass

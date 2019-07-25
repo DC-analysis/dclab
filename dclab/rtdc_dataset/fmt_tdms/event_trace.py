@@ -11,6 +11,7 @@ import numpy as np
 from ... import definitions as dfn
 
 from . import naming
+from .exc import InvalidTDMSFileFormat
 
 
 class TraceColumn(object):
@@ -81,7 +82,11 @@ class TraceColumn(object):
             # This might increase memory usage, but it is cleaner
             # when looking at code structure.
             mdata = TdmsFile(str(mname))
-            sampleids = mdata.object("Cell Track", "FL1index").data
+            try:
+                sampleids = mdata.object("Cell Track", "FL1index").data
+            except KeyError:
+                raise InvalidTDMSFileFormat(
+                    "No 'FL1index' column in '{}'!".format(tname))
 
             # Load the trace data. The traces file is usually larger than the
             # measurement file.

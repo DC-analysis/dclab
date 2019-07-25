@@ -6,8 +6,9 @@ from __future__ import division, print_function
 import pathlib
 import time
 
-
 from ...compat import PyImportError
+
+from .exc import InvalidTDMSFileFormat  # noqa:F401
 
 try:
     import nptdms

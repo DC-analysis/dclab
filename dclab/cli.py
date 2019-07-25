@@ -9,7 +9,8 @@ import sys
 import h5py
 import numpy as np
 
-from .rtdc_dataset import export, fmt_tdms, load, util, write_hdf5
+from .rtdc_dataset import check_dataset, export, fmt_tdms, new_dataset, \
+    util, write_hdf5
 from . import definitions as dfn
 
 from ._version import version
@@ -79,7 +80,7 @@ def join(path_out=None, paths_in=None):
     # Determine input file order
     key_paths = []
     for pp in paths_in:
-        ds = load.new_dataset(pp)
+        ds = new_dataset(pp)
         key = "_".join([ds.config["experiment"]["date"],
                         ds.config["experiment"]["time"],
                         str(ds.config["experiment"]["run index"])
@@ -89,7 +90,7 @@ def join(path_out=None, paths_in=None):
     sorted_paths = [p[1] for p in sorted(key_paths, key=lambda x: x[0])]
 
     # Create initial output file
-    ds0 = load.new_dataset(sorted_paths[0])
+    ds0 = new_dataset(sorted_paths[0])
     # Check for features existence (fmt_tdms may have empty "image", ...)
     features = sorted([f for f in ds0._events if f in ds0])
     ds0.export.hdf5(path=path_out,
@@ -100,7 +101,7 @@ def join(path_out=None, paths_in=None):
     with write_hdf5.write(path_out, mode="append") as h5obj:
         # Append data from other files
         for pi in sorted_paths[1:]:
-            dsi = load.new_dataset(pi)
+            dsi = new_dataset(pi)
             for feat in features:
                 export.hdf5_append(h5obj=h5obj,
                                    rtdc_ds=dsi,
@@ -115,7 +116,7 @@ def join(path_out=None, paths_in=None):
     logs = {}
     logs["dclab-join"] = get_command_log(paths=sorted_paths)
     for ii, pp in enumerate(sorted_paths):
-        with load.new_dataset(pp) as ds:
+        with new_dataset(pp) as ds:
             # data file logs
             for ll in ds.logs:
                 logs["src-#{}_{}".format(ii+1, ll)] = ds.logs[ll]
@@ -184,7 +185,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         if not fr.parent.exists():
             fr.parent.mkdir(parents=True)
         # load and export dataset
-        with load.new_dataset(ff) as ds:
+        with new_dataset(ff) as ds:
             # determine features to export
             if compute_features:
                 features = ds.features
@@ -250,16 +251,20 @@ def verify_dataset():
     parser = verify_dataset_parser()
     args = parser.parse_args()
     path_in = pathlib.Path(args.path).resolve()
-    viol, aler, info = load.check_dataset(path_in)
     print_info("Checking {}".format(path_in))
-    for inf in info:
-        print_info(inf)
-    for ale in aler:
-        print_alert(ale)
-    for vio in viol:
-        print_violation(vio)
-    print_info("Check Complete: {} violations and {} alerts".format(len(viol),
-                                                                    len(aler)))
+    try:
+        viol, aler, info = check_dataset(path_in)
+    except fmt_tdms.InvalidTDMSFileFormat:
+        print_violation("Unsupported TDMS file format!")
+    else:
+        for inf in info:
+            print_info(inf)
+        for ale in aler:
+            print_alert(ale)
+        for vio in viol:
+            print_violation(vio)
+        print_info("Check Complete: {} violations and ".format(len(viol))
+                   + "{} alerts".format(len(aler)))
 
 
 def verify_dataset_parser():

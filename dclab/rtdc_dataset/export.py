@@ -223,7 +223,6 @@ class Export(object):
             # update configuration
             hdf5_autocomplete_config(h5obj)
 
-
     def tsv(self, path, features, filtered=True, override=False):
         """Export the data of the current instance to a .tsv file
 

@@ -35,6 +35,40 @@ def test_basic():
     cleanup()
 
 
+def test_complete():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    viol, aler, info = check_dataset(h5path)
+    assert len(viol) == 0
+    assert len(aler) == 0
+    assert "Data file format: hdf5" in info
+    assert "Fluorescence: True" in info
+    cleanup()
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_tdms.event_contour.NoContourDataWarning')
+def test_exact():
+    h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
+    viol, aler, info = check_dataset(h5path)
+    known_viol = [
+        "Metadata: Missing key [fluorescence] 'channel count'",
+        "Metadata: Missing key [fluorescence] 'channels installed'",
+        "Metadata: Missing key [fluorescence] 'laser count'",
+        "Metadata: Missing key [fluorescence] 'lasers installed'",
+        "Metadata: Missing key [fluorescence] 'samples per event'",
+        ]
+    known_aler = [
+        "Metadata: Missing key [online_contour] 'no absdiff'",
+        "Metadata: Missing key [setup] 'identifier'",
+        "Metadata: Missing key [setup] 'module composition'",
+        ]
+    known_info = ['Data file format: tdms', 'Fluorescence: True']
+    assert set(viol) == set(known_viol)
+    assert set(aler) == set(known_aler)
+    assert set(info) == set(known_info)
+    cleanup()
+
+
 def test_missing_file():
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     h5path.with_name("M1_para.ini").unlink()
@@ -44,6 +78,19 @@ def test_missing_file():
         pass
     else:
         assert False
+    cleanup()
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_tdms.event_contour.NoContourDataWarning')
+def test_wrong_samples_per_event():
+    h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
+    with open(h5path.with_name("M1_para.ini"), "a") as fd:
+        fd.write("Samples Per Event = 10\n")
+    msg = "Metadata: wrong number of samples per event: fl1_median " \
+          + "(expected 10, got 566)"
+    viol, _, _ = check_dataset(h5path)
+    assert msg in viol
     cleanup()
 
 

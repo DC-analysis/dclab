@@ -124,20 +124,26 @@ class RTDC_TDMS(RTDCBase):
             if not cp.exists():
                 raise IncompleteTDMSFileFormatError(
                     "Missing file: {}".format(cp))
+        shpin_set = self.path.with_name(self._mid + "_SoftwareSettings.ini")
+        if shpin_set.exists():
+            config_paths.append(shpin_set)
+
         tdms_config = Configuration(files=config_paths)
 
         dclab_config = Configuration()
-        for section in naming.configmap:
-            for pname in naming.configmap[section]:
-                meta = naming.configmap[section][pname]
-                typ = dfn.config_funcs[section][pname]
-                if isinstance(meta, tuple):
-                    osec, opar = meta
-                    if osec in tdms_config and opar in tdms_config[osec]:
-                        val = tdms_config[osec].pop(opar)
-                        dclab_config[section][pname] = typ(val)
-                else:
-                    dclab_config[section][pname] = typ(meta)
+
+        for cfgii in [naming.configmap, naming.config_map_set]:
+            for section in cfgii:
+                for pname in cfgii[section]:
+                    meta = cfgii[section][pname]
+                    typ = dfn.config_funcs[section][pname]
+                    if isinstance(meta, tuple):
+                        osec, opar = meta
+                        if osec in tdms_config and opar in tdms_config[osec]:
+                            val = tdms_config[osec].pop(opar)
+                            dclab_config[section][pname] = typ(val)
+                    else:
+                        dclab_config[section][pname] = typ(meta)
 
         # Additional information from log file
         rtfdc_log = self.path.with_name(self._mid + "_log.ini")
@@ -149,6 +155,7 @@ class RTDC_TDMS(RTDCBase):
                     sv = line.split("]")[1].strip()
                     if sv:
                         dclab_config["setup"]["software version"] = sv
+
         rtfdc_parm = self.path.with_name("parameters.txt")
         if rtfdc_parm.exists():
             with rtfdc_parm.open() as fd:

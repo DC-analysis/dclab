@@ -65,13 +65,14 @@ tr_data_map = {
     "fl3_median": ["fluorescence traces", "FL3med"],
 }
 
+#: for param.ini and camera.ini
 configmap = {
     "experiment": {
         "run index": ("General", "Measurement Number"),
         "sample": ("General", "Sample Name"),
         "date": ("General", "Date [YYYY-MM-DD]"),
         "time": ("General", "Start Time [hh:mm:ss]"),
-    },
+        },
     # All special keywords related to RT-FDC
     "fluorescence": {
         "bit depth": ("FLUOR", "Bitdepthraw"),
@@ -90,11 +91,11 @@ configmap = {
         "signal max": ("FLUOR", "ADCmax [V]"),
         "signal min": ("FLUOR", "ADCmin [V]"),
         "trace median": ("FLUOR", "Trace Median"),
-    },
+        },
     # All tdms-related parameters
     "fmt_tdms": {
         "video frame offset": ("General", "video frame offset"),
-    },
+        },
     # All imaging-related keywords
     "imaging": {
         "flash device": "LED (undefined)",
@@ -105,7 +106,7 @@ configmap = {
         "roi position y": ("ROI", "y-pos"),
         "roi size x": ("ROI", "width"),
         "roi size y": ("ROI", "height"),
-    },
+        },
     # All parameters for online contour extraction from the event images
     "online_contour": {
         "bin area min": ("Image", "Trig Thresh"),
@@ -113,14 +114,14 @@ configmap = {
         "bin threshold": ("Image", "Thresh"),
         "image blur": ("Image", "Blur"),
         "no absdiff": ("Image", "Diff_Method"),
-    },
+        },
     # All online filters
     "online_filter": {
         "aspect min": ("Image", "Cell Aspect Min"),
         "aspect max": ("Image", "Cell Aspect Max"),
         "size_x max": ("Image", "Cell Max Length"),
         "size_y max": ("Image", "Cell Max Height"),
-    },
+        },
     # All setup-related keywords, except imaging
     "setup": {
         "channel width": ("General", "Channel width [um]"),
@@ -132,5 +133,19 @@ configmap = {
         "medium": ("General", "Buffer Medium"),
         "module composition": ("Image", "Setup"),
         "software version": ("General", "Software Version"),
-    },
-}
+        },
+    }
+
+#: for SoftwareSettings.ini
+config_map_set = {
+    "online_contour": {
+        "bin kernel": ("MaintenanceD", "bin_ops"),
+        "image blur": ("MaintenanceD", "blur"),
+        },
+    "fluorescence": {
+        "laser 1 power": ("Fluorescence", "Laser1_Power"),
+        "laser 2 power": ("Fluorescence", "Laser2_Power"),
+        "laser 3 power": ("Fluorescence", "Laser3_Power"),
+        "trace median": ("Maintenance", "median_pmt"),
+        },
+    }

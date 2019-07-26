@@ -254,8 +254,10 @@ def verify_dataset():
     print_info("Checking {}".format(path_in))
     try:
         viol, aler, info = check_dataset(path_in)
-    except fmt_tdms.InvalidTDMSFileFormat:
-        print_violation("Unsupported TDMS file format!")
+    except fmt_tdms.InvalidTDMSFileFormatError:
+        print_violation("Invalid tdms file format!")
+    except fmt_tdms.IncompleteTDMSFileFormatError:
+        print_violation("Incomplete dataset!")
     else:
         for inf in info:
             print_info(inf)

@@ -8,7 +8,8 @@ import time
 
 from ...compat import PyImportError
 
-from .exc import InvalidTDMSFileFormat  # noqa:F401
+from .exc import InvalidTDMSFileFormatError  # noqa:F401
+from .exc import IncompleteTDMSFileFormatError  # noqa:F401
 
 try:
     import nptdms
@@ -119,6 +120,10 @@ class RTDC_TDMS(RTDCBase):
         # Set up configuration
         config_paths = [self.path.with_name(self._mid + "_para.ini"),
                         self.path.with_name(self._mid + "_camera.ini")]
+        for cp in config_paths:
+            if not cp.exists():
+                raise IncompleteTDMSFileFormatError(
+                    "Missing file: {}".format(cp))
         tdms_config = Configuration(files=config_paths)
 
         dclab_config = Configuration()
@@ -185,12 +190,12 @@ class RTDC_TDMS(RTDCBase):
                 elif line.startswith("median_pmt"):
                     mfs = int(line.split()[1])
                     dclab_config["fluorescence"]["trace median"] = mfs
-            # Add generic channel names
-            for ii, pi, ci in [(1, p1, "488"), (2, p2, "561"), (3, p3, "640")]:
-                if pi is not None and pi != 0:
-                    chn = "channel {} name".format(ii)
-                    if chn not in dclab_config["fluorescence"]:
-                        dclab_config["fluorescence"][chn] = ci
+            # Add generic channel names (independent of lasers)
+            for ii in range(1, 4):
+                chn = "channel {} name".format(ii)
+                fln = "fl{}_max".format(ii)
+                if fln in self and chn not in dclab_config["fluorescence"]:
+                    dclab_config["fluorescence"][chn] = "FL{}".format(ii)
             lc = bool(p1) + bool(p2) + bool(p3)
             dclab_config["fluorescence"]["laser count"] = lc
             li = (p1 is not None) + (p2 is not None) + (p3 is not None)
@@ -218,7 +223,11 @@ class RTDC_TDMS(RTDCBase):
             self.logs[pp.name] = cfg
 
     def _complete_config_tdms(self, residual_config={}):
-        # experiment
+        # remove zero frame rate
+        if ("frame rate" in self.config["imaging"]
+                and self.config["imaging"]["frame rate"] == 0):
+            self.config["imaging"].pop("frame rate")
+        # measurement start time
         tse = self.path.stat().st_mtime
         if "time" in self:
             # correct for duration of experiment

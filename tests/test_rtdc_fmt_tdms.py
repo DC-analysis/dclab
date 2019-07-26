@@ -275,9 +275,33 @@ def test_mask_img_shape():
     assert len(ds["mask"]) == 0
 
 
-def test_naming_valud():
+def test_naming_valid():
     for key in dclab.rtdc_dataset.fmt_tdms.naming.dclab2tdms:
         assert key in dclab.definitions.feature_names
+
+
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_contour.'
+                            + 'NoContourDataWarning')
+def test_parameters_txt():
+    ds = new_dataset(retrieve_data("rtdc_data_frtdc_parameters.zip"))
+    assert ds.config["setup"]["module composition"] == "Cell_Flow_2, Fluor"
+    assert ds.config["setup"]["software version"] == "fRT-DC V0.80 150601"
+    assert ds.config["setup"]["identifier"] == "47 red angels"
+    assert ds.config["setup"]["medium"] == "other"
+    assert ds.config["setup"]["flow rate sample"] == 0.01
+    assert ds.config["setup"]["flow rate sheath"] == 0.03
+    assert ds.config["imaging"]["pixel size"] == 0.34
+    assert ds.config["imaging"]["flash duration"] == 2
+    assert ds.config["fluorescence"]["samples per event"] == 1000
+    assert ds.config["fluorescence"]["sample rate"] == 1000000
+    assert ds.config["fluorescence"]["signal min"] == -1
+    assert ds.config["fluorescence"]["signal max"] == 1
+    assert ds.config["fluorescence"]["trace median"] == 21
+    assert ds.config["fluorescence"]["laser 1 power"] == 5
+    assert ds.config["fluorescence"]["laser 2 power"] == 0
+    assert ds.config["fluorescence"]["laser 3 power"] == 0
+    cleanup()
 
 
 def test_pixel_size():

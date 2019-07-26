@@ -116,7 +116,9 @@ class RTDC_TDMS(RTDCBase):
                     # - in nptdms 0.9.0, `data` is an array of length 0
                     continue
                 self._events[naming.tdms2dclab[arg]] = data
-
+        if len(self._events) == 0:
+            raise IncompleteTDMSFileFormatError(
+                "No usable feature data found in '{}'!".format(tdms_filename))
         # Set up configuration
         config_paths = [self.path.with_name(self._mid + "_para.ini"),
                         self.path.with_name(self._mid + "_camera.ini")]

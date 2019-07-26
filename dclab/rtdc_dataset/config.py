@@ -232,6 +232,9 @@ def load_from_file(cfg_file):
                 if section not in cfg:
                     cfg[section] = CaseInsensitiveDict()
                 continue
+            elif not line.count("="):
+                # ignore invalid lines
+                continue
             var, val = line.split("=", 1)
             var = var.strip().lower()
             val = val.strip("' ").strip('" ').strip()

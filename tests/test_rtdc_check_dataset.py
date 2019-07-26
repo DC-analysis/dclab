@@ -4,7 +4,7 @@ from __future__ import print_function, unicode_literals
 
 import pytest
 
-from dclab.rtdc_dataset import check_dataset
+from dclab.rtdc_dataset import check_dataset, fmt_tdms
 
 from helper_methods import cleanup, retrieve_data
 
@@ -32,6 +32,18 @@ def test_basic():
     assert len(aler) == 5
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
+    cleanup()
+
+
+def test_missing_file():
+    h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
+    h5path.with_name("M1_para.ini").unlink()
+    try:
+        check_dataset(h5path)
+    except fmt_tdms.IncompleteTDMSFileFormatError:
+        pass
+    else:
+        assert False
     cleanup()
 
 

@@ -4,6 +4,7 @@ import time
 import hashlib
 import json
 import pathlib
+import platform
 import sys
 
 import h5py
@@ -12,8 +13,18 @@ import numpy as np
 from .rtdc_dataset import check_dataset, export, fmt_tdms, new_dataset, \
     util, write_hdf5
 from . import definitions as dfn
-
+from .compat import PyImportError
 from ._version import version
+
+try:
+    import imageio
+except PyImportError:
+    imageio = None
+
+try:
+    import nptdms
+except PyImportError:
+    nptdms = None
 
 
 def get_command_log(paths, custom_dict={}):
@@ -28,20 +39,8 @@ def get_command_log(paths, custom_dict={}):
         additional user-defined entries; must contain simple
         Python objects (json.dumps must still work)
     """
-    data = {
-        "utc": {
-            "date": time.strftime("%Y-%m-%d", time.gmtime()),
-            "time": time.strftime("%H:%M:%S", time.gmtime()),
-            },
-        "system": {
-            "platform": sys.platform,
-            "python": sys.version.replace("\n", ""),
-            "dclab": version,
-            "h5py": h5py.__version__,
-            "numpy": np.__version__,
-            },
-        "files": [],
-    }
+    data = get_job_info()
+    data["files"] = []
     for ii, pp in enumerate(paths):
         fdict = {"name": pathlib.Path(pp).name,
                  "sha256": util.hashfile(pp, hasher_class=hashlib.sha256),
@@ -53,6 +52,37 @@ def get_command_log(paths, custom_dict={}):
     final_data.update(data)
     dump = json.dumps(final_data, sort_keys=True, indent=2).split("\n")
     return dump
+
+
+def get_job_info():
+    data = {
+        "utc": {
+            "date": time.strftime("%Y-%m-%d", time.gmtime()),
+            "time": time.strftime("%H:%M:%S", time.gmtime()),
+            },
+        "system": {
+            "info": platform.platform(),
+            "machine": platform.machine(),
+            "name": platform.system(),
+            "release": platform.release(),
+            "version": platform.version(),
+            },
+        "python": {
+            "implementation": platform.python_implementation(),
+            "info": sys.version.replace("\n", ""),
+            "version": platform.python_version(),
+            },
+        "libraries": {
+            "dclab": version,
+            "h5py": h5py.__version__,
+            "numpy": np.__version__,
+            }
+        }
+    if imageio is not None:
+        data["libraries"]["imageio"] = imageio.__version__
+    if nptdms is not None:
+        data["libraries"]["nptdms"] = nptdms.__version__
+    return data
 
 
 def print_info(string):

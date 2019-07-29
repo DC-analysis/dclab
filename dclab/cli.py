@@ -1,6 +1,6 @@
 """command line interface"""
 import argparse
-import datetime
+import time
 import hashlib
 import json
 import pathlib
@@ -29,13 +29,17 @@ def get_command_log(paths, custom_dict={}):
         Python objects (json.dumps must still work)
     """
     data = {
-        "date": datetime.datetime.now().strftime("%Y-%m-%d"),
-        "time": datetime.datetime.now().strftime("%H:%M:%S"),
-        "platform": sys.platform,
-        "python": sys.version.replace("\n", ""),
-        "dclab": version,
-        "h5py": h5py.__version__,
-        "numpy": np.__version__,
+        "utc": {
+            "date": time.strftime("%Y-%m-%d", time.gmtime()),
+            "time": time.strftime("%H:%M:%S", time.gmtime()),
+            },
+        "system": {
+            "platform": sys.platform,
+            "python": sys.version.replace("\n", ""),
+            "dclab": version,
+            "h5py": h5py.__version__,
+            "numpy": np.__version__,
+            },
         "files": [],
     }
     for ii, pp in enumerate(paths):

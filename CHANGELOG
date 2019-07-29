@@ -8,6 +8,7 @@
  - enh: update channel count and samples per event when writing hdf5 data
  - enh: dclab-verify-dataset now recognizes invalid tdms data
  - enh: several other improvements when reading tdms data
+ - enh: group meta data in log files (dclab-tdms2rtdc and dclab-join)
  - fix: ignore empty configuration values when loading tdms data
  - fix: image/contour files were searched recursively instead of
    only in the directory of the tdms file

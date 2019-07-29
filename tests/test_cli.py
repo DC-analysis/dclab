@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Test tdms file format"""
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import numpy as np
 

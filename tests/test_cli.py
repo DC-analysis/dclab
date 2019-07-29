@@ -145,7 +145,7 @@ def test_tdms2rtdc_update_sample_per_events():
     path_out = path_in.with_name("out.rtdc")
 
     # set wrong samples per event
-    with open(path_in.with_name("M1_para.ini"), "a") as fd:
+    with path_in.with_name("M1_para.ini").open("a") as fd:
         fd.write("Samples Per Event = 1234")
 
     with new_dataset(path_in) as ds:

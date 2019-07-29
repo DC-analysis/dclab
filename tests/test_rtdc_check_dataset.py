@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
+import sys
+
 import pytest
 
 from dclab.rtdc_dataset import check_dataset, fmt_tdms, new_dataset
@@ -72,6 +74,7 @@ def test_exact():
     cleanup()
 
 
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
@@ -89,6 +92,8 @@ def test_invalid_medium():
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
+@pytest.mark.skipif(sys.version_info < (3, 6),
+                    reason="requires python3.6 or higher")
 def test_load_with():
     h5path = retrieve_data("rtdc_data_minimal.zip")
     known_aler = [

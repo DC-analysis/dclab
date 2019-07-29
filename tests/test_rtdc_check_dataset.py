@@ -4,7 +4,7 @@ from __future__ import print_function, unicode_literals
 
 import pytest
 
-from dclab.rtdc_dataset import check_dataset, fmt_tdms
+from dclab.rtdc_dataset import check_dataset, fmt_tdms, new_dataset
 
 from helper_methods import cleanup, retrieve_data
 
@@ -72,6 +72,37 @@ def test_exact():
     cleanup()
 
 
+def test_invalid_medium():
+    h5path = retrieve_data("rtdc_data_minimal.zip")
+    para = h5path.with_name("M1_para.ini")
+    cfg = para.read_text().split("\n")
+    cfg.insert(3, "Buffer Medium = unknown_bad!")
+    para.write_text("\n".join(cfg))
+    viol, _, _ = check_dataset(h5path)
+    assert "Metadata: Invalid value [setup] medium: 'unknown_bad!'" in viol
+    cleanup()
+
+
+def test_load_with():
+    h5path = retrieve_data("rtdc_data_minimal.zip")
+    known_aler = [
+        "Metadata: Missing key [setup] 'flow rate sample'",
+        "Metadata: Missing key [setup] 'flow rate sheath'",
+        "Metadata: Missing key [setup] 'identifier'",
+        "Metadata: Missing key [setup] 'module composition'",
+        "Metadata: Missing key [setup] 'software version'",
+        ]
+    known_viol = [
+        "Metadata: Missing key [setup] 'medium'",
+        ]
+
+    with new_dataset(h5path) as ds:
+        viol, aler, _ = check_dataset(ds)
+        assert set(viol) == set(known_viol)
+        assert set(aler) == set(known_aler)
+    cleanup()
+
+
 def test_missing_file():
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     h5path.with_name("M1_para.ini").unlink()
@@ -81,6 +112,14 @@ def test_missing_file():
         pass
     else:
         assert False
+    cleanup()
+
+
+def test_no_fluorescence():
+    h5path = retrieve_data("rtdc_data_minimal.zip")
+    _, _, info= check_dataset(h5path)
+    known_info = ['Data file format: tdms', 'Fluorescence: False']
+    assert set(info) == set(known_info)
     cleanup()
 
 

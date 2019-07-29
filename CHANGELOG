@@ -14,6 +14,7 @@
    only in the directory of the tdms file
  - fix: check for precence of "time" feature before using it to
    correct measurement date and time
+ - ref: remove NoContourDataWarning for tdms file format
 0.12.0
  - feat: add command line script for joining measurements "dclab-join" (#57)
  - feat: make log files available as `RTDCBase.logs`

@@ -1,18 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Class for efficiently handling contour data
-"""
+"""Class for efficiently handling contour data"""
 from __future__ import division, print_function, unicode_literals
 
 import sys
-import warnings
 
 import numpy as np
-
-
-class NoContourDataWarning(UserWarning):
-    pass
 
 
 class ContourColumn(object):
@@ -114,8 +107,6 @@ class ContourColumn(object):
                     cfile = rtdc_dataset._fdir / c2
                     break
             else:
-                msg = "No contour data found for {}".format(rtdc_dataset)
-                warnings.warn(msg, NoContourDataWarning)
                 cfile = None
         return cfile
 

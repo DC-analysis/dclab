@@ -4,15 +4,11 @@
 from __future__ import print_function
 
 import numpy as np
-import pytest
 
 from dclab import cli, new_dataset
 from helper_methods import retrieve_data, cleanup
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_contour.'
-                            + 'NoContourDataWarning')
 def test_join_tdms():
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
@@ -31,9 +27,6 @@ def test_join_tdms():
     cleanup()
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_contour.'
-                            + 'NoContourDataWarning')
 def test_join_tdms_logs():
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
@@ -68,9 +61,6 @@ def test_join_rtdc():
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_contour.'
-                            + 'NoContourDataWarning')
 def test_tdms2rtdc():
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
@@ -91,9 +81,6 @@ def test_tdms2rtdc():
     cleanup()
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_contour.'
-                            + 'NoContourDataWarning')
 def test_tdms2rtdc_features():
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)

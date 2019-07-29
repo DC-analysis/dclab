@@ -45,8 +45,6 @@ def test_complete():
     cleanup()
 
 
-@pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_tdms.event_contour.NoContourDataWarning')
 def test_exact():
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     viol, aler, info = check_dataset(h5path)
@@ -81,8 +79,6 @@ def test_missing_file():
     cleanup()
 
 
-@pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_tdms.event_contour.NoContourDataWarning')
 def test_wrong_samples_per_event():
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     with h5path.with_name("M1_para.ini").open("a") as fd:

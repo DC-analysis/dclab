@@ -202,9 +202,6 @@ def test_emodulus_none2():
     assert "emodulus" not in ds, "emodulus model should be missing"
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_contour.'
-                            + 'NoContourDataWarning')
 def test_fl_crosstalk_2chan():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
     # simple example

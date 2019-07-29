@@ -117,7 +117,7 @@ def test_missing_file():
 
 def test_no_fluorescence():
     h5path = retrieve_data("rtdc_data_minimal.zip")
-    _, _, info= check_dataset(h5path)
+    _, _, info = check_dataset(h5path)
     known_info = ['Data file format: tdms', 'Fluorescence: False']
     assert set(info) == set(known_info)
     cleanup()

@@ -24,12 +24,15 @@ def test_basic():
     # Metadata: Unknown key [setup] 'temperature'
     # Metadata: fluorescence channel count inconsistent
     assert len(viol) == 9
-    # Metadata: Missing key [setup] identifier'
-    # Metadata: Missing section 'online_contour'
     # "HDF5: '/image': attribute 'CLASS' should be fixed-length ASCII string",
-    # "HDF5: '/image': attribute 'IMAGE_SUBCLASS' should be fixed-length ...",
-    # "HDF5: '/image': attribute 'IMAGE_VERSION' should be fixed-length ...",
-    assert len(aler) == 5
+    # "HDF5: '/image': attribute 'IMAGE_SUBCLASS' should be fixed-length ...
+    # "HDF5: '/image': attribute 'IMAGE_VERSION' should be fixed-length ...
+    # "Metadata: Missing key [fluorescence] 'channel 1 name'",
+    # "Metadata: Missing key [fluorescence] 'channel 2 name'",
+    # "Metadata: Missing key [fluorescence] 'channel 3 name'",
+    # "Metadata: Missing key [setup] 'identifier'",
+    # "Metadata: Missing section 'online_contour'"
+    assert len(aler) == 8
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     cleanup()
@@ -56,6 +59,8 @@ def test_exact():
         "Metadata: Missing key [fluorescence] 'samples per event'",
         ]
     known_aler = [
+        "Metadata: Missing key [fluorescence] 'channel 1 name'",
+        "Metadata: Missing key [fluorescence] 'channel 2 name'",
         "Metadata: Missing key [online_contour] 'no absdiff'",
         "Metadata: Missing key [setup] 'identifier'",
         "Metadata: Missing key [setup] 'module composition'",

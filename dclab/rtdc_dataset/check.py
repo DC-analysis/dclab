@@ -54,6 +54,16 @@ IMPORTANT_KEYS_FL = {
 LOG_MAX_LINE_LENGTH = 100
 
 
+#: log names that end with these strings are not checked
+IGNORED_LOG_NAMES = {
+    "_para.ini",
+    "_image.ini",
+    "FG_Config.mcf",
+    "parameters.txt",
+    "_SoftwareSettings.ini"
+    }
+
+
 def check_dataset(path_or_ds):
     """Check whether a dataset is complete
 
@@ -145,6 +155,20 @@ def check_dataset(path_or_ds):
                               + "{} (expected {}, got {})".format(key, spe,
                                                                   spek)
                         viol.append(msg)
+        # check for channel names
+        for ii in range(1, 4):
+            chn = "channel {} name".format(ii)
+            fli = "fl{}_max".format(ii)
+            if fli in ds and chn not in ds.config["fluorescence"]:
+                # Channel names must be defined when there is
+                # a corresponding fluorescence signal.
+                aler.append("Metadata: Missing key [{}] '{}'".format(
+                    "fluorescence", chn))
+            elif fli not in ds and chn in ds.config["fluorescence"]:
+                # Channel names must not be defined when there is
+                # no corresponding fluorescence signal.
+                aler.append("Metadata: Unused key defined [{}] '{}'".format(
+                    "fluorescence", chn))
     else:
         info.append("Fluorescence: False")
     # search for missing keys (hard)
@@ -153,16 +177,15 @@ def check_dataset(path_or_ds):
             viol.append("Metadata: Missing section '{}'".format(sec))
         else:
             for key in dfn.config_keys[sec]:
-                if (key in tocheck[sec] and
-                        key not in ds.config[sec]):
+                if (key in tocheck[sec]
+                        and key not in ds.config[sec]):
                     viol.append("Metadata: Missing key [{}] '{}'".format(sec,
                                                                          key))
-                elif (sec in tocheck_sec_aler and
-                        key not in ds.config[sec]):
-                    # Note: fluorescence is not treated here. It can be
-                    # incomplete (e.g. number of channels installed may vary)
-                    aler.append("Metadata: Missing key [{}] '{}'".format(sec,
-                                                                         key))
+                elif (sec in tocheck_sec_aler
+                        and key not in ds.config[sec]):
+                    # Note that fluorescence data is not checked here
+                    aler.append("Metadata: Missing key [{}] '{}'".format(
+                        sec, key))
     # search again (soft)
     for sec in tocheck_sec_aler:
         if sec in tocheck:
@@ -207,6 +230,10 @@ def check_dataset(path_or_ds):
         with h5py.File(ds.path, mode="r") as h5:
             logs = h5["logs"]
             for logname in logs.keys():
+                # ignore tmds meta data log files
+                logends = [logname.endswith(l) for l in IGNORED_LOG_NAMES]
+                if sum(logends):
+                    continue
                 log = logs[logname]
                 for ii in range(len(log)):
                     if len(log[ii]) > LOG_MAX_LINE_LENGTH:

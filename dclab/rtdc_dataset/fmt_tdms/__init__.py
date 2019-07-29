@@ -258,7 +258,10 @@ class RTDC_TDMS(RTDCBase):
             timestr = time.strftime("%H:%M:%S", loct)
             self.config["experiment"]["time"] = timestr
         # fluorescence
-        if "fluorescence" in self.config:
+        if ("fluorescence" in self.config
+            or "fl1_max" in self
+            or "fl2_max" in self
+                or "fl3_max" in self):
             if "bit depth" not in self.config["fluorescence"]:
                 # hardware-defined (always the same)
                 self.config["fluorescence"]["bit depth"] = 16

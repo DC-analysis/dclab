@@ -380,10 +380,10 @@ def hdf5_autocomplete_config(path_or_h5obj):
     The following configuration keys are updated:
 
     - experiment:event count
+    - fluorescence:samples per event
 
     The following configuration keys are added if not present:
 
-    - fluorescence:samples per event
     - fluorescence:channel count
 
     Parameters
@@ -407,10 +407,9 @@ def hdf5_autocomplete_config(path_or_h5obj):
         raise ValueError("No features in '{}'!".format(path_or_h5obj))
     # set samples per event
     if "trace" in feats:
-        if "fluorescence:samples per event" not in h5obj.attrs:
-            traces = list(h5obj["events"]["trace"].keys())
-            trsize = h5obj["events"]["trace"][traces[0]].shape[1]
-            h5obj.attrs["fluorescence:samples per event"] = trsize
+        traces = list(h5obj["events"]["trace"].keys())
+        trsize = h5obj["events"]["trace"][traces[0]].shape[1]
+        h5obj.attrs["fluorescence:samples per event"] = trsize
     # set channel count
     chcount = sum(["fl1_max" in feats, "fl2_max" in feats, "fl3_max" in feats])
     if chcount:

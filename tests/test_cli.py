@@ -82,6 +82,23 @@ def test_tdms2rtdc():
     cleanup()
 
 
+def test_tdms2rtdc_features():
+    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("out.rtdc")
+
+    cli.tdms2rtdc(path_tdms=path_in,
+                  path_rtdc=path_out,
+                  compute_features=True)
+
+    with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
+        assert len(ds2)
+        assert set(ds1.features) == set(ds2.features)
+        # features were computed
+        assert set(ds2._events.keys()) == set(ds1.features)
+    cleanup()
+
+
 def test_tdms2rtdc_remove_nan_image():
     path_in = retrieve_data("rtdc_data_traces_video_bright.zip")
     # same directory (will be cleaned up with path_in)
@@ -116,26 +133,31 @@ def test_tdms2rtdc_remove_nan_image():
                   skip_initial_empty_image=True)
 
     with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
-        assert len(ds2) == len(ds1) - 1
+        assert len(ds2) == video_length
         assert not np.all(ds2["image"][0] == 0)
-
+        assert ds2.config["experiment"]["event count"] == video_length
     cleanup()
 
 
-def test_tdms2rtdc_features():
-    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+def test_tdms2rtdc_update_sample_per_events():
+    path_in = retrieve_data("rtdc_data_traces_2flchan.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
+
+    # set wrong samples per event
+    with open(path_in.with_name("M1_para.ini"), "a") as fd:
+        fd.write("Samples Per Event = 1234")
+
+    with new_dataset(path_in) as ds:
+        assert ds.config["fluorescence"]["samples per event"] == 1234
 
     cli.tdms2rtdc(path_tdms=path_in,
                   path_rtdc=path_out,
                   compute_features=True)
 
-    with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
-        assert len(ds2)
-        assert set(ds1.features) == set(ds2.features)
-        # features were computed
-        assert set(ds2._events.keys()) == set(ds1.features)
+    with new_dataset(path_out) as ds2:
+        assert ds2.config["fluorescence"]["samples per event"] == 566
+
     cleanup()
 
 

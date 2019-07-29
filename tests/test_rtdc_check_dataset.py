@@ -74,7 +74,6 @@ def test_exact():
     cleanup()
 
 
-
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')

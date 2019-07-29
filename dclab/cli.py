@@ -181,8 +181,26 @@ def join_parser():
 
 
 def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
-              verbose=False):
-    """Convert .tdms datasets to the hdf5-based .rtdc file format"""
+              skip_initial_empty_image=True, verbose=False):
+    """Convert .tdms datasets to the hdf5-based .rtdc file format
+
+    Parameters
+    ----------
+    path_tdms: str or pathlib.Path
+        Path to input .tdms file
+    path_rtdc: str or pathlib.Path
+        Path to output .rtdc file
+    compute_featues: bool
+        If `True`, compute all ancillary features and store them in the
+        output file
+    skip_initial_empty_image: bool
+        In old versions of Shape-In, the first image was sometimes
+        not stored in the resulting .avi file. In dclab, such images
+        are represented as zero-valued images. If `True` (default),
+        this first image is not included in the resulting .rtdc file.
+    verbose: bool
+        If `True`, print messages to stoud
+    """
     if path_tdms is None or path_rtdc is None:
         parser = tdms2rtdc_parser()
         args = parser.parse_args()
@@ -190,7 +208,11 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         path_tdms = pathlib.Path(args.tdms_path).resolve()
         path_rtdc = pathlib.Path(args.rtdc_path)
         compute_features = args.compute_features
+        skip_initial_empty_image = args.skip_initial_empty_image
         verbose = True
+
+    if not path_rtdc.suffix == ".rtdc":
+        path_rtdc = path_rtdc.with_name(path_rtdc.name + ".rtdc")
 
     # Determine whether input path is a tdms file or a directory
     if path_tdms.is_dir():
@@ -231,10 +253,16 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                 # "contour" because it is original data.
                 features = [f for f in ds._events if f in ds]
 
+            if skip_initial_empty_image:
+                if ("image" in ds
+                        and ds.config["fmt_tdms"]["video frame offset"]):
+                    ds.filter.manual[0] = False
+                    ds.apply_filter()
+
             # export as hdf5
             ds.export.hdf5(path=fr,
                            features=features,
-                           filtered=False,
+                           filtered=True,
                            override=True)
 
             # write logs
@@ -271,6 +299,16 @@ def tdms2rtdc_parser():
                              + 'compatibility with future versions and '
                              + 'allows to isolate the original data.')
     parser.set_defaults(compute_features=False)
+    parser.add_argument('--include-initial-empty-image',
+                        dest='skip_initial_empty_image',
+                        action='store_false',
+                        help='In old versions of Shape-In, the first image '
+                             + 'was sometimes not stored in the resulting '
+                             + '.avi file. In dclab, such images are '
+                             + 'represented as zero-valued images. Set '
+                             + 'this option, if you wish to include the '
+                             + 'first event with empty image data.')
+    parser.set_defaults(skip_initial_empty_image=True)
     parser.add_argument('tdms_path', metavar="TDMS_PATH", type=str,
                         help='Input path (tdms file or folder containing '
                              + 'tdms files)')

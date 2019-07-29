@@ -7,6 +7,7 @@ import numpy as np
 
 from dclab import cli, new_dataset
 from helper_methods import retrieve_data, cleanup
+import imageio
 
 
 def test_join_tdms():
@@ -77,6 +78,46 @@ def test_tdms2rtdc():
         assert set(ds2._events.keys()) < set(ds1.features)
         for feat in ds1:
             assert np.all(ds1[feat] == ds2[feat])
+
+    cleanup()
+
+
+def test_tdms2rtdc_remove_nan_image():
+    path_in = retrieve_data("rtdc_data_traces_video_bright.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("out.rtdc")
+
+    # generate fake video
+    with new_dataset(path_in) as ds:
+        video_length = len(ds) - 1
+    vname = path_in.with_name("M4_0.040000ul_s_imaq.avi")
+    # remove contour data (not necessary for this test)
+    path_in.with_name("M4_0.040000ul_s_contours.txt").unlink()
+
+    imgs = imageio.mimread(vname)
+    with imageio.get_writer(vname) as writer:
+        for ii in range(video_length):
+            writer.append_data(imgs[ii % len(imgs)])
+
+    # without removal
+    cli.tdms2rtdc(path_tdms=path_in,
+                  path_rtdc=path_out,
+                  compute_features=False,
+                  skip_initial_empty_image=False)
+
+    with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
+        assert len(ds2) == len(ds1)
+        assert np.all(ds2["image"][0] == 0)
+
+    # with removal
+    cli.tdms2rtdc(path_tdms=path_in,
+                  path_rtdc=path_out,
+                  compute_features=False,
+                  skip_initial_empty_image=True)
+
+    with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
+        assert len(ds2) == len(ds1) - 1
+        assert not np.all(ds2["image"][0] == 0)
 
     cleanup()
 

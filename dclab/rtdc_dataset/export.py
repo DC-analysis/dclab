@@ -175,8 +175,8 @@ class Export(object):
             that are defined in `dclab.definitions.feature_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "image".
         filtered: bool
-            If set to `True`, only the filtered data (index in ds._filter)
-            are used.
+            If set to `True`, only the filtered data
+            (index in ds.filter.all) are used.
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.

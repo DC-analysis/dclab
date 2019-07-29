@@ -125,8 +125,7 @@ def join(path_out=None, paths_in=None):
 
     # Create initial output file
     ds0 = new_dataset(sorted_paths[0])
-    # Check for features existence (fmt_tdms may have empty "image", ...)
-    features = sorted([f for f in ds0._events if f in ds0])
+    features = sorted(ds0.features_innate)
     ds0.export.hdf5(path=path_out,
                     features=features,
                     filtered=False,
@@ -211,6 +210,9 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         skip_initial_empty_image = args.skip_initial_empty_image
         verbose = True
 
+    if not path_tdms.suffix == ".tdms":
+        raise ValueError("Please specify a .tdms file!")
+
     if not path_rtdc.suffix == ".rtdc":
         path_rtdc = path_rtdc.with_name(path_rtdc.name + ".rtdc")
 
@@ -251,7 +253,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                 # The "mask" is computed from "contour" and it is needed
                 # by dclab for other ancillary features. We still keep
                 # "contour" because it is original data.
-                features = [f for f in ds._events if f in ds]
+                features = ds.features_innate
 
             if skip_initial_empty_image:
                 if ("image" in ds
@@ -267,7 +269,8 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
 
             # write logs
             custom_dict = {}
-            cfeats = [f for f in features if f not in ds._events]
+            # computed features
+            cfeats = list(set(features) - set(ds.features_innate))
             if "mask" in features:
                 # Mask is always computed from contour data
                 cfeats.append("mask")

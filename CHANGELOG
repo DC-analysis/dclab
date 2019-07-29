@@ -5,6 +5,7 @@
    using the `remove_invalid` keyword argument
  - feat: exclude empty initial images in dclab-tdms2rtdc;
    they may optionally be included with "--include-initial-empty-image"
+ - feat: new property `RTDCBase.features_innate` (measuerd feature)
  - enh: log which ancillary features were computed in dclab-tdms2rtdc (#65)
  - enh: improved tdms meta data import (also affects dclab-tdms2rtdc)
  - enh: update channel count and samples per event when writing hdf5 data

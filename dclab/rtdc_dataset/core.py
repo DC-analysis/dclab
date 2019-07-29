@@ -207,6 +207,12 @@ class RTDCBase(object):
         mycols.sort()
         return mycols
 
+    @property
+    def features_innate(self):
+        """All features excluding ancillary features"""
+        innate = [ft for ft in self.features if ft in self._events]
+        return innate
+
     @abc.abstractproperty
     def hash(self):
         """Reproducible dataset hash (defined by derived classes)"""

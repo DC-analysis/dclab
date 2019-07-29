@@ -242,7 +242,7 @@ def check_dataset(path_or_ds):
                                     + "{}".format(LOG_MAX_LINE_LENGTH))
     # check feature size
     lends = len(ds)
-    for feat in ds.features:
+    for feat in ds.features_innate:
         msg = "Features: wrong event count: '{}' ({} of {})"
         if feat == "trace":
             for tr in list(ds["trace"].keys()):

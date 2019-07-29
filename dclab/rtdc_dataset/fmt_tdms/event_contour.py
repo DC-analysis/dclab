@@ -42,18 +42,24 @@ class ContourColumn(object):
             cdata = np.zeros((2, 2), dtype=int)
         else:
             cdata = self._contour_data[idnew]
+            # check frame
+            frame_ist = self.frame[idx]
+            frame_soll = self._contour_data.get_frame(idnew)
+            if frame_soll != frame_ist:
+                raise ValueError("Contour frame mismatch at index {}!".format(
+                    idx))
         return cdata
 
     def __len__(self):
         length = len(self._contour_data)
         if length:
-            self.determine_offset()
+            if not self._initialized:
+                self.determine_offset()
             length += self.event_offset
         return length
 
     def determine_offset(self):
         """Determines the offset of the contours w.r.t. other data columns
-
 
         Notes
         -----

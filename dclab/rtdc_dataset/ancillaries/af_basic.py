@@ -7,7 +7,9 @@ from .ancillary_feature import AncillaryFeature
 
 
 def compute_area_ratio(mm):
-    return mm["area_cvx"] / mm["area_msd"]
+    valid = mm["area_msd"] != 0
+    out = np.nan * np.ones(len(mm), dtype=float)
+    return np.divide(mm["area_cvx"], mm["area_msd"], where=valid, out=out)
 
 
 def compute_area_um(mm):
@@ -24,8 +26,10 @@ def compute_aspect(mm):
     `size_x` is larger than `size_y`, then the aspect
     ratio is larger than 1.
     """
+    out = np.nan * np.ones(len(mm), dtype=float)
+    valid = mm["size_y"] != 0
     # parallel to flow, perpendicular to flow
-    return mm["size_x"] / mm["size_y"]
+    return np.divide(mm["size_x"], mm["size_y"], where=valid, out=out)
 
 
 def compute_deform(mm):

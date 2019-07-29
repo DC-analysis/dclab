@@ -335,7 +335,11 @@ def get_tilt(cont):
 
     # restrict to interval [0,PI/2]
     tilt = np.mod(tilt, np.pi)
-    tilt[tilt > np.pi/2] -= np.pi
+    # avoid nans
+    valid = ~np.isnan(tilt)
+    wrap = tilt[valid]
+    wrap[wrap > np.pi/2] -= np.pi
+    tilt[valid] = wrap
     tilt = np.abs(tilt)
 
     if not ret_list:

@@ -16,6 +16,10 @@
    only in the directory of the tdms file
  - fix: check for precence of "time" feature before using it to
    correct measurement date and time
+ - fix: ancillary feature computation for brightness had wrong
+   dependency coded (contour instead of mask)
+ - fix: ancillary feature computation when contour data is involved lead to
+   error, because `LazyContourList` did not implement `identifier` (see #61)
  - ref: remove NoContourDataWarning for tdms file format
  - tests: improve dataset checks (#64)
 0.12.0

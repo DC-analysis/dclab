@@ -240,4 +240,17 @@ def check_dataset(path_or_ds):
                         aler.append("Logs: {} line {} ".format(logname, ii)
                                     + "exceeds maximum line length "
                                     + "{}".format(LOG_MAX_LINE_LENGTH))
+    # check feature size
+    lends = len(ds)
+    for feat in ds.features:
+        msg = "Features: wrong event count: '{}' ({} of {})"
+        if feat == "trace":
+            for tr in list(ds["trace"].keys()):
+                if len(ds["trace"][tr]) != lends:
+                    viol.append(msg.format("trace/".format(tr),
+                                           len(ds["trace"][tr]),
+                                           lends))
+        else:
+            if len(ds[feat]) != lends:
+                viol.append(msg.format(feat, len(ds[feat]), lends))
     return sorted(viol), sorted(aler), sorted(info)

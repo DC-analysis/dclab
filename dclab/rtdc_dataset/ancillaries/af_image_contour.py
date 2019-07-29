@@ -59,11 +59,11 @@ def register():
 
     AncillaryFeature(feature_name="bright_avg",
                      method=compute_bright_avg,
-                     req_features=["image", "contour"])
+                     req_features=["image", "mask"])
 
     AncillaryFeature(feature_name="bright_sd",
                      method=compute_bright_sd,
-                     req_features=["image", "contour"])
+                     req_features=["image", "mask"])
 
     AncillaryFeature(feature_name="inert_ratio_cvx",
                      method=compute_inert_ratio_cvx,

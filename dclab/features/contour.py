@@ -15,6 +15,8 @@ class LazyContourList(object):
         """A list-like object that computes contours upon indexing"""
         self.masks = masks
         self.contours = [None] * len(masks)
+        #: used for hashing in ancillary features
+        self.identifier = str(masks[0][:].tostring())
 
     def __getitem__(self, idx):
         """Compute contour if it does not already exists"""

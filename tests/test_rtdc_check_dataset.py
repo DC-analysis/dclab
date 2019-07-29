@@ -72,6 +72,9 @@ def test_exact():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_invalid_medium():
     h5path = retrieve_data("rtdc_data_minimal.zip")
     para = h5path.with_name("M1_para.ini")
@@ -83,6 +86,9 @@ def test_invalid_medium():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_load_with():
     h5path = retrieve_data("rtdc_data_minimal.zip")
     known_aler = [
@@ -93,9 +99,10 @@ def test_load_with():
         "Metadata: Missing key [setup] 'software version'",
         ]
     known_viol = [
+        "Features: wrong event count: 'contour' (14 of 156)",
+        "Features: wrong event count: 'mask' (14 of 156)",
         "Metadata: Missing key [setup] 'medium'",
         ]
-
     with new_dataset(h5path) as ds:
         viol, aler, _ = check_dataset(ds)
         assert set(viol) == set(known_viol)
@@ -115,6 +122,9 @@ def test_missing_file():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
 def test_no_fluorescence():
     h5path = retrieve_data("rtdc_data_minimal.zip")
     _, _, info = check_dataset(h5path)

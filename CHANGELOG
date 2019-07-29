@@ -12,6 +12,8 @@
  - enh: dclab-verify-dataset now recognizes invalid tdms data
  - enh: several other improvements when reading tdms data
  - enh: group meta data in log files (dclab-tdms2rtdc and dclab-join)
+ - fix: correctly handle hdf5 export when the image or contour columns
+   have incorrect sizes (affects dclab-tdms2rtdc)
  - fix: ignore empty configuration values when loading tdms data
  - fix: image/contour files were searched recursively instead of
    only in the directory of the tdms file

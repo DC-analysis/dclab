@@ -34,6 +34,10 @@ class NoImageWarning(UserWarning):
     pass
 
 
+class LimitingExportSizeWarning(UserWarning):
+    pass
+
+
 class Export(object):
     def __init__(self, rtdc_ds):
         """Export functionalities for RT-DC datasets"""
@@ -45,10 +49,10 @@ class Export(object):
         Parameters
         ----------
         path: str
-            Path to a .tsv file. The ending .tsv is added automatically.
+            Path to a .avi file. The ending .avi is added automatically.
         filtered: bool
-            If set to `True`, only the filtered data (index in ds._filter)
-            are used.
+            If set to `True`, only the filtered data
+            (index in ds.filter.all) are used.
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
@@ -110,14 +114,14 @@ class Export(object):
         mm: instance of dclab.RTDCBase
             The dataset that will be exported.
         path: str
-            Path to a .tsv file. The ending .tsv is added automatically.
+            Path to an .fcs file. The ending .fcs is added automatically.
         features: list of str
-            The features in the resulting .tsv file. These are strings
+            The features in the resulting .fcs file. These are strings
             that are defined in `dclab.definitions.scalar_feature_names`,
             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered: bool
-            If set to `True`, only the filtered data (index in ds._filter)
-            are used.
+            If set to `True`, only the filtered data
+            (index in ds.filter.all) are used.
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
@@ -171,7 +175,7 @@ class Export(object):
             Path to an .rtdc file. The ending .rtdc is added
             automatically.
         features: list of str
-            The features in the resulting .tsv file. These are strings
+            The features in the resulting .rtdc file. These are strings
             that are defined in `dclab.definitions.feature_names`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "image".
         filtered: bool
@@ -208,8 +212,27 @@ class Export(object):
         if filtered:
             filtarr = self.rtdc_ds.filter.all
         else:
-            nev = len(self.rtdc_ds)
-            filtarr = np.ones(nev, dtype=bool)
+            filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
+
+        # check that all features have same length and use smallest
+        # common length
+        lengths = []
+        for feat in features:
+            if feat == "trace":
+                for tr in list(self.rtdc_ds["trace"].keys()):
+                    lengths.append(len(self.rtdc_ds["trace"][tr]))
+            else:
+                lengths.append(len(self.rtdc_ds[feat]))
+        if not np.all(lengths == lengths[0]):
+            lmin = np.min(lengths)
+            nev_bef = np.sum(filtarr)
+            filtarr[lmin:] = False
+            nev_aft = np.sum(filtarr)
+            if nev_bef != nev_aft:
+                warnings.warn(
+                    "Not all features have the same length! "
+                    + "Limiting output event count to {} ".format(lmin)
+                    + "in '{}'.".format(path), LimitingExportSizeWarning)
 
         # write meta data
         with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
@@ -235,8 +258,8 @@ class Export(object):
             that are defined in `dclab.definitions.scalar_feature_names`,
             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
         filtered: bool
-            If set to `True`, only the filtered data (index in ds._filter)
-            are used.
+            If set to `True`, only the filtered data
+            (index in ds.filter.all) are used.
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.

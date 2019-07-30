@@ -212,7 +212,7 @@ class RTDC_TDMS(RTDCBase):
             dclab_config["fluorescence"]["channels installed"] = 3
 
         # Additional information from commented-out log-file (manual)
-        with open(config_paths[0], "r") as fd:
+        with config_paths[0].open("r") as fd:
             lns = [l[1:].strip() for l in fd.readlines() if l.startswith("#")]
             if lns and lns[0] == "[FLUOR]":
                 if ("software version" not in dclab_config["setup"]

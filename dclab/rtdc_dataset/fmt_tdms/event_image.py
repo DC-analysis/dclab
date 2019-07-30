@@ -158,7 +158,16 @@ class ImageMap(object):
             if hasattr(cap, "count_frames"):  # imageio>=2.5.0
                 length = cap.count_frames()
             else:  # imageio<2.5.0
-                length = len(cap)
+                try:
+                    length = len(cap)
+                except TypeError:
+                    # length is set to inf (it would generally still be
+                    # possible to rescue a limted number of frames, but
+                    # other parts of the dataset are probably also broken
+                    # (aborted measurement), so for the sake of simplicity
+                    # we stop here)
+                    raise InvalidVideoFileError(
+                        "Broken video file '{}'!".format(self.filename))
             self._length = length
         return self._length
 

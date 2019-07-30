@@ -80,7 +80,7 @@ def store_mask(h5group, data, compression):
         dset[oldsize:] = data
 
 
-def store_scalar(h5group, name, data):
+def store_scalar(h5group, name, data, compression):
     if np.isscalar(data):
         # single event
         data = np.atleast_1d(data)
@@ -89,7 +89,8 @@ def store_scalar(h5group, name, data):
                                data=data,
                                maxshape=(None,),
                                chunks=True,
-                               fletcher32=True)
+                               fletcher32=True,
+                               compression=compression)
     else:
         dset = h5group[name]
         oldsize = dset.shape[0]
@@ -271,7 +272,8 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
         if fk in dfn.scalar_feature_names:
             store_scalar(h5group=events,
                          name=fk,
-                         data=data[fk])
+                         data=data[fk],
+                         compression=compression)
         elif fk == "contour":
             store_contour(h5group=events,
                           data=data["contour"],

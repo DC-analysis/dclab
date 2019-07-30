@@ -1,6 +1,7 @@
 0.14.0
  - feat: new command line script for creating a scalar-feature-only
-   dataset with all available ancillary features "dclab-condense" 
+   dataset with all available ancillary features "dclab-condense"
+ - enh: enable scalar feature compression for hdf5 export 
  - docs: fix doc string for dclab-tdms2rtdc
    (`--include-initial-empty-image` false shown as "enabled by default")
 0.13.0

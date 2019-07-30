@@ -390,11 +390,13 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None):
             nev0 = 0
         write(h5obj,
               data={"index": np.arange(nev0+1, nev0+nev+1)},
-              mode="append")
+              mode="append",
+              compression=compression)
     else:
         write(h5obj,
               data={feat: rtdc_ds[feat][filtarr]},
-              mode="append")
+              mode="append",
+              compression=compression)
 
 
 def hdf5_autocomplete_config(path_or_h5obj):

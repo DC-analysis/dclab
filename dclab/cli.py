@@ -207,7 +207,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         path_tdms = pathlib.Path(args.tdms_path).resolve()
         path_rtdc = pathlib.Path(args.rtdc_path)
         compute_features = args.compute_features
-        skip_initial_empty_image = args.skip_initial_empty_image
+        skip_initial_empty_image = not args.include_initial_empty_image
         verbose = True
 
     if not path_tdms.suffix == ".tdms":
@@ -303,15 +303,15 @@ def tdms2rtdc_parser():
                              + 'allows to isolate the original data.')
     parser.set_defaults(compute_features=False)
     parser.add_argument('--include-initial-empty-image',
-                        dest='skip_initial_empty_image',
-                        action='store_false',
+                        dest='include_initial_empty_image',
+                        action='store_true',
                         help='In old versions of Shape-In, the first image '
                              + 'was sometimes not stored in the resulting '
                              + '.avi file. In dclab, such images are '
                              + 'represented as zero-valued images. Set '
                              + 'this option, if you wish to include the '
                              + 'first event with empty image data.')
-    parser.set_defaults(skip_initial_empty_image=True)
+    parser.set_defaults(include_initial_empty_image=False)
     parser.add_argument('tdms_path', metavar="TDMS_PATH", type=str,
                         help='Input path (tdms file or folder containing '
                              + 'tdms files)')

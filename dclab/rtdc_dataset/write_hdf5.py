@@ -15,21 +15,13 @@ def store_contour(h5group, data, compression):
     if not isinstance(data, (list, tuple)):
         # single event
         data = [data]
-    if "contour" not in h5group:
-        dset = h5group.create_group("contour")
-        for ii, cc in enumerate(data):
-            dset.create_dataset("{}".format(ii),
-                                data=cc,
-                                fletcher32=True,
-                                compression=compression)
-    else:
-        grp = h5group["contour"]
-        curid = len(grp.keys())
-        for ii, cc in enumerate(data):
-            grp.create_dataset("{}".format(curid + ii),
-                               data=cc,
-                               fletcher32=True,
-                               compression=compression)
+    grp = h5group.require_group("contour")
+    curid = len(grp.keys())
+    for ii, cc in enumerate(data):
+        grp.create_dataset("{}".format(curid + ii),
+                           data=cc,
+                           fletcher32=True,
+                           compression=compression)
 
 
 def store_image(h5group, data, compression):
@@ -112,10 +104,7 @@ def store_trace(h5group, data, compression):
         for dd in data:
             data[dd] = data[dd].reshape(1, -1)
     # create trace group
-    if "trace" not in h5group:
-        grp = h5group.create_group("trace")
-    else:
-        grp = h5group["trace"]
+    grp = h5group.require_group("trace")
 
     for flt in data:
         # create traces datasets
@@ -271,9 +260,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
 
     # Write data
     # create events group
-    if "events" not in h5obj:
-        h5obj.create_group("events")
-    events = h5obj["events"]
+    events = h5obj.require_group("events")
     # remove previous data
     if mode == "replace":
         for rk in feat_keys:
@@ -303,9 +290,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
                         compression=compression)
 
     # Write logs
-    if "logs" not in h5obj:
-        h5obj.create_group("logs")
-    log_group = h5obj["logs"]
+    log_group = h5obj.require_group("logs")
     # remove previous data
     if mode == "replace":
         for rl in logs:

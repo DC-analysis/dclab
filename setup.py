@@ -70,6 +70,7 @@ setup(
     extras_require=extras_require,
     entry_points={
        "console_scripts": [
+           "dclab-condense = dclab.cli:condense",
            "dclab-join = dclab.cli:join",
            "dclab-tdms2rtdc = dclab.cli:tdms2rtdc [tdms]",
            "dclab-verify-dataset = dclab.cli:verify_dataset",

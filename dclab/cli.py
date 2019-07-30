@@ -97,6 +97,50 @@ def print_violation(string):
     print_info("\033[31m{}".format(string))
 
 
+def condense(path_out=None, path_in=None):
+    """Create a new dataset with all (ancillary) scalar-only features"""
+    if path_out is None or path_in is None:
+        parser = condense_parser()
+        args = parser.parse_args()
+        path_in = args.input
+        path_out = args.output
+
+    path_in = pathlib.Path(path_in)
+    path_out = pathlib.Path(path_out)
+
+    if path_out.suffix != ".rtdc":
+        path_out = path_out.with_name(path_out.name + ".rtdc")
+
+    logs = {}
+
+    with new_dataset(path_in) as ds:
+        features = [f for f in ds.features if f in dfn.scalar_feature_names]
+        ds.export.hdf5(path=path_out,
+                       features=features,
+                       filtered=False,
+                       compression="gzip",
+                       override=True)
+        logs.update(ds.logs)
+
+    # Log
+    logs["dclab-condense"] = get_command_log(paths=[path_in])
+
+    # Write log file
+    with write_hdf5.write(path_out, logs=logs, mode="append"):
+        pass
+
+
+def condense_parser():
+    descr = "Reduce an RT-DC measurement to its scalar-only features. " \
+            + "All available ancillary features are computed."
+    parser = argparse.ArgumentParser(description=descr)
+    parser.add_argument('input', metavar="INPUT", type=str,
+                        help='Input path (.tdms or .rtdc file)')
+    parser.add_argument('output', metavar="OUTPUT", type=str,
+                        help='Output path (.rtdc file)')
+    return parser
+
+
 def join(path_out=None, paths_in=None):
     """Join multiple RT-DC measurements into a single .rtdc file"""
     if path_out is None or paths_in is None:
@@ -124,12 +168,12 @@ def join(path_out=None, paths_in=None):
     sorted_paths = [p[1] for p in sorted(key_paths, key=lambda x: x[0])]
 
     # Create initial output file
-    ds0 = new_dataset(sorted_paths[0])
-    features = sorted(ds0.features_innate)
-    ds0.export.hdf5(path=path_out,
-                    features=features,
-                    filtered=False,
-                    compression="gzip")
+    with new_dataset(sorted_paths[0]) as ds0:
+        features = sorted(ds0.features_innate)
+        ds0.export.hdf5(path=path_out,
+                        features=features,
+                        filtered=False,
+                        compression="gzip")
 
     with write_hdf5.write(path_out, mode="append") as h5obj:
         # Append data from other files
@@ -157,11 +201,8 @@ def join(path_out=None, paths_in=None):
             cfg = ds.config.tostring(sections=dfn.CFG_METADATA).split("\n")
             logs["cfg-#{}".format(ii+1)] = cfg
 
-    # Write missing meta data
-    with write_hdf5.write(path_out,
-                          logs=logs,
-                          meta=meta,
-                          mode="append") as h5obj:
+    # Write logs and missing meta data
+    with write_hdf5.write(path_out, logs=logs, meta=meta, mode="append"):
         pass
 
 

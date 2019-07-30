@@ -3,6 +3,17 @@ Command-line interface
 ======================
 
 
+.. _sec_condense:
+
+dclab-condense
+----------
+
+.. simple_argparse::
+   :module: dclab.cli
+   :func: condense_parser
+   :prog: dclab-condense
+
+
 .. _sec_join:
 
 dclab-join
@@ -12,7 +23,7 @@ dclab-join
    :module: dclab.cli
    :func: join_parser
    :prog: dclab-join
-    
+
 
 .. _sec_tdms2rtdc:
 

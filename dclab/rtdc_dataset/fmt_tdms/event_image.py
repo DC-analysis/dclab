@@ -16,6 +16,10 @@ import imageio
 ISWIN = sys.platform.startswith("win")
 
 
+class InvalidVideoFileError(BaseException):
+    pass
+
+
 class ImageColumn(object):
     def __init__(self, rtdc_dataset):
         """A wrapper for ImageMap that takes into account event offsets
@@ -98,7 +102,12 @@ class ImageColumn(object):
         if video is None:
             return None
         else:
-            return rtdc_dataset._fdir / video
+            vpath = rtdc_dataset._fdir / video
+            if vpath.stat().st_size < 64:
+                # the video file is empty
+                raise InvalidVideoFileError("Bad video '{}'!".format(vpath))
+            else:
+                return vpath
 
 
 class ImageMap(object):

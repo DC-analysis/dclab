@@ -8,6 +8,10 @@ import sys
 import numpy as np
 
 
+class ContourIndexingError(BaseException):
+    pass
+
+
 class ContourColumn(object):
     def __init__(self, rtdc_dataset):
         """A wrapper for ContourData that takes into account event offsets
@@ -84,7 +88,7 @@ class ContourColumn(object):
             self.event_offset = 1
         else:
             msg = "Contour data has unknown offset (frame {})!".format(fref)
-            raise IndexError(msg)
+            raise ContourIndexingError(msg)
         self._initialized = True
 
     @staticmethod

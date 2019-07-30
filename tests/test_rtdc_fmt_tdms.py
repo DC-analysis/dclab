@@ -78,6 +78,24 @@ def test_contour_basic():
     cleanup()
 
 
+def test_contour_corrupt():
+    path = pathlib.Path(retrieve_data(example_data_sets[1]))
+    cpath = path.with_name("M1_contours.txt")
+    # remove initial contours
+    with cpath.open("r") as fd:
+        lines = fd.readlines()
+    with cpath.open("w") as fd:
+        fd.writelines(lines[183:])
+    ds = new_dataset(path)
+    try:
+        ds["contour"].determine_offset()
+    except dclab.rtdc_dataset.fmt_tdms.event_contour.ContourIndexingError:
+        pass
+    else:
+        assert False
+    cleanup()
+
+
 def test_contour_naming():
     # Test that we always find the correct contour name
     ds = new_dataset(retrieve_data(example_data_sets[0]))
@@ -156,6 +174,21 @@ def test_image_basic():
 def test_image_column_length():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert len(ds["image"]) == 3
+    cleanup()
+
+
+def test_image_corrupt():
+    path = pathlib.Path(retrieve_data(example_data_sets[1]))
+    vpath = path.with_name("M1_imaq.avi")
+    # create empty video file
+    vpath.unlink()
+    vpath.touch()
+    try:
+        new_dataset(path)
+    except dclab.rtdc_dataset.fmt_tdms.event_image.InvalidVideoFileError:
+        pass
+    else:
+        assert False
     cleanup()
 
 

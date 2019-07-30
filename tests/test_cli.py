@@ -10,6 +10,21 @@ from helper_methods import retrieve_data, cleanup
 import imageio
 
 
+def test_condense():
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("condensed.rtdc")
+
+    cli.condense(path_out=path_out, path_in=path_in)
+    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
+        assert "dclab-condense" in dsj.logs
+        assert len(dsj)
+        assert len(dsj) == len(ds0)
+        for feat in dsj.features:
+            assert np.all(dsj[feat] == ds0[feat])
+    cleanup()
+
+
 def test_join_tdms():
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
@@ -60,6 +75,7 @@ def test_join_rtdc():
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
+    cleanup()
 
 
 def test_tdms2rtdc():
@@ -78,7 +94,6 @@ def test_tdms2rtdc():
         assert set(ds2._events.keys()) < set(ds1.features)
         for feat in ds1:
             assert np.all(ds1[feat] == ds2[feat])
-
     cleanup()
 
 
@@ -157,7 +172,6 @@ def test_tdms2rtdc_update_sample_per_events():
 
     with new_dataset(path_out) as ds2:
         assert ds2.config["fluorescence"]["samples per event"] == 566
-
     cleanup()
 
 

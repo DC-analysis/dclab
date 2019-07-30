@@ -167,7 +167,8 @@ class ImageMap(object):
                     # (aborted measurement), so for the sake of simplicity
                     # we stop here)
                     raise InvalidVideoFileError(
-                        "Broken video file '{}'!".format(self.filename))
+                        "Video file has unknown length '{}'!".format(
+                            self.filename))
             self._length = length
         return self._length
 
@@ -187,5 +188,9 @@ class ImageMap(object):
     @property
     def video_handle(self):
         if self._cap is None:
-            self._cap = imageio.get_reader(self.filename)
+            try:
+                self._cap = imageio.get_reader(self.filename)
+            except OSError:
+                raise InvalidVideoFileError(
+                    "Broken video file '{}'!".format(self.filename))
         return self._cap

@@ -211,6 +211,27 @@ class RTDC_TDMS(RTDCBase):
             dclab_config["fluorescence"]["lasers installed"] = li
             dclab_config["fluorescence"]["channels installed"] = 3
 
+        # Additional information from commented-out log-file (manual)
+        with open(config_paths[0], "r") as fd:
+            lns = [l[1:].strip() for l in fd.readlines() if l.startswith("#")]
+            if lns and lns[0] == "[FLUOR]":
+                if ("software version" not in dclab_config["setup"]
+                        and lns[1].startswith("fRTDC")):
+                    dclab_config["setup"]["software version"] = lns[1]
+                for ll in lns[2:]:
+                    if ("sample rate" not in dclab_config["fluorescence"]
+                            and ll.startswith("Samplerate")):
+                        val = float(ll.split("=")[1])
+                        dclab_config["fluorescence"]["sample rate"] = val
+                    elif ("signal min" not in dclab_config["fluorescence"]
+                            and ll.startswith("ADCmin")):
+                        val = float(ll.split("=")[1])
+                        dclab_config["fluorescence"]["signal min"] = val
+                    elif ("signal max" not in dclab_config["fluorescence"]
+                            and ll.startswith("ADCmax")):
+                        val = float(ll.split("=")[1])
+                        dclab_config["fluorescence"]["signal max"] = val
+
         self.config = dclab_config
         self._complete_config_tdms(tdms_config)
 

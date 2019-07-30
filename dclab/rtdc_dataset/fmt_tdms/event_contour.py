@@ -176,5 +176,6 @@ class ContourData(object):
     def get_frame(self, idx):
         """Return the frame number of a contour"""
         cont = self.data[idx]
-        frame = int(cont.strip().split(" ", 1)[0])
+        # previously was split using " ", but "(" is more general
+        frame = int(cont.strip().split("(", 1)[0])
         return frame

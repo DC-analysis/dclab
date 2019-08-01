@@ -49,7 +49,7 @@ class ContourColumn(object):
             # check frame
             frame_ist = self.frame[idx]
             frame_soll = self._contour_data.get_frame(idnew)
-            if not np.allclose(frame_soll, frame_ist):
+            if not np.allclose(frame_soll, frame_ist, rtol=0):
                 raise ValueError("Frame index mismatch at {} ".format(idx)
                                  + "({} vs {}) in contour '{}'".format(
                                      frame_ist, frame_soll, self.identifier))
@@ -83,9 +83,9 @@ class ContourColumn(object):
         f0 = self.frame[0]
         f1 = self.frame[1]
         # Use allclose to avoid float/integer comparison problems
-        if np.allclose(fref, f0):
+        if np.allclose(fref, f0, rtol=0):
             self.event_offset = 0
-        elif np.allclose(fref, f1):
+        elif np.allclose(fref, f1, rtol=0):
             self.event_offset = 1
         else:
             msg = "Contour data has unknown offset (frame {})!".format(fref)

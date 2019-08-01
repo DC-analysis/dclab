@@ -49,9 +49,10 @@ class ContourColumn(object):
             # check frame
             frame_ist = self.frame[idx]
             frame_soll = self._contour_data.get_frame(idnew)
-            if frame_soll != frame_ist:
-                raise ValueError("Contour frame mismatch at index {}!".format(
-                    idx))
+            if not np.allclose(frame_soll, frame_ist):
+                raise ValueError("Frame index mismatch at {} ".format(idx)
+                                 + "({} vs {}) in contour '{}'".format(
+                                     frame_ist, frame_soll, self.identifier))
         return cdata
 
     def __len__(self):

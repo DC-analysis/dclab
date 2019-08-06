@@ -298,8 +298,10 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                 features = ds.features_innate
 
             if skip_initial_empty_image:
-                if ("image" in ds
-                        and ds.config["fmt_tdms"]["video frame offset"]):
+                if (("image" in ds
+                     and ds.config["fmt_tdms"]["video frame offset"])
+                        or ("contour" in ds
+                            and np.all(ds["contour"][0] == 0))):
                     ds.filter.manual[0] = False
                     ds.apply_filter()
 

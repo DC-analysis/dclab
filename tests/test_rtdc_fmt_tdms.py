@@ -139,6 +139,7 @@ def test_contour_naming():
     # This will issue a warning that no contour data was found.
     ds5 = new_dataset(dp)
     assert ds5["contour"].identifier is None
+    cleanup()
 
 
 def test_contour_negative_offset():
@@ -277,12 +278,16 @@ def test_mask_basic():
     cleanup()
 
 
-def test_mask_img_shape():
+def test_mask_img_shape_1():
     path = retrieve_data("rtdc_data_traces_video.zip")
     # shape from image data
     with new_dataset(path) as ds:
         assert ds["mask"]._img_shape == (96, 256)
-    # shape from config (delete image data)
+    cleanup()
+
+
+def test_mask_img_shape_2():
+    path = retrieve_data("rtdc_data_traces_video.zip")
     path.with_name("M1_imaq.avi").unlink()
     with new_dataset(path) as ds:
         # shape from config ("roi size x", "roi size y")
@@ -293,21 +298,28 @@ def test_mask_img_shape():
         ds.config["imaging"].pop("roi size y")
         assert ds["mask"]._img_shape == (0, 0)
         assert len(ds["mask"]) == 0
+    cleanup()
 
 
-def test_mask_img_wrong_config_shape():
+def test_mask_img_wrong_config_shape_1():
     path = retrieve_data("rtdc_data_traces_video.zip")
     with new_dataset(path) as ds:
         # deliberately set wrong size in ROI (fmt_tdms tries image shape first)
         ds.config["imaging"]["roi size x"] = 200
         ds.config["imaging"]["roi size y"] = 200
         assert ds["mask"]._img_shape == (96, 256)
+    cleanup()
+
+
+def test_mask_img_wrong_config_shape_2():
+    path = retrieve_data("rtdc_data_traces_video.zip")
     path.with_name("M1_imaq.avi").unlink()
     with new_dataset(path) as ds:
         # deliberately set wrong size in ROI (fmt_tdms tries image shape first)
         ds.config["imaging"]["roi size x"] = 200
         ds.config["imaging"]["roi size y"] = 200
         assert ds["mask"]._img_shape == (200, 200)
+    cleanup()
 
 
 def test_naming_valid():
@@ -441,6 +453,7 @@ def test_trace_wrong_samples_per_event():
 
     with dclab.new_dataset(tdms) as ds:
         assert "trace" not in ds
+    cleanup()
 
 
 def test_unicode_paths():

@@ -10,6 +10,7 @@ import sys
 import tempfile
 
 import numpy as np
+import nptdms
 import pytest
 
 from dclab import new_dataset
@@ -384,6 +385,46 @@ def test_trace_methods():
         assert k in dclab.definitions.FLUOR_TRACES
     assert ds["trace"].__repr__().count("<loaded into memory>")
     cleanup()
+
+
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_trace.'
+                            + 'MultipleSamplesPerEventFound')  # desired
+def test_trace_wrong_samples_per_event():
+    """The "samples per event" should be a constant for trace data
+
+    If this condition is not given, the trace data is considered
+    unusable, but the rest of the data still makes sense
+    (Philipp said that something must have gone wrong during writing
+    of the trace data).
+    """
+    tdms = retrieve_data("rtdc_data_traces_video.zip")
+    mdata = nptdms.TdmsFile(str(tdms))
+    objects = [obj for obj in mdata.objects.values()]
+
+    # blank write same data to test that modification works
+    with nptdms.TdmsWriter(str(tdms)) as tdms_writer:
+        tdms_writer.write_segment(objects)
+
+    with dclab.new_dataset(tdms) as ds:
+        assert "trace" in ds
+
+    # modify objects
+    sampleids = mdata.object("Cell Track", "FL1index").data
+    sampleids[0] = 10
+    sampleids[1] = 20
+    sampleids[2] = 40
+    objects2 = []
+    for obj in objects:
+        if obj.channel == "FL1index":
+            nptdms.ChannelObject("Cell Track", "FL1index", sampleids)
+        objects2.append(obj)
+
+    with nptdms.TdmsWriter(str(tdms)) as tdms_writer:
+        tdms_writer.write_segment(objects2)
+
+    with dclab.new_dataset(tdms) as ds:
+        assert "trace" not in ds
 
 
 def test_unicode_paths():

@@ -4,6 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 import pathlib
+import warnings
 
 from nptdms import TdmsFile
 import numpy as np
@@ -12,6 +13,10 @@ from ... import definitions as dfn
 
 from . import naming
 from .exc import InvalidTDMSFileFormatError
+
+
+class MultipleSamplesPerEventFound(UserWarning):
+    pass
 
 
 class TraceColumn(object):
@@ -88,21 +93,33 @@ class TraceColumn(object):
                 raise InvalidTDMSFileFormatError(
                     "No 'FL1index' column in '{}'!".format(tname))
 
-            # Load the trace data. The traces file is usually larger than the
-            # measurement file.
-            tdata = TdmsFile(str(tname))
-            for trace_key in dfn.FLUOR_TRACES:
-                group, ch = naming.tr_data_map[trace_key]
-                try:
-                    trdat = tdata.object(group, ch).data
-                except KeyError:
-                    pass
-                else:
-                    if trdat is not None and trdat.size != 0:
-                        # Only add trace if there is actual data.
-                        # Split only needs the position of the sections,
-                        # so we remove the first (0) index.
-                        trace[trace_key] = np.split(trdat, sampleids[1:])
+            # Check that sample IDs are always incremented with same
+            # sample size.
+            samples_per_event = np.unique(np.diff(sampleids))
+            if len(samples_per_event) > 1:
+                # This means the length of the fluorescence trace is not
+                # a constant. According to Philipp, this means the trace
+                # cannot be used.
+                warnings.warn("Ignoring trace data of '{}' ".format(tname)
+                              + "due to multiple values for samples per "
+                              + " event: {}".format(samples_per_event),
+                              MultipleSamplesPerEventFound)
+            else:
+                # Load the trace data. The traces file is usually larger than
+                # the measurement file.
+                tdata = TdmsFile(str(tname))
+                for trace_key in dfn.FLUOR_TRACES:
+                    group, ch = naming.tr_data_map[trace_key]
+                    try:
+                        trdat = tdata.object(group, ch).data
+                    except KeyError:
+                        pass
+                    else:
+                        if trdat is not None and trdat.size != 0:
+                            # Only add trace if there is actual data.
+                            # Split only needs the position of the sections,
+                            # so we remove the first (0) index.
+                            trace[trace_key] = np.split(trdat, sampleids[1:])
         return trace
 
     @staticmethod

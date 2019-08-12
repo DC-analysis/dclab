@@ -149,7 +149,7 @@ class ImageMap(object):
 
     def force_close(self):
         if self._cap is not None:
-            if ISWIN:
+            if ISWIN and self._cap._proc is not None:
                 # This is a workaround for windows when pytest fails due
                 # to "OSError: [WinError 6] The handle is invalid",
                 # which is somehow related to the fact that "_proc.kill()"

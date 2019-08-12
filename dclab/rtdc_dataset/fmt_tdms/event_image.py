@@ -38,6 +38,13 @@ class ImageColumn(object):
         self.event_offset = int(conf["fmt_tdms"]["video frame offset"])
         self.video_file = fname
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        if isinstance(self._image_data, ImageMap):
+            self._image_data.__exit__(type, value, tb)
+
     def __getitem__(self, idx):
         idnew = int(idx-self.event_offset)
         if idnew < 0:
@@ -125,18 +132,30 @@ class ImageMap(object):
             raise OSError("file does not exist: {}".format(fname))
         self.filename = fname
 
+    def __enter__(self):
+        # initialize video
+        _ = self.video_handle  # noqa: F841
+        return self
+
+    def __exit__(self, type, value, tb):
+        if self._cap is not None:
+            self._cap.__exit__(type, value, tb)
+
     def __del__(self):
         if self._cap is not None:
-            if ISWIN:
-                # This is a workaround for windows when pytest fails due
-                # to "OSError: [WinError 6] The handle is invalid",
-                # which is somehow related to the fact that "_proc.kill()"
-                # must be called twice (in "close()" and in this case) in
-                # order to terminate the process and due to the fact the
-                # we are not using the with-statement in combination
-                # with imageio.get_reader().
-                self._cap._proc.kill()
-            self._cap.close()
+            self._cap.__del__()
+
+#        if self._cap is not None:
+#            if ISWIN:
+#                # This is a workaround for windows when pytest fails due
+#                # to "OSError: [WinError 6] The handle is invalid",
+#                # which is somehow related to the fact that "_proc.kill()"
+#                # must be called twice (in "close()" and in this case) in
+#                # order to terminate the process and due to the fact the
+#                # we are not using the with-statement in combination
+#                # with imageio.get_reader().
+#                self._cap._proc.kill()
+#            self._cap.close()
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in gray scale"""

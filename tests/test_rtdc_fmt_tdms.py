@@ -278,20 +278,36 @@ def test_mask_basic():
 
 
 def test_mask_img_shape():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
-    # shape from configuration
-    assert ds["mask"]._img_shape == (96, 256)
+    path = retrieve_data("rtdc_data_traces_video.zip")
     # shape from image data
-    ds.config["imaging"].pop("roi size x")
-    ds.config["imaging"].pop("roi size y")
-    ds["mask"]._shape = None
-    assert ds["mask"]._img_shape == (96, 256)
+    with new_dataset(path) as ds:
+        assert ds["mask"]._img_shape == (96, 256)
+    # shape from config (delete image data)
+    path.with_name("M1_imaq.avi").unlink()
+    with new_dataset(path) as ds:
+        # shape from config ("roi size x", "roi size y")
+        assert ds["mask"]._img_shape == (96, 256)
     # no shape available
-    ds._events.pop("image")
-    ds["mask"].image = None
-    ds["mask"]._shape = None
-    assert ds["mask"]._img_shape == (0, 0)
-    assert len(ds["mask"]) == 0
+    with new_dataset(path) as ds:
+        ds.config["imaging"].pop("roi size x")
+        ds.config["imaging"].pop("roi size y")
+        assert ds["mask"]._img_shape == (0, 0)
+        assert len(ds["mask"]) == 0
+
+
+def test_mask_img_wrong_config_shape():
+    path = retrieve_data("rtdc_data_traces_video.zip")
+    with new_dataset(path) as ds:
+        # deliberately set wrong size in ROI (fmt_tdms tries image shape first)
+        ds.config["imaging"]["roi size x"] = 200
+        ds.config["imaging"]["roi size y"] = 200
+        assert ds["mask"]._img_shape == (96, 256)
+    path.with_name("M1_imaq.avi").unlink()
+    with new_dataset(path) as ds:
+        # deliberately set wrong size in ROI (fmt_tdms tries image shape first)
+        ds.config["imaging"]["roi size x"] = 200
+        ds.config["imaging"]["roi size y"] = 200
+        assert ds["mask"]._img_shape == (200, 200)
 
 
 def test_naming_valid():

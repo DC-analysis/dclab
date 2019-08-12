@@ -1,6 +1,8 @@
 0.14.4
  - fix: discard trace data when "samples per event" has multiple values
-   for tdms data.
+   for tdms data
+ - fix: prefer image shape over config keywords when determining the
+   shape of the event mask and check the shape in dclab-verify-dataset
 0.14.3
  - enh: explicitly check contour data when testing whether to include
    the first event in tdms2rtdc

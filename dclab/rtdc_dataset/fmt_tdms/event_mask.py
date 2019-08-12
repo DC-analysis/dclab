@@ -34,12 +34,14 @@ class MaskColumn(object):
     def _img_shape(self):
         if self._shape is None:
             cfgim = self.config["imaging"]
-            if "roi size x" in cfgim and "roi size y" in cfgim:
-                # get shape from congig
-                self._shape = (cfgim["roi size y"], cfgim["roi size x"])
-            elif self.image:
+            if self.image:
                 # get shape from image column
                 self._shape = self.image[0].shape
+            elif "roi size x" in cfgim and "roi size y" in cfgim:
+                # get shape from config (this is less reliable than getting
+                # the shape from the image; there were measurements with
+                # wrong config keys)
+                self._shape = (cfgim["roi size y"], cfgim["roi size x"])
             else:
                 # no shape available
                 self._shape = (0, 0)

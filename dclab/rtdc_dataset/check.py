@@ -209,6 +209,19 @@ def check_dataset(path_or_ds):
         if feat not in dfn.feature_names:
             viol.append("Features: Unknown key '{}'".format(feat))
     info.append("Data file format: {}".format(ds.format))
+    # check for ROI size
+    if ("imaging" in ds.config
+        and "roi size x" in ds.config["imaging"]
+            and "roi size y" in ds.config["imaging"]):
+        for ii, roi in enumerate(["roi size y", "roi size x"]):
+            for feat in ["image", "mask"]:
+                if feat in ds:
+                    soll = ds[feat][0].shape[ii]
+                    ist = ds.config["imaging"][roi]
+                    if soll != ist:
+                        viol.append("Metadata: Mismatch [imaging] "
+                                    + "'{}' and feature {} ".format(roi, feat)
+                                    + "({} vs {})".format(ist, soll))
     # hdf5-based checks
     if ds.format == "hdf5":
         # check meta data of images

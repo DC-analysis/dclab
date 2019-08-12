@@ -406,6 +406,8 @@ def hdf5_autocomplete_config(path_or_h5obj):
 
     - experiment:event count
     - fluorescence:samples per event
+    - imaging: roi size x (if image or mask is given)
+    - imaging: roi size y (if image or mask is given)
 
     The following configuration keys are added if not present:
 
@@ -430,16 +432,30 @@ def hdf5_autocomplete_config(path_or_h5obj):
         h5obj.attrs["experiment:event count"] = len(h5obj["events"][feats[0]])
     else:
         raise ValueError("No features in '{}'!".format(path_or_h5obj))
+
     # set samples per event
     if "trace" in feats:
         traces = list(h5obj["events"]["trace"].keys())
         trsize = h5obj["events"]["trace"][traces[0]].shape[1]
         h5obj.attrs["fluorescence:samples per event"] = trsize
+
     # set channel count
     chcount = sum(["fl1_max" in feats, "fl2_max" in feats, "fl3_max" in feats])
     if chcount:
         if "fluorescence:channel count" not in h5obj.attrs:
             h5obj.attrs["fluorescence:channel count"] = chcount
+
+    # set roi size x/y
+    if "image" in h5obj["events"]:
+        shape = h5obj["events"]["image"][0].shape
+    elif "mask" in h5obj["events"]:
+        shape = h5obj["events"]["mask"][0].shape
+    else:
+        shape = None
+    if shape is not None:
+        # update shape
+        h5obj.attrs["imaging:roi size x"] = shape[0]
+        h5obj.attrs["imaging:roi size y"] = shape[1]
 
     if close:
         h5obj.close()

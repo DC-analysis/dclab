@@ -17,6 +17,8 @@ def test_basic():
     h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     viol, aler, info = check_dataset(h5path)
     # Features: Unknown key 'ncells'
+    # Metadata: Mismatch [imaging] 'roi size x' and feature image (50 vs 90)
+    # Metadata: Mismatch [imaging] 'roi size y' and feature image (90 vs 50)
     # Metadata: Missing key [fluorescence] 'channels installed'
     # Metadata: Missing key [fluorescence] 'laser count'
     # Metadata: Missing key [fluorescence] 'lasers installed'
@@ -25,7 +27,7 @@ def test_basic():
     # Metadata: Unknown key [imaging] 'flash current'
     # Metadata: Unknown key [setup] 'temperature'
     # Metadata: fluorescence channel count inconsistent
-    assert len(viol) == 9
+    assert len(viol) == 11
     # "HDF5: '/image': attribute 'CLASS' should be fixed-length ASCII string",
     # "HDF5: '/image': attribute 'IMAGE_SUBCLASS' should be fixed-length ...
     # "HDF5: '/image': attribute 'IMAGE_VERSION' should be fixed-length ...

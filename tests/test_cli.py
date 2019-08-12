@@ -6,8 +6,10 @@ from __future__ import print_function, unicode_literals
 import numpy as np
 
 from dclab import cli, new_dataset
-from helper_methods import retrieve_data, cleanup
 import imageio
+import pytest
+
+from helper_methods import retrieve_data, cleanup
 
 
 def test_condense():
@@ -151,6 +153,36 @@ def test_tdms2rtdc_remove_nan_image():
         assert len(ds2) == video_length
         assert not np.all(ds2["image"][0] == 0)
         assert ds2.config["experiment"]["event count"] == video_length
+    cleanup()
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.export.LimitingExportSizeWarning')
+def test_tdms2rtdc_update_roi_size():
+    path_in = retrieve_data("rtdc_data_traces_video.zip")
+    # set wrong roi sizes
+    camin = path_in.with_name("M1_camera.ini")
+    with camin.open("r") as fd:
+        lines = fd.readlines()
+    lines = lines[:-2]
+    lines.append("width = 23\n")
+    lines.append("height = 24\n")
+    with camin.open("w") as fd:
+        fd.writelines(lines)
+
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("out.rtdc")
+
+    cli.tdms2rtdc(path_tdms=path_in,
+                  path_rtdc=path_out,
+                  compute_features=False,
+                  skip_initial_empty_image=True)
+
+    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
+        assert ds0.config["imaging"]["roi size x"] == 23
+        assert ds0.config["imaging"]["roi size y"] == 24
+        assert dsj.config["imaging"]["roi size x"] == 96
+        assert dsj.config["imaging"]["roi size y"] == 256
     cleanup()
 
 

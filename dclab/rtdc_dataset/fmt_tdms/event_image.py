@@ -140,22 +140,25 @@ class ImageMap(object):
     def __exit__(self, type, value, tb):
         if self._cap is not None:
             self._cap.__exit__(type, value, tb)
+        self.force_close()
 
     def __del__(self):
         if self._cap is not None:
             self._cap.__del__()
+        self.force_close()
 
-#        if self._cap is not None:
-#            if ISWIN:
-#                # This is a workaround for windows when pytest fails due
-#                # to "OSError: [WinError 6] The handle is invalid",
-#                # which is somehow related to the fact that "_proc.kill()"
-#                # must be called twice (in "close()" and in this case) in
-#                # order to terminate the process and due to the fact the
-#                # we are not using the with-statement in combination
-#                # with imageio.get_reader().
-#                self._cap._proc.kill()
-#            self._cap.close()
+    def force_close(self):
+        if self._cap is not None:
+            if ISWIN:
+                # This is a workaround for windows when pytest fails due
+                # to "OSError: [WinError 6] The handle is invalid",
+                # which is somehow related to the fact that "_proc.kill()"
+                # must be called twice (in "close()" and in this case) in
+                # order to terminate the process and due to the fact the
+                # we are not using the with-statement in combination
+                # with imageio.get_reader().
+                self._cap._proc.kill()
+            self._cap.close()
 
     def __getitem__(self, idx):
         """Returns the requested frame from the video in gray scale"""

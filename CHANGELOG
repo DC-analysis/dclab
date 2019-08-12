@@ -3,6 +3,8 @@
    for tdms data
  - fix: prefer image shape over config keywords when determining the
    shape of the event mask and check the shape in dclab-verify-dataset
+ - fix: avoid ContourIndexingError by also searching the neighboring
+   (+2/-2) events when the contour frame number does not match (#67)
 0.14.3
  - enh: explicitly check contour data when testing whether to include
    the first event in tdms2rtdc

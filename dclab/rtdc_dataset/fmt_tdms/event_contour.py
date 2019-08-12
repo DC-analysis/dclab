@@ -45,11 +45,16 @@ class ContourColumn(object):
         if idnew < 0:
             cdata = np.zeros((2, 2), dtype=int)
         else:
-            cdata = self._contour_data[idnew]
-            # check frame
             frame_ist = self.frame[idx]
-            frame_soll = self._contour_data.get_frame(idnew)
-            if not np.allclose(frame_soll, frame_ist, rtol=0):
+            # Do not only check the exact frame, but +/- 2 events around it
+            for idn in [idnew, idnew-1, idnew+1, idnew-2, idnew+2]:
+                # check frame
+                frame_soll = self._contour_data.get_frame(idn)
+                if np.allclose(frame_soll, frame_ist, rtol=0):
+                    cdata = self._contour_data[idn]
+                    break
+            else:
+                frame_soll = self._contour_data.get_frame(idnew)
                 raise ContourIndexingError(
                     "Frame index mismatch at event {} ".format(idx)
                     + "({} vs {}) in contour '{}'".format(

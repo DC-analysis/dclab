@@ -38,13 +38,6 @@ class ImageColumn(object):
         self.event_offset = int(conf["fmt_tdms"]["video frame offset"])
         self.video_file = fname
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, tb):
-        if isinstance(self._image_data, ImageMap):
-            self._image_data.__exit__(type, value, tb)
-
     def __getitem__(self, idx):
         idnew = int(idx-self.event_offset)
         if idnew < 0:
@@ -132,22 +125,7 @@ class ImageMap(object):
             raise OSError("file does not exist: {}".format(fname))
         self.filename = fname
 
-    def __enter__(self):
-        # initialize video
-        _ = self.video_handle  # noqa: F841
-        return self
-
-    def __exit__(self, type, value, tb):
-        if self._cap is not None:
-            self._cap.__exit__(type, value, tb)
-        self.force_close()
-
     def __del__(self):
-        if self._cap is not None:
-            self._cap.__del__()
-        self.force_close()
-
-    def force_close(self):
         if self._cap is not None:
             if ISWIN and self._cap._proc is not None:
                 # This is a workaround for windows when pytest fails due

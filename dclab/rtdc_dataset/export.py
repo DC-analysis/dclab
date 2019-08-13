@@ -225,6 +225,7 @@ class Export(object):
                 lengths.append(len(self.rtdc_ds[feat]))
         if not np.all(lengths == lengths[0]):
             lmin = np.min(lengths)
+            lmax = np.max(lengths)
             nev_bef = np.sum(filtarr)
             filtarr[lmin:] = False
             nev_aft = np.sum(filtarr)
@@ -232,7 +233,8 @@ class Export(object):
                 warnings.warn(
                     "Not all features have the same length! "
                     + "Limiting output event count to {} ".format(lmin)
-                    + "in '{}'.".format(path), LimitingExportSizeWarning)
+                    + "(max {}) in '{}'.".format(lmax, path),
+                    LimitingExportSizeWarning)
 
         # write meta data
         with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:

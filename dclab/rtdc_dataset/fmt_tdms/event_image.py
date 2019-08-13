@@ -20,6 +20,14 @@ class InvalidVideoFileError(BaseException):
     pass
 
 
+class CorruptFrameWarning(UserWarning):
+    pass
+
+
+class SlowVideoWarning(UserWarning):
+    pass
+
+
 class ImageColumn(object):
     def __init__(self, rtdc_dataset):
         """A wrapper for ImageMap that takes into account event offsets
@@ -54,9 +62,9 @@ class ImageColumn(object):
                 cdata = self._image_data[idnew]
             except UsedException:
                 # The avi is corrupt. Return a dummy image.
-                msg = "Frame {} in {} is corrupt!".format(idnew,
-                                                          self.identifier)
-                warnings.warn(msg)
+                warnings.warn("Frame {} in {} ".format(idnew, self.identifier)
+                              + "is corrupt; replacing with dummy image!",
+                              CorruptFrameWarning)
                 cdata = self.dummy
         return cdata
 
@@ -177,7 +185,8 @@ class ImageMap(object):
 
         This is a workaround for an all-zero image returned by `imageio`.
         """
-        warnings.warn("imageio workaround used!")
+        warnings.warn("Seeking video file does not work, using workaround "
+                      + "which is slow!", SlowVideoWarning)
         cap = self.video_handle
         mult = 50
         for ii in range(idx//mult):

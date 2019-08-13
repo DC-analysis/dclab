@@ -102,7 +102,7 @@ class TraceColumn(object):
                 # cannot be used.
                 warnings.warn("Ignoring trace data of '{}' ".format(tname)
                               + "due to multiple values for samples per "
-                              + " event: {}".format(samples_per_event),
+                              + "event: {}".format(samples_per_event),
                               MultipleSamplesPerEventFound)
             else:
                 # Load the trace data. The traces file is usually larger than

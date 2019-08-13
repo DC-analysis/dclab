@@ -6,6 +6,7 @@ import json
 import pathlib
 import platform
 import sys
+import warnings
 
 import h5py
 import numpy as np
@@ -285,47 +286,71 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         if not fr.parent.exists():
             fr.parent.mkdir(parents=True)
         # load and export dataset
-        with new_dataset(ff) as ds:
-            # determine features to export
-            if compute_features:
-                features = ds.features
-            else:
-                # consider special case for "image", "trace", and "contour"
-                # (This will export both "mask" and "contour".
-                # The "mask" is computed from "contour" and it is needed
-                # by dclab for other ancillary features. We still keep
-                # "contour" because it is original data.
-                features = ds.features_innate
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            with new_dataset(ff) as ds:
+                # determine features to export
+                if compute_features:
+                    features = ds.features
+                else:
+                    # consider special case for "image", "trace", and "contour"
+                    # (This will export both "mask" and "contour".
+                    # The "mask" is computed from "contour" and it is needed
+                    # by dclab for other ancillary features. We still keep
+                    # "contour" because it is original data.
+                    features = ds.features_innate
 
-            if skip_initial_empty_image:
-                if (("image" in ds
-                     and ds.config["fmt_tdms"]["video frame offset"])
-                        or ("contour" in ds
-                            and np.all(ds["contour"][0] == 0))):
-                    ds.filter.manual[0] = False
-                    ds.apply_filter()
+                if skip_initial_empty_image:
+                    if (("image" in ds
+                         and ds.config["fmt_tdms"]["video frame offset"])
+                            or ("contour" in ds
+                                and np.all(ds["contour"][0] == 0))):
+                        ds.filter.manual[0] = False
+                        ds.apply_filter()
 
-            # export as hdf5
-            ds.export.hdf5(path=fr,
-                           features=features,
-                           filtered=True,
-                           override=True)
+                # export as hdf5
+                ds.export.hdf5(path=fr,
+                               features=features,
+                               filtered=True,
+                               override=True)
 
-            # write logs
-            custom_dict = {}
-            # computed features
-            cfeats = list(set(features) - set(ds.features_innate))
-            if "mask" in features:
-                # Mask is always computed from contour data
-                cfeats.append("mask")
-            custom_dict["ancillary features"] = sorted(cfeats)
+                # write logs
+                custom_dict = {}
+                # computed features
+                cfeats = list(set(features) - set(ds.features_innate))
+                if "mask" in features:
+                    # Mask is always computed from contour data
+                    cfeats.append("mask")
+                custom_dict["ancillary features"] = sorted(cfeats)
 
-            logs = {}
-            logs["dclab-tdms2rtdc"] = get_command_log(paths=[ff],
-                                                      custom_dict=custom_dict)
-            logs.update(ds.logs)
-            with write_hdf5.write(fr, logs=logs, mode="append"):
-                pass
+                logs = {}
+                # command log
+                logs["dclab-tdms2rtdc"] = get_command_log(
+                    paths=[ff], custom_dict=custom_dict)
+                # warnings log
+                if w:
+                    wlog = []
+                    for wi in w:
+                        wlog.append("{}".format(wi.category.__name__))
+                        wlog.append(" in {} line {}:".format(
+                            wi.category.__module__, wi.lineno))
+                        # make sure line is not longer than 100 characters
+                        words = str(wi.message).split(" ")
+                        wline = "  "
+                        for ii in range(len(words)):
+                            wline += " " + words[ii]
+                            if ii == len(words) - 1:
+                                # end
+                                wlog.append(wline)
+                            elif len(wline + words[ii+1]) + 1 >= 100:
+                                # new line
+                                wlog.append(wline)
+                                wline = "  "
+                            # nothing to do here
+                    logs["dclab-tdms2rtdc-warnings"] = wlog
+                logs.update(ds.logs)
+                with write_hdf5.write(fr, logs=logs, mode="append"):
+                    pass
 
 
 def tdms2rtdc_parser():

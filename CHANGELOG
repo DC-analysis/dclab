@@ -1,3 +1,7 @@
+0.14.6
+ - fix: improved handling of tdms trace data (split trace with fixed
+   samples per event to avoid ValueError when exporting to hdf5)
+ - fix: transposed roi size x/y config value when exporting to hdf5
 0.14.5
  - cli: write warning messages to logs in tdms2rtdc
  - ref: increase verbosity of warning messages

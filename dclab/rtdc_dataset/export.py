@@ -456,8 +456,8 @@ def hdf5_autocomplete_config(path_or_h5obj):
         shape = None
     if shape is not None:
         # update shape
-        h5obj.attrs["imaging:roi size x"] = shape[0]
-        h5obj.attrs["imaging:roi size y"] = shape[1]
+        h5obj.attrs["imaging:roi size x"] = shape[1]
+        h5obj.attrs["imaging:roi size y"] = shape[0]
 
     if close:
         h5obj.close()

@@ -181,8 +181,8 @@ def test_tdms2rtdc_update_roi_size():
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert ds0.config["imaging"]["roi size x"] == 23
         assert ds0.config["imaging"]["roi size y"] == 24
-        assert dsj.config["imaging"]["roi size x"] == 96
-        assert dsj.config["imaging"]["roi size y"] == 256
+        assert dsj.config["imaging"]["roi size x"] == 256
+        assert dsj.config["imaging"]["roi size y"] == 96
     cleanup()
 
 

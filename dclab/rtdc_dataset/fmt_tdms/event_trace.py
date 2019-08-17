@@ -116,10 +116,11 @@ class TraceColumn(object):
                         pass
                     else:
                         if trdat is not None and trdat.size != 0:
-                            # Only add trace if there is actual data.
-                            # Split only needs the position of the sections,
-                            # so we remove the first (0) index.
-                            trace[trace_key] = np.split(trdat, sampleids[1:])
+                            # Split the input trace data into equally-saced
+                            # sections (we already tested that sampleids is
+                            # equally-spaced).
+                            spe = sampleids[1] - sampleids[0]
+                            trace[trace_key] = np.split(trdat, trdat.size//spe)
         return trace
 
     @staticmethod

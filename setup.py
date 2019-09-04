@@ -35,7 +35,7 @@ extras_require = {
                    "imageio",  # avi export
                    "imageio-ffmpeg;python_version>='3.4'"  # just in case
                    ],
-        "all": ["fcswrite>=0.4.1",
+        "all": ["fcswrite>=0.5.0",
                 "imageio>=2.3.0,<2.5.0",
                 "nptdms",
                 ]

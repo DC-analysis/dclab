@@ -31,7 +31,7 @@ extras_require = {
                  # Workaround for now:
                  "imageio>=2.3.0,<2.5.0",  # read tdms avi data
                  ],
-        "export": ["fcswrite>=0.4.1",  # fcs export
+        "export": ["fcswrite>=0.5.0",  # fcs export
                    "imageio",  # avi export
                    "imageio-ffmpeg;python_version>='3.4'"  # just in case
                    ],

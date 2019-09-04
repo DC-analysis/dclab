@@ -1,3 +1,7 @@
+0.14.7
+ - enh: allow to add meta data when exporting to .fcs or .tsv
+   (dclab version is saved by default)
+ - setup: bump fcswrite from 0.4.1 to 0.5.0
 0.14.6
  - fix: improved handling of tdms trace data (split trace with fixed
    samples per event to avoid ValueError when exporting to hdf5)

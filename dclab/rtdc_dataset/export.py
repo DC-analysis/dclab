@@ -27,6 +27,7 @@ else:
 import numpy as np
 
 from .. import definitions as dfn
+from .._version import version
 from .write_hdf5 import write
 
 
@@ -106,7 +107,7 @@ class Export(object):
             msg = "No image data to export: dataset {} !".format(ds.title)
             raise OSError(msg)
 
-    def fcs(self, path, features, filtered=True, override=False):
+    def fcs(self, path, features, meta_data={}, filtered=True, override=False):
         """Export the data of an RT-DC dataset to an .fcs file
 
         Parameters
@@ -119,6 +120,10 @@ class Export(object):
             The features in the resulting .fcs file. These are strings
             that are defined in `dclab.definitions.scalar_feature_names`,
             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
+        meta_data: dict
+            User-defined, optional key-value pairs that are stored
+            in the primary TEXT segment of the FCS file; the version
+            of dclab is stored there by default
         filtered: bool
             If set to `True`, only the filtered data
             (index in ds.filter.all) are used.
@@ -161,9 +166,12 @@ class Export(object):
             data = [ds[c] for c in features]
 
         data = np.array(data).transpose()
+        meta_data["dclab version"] = version
         fcswrite.write_fcs(filename=str(path),
                            chn_names=chn_names,
-                           data=data)
+                           data=data,
+                           text_kw_pr=meta_data,
+                           )
 
     def hdf5(self, path, features, filtered=True, override=False,
              compression="gzip"):
@@ -248,7 +256,7 @@ class Export(object):
             # update configuration
             hdf5_autocomplete_config(h5obj)
 
-    def tsv(self, path, features, filtered=True, override=False):
+    def tsv(self, path, features, meta_data={}, filtered=True, override=False):
         """Export the data of the current instance to a .tsv file
 
         Parameters
@@ -259,6 +267,11 @@ class Export(object):
             The features in the resulting .tsv file. These are strings
             that are defined in `dclab.definitions.scalar_feature_names`,
             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
+        meta_data: dict
+            User-defined, optional key-value pairs that are stored
+            at the beginning of the tsv file - one key-value pair is
+            stored per line which starts with a hash. The version of
+            dclab is stored there by default.
         filtered: bool
             If set to `True`, only the filtered data
             (index in ds.filter.all) are used.
@@ -281,9 +294,13 @@ class Export(object):
         for c in features:
             if c not in dfn.scalar_feature_names:
                 raise ValueError("Unknown feature name {}".format(c))
-
+        meta_data["dclab version"] = version
         # Open file
         with path.open("w") as fd:
+            # write meta data
+            for key in sorted(meta_data.keys()):
+                fd.write("# {}: {}\n".format(key, meta_data[key]))
+            fd.write("#\n")
             # write header
             header1 = "\t".join([c for c in features])
             fd.write("# "+header1+"\n")

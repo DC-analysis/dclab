@@ -97,8 +97,8 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
 
     Returns
     -------
-    level: float
-        Contours level corresponding to the given quantile
+    level: np.ndarray or float
+        Contours level(s) corresponding to the given quantile
 
     Notes
     -----

@@ -60,6 +60,9 @@ class H5Events(object):
     def __init__(self, h5):
         self._h5 = h5
         self._features = sorted(self._h5["events"].keys())
+        # make sure that "trace" is not empty
+        if "trace" in self._features and len(self._h5["events"]["trace"]) == 0:
+            self._features.remove("trace")
 
     def __contains__(self, key):
         if self._is_defective_feature(key):

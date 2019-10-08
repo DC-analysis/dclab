@@ -1,6 +1,8 @@
 0.14.8
  - fix: Ignore feature "trace" when the trace folder exists but is
    empty (HDF5 format)
+ - fix: If no contour can be found, raise an error before other
+   ancillary features produce cryptic errors
 0.14.7
  - enh: allow to add meta data when exporting to .fcs or .tsv
    (dclab version is saved by default)

@@ -10,6 +10,10 @@ import numpy as np
 from ..external.skimage.measure import find_contours
 
 
+class NoValidContourFoundError(BaseException):
+    pass
+
+
 class LazyContourList(object):
     def __init__(self, masks):
         """A list-like object that computes contours upon indexing"""
@@ -21,7 +25,11 @@ class LazyContourList(object):
     def __getitem__(self, idx):
         """Compute contour if it does not already exists"""
         if self.contours[idx] is None:
-            self.contours[idx] = get_contour(self.masks[idx])
+            try:
+                self.contours[idx] = get_contour(self.masks[idx])
+            except BaseException as e:
+                e.args = ("Event {}, {}".format(idx, e.args[0]),)
+                raise
         return self.contours[idx]
 
     def __len__(self):
@@ -65,6 +73,8 @@ def get_contour(mask):
         c1 = np.asarray(np.round(c0), int)
         # remove duplicates
         c2 = remove_duplicates(c1)
+        if len(c2) == 0:
+            raise NoValidContourFoundError("No contour found!")
         contours.append(c2)
     if ret_list:
         return contours

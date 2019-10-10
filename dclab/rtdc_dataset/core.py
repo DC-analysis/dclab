@@ -184,13 +184,10 @@ class RTDCBase(object):
         return self.filter.all
 
     def _init_filters(self):
-        # Plot filters is only used for plotting and does
-        # not have anything to do with filtering.
-        self._plot_filter = np.ones(len(self), dtype=bool)
-
         #: Filtering functionalities (this is an instance of
         #: :class:`dclab.rtdc_dataset.filter.Filter`.
         self.filter = Filter(self)
+        self.reset_filter()
 
     @property
     def identifier(self):
@@ -468,3 +465,16 @@ class RTDCBase(object):
             uid = int(filt)
         # remove item
         self.config["filtering"]["polygon filters"].remove(uid)
+
+    def reset_filter(self):
+        """Reset the current filter"""
+        # Plot filters is only used for plotting and does
+        # not have anything to do with filtering.
+        self._plot_filter = np.ones(len(self), dtype=bool)
+        # reset filter instance
+        self.filter.reset()
+        # reset configuration
+        # remember hierarchy parent
+        hp = self.config["filtering"]["hierarchy parent"]
+        self.config._init_default_filter_values()
+        self.config["filtering"]["hierarchy parent"] = hp

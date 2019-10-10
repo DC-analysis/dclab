@@ -88,7 +88,7 @@ class Configuration(object):
         self._cfg = CaseInsensitiveDict()
 
         # set initial default values
-        self._init_default_values()
+        self._init_default_filter_values()
 
         # Update with additional dictionary
         self.update(cfg)
@@ -127,7 +127,7 @@ class Configuration(object):
     def __setitem__(self, *args):
         self._cfg.__setitem__(*args)
 
-    def _init_default_values(self):
+    def _init_default_filter_values(self):
         """Set default initial values
 
         The default values are hard-coded for backwards compatibility

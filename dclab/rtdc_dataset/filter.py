@@ -24,21 +24,8 @@ class Filter(object):
         """
         # initialize important parameters
         self._init_rtdc_ds(rtdc_ds)
-        self._filters = {}
-
-        #: All filters combined (see :func:`Filter.update`);
-        #: Use this property to filter the features of
-        #: :class:`dclab.rtdc_dataset.RTDCBase` instances
-        self.all = np.ones(len(rtdc_ds), dtype=bool)
-        #: Invalid (nan/inf) events
-        self.invalid = np.ones(len(rtdc_ds), dtype=bool)
-        #: 1D boolean array for manually excluding events; `False` values
-        #: are excluded.
-        self.manual = np.ones(len(rtdc_ds), dtype=bool)
-        #: Polygon filters
-        self.polygon = np.ones(len(rtdc_ds), dtype=bool)
-        # old filter configuration of `rtdc_ds`
-        self._old_config = {}
+        # initialize properties
+        self.reset()
 
     def __getitem__(self, key):
         """Return the filter for a feature in `self.features`"""
@@ -54,6 +41,24 @@ class Filter(object):
         #: Available feature names
         self.features = rtdc_ds.features
         self.size = len(rtdc_ds)
+
+    def reset(self):
+        """Reset all filters"""
+        # Box filters
+        self._filters = {}
+        #: All filters combined (see :func:`Filter.update`);
+        #: Use this property to filter the features of
+        #: :class:`dclab.rtdc_dataset.RTDCBase` instances
+        self.all = np.ones(self.size, dtype=bool)
+        #: Invalid (nan/inf) events
+        self.invalid = np.ones(self.size, dtype=bool)
+        #: 1D boolean array for manually excluding events; `False` values
+        #: are excluded.
+        self.manual = np.ones(self.size, dtype=bool)
+        #: Polygon filters
+        self.polygon = np.ones(self.size, dtype=bool)
+        # old filter configuration of `rtdc_ds`
+        self._old_config = {}
 
     def update(self, rtdc_ds, force=[]):
         """Update the filters according to `rtdc_ds.config["filtering"]`

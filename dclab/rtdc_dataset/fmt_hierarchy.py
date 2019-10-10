@@ -83,8 +83,8 @@ class HierarchyFilter(Filter):
         - the excluded event is filtered out in the parent.
         """
         super(HierarchyFilter, self).__init__(rtdc_ds, *args, **kwargs)
-        self._man_root_ids = []
         self.update_parent(rtdc_ds.hparent)
+        self._man_root_ids = []
 
     @property
     def parent_changed(self):
@@ -116,6 +116,10 @@ class HierarchyFilter(Filter):
                                           root_indices=manual_indices)
             if len(cidx):
                 self.manual[cidx] = False
+
+    def reset(self):
+        super(HierarchyFilter, self).reset()
+        self._man_root_ids = []
 
     def retrieve_manual_indices(self, rtdc_ds):
         """Read from self.manual
@@ -221,6 +225,8 @@ class RTDC_Hierarchy(RTDCBase):
         #: hierarchy parent
         self.hparent = hparent
 
+        self.filter = HierarchyFilter(self)
+
         # Copy configuration
         cfg = hparent.config.copy()
 
@@ -257,25 +263,33 @@ class RTDC_Hierarchy(RTDCBase):
     def __len__(self):
         return np.sum(self.hparent._filter)
 
-    def _init_filters(self):
-        if self.filter is None:
-            manual_pidx = []
-        else:
-            # get manual filters
-            manual_pidx = self.filter.retrieve_manual_indices(self)
-        # clear filters
-        super(RTDC_Hierarchy, self)._init_filters()
-        # override standard filter
-        self.filter = HierarchyFilter(self)
+    def _check_parent_filter(self):
+        """Reset filter if parent changed
 
-        if len(manual_pidx):
-            # set manually excluded events
+        This will create a new HierarchyFilter for self if the
+        parent RTDCBase changed. We do it like this, because it
+        would be complicated to track all the changes in
+        HierarchyFilter.
+        """
+        if self.filter.parent_changed:
+            manual_pidx = self.filter.retrieve_manual_indices(self)
+            self.filter = HierarchyFilter(self)
             self.filter.apply_manual_indices(self, manual_pidx)
+
+    @property
+    def hash(self):
+        """Hashes of a hierarchy child changes if the parent changes"""
+        # Do not apply filters here (speed)
+        hph = self.hparent.hash
+        hpfilt = hashobj(self.hparent._filter)
+        dhash = hashobj(hph + hpfilt)
+        return dhash
 
     def apply_filter(self, *args, **kwargs):
         """Overridden `apply_filter` to perform tasks for hierarchy child"""
         if self.filter is not None:
             # make sure self.filter knows about root manual indices
+            # (stored in self.filter._man_root_ids)
             self.filter.retrieve_manual_indices(self)
 
         # Copy event data from hierarchy parent
@@ -300,17 +314,9 @@ class RTDC_Hierarchy(RTDCBase):
         # update config
         self.config["experiment"]["event count"] = event_count
 
-        self._init_filters()
+        # create a new filter if the parent changed
+        self._check_parent_filter()
         super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
-
-    @property
-    def hash(self):
-        """Hashes of a hierarchy child changes if the parent changes"""
-        # Do not apply filters here (speed)
-        hph = self.hparent.hash
-        hpfilt = hashobj(self.hparent._filter)
-        dhash = hashobj(hph + hpfilt)
-        return dhash
 
 
 def map_indices_child2parent(child, child_indices):

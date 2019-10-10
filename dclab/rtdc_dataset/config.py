@@ -149,6 +149,13 @@ class Configuration(object):
             for a in appends:
                 self["filtering"][item + a] = 0
 
+        # Make sure that all filtering values have a default value
+        # (otherwise we wil get problems with resetting filters)
+        for item in dfn.CFG_ANALYSIS["filtering"]:
+            if item[0] not in self["filtering"]:
+                raise KeyError(
+                    "No default value set for [filtering]:{}".format(item[0]))
+
     def copy(self):
         """Return copy of current configuration"""
         return Configuration(cfg=copy.deepcopy(self._cfg))

@@ -104,8 +104,6 @@ class Configuration(object):
         if idx not in self and idx in dfn.config_keys:
             self._cfg[idx] = CaseInsensitiveDict()
         item = self._cfg.__getitem__(idx)
-        if isinstance(item, str_types):
-            item = item.lower()
         return item
 
     def __iter__(self):

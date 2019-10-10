@@ -18,10 +18,15 @@ class HierarchyFilterError(BaseException):
     pass
 
 
-class ChildContour(object):
+class ChildBase(object):
     def __init__(self, child):
         self.child = child
 
+    def __len__(self):
+        return len(self.child)
+
+
+class ChildContour(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
                                         child_indices=[idx])[0]
@@ -29,10 +34,7 @@ class ChildContour(object):
         return hp["contour"][pidx]
 
 
-class ChildImage(object):
-    def __init__(self, child):
-        self.child = child
-
+class ChildImage(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
                                         child_indices=[idx])[0]
@@ -40,10 +42,7 @@ class ChildImage(object):
         return hp["image"][pidx]
 
 
-class ChildMask(object):
-    def __init__(self, child):
-        self.child = child
-
+class ChildMask(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
                                         child_indices=[idx])[0]
@@ -51,9 +50,9 @@ class ChildMask(object):
         return hp["mask"][pidx]
 
 
-class ChildTrace(object):
+class ChildTrace(ChildBase):
     def __init__(self, child, flname):
-        self.child = child
+        super(ChildTrace, self).__init__(child)
         self.flname = flname
 
     def __getitem__(self, idx):

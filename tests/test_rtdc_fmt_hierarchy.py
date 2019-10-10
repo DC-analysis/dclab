@@ -110,10 +110,13 @@ def test_manual_exclude():
     # simple exclusion of few events
     assert len(c3) == len(p) - 2
 
-    # removing event in parent removes the event from the
+    # removing same event in parent removes the event from the
     # child altogether, including the manual filter
+    print("a")
     c3.filter.manual[0] = False
+    print("b")
     c2.filter.manual[0] = False
+    print("c")
     c3.apply_filter()
     assert np.alltrue(c3.filter.manual)
 
@@ -140,11 +143,11 @@ def test_manual_exclude_parent_changed():
     assert len(c.filter.all) == 41
     assert c.filter.parent_changed
     # the initially excluded event
-    assert c.filter.retrieve_manual_indices() == [6]
+    assert c.filter.retrieve_manual_indices(c) == [6]
 
     # try to change the excluded events
     try:
-        c.filter.apply_manual_indices([1, 2])
+        c.filter.apply_manual_indices(c, [1, 2])
     except fmt_hierarchy.HierarchyFilterError:
         pass
     else:
@@ -152,8 +155,8 @@ def test_manual_exclude_parent_changed():
 
     # this can be resolved by applying the filter
     c.apply_filter()
-    c.filter.apply_manual_indices([1, 2])
-    assert c.filter.retrieve_manual_indices() == [1, 2]
+    c.filter.apply_manual_indices(c, [1, 2])
+    assert c.filter.retrieve_manual_indices(c) == [1, 2]
 
 
 def test_same_hash_different_identifier():

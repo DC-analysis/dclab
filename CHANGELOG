@@ -1,3 +1,5 @@
+0.15.0
+ - ref: remove circular references between Filter and RTDCBase
 0.14.8
  - fix: Ignore feature "trace" when the trace folder exists but is
    empty (HDF5 format)

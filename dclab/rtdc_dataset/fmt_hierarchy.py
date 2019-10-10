@@ -64,7 +64,7 @@ class ChildTrace(object):
 
 
 class HierarchyFilter(Filter):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, rtdc_ds, *args, **kwargs):
         """A filtering class for RTDC_Hierarchy
 
         This subclass handles manual filters for hierarchy children.
@@ -82,15 +82,15 @@ class HierarchyFilter(Filter):
         - the parent is a hierarchy child as well, or
         - the excluded event is filtered out in the parent.
         """
-        super(HierarchyFilter, self).__init__(*args, **kwargs)
+        super(HierarchyFilter, self).__init__(rtdc_ds, *args, **kwargs)
         self._man_root_ids = []
-        self._parent_hash = hashobj(self.rtdc_ds.hparent.filter.all)
+        self.update_parent(rtdc_ds.hparent)
 
     @property
     def parent_changed(self):
-        return hashobj(self.rtdc_ds.hparent.filter.all) != self._parent_hash
+        return hashobj(self._parent_rtdc_ds.filter.all) != self._parent_hash
 
-    def apply_manual_indices(self, manual_indices):
+    def apply_manual_indices(self, rtdc_ds, manual_indices):
         """Write to `self.manual`
 
         Write `manual_indices` to the boolean array `self.manual`
@@ -107,17 +107,17 @@ class HierarchyFilter(Filter):
         """
         if self.parent_changed:
             msg = "Cannot apply filter, because parent changed: " \
-                  + "dataset {}. ".format(self.rtdc_ds) \
+                  + "dataset {}. ".format(rtdc_ds) \
                   + "Run `RTDC_Hierarchy.apply_filter()` first!"
             raise HierarchyFilterError(msg)
         else:
             self._man_root_ids = list(manual_indices)
-            cidx = map_indices_root2child(child=self.rtdc_ds,
+            cidx = map_indices_root2child(child=rtdc_ds,
                                           root_indices=manual_indices)
             if len(cidx):
                 self.manual[cidx] = False
 
-    def retrieve_manual_indices(self):
+    def retrieve_manual_indices(self, rtdc_ds):
         """Read from self.manual
 
         Read from the boolean array `self.manual`, index all
@@ -145,7 +145,7 @@ class HierarchyFilter(Filter):
         else:
             # indices from boolean array
             pbool = map_indices_child2root(
-                child=self.rtdc_ds,
+                child=rtdc_ds,
                 child_indices=np.where(~self.manual)[0]).tolist()
             # retrieve all indices that are currently not visible
             # previous indices
@@ -155,10 +155,10 @@ class HierarchyFilter(Filter):
             # - self.apply_manual_indices
             pall = sorted(list(set(pbool + pold)))
             # visible indices (only available child indices are returned)
-            pvis_c = map_indices_root2child(child=self.rtdc_ds,
+            pvis_c = map_indices_root2child(child=rtdc_ds,
                                             root_indices=pall).tolist()
             # map visible child indices back to root indices
-            pvis_p = map_indices_child2root(child=self.rtdc_ds,
+            pvis_p = map_indices_child2root(child=rtdc_ds,
                                             child_indices=pvis_c).tolist()
             # hidden indices
             phid = list(set(pall) - set(pvis_p))
@@ -173,6 +173,12 @@ class HierarchyFilter(Filter):
             all_idx = list(set(pbool + phid))
             self._man_root_ids = sorted(all_idx)
         return self._man_root_ids
+
+    def update_parent(self, parent_rtdc_ds):
+        # hold reference to rtdc_ds parent
+        # (not to its filter, because that is reinstantiated)
+        self._parent_rtdc_ds = parent_rtdc_ds
+        self._parent_hash = hashobj(self._parent_rtdc_ds.filter.all)
 
 
 class RTDC_Hierarchy(RTDCBase):
@@ -256,7 +262,7 @@ class RTDC_Hierarchy(RTDCBase):
             manual_pidx = []
         else:
             # get manual filters
-            manual_pidx = self.filter.retrieve_manual_indices()
+            manual_pidx = self.filter.retrieve_manual_indices(self)
         # clear filters
         super(RTDC_Hierarchy, self)._init_filters()
         # override standard filter
@@ -264,13 +270,13 @@ class RTDC_Hierarchy(RTDCBase):
 
         if len(manual_pidx):
             # set manually excluded events
-            self.filter.apply_manual_indices(manual_pidx)
+            self.filter.apply_manual_indices(self, manual_pidx)
 
     def apply_filter(self, *args, **kwargs):
         """Overridden `apply_filter` to perform tasks for hierarchy child"""
         if self.filter is not None:
             # make sure self.filter knows about root manual indices
-            self.filter.retrieve_manual_indices()
+            self.filter.retrieve_manual_indices(self)
 
         # Copy event data from hierarchy parent
         self.hparent.apply_filter()

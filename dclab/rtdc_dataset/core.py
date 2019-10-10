@@ -219,7 +219,7 @@ class RTDCBase(object):
 
     def apply_filter(self, force=[]):
         """Compute the filters for the dataset"""
-        self.filter.update(force)
+        self.filter.update(rtdc_ds=self, force=force)
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform",
                                 downsample=0, xscale="linear",

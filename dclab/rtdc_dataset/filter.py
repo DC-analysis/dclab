@@ -22,8 +22,8 @@ class Filter(object):
         rtdc_ds: instance of RTDCBase
             The RT-DC dataset the filter applies to
         """
-        #: Instance of RTDCBase the filter applies to
-        self.rtdc_ds = rtdc_ds
+        # initialize important parameters
+        self._init_rtdc_ds(rtdc_ds)
         self._filters = {}
 
         #: All filters combined (see :func:`Filter.update`);
@@ -41,19 +41,27 @@ class Filter(object):
         self._old_config = {}
 
     def __getitem__(self, key):
-        """Return the filter for a feature of `self.rtdc_ds`"""
-        if key in self.rtdc_ds:
-            if (key not in self._filters and
-                    key in dfn.scalar_feature_names):
+        """Return the filter for a feature in `self.features`"""
+        if key in self.features and key in dfn.scalar_feature_names:
+            if key not in self._filters:
                 # Generate filters on-the-fly
-                self._filters[key] = np.ones(len(self.rtdc_ds), dtype=bool)
+                self._filters[key] = np.ones(self.size, dtype=bool)
+        else:
+            raise KeyError("Feature not available: '{}'".format(key))
         return self._filters[key]
 
-    def update(self, force=[]):
-        """Update the filters according to `self.rtdc_ds.config["filtering"]`
+    def _init_rtdc_ds(self, rtdc_ds):
+        #: Available feature names
+        self.features = rtdc_ds.features
+        self.size = len(rtdc_ds)
+
+    def update(self, rtdc_ds, force=[]):
+        """Update the filters according to `rtdc_ds.config["filtering"]`
 
         Parameters
         ----------
+        rtdc_ds: dclab.rtdc_dataset.core.RTDCBase
+            The measurement to which the filter is applied
         force : list
             A list of feature names that must be refiltered with
             min/max values.
@@ -64,13 +72,15 @@ class Filter(object):
         :func:`ds.apply_filter <dclab.rtdc_dataset.RTDCBase.apply_filter>`
         is called.
         """
+        # re-initialize important parameters
+        self._init_rtdc_ds(rtdc_ds)
 
         # These lists may help us become very fast in the future
         newkeys = []
         oldvals = []
         newvals = []
 
-        cfg_cur = self.rtdc_ds.config["filtering"]
+        cfg_cur = rtdc_ds.config["filtering"]
         cfg_old = self._old_config
 
         # Determine which data was updated
@@ -101,7 +111,7 @@ class Filter(object):
         col2filter = np.unique(col2filter)
 
         for col in col2filter:
-            if col in self.rtdc_ds:
+            if col in rtdc_ds:
                 fstart = col + " min"
                 fend = col + " max"
                 # Get the current feature filter
@@ -120,7 +130,7 @@ class Filter(object):
                         msg = "inverting filter: {} > {}".format(fstart, fend)
                         warnings.warn(msg)
                         ivalstart, ivalend = ivalend, ivalstart
-                    data = self.rtdc_ds[col]
+                    data = rtdc_ds[col]
                     col_filt[:] = (ivalstart <= data)*(data <= ivalend)
                 else:
                     col_filt[:] = True
@@ -138,16 +148,16 @@ class Filter(object):
                 if p.unique_id in cfg_cur[pf_id]:
                     # update self.polygon
                     # iterate through axes
-                    datax = self.rtdc_ds[p.axes[0]]
-                    datay = self.rtdc_ds[p.axes[1]]
+                    datax = rtdc_ds[p.axes[0]]
+                    datay = rtdc_ds[p.axes[1]]
                     self.polygon *= p.filter(datax, datay)
 
         # 3. Invalid filters
         self.invalid[:] = True
         if cfg_cur["remove invalid events"]:
             for col in dfn.scalar_feature_names:
-                if col in self.rtdc_ds:
-                    data = self.rtdc_ds[col]
+                if col in rtdc_ds:
+                    data = rtdc_ds[col]
                     invalid = np.isinf(data) | np.isnan(data)
                     self.invalid *= ~invalid
 
@@ -176,4 +186,4 @@ class Filter(object):
                 self.all[self.all] = sub
 
         # Actual filtering is then done during plotting
-        self._old_config = self.rtdc_ds.config.copy()["filtering"]
+        self._old_config = rtdc_ds.config.copy()["filtering"]

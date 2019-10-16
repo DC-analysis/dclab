@@ -10,4 +10,5 @@ Examples
 
 .. fancy_include:: isoelastics.py
 
+.. fancy_include:: overview_plot.py
 

@@ -6,7 +6,7 @@ Command-line interface
 .. _sec_condense:
 
 dclab-condense
-----------
+--------------
 
 .. simple_argparse::
    :module: dclab.cli

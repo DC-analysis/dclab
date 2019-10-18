@@ -276,6 +276,10 @@ class RTDC_Hierarchy(RTDCBase):
             self.filter.apply_manual_indices(self, manual_pidx)
 
     @property
+    def features_loaded(self):
+        return self.hparent.features_loaded
+
+    @property
     def hash(self):
         """Hashes of a hierarchy child changes if the parent changes"""
         # Do not apply filters here (speed)

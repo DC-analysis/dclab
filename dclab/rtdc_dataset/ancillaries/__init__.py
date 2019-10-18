@@ -7,6 +7,17 @@ from . import af_fl_max_ctc
 from . import af_image_contour
 
 
+#: features whose computation is fast
+FEATURES_RAPID = [
+    "area_ratio",
+    "area_um",
+    "aspec",
+    "deform",
+    "index",
+    "time",
+]
+
+
 af_basic.register()
 af_emodulus.register()
 af_fl_max_ctc.register()

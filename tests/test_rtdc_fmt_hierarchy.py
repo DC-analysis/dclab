@@ -22,6 +22,7 @@ def test_event_count():
     assert ds.config["experiment"]["event count"] == len(ds)
     assert ch.config["experiment"]["event count"] == len(ch)
     assert len(ds) == len(ch) + 1
+    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -34,6 +35,7 @@ def test_feat_contour():
     ch = new_dataset(ds)
     assert np.all(ch["contour"][0] == ds["contour"][1])
     assert np.all(ch["contour"][1] == ds["contour"][3])
+    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -46,6 +48,7 @@ def test_feat_image():
     ch = new_dataset(ds)
     assert np.all(ch["image"][0] == ds["image"][1])
     assert np.all(ch["image"][1] == ds["image"][3])
+    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -58,6 +61,7 @@ def test_feat_mask():
     ch = new_dataset(ds)
     assert np.all(ch["mask"][0] == ds["mask"][1])
     assert np.all(ch["mask"][1] == ds["mask"][3])
+    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -72,6 +76,21 @@ def test_feat_trace():
                   == ds["trace"]["fl1_median"][1])
     assert np.all(ch["trace"]["fl1_median"][1]
                   == ds["trace"]["fl1_median"][3])
+    cleanup()
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+def test_features_loaded():
+    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    ds = new_dataset(path)
+    assert "volume" in ds.features
+    assert "volume" not in ds.features_loaded
+    assert "volume" not in ds.features_innate
+    # compute volume, now it should be loaded
+    ds["volume"]
+    assert "volume" in ds.features_loaded
+    cleanup()
 
 
 def test_hierarchy_from_tdms():
@@ -112,11 +131,8 @@ def test_manual_exclude():
 
     # removing same event in parent removes the event from the
     # child altogether, including the manual filter
-    print("a")
     c3.filter.manual[0] = False
-    print("b")
     c2.filter.manual[0] = False
-    print("c")
     c3.apply_filter()
     assert np.alltrue(c3.filter.manual)
 
@@ -168,6 +184,7 @@ def test_same_hash_different_identifier():
     assert len(ch1) == len(ds1) - 1
     assert ch1.hash == ch2.hash
     assert ch1.identifier != ch2.identifier
+    cleanup()
 
 
 if __name__ == "__main__":

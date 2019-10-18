@@ -15,7 +15,7 @@ from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
-from .ancillaries import AncillaryFeature
+from .ancillaries import AncillaryFeature, FEATURES_RAPID
 from .export import Export
 from .filter import Filter
 
@@ -209,6 +209,28 @@ class RTDCBase(object):
         """All features excluding ancillary features"""
         innate = [ft for ft in self.features if ft in self._events]
         return innate
+
+    @property
+    def features_loaded(self):
+        """All features including ancillary that have been computed
+
+        Notes
+        -----
+        Features that are computationally cheap to compute are
+        always included. They are defined in
+        :const:`dclab.rtdc_dataset.ancillaries.FEATURES_RAPID`.
+        """
+        features_innate = self.features_innate
+        features_loaded = []
+        for feat in self.features:
+            if (feat in features_innate
+                or feat in FEATURES_RAPID
+                    or feat in self._ancillaries):
+                # Note that there is no hash checking here for
+                # ancillary features. This might be interesting
+                # only in rare cases.
+                features_loaded.append(feat)
+        return features_loaded
 
     @abc.abstractproperty
     def hash(self):

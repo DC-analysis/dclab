@@ -1,5 +1,6 @@
 0.15.0
  - feat: add method RTDCBase.reset_filter
+ - feat: implement RTDCBase.features_loaded
  - fix: non-scalar columns of RTDC_Hierarchy did not implement len()
  - docs: add an example script dedicated to data plotting
  - ref: remove circular references between Filter and RTDCBase

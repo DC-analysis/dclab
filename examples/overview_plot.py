@@ -80,7 +80,7 @@ ax5.plot(fltime, ds["trace"]["fl3_raw"][EVENT_INDEX],
 ax5.legend()
 ax5.set_xlim(ds["fl1_pos"][EVENT_INDEX] - 2*ds["fl1_width"][EVENT_INDEX],
              ds["fl1_pos"][EVENT_INDEX] + 2*ds["fl1_width"][EVENT_INDEX])
-ax5.set_xlabel("Sample time [µs]")
+ax5.set_xlabel("Event time [µs]")
 ax5.set_ylabel("Fluorescence [a.u.]")
 
 plt.tight_layout()

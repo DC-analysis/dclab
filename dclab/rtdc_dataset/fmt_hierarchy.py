@@ -185,7 +185,7 @@ class HierarchyFilter(Filter):
 
 
 class RTDC_Hierarchy(RTDCBase):
-    def __init__(self, hparent, *args, **kwargs):
+    def __init__(self, hparent, apply_filter=True, *args, **kwargs):
         """Hierarchy dataset (filtered from RTDCBase)
 
         A few words on hierarchies:
@@ -205,7 +205,11 @@ class RTDC_Hierarchy(RTDCBase):
         Parameters
         ----------
         hparent: instance of RTDCBase
-            The hierarchy parent.
+            The hierarchy parent
+        apply_filter: bool
+            Whether to apply the filter durint instantiation;
+            If set to `False`, `apply_filter` must be called
+            manually.
         *args:
             Arguments for `RTDCBase`
         **kwargs:
@@ -243,9 +247,10 @@ class RTDC_Hierarchy(RTDCBase):
 
         self.config = Configuration(cfg=cfg)
 
-        # Apply the filter
-        # This will also populate all event attributes
-        self.apply_filter()
+        if apply_filter:
+            # Apply the filter
+            # This will also populate all event attributes
+            self.apply_filter()
 
     def __contains__(self, key):
         return self.hparent.__contains__(key)

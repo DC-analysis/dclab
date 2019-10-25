@@ -189,7 +189,7 @@ class RTDCBase(object):
     @property
     def _plot_filter(self):
         raise NotImplementedError(
-            "RTDCBase._plot_filter has been removed. "
+            "RTDCBase._plot_filter has been removed in dclab 0.16.0. "
             + "Please use the output of RTDCBase.downsample_scatter "
             + "with the argument ret_mask instead.")
 

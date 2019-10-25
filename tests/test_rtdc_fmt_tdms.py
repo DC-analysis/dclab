@@ -260,7 +260,7 @@ def test_load_tdms_avi_files():
 def test_load_tdms_simple():
     tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
-    assert ds._filter.shape[0] == 156
+    assert ds.filter.all.shape[0] == 156
     cleanup()
 
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Downsampling only affects RTDCBase._plot_filter"""
 from __future__ import print_function
 
 import numpy as np

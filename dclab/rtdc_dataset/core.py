@@ -181,7 +181,17 @@ class RTDCBase(object):
     @property
     def _filter(self):
         """return the current filter boolean array"""
+        warnings.warn("RTDCBase._filter is deprecated. Please use "
+                      + "RTDCBase.filter.all instead.",
+                      DeprecationWarning)
         return self.filter.all
+
+    @property
+    def _plot_filter(self):
+        raise NotImplementedError(
+            "RTDCBase._plot_filter has been removed. "
+            + "Please use the output of RTDCBase.downsample_scatter "
+            + "with the argument ret_mask instead.")
 
     def _init_filters(self):
         #: Filtering functionalities (this is an instance of
@@ -302,9 +312,13 @@ class RTDCBase(object):
                                                  samples=downsample,
                                                  remove_invalid=remove_invalid,
                                                  ret_idx=True)
-        self._plot_filter = idx
+
         if ret_mask:
-            return x[idx], y[idx], idx
+            # Mask is a boolean array of len(self)
+            mask = np.zeros(len(self), dtype=bool)
+            mids = np.where(self.filter.all)[0]
+            mask[mids] = idx
+            return x[idx], y[idx], mask
         else:
             return x[idx], y[idx]
 
@@ -490,9 +504,6 @@ class RTDCBase(object):
 
     def reset_filter(self):
         """Reset the current filter"""
-        # Plot filters is only used for plotting and does
-        # not have anything to do with filtering.
-        self._plot_filter = np.ones(len(self), dtype=bool)
         # reset filter instance
         self.filter.reset()
         # reset configuration

@@ -61,7 +61,7 @@ class Statistics(object):
         """Return filtered feature data
 
         The features are filtered according to the user-defined filters,
-        using the information in `ds._filter`. In addition, all
+        using the information in `ds.filter.all`. In addition, all
         `nan` and `inf` values are purged.
 
         Parameters
@@ -72,7 +72,7 @@ class Statistics(object):
             The name of the feature; must be a scalar feature
         """
         if ds.config["filtering"]["enable filters"]:
-            x = ds[feat][ds._filter]
+            x = ds[feat][ds.filter.all]
         else:
             x = ds[feat]
         bad = np.isnan(x) | np.isinf(x)
@@ -195,8 +195,8 @@ Statistics(name="Mode",   req_feature=True, method=mode)
 Statistics(name="SD",     req_feature=True, method=np.std)
 # Methods that work on RTDCBase
 Statistics(name="Events",
-           method=lambda mm: np.sum(mm._filter))
+           method=lambda mm: np.sum(mm.filter.all))
 Statistics(name="%-gated",
-           method=lambda mm: np.average(mm._filter)*100)
+           method=lambda mm: np.average(mm.filter.all)*100)
 Statistics(name="Flow rate",
            method=lambda mm: flow_rate(mm))

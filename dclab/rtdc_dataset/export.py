@@ -87,7 +87,7 @@ class Export(object):
             # write the filtered frames to avi file
             for evid in np.arange(len(ds)):
                 # skip frames that were filtered out
-                if filtered and not ds._filter[evid]:
+                if filtered and not ds.filter.all[evid]:
                     continue
                 try:
                     image = ds["image"][evid]
@@ -161,7 +161,7 @@ class Export(object):
 
         # Collect the data
         if filtered:
-            data = [ds[c][ds._filter] for c in features]
+            data = [ds[c][ds.filter.all] for c in features]
         else:
             data = [ds[c] for c in features]
 
@@ -310,7 +310,7 @@ class Export(object):
         with path.open("ab") as fd:
             # write data
             if filtered:
-                data = [ds[c][ds._filter] for c in features]
+                data = [ds[c][ds.filter.all] for c in features]
             else:
                 data = [ds[c] for c in features]
 

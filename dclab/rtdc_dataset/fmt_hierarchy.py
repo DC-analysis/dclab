@@ -261,11 +261,11 @@ class RTDC_Hierarchy(RTDCBase):
         if key not in self._events:
             item = self.hparent[key]
             if key in dfn.scalar_feature_names:
-                self._events[key] = item[self.hparent._filter]
+                self._events[key] = item[self.hparent.filter.all]
         return self._events[key]
 
     def __len__(self):
-        return np.sum(self.hparent._filter)
+        return np.sum(self.hparent.filter.all)
 
     def _check_parent_filter(self):
         """Reset filter if parent changed
@@ -289,7 +289,7 @@ class RTDC_Hierarchy(RTDCBase):
         """Hashes of a hierarchy child changes if the parent changes"""
         # Do not apply filters here (speed)
         hph = self.hparent.hash
-        hpfilt = hashobj(self.hparent._filter)
+        hpfilt = hashobj(self.hparent.filter.all)
         dhash = hashobj(hph + hpfilt)
         return dhash
 
@@ -303,7 +303,7 @@ class RTDC_Hierarchy(RTDCBase):
         # Copy event data from hierarchy parent
         self.hparent.apply_filter()
         # update event index
-        event_count = np.sum(self.hparent._filter)
+        event_count = np.sum(self.hparent.filter.all)
         self._events = {}
         self._events["index"] = np.arange(1, event_count + 1)
         # set non-scalar column data

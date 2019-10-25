@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Downsampling only affects RTDCBase._plot_filter
-"""
 from __future__ import print_function
 
 import numpy as np
@@ -16,14 +14,14 @@ def test_limit_simple():
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.new_dataset(ddict)
 
-    assert np.sum(ds._filter) == 9999
+    assert np.sum(ds.filter.all) == 9999
     filtflt = {"limit events": 800}
 
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
     ds.apply_filter()
 
-    assert np.sum(ds._filter) == 800
+    assert np.sum(ds.filter.all) == 800
 
 
 def test_limit_equal():
@@ -31,14 +29,14 @@ def test_limit_equal():
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.new_dataset(ddict)
 
-    assert np.sum(ds._filter) == 9999
+    assert np.sum(ds.filter.all) == 9999
     filtflt = {"limit events": 9999}
 
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
     ds.apply_filter()
 
-    assert np.sum(ds._filter) == 9999
+    assert np.sum(ds.filter.all) == 9999
 
 
 def test_limit_above():
@@ -46,14 +44,14 @@ def test_limit_above():
     ddict = example_data_dict(size=9999, keys=keys)
     ds = dclab.new_dataset(ddict)
 
-    assert np.sum(ds._filter) == 9999
+    assert np.sum(ds.filter.all) == 9999
     filtflt = {"limit events": 10000}
 
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
     ds.apply_filter()
 
-    assert np.sum(ds._filter) == 9999
+    assert np.sum(ds.filter.all) == 9999
 
 
 def test_downsample_nan():

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Downsampling only affects RTDCBase._plot_filter"""
 from __future__ import print_function
 
 import numpy as np
@@ -128,10 +127,9 @@ def test_downsample_none():
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
 
-    assert np.sum(ds._plot_filter) == 8472
     ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=0)
-    assert np.sum(ds._plot_filter) == 8472
+    _, _, idx = ds.get_downsampled_scatter(downsample=0, ret_mask=True)
+    assert np.sum(idx) == 8472
 
 
 def test_downsample_none2():
@@ -139,25 +137,23 @@ def test_downsample_none2():
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
 
-    assert np.sum(ds._plot_filter) == 8472
-
     filtflt = {"enable filters": False}
 
     cfg = {"filtering": filtflt}
     ds.config.update(cfg)
     ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=100)
+    _, _, idx = ds.get_downsampled_scatter(downsample=100, ret_mask=True)
 
-    assert np.sum(ds._plot_filter) == 100
-    assert np.sum(ds._filter) == 8472
+    assert np.sum(idx) == 100
+    assert np.sum(ds.filter.all) == 8472
 
     filtflt["enable filters"] = True
     ds.config.update(cfg)
     ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=100)
+    _, _, idx = ds.get_downsampled_scatter(downsample=100, ret_mask=True)
 
-    assert np.sum(ds._plot_filter) == 100
-    assert np.sum(ds._filter) == 8472
+    assert np.sum(idx) == 100
+    assert np.sum(ds.filter.all) == 8472
 
 
 def test_downsample_up():
@@ -169,11 +165,9 @@ def test_downsample_up():
     ddict = example_data_dict(size=10000, keys=keys)
     ds = dclab.new_dataset(ddict)
 
-    assert np.sum(ds._plot_filter) == 10000
-
     ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=9999)
-    assert np.sum(ds._plot_filter) == 9999
+    _, _, idx = ds.get_downsampled_scatter(downsample=9999, ret_mask=True)
+    assert np.sum(idx) == 9999
     ds.get_downsampled_scatter(downsample=9999)
 
 
@@ -183,11 +177,9 @@ def test_downsample_yes():
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
 
-    assert np.sum(ds._plot_filter) == 8472
-
     ds.apply_filter()
-    ds.get_downsampled_scatter(downsample=100)
-    assert np.sum(ds._plot_filter) == 100
+    _, _, idx = ds.get_downsampled_scatter(downsample=100, ret_mask=True)
+    assert np.sum(idx) == 100
     ds.get_downsampled_scatter(downsample=100)
 
 

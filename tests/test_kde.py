@@ -11,7 +11,7 @@ from helper_methods import example_data_dict
 def test_kde_empty():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
-    ds._filter[:] = 0
+    ds.filter.all[:] = 0
     a = ds.get_kde_scatter()
     assert len(a) == 0
 

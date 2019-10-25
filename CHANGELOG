@@ -1,3 +1,8 @@
+0.16.0
+ - fix: RTDCBase.downsample_scatter with ret_mask=True did not return
+   boolean array of len(RTDCBase) as indicated in the docs
+ - ref: remove RTDCBase._plot_filter, which was confusing anyway
+ - ref: deprecate usage of RTDCBase._filter
 0.15.0
  - feat: add method RTDCBase.reset_filter
  - feat: implement RTDCBase.features_loaded

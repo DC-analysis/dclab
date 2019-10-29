@@ -150,7 +150,7 @@ class RTDC_TDMS(RTDCBase):
         # Additional information from log file
         rtfdc_log = self.path.with_name(self._mid + "_log.ini")
         if rtfdc_log.exists():
-            with rtfdc_log.open() as fd:
+            with rtfdc_log.open("r", errors="replace") as fd:
                 loglines = fd.readlines()
             for line in loglines:
                 if line.startswith("[EVENT LOG]"):
@@ -160,7 +160,7 @@ class RTDC_TDMS(RTDCBase):
 
         rtfdc_parm = self.path.with_name("parameters.txt")
         if rtfdc_parm.exists():
-            with rtfdc_parm.open() as fd:
+            with rtfdc_parm.open("r", errors="replace") as fd:
                 parlines = fd.readlines()
             p1 = None
             p2 = None
@@ -212,7 +212,7 @@ class RTDC_TDMS(RTDCBase):
             dclab_config["fluorescence"]["channels installed"] = 3
 
         # Additional information from commented-out log-file (manual)
-        with config_paths[0].open("r") as fd:
+        with config_paths[0].open("r", errors="replace") as fd:
             lns = [l[1:].strip() for l in fd.readlines() if l.startswith("#")]
             if lns and lns[0] == "[FLUOR]":
                 if ("software version" not in dclab_config["setup"]
@@ -248,7 +248,7 @@ class RTDC_TDMS(RTDCBase):
             if pl.exists():
                 log_files.append(pl)
         for pp in log_files:
-            with pp.open('r') as f:
+            with pp.open("r", errors="replace") as f:
                 cfg = [l.strip() for l in f.readlines()]
             self.logs[pp.name] = cfg
 
@@ -365,7 +365,7 @@ def get_project_name_from_path(path, append_mx=False):
         # check para.ini
         para = dirn / (mx + "_para.ini")
         if para.exists():
-            with para.open() as fd:
+            with para.open("r", errors="replace") as fd:
                 lines = fd.readlines()
             for line in lines:
                 if line.startswith("Sample Name ="):

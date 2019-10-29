@@ -106,7 +106,7 @@ class PolygonFilter(object):
     def _load(self, filename):
         """Import all filters from a text file"""
         filename = pathlib.Path(filename)
-        with filename.open() as fd:
+        with filename.open("r", errors="replace") as fd:
             data = fd.readlines()
 
         # Get the strings that correspond to self.fileid

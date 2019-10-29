@@ -375,7 +375,7 @@ class Isoelastics(object):
         path = pathlib.Path(path).resolve()
         # Get metadata
         meta = {}
-        with path.open() as fd:
+        with path.open("r", errors='replace') as fd:
             while True:
                 line = fd.readline().strip()
                 if line.startswith("# - "):

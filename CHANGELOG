@@ -1,3 +1,6 @@
+0.16.1
+ - fix: circumvent UnicodeDecodeErrors which occured in frozen macOS
+   binaries that use dclab
 0.16.0
  - fix: RTDCBase.downsample_scatter with ret_mask=True did not return
    boolean array of len(RTDCBase) as indicated in the docs

@@ -222,7 +222,7 @@ def load_from_file(cfg_file):
         Dictionary with configuration parameters
     """
     path = pathlib.Path(cfg_file).resolve()
-    with path.open('r') as f:
+    with path.open("r", errors="replace") as f:
         code = f.readlines()
 
     cfg = CaseInsensitiveDict()

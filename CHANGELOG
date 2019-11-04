@@ -1,6 +1,9 @@
 0.16.1
  - fix: circumvent UnicodeDecodeErrors which occured in frozen macOS
    binaries that use dclab
+ - enh: support subsecond accuracy in the the configuration key
+   [experiment] time (e.g. "HH:MM:SS.SSS" instead of "HH:MM:SS")
+ - enh: store the correct, relative measurement time in dclab-join
 0.16.0
  - fix: RTDCBase.downsample_scatter with ret_mask=True did not return
    boolean array of len(RTDCBase) as indicated in the docs

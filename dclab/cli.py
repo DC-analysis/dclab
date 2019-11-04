@@ -160,14 +160,28 @@ def join(path_out=None, paths_in=None):
     # Determine input file order
     key_paths = []
     for pp in paths_in:
-        ds = new_dataset(pp)
-        key = "_".join([ds.config["experiment"]["date"],
-                        ds.config["experiment"]["time"],
-                        str(ds.config["experiment"]["run index"])
-                        ])
-        key_paths.append((key, pp))
-        del ds
+        with new_dataset(pp) as ds:
+            key = "_".join([ds.config["experiment"]["date"],
+                            ds.config["experiment"]["time"],
+                            str(ds.config["experiment"]["run index"])
+                            ])
+            key_paths.append((key, pp))
     sorted_paths = [p[1] for p in sorted(key_paths, key=lambda x: x[0])]
+
+    # Determine temporal offsets
+    toffsets = np.zeros(len(sorted_paths), dtype=float)
+    for ii, pp in enumerate(sorted_paths):
+        with new_dataset(pp) as ds:
+            etime = ds.config["experiment"]["time"]
+            st = time.strptime(ds.config["experiment"]["date"]
+                               + etime[:8],
+                               "%Y-%m-%d%H:%M:%S")
+            toffsets[ii] = time.mktime(st)
+            if len(etime) > 8:
+                # floating point time stored as well (HH:MM:SS.SS)
+                toffsets[ii] += float(etime[8:])
+
+    toffsets -= toffsets[0]
 
     # Create initial output file
     with new_dataset(sorted_paths[0]) as ds0:
@@ -179,13 +193,14 @@ def join(path_out=None, paths_in=None):
 
     with write_hdf5.write(path_out, mode="append") as h5obj:
         # Append data from other files
-        for pi in sorted_paths[1:]:
-            dsi = new_dataset(pi)
-            for feat in features:
-                export.hdf5_append(h5obj=h5obj,
-                                   rtdc_ds=dsi,
-                                   feat=feat,
-                                   compression="gzip")
+        for pi, ti in zip(sorted_paths[1:], toffsets[1:]):
+            with new_dataset(pi) as dsi:
+                for feat in features:
+                    export.hdf5_append(h5obj=h5obj,
+                                       rtdc_ds=dsi,
+                                       feat=feat,
+                                       compression="gzip",
+                                       time_offset=ti)
         export.hdf5_autocomplete_config(h5obj)
 
     # Meta data

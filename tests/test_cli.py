@@ -6,6 +6,7 @@ from __future__ import print_function, unicode_literals
 import numpy as np
 
 from dclab import cli, new_dataset
+import h5py
 import imageio
 import pytest
 
@@ -77,6 +78,32 @@ def test_join_rtdc():
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
+    cleanup()
+
+
+def test_join_times():
+    path_in1 = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in2 = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in1.with_name("out.rtdc")
+
+    # modify acquisition times
+    with h5py.File(path_in1, mode="a") as h1:
+        h1.attrs["experiment:date"] = "2019-11-04"
+        h1.attrs["experiment:time"] = "15:00:00"
+
+    with h5py.File(path_in2, mode="a") as h2:
+        h2.attrs["experiment:date"] = "2019-11-05"
+        h2.attrs["experiment:time"] = "16:01:15.050"
+
+    offset = 24*60*60 + 60*60 + 1*60 + 15 + .05
+
+    cli.join(path_out=path_out, paths_in=[path_in1, path_in2])
+    with new_dataset(path_out) as dsj, new_dataset(path_in1) as ds0:
+        assert np.allclose(dsj["time"],
+                           np.concatenate((ds0["time"], ds0["time"]+offset)),
+                           rtol=0,
+                           atol=.0001)
     cleanup()
 
 

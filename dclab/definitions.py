@@ -41,7 +41,7 @@ CFG_METADATA = {
         ["event count", fint, "Number of recorded events"],
         ["run index", fint, "Index of measurement run"],
         ["sample", str, "Measured sample or user-defined reference"],
-        ["time", str, "Start time of measurement ('HH:MM:SS')"],
+        ["time", str, "Start time of measurement ('HH:MM:SS[.S]')"],
     ],
     # All special keywords related to RT-FDC
     # This section should not be present for regular RT-DC measurements.

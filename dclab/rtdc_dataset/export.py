@@ -320,7 +320,8 @@ class Export(object):
                        delimiter="\t")
 
 
-def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None):
+def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
+                time_offset=0):
     """Append feature data to an HDF5 file
 
     Parameters
@@ -337,6 +338,9 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None):
     filtarr: None or 1d boolean np.ndarray
         Optional boolean array used for filtering. If set to
         `None`, all events are saved.
+    time_offset: float
+        This value will be added to the time feature (used for
+        joining multiple measurements)
 
     Notes
     -----
@@ -409,6 +413,11 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None):
             nev0 = 0
         write(h5obj,
               data={"index": np.arange(nev0+1, nev0+nev+1)},
+              mode="append",
+              compression=compression)
+    elif feat == "time":
+        write(h5obj,
+              data={"time": rtdc_ds["time"][filtarr] + time_offset},
               mode="append",
               compression=compression)
     else:

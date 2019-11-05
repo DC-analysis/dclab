@@ -28,6 +28,25 @@ def test_condense():
     cleanup()
 
 
+def test_compress():
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("compressed.rtdc")
+
+    cli.compress(path_out=path_out, path_in=path_in)
+    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
+        assert "dclab-compress" in dsj.logs
+        assert len(dsj)
+        assert len(dsj) == len(ds0)
+        for feat in ds0.features:
+            if feat in ["contour", "image", "mask"]:
+                for ii in range(len(dsj)):
+                    assert np.all(dsj[feat][ii] == ds0[feat][ii]), feat
+            else:
+                assert np.all(dsj[feat] == ds0[feat]), feat
+    cleanup()
+
+
 def test_join_tdms():
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
@@ -183,8 +202,6 @@ def test_tdms2rtdc_remove_nan_image():
     cleanup()
 
 
-@pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.export.LimitingExportSizeWarning')
 def test_tdms2rtdc_update_roi_size():
     path_in = retrieve_data("rtdc_data_traces_video.zip")
     # set wrong roi sizes
@@ -210,6 +227,8 @@ def test_tdms2rtdc_update_roi_size():
         assert ds0.config["imaging"]["roi size y"] == 24
         assert dsj.config["imaging"]["roi size x"] == 256
         assert dsj.config["imaging"]["roi size y"] == 96
+        wlog = "dclab-tdms2rtdc-warnings"
+        assert "LimitingExportSizeWarning" in dsj.logs[wlog]
     cleanup()
 
 

@@ -1,3 +1,7 @@
+0.17.0
+ - feat: add command line script for compressing  HDF5 (.rtdc)
+   data "dclab-compress"
+ - enh: record warnings under "/log" for all command line scripts
 0.16.1
  - fix: circumvent UnicodeDecodeErrors which occured in frozen macOS
    binaries that use dclab

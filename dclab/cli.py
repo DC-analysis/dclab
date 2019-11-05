@@ -28,6 +28,29 @@ except PyImportError:
     nptdms = None
 
 
+def assemble_warnings(w):
+    """pretty-format all warnings for logs"""
+    wlog = []
+    for wi in w:
+        wlog.append("{}".format(wi.category.__name__))
+        wlog.append(" in {} line {}:".format(
+            wi.category.__module__, wi.lineno))
+        # make sure line is not longer than 100 characters
+        words = str(wi.message).split(" ")
+        wline = "  "
+        for ii in range(len(words)):
+            wline += " " + words[ii]
+            if ii == len(words) - 1:
+                # end
+                wlog.append(wline)
+            elif len(wline + words[ii+1]) + 1 >= 100:
+                # new line
+                wlog.append(wline)
+                wline = "  "
+            # nothing to do here
+    return wlog
+
+
 def get_command_log(paths, custom_dict={}):
     """Return a json dump of system parameters
 
@@ -98,6 +121,59 @@ def print_violation(string):
     print_info("\033[31m{}".format(string))
 
 
+def compress(path_out=None, path_in=None):
+    """Create a new dataset with all features compressed losslessly"""
+    if path_out is None or path_in is None:
+        parser = compress_parser()
+        args = parser.parse_args()
+        path_in = args.input
+        path_out = args.output
+
+    path_in = pathlib.Path(path_in)
+    path_out = pathlib.Path(path_out)
+
+    if not path_in.suffix == ".rtdc":
+        raise ValueError("Please specify an .rtdc file!")
+
+    if path_out.suffix != ".rtdc":
+        path_out = path_out.with_name(path_out.name + ".rtdc")
+
+    logs = {}
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        with new_dataset(path_in) as ds:
+            ds.export.hdf5(path=path_out,
+                           features=ds.features_innate,
+                           filtered=False,
+                           compression="gzip",
+                           override=True)
+            logs.update(ds.logs)
+
+        # command log
+        logs["dclab-compress"] = get_command_log(paths=[path_in])
+
+        # warnings log
+        if w:
+            logs["dclab-compress-warnings"] = assemble_warnings(w)
+
+    # Write log file
+    with write_hdf5.write(path_out, logs=logs, mode="append"):
+        pass
+
+
+def compress_parser():
+    descr = "Create a compressed version of an .rtdc file. This can be " \
+            + "used for saving disk space. The data generate during " \
+            + "an experiment is usually not compressed."
+    parser = argparse.ArgumentParser(description=descr)
+    parser.add_argument('input', metavar="INPUT", type=str,
+                        help='Input path (.rtdc file)')
+    parser.add_argument('output', metavar="OUTPUT", type=str,
+                        help='Output path (.rtdc file)')
+    return parser
+
+
 def condense(path_out=None, path_in=None):
     """Create a new dataset with all (ancillary) scalar-only features"""
     if path_out is None or path_in is None:
@@ -114,17 +190,23 @@ def condense(path_out=None, path_in=None):
 
     logs = {}
 
-    with new_dataset(path_in) as ds:
-        features = [f for f in ds.features if f in dfn.scalar_feature_names]
-        ds.export.hdf5(path=path_out,
-                       features=features,
-                       filtered=False,
-                       compression="gzip",
-                       override=True)
-        logs.update(ds.logs)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        with new_dataset(path_in) as ds:
+            feats = [f for f in ds.features if f in dfn.scalar_feature_names]
+            ds.export.hdf5(path=path_out,
+                           features=feats,
+                           filtered=False,
+                           compression="gzip",
+                           override=True)
+            logs.update(ds.logs)
 
-    # Log
-    logs["dclab-condense"] = get_command_log(paths=[path_in])
+        # command log
+        logs["dclab-condense"] = get_command_log(paths=[path_in])
+
+        # warnings log
+        if w:
+            logs["dclab-condense-warnings"] = assemble_warnings(w)
 
     # Write log file
     with write_hdf5.write(path_out, logs=logs, mode="append"):
@@ -183,31 +265,42 @@ def join(path_out=None, paths_in=None):
 
     toffsets -= toffsets[0]
 
+    logs = {}
     # Create initial output file
-    with new_dataset(sorted_paths[0]) as ds0:
-        features = sorted(ds0.features_innate)
-        ds0.export.hdf5(path=path_out,
-                        features=features,
-                        filtered=False,
-                        compression="gzip")
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        with new_dataset(sorted_paths[0]) as ds0:
+            features = sorted(ds0.features_innate)
+            ds0.export.hdf5(path=path_out,
+                            features=features,
+                            filtered=False,
+                            compression="gzip")
+        if w:
+            logs["dclab-join-warnings-#1"] = assemble_warnings(w)
 
     with write_hdf5.write(path_out, mode="append") as h5obj:
+        ii = 1
         # Append data from other files
         for pi, ti in zip(sorted_paths[1:], toffsets[1:]):
-            with new_dataset(pi) as dsi:
-                for feat in features:
-                    export.hdf5_append(h5obj=h5obj,
-                                       rtdc_ds=dsi,
-                                       feat=feat,
-                                       compression="gzip",
-                                       time_offset=ti)
+            ii += 1  # we start with the second dataset
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                with new_dataset(pi) as dsi:
+                    for feat in features:
+                        export.hdf5_append(h5obj=h5obj,
+                                           rtdc_ds=dsi,
+                                           feat=feat,
+                                           compression="gzip",
+                                           time_offset=ti)
+                if w:
+                    lkey = "dclab-join-warnings-#{}".format(ii)
+                    logs[lkey] = assemble_warnings(w)
         export.hdf5_autocomplete_config(h5obj)
 
     # Meta data
     meta = {"experiment": {"run index": 1}}
 
     # Logs and configs from source files
-    logs = {}
     logs["dclab-join"] = get_command_log(paths=sorted_paths)
     for ii, pp in enumerate(sorted_paths):
         with new_dataset(pp) as ds:
@@ -344,25 +437,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                     paths=[ff], custom_dict=custom_dict)
                 # warnings log
                 if w:
-                    wlog = []
-                    for wi in w:
-                        wlog.append("{}".format(wi.category.__name__))
-                        wlog.append(" in {} line {}:".format(
-                            wi.category.__module__, wi.lineno))
-                        # make sure line is not longer than 100 characters
-                        words = str(wi.message).split(" ")
-                        wline = "  "
-                        for ii in range(len(words)):
-                            wline += " " + words[ii]
-                            if ii == len(words) - 1:
-                                # end
-                                wlog.append(wline)
-                            elif len(wline + words[ii+1]) + 1 >= 100:
-                                # new line
-                                wlog.append(wline)
-                                wline = "  "
-                            # nothing to do here
-                    logs["dclab-tdms2rtdc-warnings"] = wlog
+                    logs["dclab-tdms2rtdc-warnings"] = assemble_warnings(w)
                 logs.update(ds.logs)
                 with write_hdf5.write(fr, logs=logs, mode="append"):
                     pass

@@ -165,7 +165,7 @@ def compress(path_out=None, path_in=None):
 
 def compress_parser():
     descr = "Create a compressed version of an .rtdc file. This can be " \
-            + "used for saving disk space. The data generate during " \
+            + "used for saving disk space. The data generated during " \
             + "an experiment is usually not compressed."
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('input', metavar="INPUT", type=str,

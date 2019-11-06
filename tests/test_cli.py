@@ -8,7 +8,6 @@ import numpy as np
 from dclab import cli, new_dataset
 import h5py
 import imageio
-import pytest
 
 from helper_methods import retrieve_data, cleanup
 

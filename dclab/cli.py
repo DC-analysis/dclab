@@ -158,7 +158,8 @@ def compress(path_out=None, path_in=None):
             logs["dclab-compress-warnings"] = assemble_warnings(w)
 
     # Write log file
-    with write_hdf5.write(path_out, logs=logs, mode="append"):
+    with write_hdf5.write(path_out, logs=logs, mode="append",
+                          compression="gzip"):
         pass
 
 
@@ -209,7 +210,8 @@ def condense(path_out=None, path_in=None):
             logs["dclab-condense-warnings"] = assemble_warnings(w)
 
     # Write log file
-    with write_hdf5.write(path_out, logs=logs, mode="append"):
+    with write_hdf5.write(path_out, logs=logs, mode="append",
+                          compression="gzip"):
         pass
 
 
@@ -274,11 +276,13 @@ def join(path_out=None, paths_in=None):
             ds0.export.hdf5(path=path_out,
                             features=features,
                             filtered=False,
+                            override=True,
                             compression="gzip")
         if w:
             logs["dclab-join-warnings-#1"] = assemble_warnings(w)
 
-    with write_hdf5.write(path_out, mode="append") as h5obj:
+    with write_hdf5.write(path_out, mode="append",
+                          compression="gzip") as h5obj:
         ii = 1
         # Append data from other files
         for pi, ti in zip(sorted_paths[1:], toffsets[1:]):
@@ -312,7 +316,8 @@ def join(path_out=None, paths_in=None):
             logs["cfg-#{}".format(ii+1)] = cfg
 
     # Write logs and missing meta data
-    with write_hdf5.write(path_out, logs=logs, meta=meta, mode="append"):
+    with write_hdf5.write(path_out, logs=logs, meta=meta, mode="append",
+                          compression="gzip"):
         pass
 
 
@@ -420,7 +425,8 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                 ds.export.hdf5(path=fr,
                                features=features,
                                filtered=True,
-                               override=True)
+                               override=True,
+                               compression="gzip")
 
                 # write logs
                 custom_dict = {}
@@ -439,7 +445,8 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                 if w:
                     logs["dclab-tdms2rtdc-warnings"] = assemble_warnings(w)
                 logs.update(ds.logs)
-                with write_hdf5.write(fr, logs=logs, mode="append"):
+                with write_hdf5.write(fr, logs=logs, mode="append",
+                                      compression="gzip"):
                     pass
 
 

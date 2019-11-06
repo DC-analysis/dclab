@@ -3,6 +3,17 @@ Command-line interface
 ======================
 
 
+.. _sec_compress:
+
+dclab-compress
+--------------
+
+.. simple_argparse::
+   :module: dclab.cli
+   :func: compress_parser
+   :prog: dclab-compress
+
+
 .. _sec_condense:
 
 dclab-condense

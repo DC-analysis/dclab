@@ -64,6 +64,9 @@ class PolygonFilter(object):
             # This also sets a unique id
             self._load(filename)
         else:
+            if len(axes) != 2:
+                raise ValueError("`axes` must have length 2, "
+                                 + "got '{}'!".format(axes))
             self.axes = axes
             self.points = np.array(points, dtype=float)
             self.name = name

@@ -16,8 +16,8 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     Parameters
     ----------
     medium: str
-        The medium to compute the viscosity for.
-        One of ["CellCarrier", "CellCarrier B", "water"].
+        The medium to compute the viscosity for; Valid values
+        are defined in :const:`KNOWN_MEDIA`.
     channel_width: float
         The channel width in µm
     flow_rate: float

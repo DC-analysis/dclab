@@ -176,6 +176,8 @@ features
 
 .. autofunction:: dclab.features.emodulus_viscosity.get_viscosity
 
+.. autodata:: dclab.features.emodulus_viscosity.KNOWN_MEDIA
+
 .. autofunction:: dclab.features.fl_crosstalk.correct_crosstalk
 
 .. autofunction:: dclab.features.fl_crosstalk.get_compensation_matrix

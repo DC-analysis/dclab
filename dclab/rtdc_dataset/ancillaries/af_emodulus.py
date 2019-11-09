@@ -12,7 +12,7 @@ def compute_emodulus(mm):
     assert model == "elastic sphere"
     medium = calccfg["emodulus medium"]
     viscosity = calccfg["emodulus viscosity"]
-    if medium == "Other":
+    if medium.lower() == "other":
         medium = viscosity
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(

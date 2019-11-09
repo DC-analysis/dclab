@@ -148,7 +148,7 @@ class Configuration(object):
                 self["filtering"][item + a] = 0
 
         # Make sure that all filtering values have a default value
-        # (otherwise we wil get problems with resetting filters)
+        # (otherwise we will get problems with resetting filters)
         for item in dfn.CFG_ANALYSIS["filtering"]:
             if item[0] not in self["filtering"]:
                 raise KeyError(

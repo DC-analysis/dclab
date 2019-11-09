@@ -1,3 +1,6 @@
+0.17.2
+ - ref: minor cleanup in computation of viscosity (support lower-case
+   `medum` values, add `dclab.features.emodulus_viscosity.KNOWN_MEDIA`)
 0.17.1
  - maintenance release
 0.17.0

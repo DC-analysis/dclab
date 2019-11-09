@@ -27,7 +27,7 @@ CFG_ANALYSIS = {
         ["crosstalk fl21", float, "Fluorescence crosstalk, channel 2 to 1"],
         ["crosstalk fl31", float, "Fluorescence crosstalk, channel 3 to 1"],
         ["crosstalk fl12", float, "Fluorescence crosstalk, channel 1 to 2"],
-        ["crosstalk fl32", float, "Fluorescence crosstalk, channel 3 to 1"],
+        ["crosstalk fl32", float, "Fluorescence crosstalk, channel 3 to 2"],
         ["crosstalk fl31", float, "Fluorescence crosstalk, channel 1 to 3"],
         ["crosstalk fl32", float, "Fluorescence crosstalk, channel 2 to 3"],
     ]

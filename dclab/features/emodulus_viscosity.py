@@ -5,6 +5,9 @@ from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 
+#: Media for which computation of viscosity is defined
+KNOWN_MEDIA = ["CellCarrier", "CellCarrierB", "water"]
+
 
 def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
                   temperature=23.0):
@@ -34,18 +37,21 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     - Values for the viscosity of water are computed using
       equation (15) from :cite:`Kestin_1978`.
     """
-    if medium.lower() not in ["cellcarrier", "cellcarrier b", "water"]:
+    # also support lower-case media and a space before the "B"
+    valmed = [v.lower() for v in KNOWN_MEDIA + ["CellCarrier B"]]
+    medium = medium.lower()
+    if medium.lower() not in valmed:
         raise ValueError("Invalid medium: {}".format(medium))
 
     # convert flow_rate from µl/s to m³/s
     # convert channel_width from µm to m
     term1 = 1.1856 * 6 * flow_rate * 1e-9 / (channel_width * 1e-6)**3 * 2 / 3
 
-    if medium == "CellCarrier":
+    if medium == "cellcarrier":
         temp_corr = (temperature / 23.2)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.677)
         eta = 0.179 * (term1 * term2)**(0.677 - 1) * temp_corr * 1e3
-    elif medium == "CellCarrier B":
+    elif medium in ["cellCarrierb", "cellcarrier b"]:
         temp_corr = (temperature / 23.6)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.634)
         eta = 0.360 * (term1 * term2)**(0.634 - 1) * temp_corr * 1e3

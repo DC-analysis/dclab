@@ -7,10 +7,11 @@ import numpy as np
 
 from .. import definitions as dfn
 
+from ..util import hashobj
+
 from .config import Configuration
 from .core import RTDCBase
 from .filter import Filter
-from .util import hashobj
 
 
 class HierarchyFilterError(BaseException):

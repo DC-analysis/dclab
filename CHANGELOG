@@ -1,11 +1,10 @@
 0.18.0
- - feat: polygon filters are only computed for those events that are
-   not filtered by other filters (box, manual, invalid); Note that this
-   may break things for you if you used `RTDCBase.filter.polygon`.
+ - ref: move dclab.rtdc_dataset.util to dclab.util
  - ref: minor cleanup in computation of viscosity (support lower-case
    `medum` values, add `dclab.features.emodulus_viscosity.KNOWN_MEDIA`)
  - ref: cleanup dclab.rtdc_dataset.filter (use logical operators,
-   correctly display nan-warning messages)
+   correctly display nan-warning messages, keep track of polygon
+   filters, add consistency checks, improve readability)
 0.17.1
  - maintenance release
 0.17.0

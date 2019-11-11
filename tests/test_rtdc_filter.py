@@ -2,11 +2,48 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
+import warnings
+
 import numpy as np
 
+import dclab
 from dclab.rtdc_dataset import new_dataset
 
 from helper_methods import example_data_dict
+
+
+def test_changed_polygon_filter():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    amin, amax = ds["area_um"].min(), ds["area_um"].max()
+    dmin, dmax = ds["deform"].min(), ds["deform"].max()
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[amin, dmin],
+                                     [(amax + amin) / 2, dmin],
+                                     [(amax + amin) / 2, dmax],
+                                     ])
+    ds.config["filtering"]["polygon filters"].append(pf.unique_id)
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 6335
+    # change the filter
+    pf.points = list(pf.points) + [np.array([amin, dmax])]
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 4258
+    # invert the filter
+    pf.inverted = True
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 8472 - 4258
+
+
+def test_disable_filters():
+    """Disabling the filters should only affect RTDCBase.filter.all"""
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.filter.manual[[0, 8471]] = False
+    ds.apply_filter()
+    ds.config["filtering"]["enable filters"] = False
+    ds.apply_filter()
+    assert np.alltrue(ds.filter.all)
 
 
 def test_filter_manual():
@@ -34,6 +71,41 @@ def test_filter_min_max():
     ds.config["filtering"]["deform min"] = (dmin + dmax) / 2
     ds.config["filtering"]["deform max"] = dmax
     assert np.sum(ds.filter.all) == 4256
+
+
+def test_nan_warning():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ddict["area_um"][[1, 4, 6]] = np.nan
+    ds = new_dataset(ddict)
+    amin, amax = np.nanmin(ds["area_um"]), np.nanmax(ds["area_um"])
+    ds.config["filtering"]["area_um min"] = (amax + amin) / 2
+    ds.config["filtering"]["area_um max"] = amax
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        ds.apply_filter()
+        assert w[0].category == dclab.rtdc_dataset.filter.NanWarning
+        assert str(w[0].message).count("area_um")
+    assert np.sum(ds.filter.all) == 4255
+
+
+def test_remove_ancillary_feature():
+    """When a feature is removed, the box boolean filter must be deleted"""
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform",
+                                               "emodulus"])
+    ds = new_dataset(ddict)
+    amin, amax = ds["area_um"].min(), ds["area_um"].max()
+    ds.config["filtering"]["area_um min"] = (amax + amin) / 2
+    ds.config["filtering"]["area_um max"] = amax
+    emin, emax = ds["emodulus"].min(), ds["emodulus"].max()
+    ds.config["filtering"]["emodulus min"] = (emax + emin) / 2
+    ds.config["filtering"]["emodulus max"] = emax
+    ds.apply_filter()
+    numevents = np.sum(ds.filter.all)
+    # now remove the ancillary feature
+    ds._events.pop("emodulus")
+    ds.apply_filter()
+    numevents2 = np.sum(ds.filter.all)
+    assert numevents != numevents2
 
 
 if __name__ == "__main__":

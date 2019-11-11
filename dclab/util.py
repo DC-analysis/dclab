@@ -9,7 +9,7 @@ import pathlib
 import h5py
 import numpy as np
 
-from ..compat import str_types
+from .compat import str_types
 
 
 def hashfile(fname, blocksize=65536, count=0, hasher_class=hashlib.md5):

@@ -61,14 +61,14 @@ def test_exact():
         "Metadata: Missing key [fluorescence] 'laser count'",
         "Metadata: Missing key [fluorescence] 'lasers installed'",
         "Metadata: Missing key [fluorescence] 'samples per event'",
-        ]
+    ]
     known_aler = [
         "Metadata: Missing key [fluorescence] 'channel 1 name'",
         "Metadata: Missing key [fluorescence] 'channel 2 name'",
         "Metadata: Missing key [online_contour] 'no absdiff'",
         "Metadata: Missing key [setup] 'identifier'",
         "Metadata: Missing key [setup] 'module composition'",
-        ]
+    ]
     known_info = ['Data file format: tdms', 'Fluorescence: True']
     assert set(viol) == set(known_viol)
     assert set(aler) == set(known_aler)
@@ -103,12 +103,12 @@ def test_load_with():
         "Metadata: Missing key [setup] 'identifier'",
         "Metadata: Missing key [setup] 'module composition'",
         "Metadata: Missing key [setup] 'software version'",
-        ]
+    ]
     known_viol = [
         "Features: wrong event count: 'contour' (14 of 156)",
         "Features: wrong event count: 'mask' (14 of 156)",
         "Metadata: Missing key [setup] 'medium'",
-        ]
+    ]
     with new_dataset(h5path) as ds:
         viol, aler, _ = check_dataset(ds)
         assert set(viol) == set(known_viol)

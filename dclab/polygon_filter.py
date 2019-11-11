@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 
 from .compat import is_file_obj
+from .util import hashobj
 
 
 class FilterIdExistsWarning(UserWarning):
@@ -172,6 +173,11 @@ class PolygonFilter(object):
         ic = max(PolygonFilter._instance_counter, unique_id+1)
         PolygonFilter._instance_counter = ic
         self.unique_id = unique_id
+
+    @property
+    def hash(self):
+        """Hash of `axes`, `points`, and `inverted`"""
+        return hashobj([self.axes, self.points, self.inverted])
 
     @staticmethod
     def clear_all_filters():

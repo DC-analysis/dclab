@@ -10,10 +10,11 @@ import warnings
 import h5py
 import numpy as np
 
-from dclab import definitions as dfn
+from .. import definitions as dfn
+from ..util import hashobj, hashfile
+
 from .config import Configuration
 from .core import RTDCBase
-from .util import hashobj, hashfile
 
 
 #: rtdc files exported with dclab prior to this version are not supported

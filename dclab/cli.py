@@ -12,9 +12,10 @@ import h5py
 import numpy as np
 
 from .rtdc_dataset import check_dataset, export, fmt_tdms, new_dataset, \
-    util, write_hdf5
+    write_hdf5
 from . import definitions as dfn
 from .compat import PyImportError
+from . import util
 from ._version import version
 
 try:

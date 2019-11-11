@@ -27,7 +27,7 @@ import warnings
 
 import numpy as np
 
-from ..util import obj2str
+from ...util import obj2str
 
 
 class BadFeatureSizeWarning(UserWarning):

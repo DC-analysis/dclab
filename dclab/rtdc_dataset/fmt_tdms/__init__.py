@@ -26,10 +26,10 @@ else:
 import numpy as np
 
 from ... import definitions as dfn
+from ...util import hashobj, hashfile
 
 from ..config import Configuration
 from ..core import RTDCBase
-from ..util import hashobj, hashfile
 
 
 class RTDC_TDMS(RTDCBase):

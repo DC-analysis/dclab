@@ -5,9 +5,10 @@ from __future__ import division, print_function, unicode_literals
 
 import time
 
+from ..util import hashobj
+
 from .config import Configuration
 from .core import RTDCBase
-from .util import hashobj
 
 
 class RTDC_Dict(RTDCBase):

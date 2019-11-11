@@ -1,4 +1,6 @@
 0.18.0
+ - fix: correctly handle filtering when features are removed from a
+   dataset
  - ref: move dclab.rtdc_dataset.util to dclab.util
  - ref: minor cleanup in computation of viscosity (support lower-case
    `medum` values, add `dclab.features.emodulus_viscosity.KNOWN_MEDIA`)

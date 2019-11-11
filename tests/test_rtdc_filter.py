@@ -24,15 +24,15 @@ def test_changed_polygon_filter():
                                      ])
     ds.config["filtering"]["polygon filters"].append(pf.unique_id)
     ds.apply_filter()
-    assert np.sum(ds.filter.all) == 6335
+    assert np.sum(ds.filter.all) == 8472 - 6335
     # change the filter
     pf.points = list(pf.points) + [np.array([amin, dmax])]
     ds.apply_filter()
-    assert np.sum(ds.filter.all) == 4258
+    assert np.sum(ds.filter.all) == 8472 - 4258
     # invert the filter
     pf.inverted = True
     ds.apply_filter()
-    assert np.sum(ds.filter.all) == 8472 - 4258
+    assert np.sum(ds.filter.all) == 4258
 
 
 def test_disable_filters():

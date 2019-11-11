@@ -197,7 +197,7 @@ class Filter(object):
                     or pf.hash != self._poly_filters[pf_id][0]):
                 datax = rtdc_ds[pf.axes[0]]
                 datay = rtdc_ds[pf.axes[1]]
-                self._poly_filters[pf_id] = (pf.hash, ~pf.filter(datax, datay))
+                self._poly_filters[pf_id] = (pf.hash, pf.filter(datax, datay))
         # store polygon filters
         self.polygon[:] = True
         for pf_id in self._poly_filters:

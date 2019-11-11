@@ -40,7 +40,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     # also support lower-case media and a space before the "B"
     valmed = [v.lower() for v in KNOWN_MEDIA + ["CellCarrier B"]]
     medium = medium.lower()
-    if medium.lower() not in valmed:
+    if medium not in valmed:
         raise ValueError("Invalid medium: {}".format(medium))
 
     # convert flow_rate from µl/s to m³/s
@@ -51,7 +51,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
         temp_corr = (temperature / 23.2)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.677)
         eta = 0.179 * (term1 * term2)**(0.677 - 1) * temp_corr * 1e3
-    elif medium in ["cellCarrierb", "cellcarrier b"]:
+    elif medium in ["cellcarrierb", "cellcarrier b"]:
         temp_corr = (temperature / 23.6)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.634)
         eta = 0.360 * (term1 * term2)**(0.634 - 1) * temp_corr * 1e3

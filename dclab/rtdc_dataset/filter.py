@@ -203,7 +203,7 @@ class Filter(object):
         for pf_id in self._poly_filters:
             self.polygon &= self._poly_filters[pf_id][1]
 
-        # 4. Finally combine `allwop` with the polygon filter
+        # 4. Finally combine all filters and apply "limit events"
         # get a list of all filters
         if cfg_cur["enable filters"]:
             self.all[:] = self.invalid & self.manual & self.polygon & self.box

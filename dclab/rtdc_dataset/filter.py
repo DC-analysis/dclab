@@ -164,7 +164,7 @@ class Filter(object):
                                   + "nan-values! Box filters remove those."
                             warnings.warn(msg, NanWarning)
                     else:
-                        idx = slice(1, -1)  # place holder for [:]
+                        idx = slice(0, len(self.all))  # place-holder for [:]
                     feat_filt[idx] &= ivalstart <= data[idx]
                     feat_filt[idx] &= data[idx] <= ivalend
 

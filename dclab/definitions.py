@@ -79,7 +79,7 @@ CFG_METADATA = {
     ],
     # All imaging-related keywords
     "imaging": [
-        ["flash device", str, "Light source device type (e.g. green LED)"],
+        ["flash device", str, "Light source device type"],  # e.g. green LED
         ["flash duration", float, "Light source flash duration [µs]"],
         ["frame rate", float, "Imaging frame rate [Hz]"],
         ["pixel size", float, "Pixel size [µm]"],

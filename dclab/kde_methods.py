@@ -21,13 +21,20 @@ def bin_num_doane(a):
 
 
 def bin_width_doane(a):
-    """Compute accuracy (bin width) based on Doane's formula
+    """Compute contour spacing based on Doane's formula
 
     References
     ----------
     - `<https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width>`_
     - `<https://stats.stackexchange.com/questions/55134/
       doanes-formula-for-histogram-binning>`_
+
+    Notes
+    -----
+    Doane's formula is actually designed for histograms. This
+    function is kept here for backwards-compatibility reasons.
+    It is highly recommended to use :func:`bin_width_percentile`
+    instead.
     """
     bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
@@ -36,6 +43,29 @@ def bin_width_doane(a):
     sigma_g1 = np.sqrt(6 * (n - 2) / ((n + 1) * (n + 3)))
     k = 1 + np.log2(n) + np.log2(1 + np.abs(g1) / sigma_g1)
     acc = (data.max() - data.min()) / k
+    return acc
+
+
+def bin_width_percentile(a):
+    """Compute contour spacing based on data percentiles
+
+    The 10th and the 90th percentile of the input data are taken.
+    The spacing then computes to the difference between those
+    two percentiles divided by 23.
+
+    Notes
+    -----
+    The Freedman–Diaconis rule uses the interquartile range and
+    normalizes to the third root of len(a). Such things do not
+    work very well for RT-DC data, because len(a) is huge. Here
+    we use just the top an bottom 10th percentiles with a fixed
+    normalization.
+    """
+    bad = np.isnan(a) | np.isinf(a)
+    data = a[~bad]
+    start = np.percentile(data, 10)
+    end = np.percentile(data, 90)
+    acc = (end - start) / 23
     return acc
 
 

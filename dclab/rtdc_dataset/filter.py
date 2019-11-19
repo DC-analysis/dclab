@@ -151,16 +151,17 @@ class Filter(object):
         feat2filter = np.unique(feat2filter)
 
         for feat in feat2filter:
+            fstart = feat + " min"
+            fend = feat + " max"
+            must_be_filtered = (fstart in cfg_cur
+                                and fend in cfg_cur
+                                and cfg_cur[fstart] != cfg_cur[fend])
             if feat in self.features:
-                fstart = feat + " min"
-                fend = feat + " max"
                 # Get the current feature filter
                 feat_filt = self[feat]
                 feat_filt[:] = True
                 # If min and max exist and if they are not identical:
-                if (fstart in cfg_cur
-                    and fend in cfg_cur
-                        and cfg_cur[fstart] != cfg_cur[fend]):
+                if must_be_filtered:
                     ivalstart = cfg_cur[fstart]
                     ivalend = cfg_cur[fend]
                     if ivalstart > ivalend:
@@ -183,6 +184,10 @@ class Filter(object):
                         idx = slice(0, len(self.all))  # place-holder for [:]
                     feat_filt[idx] &= ivalstart <= data[idx]
                     feat_filt[idx] &= data[idx] <= ivalend
+            elif must_be_filtered:
+                warnings.warn("Dataset '{}' does ".format(rtdc_ds.identifier)
+                              + "not contain the feature '{}'! ".format(feat)
+                              + "A box filter has been ignored.")
         # store box filters
         self.box[:] = True
         for feat in self._box_filters:

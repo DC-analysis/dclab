@@ -186,7 +186,9 @@ FEATURES_SCALAR = [
     ["fl3_width", "FL-3 width [µs]"],
     ["frame", "Video frame number"],
     ["g_force", "Gravitational force in multiples of g"],
-    ["index", "Event index"],
+    ["index", "Event index (Dataset)"],
+    # index_online may have missing values (#71)
+    ["index_online", "Event index (Online)"],
     # The inertia ratios of the event contours are defined by the
     # central second order moments of area (sqrt(m20/m02).
     ["inert_ratio_cvx", "Inertia ratio of convex contour"],

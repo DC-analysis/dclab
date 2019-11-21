@@ -3,6 +3,7 @@
 """Export RT-DC measurement data"""
 from __future__ import division, print_function, unicode_literals
 
+import codecs
 import pathlib
 import warnings
 
@@ -295,8 +296,11 @@ class Export(object):
             if c not in dfn.scalar_feature_names:
                 raise ValueError("Unknown feature name {}".format(c))
         meta_data["dclab version"] = version
+        # Write BOM header
+        with codecs.open(path, "wb") as fd:
+            fd.write(codecs.BOM_UTF8)
         # Open file
-        with path.open("w") as fd:
+        with codecs.open(path, "a", encoding="utf-8") as fd:
             # write meta data
             for key in sorted(meta_data.keys()):
                 fd.write("# {}: {}\n".format(key, meta_data[key]))

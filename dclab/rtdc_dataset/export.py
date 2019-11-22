@@ -297,10 +297,10 @@ class Export(object):
                 raise ValueError("Unknown feature name {}".format(c))
         meta_data["dclab version"] = version
         # Write BOM header
-        with codecs.open(path, "wb") as fd:
+        with path.open("wb") as fd:
             fd.write(codecs.BOM_UTF8)
         # Open file
-        with codecs.open(path, "a", encoding="utf-8") as fd:
+        with path.open("a", encoding="utf-8") as fd:
             # write meta data
             for key in sorted(meta_data.keys()):
                 fd.write("# {}: {}\n".format(key, meta_data[key]))

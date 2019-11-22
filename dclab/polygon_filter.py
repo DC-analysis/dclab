@@ -54,6 +54,7 @@ class PolygonFilter(object):
         taken from the given .poly file.
         """
         self.inverted = inverted
+        self._points = None
         # check if a filename was given
         if filename is not None:
             filename = pathlib.Path(filename)
@@ -92,6 +93,25 @@ class PolygonFilter(object):
         else:
             eq = False
         return eq
+
+    def __getstate__(self):
+        state = {
+            "axis x": self.axes[0],
+            "axis y": self.axes[1],
+            "identifier": self.unique_id,
+            "inverted": self.inverted,
+            "name": self.name,
+            "points": self.points.tolist()
+            }
+        return state
+
+    def __setstate__(self, state):
+        if state["identifier"] != self.unique_id:
+            raise ValueError("Polygon filter identifier mismatch!")
+        self.axes = [state["axis x"], state["axis y"]]
+        self.inverted = state["inverted"]
+        self.name = state["name"]
+        self.points = state["points"]
 
     def _check_data(self):
         """Check if the data given is valid"""
@@ -178,6 +198,15 @@ class PolygonFilter(object):
     def hash(self):
         """Hash of `axes`, `points`, and `inverted`"""
         return hashobj([self.axes, self.points, self.inverted])
+
+    @property
+    def points(self):
+        # make sure points always is an array (so we can use .tostring())
+        return np.array(self._points)
+
+    @points.setter
+    def points(self, points):
+        self._points = points
 
     @staticmethod
     def clear_all_filters():

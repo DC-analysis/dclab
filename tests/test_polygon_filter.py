@@ -269,6 +269,44 @@ def test_save_multiple():
         pass
 
 
+def test_state():
+    dclab.PolygonFilter.clear_all_filters()
+
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
+
+    # Add polygon filter
+    pf = dclab.PolygonFilter(filename=tf)
+
+    state = pf.__getstate__()
+    assert state["name"] == "polygon filter 0"
+    assert state["axis x"] == "area_um"
+    assert state["axis y"] == "deform"
+    assert np.allclose(state["points"][0][0], 6.344607717656481e-03)
+    assert np.allclose(state["points"][3][1], 1.015706806282723e-03)
+    assert not state["inverted"]
+
+    state["name"] = "peter"
+    state["axis x"] = "deform"
+    state["axis y"] = "aspect"
+    state["points"][0][0] = 1
+    state["inverted"] = True
+
+    pf.__setstate__(state)
+
+    assert pf.name == "peter"
+    assert pf.axes[0] == "deform"
+    assert pf.axes[1] == "aspect"
+    assert np.allclose(pf.points[0, 0], 1)
+    assert pf.inverted
+
+    try:
+        os.remove(tf)
+    except OSError:
+        pass
+
+
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
                             + 'FilterIdExistsWarning')
 def test_unique_id():

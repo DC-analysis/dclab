@@ -214,6 +214,17 @@ class PolygonFilter(object):
         PolygonFilter.instances = []
         PolygonFilter._instance_counter = 0
 
+    @staticmethod
+    def unique_id_exists(pid):
+        """Whether or not a filter with this unique id exists"""
+        for instance in PolygonFilter.instances:
+            if instance.unique_id == pid:
+                exists = True
+                break
+        else:
+            exists = False
+        return exists
+
     def copy(self, invert=False):
         """Return a copy of the current instance
 

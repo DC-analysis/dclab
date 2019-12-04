@@ -4,6 +4,7 @@
  - feat: add feature "index_online" which may be missing values (#71)
  - feat: implement __getstate__ and __setstate__ for polygon filters
  - fix: write UTF-8 BOM when exporting to .tsv
+ - enh: add check whether unique_id exists in PolygonFilter
 0.18.0
  - fix: correctly handle filtering when features are removed from a
    dataset

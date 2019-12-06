@@ -132,12 +132,14 @@ class RTDCBase(object):
             raise ValueError(msg)
 
     def __repr__(self):
-        repre = self.identifier
+        repre = "<{} '{}' at {}".format(self.__class__.__name__,
+                                        self.identifier,
+                                        hex(id(self)))
         if self.path != "none":
             if sys.version_info[0] == 2:
-                repre += " - file: {}".format(str(self.path).decode("utf-8"))
+                repre += " ({})>".format(str(self.path).decode("utf-8"))
             else:
-                repre += " - file: {}".format(self.path)
+                repre += " ({})>".format(self.path)
         return repre
 
     def _apply_scale(self, a, scale, feat):

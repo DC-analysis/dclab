@@ -302,7 +302,7 @@ class RTDC_Hierarchy(RTDCBase):
             self.filter.retrieve_manual_indices(self)
 
         # Copy event data from hierarchy parent
-        self.hparent.apply_filter()
+        self.hparent.apply_filter(*args, **kwargs)
         # update event index
         event_count = np.sum(self.hparent.filter.all)
         self._events = {}

@@ -193,7 +193,7 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
     hist2d, xedges, yedges = np.histogram2d(x=events_x,
                                             y=events_y,
                                             bins=bins,
-                                            density=True)
+                                            normed=True)
     xip = xedges[1:]-(xedges[1]-xedges[0])/2
     yip = yedges[1:]-(yedges[1]-yedges[0])/2
 

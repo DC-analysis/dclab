@@ -1,6 +1,8 @@
 0.19.1
  - fix: hierarchy children did not pass `force` argument to
    hierarchy parent when `apply_filter` is called
+ - fix: revert histogram2d "density" argument to "normed" to support
+   numpy 1.10 (Shape-Out 1)
 0.19.0
  - feat: added better contour spacing computation based on percentiles
    (dclab.kde_methods.bin_width_percentile)

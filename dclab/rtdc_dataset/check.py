@@ -11,6 +11,15 @@ from .load import load_file
 from .. import definitions as dfn
 
 
+#: log names that end with these strings are not checked
+IGNORED_LOG_NAMES = {
+    "_para.ini",
+    "_image.ini",
+    "FG_Config.mcf",
+    "parameters.txt",
+    "_SoftwareSettings.ini"
+    }
+
 #: keys that must be present for every measurement
 IMPORTANT_KEYS = {
     "experiment": [
@@ -53,15 +62,11 @@ IMPORTANT_KEYS_FL = {
 #: maximum line length in log files
 LOG_MAX_LINE_LENGTH = 100
 
-
-#: log names that end with these strings are not checked
-IGNORED_LOG_NAMES = {
-    "_para.ini",
-    "_image.ini",
-    "FG_Config.mcf",
-    "parameters.txt",
-    "_SoftwareSettings.ini"
-    }
+#: keys that are optional
+OPTIONAL_KEYS = {
+    "setup": [
+        "temperature"],
+}
 
 
 def check_dataset(path_or_ds):
@@ -107,7 +112,7 @@ def check_dataset(path_or_ds):
     # check existence of meta data keys
     # These "must" be present:
     tocheck = IMPORTANT_KEYS
-    # These sections "should" be fully present
+    # These sections "should" be fully present (except if in OPTIONAL_KEYS)
     tocheck_sec_aler = ["experiment", "imaging", "online_contour", "setup"]
     # should we also check for fluorescence keys?
     if ("fluorescence" in ds.config or
@@ -181,8 +186,11 @@ def check_dataset(path_or_ds):
                         and key not in ds.config[sec]):
                     viol.append("Metadata: Missing key [{}] '{}'".format(sec,
                                                                          key))
-                elif (sec in tocheck_sec_aler
-                        and key not in ds.config[sec]):
+                elif ((sec in tocheck_sec_aler and key not in ds.config[sec])
+                      and not (sec in OPTIONAL_KEYS
+                               and key in OPTIONAL_KEYS[sec])):
+                    # The section should be present, but the key is not.
+                    # The key is not in the optional key list.
                     # Note that fluorescence data is not checked here
                     aler.append("Metadata: Missing key [{}] '{}'".format(
                         sec, key))

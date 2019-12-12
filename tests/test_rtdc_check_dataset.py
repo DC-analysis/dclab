@@ -25,9 +25,8 @@ def test_basic():
     # Metadata: Missing key [fluorescence] 'samples per event'
     # Metadata: Unknown key [imaging] 'exposure time'
     # Metadata: Unknown key [imaging] 'flash current'
-    # Metadata: Unknown key [setup] 'temperature'
     # Metadata: fluorescence channel count inconsistent
-    assert len(viol) == 11
+    assert len(viol) == 10
     # "HDF5: '/image': attribute 'CLASS' should be fixed-length ASCII string",
     # "HDF5: '/image': attribute 'IMAGE_SUBCLASS' should be fixed-length ...
     # "HDF5: '/image': attribute 'IMAGE_VERSION' should be fixed-length ...

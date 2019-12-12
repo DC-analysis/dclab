@@ -1,4 +1,5 @@
-0.19.2
+0.20.0
+ - feat: compute elastic modulus from "temp" feature (#51)
  - enh: define new meta data key [setup]: "temperature"
 0.19.1
  - fix: hierarchy children did not pass `force` argument to

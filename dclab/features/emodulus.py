@@ -12,11 +12,9 @@ import scipy.interpolate as spint
 from .emodulus_viscosity import get_viscosity
 
 
-def convert(area_um, deform, emodulus,
-            channel_width_in, channel_width_out,
-            flow_rate_in, flow_rate_out,
-            viscosity_in, viscosity_out,
-            inplace=False):
+def convert(area_um, deform, channel_width_in, channel_width_out,
+            emodulus=None, flow_rate_in=None, flow_rate_out=None,
+            viscosity_in=None, viscosity_out=None, inplace=False):
     """convert area-deformation-emodulus triplet
 
     The conversion formula is described in :cite:`Mietke2015`.
@@ -27,20 +25,20 @@ def convert(area_um, deform, emodulus,
         Convex cell area [µm²]
     deform: ndarray
         Deformation
-    emodulus: ndarray
-        Young's Modulus [kPa]
     channel_width_in: float
         Original channel width [µm]
     channel_width_out: float
         Target channel width [µm]
+    emodulus: ndarray
+        Young's Modulus [kPa]
     flow_rate_in: float
         Original flow rate [µl/s]
     flow_rate_in: float
         Target flow rate [µl/s]
     viscosity_in: float
-        Original viscosity in the LUT [mPa*s]
-    viscosity_out: float
-        Target viscosity [mPa*s]
+        Original viscosity [mPa*s]
+    viscosity_out: float or ndarray
+        Target viscosity [mPa*s]; This can be an array
     inplace: bool
         If True, override input arrays with corrected data
 
@@ -51,25 +49,47 @@ def convert(area_um, deform, emodulus,
     deform_corr: ndarray
         Deformation (a copy if `inplace` is False)
     emodulus_corr: ndarray
-        Corrected emodulus [kPa]
+        Corrected emodulus [kPa]; only returned if `emodulus` is given.
+
+    Notes
+    -----
+    If only `area_um`, `deform`, `channel_width_in` and
+    `channel_width_out` are given, then only the area is
+    corrected and returned together with the original deform.
+    If all other arguments are not set to None, the emodulus
+    is corrected and returned as well.
     """
     copy = not inplace
     # make sure area_um_corr is not an integer array
     area_um_corr = np.array(area_um, dtype=float, copy=copy)
     deform_corr = np.array(deform, copy=copy)
-    emodulus_corr = np.array(emodulus, copy=copy)
 
     if channel_width_in != channel_width_out:
         area_um_corr *= (channel_width_out / channel_width_in)**2
 
-    if (flow_rate_in != flow_rate_out or
-            viscosity_in != viscosity_out or
-            channel_width_in != channel_width_out):
-        emodulus_corr *= (flow_rate_out / flow_rate_in) \
-            * (viscosity_out / viscosity_in) \
-            * (channel_width_in / channel_width_out)**3
+    if emodulus is not None:
+        emodulus_corr = np.array(emodulus, copy=copy)
 
-    return area_um_corr, deform_corr, emodulus_corr
+        if viscosity_in is not None:
+            if isinstance(viscosity_in, np.ndarray):
+                raise ValueError("`viscosity_in` must not be an array!")
+
+        if (flow_rate_in is not None
+            and flow_rate_out is not None
+            and viscosity_in is not None
+            and viscosity_out is not None
+            and (flow_rate_in != flow_rate_out
+                 or (isinstance(viscosity_out, np.ndarray)  # check b4 compare
+                     or viscosity_in != viscosity_out)
+                 or channel_width_in != channel_width_out)):
+            emodulus_corr *= (flow_rate_out / flow_rate_in) \
+                * (viscosity_out / viscosity_in) \
+                * (channel_width_in / channel_width_out)**3
+
+    if emodulus is None:
+        return area_um_corr, deform_corr
+    else:
+        return area_um_corr, deform_corr, emodulus_corr
 
 
 def corrpix_deform_delta(area_um, px_um=0.34):
@@ -187,9 +207,47 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
         visco = get_viscosity(medium=medium, channel_width=channel_width,
                               flow_rate=flow_rate, temperature=temperature)
 
+    if px_um:
+        # Correct deformation for pixelation effect (subtract ddelt).
+        ddelt = corrpix_deform_delta(area_um=area_um, px_um=px_um)
+        deform -= ddelt
+
     if isinstance(visco, np.ndarray):
-        raise NotImplementedError(
-            "Computing from temp feature not yet supported!")
+        # New in dclab 0.20.0
+        # Convert the input area_um to that of the LUT (deform does not change)
+        area_um_4lut, deform_4lut = convert(
+            area_um=area_um,
+            deform=deform,
+            channel_width_in=channel_width,
+            channel_width_out=lut_channel_width,
+            inplace=False)
+
+        # Normalize interpolation data such that the spacing for
+        # area and deformation is about the same during interpolation.
+        area_norm = lut[:, 0].max()
+        normalize(lut[:, 0], area_norm)
+        normalize(area_um_4lut, area_norm)
+
+        defo_norm = lut[:, 1].max()
+        normalize(lut[:, 1], defo_norm)
+        normalize(deform_4lut, defo_norm)
+
+        # Perform interpolation
+        emod = spint.griddata((lut[:, 0], lut[:, 1]), lut[:, 2],
+                              (area_um_4lut, deform_4lut),
+                              method='linear')
+
+        # Convert the LUT-interpolated emodulus back
+        convert(area_um=area_um_4lut,
+                deform=deform_4lut,
+                emodulus=emod,
+                channel_width_in=lut_channel_width,
+                channel_width_out=channel_width,
+                flow_rate_in=lut_flow_rate,
+                flow_rate_out=flow_rate,
+                viscosity_in=lut_visco,
+                viscosity_out=visco,
+                inplace=True)
     else:
         # Corrections
         # We correct the lut, because it contains less points than
@@ -205,11 +263,6 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
                 viscosity_in=lut_visco,
                 viscosity_out=visco,
                 inplace=True)
-
-        if px_um:
-            # Correct deformation for pixelation effect (subtract ddelt).
-            ddelt = corrpix_deform_delta(area_um=area_um, px_um=px_um)
-            deform -= ddelt
 
         # Normalize interpolation data such that the spacing for
         # area and deformation is about the same during interpolation.

@@ -256,13 +256,51 @@ def test_emodulus_temp_feat():
     ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
                                  "emodulus model": "elastic sphere",
                                  }
-    try:
-        assert np.sum(~np.isnan(ds["emodulus"])) > 0
-        assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                           rtol=0, atol=1e-15)
-    except NotImplementedError:
-        # TODO
-        pass
+    assert np.sum(~np.isnan(ds["emodulus"])) > 0
+    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
+                       rtol=0, atol=6e-14)
+
+
+def test_emodulus_temp_feat_2():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # legacy
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                "emodulus model": "elastic sphere",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity": 0.5
+                                }
+    ddict2 = example_data_dict(size=8472, keys=keys)
+    ddict2["temp"] = 23.0 * np.ones(8472)
+    ddict2["temp"][0] = 23.5  # change first element
+    # temp-feat
+    ds2 = dclab.new_dataset(ddict2)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                 "emodulus model": "elastic sphere",
+                                 }
+    assert np.sum(~np.isnan(ds["emodulus"])) > 0
+    assert np.allclose(ds["emodulus"][1:], ds2["emodulus"][1:], equal_nan=True,
+                       rtol=0, atol=6e-14)
+    assert not np.allclose(ds["emodulus"][0], ds2["emodulus"][0])
+    ds3 = dclab.new_dataset(ddict)
+    ds3.config["setup"]["flow rate"] = 0.16
+    ds3.config["setup"]["channel width"] = 30
+    ds3.config["imaging"]["pixel size"] = .34
+    ds3.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                 "emodulus model": "elastic sphere",
+                                 "emodulus temperature": 23.5,
+                                 "emodulus viscosity": 0.5
+                                 }
+    assert np.allclose(ds3["emodulus"][0], ds2["emodulus"][0], rtol=0,
+                       atol=6e-14)
+
 
 def test_fl_crosstalk_2chan():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))

@@ -38,7 +38,7 @@ def convert(area_um, deform, emodulus,
     flow_rate_in: float
         Target flow rate [µl/s]
     viscosity_in: float
-        Original viscosity [mPa*s]
+        Original viscosity in the LUT [mPa*s]
     viscosity_out: float
         Target viscosity [mPa*s]
     inplace: bool
@@ -130,9 +130,9 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
         The deformation (1-circularity) of the event(s)
     medium: str or float
         The medium to compute the viscosity for. If a string
-        in ["CellCarrier", "CellCarrier B"] is given, the viscosity
-        will be computed. If a float is given, this value will be
-        used as the viscosity in mPa*s.
+        is given, the viscosity is computed. If a float is given,
+        this value is used as the viscosity in mPa*s (Note that
+        `temperature` must be set to None in this case).
     channel_width: float
         The channel width [µm]
     flow_rate: float
@@ -140,7 +140,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
     px_um: float
         The detector pixel size [µm] used for pixelation correction.
         Set to zero to disable.
-    temperature: float or ndarray
+    temperature: float, ndarray, or None
         Temperature [°C] of the event(s)
     copy: bool
         Copy input arrays. If set to false, input arrays are
@@ -180,43 +180,51 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
     # Compute viscosity
     if isinstance(medium, (float, int)):
         visco = medium
+        if temperature is not None:
+            raise ValueError("It `medium` is given in Pa*s, then "
+                             + "`temperature` must be set to None!")
     else:
         visco = get_viscosity(medium=medium, channel_width=channel_width,
                               flow_rate=flow_rate, temperature=temperature)
-    # Corrections
-    # We correct the lut, because it contains less points than
-    # the event data. Furthermore, the lut could be cached
-    # in the future, if this takes up a lot of time.
-    convert(area_um=lut[:, 0],
-            deform=lut[:, 1],
-            emodulus=lut[:, 2],
-            channel_width_in=lut_channel_width,
-            channel_width_out=channel_width,
-            flow_rate_in=lut_flow_rate,
-            flow_rate_out=flow_rate,
-            viscosity_in=lut_visco,
-            viscosity_out=visco,
-            inplace=True)
 
-    if px_um:
-        # Correct deformation for pixelation effect (subtract ddelt).
-        ddelt = corrpix_deform_delta(area_um=area_um, px_um=px_um)
-        deform -= ddelt
+    if isinstance(visco, np.ndarray):
+        raise NotImplementedError(
+            "Computing from temp feature not yet supported!")
+    else:
+        # Corrections
+        # We correct the lut, because it contains less points than
+        # the event data. Furthermore, the lut could be cached
+        # in the future, if this takes up a lot of time.
+        convert(area_um=lut[:, 0],
+                deform=lut[:, 1],
+                emodulus=lut[:, 2],
+                channel_width_in=lut_channel_width,
+                channel_width_out=channel_width,
+                flow_rate_in=lut_flow_rate,
+                flow_rate_out=flow_rate,
+                viscosity_in=lut_visco,
+                viscosity_out=visco,
+                inplace=True)
 
-    # Normalize interpolation data such that the spacing for
-    # area and deformation is about the same during interpolation.
-    area_norm = lut[:, 0].max()
-    normalize(lut[:, 0], area_norm)
-    normalize(area_um, area_norm)
+        if px_um:
+            # Correct deformation for pixelation effect (subtract ddelt).
+            ddelt = corrpix_deform_delta(area_um=area_um, px_um=px_um)
+            deform -= ddelt
 
-    defo_norm = lut[:, 1].max()
-    normalize(lut[:, 1], defo_norm)
-    normalize(deform, defo_norm)
+        # Normalize interpolation data such that the spacing for
+        # area and deformation is about the same during interpolation.
+        area_norm = lut[:, 0].max()
+        normalize(lut[:, 0], area_norm)
+        normalize(area_um, area_norm)
 
-    # Perform interpolation
-    emod = spint.griddata((lut[:, 0], lut[:, 1]), lut[:, 2],
-                          (area_um, deform),
-                          method='linear')
+        defo_norm = lut[:, 1].max()
+        normalize(lut[:, 1], defo_norm)
+        normalize(deform, defo_norm)
+
+        # Perform interpolation
+        emod = spint.griddata((lut[:, 0], lut[:, 1]), lut[:, 2],
+                              (area_um, deform),
+                              method='linear')
     return emod
 
 

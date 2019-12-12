@@ -57,6 +57,16 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
         else:
             state = np.random.RandomState(size + ii)
             val = state.random_sample(size)
+
+        norm = False
+        if key == "area_um":
+            norm = 400
+        elif key in ["deform", "circ"]:
+            norm = .02
+        if norm:
+            vmin, vmax = val.min(), val.max()
+            val = (val - vmin) / (vmax - vmin) * norm
+
         ddict[key] = val
 
     return ddict

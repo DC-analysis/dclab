@@ -10,11 +10,11 @@ import dclab
 from helper_methods import example_data_dict
 
 
-def test_stat_defo():
-    ddict = example_data_dict(size=5085, keys=["area_um", "deform"])
+def test_stat_simple():
+    ddict = example_data_dict(size=5085, keys=["area_um", "tilt"])
     ds = dclab.new_dataset(ddict)
 
-    head, vals = dclab.statistics.get_statistics(ds, features=["deform"])
+    head, vals = dclab.statistics.get_statistics(ds, features=["tilt"])
 
     for h, v in zip(head, vals):
         if h.lower() == "flow rate":

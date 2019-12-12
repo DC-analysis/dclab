@@ -144,13 +144,13 @@ def test_manual_exclude():
 
 
 def test_manual_exclude_parent_changed():
-    data = example_data_dict(42, keys=["area_um", "deform"])
+    data = example_data_dict(42, keys=["area_um", "tilt"])
     p = new_dataset(data)
     p.filter.manual[4] = False
     c = new_dataset(p)
     c.filter.manual[5] = False
     c.apply_filter()
-    p.config["filtering"]["deform max"] = .5
+    p.config["filtering"]["tilt max"] = .5
     p.apply_filter()
     assert np.sum(p.filter.all) == 21
     # size of child is directly determined from parent

@@ -102,7 +102,7 @@ class PolygonFilter(object):
             "inverted": self.inverted,
             "name": self.name,
             "points": self.points.tolist()
-            }
+        }
         return state
 
     def __setstate__(self, state):

@@ -84,25 +84,25 @@ def get_job_info():
         "utc": {
             "date": time.strftime("%Y-%m-%d", time.gmtime()),
             "time": time.strftime("%H:%M:%S", time.gmtime()),
-            },
+        },
         "system": {
             "info": platform.platform(),
             "machine": platform.machine(),
             "name": platform.system(),
             "release": platform.release(),
             "version": platform.version(),
-            },
+        },
         "python": {
             "implementation": platform.python_implementation(),
             "info": sys.version.replace("\n", ""),
             "version": platform.python_version(),
-            },
+        },
         "libraries": {
             "dclab": version,
             "h5py": h5py.__version__,
             "numpy": np.__version__,
-            }
         }
+    }
     if imageio is not None:
         data["libraries"]["imageio"] = imageio.__version__
     if nptdms is not None:

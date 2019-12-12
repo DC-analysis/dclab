@@ -136,7 +136,7 @@ def test_deform():
 
 @pytest.mark.skipif(sys.version_info < (3, 3),
                     reason="perf_counter requires python3.3 or higher")
-def test_emodulus():
+def test_emodulus_legacy():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -158,7 +158,7 @@ def test_emodulus():
     assert t4 - t3 > t2 - t1
 
 
-def test_emodulus_area():
+def test_emodulus_legacy_area():
     # computes "area_um" from "area_cvx"
     keys = ["area_cvx", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -177,7 +177,7 @@ def test_emodulus_area():
     assert "emodulus" in ds
 
 
-def test_emodulus_none():
+def test_emodulus_legacy_none():
     keys = ["area_msd", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -190,7 +190,7 @@ def test_emodulus_none():
     assert "emodulus" not in ds, "column 'area_um' should be missing"
 
 
-def test_emodulus_none2():
+def test_emodulus_legacy_none2():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -201,6 +201,68 @@ def test_emodulus_none2():
                                 }
     assert "emodulus" not in ds, "emodulus model should be missing"
 
+
+def test_emodulus_visc_only():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # legacy
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                "emodulus model": "elastic sphere",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity": 0.5
+                                }
+    # visc-only
+    ds2 = dclab.new_dataset(ddict)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    visc = dclab.features.emodulus_viscosity.get_viscosity(
+        medium="CellCarrier",
+        channel_width=30,
+        flow_rate=0.16,
+        temperature=23.0)
+    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
+                                 "emodulus viscosity": visc
+                                 }
+    assert np.sum(~np.isnan(ds["emodulus"])) > 0
+    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
+                       rtol=0, atol=1e-15)
+
+
+def test_emodulus_temp_feat():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # legacy
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                "emodulus model": "elastic sphere",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity": 0.5
+                                }
+    ddict2 = example_data_dict(size=8472, keys=keys)
+    ddict2["temp"] = 23.0 * np.ones(8472)
+    # temp-feat
+    ds2 = dclab.new_dataset(ddict2)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                 "emodulus model": "elastic sphere",
+                                 }
+    try:
+        assert np.sum(~np.isnan(ds["emodulus"])) > 0
+        assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
+                           rtol=0, atol=1e-15)
+    except NotImplementedError:
+        # TODO
+        pass
 
 def test_fl_crosstalk_2chan():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))

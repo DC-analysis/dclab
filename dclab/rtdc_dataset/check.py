@@ -18,7 +18,7 @@ IGNORED_LOG_NAMES = {
     "FG_Config.mcf",
     "parameters.txt",
     "_SoftwareSettings.ini"
-    }
+}
 
 #: keys that must be present for every measurement
 IMPORTANT_KEYS = {

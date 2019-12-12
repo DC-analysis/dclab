@@ -54,6 +54,7 @@ The following features are supported by dclab:
         ax1.imshow(ds["image"][6], cmap="gray")
         ax2.imshow(ds["mask"][6])
 
+.. _sec_features_ancillary:
 
 Ancillary features
 ------------------

@@ -14,3 +14,4 @@ functionalities.
    sec_av_rtdc_dataset
    sec_av_scatter
    sec_av_fluorescence
+   sec_av_emodulus

@@ -3,6 +3,7 @@
  - enh: computing isoelastics from datasets can use
    [setup]: "temperature" to compute the viscosity/emodulus (#51)
  - enh: define new meta data key [setup]: "temperature"
+ - docs: add an advanced section on Young's modulus computation (#51)
 0.19.1
  - fix: hierarchy children did not pass `force` argument to
    hierarchy parent when `apply_filter` is called

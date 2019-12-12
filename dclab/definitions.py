@@ -142,7 +142,7 @@ CFG_METADATA = {
         ["medium", str, "Medium used"],
         ["module composition", str, "Comma-separated list of modules used"],
         ["software version", str, "Acquisition software with version"],
-        ["temperature", str, "Mean chip temperature [°C]"],
+        ["temperature", float, "Mean chip temperature [°C]"],
     ],
 }
 

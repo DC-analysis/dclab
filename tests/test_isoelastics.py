@@ -3,11 +3,15 @@
 from __future__ import division
 
 import pathlib
+import warnings
 
 import numpy as np
 
+import dclab
 from dclab import isoelastics as iso
-from dclab.features import emodulus
+from dclab.features import emodulus, emodulus_viscosity
+
+from helper_methods import example_data_dict
 
 
 def get_isofile(name="example_isoelastics.txt"):
@@ -178,6 +182,68 @@ def test_get():
 
     for a, b in zip(data, refd):
         assert np.all(a == b)
+
+
+def test_with_rtdc():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # legacy
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["setup"]["temperature"] = 23.0
+    ds.config["setup"]["medium"] = "CellCarrier"
+    ds.config["imaging"]["pixel size"] = .34
+    i1 = iso.get_default()
+    data1 = i1.get_with_rtdcbase(col1="area_um",
+                                 col2="deform",
+                                 method="numerical",
+                                 dataset=ds,
+                                 viscosity=None,
+                                 add_px_err=False)
+
+    viscosity = emodulus_viscosity.get_viscosity(
+        medium="CellCarrier",
+        channel_width=ds.config["setup"]["channel width"],
+        flow_rate=ds.config["setup"]["flow rate"],
+        temperature=ds.config["setup"]["temperature"])
+    data2 = i1.get(col1="area_um",
+                   col2="deform",
+                   method="numerical",
+                   channel_width=ds.config["setup"]["channel width"],
+                   flow_rate=ds.config["setup"]["flow rate"],
+                   viscosity=viscosity,
+                   add_px_err=False,
+                   px_um=ds.config["imaging"]["pixel size"])
+    for d1, d2 in zip(data1, data2):
+        assert np.allclose(d1, d2, atol=0, rtol=1e-14)
+
+
+def test_with_rtdc_warning():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # legacy
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["setup"]["medium"] = "CellCarrier"
+    ds.config["imaging"]["pixel size"] = .34
+    i1 = iso.get_default()
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        # Trigger a warning (temperature missing).
+        i1.get_with_rtdcbase(col1="area_um",
+                             col2="deform",
+                             method="numerical",
+                             dataset=ds,
+                             viscosity=None,
+                             add_px_err=False)
+        # Verify some things
+        assert len(w) == 1
+        assert issubclass(w[-1].category,
+                          iso.IsoelasticsEmodulusMeaninglessWarning)
+        assert "plotting" in str(w[-1].message)
 
 
 if __name__ == "__main__":

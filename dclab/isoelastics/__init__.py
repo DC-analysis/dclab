@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Isoelastics management
-
-"""
+"""Isoelastics management"""
 from __future__ import division, unicode_literals
+
+import warnings
 
 import pathlib
 from pkg_resources import resource_filename
@@ -12,7 +12,7 @@ import numpy as np
 
 from .. import definitions as dfn
 from ..features import emodulus as feat_emod
-
+from ..features import emodulus_viscosity as feat_emod_visc
 
 ISOFILES = ["isoel-analytical-area_um-deform.txt",
             "isoel-numerical-area_um-deform.txt",
@@ -20,6 +20,10 @@ ISOFILES = ["isoel-analytical-area_um-deform.txt",
 ISOFILES = [resource_filename("dclab.isoelastics", _if) for _if in ISOFILES]
 
 VALID_METHODS = ["analytical", "numerical"]
+
+
+class IsoelasticsEmodulusMeaninglessWarning(UserWarning):
+    pass
 
 
 class Isoelastics(object):
@@ -326,16 +330,31 @@ class Isoelastics(object):
             (must be one of `VALID_METHODS`).
         dataset: dclab.rtdc_dataset.RTDCBase
             The dataset from which to obtain the metadata.
-        viscosity: float or `None`
+        viscosity: float, `None`, or False
             Viscosity of the medium in mPa*s. If set to
-            `None`, the flow rate of the imported data will
-            be used (only do this if you do not need the
-            correct values for elastic moduli).
+            `None`, the viscosity is computed from the meta
+            data (medium, flow rate, channel width, temperature)
+            in the [setup] config section. If this is not possible,
+            the flow rate of the imported data is used and a warning
+            will be issued.
         add_px_err: bool
             If True, add pixelation errors according to
             C. Herold (2017), https://arxiv.org/abs/1704.00572
         """
         cfg = dataset.config
+        if viscosity is None:
+            if "temperature" in cfg["setup"] and "medium" in cfg["setup"]:
+                viscosity = feat_emod_visc.get_viscosity(
+                    medium=cfg["setup"]["medium"],
+                    channel_width=cfg["setup"]["channel width"],
+                    flow_rate=cfg["setup"]["flow rate"],
+                    temperature=cfg["setup"]["temperature"])
+            else:
+                warnings.warn("Computing emodulus data for isoelastics from "
+                              + "RTDCBase is not possible. Isoelastics will "
+                              + "not have correct emodulus values (this is "
+                              + "not relevant for plotting).",
+                              IsoelasticsEmodulusMeaninglessWarning)
         return self.get(col1=col1,
                         col2=col2,
                         method=method,

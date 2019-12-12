@@ -8,7 +8,7 @@ import pytest
 
 from dclab.rtdc_dataset import check_dataset, fmt_tdms, new_dataset
 
-from helper_methods import cleanup, retrieve_data
+from helper_methods import cleanup, example_data_dict, retrieve_data
 
 
 @pytest.mark.filterwarnings(
@@ -136,6 +136,17 @@ def test_no_fluorescence():
     known_info = ['Data file format: tdms', 'Fluorescence: False']
     assert set(info) == set(known_info)
     cleanup()
+
+
+def test_temperature():
+    # there are probably a million things wrong with this dataset, but
+    # we are only looking for the temperature thing
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform", "temp"])
+    ds = new_dataset(ddict)
+    sstr = "Metadata: Missing key [setup] 'temperature', " \
+           + "because the 'temp' feature is given"
+    _, aler, _ = check_dataset(ds)
+    assert sstr in aler
 
 
 def test_wrong_samples_per_event():

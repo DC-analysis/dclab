@@ -230,6 +230,11 @@ def check_dataset(path_or_ds):
                         viol.append("Metadata: Mismatch [imaging] "
                                     + "'{}' and feature {} ".format(roi, feat)
                                     + "({} vs {})".format(ist, soll))
+    # check for temperature
+    if "temp" in ds:
+        if "temperature" not in ds.config["setup"]:
+            aler.append("Metadata: Missing key [setup] 'temperature', "
+                        + "because the 'temp' feature is given")
     # hdf5-based checks
     if ds.format == "hdf5":
         # check meta data of images

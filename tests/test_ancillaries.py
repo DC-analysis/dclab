@@ -159,6 +159,16 @@ def test_emodulus_known_media():
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
                        rtol=0, atol=1e-15)
+    # ancillary feature priority check
+    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+        if af.method.__name__ == "compute_emodulus_legacy":
+            assert af.is_available(ds)
+        else:
+            assert not af.is_available(ds)
+        if af.method.__name__ == "compute_emodulus_known_media":
+            assert af.is_available(ds2)
+        else:
+            assert not af.is_available(ds2)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 3),
@@ -286,6 +296,16 @@ def test_emodulus_visc_only():
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
                        rtol=0, atol=1e-15)
+    # ancillary feature priority check
+    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+        if af.method.__name__ == "compute_emodulus_legacy":
+            assert af.is_available(ds)
+        else:
+            assert not af.is_available(ds)
+        if af.method.__name__ == "compute_emodulus_visc_only":
+            assert af.is_available(ds2)
+        else:
+            assert not af.is_available(ds2)
 
 
 def test_emodulus_visc_only_2():
@@ -345,6 +365,16 @@ def test_emodulus_temp_feat():
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
                        rtol=0, atol=6e-14)
+    # ancillary feature priority check
+    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+        if af.method.__name__ == "compute_emodulus_legacy":
+            assert af.is_available(ds)
+        else:
+            assert not af.is_available(ds)
+        if af.method.__name__ == "compute_emodulus_temp_feat":
+            assert af.is_available(ds2)
+        else:
+            assert not af.is_available(ds2)
 
 
 def test_emodulus_temp_feat_2():

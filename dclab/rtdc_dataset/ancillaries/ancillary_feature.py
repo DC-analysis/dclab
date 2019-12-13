@@ -79,7 +79,12 @@ class AncillaryFeature():
         AncillaryFeature.feature_names.append(feature_name)
 
     def __repr__(self):
-        return "Ancillary feature: {}".format(self.feature_name)
+        repre = "<{} '{}' (priority {}) at {}>".format(
+            self.__class__.__name__,
+            self.feature_name,
+            self.priority,
+            hex(id(self)))
+        return repre
 
     @staticmethod
     def available_features(rtdc_ds):
@@ -101,6 +106,15 @@ class AncillaryFeature():
             if inst.is_available(rtdc_ds):
                 cols[inst.feature_name] = inst
         return cols
+
+    @staticmethod
+    def get_instances(feature_name):
+        """Return all instances that compute `feature_name`"""
+        feats = []
+        for ft in AncillaryFeature.features:
+            if ft.feature_name == feature_name:
+                feats.append(ft)
+        return feats
 
     def compute(self, rtdc_ds):
         """Compute the feature with self.method
@@ -138,15 +152,6 @@ class AncillaryFeature():
                     item.setflags(write=False)
 
         return data
-
-    @staticmethod
-    def get_instances(feature_name):
-        """Return all all instances that compute `feature_name`"""
-        feats = []
-        for ft in AncillaryFeature.features:
-            if ft.feature_name == feature_name:
-                feats.append(ft)
-        return feats
 
     def hash(self, rtdc_ds):
         """Used for identifying an ancillary computation

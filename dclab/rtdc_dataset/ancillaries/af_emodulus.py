@@ -94,6 +94,8 @@ def compute_emodulus_visc_only(mm):
 
 
 def register():
+    # Please note that registering these things is a delicate business,
+    # because the priority has to be chosen carefully.
     AncillaryFeature(feature_name="emodulus",
                      method=compute_emodulus_legacy,
                      req_features=["area_um", "deform"],

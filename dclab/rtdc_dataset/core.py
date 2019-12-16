@@ -394,7 +394,7 @@ class RTDCBase(object):
                               xout=xmesh, yout=ymesh,
                               **kde_kwargs)
         else:
-            density = []
+            density = np.array([])
 
         # Convert mesh back to linear scale if applicable
         if xscale == "log":
@@ -462,7 +462,7 @@ class RTDCBase(object):
                               xout=posx, yout=posy,
                               **kde_kwargs)
         else:
-            density = []
+            density = np.array([])
 
         return density
 

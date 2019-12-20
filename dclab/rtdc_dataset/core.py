@@ -149,9 +149,11 @@ class RTDCBase(object):
         ----------
         a: np.ndarray
             Input array
-        scale:
+        scale: str
             If set to "log", take the logarithm of `a`; if set to
             "linear" return `a` unchanged.
+        feat: str
+            Feature name (required for debugging)
 
         Returns
         -------

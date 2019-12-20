@@ -17,17 +17,17 @@ year = "2015"
 sys.path.insert(0, realpath(dirname(__file__))+"/"+name)
 try:
     from _version import version  # @UnresolvedImport
-except:
+except BaseException:
     version = "unknown"
 
 
 extras_require = {
         "tdms": ["nptdms",  # read tdms files
-                 #"imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
-                 #"imageio[ffmpeg]>=2.5.0;python_version>='3.4'",  # avi (new)
+                 # "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
+                 # "imageio[ffmpeg]>=2.5.0;python_version>='3.4'",  # avi (new)
                  # Currently, the above option of using imageio>=2.5.0 makes
                  # the tdms tests fail (SegFault at the end).
-                 # Related to https://github.com/imageio/imageio-ffmpeg/issues/20
+                 # Related to github.com/imageio/imageio-ffmpeg/issues/20
                  # Workaround for now:
                  "imageio>=2.3.0,<2.5.0",  # read tdms avi data
                  ],
@@ -59,11 +59,12 @@ setup(
                       "pathlib;python_version<='3.4'",
                       "scipy>=0.14.0",
                       ],
-    ext_modules = [Extension("dclab.external.skimage._find_contours_cy",
-                        sources=["dclab/external/skimage/_find_contours_cy.pyx"],
-                        include_dirs=[np.get_include()]
-                        )
-                   ],
+    ext_modules=[
+        Extension("dclab.external.skimage._find_contours_cy",
+                  sources=["dclab/external/skimage/_find_contours_cy.pyx"],
+                  include_dirs=[np.get_include()]
+                  )
+        ],
     # not to be confused with definitions in pyproject.toml [build-system]
     setup_requires=["pytest-runner"],
     tests_require=["pytest", "urllib3"] + extras_require["all"],
@@ -78,11 +79,11 @@ setup(
             ],
        },
     keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],
-    classifiers= ['Operating System :: OS Independent',
-                  'Programming Language :: Python :: 2.7',
-                  'Programming Language :: Python :: 3.6',
-                  'Topic :: Scientific/Engineering :: Visualization',
-                  'Intended Audience :: Science/Research',
-                  ],
+    classifiers=['Operating System :: OS Independent',
+                 'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 3.6',
+                 'Topic :: Scientific/Engineering :: Visualization',
+                 'Intended Audience :: Science/Research',
+                 ],
     platforms=['ALL'],
     )

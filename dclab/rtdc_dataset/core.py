@@ -142,7 +142,8 @@ class RTDCBase(object):
                 repre += " ({})>".format(self.path)
         return repre
 
-    def _apply_scale(self, a, scale, feat):
+    @staticmethod
+    def _apply_scale(a, scale, feat):
         """Helper function for transforming an aray to log-scale
 
         Parameters
@@ -181,6 +182,35 @@ class RTDCBase(object):
             raise ValueError("`scale` must be either 'linear' or 'log', "
                              + "got '{}'!".format(scale))
         return b
+
+    @staticmethod
+    def get_kde_spacing(a, scale="linear", method=kde_methods.bin_width_doane,
+                        method_kw={}, feat="undefined", ret_scaled=False):
+        """Convenience function for computing the contour spacing
+
+        Parameters
+        ----------
+        a: ndarray
+            feature data
+        scale: str
+            how the data should be scaled ("log" or "linear")
+        method: callable
+            KDE method to use (see `kde_methods` submodule)
+        method_kw: dict
+            keyword arguments to `method`
+        feat: str
+            feature name for debugging
+        ret_scale: bol
+            whether or not to return the scaled array of `a`
+        """
+        # Apply scale (no change for linear scale)
+        asc = RTDCBase._apply_scale(a, scale, feat)
+        # Apply multiplicator
+        acc = method(asc, **method_kw)
+        if ret_scaled:
+            return acc, asc
+        else:
+            return acc
 
     @property
     def _filter(self):
@@ -309,8 +339,8 @@ class RTDCBase(object):
         y = self[yax][self.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = self._apply_scale(x, xscale, xax)
-        ys = self._apply_scale(y, yscale, yax)
+        xs = RTDCBase._apply_scale(x, xscale, xax)
+        ys = RTDCBase._apply_scale(y, yscale, yax)
 
         _, _, idx = downsampling.downsample_grid(xs, ys,
                                                  samples=downsample,
@@ -367,15 +397,25 @@ class RTDCBase(object):
         x = self[xax][self.filter.all]
         y = self[yax][self.filter.all]
 
-        # Apply scale (no change for linear scale)
-        xs = self._apply_scale(x, xscale, xax)
-        ys = self._apply_scale(y, yscale, yax)
+        xacc_sc, xs = RTDCBase.get_kde_spacing(
+            a=x,
+            feat=xax,
+            scale=xscale,
+            method=kde_methods.bin_width_doane,
+            ret_scaled=True)
 
-        # accuracy (bin width) of KDE estimator
+        yacc_sc, ys = RTDCBase.get_kde_spacing(
+            a=y,
+            feat=yax,
+            scale=yscale,
+            method=kde_methods.bin_width_doane,
+            ret_scaled=True)
+
         if xacc is None:
-            xacc = kde_methods.bin_width_doane(xs) / 5
+            xacc = xacc_sc / 5
+
         if yacc is None:
-            yacc = kde_methods.bin_width_doane(ys) / 5
+            yacc = yacc_sc / 5
 
         # Ignore infs and nans
         bad = kde_methods.get_bad_vals(xs, ys)
@@ -448,15 +488,15 @@ class RTDCBase(object):
         y = self[yax][self.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = self._apply_scale(x, xscale, xax)
-        ys = self._apply_scale(y, yscale, yax)
+        xs = RTDCBase._apply_scale(x, xscale, xax)
+        ys = RTDCBase._apply_scale(y, yscale, yax)
 
         if positions is None:
             posx = None
             posy = None
         else:
-            posx = self._apply_scale(positions[0], xscale, xax)
-            posy = self._apply_scale(positions[1], yscale, yax)
+            posx = RTDCBase._apply_scale(positions[0], xscale, xax)
+            posy = RTDCBase._apply_scale(positions[1], yscale, yax)
 
         kde_fct = kde_methods.methods[kde_type]
         if len(x):

@@ -1,5 +1,6 @@
 0.20.1
  - fix: always return an array when computing the KDE
+ - ref: make accessible static function RTDCBase.get_kde_spacing
 0.20.0
  - feat: compute elastic modulus from "temp" feature (#51)
  - enh: computing isoelastics from datasets can use

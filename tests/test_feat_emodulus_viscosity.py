@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import numpy as np
+import warnings
 
 from dclab.features import emodulus_viscosity
 
@@ -33,6 +34,58 @@ def test_cell_carrier():
         assert np.allclose(np.round(eta, 1), b)
 
 
+def test_cellcarrier_range():
+    # test values
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        emodulus_viscosity.get_viscosity(
+            medium="CellCarrier B", temperature=15)
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        emodulus_viscosity.get_viscosity(
+            medium="CellCarrier B", temperature=28)
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        emodulus_viscosity.get_viscosity(medium="CellCarrier B",
+                                         temperature=np.arange(-2, 10))
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+
+
+def test_cellcarrierb_range():
+    # test values
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        emodulus_viscosity.get_viscosity(medium="CellCarrier", temperature=15)
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        emodulus_viscosity.get_viscosity(medium="CellCarrier", temperature=28)
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        emodulus_viscosity.get_viscosity(medium="CellCarrier",
+                                         temperature=np.arange(-2, 10))
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+
+
 def test_water():
     """Test with data from Kestin et al, J. Phys. Chem. 7(3) 1978"""
     ref = np.array([[0, 1791.5],
@@ -54,27 +107,27 @@ def test_water():
 
 def test_water_range():
     # test values
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
         emodulus_viscosity.get_viscosity(medium="water", temperature=-1)
-    except ValueError:
-        pass
-    else:
-        assert False, "temperature should be outside valid range"
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
 
-    try:
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
         emodulus_viscosity.get_viscosity(medium="water", temperature=41)
-    except ValueError:
-        pass
-    else:
-        assert False, "temperature should be outside valid range"
-    # also test arrays
-    try:
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
         emodulus_viscosity.get_viscosity(medium="water",
                                          temperature=np.arange(-2, 10))
-    except ValueError:
-        pass
-    else:
-        assert False, "temperature should be outside valid range"
+        assert issubclass(w[-1].category,
+                          emodulus_viscosity.TemperatureOutOfRangeWarning)
 
 
 if __name__ == "__main__":

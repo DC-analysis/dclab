@@ -1,3 +1,7 @@
+0.20.2
+ - ref: using temperature values outside the range for viscosity
+   computation now issues a warning instead of raising an error;
+   warnings were added for the CellCarrier buffers
 0.20.1
  - fix: always return an array when computing the KDE
  - ref: make accessible static function RTDCBase.get_kde_spacing

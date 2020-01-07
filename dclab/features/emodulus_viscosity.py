@@ -3,10 +3,16 @@
 """Viscosity computation for various media"""
 from __future__ import division, print_function, unicode_literals
 
+import warnings
+
 import numpy as np
 
 #: Media for which computation of viscosity is defined
 KNOWN_MEDIA = ["CellCarrier", "CellCarrierB", "water"]
+
+
+class TemperatureOutOfRangeWarning(UserWarning):
+    pass
 
 
 def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
@@ -36,6 +42,9 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
       RT-DC measurements.
     - Values for the viscosity of water are computed using
       equation (15) from :cite:`Kestin_1978`.
+    - A :class:`TemperatureOutOfRangeWarning` is issued if the
+      input temperature range exceeds the temperature ranges given
+      by :cite:`Herold2017` and :cite:`Kestin_1978`.
     """
     # also support lower-case media and a space before the "B"
     valmed = [v.lower() for v in KNOWN_MEDIA + ["CellCarrier B"]]
@@ -51,17 +60,29 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
         temp_corr = (temperature / 23.2)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.677)
         eta = 0.179 * (term1 * term2)**(0.677 - 1) * temp_corr * 1e3
+        if np.min(temperature) < 16 or np.max(temperature) > 26:
+            # see figure (9) in Herold arXiv:1704.00572 (2017)
+            warnings.warn("For CellCarrier, the temperature should be in "
+                          + "[18, 26] degC! Got min/max of '{}'.".format(
+                              np.min(temperature), np.max(temperature)),
+                          TemperatureOutOfRangeWarning)
     elif medium in ["cellcarrierb", "cellcarrier b"]:
         temp_corr = (temperature / 23.6)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.634)
         eta = 0.360 * (term1 * term2)**(0.634 - 1) * temp_corr * 1e3
+        if np.min(temperature) < 16 or np.max(temperature) > 26:
+            # see figure (9) in Herold arXiv:1704.00572 (2017)
+            warnings.warn("For CellCarrier B, the temperature should be in "
+                          + "[18, 26] degC! Got min/max of '{}'.".format(
+                              np.min(temperature), np.max(temperature)),
+                          TemperatureOutOfRangeWarning)
     elif medium == "water":
-        # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
         if np.min(temperature) < 0 or np.max(temperature) > 40:
-            msg = "For water, the temperature must be in [0, 40] degC! " \
-                  "Got min/max values of '{}'.".format(np.min(temperature),
-                                                       np.max(temperature))
-            raise ValueError(msg)
+            # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
+            warnings.warn("For water, the temperature should be in [0, 40] "
+                          + "degC! Got min/max of '{}'.".format(
+                              np.min(temperature), np.max(temperature)),
+                          TemperatureOutOfRangeWarning)
         eta0 = 1.002  # [mPa]
         right = (20-temperature) / (temperature + 96) \
             * (+ 1.2364

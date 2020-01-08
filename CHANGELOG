@@ -1,3 +1,5 @@
+0.20.3
+ - docs: fix bad anchors
 0.20.2
  - ref: using temperature values outside the range for viscosity
    computation now issues a warning instead of raising an error;

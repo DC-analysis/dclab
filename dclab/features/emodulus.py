@@ -3,6 +3,7 @@
 """Computation of apparent Young's modulus for RT-DC measurements"""
 from __future__ import division, print_function, unicode_literals
 
+import numbers
 import pathlib
 from pkg_resources import resource_filename
 
@@ -198,10 +199,10 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
     lut_flow_rate = 0.04
     lut_visco = 15.0
     # Compute viscosity
-    if isinstance(medium, (float, int)):
+    if isinstance(medium, numbers.Number):
         visco = medium
         if temperature is not None:
-            raise ValueError("It `medium` is given in Pa*s, then "
+            raise ValueError("If `medium` is given in Pa*s, then "
                              + "`temperature` must be set to None!")
     else:
         visco = get_viscosity(medium=medium, channel_width=channel_width,

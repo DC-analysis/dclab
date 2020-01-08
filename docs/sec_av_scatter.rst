@@ -1,4 +1,4 @@
-... _sec_av_scatter:
+.. _sec_av_scatter:
 
 =============
 Scatter plots

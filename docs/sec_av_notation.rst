@@ -1,4 +1,4 @@
-... _sec_av_notation:
+.. _sec_av_notation:
 
 ========
 Notation

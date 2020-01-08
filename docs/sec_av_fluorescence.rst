@@ -1,4 +1,4 @@
-... _sec_av_fltrace:
+.. _sec_av_fltrace:
 
 ===================
 Fluorescence traces

@@ -1,4 +1,4 @@
-... _sec_av_datasets:
+.. _sec_av_datasets:
 
 ==============
 RT-DC datasets

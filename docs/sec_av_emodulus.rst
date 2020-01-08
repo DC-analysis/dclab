@@ -1,4 +1,4 @@
-... _sec_av_emodulus:
+.. _sec_av_emodulus:
 
 ===========================
 Young's modulus computation

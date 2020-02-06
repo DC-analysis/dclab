@@ -1,3 +1,5 @@
+0.20.4
+ - ref: move integrity checks to new class check.IntegrityChecker
 0.20.3
  - docs: fix bad anchors
 0.20.2

@@ -192,6 +192,8 @@ def test_ic_fmt_hdf5_image1():
     cleanup()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 0),
+                    reason="requires python3 or higher")
 def test_ic_fmt_hdf5_image2():
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with h5py.File(h5path, "a") as h5:

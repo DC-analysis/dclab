@@ -239,17 +239,17 @@ FLUOR_TRACES = [
 # CFG convenience lists and dicts
 _cfg = copy.deepcopy(CFG_METADATA)
 _cfg.update(CFG_ANALYSIS)
-# dict with section as keys and config parameter names as values
+#: dict with section as keys and config parameter names as values
 config_keys = {}
 for _key in _cfg:
     config_keys[_key] = [it[0] for it in _cfg[_key]]
-# dict of dicts containing functions to convert input data
+#: dict of dicts containing functions to convert input data
 config_funcs = {}
 for _key in _cfg:
     config_funcs[_key] = {}
     for _subkey, _type, __ in _cfg[_key]:
         config_funcs[_key][_subkey] = _type
-# dict of dicts containing the type of section parameters
+#: dict of dicts containing the type of section parameters
 config_types = {}
 for _key in _cfg:
     config_types[_key] = {}
@@ -257,12 +257,23 @@ for _key in _cfg:
         if _type in func_types:
             _type = func_types[_type]
         config_types[_key][_subkey] = _type
+#: dict with metadata description
+config_descr = {}
+for _key in _cfg:
+    config_descr[_key] = {}
+    for _subkey, __, _descr in _cfg[_key]:
+        config_descr[_key][_subkey] = _descr
+
 
 # FEATURE convenience lists and dicts
+#: list of feature names
 feature_names = [_cc[0] for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR]
+#: list of feature labels (same order as :const:`feature_names`
 feature_labels = [_cc[1] for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR]
+#: dict for converting feature names to labels
 feature_name2label = {}
 for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR:
     feature_name2label[_cc[0]] = _cc[1]
 
+#: list of all scalar feature names
 scalar_feature_names = [_cc[0] for _cc in FEATURES_SCALAR]

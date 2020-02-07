@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 
 import copy
+import functools
 
 import h5py
 
@@ -19,7 +20,8 @@ IGNORED_LOG_NAMES = {
     "_image.ini",
     "FG_Config.mcf",
     "parameters.txt",
-    "_SoftwareSettings.ini"
+    "_SoftwareSettings.ini",
+    "dckit-history",
 }
 
 #: keys that must be present for every measurement
@@ -78,6 +80,7 @@ VALID_CHOICES = {
 }
 
 
+@functools.total_ordering
 class ICue(object):
     def __init__(self, msg, level, category,
                  cfg_section=None, cfg_key=None, cfg_choices=None):
@@ -97,6 +100,42 @@ class ICue(object):
         #: allowed choices for the specific [section]: key combination
         #: (only for categories "missing metadata", "bad metadata")
         self.cfg_choices = cfg_choices
+        if self.cfg_choices is None:
+            if (cfg_section in VALID_CHOICES
+                    and cfg_key in VALID_CHOICES[cfg_section]):
+                self.cfg_choices = VALID_CHOICES[cfg_section][cfg_key]
+
+    def __eq__(self, other):
+        leveld = {"info": 0,
+                  "violation": 1,
+                  "alert": 2,
+                  }
+        return ((leveld[self.level], self.cfg_section or "",
+                 self.cfg_key or "", self.category, self.msg) ==
+                (leveld[other.level], other.cfg_section or "",
+                 other.cfg_key or "", other.category, other.msg))
+
+    def __lt__(self, other):
+        leveld = {"info": 0,
+                  "violation": 1,
+                  "alert": 2, }
+        return ((leveld[self.level], self.cfg_section or "",
+                 self.cfg_key or "", self.category, self.msg) <
+                (leveld[other.level], other.cfg_section or "",
+                 other.cfg_key or "", other.category, other.msg))
+
+    def __repr__(self):
+        return "<ICue: '{}' at 0x{}>".format(self.msg, hex(id(self)))
+
+    @staticmethod
+    def get_level_summary(cues):
+        """For a list of ICue, return the abundance of all levels"""
+        levels = {"info": 0,
+                  "alert": 0,
+                  "violation": 0}
+        for cue in cues:
+            levels[cue.level] += 1
+        return levels
 
 
 class IntegrityChecker(object):
@@ -138,7 +177,7 @@ class IntegrityChecker(object):
                 continue
             elif ff.startswith("check_"):
                 cues += funcs[ff](self, **kwargs)
-        return cues
+        return sorted(cues)
 
     def check_feature_size(self, **kwargs):
         cues = []
@@ -175,28 +214,31 @@ class IntegrityChecker(object):
 
     def check_fl_metadata_channel_names(self, **kwargs):
         cues = []
-        if self.has_fluorescence:
-            for ii in range(1, 4):
-                chn = "channel {} name".format(ii)
-                fli = "fl{}_max".format(ii)
-                if (fli in self.ds
-                        and chn not in self.ds.config["fluorescence"]):
-                    # Channel names must be defined when there is
-                    # a corresponding fluorescence signal.
-                    cues.append(ICue(
-                        msg="Metadata: Missing key [{}] '{}'".format(
-                            "fluorescence", chn),
-                        level="alert",
-                        category="metadata missing"))
-                elif (fli not in self.ds
-                      and chn in self.ds.config["fluorescence"]):
-                    # Channel names must not be defined when there is
-                    # no corresponding fluorescence signal.
-                    cues.append(ICue(
-                        msg="Metadata: Unused key defined [{}] '{}'".format(
-                            "fluorescence", chn),
-                        level="alert",
-                        category="metadata invalid"))
+        for ii in range(1, 4):
+            chn = "channel {} name".format(ii)
+            fli = "fl{}_max".format(ii)
+            if (fli in self.ds
+                    and chn not in self.ds.config["fluorescence"]):
+                # Channel names must be defined when there is
+                # a corresponding fluorescence signal.
+                cues.append(ICue(
+                    msg="Metadata: Missing key [{}] '{}'".format(
+                        "fluorescence", chn),
+                    level="alert",
+                    category="metadata missing",
+                    cfg_section="fluorescence",
+                    cfg_key=chn))
+            elif (fli not in self.ds
+                  and chn in self.ds.config["fluorescence"]):
+                # Channel names must not be defined when there is
+                # no corresponding fluorescence signal.
+                cues.append(ICue(
+                    msg="Metadata: Unused key defined [{}] '{}'".format(
+                        "fluorescence", chn),
+                    level="alert",
+                    category="metadata invalid",
+                    cfg_section="fluorescence",
+                    cfg_key=chn))
         return cues
 
     def check_fl_num_channels(self, **kwargs):
@@ -215,7 +257,9 @@ class IntegrityChecker(object):
                 cues.append(ICue(
                     msg="Metadata: fluorescence channel count inconsistent",
                     level="violation",
-                    category="fluorescence"))
+                    category="metadata wrong",
+                    cfg_section="fluorescence",
+                    cfg_key="channel count"))
         return cues
 
     def check_fl_num_lasers(self, **kwargs):
@@ -235,7 +279,9 @@ class IntegrityChecker(object):
                 cues.append(ICue(
                     msg="Metadata: fluorescence laser count inconsistent",
                     level="violation",
-                    category="fluorescence"))
+                    category="metadata wrong",
+                    cfg_section="fluorescence",
+                    cfg_key="laser count"))
         return cues
 
     def check_fl_samples_per_event(self, **kwargs):
@@ -252,7 +298,9 @@ class IntegrityChecker(object):
                                 + "event: {} (expected {}, got {})".format(
                                     key, spe, spek),
                             level="violation",
-                            category="fluorescence"))
+                            category="metadata wrong",
+                            cfg_section="fluorescence",
+                            cfg_key="samples per event"))
         return cues
 
     def check_fmt_hdf5(self, **kwargs):
@@ -330,7 +378,8 @@ class IntegrityChecker(object):
                         msg="Metadata: Unknown key [{}] '{}'".format(sec, key),
                         level="violation",
                         category="metadata unknown",
-                        cfg_section=sec))
+                        cfg_section=sec,
+                        cfg_key=key))
                 elif not isinstance(self.ds.config[sec][key],
                                     dfn.config_types[sec][key]):
                     cues.append(ICue(
@@ -339,7 +388,8 @@ class IntegrityChecker(object):
                                 dfn.config_types[sec][key]),
                         level="violation",
                         category="metadata dtype",
-                        cfg_section=sec))
+                        cfg_section=sec,
+                        cfg_key=key))
         # check for ROI size
         if ("imaging" in self.ds.config
             and "roi size x" in self.ds.config["imaging"]
@@ -357,7 +407,8 @@ class IntegrityChecker(object):
                                         + "({} vs {})".format(ist, soll),
                                         level="violation",
                                         category="metadata wrong",
-                                        cfg_section=sec))
+                                        cfg_section="imaging",
+                                        cfg_key=roi))
         return cues
 
     def check_metadata_choices(self, **kwargs):
@@ -371,8 +422,10 @@ class IntegrityChecker(object):
                             msg="Metadata: Invalid value [{}] {}: '{}'".format(
                                 sec, key, val),
                             level="violation",
-                            category="metadata choice",
-                            cfg_section=sec))
+                            category="metadata wrong",
+                            cfg_section=sec,
+                            cfg_key=key,
+                            cfg_choices=VALID_CHOICES[sec][key]))
         return cues
 
     def check_metadata_missing(self, expand_section=True, **kwargs):
@@ -421,7 +474,7 @@ class IntegrityChecker(object):
             if sec in tocheck:
                 # already treated above (hard)
                 continue
-            if sec not in self.ds.config:
+            if sec not in self.ds.config and not expand_section:
                 cues.append(ICue(
                     msg="Metadata: Missing section '{}'".format(sec),
                     level="alert",

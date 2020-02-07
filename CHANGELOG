@@ -1,5 +1,6 @@
 0.20.4
  - ref: move integrity checks to new class check.IntegrityChecker
+ - docs: document remaining dictionaries in dclab.dfn
 0.20.3
  - docs: fix bad anchors
 0.20.2

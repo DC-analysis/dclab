@@ -4,9 +4,12 @@ from __future__ import print_function, unicode_literals
 
 import sys
 
+import h5py
+import numpy as np
 import pytest
 
-from dclab.rtdc_dataset import check_dataset, fmt_tdms, new_dataset
+from dclab.rtdc_dataset import check, check_dataset, fmt_tdms, new_dataset, \
+    write
 
 from helper_methods import cleanup, example_data_dict, retrieve_data
 
@@ -73,6 +76,184 @@ def test_exact():
     assert set(aler) == set(known_aler)
     assert set(info) == set(known_info)
     cleanup()
+
+
+def test_icue():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check()
+    assert cues[0] != cues[1]
+    levels = check.ICue.get_level_summary(cues)
+    assert levels["info"] >= 2
+    assert levels["alert"] == 0
+    assert levels["violation"] == 0
+    assert cues[0].msg in cues[0].__repr__()
+    cleanup()
+
+
+def test_ic_expand_section():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds1 = new_dataset(ddict)
+    ds2 = new_dataset(ddict)
+    with check.IntegrityChecker(ds1) as ic:
+        cues1 = ic.check_metadata_missing(expand_section=True)
+    with check.IntegrityChecker(ds2) as ic:
+        cues2 = ic.check_metadata_missing(expand_section=False)
+    assert len(cues1) > len(cues2)
+
+
+def test_ic_feature_size_scalar():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ddict["bright_sd"] = np.linspace(10, 20, 1000)
+    ds = new_dataset(ddict)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_feature_size()
+    for cue in cues:
+        if cue.category == "feature size":
+            assert cue.msg == "Features: wrong event count: 'bright_sd' " \
+                              + "(1000 of 8472)"
+            break
+    else:
+        assert False
+
+
+def test_ic_feature_size_trace():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ddict["trace"] = {"fl1_raw": [range(10)] * 1000}
+    ds = new_dataset(ddict)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_feature_size()
+    for cue in cues:
+        if cue.category == "feature size":
+            assert cue.msg == "Features: wrong event count: 'trace/fl1_raw'" \
+                              + " (1000 of 8472)"
+            break
+    else:
+        assert False
+
+
+def test_ic_fl_metadata_channel_names():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform", "fl1_max"])
+    ddict["trace"] = {"fl1_raw": [range(10)] * 1000}
+    ds = new_dataset(ddict)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_metadata_channel_names()
+    assert cues[0].category == "metadata missing"
+    assert cues[0].cfg_section == "fluorescence"
+    assert cues[0].cfg_key == "channel 1 name"
+
+
+def test_ic_fl_metadata_channel_names_2():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["fluorescence"]["channel 1 name"] = "peter"
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_metadata_channel_names()
+    assert cues[0].category == "metadata invalid"
+    assert cues[0].cfg_section == "fluorescence"
+    assert cues[0].cfg_key == "channel 1 name"
+
+
+def test_ic_fl_num_channels():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["fluorescence"]["channel count"] = 3
+    ds.config["fluorescence"]["channel 1 name"] = "hans"
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_num_channels()
+    assert cues[0].category == "metadata wrong"
+    assert cues[0].cfg_section == "fluorescence"
+    assert cues[0].cfg_key == "channel count"
+
+
+def test_ic_fl_num_lasers():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["fluorescence"]["laser count"] = 3
+    ds.config["fluorescence"]["laser 1 lambda"] = 550
+    ds.config["fluorescence"]["laser 1 power"] = 20
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_num_lasers()
+    assert cues[0].category == "metadata wrong"
+    assert cues[0].cfg_section == "fluorescence"
+    assert cues[0].cfg_key == "laser count"
+
+
+def test_ic_fmt_hdf5_image1():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5["events/image"].attrs["CLASS"] = "bad"
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check_fmt_hdf5()
+    assert cues[0].category == "format HDF5"
+    assert cues[0].msg == "HDF5: '/image': attribute 'CLASS' should be " \
+                          + "fixed-length ASCII string"
+    assert cues[0].level == "alert"
+    cleanup()
+
+
+def test_ic_fmt_hdf5_image2():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5["events/image"].attrs["CLASS"] = np.string_("bad")
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check_fmt_hdf5()
+    assert cues[0].category == "format HDF5"
+    assert cues[0].msg == "HDF5: '/image': attribute 'CLASS' should have " \
+                          + "value 'b'IMAGE''"
+    assert cues[0].level == "alert"
+    cleanup()
+
+
+def test_ic_fmt_hdf5_image3():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(h5path, "a") as h5:
+        del h5["events/image"].attrs["CLASS"]
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check_fmt_hdf5()
+    assert cues[0].category == "format HDF5"
+    assert cues[0].msg == "HDF5: '/image': missing attribute 'CLASS'"
+    assert cues[0].level == "alert"
+    cleanup()
+
+
+def test_ic_fmt_hdf5_logs():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    write(h5path, logs={
+        "test": ["asdasd"*100],
+        "M1_para.ini":  ["asdasd"*100],  # should be ignored
+        }, mode="append")
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check_fmt_hdf5()
+    assert len(cues) == 1
+    assert cues[0].category == "format HDF5"
+    assert cues[0].msg == 'Logs: test line 0 exceeds maximum line length 100'
+    assert cues[0].level == "alert"
+    cleanup()
+
+
+def test_ic_metadata_bad():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["experiment"]["run index"] = "1"
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_metadata_bad()
+    assert cues[0].category == "metadata dtype"
+    assert cues[0].level == "violation"
+    assert cues[0].cfg_section == "experiment"
+    assert cues[0].cfg_key == "run index"
+
+
+def test_ic_metadata_choices():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["setup"]["medium"] = "honey"
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_metadata_choices()
+    assert cues[0].category == "metadata wrong"
+    assert cues[0].level == "violation"
+    assert cues[0].cfg_section == "setup"
+    assert cues[0].cfg_key == "medium"
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'

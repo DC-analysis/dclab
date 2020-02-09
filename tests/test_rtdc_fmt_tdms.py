@@ -72,7 +72,7 @@ def test_contains_non_scalar():
 
 
 def test_contour_basic():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert len(ds["contour"]) == 12
     assert np.allclose(np.average(ds["contour"][0]), 38.488764044943821)
     assert ds["contour"]._initialized
@@ -80,7 +80,7 @@ def test_contour_basic():
 
 
 def test_contour_corrupt():
-    path = pathlib.Path(retrieve_data(example_data_sets[1]))
+    path = pathlib.Path(retrieve_data("rtdc_data_traces_video.zip"))
     cpath = path.with_name("M1_contours.txt")
     # remove initial contours
     with cpath.open("r") as fd:
@@ -143,7 +143,7 @@ def test_contour_naming():
 
 
 def test_contour_negative_offset():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     ds["contour"][0]
     ds["contour"].event_offset = 1
     assert np.all(ds["contour"][0] == np.zeros((2, 2), dtype=int))
@@ -151,7 +151,7 @@ def test_contour_negative_offset():
 
 
 def test_contour_not_initialized():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert not ds["contour"]._initialized
     cleanup()
 
@@ -165,7 +165,7 @@ def test_fluorescence_config():
 
 
 def test_image_basic():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     # Transition image
     assert np.allclose(ds["image"][0], 0)
     # Real image
@@ -174,13 +174,13 @@ def test_image_basic():
 
 
 def test_image_column_length():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert len(ds["image"]) == 3
     cleanup()
 
 
 def test_image_corrupt():
-    path = pathlib.Path(retrieve_data(example_data_sets[1]))
+    path = pathlib.Path(retrieve_data("rtdc_data_traces_video.zip"))
     vpath = path.with_name("M1_imaq.avi")
     # create empty video file
     vpath.unlink()
@@ -195,7 +195,7 @@ def test_image_corrupt():
 
 
 def test_image_out_of_bounds():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     try:
         ds["image"][5]
     except IndexError:
@@ -234,23 +234,30 @@ def test_load_tdms_all():
     cleanup()
 
 
-def test_load_tdms_avi_files():
-    tdms_path = retrieve_data(example_data_sets[1])
+def test_load_tdms_avi_files_1():
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
     edest = pathlib.Path(tdms_path).parent
     with new_dataset(tdms_path) as ds1:
         assert pathlib.Path(ds1["image"].video_file).name == "M1_imaq.avi"
-        shutil.copyfile(str(edest / "M1_imaq.avi"),
-                        str(edest / "M1_imag.avi"))
+    shutil.copyfile(str(edest / "M1_imaq.avi"),
+                    str(edest / "M1_imag.avi"))
     with new_dataset(tdms_path) as ds2:
         # prefer imag over imaq
         assert pathlib.Path(ds2["image"].video_file).name == "M1_imag.avi"
-        shutil.copyfile(str(edest / "M1_imaq.avi"),
-                        str(edest / "M1_test.avi"))
+    shutil.copyfile(str(edest / "M1_imaq.avi"),
+                    str(edest / "M1_test.avi"))
     with new_dataset(tdms_path) as ds3:
         # ignore any other videos
         assert pathlib.Path(ds3["image"].video_file).name == "M1_imag.avi"
-        os.remove(str(edest / "M1_imaq.avi"))
-        os.remove(str(edest / "M1_imag.avi"))
+    cleanup()
+
+
+def test_load_tdms_avi_files_2():
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
+    edest = pathlib.Path(tdms_path).parent
+    shutil.copyfile(str(edest / "M1_imaq.avi"),
+                    str(edest / "M1_test.avi"))
+    os.remove(str(edest / "M1_imaq.avi"))
     with new_dataset(tdms_path) as ds4:
         # use available video if ima* not there
         assert pathlib.Path(ds4["image"].video_file).name == "M1_test.avi"
@@ -268,7 +275,7 @@ def test_load_tdms_simple():
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_mask_basic():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert len(ds["mask"]) == 12
     # Test mask computation by averaging brightness and comparing to
     # the ancillary feature "bright_avg".
@@ -384,7 +391,7 @@ def test_project_path():
 
 
 def test_trace_basic():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     msg = "traces should not be loaded into memory before first access"
     assert ds["trace"].__repr__().count("<not loaded into memory>"), msg
     assert len(ds["trace"]) == 2
@@ -395,7 +402,7 @@ def test_trace_basic():
 
 def test_trace_import_fail():
     # make sure undefined trace data does not raise an error
-    tdms_path = retrieve_data(example_data_sets[1])
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
     dclab.definitions.FLUOR_TRACES.append("peter")
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = [u'ukwn', u'ha']
     new_dataset(tdms_path)
@@ -406,7 +413,7 @@ def test_trace_import_fail():
 
 
 def test_trace_methods():
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     for k in list(ds["trace"].keys()):
         assert k in dclab.definitions.FLUOR_TRACES
     for k in ds["trace"]:
@@ -457,7 +464,7 @@ def test_trace_wrong_samples_per_event():
 
 
 def test_unicode_paths():
-    path = retrieve_data(example_data_sets[1])
+    path = retrieve_data("rtdc_data_traces_video.zip")
     path = pathlib.Path(path)
     pp = path.parent
     # create a unicode name

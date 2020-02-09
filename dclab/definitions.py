@@ -149,6 +149,7 @@ CFG_METADATA = {
 # List of scalar features (one number per event).
 FEATURES_SCALAR = [
     ["area_cvx", "Convex area [px]"],
+    # area_msd is the contour moment M00
     ["area_msd", "Measured area [px]"],
     ["area_ratio", "Porosity (convex to measured area ratio)"],
     # area_um is the convex area per definition

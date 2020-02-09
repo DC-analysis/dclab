@@ -104,10 +104,10 @@ class ContourColumn(object):
                 # are computed from the raw contour (not stored in format)
                 and np.allclose(self.pxfeat["pos_x"][idx],
                                 mm["m10"]/mm["m00"],
-                                rtol=0, atol=2)
+                                rtol=0, atol=6)
                 and np.allclose(self.pxfeat["pos_y"][idx],
                                 mm["m01"]/mm["m00"],
-                                rtol=0, atol=2)):
+                                rtol=0, atol=6)):
                 cdata = cdata2
 
         if cdata is None:

@@ -237,23 +237,23 @@ def test_load_tdms_all():
 def test_load_tdms_avi_files():
     tdms_path = retrieve_data(example_data_sets[1])
     edest = pathlib.Path(tdms_path).parent
-    ds1 = new_dataset(tdms_path)
-    assert pathlib.Path(ds1["image"].video_file).name == "M1_imaq.avi"
-    shutil.copyfile(str(edest / "M1_imaq.avi"),
-                    str(edest / "M1_imag.avi"))
-    ds2 = new_dataset(tdms_path)
-    # prefer imag over imaq
-    assert pathlib.Path(ds2["image"].video_file).name == "M1_imag.avi"
-    shutil.copyfile(str(edest / "M1_imaq.avi"),
-                    str(edest / "M1_test.avi"))
-    ds3 = new_dataset(tdms_path)
-    # ignore any other videos
-    assert pathlib.Path(ds3["image"].video_file).name == "M1_imag.avi"
-    os.remove(str(edest / "M1_imaq.avi"))
-    os.remove(str(edest / "M1_imag.avi"))
-    ds4 = new_dataset(tdms_path)
-    # use available video if ima* not there
-    assert pathlib.Path(ds4["image"].video_file).name == "M1_test.avi"
+    with new_dataset(tdms_path) as ds1:
+        assert pathlib.Path(ds1["image"].video_file).name == "M1_imaq.avi"
+        shutil.copyfile(str(edest / "M1_imaq.avi"),
+                        str(edest / "M1_imag.avi"))
+    with new_dataset(tdms_path) as ds2:
+        # prefer imag over imaq
+        assert pathlib.Path(ds2["image"].video_file).name == "M1_imag.avi"
+        shutil.copyfile(str(edest / "M1_imaq.avi"),
+                        str(edest / "M1_test.avi"))
+    with new_dataset(tdms_path) as ds3:
+        # ignore any other videos
+        assert pathlib.Path(ds3["image"].video_file).name == "M1_imag.avi"
+        os.remove(str(edest / "M1_imaq.avi"))
+        os.remove(str(edest / "M1_imag.avi"))
+    with new_dataset(tdms_path) as ds4:
+        # use available video if ima* not there
+        assert pathlib.Path(ds4["image"].video_file).name == "M1_test.avi"
     cleanup()
 
 

@@ -1,3 +1,6 @@
+0.20.5
+ - fix: be more trustful when it comes to contour data in the tdms
+   file format; instead of raising errors, issue warnings (#72)
 0.20.4
  - ref: move integrity checks to new class check.IntegrityChecker
  - docs: document remaining dictionaries in dclab.dfn

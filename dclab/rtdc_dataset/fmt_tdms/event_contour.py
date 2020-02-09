@@ -4,8 +4,15 @@
 from __future__ import division, print_function, unicode_literals
 
 import sys
+import warnings
 
 import numpy as np
+
+from ...features import inert_ratio
+
+
+class ContourVerificationWarning(UserWarning):
+    pass
 
 
 class ContourIndexingError(BaseException):
@@ -36,29 +43,83 @@ class ContourColumn(object):
             # prevent `determine_offset` to be called
             self._initialized = True
         self.frame = rtdc_dataset["frame"]
+        # if they are set, these features are used for verifying the contour
+        self.pxfeat = {}
+
+        self.pxfeat["area_msd"] = rtdc_dataset["area_msd"]
+        if "pixel size" in rtdc_dataset.config["imaging"]:
+            px_size = rtdc_dataset.config["imaging"]["pixel size"]
+            for key in ["pos_x", "pos_y", "size_x", "size_y"]:
+                if key not in rtdc_dataset.features_innate:
+                    # abort
+                    self.pxfeat.clear()
+                    break
+                self.pxfeat[key] = rtdc_dataset[key] / px_size
+        if "image" in rtdc_dataset:
+            self.shape = rtdc_dataset["image"][0].shape
+        else:
+            self.shape = None
         self.event_offset = 0
 
     def __getitem__(self, idx):
         if not self._initialized:
             self.determine_offset()
         idnew = idx-self.event_offset
+        cdata = None
         if idnew < 0:
+            # No contour data
             cdata = np.zeros((2, 2), dtype=int)
         else:
+            # Assign contour based on stored frame index
             frame_ist = self.frame[idx]
             # Do not only check the exact frame, but +/- 2 events around it
             for idn in [idnew, idnew-1, idnew+1, idnew-2, idnew+2]:
                 # check frame
-                frame_soll = self._contour_data.get_frame(idn)
+                try:
+                    frame_soll = self._contour_data.get_frame(idn)
+                except IndexError:
+                    # reached end of file
+                    continue
                 if np.allclose(frame_soll, frame_ist, rtol=0):
                     cdata = self._contour_data[idn]
                     break
-            else:
-                frame_soll = self._contour_data.get_frame(idnew)
-                raise ContourIndexingError(
-                    "Frame index mismatch at event {} ".format(idx)
-                    + "({} vs {}) in contour '{}'".format(
-                        frame_ist, frame_soll, self.identifier))
+        if cdata is None and self.shape and self.pxfeat:  #
+            # The frame is wrong, but the contour might be correct.
+            # We check that by verifying several features.
+            cdata2 = self._contour_data[idnew]
+            cont = np.zeros((self.shape[1], self.shape[0]))
+            cont[cdata2[:, 0], cdata2[:, 1]] = True
+            mm = inert_ratio.cont_moments_cv(cdata2)
+
+            if (np.allclose(self.pxfeat["size_x"][idx],
+                            np.ptp(cdata2[:, 0]) + 1,
+                            rtol=0, atol=1e-5)
+                and np.allclose(self.pxfeat["size_y"][idx],
+                                np.ptp(cdata2[:, 1]) + 1,
+                                rtol=0, atol=1e-5)
+                and np.allclose(mm["m00"],
+                                self.pxfeat["area_msd"][idx],
+                                rtol=0, atol=1e-5)
+                # atol=6 for positions, because the original positions
+                # are computed from the raw contour (not stored in format)
+                and np.allclose(self.pxfeat["pos_x"][idx],
+                                mm["m10"]/mm["m00"],
+                                rtol=0, atol=2)
+                and np.allclose(self.pxfeat["pos_y"][idx],
+                                mm["m01"]/mm["m00"],
+                                rtol=0, atol=2)):
+                cdata = cdata2
+
+        if cdata is None:
+            # No idea what went wrong, but we make the beste guess and
+            # issue a warning.
+            cdata = self._contour_data[idnew]
+            frame_c = self._contour_data.get_frame(idnew)
+            warnings.warn(
+                "Couldn't verify contour {} in {}".format(idx, self.identifier)
+                + " (frame index {})!".format(frame_c),
+                ContourVerificationWarning
+            )
         return cdata
 
     def __len__(self):

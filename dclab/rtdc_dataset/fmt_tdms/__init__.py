@@ -71,7 +71,7 @@ class RTDC_TDMS(RTDCBase):
         # Add additional features
         # event images
         self._events["image"] = ImageColumn(self)
-        # event contours
+        # event contours (requires image)
         self._events["contour"] = ContourColumn(self)
         # event masks (requires contour)
         self._events["mask"] = MaskColumn(self)

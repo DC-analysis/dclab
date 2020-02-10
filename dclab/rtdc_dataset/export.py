@@ -343,8 +343,8 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
         Optional boolean array used for filtering. If set to
         `None`, all events are saved.
     time_offset: float
-        This value will be added to the time feature (used for
-        joining multiple measurements)
+        This value will be added to the "time" and "frame" features
+        (used for joining multiple measurements)
 
     Notes
     -----
@@ -419,9 +419,25 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
               data={"index": np.arange(nev0+1, nev0+nev+1)},
               mode="append",
               compression=compression)
+    elif feat == "index_online":
+        if "events/index_online" in h5obj:
+            idxo_offset = h5obj["events/index"][-1] + 1
+        else:
+            idxo_offset = 0
+        write(h5obj,
+              data={"index": rtdc_ds["index_online"][filtarr] + idxo_offset},
+              mode="append",
+              compression=compression)
     elif feat == "time":
         write(h5obj,
               data={"time": rtdc_ds["time"][filtarr] + time_offset},
+              mode="append",
+              compression=compression)
+    elif feat == "frame":
+        fr = rtdc_ds.config["imaging"]["frame rate"]
+        frame_offset = time_offset * fr
+        write(h5obj,
+              data={"frame": rtdc_ds["frame"][filtarr] + frame_offset},
               mode="append",
               compression=compression)
     else:

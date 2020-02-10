@@ -1,3 +1,8 @@
+0.20.7
+ - fix: ensure file extension is .rtdc in dclab-join
+ - fix: correct "frame" and "index_online" features when exporting
+   to hdf5
+ - enh: allow to set metadata dictionary in dclab.cli.join
 0.20.6
  - fix: typo in contour check resulted in small tolerance
 0.20.5

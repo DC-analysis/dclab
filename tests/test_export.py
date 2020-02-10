@@ -129,6 +129,7 @@ def test_hdf5():
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
     ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5.rtdc")
@@ -230,6 +231,7 @@ def test_hdf5_override():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=212, keys=keys)
     ds = dclab.new_dataset(ddict)
+    ds.config["imaging"]["frame rate"] = 2000
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.rtdc")

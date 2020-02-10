@@ -228,7 +228,8 @@ def condense_parser():
     return parser
 
 
-def join(path_out=None, paths_in=None):
+def join(path_out=None, paths_in=None,
+         metadata={"experiment": {"run index": 1}}):
     """Join multiple RT-DC measurements into a single .rtdc file"""
     if path_out is None or paths_in is None:
         parser = join_parser()
@@ -239,7 +240,11 @@ def join(path_out=None, paths_in=None):
     if len(paths_in) < 2:
         raise ValueError("At least two input files must be specified!")
 
-    if pathlib.Path(path_out).exists():
+    path_out = pathlib.Path(path_out)
+    if not path_out.suffix == ".rtdc":
+        path_out = path_out.parent / (path_out.name + ".rtdc")
+
+    if path_out.exists():
         raise ValueError("Output file '{}' already exists!".format(path_out))
 
     # Determine input file order
@@ -265,7 +270,6 @@ def join(path_out=None, paths_in=None):
             if len(etime) > 8:
                 # floating point time stored as well (HH:MM:SS.SS)
                 toffsets[ii] += float(etime[8:])
-
     toffsets -= toffsets[0]
 
     logs = {}
@@ -302,9 +306,6 @@ def join(path_out=None, paths_in=None):
                     logs[lkey] = assemble_warnings(w)
         export.hdf5_autocomplete_config(h5obj)
 
-    # Meta data
-    meta = {"experiment": {"run index": 1}}
-
     # Logs and configs from source files
     logs["dclab-join"] = get_command_log(paths=sorted_paths)
     for ii, pp in enumerate(sorted_paths):
@@ -317,7 +318,7 @@ def join(path_out=None, paths_in=None):
             logs["cfg-#{}".format(ii+1)] = cfg
 
     # Write logs and missing meta data
-    with write_hdf5.write(path_out, logs=logs, meta=meta, mode="append",
+    with write_hdf5.write(path_out, logs=logs, meta=metadata, mode="append",
                           compression="gzip"):
         pass
 

@@ -199,6 +199,8 @@ FEATURES_SCALAR = [
     ["nevents", "Total number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
+    # pos_x and pos_y are computed from the contour moments
+    # "m10"/"m00" and "m01"/"m00" of the convex hull of "contour"
     ["pos_x", "Position along channel axis [µm]"],
     ["pos_y", "Position lateral in channel [µm]"],
     ["size_x", "Bounding box size x [µm]"],

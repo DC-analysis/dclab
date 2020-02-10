@@ -101,7 +101,8 @@ class ContourColumn(object):
                                 self.pxfeat["area_msd"][idx],
                                 rtol=0, atol=1e-5)
                 # atol=6 for positions, because the original positions
-                # are computed from the raw contour (not stored in format)
+                # are computed from the convex contour, which would be
+                # computed using cv2.convexHull(cdata2).
                 and np.allclose(self.pxfeat["pos_x"][idx],
                                 mm["m10"]/mm["m00"],
                                 rtol=0, atol=6)

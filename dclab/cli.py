@@ -5,7 +5,6 @@ import hashlib
 import json
 import pathlib
 import platform
-import sys
 import warnings
 
 import h5py
@@ -93,8 +92,8 @@ def get_job_info():
             "version": platform.version(),
         },
         "python": {
+            "build": platform.python_build(),
             "implementation": platform.python_implementation(),
-            "info": sys.version.replace("\n", ""),
             "version": platform.python_version(),
         },
         "libraries": {

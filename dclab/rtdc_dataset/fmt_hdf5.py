@@ -118,12 +118,18 @@ class H5Logs(object):
         self._h5 = h5
 
     def __getitem__(self, key):
-        return list(self._h5["logs"][key])
+        log = list(self._h5["logs"][key])
+        if isinstance(log[0], bytes):
+            log = [l.decode("utf") for l in log]
+        return log
 
     def __iter__(self):
         # dict-like behavior
         for key in self.keys():
             yield key
+
+    def __len__(self):
+        return len(self.keys())
 
     def keys(self):
         names = sorted(self._h5["logs"].keys())

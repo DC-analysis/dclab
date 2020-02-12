@@ -92,7 +92,7 @@ def get_job_info():
             "version": platform.version(),
         },
         "python": {
-            "build": platform.python_build(),
+            "build": ", ".join(platform.python_build()),
             "implementation": platform.python_implementation(),
             "version": platform.python_version(),
         },

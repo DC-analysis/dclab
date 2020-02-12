@@ -46,7 +46,8 @@ class ContourColumn(object):
         # if they are set, these features are used for verifying the contour
         self.pxfeat = {}
 
-        self.pxfeat["area_msd"] = rtdc_dataset["area_msd"]
+        if "area_msd" in rtdc_dataset:
+            self.pxfeat["area_msd"] = rtdc_dataset["area_msd"]
         if "pixel size" in rtdc_dataset.config["imaging"]:
             px_size = rtdc_dataset.config["imaging"]["pixel size"]
             for key in ["pos_x", "pos_y", "size_x", "size_y"]:

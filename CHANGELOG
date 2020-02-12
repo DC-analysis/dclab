@@ -1,4 +1,6 @@
 0.20.8
+ - fix: regression where old .tmds data could not be opened if
+   they did not contain the "area_msd" feature
  - fix: convert bytes logs to string in fmt_hdf5
  - enh: support len(ds.logs) for fmt_hdf5
  - enh: replace "info" by "build" in CLI job info

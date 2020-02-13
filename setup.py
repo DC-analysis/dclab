@@ -54,7 +54,7 @@ setup(
     license="GPL v2",
     description=description,
     long_description=open('README.rst').read() if exists('README.rst') else '',
-    install_requires=["h5py>=2.8.0",
+    install_requires=["h5py>=2.10.0",
                       "numpy>=1.10.0",
                       "pathlib;python_version<='3.4'",
                       "scipy>=0.14.0",

@@ -1,6 +1,7 @@
 0.21.2
  - enh: dclab-verify-dataset now also checks HDF5 "mask" feature
    attributes
+ - setup: bump h5py to 2.10.0 (need `<object>.attrs.get_id`)
 0.21.1
  - fix: correct type of HDF5 image attributes for "mask" feature
 0.21.0

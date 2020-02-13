@@ -320,7 +320,7 @@ class IntegrityChecker(object):
                                     + "attribute '{}'".format(key),
                                 level="alert",
                                 category="format HDF5"))
-                        elif not isinstance(imdat.attrs[key], bytes):
+                        elif imdat.attrs.get_id(key).dtype.char != "S":
                             cues.append(ICue(
                                 msg="HDF5: '/{}': attribute '{}' ".format(
                                     feat, key)

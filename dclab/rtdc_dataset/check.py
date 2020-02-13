@@ -323,15 +323,15 @@ class IntegrityChecker(object):
                         elif not isinstance(imdat.attrs[key], bytes):
                             cues.append(ICue(
                                 msg="HDF5: '/{}': attribute '{}' ".format(
-                                    feat,key)
-                                    + "should be fixed-length ASCII string",
+                                    feat, key)
+                                + "should be fixed-length ASCII string",
                                 level="alert",
                                 category="format HDF5"))
                         elif imdat.attrs[key] != val:
                             cues.append(ICue(
                                 msg="HDF5: '/{}': attribute '{}' ".format(
                                     feat, key)
-                                    + "should have value '{}'".format(val),
+                                + "should have value '{}'".format(val),
                                 level="alert",
                                 category="format HDF5"))
             # check length of logs

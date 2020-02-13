@@ -70,9 +70,9 @@ def store_mask(h5group, data, compression):
                                       compression=compression)
         # Create and Set image attributes
         # HDFView recognizes this as a series of images
-        dset.attrs.create('CLASS', b'IMAGE')
-        dset.attrs.create('IMAGE_VERSION', b'1.2')
-        dset.attrs.create('IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE')
+        dset.attrs.create('CLASS', np.string_('IMAGE'))
+        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
+        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
     else:
         dset = h5group["mask"]
         oldsize = dset.shape[0]

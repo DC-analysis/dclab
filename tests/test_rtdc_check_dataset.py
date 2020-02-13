@@ -224,7 +224,7 @@ def test_ic_fmt_hdf5_logs():
     write(h5path, logs={
         "test": ["asdasd"*100],
         "M1_para.ini":  ["asdasd"*100],  # should be ignored
-        }, mode="append")
+    }, mode="append")
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check_fmt_hdf5()
     assert len(cues) == 1

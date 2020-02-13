@@ -5,7 +5,7 @@ from __future__ import print_function, unicode_literals
 
 import numpy as np
 
-from dclab import cli, new_dataset
+from dclab import cli, dfn, new_dataset, rtdc_dataset
 import h5py
 import imageio
 
@@ -122,6 +122,72 @@ def test_join_times():
                            np.concatenate((ds0["time"], ds0["time"]+offset)),
                            rtol=0,
                            atol=.0001)
+    cleanup()
+
+
+def test_repack_basic():
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("repacked.rtdc")
+
+    cli.repack(path_out=path_out, path_in=path_in)
+
+    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
+        assert len(dsj)
+        assert len(dsj) == len(ds0)
+        for feat in ds0.features_innate:
+            if feat in dfn.scalar_feature_names:
+                assert np.all(dsj[feat] == ds0[feat]), feat
+        for ii in range(len(ds0)):
+            assert np.all(dsj["contour"][ii] == ds0["contour"][ii])
+            assert np.all(dsj["image"][ii] == ds0["image"][ii])
+            assert np.all(dsj["mask"][ii] == ds0["mask"][ii])
+    cleanup()
+
+
+def test_repack_remove_secrets():
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("repacked.rtdc")
+
+    with h5py.File(path_in, "a") as h5:
+        h5.attrs["experiment:sample"] = "my dirty secret"
+
+    with h5py.File(path_in, "a") as h5:
+        h5.attrs["experiment:sample"] = "sunshine"
+
+    # test whether the dirty secret is still there
+    with open(path_in, "rb") as fd:
+        data = fd.read()
+        assert str(data).count("my dirty secret")
+
+    # now repack
+    cli.repack(path_out=path_out, path_in=path_in)
+
+    # clean?
+    with open(path_out, "rb") as fd:
+        data = fd.read()
+        assert not str(data).count("my dirty secret")
+
+    cleanup()
+
+
+def test_repack_strip_logs():
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("repacked.rtdc")
+
+    # write some logs
+    with h5py.File(path_in, "a") as h5:
+        rtdc_dataset.write(h5,
+                           logs={"test_log": ["peter", "hans"]},
+                           mode="append")
+
+    cli.repack(path_out=path_out, path_in=path_in, strip_logs=True)
+
+    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
+        assert ds0.logs
+        assert not dsj.logs
     cleanup()
 
 

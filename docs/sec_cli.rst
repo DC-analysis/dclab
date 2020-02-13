@@ -36,6 +36,17 @@ dclab-join
    :prog: dclab-join
 
 
+.. _sec_repack:
+
+dclab-repack
+------------
+
+.. simple_argparse::
+   :module: dclab.cli
+   :func: repack_parser
+   :prog: dclab-repack
+
+
 .. _sec_tdms2rtdc:
 
 dclab-tdms2rtdc

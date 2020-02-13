@@ -118,9 +118,12 @@ class H5Logs(object):
         self._h5 = h5
 
     def __getitem__(self, key):
-        log = list(self._h5["logs"][key])
-        if isinstance(log[0], bytes):
-            log = [l.decode("utf") for l in log]
+        if "logs" in self._h5:
+            log = list(self._h5["logs"][key])
+            if isinstance(log[0], bytes):
+                log = [l.decode("utf") for l in log]
+        else:
+            raise KeyError("No logs in {}!".format(self._h5.file.filename))
         return log
 
     def __iter__(self):
@@ -132,7 +135,10 @@ class H5Logs(object):
         return len(self.keys())
 
     def keys(self):
-        names = sorted(self._h5["logs"].keys())
+        if "logs" in self._h5:
+            names = sorted(self._h5["logs"].keys())
+        else:
+            names = []
         return names
 
 

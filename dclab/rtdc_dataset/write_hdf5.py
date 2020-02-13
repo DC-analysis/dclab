@@ -292,35 +292,36 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
                         compression=compression)
 
     # Write logs
-    log_group = h5obj.require_group("logs")
-    # remove previous data
-    if mode == "replace":
-        for rl in logs:
-            if rl in log_group:
-                del log_group[rl]
-    dt = h5py.special_dtype(vlen=hdf5_str)
-    for lkey in logs:
-        ldata = logs[lkey]
-        if isinstance(ldata, (str, hdf5_str)):
-            # single event
-            ldata = [ldata]
-        lnum = len(ldata)
-        if lkey not in log_group:
-            log_dset = log_group.create_dataset(lkey,
-                                                (lnum,),
-                                                dtype=dt,
-                                                maxshape=(None,),
-                                                chunks=True,
-                                                fletcher32=True,
-                                                compression=compression)
-            for ii, line in enumerate(ldata):
-                log_dset[ii] = line
-        else:
-            log_dset = log_group[lkey]
-            oldsize = log_dset.shape[0]
-            log_dset.resize(oldsize + lnum, axis=0)
-            for ii, line in enumerate(ldata):
-                log_dset[oldsize + ii] = line
+    if logs:
+        log_group = h5obj.require_group("logs")
+        # remove previous data
+        if mode == "replace":
+            for rl in logs:
+                if rl in log_group:
+                    del log_group[rl]
+        dt = h5py.special_dtype(vlen=hdf5_str)
+        for lkey in logs:
+            ldata = logs[lkey]
+            if isinstance(ldata, (str, hdf5_str)):
+                # single event
+                ldata = [ldata]
+            lnum = len(ldata)
+            if lkey not in log_group:
+                log_dset = log_group.create_dataset(lkey,
+                                                    (lnum,),
+                                                    dtype=dt,
+                                                    maxshape=(None,),
+                                                    chunks=True,
+                                                    fletcher32=True,
+                                                    compression=compression)
+                for ii, line in enumerate(ldata):
+                    log_dset[ii] = line
+            else:
+                log_dset = log_group[lkey]
+                oldsize = log_dset.shape[0]
+                log_dset.resize(oldsize + lnum, axis=0)
+                for ii, line in enumerate(ldata):
+                    log_dset[oldsize + ii] = line
 
     if mode == "append":
         return h5obj

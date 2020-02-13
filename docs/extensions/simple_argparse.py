@@ -19,6 +19,10 @@ Downsides:
 - makes use of private function argparse.ArgumentParser._actions
 
 Changelog:
+0.3 (2020-02-14)
+ - change "positional" to "required" arguments
+ - check the "required" property to include keyword arguements
+   that are required
 0.2 (2019-07-12)
  - remove tables, use bullet points (improve readability for long
    docstrings)
@@ -68,7 +72,7 @@ class ArgparseDirective(Directive):
 
         if pos:
             rst.append("")
-            rst.append("**positional arguments:**")
+            rst.append("**required arguments:**")
             rst.append("")
             for item in pos:
                 rst.append("- ``{}``".format(item[0]))
@@ -109,7 +113,7 @@ class ArgparseDirective(Directive):
         positional = []
         optional = []
         for ac in actions:
-            if ac.option_strings:
+            if ac.option_strings and not ac.required:
                 optional.append([
                     ac.metavar,
                     ", ".join(ac.option_strings),
@@ -137,4 +141,4 @@ class ArgparseDirective(Directive):
 
 def setup(app):
     app.add_directive('simple_argparse', ArgparseDirective)
-    return {'version': '0.2'}   # identifies the version of our extension
+    return {'version': '0.3'}   # identifies the version of our extension

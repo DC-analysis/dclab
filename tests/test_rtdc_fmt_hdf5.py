@@ -7,7 +7,7 @@ import h5py
 import numpy as np
 import pytest
 
-from dclab import new_dataset
+from dclab import new_dataset, rtdc_dataset
 
 from helper_methods import retrieve_data, cleanup
 
@@ -71,6 +71,35 @@ def test_image_basic():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert np.allclose(np.average(ds["image"][1]), 125.37133333333334)
     assert len(ds["image"]) == 5
+    cleanup()
+
+
+def test_logs():
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+
+    with new_dataset(path_in) as ds:
+        assert not ds.logs
+
+    # write some logs
+    with h5py.File(path_in, "a") as h5:
+        rtdc_dataset.write(h5,
+                           logs={"test_log": ["peter", "hans"]},
+                           mode="append")
+
+    with new_dataset(path_in) as ds:
+        assert ds.logs
+        assert ds.logs["test_log"][0] == "peter"
+
+    # remove logs
+    with h5py.File(path_in, "a") as h5:
+        del h5["logs"]
+
+    with new_dataset(path_in) as ds:
+        assert not ds.logs
+        try:
+            ds.logs["test_log"]
+        except KeyError:  # no log data
+            pass
     cleanup()
 
 

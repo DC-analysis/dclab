@@ -157,7 +157,7 @@ def test_repack_remove_secrets():
         h5.attrs["experiment:sample"] = "sunshine"
 
     # test whether the dirty secret is still there
-    with open(path_in, "rb") as fd:
+    with open(str(path_in), "rb") as fd:
         data = fd.read()
         assert str(data).count("my dirty secret")
 
@@ -165,7 +165,7 @@ def test_repack_remove_secrets():
     cli.repack(path_out=path_out, path_in=path_in)
 
     # clean?
-    with open(path_out, "rb") as fd:
+    with open(str(path_out), "rb") as fd:
         data = fd.read()
         assert not str(data).count("my dirty secret")
 

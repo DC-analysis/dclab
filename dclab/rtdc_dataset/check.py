@@ -308,29 +308,32 @@ class IntegrityChecker(object):
         # hdf5-based checks
         if self.ds.format == "hdf5":
             # check meta data of images
-            if "image" in self.ds._events:
-                imdat = self.ds["image"]
-                for key, val in [['CLASS', b'IMAGE'],
-                                 ['IMAGE_VERSION', b'1.2'],
-                                 ['IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE']]:
-                    if key not in imdat.attrs:
-                        cues.append(ICue(
-                            msg="HDF5: '/image': missing attribute "
-                                + "'{}'".format(key),
-                            level="alert",
-                            category="format HDF5"))
-                    elif not isinstance(imdat.attrs[key], bytes):
-                        cues.append(ICue(
-                            msg="HDF5: '/image': attribute '{}' ".format(key)
-                                + "should be fixed-length ASCII string",
-                            level="alert",
-                            category="format HDF5"))
-                    elif imdat.attrs[key] != val:
-                        cues.append(ICue(
-                            msg="HDF5: '/image': attribute '{}' ".format(key)
-                                + "should have value '{}'".format(val),
-                            level="alert",
-                            category="format HDF5"))
+            for feat in ["image", "mask"]:
+                if feat in self.ds._events:
+                    imdat = self.ds[feat]
+                    for key, val in [['CLASS', b'IMAGE'],
+                                     ['IMAGE_VERSION', b'1.2'],
+                                     ['IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE']]:
+                        if key not in imdat.attrs:
+                            cues.append(ICue(
+                                msg="HDF5: '/{}': missing ".format(feat)
+                                    + "attribute '{}'".format(key),
+                                level="alert",
+                                category="format HDF5"))
+                        elif not isinstance(imdat.attrs[key], bytes):
+                            cues.append(ICue(
+                                msg="HDF5: '/{}': attribute '{}' ".format(
+                                    feat,key)
+                                    + "should be fixed-length ASCII string",
+                                level="alert",
+                                category="format HDF5"))
+                        elif imdat.attrs[key] != val:
+                            cues.append(ICue(
+                                msg="HDF5: '/{}': attribute '{}' ".format(
+                                    feat, key)
+                                    + "should have value '{}'".format(val),
+                                level="alert",
+                                category="format HDF5"))
             # check length of logs
             with h5py.File(self.ds.path, mode="r") as h5:
                 logs = h5["logs"]

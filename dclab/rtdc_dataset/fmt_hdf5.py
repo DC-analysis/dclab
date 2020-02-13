@@ -162,6 +162,10 @@ class H5MaskEvent(object):
         return len(self.h5group)
 
     @property
+    def attrs(self):
+        return self.h5group.attrs
+
+    @property
     def shape(self):
         return self.h5group.shape
 

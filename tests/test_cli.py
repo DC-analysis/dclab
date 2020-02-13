@@ -3,11 +3,13 @@
 """Test tdms file format"""
 from __future__ import print_function, unicode_literals
 
-import numpy as np
+import sys
 
 from dclab import cli, dfn, new_dataset, rtdc_dataset
 import h5py
 import imageio
+import numpy as np
+import pytest
 
 from helper_methods import retrieve_data, cleanup
 
@@ -145,6 +147,8 @@ def test_repack_basic():
     cleanup()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6),
+                    reason="requires python3.6 or higher")
 def test_repack_remove_secrets():
     path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
     # same directory (will be cleaned up with path_in)

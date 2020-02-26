@@ -20,17 +20,16 @@ def check_dataset(path_or_ds):
     return check.check_dataset(path_or_ds)
 
 
-def load_file(path, identifier=None):
+def load_file(path, identifier=None, **kwargs):
     path = pathlib.Path(path).resolve()
-    if path.suffix == ".tdms":
-        return fmt_tdms.RTDC_TDMS(path, identifier=identifier)
-    elif path.suffix == ".rtdc":
-        return fmt_hdf5.RTDC_HDF5(path, identifier=identifier)
+    for fmt in [fmt_hdf5.RTDC_HDF5, fmt_tdms.RTDC_TDMS]:
+        if fmt.can_open(path):
+            return fmt(path, identifier=identifier, **kwargs)
     else:
-        raise ValueError("Unknown file extension: '{}'".format(path.suffix))
+        raise ValueError("Unknown file format: '{}'".format(path.suffix))
 
 
-def new_dataset(data, identifier=None):
+def new_dataset(data, identifier=None, **kwargs):
     """Initialize a new RT-DC dataset
 
     Parameters
@@ -46,6 +45,8 @@ def new_dataset(data, identifier=None):
     identifier: str
         A unique identifier for this dataset. If set to `None`
         an identifier is generated.
+    kwargs: dict
+        Additional parameters passed to the RTDCBase subclass
 
     Returns
     -------
@@ -53,11 +54,12 @@ def new_dataset(data, identifier=None):
         A new dataset instance
     """
     if isinstance(data, dict):
-        return fmt_dict.RTDC_Dict(data, identifier=identifier)
+        return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
     elif isinstance(data, (str_types)) or isinstance(data, pathlib.Path):
-        return load_file(data, identifier=identifier)
+        return load_file(data, identifier=identifier, **kwargs)
     elif isinstance(data, RTDCBase):
-        return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier)
+        return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
+                                            **kwargs)
     else:
         msg = "data type not supported: {}".format(data.__class__)
         raise NotImplementedError(msg)

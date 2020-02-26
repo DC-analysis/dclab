@@ -3,6 +3,8 @@
 """Test hdf5 file format"""
 from __future__ import print_function
 
+import os
+
 import h5py
 import numpy as np
 import pytest
@@ -101,6 +103,15 @@ def test_logs():
         except KeyError:  # no log data
             pass
     cleanup()
+
+
+def test_no_suffix():
+    """Loading an .rtdc file that has a wrong suffix"""
+    path = str(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    path2 = path + ".wrong_suffix"
+    os.rename(path, path2)
+    ds = new_dataset(path2)
+    assert(len(ds) == 8)
 
 
 @pytest.mark.filterwarnings(

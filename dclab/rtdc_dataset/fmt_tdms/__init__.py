@@ -320,6 +320,11 @@ class RTDC_TDMS(RTDCBase):
                 mc2 = ", ".join([m.strip() for m in mc.split("+")])
                 self.config["setup"]["module composition"] = mc2
 
+    @staticmethod
+    def can_open(h5path):
+        """Check whether a given file is in the .tdms file format"""
+        return pathlib.Path(h5path).suffix == ".tdms"
+
     @property
     def hash(self):
         """Hash value based on file name and .ini file content"""

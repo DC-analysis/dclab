@@ -229,6 +229,20 @@ class RTDC_HDF5(RTDCBase):
         self._h5.close()
 
     @staticmethod
+    def can_open(h5path):
+        """Check whether a given file is in the .rtdc file format"""
+        if pathlib.Path(h5path).suffix == ".rtdc":
+            return True
+        else:
+            # we don't know the extension; check for the "events" group
+            canopen = False
+            if h5py.is_hdf5(h5path):
+                with h5py.File(h5path, "r") as h5:
+                    if "events" in h5:
+                        canopen = True
+            return canopen
+
+    @staticmethod
     def parse_config(h5path):
         """Parse the RT-DC configuration of an hdf5 file"""
         with h5py.File(h5path, mode="r") as fh5:

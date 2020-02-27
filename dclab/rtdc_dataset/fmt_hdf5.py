@@ -231,15 +231,22 @@ class RTDC_HDF5(RTDCBase):
     @staticmethod
     def can_open(h5path):
         """Check whether a given file is in the .rtdc file format"""
-        if pathlib.Path(h5path).suffix == ".rtdc":
+        h5path = pathlib.Path(h5path)
+        if h5path.suffix == ".rtdc":
             return True
         else:
             # we don't know the extension; check for the "events" group
             canopen = False
-            if h5py.is_hdf5(h5path):
-                with h5py.File(h5path, "r") as h5:
+            try:
+                # This is a workaround for Python2 where h5py cannot handle
+                # unicode file names.
+                with h5path.open("rb") as fd:
+                    h5 = h5py.File(fd, "r")
                     if "events" in h5:
                         canopen = True
+            except IOError:
+                # not an HDF5 file
+                pass
             return canopen
 
     @staticmethod

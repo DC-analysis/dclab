@@ -5,12 +5,19 @@ from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 import requests
+import sys
 
 from .. import definitions as dfn
 from ..util import hashobj
 
 from .config import Configuration
 from .core import RTDCBase
+
+
+if sys.version_info[0] < 3 and sys.version_info[1] < 3:
+    # Not defined in Python 2
+    class ConnectionError(OSError):
+        pass
 
 
 class APIHandler(object):

@@ -67,6 +67,7 @@ def test_dcor_hierarchy(monkeypatch):
     dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id=1")
     dsh = dclab.new_dataset(dso)
     assert np.all(dso["area_um"] == dsh["area_um"])
+    cleanup()
 
 
 def test_url():

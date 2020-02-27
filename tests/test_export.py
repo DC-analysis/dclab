@@ -250,6 +250,9 @@ def test_hdf5_frame():
     ds2 = dclab.new_dataset(f1)
     assert ds2["frame"][10] == 20000
 
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
 
 def test_hdf5_override():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]

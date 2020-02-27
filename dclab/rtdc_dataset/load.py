@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Load RT-DC datasets for completeness"""
+"""Load RT-DC datasets"""
 from __future__ import unicode_literals
 
 import pathlib
@@ -9,7 +9,7 @@ import warnings
 from ..compat import str_types
 
 from .core import RTDCBase
-from . import fmt_dict, fmt_hdf5, fmt_tdms, fmt_hierarchy
+from . import fmt_dict, fmt_dcor, fmt_hdf5, fmt_tdms, fmt_hierarchy
 
 
 def check_dataset(path_or_ds):
@@ -42,6 +42,7 @@ def new_dataset(data, identifier=None, **kwargs):
         - .rtdc file
         - subclass of `RTDCBase`
           (will create a hierarchy child)
+        - DCOR resource URL
     identifier: str
         A unique identifier for this dataset. If set to `None`
         an identifier is generated.
@@ -56,7 +57,10 @@ def new_dataset(data, identifier=None, **kwargs):
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
     elif isinstance(data, (str_types)) or isinstance(data, pathlib.Path):
-        return load_file(data, identifier=identifier, **kwargs)
+        if isinstance(data, pathlib.Path) or pathlib.Path(data).exists():
+            return load_file(data, identifier=identifier, **kwargs)
+        else:
+            return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
     elif isinstance(data, RTDCBase):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
                                             **kwargs)

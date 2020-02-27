@@ -41,6 +41,8 @@ class RTDCBase(object):
         self.format = self.__class__.__name__.split("_")[-1].lower()
 
         self._polygon_filter_ids = []
+        # Events have the feature name as keys and contain 1D ndarrays.
+        self._events = {}
         # Ancillaries have the feature name as keys and a
         # tuple containing feature and hash as value.
         self._ancillaries = {}

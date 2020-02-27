@@ -1,4 +1,5 @@
-0.21.3
+0.22.0
+ - feat: implement DCOR client
  - enh: improved .rtdc file format detection (with wrong extension)
 0.21.2
  - enh: dclab-verify-dataset now also checks HDF5 "mask" feature

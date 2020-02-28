@@ -57,7 +57,9 @@ def new_dataset(data, identifier=None, **kwargs):
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
     elif isinstance(data, (str_types)) or isinstance(data, pathlib.Path):
-        if isinstance(data, pathlib.Path) or pathlib.Path(data).exists():
+        if (isinstance(data, pathlib.Path)
+                or (not data.count("://")  # prevent Pathing it on Windows
+                    and pathlib.Path(data).exists())):
             return load_file(data, identifier=identifier, **kwargs)
         else:
             return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)

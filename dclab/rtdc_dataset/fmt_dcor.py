@@ -14,7 +14,8 @@ from .config import Configuration
 from .core import RTDCBase
 
 
-if sys.version_info[0] < 3 and sys.version_info[1] < 3:
+if (sys.version_info[0] < 3
+        or (sys.version_info[0] == 3 and sys.version_info[1] < 3)):
     # Not defined in Python 2
     class ConnectionError(OSError):
         pass

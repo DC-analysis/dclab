@@ -3,15 +3,23 @@
 """DCOR client interface"""
 from __future__ import division, print_function, unicode_literals
 
-import numpy as np
-import requests
 import sys
 
+import numpy as np
+
+from ..compat import PyImportError
 from .. import definitions as dfn
 from ..util import hashobj
 
 from .config import Configuration
 from .core import RTDCBase
+
+try:
+    import requests
+except PyImportError:
+    REQUESTS_AVAILABLE = False
+else:
+    REQUESTS_AVAILABLE = True
 
 
 if (sys.version_info[0] < 3
@@ -182,6 +190,9 @@ class RTDC_DCOR(RTDCBase):
         path: str
             Full URL to the DCOR resource
         """
+        if not REQUESTS_AVAILABLE:
+            raise PyImportError("Package `requests` required for DCOR format!")
+
         super(RTDC_DCOR, self).__init__(*args, **kwargs)
 
         self._hash = None

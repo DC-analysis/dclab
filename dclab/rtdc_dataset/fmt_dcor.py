@@ -3,8 +3,6 @@
 """DCOR client interface"""
 from __future__ import division, print_function, unicode_literals
 
-import sys
-
 import numpy as np
 
 from ..compat import PyImportError
@@ -22,14 +20,7 @@ else:
     REQUESTS_AVAILABLE = True
 
 
-if (sys.version_info[0] < 3
-        or (sys.version_info[0] == 3 and sys.version_info[1] < 3)):
-    # Not defined in Python 2
-    class ConnectionError(OSError):
-        pass
-
-
-class AccessError(OSError):
+class DCORAccessError(BaseException):
     pass
 
 
@@ -76,7 +67,7 @@ class APIHandler(object):
                 if req["success"]:
                     break
             else:
-                raise AccessError("Cannot access {}: {}".format(
+                raise DCORAccessError("Cannot access {}: {}".format(
                     query, req["error"]["message"]))
             result = req["result"]
             if query in APIHandler.cache_queries:

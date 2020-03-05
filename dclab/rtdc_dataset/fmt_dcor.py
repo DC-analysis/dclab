@@ -29,32 +29,55 @@ if (sys.version_info[0] < 3
         pass
 
 
+class AccessError(OSError):
+    pass
+
+
 class APIHandler(object):
     """Handles the DCOR api with caching for simple queries"""
-    cache_queries = ["metadata", "size", "feature_list"]
+    #: these are cached to minimize network usage
+    cache_queries = ["metadata", "size", "feature_list", "valid"]
+    #: DCOR API Keys in the current session
+    api_keys = []
 
-    def __init__(self, url, api_headers):
+    def __init__(self, url, api_key=""):
         self.url = url
-        self.api_headers = api_headers
+        self.api_key = api_key
         self._cache = {}
+
+    @classmethod
+    def add_api_key(cls, api_key):
+        """Add an API Key to the base class
+
+        When accessing the DCOR API, all available API Keys are
+        used to access a resource (trial and error).
+        """
+        APIHandler.api_keys.append(api_key)
+
+    def _get(self, query, feat=None, trace=None, event=None, api_key=""):
+        qstr = "&query={}".format(query)
+        if feat is not None:
+            qstr += "&feature={}".format(feat)
+        if trace is not None:
+            qstr += "&trace={}".format(trace)
+        if event is not None:
+            qstr += "&event={}".format(event)
+        apicall = self.url + qstr
+        req = requests.get(apicall, headers={"Authorization": api_key})
+        return req.json()
 
     def get(self, query, feat=None, trace=None, event=None):
         if query in APIHandler.cache_queries and query in self._cache:
             result = self._cache[query]
         else:
-            qstr = "&query={}".format(query)
-            if feat is not None:
-                qstr += "&feature={}".format(feat)
-            if trace is not None:
-                qstr += "&trace={}".format(trace)
-            if event is not None:
-                qstr += "&event={}".format(event)
-            apicall = self.url + qstr
-            req = requests.get(apicall, headers=self.api_headers)
-            if not req.ok:
-                raise ConnectionError("Error accessing {}: {}".format(
-                    apicall, req.reason))
-            result = req.json()["result"]
+            for api_key in [self.api_key] + APIHandler.api_keys:
+                req = self._get(query, feat, trace, event, api_key)
+                if req["success"]:
+                    break
+            else:
+                raise AccessError("Cannot access {}: {}".format(
+                    query, req["error"]["message"]))
+            result = req["result"]
             if query in APIHandler.cache_queries:
                 self._cache[query] = result
         return result
@@ -198,8 +221,7 @@ class RTDC_DCOR(RTDCBase):
 
         self._hash = None
         self.path = RTDC_DCOR.get_full_url(url, use_ssl, host)
-        self.api = APIHandler(url=self.path,
-                              api_headers={"Authorization": api_key})
+        self.api = APIHandler(url=self.path, api_key=api_key)
 
         # Parse configuration
         self.config = Configuration(cfg=self.api.get(query="metadata"))

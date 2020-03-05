@@ -84,6 +84,14 @@ def test_url():
         url="example.com/api/3/action/dcserv?id=123456",
         use_ssl=True,
         host="example.com") == target
+    assert RTDC_DCOR.get_full_url(
+        url="https://example.com/api/3/action/dcserv?id=123456",
+        use_ssl=None,
+        host="example.com") == target
+    assert RTDC_DCOR.get_full_url(
+        url="123456",
+        use_ssl=None,
+        host="example.com") == target
     target2 = "http://example.com/api/3/action/dcserv?id=123456"
     assert RTDC_DCOR.get_full_url(
         url="example.com/api/3/action/dcserv?id=123456",
@@ -92,4 +100,8 @@ def test_url():
     assert RTDC_DCOR.get_full_url(
         url="https://example.com/api/3/action/dcserv?id=123456",
         use_ssl=False,
+        host="example.com") == target2
+    assert RTDC_DCOR.get_full_url(
+        url="http://example.com/api/3/action/dcserv?id=123456",
+        use_ssl=None,
         host="example.com") == target2

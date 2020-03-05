@@ -158,7 +158,7 @@ class FeatureCache(object):
 
 
 class RTDC_DCOR(RTDCBase):
-    def __init__(self, url, use_ssl=True, host="dcor.mpl.mpg.de",
+    def __init__(self, url, use_ssl=None, host="dcor.mpl.mpg.de",
                  api_key="", *args, **kwargs):
         """Wrap around the DCOR API
 
@@ -174,7 +174,8 @@ class RTDC_DCOR(RTDCBase):
             - caab96f6-df12-4299-aa2e-089e390aafd5
         use_ssl: bool
             Set this to False to disable SSL (should only be used for
-            testing)
+            testing). Defaults to None (does not force SSL if the URL
+            starts with "http://").
         host: str
             The host machine (required if the host is not given
             in the URL)
@@ -229,8 +230,32 @@ class RTDC_DCOR(RTDCBase):
 
     @staticmethod
     def get_full_url(url, use_ssl, host):
-        """Return the full URL to a DCOR resource"""
-        if use_ssl:
+        """Return the full URL to a DCOR resource
+
+        Parameters
+        ----------
+        url: str
+            Full URL or resource identifier; valid values are
+
+            - https://dcor.mpl.mpg.de/api/3/action/dcserv?id=caab96f6-
+              df12-4299-aa2e-089e390aafd5'
+            - dcor.mpl.mpg.de/api/3/action/dcserv?id=caab96f6-df12-
+              4299-aa2e-089e390aafd5
+            - caab96f6-df12-4299-aa2e-089e390aafd5
+        use_ssl: bool
+            Set this to False to disable SSL (should only be used for
+            testing). Defaults to None (does not force SSL if the URL
+            starts with "http://").
+        host: str
+            Use this host if it is not specified in `url`
+        """
+        if use_ssl is None:
+            if url.startswith("http://"):
+                # user wanted it that way
+                web = "http"
+            else:
+                web = "https"
+        elif use_ssl:
             web = "https"
         else:
             web = "http"

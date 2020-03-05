@@ -52,7 +52,8 @@ class APIHandler(object):
         When accessing the DCOR API, all available API Keys are
         used to access a resource (trial and error).
         """
-        APIHandler.api_keys.append(api_key)
+        if api_key not in APIHandler.api_keys:
+            APIHandler.api_keys.append(api_key)
 
     def _get(self, query, feat=None, trace=None, event=None, api_key=""):
         qstr = "&query={}".format(query)

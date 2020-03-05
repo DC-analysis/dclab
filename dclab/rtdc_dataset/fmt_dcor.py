@@ -65,6 +65,7 @@ class APIHandler(object):
             for api_key in [self.api_key] + APIHandler.api_keys:
                 req = self._get(query, feat, trace, event, api_key)
                 if req["success"]:
+                    self.api_key = api_key  # remember working key
                     break
             else:
                 raise DCORAccessError("Cannot access {}: {}".format(

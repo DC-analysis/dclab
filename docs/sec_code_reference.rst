@@ -95,6 +95,21 @@ Base class
 .. autoclass:: dclab.rtdc_dataset.RTDCBase
     :members:
 
+
+.. _sec_ref_rtdc_dataset_dcor:
+
+DCOR (online) format
+--------------------
+
+.. autoclass:: dclab.rtdc_dataset.RTDC_DCOR
+    :members:
+
+
+.. autoclass:: dclab.rtdc_dataset.fmt_dcor.APIHandler
+    :members:
+
+
+
 Dictionary format
 -----------------
 
@@ -104,7 +119,7 @@ HDF5 (.rtdc) format
 -------------------
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_HDF5
-    :members: parse_config
+    :members:
 
 .. autodata:: dclab.rtdc_dataset.fmt_hdf5.MIN_DCLAB_EXPORT_VERSION
 

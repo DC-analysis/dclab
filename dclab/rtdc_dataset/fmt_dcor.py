@@ -183,18 +183,17 @@ class RTDC_DCOR(RTDCBase):
         url: str
             Full URL or resource identifier; valid values are
 
-            - https://dcor.mpl.mpg.de/api/3/action/dcserv?id=caab96f6-
-              df12-4299-aa2e-089e390aafd5'
-            - dcor.mpl.mpg.de/api/3/action/dcserv?id=caab96f6-df12-
-              4299-aa2e-089e390aafd5
-            - caab96f6-df12-4299-aa2e-089e390aafd5
+            - `<https://dcor.mpl.mpg.de/api/3/action/dcserv?id=
+              b1404eb5-f661-4920-be79-5ff4e85915d5>`_
+            - dcor.mpl.mpg.de/api/3/action/dcserv?id=b1404eb5-f
+              661-4920-be79-5ff4e85915d5
+            - b1404eb5-f661-4920-be79-5ff4e85915d5
         use_ssl: bool
             Set this to False to disable SSL (should only be used for
             testing). Defaults to None (does not force SSL if the URL
             starts with "http://").
         host: str
-            The host machine (required if the host is not given
-            in the URL)
+            The host machine (used if the host is not given in `url`)
         api_key: str
             API key to access private resources
         *args:

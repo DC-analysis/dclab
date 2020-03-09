@@ -1,5 +1,6 @@
 0.22.1
  - enh: remember working API Key
+ - docs: document DCOR format
 0.22.0
  - feat: implement DCOR client
  - enh: improved .rtdc file format detection (with wrong extension)

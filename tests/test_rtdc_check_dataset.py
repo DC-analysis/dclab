@@ -71,7 +71,11 @@ def test_exact():
         "Metadata: Missing key [setup] 'identifier'",
         "Metadata: Missing key [setup] 'module composition'",
     ]
-    known_info = ['Data file format: tdms', 'Fluorescence: True']
+    known_info = [
+        'Compression: No',
+        'Data file format: tdms',
+        'Fluorescence: True',
+        ]
     assert set(viol) == set(known_viol)
     assert set(aler) == set(known_aler)
     assert set(info) == set(known_info)
@@ -316,7 +320,11 @@ def test_missing_file():
 def test_no_fluorescence():
     h5path = retrieve_data("rtdc_data_minimal.zip")
     _, _, info = check_dataset(h5path)
-    known_info = ['Data file format: tdms', 'Fluorescence: False']
+    known_info = [
+        'Compression: No',
+        'Data file format: tdms',
+        'Fluorescence: False',
+        ]
     assert set(info) == set(known_info)
     cleanup()
 

@@ -203,7 +203,7 @@ class IntegrityChecker(object):
                 return comp, noco
             comp, noco = iter_count_compression(self.ds._h5)
             if noco == 0:
-                compression = "Full"
+                compression = "All"
             elif comp == 0:
                 compression = "None"
             else:

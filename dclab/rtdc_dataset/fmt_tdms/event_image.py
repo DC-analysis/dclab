@@ -12,12 +12,10 @@ import warnings
 import numpy as np
 import imageio
 
+from .exc import InvalidVideoFileError
+
 
 ISWIN = sys.platform.startswith("win")
-
-
-class InvalidVideoFileError(BaseException):
-    pass
 
 
 class CorruptFrameWarning(UserWarning):

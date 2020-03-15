@@ -179,6 +179,43 @@ class IntegrityChecker(object):
                 cues += funcs[ff](self, **kwargs)
         return sorted(cues)
 
+    def check_compression(self, **kwargs):
+        cues = []
+        if self.ds.format == "tdms":
+            compression = "No"
+        elif self.ds.format == "hdf5":
+            def iter_count_compression(h5):
+                comp = 0
+                noco = 0
+                for key in h5:
+                    obj = h5[key]
+                    if isinstance(obj, h5py.Dataset):
+                        if obj.compression is None:
+                            noco += 1
+                        else:
+                            comp += 1
+                    elif isinstance(obj, h5py.Group):
+                        coi, noi = iter_count_compression(obj)
+                        comp += coi
+                        noco += noi
+                    else:
+                        raise ValueError("Unknown object: {}".format(obj))
+                return comp, noco
+            comp, noco = iter_count_compression(self.ds._h5)
+            if noco == 0:
+                compression = "Full"
+            elif comp == 0:
+                compression = "None"
+            else:
+                compression = "Partial ({} of {})".format(comp, noco+comp)
+        else:
+            compression = "Unknown"
+        cues.append(ICue(
+            msg="Compression: {}".format(compression),
+            level="info",
+            category="general"))
+        return cues
+
     def check_feature_size(self, **kwargs):
         cues = []
         lends = len(self.ds)

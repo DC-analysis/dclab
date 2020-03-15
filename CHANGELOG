@@ -1,3 +1,7 @@
+0.22.2
+ - fix: minor issue with dclab-verify-dataset when nptdms was not
+   installed and an exception occured
+ - enh: dclab-verify-dataset shows some info on data compression
 0.22.1
  - enh: remember working API Key
  - docs: document DCOR format

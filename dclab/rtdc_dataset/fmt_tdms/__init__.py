@@ -8,8 +8,10 @@ import time
 
 from ...compat import PyImportError
 
+from .exc import ContourIndexingError  # noqa:F401
 from .exc import InvalidTDMSFileFormatError  # noqa:F401
 from .exc import IncompleteTDMSFileFormatError  # noqa:F401
+from .exc import InvalidVideoFileError  # noqa:F401
 
 try:
     import nptdms

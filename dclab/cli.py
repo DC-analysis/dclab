@@ -550,9 +550,9 @@ def verify_dataset():
         print_violation("Invalid tdms file format!")
     except fmt_tdms.IncompleteTDMSFileFormatError:
         print_violation("Incomplete dataset!")
-    except fmt_tdms.event_contour.ContourIndexingError:
+    except fmt_tdms.ContourIndexingError:
         print_violation("Invalid contour data!")
-    except fmt_tdms.event_image.InvalidVideoFileError:
+    except fmt_tdms.InvalidVideoFileError:
         print_violation("Invalid image data!")
     else:
         for inf in info:

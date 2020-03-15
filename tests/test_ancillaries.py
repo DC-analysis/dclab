@@ -599,7 +599,6 @@ def test_volume():
 
 
 if __name__ == "__main__":
-    test_fl_crosstalk_2chan()
     # Run all tests
     loc = locals()
     for key in list(loc.keys()):

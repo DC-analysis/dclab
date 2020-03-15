@@ -10,12 +10,10 @@ import numpy as np
 
 from ...features import inert_ratio
 
+from .exc import ContourIndexingError
+
 
 class ContourVerificationWarning(UserWarning):
-    pass
-
-
-class ContourIndexingError(BaseException):
     pass
 
 

@@ -16,6 +16,15 @@ from dclab.features.volume import get_volume
 from helper_methods import retrieve_data, cleanup
 
 
+def test_artefact():
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_artefact.zip"))
+    # This would raise a "dclab.features.contour.NoValidContourFoundError:
+    # Event 1, No contour found!" in dclab version <= 0.22.1
+    cont = ds["contour"][1]
+    assert len(cont) == 37, "just to be sure there really is something"
+    cleanup()
+
+
 def test_lazy_contour_basic():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
     masks = ds["mask"][:]

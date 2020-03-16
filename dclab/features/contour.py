@@ -65,10 +65,12 @@ def get_contour(mask):
     contours = []
 
     for mi in mask:
-        c0 = find_contours(mi.transpose(),
-                           level=.9999,
-                           positive_orientation="low",
-                           fully_connected="high")[0]
+        conts = find_contours(mi.transpose(),
+                              level=.9999,
+                              positive_orientation="low",
+                              fully_connected="high")
+        # get the longest contour
+        c0 = sorted(conts, key=lambda x: len(x))[-1]
         # round all coordinates to pixel values
         c1 = np.asarray(np.round(c0), int)
         # remove duplicates

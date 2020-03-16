@@ -1,4 +1,7 @@
 0.22.2
+ - fix: when computing the contour from the mask image, always use
+   the longest contour - critical when the mask image contains
+   artefacts
  - fix: minor issue with dclab-verify-dataset when nptdms was not
    installed and an exception occured
  - enh: dclab-verify-dataset shows some info on data compression

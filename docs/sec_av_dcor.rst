@@ -27,7 +27,7 @@ like so:
 .. code:: python
 
     import dclab
-    ds = dclab.new_dataset("b1404eb5-f661-4920-be79-5ff4e85915d5")
+    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
 
 To determine the DCOR resource id, go to https://dcor.mpl.mpg.de,
 find the resource you are interested in, scroll down to the bottom,
@@ -44,7 +44,7 @@ API Key:
 .. code:: python
 
     import dclab
-    ds = dclab.new_dataset("b1404eb5-f661-4920-be79-5ff4e85915d5",
+    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
                            api_key="XXXX-YYYY-ZZZZ")
 
 You can find your API Key in the left panel of your profile page when
@@ -57,4 +57,4 @@ Alternatively, you can also set the API Key globally using
     import dclab
     from dclab.rtdc_dataset.fmt_dcor import APIHandler
     APIHandler.add_api_key("XXXX-YYYY-ZZZZ")
-    ds = dclab.new_dataset("b1404eb5-f661-4920-be79-5ff4e85915d5")
+    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")

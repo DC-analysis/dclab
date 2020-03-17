@@ -1,3 +1,6 @@
+0.22.3
+ - enh: add `data` property to ICues (and use it when checking for
+   compression)
 0.22.2
  - fix: when computing the contour from the mask image, always use
    the longest contour - critical when the mask image contains

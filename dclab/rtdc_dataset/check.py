@@ -82,11 +82,13 @@ VALID_CHOICES = {
 
 @functools.total_ordering
 class ICue(object):
-    def __init__(self, msg, level, category,
+    def __init__(self, msg, level, category, data=None,
                  cfg_section=None, cfg_key=None, cfg_choices=None):
         """Integrity cue"""
         #: human readable message
         self.msg = msg
+        #: machine-readable data associated with the check
+        self.data = data
         #: severity level ("violation", "alert", or "info")
         self.level = level
         #: fail category
@@ -213,7 +215,11 @@ class IntegrityChecker(object):
         cues.append(ICue(
             msg="Compression: {}".format(compression),
             level="info",
-            category="general"))
+            category="general",
+            data={"compressed": comp,
+                  "total": noco+comp,
+                  "uncompressed": noco,
+                  }))
         return cues
 
     def check_feature_size(self, **kwargs):

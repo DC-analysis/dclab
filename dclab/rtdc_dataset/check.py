@@ -184,7 +184,11 @@ class IntegrityChecker(object):
     def check_compression(self, **kwargs):
         cues = []
         if self.ds.format == "tdms":
-            compression = "No"
+            compression = "None"
+            data = {"compressed": 0,
+                    "total": 1,
+                    "uncompressed": 0,
+                    }
         elif self.ds.format == "hdf5":
             def iter_count_compression(h5):
                 comp = 0
@@ -210,16 +214,18 @@ class IntegrityChecker(object):
                 compression = "None"
             else:
                 compression = "Partial ({} of {})".format(comp, noco+comp)
+            data = {"compressed": comp,
+                    "total": noco+comp,
+                    "uncompressed": noco,
+                    }
         else:
             compression = "Unknown"
+            data = None
         cues.append(ICue(
             msg="Compression: {}".format(compression),
             level="info",
             category="general",
-            data={"compressed": comp,
-                  "total": noco+comp,
-                  "uncompressed": noco,
-                  }))
+            data=data))
         return cues
 
     def check_feature_size(self, **kwargs):

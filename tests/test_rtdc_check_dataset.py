@@ -72,7 +72,7 @@ def test_exact():
         "Metadata: Missing key [setup] 'module composition'",
     ]
     known_info = [
-        'Compression: No',
+        'Compression: None',
         'Data file format: tdms',
         'Fluorescence: True',
         ]
@@ -321,7 +321,7 @@ def test_no_fluorescence():
     h5path = retrieve_data("rtdc_data_minimal.zip")
     _, _, info = check_dataset(h5path)
     known_info = [
-        'Compression: No',
+        'Compression: None',
         'Data file format: tdms',
         'Fluorescence: False',
         ]

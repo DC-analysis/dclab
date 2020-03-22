@@ -267,7 +267,8 @@ def test_emodulus_legacy_viscosity_does_not_matter():
                        rtol=0, atol=1e-15)
 
 
-def test_emodulus_visc_only():
+def test_emodulus_reservoir():
+    """Reservoir measurements should not have emodulus"""
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     # legacy
@@ -278,65 +279,20 @@ def test_emodulus_visc_only():
     ds.config["calculation"] = {"emodulus medium": "CellCarrier",
                                 "emodulus model": "elastic sphere",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5  # irrelevant
+                                "emodulus viscosity": 0.5
                                 }
-    # visc-only
+    assert "emodulus" in ds
     ds2 = dclab.new_dataset(ddict)
     ds2.config["setup"]["flow rate"] = 0.16
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
-    visc = dclab.features.emodulus_viscosity.get_viscosity(
-        medium="CellCarrier",
-        channel_width=30,
-        flow_rate=0.16,
-        temperature=23.0)
-    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
-                                 "emodulus viscosity": visc
+    ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                 "emodulus model": "elastic sphere",
+                                 "emodulus temperature": 23.0,
+                                 "emodulus viscosity": 0.5
                                  }
-    assert np.sum(~np.isnan(ds["emodulus"])) > 0
-    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=1e-15)
-    # ancillary feature priority check
-    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
-        if af.method.__name__ == "compute_emodulus_legacy":
-            assert af.is_available(ds)
-        else:
-            assert not af.is_available(ds)
-        if af.method.__name__ == "compute_emodulus_visc_only":
-            assert af.is_available(ds2)
-        else:
-            assert not af.is_available(ds2)
-
-
-def test_emodulus_visc_only_2():
-    keys = ["area_um", "deform"]
-    ddict = example_data_dict(size=8472, keys=keys)
-    visc = dclab.features.emodulus_viscosity.get_viscosity(
-        medium="CellCarrier",
-        channel_width=30,
-        flow_rate=0.16,
-        temperature=23.0)
-    # legacy
-    ds = dclab.new_dataset(ddict)
-    ds.config["setup"]["flow rate"] = 0.16
-    ds.config["setup"]["channel width"] = 30
-    ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "other",
-                                "emodulus model": "elastic sphere",
-                                "emodulus temperature": 47.0,  # irrelevant
-                                "emodulus viscosity": visc
-                                }
-    # visc-only
-    ds2 = dclab.new_dataset(ddict)
-    ds2.config["setup"]["flow rate"] = 0.16
-    ds2.config["setup"]["channel width"] = 30
-    ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
-                                 "emodulus viscosity": visc
-                                 }
-    assert np.sum(~np.isnan(ds["emodulus"])) > 0
-    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=1e-15)
+    ds2.config["setup"]["chip region"] = "reservoir"
+    assert "emodulus" not in ds2
 
 
 def test_emodulus_temp_feat():
@@ -416,6 +372,78 @@ def test_emodulus_temp_feat_2():
                                  }
     assert np.allclose(ds3["emodulus"][0], ds2["emodulus"][0], rtol=0,
                        atol=6e-14)
+
+
+def test_emodulus_visc_only():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # legacy
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                "emodulus model": "elastic sphere",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity": 0.5  # irrelevant
+                                }
+    # visc-only
+    ds2 = dclab.new_dataset(ddict)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    visc = dclab.features.emodulus_viscosity.get_viscosity(
+        medium="CellCarrier",
+        channel_width=30,
+        flow_rate=0.16,
+        temperature=23.0)
+    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
+                                 "emodulus viscosity": visc
+                                 }
+    assert np.sum(~np.isnan(ds["emodulus"])) > 0
+    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
+                       rtol=0, atol=1e-15)
+    # ancillary feature priority check
+    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+        if af.method.__name__ == "compute_emodulus_legacy":
+            assert af.is_available(ds)
+        else:
+            assert not af.is_available(ds)
+        if af.method.__name__ == "compute_emodulus_visc_only":
+            assert af.is_available(ds2)
+        else:
+            assert not af.is_available(ds2)
+
+
+def test_emodulus_visc_only_2():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    visc = dclab.features.emodulus_viscosity.get_viscosity(
+        medium="CellCarrier",
+        channel_width=30,
+        flow_rate=0.16,
+        temperature=23.0)
+    # legacy
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus medium": "other",
+                                "emodulus model": "elastic sphere",
+                                "emodulus temperature": 47.0,  # irrelevant
+                                "emodulus viscosity": visc
+                                }
+    # visc-only
+    ds2 = dclab.new_dataset(ddict)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
+                                 "emodulus viscosity": visc
+                                 }
+    assert np.sum(~np.isnan(ds["emodulus"])) > 0
+    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
+                       rtol=0, atol=1e-15)
 
 
 def test_fl_crosstalk_2chan():

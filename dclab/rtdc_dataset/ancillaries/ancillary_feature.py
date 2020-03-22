@@ -40,7 +40,7 @@ class AncillaryFeature():
     feature_names = []
 
     def __init__(self, feature_name, method, req_config=[], req_features=[],
-                 priority=0):
+                 req_func=lambda x: True, priority=0):
         """A data feature that is computed from existing data
 
         Parameters
@@ -56,6 +56,15 @@ class AncillaryFeature():
         req_features: list
             Required existing features in the dataset,
             e.g. ["area_cvx", "deform"]
+        req_func: callable
+            A function that takes an instance of `RTDCBase` as an
+            argument and checks whether any other necessary criteria
+            are met. By default, this is a lambda function that returns
+            True. The function should return False if the necessary
+            criteria are not met. You must make sure to use
+            `req_config` and `req_features` whenever possible, because
+            these lists are used for cache hashes. This also implies
+            that `req_func` should not rely on mutable parameters.
         priority: int
             The priority of the feature; if there are multiple
             AncillaryFeature defined for the same feature_name,
@@ -72,6 +81,7 @@ class AncillaryFeature():
         self.method = method
         self.req_config = req_config
         self.req_features = req_features
+        self.req_func = req_func
         self.priority = priority
 
         # register this feature
@@ -231,4 +241,7 @@ class AncillaryFeature():
             else:
                 # other feature
                 continue
+        # Check user-defined function
+        if not self.req_func(rtdc_ds):
+            return False
         return True

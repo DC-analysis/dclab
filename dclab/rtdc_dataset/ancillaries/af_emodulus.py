@@ -93,6 +93,27 @@ def compute_emodulus_visc_only(mm):
     return emod
 
 
+def is_channel(mm):
+    """Check whether the measurement was performed in the channel
+
+    If the chip region is not set, then it is assumed to be a
+    channel measurement (for backwards compatibility and user-
+    friendliness).
+    """
+    if "setup" in mm.config and "chip region" in mm.config["setup"]:
+        region = mm.config["setup"]["chip region"]
+        if region == "channel":
+            # measured in the channel
+            return True
+        else:
+            # measured in the reservoir
+            return False
+    else:
+        # This might be a testing dictionary or someone who is
+        # playing around with data. Avoid disappointments here.
+        return True
+
+
 def register():
     # Please note that registering these things is a delicate business,
     # because the priority has to be chosen carefully.
@@ -106,6 +127,7 @@ def register():
                                  ["imaging", ["pixel size"]],
                                  ["setup", ["flow rate", "channel width"]]
                                  ],
+                     req_func=is_channel,
                      priority=3)
     AncillaryFeature(feature_name="emodulus",
                      method=compute_emodulus_known_media,
@@ -116,6 +138,7 @@ def register():
                                  ["imaging", ["pixel size"]],
                                  ["setup", ["flow rate", "channel width"]]
                                  ],
+                     req_func=is_channel,
                      priority=2)
     AncillaryFeature(feature_name="emodulus",
                      method=compute_emodulus_visc_only,
@@ -125,6 +148,7 @@ def register():
                                  ["imaging", ["pixel size"]],
                                  ["setup", ["flow rate", "channel width"]]
                                  ],
+                     req_func=is_channel,
                      priority=1)
     AncillaryFeature(feature_name="emodulus",
                      method=compute_emodulus_temp_feat,
@@ -134,4 +158,5 @@ def register():
                                  ["imaging", ["pixel size"]],
                                  ["setup", ["flow rate", "channel width"]]
                                  ],
+                     req_func=is_channel,
                      priority=0)

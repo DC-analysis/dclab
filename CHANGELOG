@@ -1,3 +1,9 @@
+0.22.4
+ - fix: disable computation of Young's modulus for reservoir
+   measurements (#75)
+ - enh: new keyword argument `req_func` for `AncillaryFeature` to
+   define additional logic for checking whether a feature is
+   available for a given instance of `RTDCBase`.
 0.22.3
  - enh: add `data` property to ICues (and use it when checking for
    compression)

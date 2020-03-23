@@ -15,7 +15,7 @@ from helper_methods import retrieve_data, cleanup
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_config():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert ds.config["setup"]["channel width"] == 30
@@ -26,7 +26,7 @@ def test_config():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_contour_basic():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert len(ds) == 5
@@ -59,7 +59,7 @@ def test_defective_feature_aspect():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_hash():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert ds.hash == "2c436daba22d2c7397b74d53d80f8931"
@@ -68,7 +68,7 @@ def test_hash():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_image_basic():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert np.allclose(np.average(ds["image"][1]), 125.37133333333334)
@@ -115,7 +115,7 @@ def test_no_suffix():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_trace():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert len(ds["trace"]) == 2

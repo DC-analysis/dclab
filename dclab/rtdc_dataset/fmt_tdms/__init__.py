@@ -132,7 +132,7 @@ class RTDC_TDMS(RTDCBase):
         if shpin_set.exists():
             config_paths.append(shpin_set)
 
-        tdms_config = Configuration(files=config_paths)
+        tdms_config = Configuration(files=config_paths, disable_checks=True)
 
         dclab_config = Configuration()
 

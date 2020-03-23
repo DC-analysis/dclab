@@ -6,18 +6,19 @@ from __future__ import print_function, unicode_literals
 
 import os
 import tempfile
+import warnings
 
 import numpy as np
 
 from dclab.rtdc_dataset import new_dataset
-from dclab.rtdc_dataset.config import Configuration, CaseInsensitiveDict
+import dclab.rtdc_dataset.config as dccfg
 
 from helper_methods import retrieve_data, example_data_sets, cleanup
 
 
 def equals(a, b):
     """Compare objects with allclose"""
-    if isinstance(a, (dict, Configuration, CaseInsensitiveDict)):
+    if isinstance(a, (dict, dccfg.Configuration, dccfg.ConfigurationDict)):
         for key in a:
             assert key in b, "key not in b"
             assert equals(a[key], b[key])
@@ -37,13 +38,27 @@ def test_config_basic():
     cleanup()
 
 
+def test_config_invalid_key():
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+        # Trigger a warning.
+        ds.config["setup"]["invalid_key"] = "picard"
+        # Verify some things
+        assert len(w) == 1
+        assert issubclass(w[-1].category, dccfg.UnknownConfigurationKeyWarning)
+        assert "invalid_key" in str(w[-1].message)
+    cleanup()
+
+
 def test_config_save_load():
     # Download and extract data
     tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
     cfg_file = tempfile.mktemp(prefix="test_dclab_rtdc_config_")
     ds.config.save(cfg_file)
-    loaded = Configuration(files=[cfg_file])
+    loaded = dccfg.Configuration(files=[cfg_file])
     assert equals(loaded, ds.config)
     cleanup()
     try:

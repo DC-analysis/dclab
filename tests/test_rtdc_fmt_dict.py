@@ -25,12 +25,12 @@ def test_min_max_update():
     ds = new_dataset(ddict)
     cfg = ds.config.copy()
 
-    # Force updating circularity
-    cfg["filtering"]["defo min"] = .4
-    cfg["filtering"]["defo max"] = .8
+    cfg["filtering"]["deform min"] = .001
+    cfg["filtering"]["deform max"] = .01
     ds.config.update(cfg)
-
     ds.apply_filter()
+
+    assert ds.filter.all.sum() == 22
 
 
 def test_trace_not_available():

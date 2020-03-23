@@ -26,7 +26,7 @@ def test_event_count():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_contour():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)
@@ -39,7 +39,7 @@ def test_feat_contour():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_image():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)
@@ -52,7 +52,7 @@ def test_feat_image():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_mask():
     path = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
     ds = new_dataset(path)
@@ -65,7 +65,7 @@ def test_feat_mask():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_trace():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)
@@ -80,7 +80,7 @@ def test_feat_trace():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_features_loaded():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)

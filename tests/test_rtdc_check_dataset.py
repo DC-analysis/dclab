@@ -15,7 +15,7 @@ from helper_methods import cleanup, example_data_dict, retrieve_data
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.fmt_hdf5.UnknownKeyWarning')
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_basic():
     h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     viol, aler, info = check_dataset(h5path)

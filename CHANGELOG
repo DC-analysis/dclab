@@ -1,3 +1,12 @@
+0.22.5
+ - enh: add checks for valid keys in the Configuration dictionary
+   of a dataset `RTDCBase().config`; unknown keys will issue
+   an UnknownConfigurationKeyWarning (#58)
+ - ref: moved `rtdc_dataset.fmt_hdf5.UnknownKeyWarning` to
+   `rtdc_dataset.config.UnknownConfigurationKeyWarning`
+ - ref: renamed `rtdc_dataset.config.CaseInsensitiveDict`
+   to `rtdc_dataset.config.ConfigurationDict` and added option
+   to check new keys
 0.22.4
  - fix: disable computation of Young's modulus for reservoir
    measurements (#75)
@@ -453,4 +462,3 @@
  - Add support for limiting amount of data points analyzed
    with the configuration keyword "Limit Events"
  - Comments refer to "events" instead of "points" from now on
-

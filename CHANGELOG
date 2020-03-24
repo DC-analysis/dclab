@@ -1,3 +1,6 @@
+0.22.6
+ - fix: data export to HDF5 did not work when the "frame rate"
+   is not given in the configuration
 0.22.5
  - enh: add checks for valid keys in the Configuration dictionary
    of a dataset `RTDCBase().config`; unknown keys will issue

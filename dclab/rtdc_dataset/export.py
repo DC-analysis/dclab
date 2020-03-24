@@ -434,7 +434,11 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
               mode="append",
               compression=compression)
     elif feat == "frame":
-        fr = rtdc_ds.config["imaging"]["frame rate"]
+        if time_offset != 0:
+            # Only get the frame rate when we actually need it.
+            fr = rtdc_ds.config["imaging"]["frame rate"]
+        else:
+            fr = 0
         frame_offset = time_offset * fr
         write(h5obj,
               data={"frame": rtdc_ds["frame"][filtarr] + frame_offset},

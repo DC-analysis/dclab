@@ -7,6 +7,7 @@ import copy
 import functools
 
 import h5py
+import numpy as np
 
 from .core import RTDCBase
 from .load import load_file
@@ -350,6 +351,28 @@ class IntegrityChecker(object):
                             category="metadata wrong",
                             cfg_section="fluorescence",
                             cfg_key="samples per event"))
+        return cues
+
+    def check_flow_rate(self, **kwargs):
+        """Make sure sheath and sample flow rates add up"""
+        cues = []
+        if ("setup" in self.ds.config
+            and "flow rate" in self.ds.config["setup"]
+            and "flow rate sample" in self.ds.config["setup"]
+                and "flow rate sheath" in self.ds.config["setup"]):
+            frsum = self.ds.config["setup"]["flow rate"]
+            frsam = self.ds.config["setup"]["flow rate sample"]
+            frshe = self.ds.config["setup"]["flow rate sheath"]
+            if not np.allclose(frsum, frsam+frshe):
+                for k in ["flow rate", "flow rate sheath", "flow rate sample"]:
+                    cues.append(ICue(
+                        msg="Metadata: Flow rates don't add up (sheath "
+                            + "{:g} + sample {:g} != channel {:g})".format(
+                                frshe, frsam, frsum),
+                        level="alert",
+                        category="metadata wrong",
+                        cfg_section="setup",
+                        cfg_key=k))
         return cues
 
     def check_fmt_hdf5(self, **kwargs):

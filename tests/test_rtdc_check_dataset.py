@@ -33,14 +33,18 @@ def test_basic():
     # "HDF5: '/image': attribute 'CLASS' should be fixed-length ASCII string",
     # "HDF5: '/image': attribute 'IMAGE_SUBCLASS' should be fixed-length ...
     # "HDF5: '/image': attribute 'IMAGE_VERSION' should be fixed-length ...
+    # "Metadata: Flow rates don't add up (sh 0.6 + sam 0.1 != channel 0.16)",
+    # "Metadata: Flow rates don't add up (sh 0.6 + sam 0.1 != channel 0.16)",
+    # "Metadata: Flow rates don't add up (sh 0.6 + sam 0.1 != channel 0.16)",
     # "Metadata: Missing key [fluorescence] 'channel 1 name'",
     # "Metadata: Missing key [fluorescence] 'channel 2 name'",
     # "Metadata: Missing key [fluorescence] 'channel 3 name'",
     # "Metadata: Missing key [setup] 'identifier'",
     # "Metadata: Missing section 'online_contour'"
-    assert len(aler) == 8
+    assert len(aler) == 11
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
+    assert "Compression: Partial (1 of 25)" in info
     cleanup()
 
 

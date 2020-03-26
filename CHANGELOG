@@ -1,3 +1,6 @@
+0.22.7
+ - enh: dclab-verify-dataset now also checks whether the sheath and
+   sample flow rates add up to the channel flow rate
 0.22.6
  - fix: data export to HDF5 did not work when the "frame rate"
    is not given in the configuration

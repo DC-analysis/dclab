@@ -88,7 +88,7 @@ class TraceColumn(object):
             # when looking at code structure.
             mdata = TdmsFile(str(mname))
             try:
-                sampleids = mdata.object("Cell Track", "FL1index").data
+                sampleids = mdata["Cell Track"]["FL1index"].data
             except KeyError:
                 raise InvalidTDMSFileFormatError(
                     "No 'FL1index' column in '{}'!".format(tname))
@@ -111,7 +111,7 @@ class TraceColumn(object):
                 for trace_key in dfn.FLUOR_TRACES:
                     group, ch = naming.tr_data_map[trace_key]
                     try:
-                        trdat = tdata.object(group, ch).data
+                        trdat = tdata[group][ch].data
                     except KeyError:
                         pass
                     else:

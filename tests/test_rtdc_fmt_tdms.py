@@ -435,28 +435,32 @@ def test_trace_wrong_samples_per_event():
     """
     tdms = retrieve_data("rtdc_data_traces_video.zip")
     mdata = nptdms.TdmsFile(str(tdms))
-    objects = [obj for obj in mdata.objects.values()]
+
+    channels = []
+    # recreate channels, because the data type might not be correct
+    for ch in mdata.groups()[0].channels():
+        channels.append(nptdms.ChannelObject("Cell Track", ch.name, ch.data))
 
     # blank write same data to test that modification works
     with nptdms.TdmsWriter(str(tdms)) as tdms_writer:
-        tdms_writer.write_segment(objects)
+        tdms_writer.write_segment(channels)
 
     with dclab.new_dataset(tdms) as ds:
         assert "trace" in ds
 
     # modify objects
-    sampleids = mdata.object("Cell Track", "FL1index").data
+    sampleids = mdata["Cell Track"]["FL1index"].data
     sampleids[0] = 10
     sampleids[1] = 20
     sampleids[2] = 40
-    objects2 = []
-    for obj in objects:
-        if obj.channel == "FL1index":
+    wchannels = []
+    for ch in channels:
+        if ch.channel == "FL1index":
             nptdms.ChannelObject("Cell Track", "FL1index", sampleids)
-        objects2.append(obj)
+        wchannels.append(ch)
 
     with nptdms.TdmsWriter(str(tdms)) as tdms_writer:
-        tdms_writer.write_segment(objects2)
+        tdms_writer.write_segment(wchannels)
 
     with dclab.new_dataset(tdms) as ds:
         assert "trace" not in ds

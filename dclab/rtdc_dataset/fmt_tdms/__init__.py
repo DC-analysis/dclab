@@ -107,7 +107,7 @@ class RTDC_TDMS(RTDCBase):
         # Edit naming.dclab2tdms to add features
         for arg in naming.tdms2dclab:
             try:
-                data = tdms_file.object(table, arg).data
+                data = tdms_file[table][arg].data
             except KeyError:
                 pass
             else:

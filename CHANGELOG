@@ -6,6 +6,7 @@
    dclab-verify-dataset will not anymore check them actively.
    Instead, any warning issued when opening a file is added
    to the list of cues.
+ - setup: bump nptdms to 0.23.0
 0.22.6
  - fix: data export to HDF5 did not work when the "frame rate"
    is not given in the configuration

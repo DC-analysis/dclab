@@ -26,10 +26,8 @@ def test_basic():
     # Metadata: Missing key [fluorescence] 'laser count'
     # Metadata: Missing key [fluorescence] 'lasers installed'
     # Metadata: Missing key [fluorescence] 'samples per event'
-    # Metadata: Unknown key [imaging] 'exposure time'
-    # Metadata: Unknown key [imaging] 'flash current'
     # Metadata: fluorescence channel count inconsistent
-    assert len(viol) == 10
+    assert len(viol) == 8
     # "HDF5: '/image': attribute 'CLASS' should be fixed-length ASCII string",
     # "HDF5: '/image': attribute 'IMAGE_SUBCLASS' should be fixed-length ...
     # "HDF5: '/image': attribute 'IMAGE_VERSION' should be fixed-length ...
@@ -41,7 +39,9 @@ def test_basic():
     # "Metadata: Missing key [fluorescence] 'channel 3 name'",
     # "Metadata: Missing key [setup] 'identifier'",
     # "Metadata: Missing section 'online_contour'"
-    assert len(aler) == 11
+    # "UnknownConfigurationKeyWarning: Unknown key 'exposure time' ...",
+    # "UnknownConfigurationKeyWarning: Unknown key 'flash current' ...",
+    assert len(aler) == 13
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     assert "Compression: Partial (1 of 25)" in info

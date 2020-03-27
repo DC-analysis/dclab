@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import copy
 import functools
+import warnings
 
 import h5py
 import numpy as np
@@ -143,12 +144,34 @@ class ICue(object):
 
 class IntegrityChecker(object):
     def __init__(self, path_or_ds):
-        """Check the integrity of a dataset"""
+        """Check the integrity of a dataset
+
+        The argument must be either a path to an .rtdc or .tdms file
+        or an instance of `RTDCBase`. If a path is given, then all
+        warnings (e.g. UnknownConfigurationKeyWarning) are catched
+        and added to the cue list.
+
+        Usage:
+
+        .. code:: python
+
+            ic = IntegrityChecker("/path/to/data.rtdc")
+            cues = ic.check()
+
+        """
+        self.warn_cues = []
         if isinstance(path_or_ds, RTDCBase):
             self.ds = path_or_ds
             self.finally_close = False
         else:
-            self.ds = load_file(path_or_ds)
+            with warnings.catch_warnings(record=True) as ws:
+                warnings.simplefilter("always")
+                self.ds = load_file(path_or_ds)
+                for ww in ws:
+                    self.warn_cues.append(ICue(
+                        msg="{}: {}".format(ww.category.__name__, ww.message),
+                        level="alert",
+                        category="warning"))
             self.finally_close = True
 
     def __enter__(self):
@@ -171,7 +194,14 @@ class IntegrityChecker(object):
         return fl
 
     def check(self, **kwargs):
-        """perform all checks"""
+        """Run all checks
+
+        This method calls all class methods that start with `check_`.
+        `kwargs` are passed to all methods. Possible options are:
+
+        - "expand_section" `bool`: add a cue for every missing
+          metadata key if a section is missing
+        """
         cues = []
         funcs = IntegrityChecker.__dict__
         for ff in sorted(funcs.keys()):
@@ -180,7 +210,7 @@ class IntegrityChecker(object):
                 continue
             elif ff.startswith("check_"):
                 cues += funcs[ff](self, **kwargs)
-        return sorted(cues)
+        return sorted(self.warn_cues + cues)
 
     def check_compression(self, **kwargs):
         cues = []
@@ -447,14 +477,6 @@ class IntegrityChecker(object):
                     # - properly test against analysis keywords
                     #   (filtering, calculation)
                     pass
-                elif (sec not in dfn.config_keys or
-                      key not in dfn.config_keys[sec]):
-                    cues.append(ICue(
-                        msg="Metadata: Unknown key [{}] '{}'".format(sec, key),
-                        level="violation",
-                        category="metadata unknown",
-                        cfg_section=sec,
-                        cfg_key=key))
                 elif not isinstance(self.ds.config[sec][key],
                                     dfn.config_types[sec][key]):
                     cues.append(ICue(

@@ -37,8 +37,12 @@ class ConfigurationDict(dict):
     def __setitem__(self, key, value):
         key = self.__class__._k(key)
         if self.section:
-            verify_section_key(self.section, key)
-        super(ConfigurationDict, self).__setitem__(key, value)
+            valid = verify_section_key(self.section, key)
+        else:
+            valid = True
+        if valid:
+            # only set valid keys
+            super(ConfigurationDict, self).__setitem__(key, value)
 
     def __delitem__(self, key):
         return super(ConfigurationDict,
@@ -246,6 +250,8 @@ class CaseInsensitiveDict(ConfigurationDict):
 
 
 def verify_section_key(section, key):
+    """Return True if the section-key combination exists"""
+    wcount = 0
     if section in dfn.config_keys and key in dfn.config_keys[section]:
         pass
     elif section in ["plotting", "analysis"]:
@@ -253,7 +259,7 @@ def verify_section_key(section, key):
             # hijacked by Shape-Out 1
             warnings.warn("The '{}' configuration key is deprecated!".format(
                 section), UnknownConfigurationKeyWarning)
-        pass
+            wcount += 1
     elif section == "filtering":
         if key.endswith(" min") or key.endswith(" max"):
             feat = key[:-4]
@@ -262,23 +268,30 @@ def verify_section_key(section, key):
                     "A range has been specified for an unknown feature "
                     + "'{}' in the 'filtering' section!".format(feat),
                     UnknownConfigurationKeyWarning)
+                wcount += 1
         elif key == "limit events auto":
             # Shape-Out 1 used this to limit the number of events to
             # a common minimum.
             if sys.version_info[0] != 2:
                 warnings.warn("The 'limit events auto' configuration key "
                               " in the 'filtering' section is deprecated!")
+                wcount += 1
         else:
             warnings.warn(
                 "Unknown key '{}' in the 'filtering' section!".format(key),
                 UnknownConfigurationKeyWarning)
+            wcount += 1
     elif section not in dfn.config_keys:
         warnings.warn("Unknown section '{}'!".format(section),
                       UnknownConfigurationKeyWarning)
+        wcount += 1
     else:
         warnings.warn(
             "Unknown key '{}' in the '{}' section!".format(key, section),
             UnknownConfigurationKeyWarning)
+        wcount += 1
+
+    return wcount == 0
 
 
 def load_from_file(cfg_file):

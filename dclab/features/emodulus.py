@@ -34,7 +34,7 @@ def convert(area_um, deform, channel_width_in, channel_width_out,
         Young's Modulus [kPa]
     flow_rate_in: float
         Original flow rate [µl/s]
-    flow_rate_in: float
+    flow_rate_out: float
         Target flow rate [µl/s]
     viscosity_in: float
         Original viscosity [mPa*s]

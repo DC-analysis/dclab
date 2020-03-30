@@ -15,7 +15,7 @@ kwargs = {"col1": "area_um",  # x-axis
           "col2": "deform",  # y-axis
           "channel_width": 20,  # [um]
           "flow_rate": 0.04,  # [ul/s]
-          "viscosity": 15,  # [Pa s]
+          "viscosity": 15,  # [mPa s]
           "add_px_err": False  # no pixelation error
           }
 

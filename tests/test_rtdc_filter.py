@@ -83,8 +83,8 @@ def test_nan_warning():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         ds.apply_filter()
-        assert w[0].category == dclab.rtdc_dataset.filter.NanWarning
         assert str(w[0].message).count("area_um")
+        assert w[0].category == dclab.rtdc_dataset.filter.NanWarning
     assert np.sum(ds.filter.all) == 4255
 
 

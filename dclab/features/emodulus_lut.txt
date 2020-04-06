@@ -20,7 +20,7 @@
 # - flow rate [ul/s]: 0.04
 # - viscosity [mPa*s]: 15
 # - method: numerical
-# - method details: FEM
+# - method details: FEM, linear elastic model
 #
 # apparent_area_um^2 deformation elastic_modulus_kPa
 3.39547e+01 6.76000e-03 2.52036e+00

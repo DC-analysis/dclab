@@ -183,25 +183,36 @@ downsampling
 features
 --------
 
+image-based
+...........
+
 .. autofunction:: dclab.features.contour.get_contour
 
 .. autofunction:: dclab.features.bright.get_bright
-
-.. autofunction:: dclab.features.emodulus.get_emodulus
-
-.. autofunction:: dclab.features.emodulus_viscosity.get_viscosity
-
-.. autodata:: dclab.features.emodulus_viscosity.KNOWN_MEDIA
-
-.. autofunction:: dclab.features.fl_crosstalk.correct_crosstalk
-
-.. autofunction:: dclab.features.fl_crosstalk.get_compensation_matrix
 
 .. autofunction:: dclab.features.inert_ratio.get_inert_ratio_cvx
 
 .. autofunction:: dclab.features.inert_ratio.get_inert_ratio_raw
 
 .. autofunction:: dclab.features.volume.get_volume
+
+
+emodulus
+........
+
+.. automodule:: dclab.features.emodulus
+    :members:
+
+.. automodule:: dclab.features.emodulus_viscosity
+    :members:
+
+
+fluorescence
+............
+
+.. autofunction:: dclab.features.fl_crosstalk.correct_crosstalk
+
+.. autofunction:: dclab.features.fl_crosstalk.get_compensation_matrix
 
 
 

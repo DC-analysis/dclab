@@ -6,11 +6,22 @@ from __future__ import division, print_function, unicode_literals
 import numbers
 import pathlib
 from pkg_resources import resource_filename
+import warnings
 
 import numpy as np
 import scipy.interpolate as spint
 
 from .emodulus_viscosity import get_viscosity
+
+
+#: Set this to True to globally enable spline extrapolation when the
+#: `area_um`/`deform` data are outside of a LUT. This is discouraged and
+#: a :class:`KnowWhatYouAreDoingWarning` warning will be issued.
+INACCURATE_SPLINE_EXTRAPOLATION = False
+
+
+class KnowWhatYouAreDoingWarning(UserWarning):
+    pass
 
 
 def convert(area_um, deform, channel_width_in, channel_width_out,
@@ -138,9 +149,72 @@ def corrpix_deform_delta(area_um, px_um=0.34):
     return delta
 
 
-def get_emodulus(area_um, deform, medium="CellCarrier",
-                 channel_width=20.0, flow_rate=0.16, px_um=0.34,
-                 temperature=23.0, copy=True):
+def extrapolate_emodulus(lut, area_um, deform, emod, deform_norm,
+                         deform_thresh=.05, inplace=True):
+    """Use spline interpolation to fill in nan-values
+
+    When points (`area_um`, `deform`) are outside the convex
+    hull of the lut, then :func:`scipy.interpolate.griddata` returns
+    nan-valules.
+
+    With this function, some of these nan-values are extrapolated
+    using :class:`scipy.interpolate.SmoothBivariateSpline`. The
+    supported extrapolation values are currently limited to those
+    where the deformation is above 0.05.
+
+    A warning will be issued, because this is not really
+    recommended.
+
+    Parameters
+    ----------
+    lut: ndarray of shape (N, 3)
+        The normalized (!! see :func:`normalize`) LUT (first axis is
+        points, second axis enumerates area_um, deform, and emodulus)
+    area_um: ndarray of size N
+        The normalized area_um (corresponding to `lut[:, 0]`)
+    deform: ndarray of size N
+        The normalized deform (corresponding to `lut[:, 1]`)
+    emod: ndarray of size N
+        The emodulus (corresponding to `lut[:, 2]`); If `emod`
+        does not contain nan-values, there is nothing to do here.
+    deform_norm: float
+        The normalization value used to normalize `lut[:, 1]` and
+        `deform`.
+    deform_thresh: float
+        Not the entire LUT is used for bivariate spline interpolation.
+        Only the points where `lut[:, 1] > deform_thresh/deform_norm`
+        are used. This is necessary, because for small deformations,
+        the LUT has an extreme slope that kills any meaningful
+        spline interpolation.
+    """
+    if not inplace:
+        emod = np.array(emod, copy=True)
+    # unknowns are nans and deformation values above the threshold
+    unkn = np.logical_and(np.isnan(emod),
+                          deform > deform_thresh/deform_norm)
+
+    if np.sum(unkn) == 0:
+        # nothing to do
+        return emod
+
+    warnings.warn("LUT extrapolation is barely tested and may yield "
+                  + "unphysical values!",
+                  KnowWhatYouAreDoingWarning)
+
+    lut_crop = lut[lut[:, 1] > deform_thresh/deform_norm, :]
+
+    itp = spint.SmoothBivariateSpline(x=lut_crop[:, 0],
+                                      y=lut_crop[:, 1],
+                                      z=lut_crop[:, 2],
+                                      )
+
+    emod[unkn] = itp.ev(area_um[unkn], deform[unkn])
+    return emod
+
+
+def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
+                 flow_rate=0.16, px_um=0.34, temperature=23.0,
+                 extrapolate=INACCURATE_SPLINE_EXTRAPOLATION, copy=True):
     """Compute apparent Young's modulus using a look-up table
 
     Parameters
@@ -163,6 +237,9 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
         Set to zero to disable.
     temperature: float, ndarray, or None
         Temperature [°C] of the event(s)
+    extrapolate: bool
+        Perform extrapolation using :func:`extrapolate_emodulus`. This
+        is discouraged!
     copy: bool
         Copy input arrays. If set to false, input arrays are
         overridden.
@@ -191,13 +268,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
     deform = np.array(deform, copy=copy, dtype=float)
     area_um = np.array(area_um, copy=copy, dtype=float)
     # Get lut data
-    lut_path = resource_filename("dclab.features", "emodulus_lut.txt")
-    with pathlib.Path(lut_path).open("rb") as lufd:
-        lut = np.loadtxt(lufd)
-    # These meta data are the simulation parameters of the lut
-    lut_channel_width = 20.0
-    lut_flow_rate = 0.04
-    lut_visco = 15.0
+    lut, lut_meta = load_lut()
     # Compute viscosity
     if isinstance(medium, numbers.Number):
         visco = medium
@@ -220,7 +291,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
             area_um=area_um,
             deform=deform,
             channel_width_in=channel_width,
-            channel_width_out=lut_channel_width,
+            channel_width_out=lut_meta["channel_width"],
             inplace=False)
 
         # Normalize interpolation data such that the spacing for
@@ -238,15 +309,26 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
                               (area_um_4lut, deform_4lut),
                               method='linear')
 
+        if extrapolate:
+            # New in dclab 0.23.0
+            # Allow to extrapolate the emodulus to values outside the LUT.
+            # This is not well-tested and thus discouraged!
+            extrapolate_emodulus(lut=lut,
+                                 area_um=area_um_4lut,
+                                 deform=deform_4lut,
+                                 emod=emod,
+                                 deform_norm=defo_norm,
+                                 inplace=True)
+
         # Convert the LUT-interpolated emodulus back
         convert(area_um=area_um_4lut,
                 deform=deform_4lut,
                 emodulus=emod,
-                channel_width_in=lut_channel_width,
+                channel_width_in=lut_meta["channel_width"],
                 channel_width_out=channel_width,
-                flow_rate_in=lut_flow_rate,
+                flow_rate_in=lut_meta["flow_rate"],
                 flow_rate_out=flow_rate,
-                viscosity_in=lut_visco,
+                viscosity_in=lut_meta["viscosity"],
                 viscosity_out=visco,
                 inplace=True)
     else:
@@ -257,11 +339,11 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
         convert(area_um=lut[:, 0],
                 deform=lut[:, 1],
                 emodulus=lut[:, 2],
-                channel_width_in=lut_channel_width,
+                channel_width_in=lut_meta["channel_width"],
                 channel_width_out=channel_width,
-                flow_rate_in=lut_flow_rate,
+                flow_rate_in=lut_meta["flow_rate"],
                 flow_rate_out=flow_rate,
-                viscosity_in=lut_visco,
+                viscosity_in=lut_meta["viscosity"],
                 viscosity_out=visco,
                 inplace=True)
 
@@ -279,10 +361,40 @@ def get_emodulus(area_um, deform, medium="CellCarrier",
         emod = spint.griddata((lut[:, 0], lut[:, 1]), lut[:, 2],
                               (area_um, deform),
                               method='linear')
+
+        if extrapolate:
+            # New in dclab 0.23.0
+            # Allow to extrapolate the emodulus to values outside the LUT.
+            # This is not well-tested and thus discouraged!
+            extrapolate_emodulus(lut=lut,
+                                 area_um=area_um,
+                                 deform=deform,
+                                 emod=emod,
+                                 deform_norm=defo_norm,
+                                 inplace=True)
+
     return emod
 
 
+def load_lut(name="emodulus_lut.txt"):
+    lut_path = resource_filename("dclab.features", name)
+    with pathlib.Path(lut_path).open("rb") as lufd:
+        lut = np.loadtxt(lufd)
+    # These meta data are the simulation parameters of the lut
+    meta = {}
+    meta["channel_width"] = 20.0
+    meta["flow_rate"] = 0.04
+    meta["viscosity"] = 15.0
+    return lut, meta
+
+
 def normalize(data, dmax):
-    """Perform normalization inplace"""
+    """Perform normalization in-place for interpolation
+
+    Note that :func:`scipy.interpolate.griddata` has a `rescale`
+    option which rescales the data onto the unit cube. For some
+    reason this does not work well with LUT data, so we
+    just normalize it by dividing by the maximum value.
+    """
     data /= dmax
     return data

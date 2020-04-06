@@ -1,3 +1,6 @@
+0.23.0
+ - feat: enable emodulus extrapolation for `area_um`/`deform` values
+   outside of the given LUT.
 0.22.7
  - enh: dclab-verify-dataset now also checks whether the sheath and
    sample flow rates add up to the channel flow rate

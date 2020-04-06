@@ -79,7 +79,7 @@ def test_exact():
         'Compression: None',
         'Data file format: tdms',
         'Fluorescence: True',
-        ]
+    ]
     assert set(viol) == set(known_viol)
     assert set(aler) == set(known_aler)
     assert set(info) == set(known_info)
@@ -328,7 +328,7 @@ def test_no_fluorescence():
         'Compression: None',
         'Data file format: tdms',
         'Fluorescence: False',
-        ]
+    ]
     assert set(info) == set(known_info)
     cleanup()
 

@@ -392,7 +392,7 @@ def test_emodulus_visc_only():
     ds2.config["setup"]["flow rate"] = 0.16
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
-    visc = dclab.features.emodulus_viscosity.get_viscosity(
+    visc = dclab.features.emodulus.viscosity.get_viscosity(
         medium="CellCarrier",
         channel_width=30,
         flow_rate=0.16,
@@ -418,7 +418,7 @@ def test_emodulus_visc_only():
 def test_emodulus_visc_only_2():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
-    visc = dclab.features.emodulus_viscosity.get_viscosity(
+    visc = dclab.features.emodulus.viscosity.get_viscosity(
         medium="CellCarrier",
         channel_width=30,
         flow_rate=0.16,

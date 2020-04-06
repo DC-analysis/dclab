@@ -11,7 +11,7 @@ import warnings
 import numpy as np
 import scipy.interpolate as spint
 
-from .emodulus_viscosity import get_viscosity
+from .viscosity import get_viscosity
 
 
 #: Set this to True to globally enable spline extrapolation when the
@@ -261,7 +261,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
 
     See Also
     --------
-    dclab.features.emodulus_viscosity.get_viscosity: compute viscosity
+    dclab.features.emodulus.viscosity.get_viscosity: compute viscosity
         for known media
     """
     # copy input arrays so we can use in-place calculations
@@ -377,7 +377,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
 
 
 def load_lut(name="emodulus_lut.txt"):
-    lut_path = resource_filename("dclab.features", name)
+    lut_path = resource_filename("dclab.features.emodulus", name)
     with pathlib.Path(lut_path).open("rb") as lufd:
         lut = np.loadtxt(lufd)
     # These meta data are the simulation parameters of the lut

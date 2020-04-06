@@ -38,9 +38,9 @@ def compute_emodulus_known_media(mm):
     model = calccfg["emodulus model"]
     assert model == "elastic sphere"
     medium = calccfg["emodulus medium"]
-    if medium not in features.emodulus_viscosity.KNOWN_MEDIA:
+    if medium not in features.emodulus.viscosity.KNOWN_MEDIA:
         raise ValueError("Only the following media are supported: {}".format(
-                         features.emodulus_viscosity.KNOWN_MEDIA))
+                         features.emodulus.viscosity.KNOWN_MEDIA))
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(
         area_um=mm["area_um"],

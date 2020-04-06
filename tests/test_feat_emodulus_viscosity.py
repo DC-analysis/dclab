@@ -5,7 +5,7 @@ from __future__ import print_function
 import numpy as np
 import warnings
 
-from dclab.features import emodulus_viscosity
+from dclab.features import emodulus
 
 
 def test_cell_carrier():
@@ -20,14 +20,14 @@ def test_cell_carrier():
              5.7, 4.9, 6.9, 5.9, 5.3, 7.3, 6.7, 5.8]
 
     for c, f, t, a in zip(ch_sizes, fl_rates, temps, eta_a):
-        eta = emodulus_viscosity.get_viscosity(medium="CellCarrier",
+        eta = emodulus.viscosity.get_viscosity(medium="CellCarrier",
                                                channel_width=c,
                                                flow_rate=f,
                                                temperature=t)
         assert np.allclose(np.round(eta, 1), a)
 
     for c, f, t, b in zip(ch_sizes, fl_rates, temps, eta_b):
-        eta = emodulus_viscosity.get_viscosity(medium="CellCarrier B",
+        eta = emodulus.viscosity.get_viscosity(medium="CellCarrier B",
                                                channel_width=c,
                                                flow_rate=f,
                                                temperature=t)
@@ -39,26 +39,26 @@ def test_cellcarrier_range():
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(
+        emodulus.viscosity.get_viscosity(
             medium="CellCarrier B", temperature=15)
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(
+        emodulus.viscosity.get_viscosity(
             medium="CellCarrier B", temperature=28)
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(medium="CellCarrier B",
+        emodulus.viscosity.get_viscosity(medium="CellCarrier B",
                                          temperature=np.arange(-2, 10))
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
 
 def test_cellcarrierb_range():
@@ -66,24 +66,24 @@ def test_cellcarrierb_range():
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(medium="CellCarrier", temperature=15)
+        emodulus.viscosity.get_viscosity(medium="CellCarrier", temperature=15)
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(medium="CellCarrier", temperature=28)
+        emodulus.viscosity.get_viscosity(medium="CellCarrier", temperature=28)
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(medium="CellCarrier",
+        emodulus.viscosity.get_viscosity(medium="CellCarrier",
                                          temperature=np.arange(-2, 10))
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
 
 def test_water():
@@ -100,7 +100,7 @@ def test_water():
                     ])
     ref[:, 1] *= 1e-3  # uPas to mPas
 
-    res = emodulus_viscosity.get_viscosity(medium="water",
+    res = emodulus.viscosity.get_viscosity(medium="water",
                                            temperature=ref[:, 0])
     assert np.allclose(res, ref[:, 1], rtol=8e-5, atol=0)
 
@@ -110,24 +110,24 @@ def test_water_range():
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(medium="water", temperature=-1)
+        emodulus.viscosity.get_viscosity(medium="water", temperature=-1)
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(medium="water", temperature=41)
+        emodulus.viscosity.get_viscosity(medium="water", temperature=41)
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus_viscosity.get_viscosity(medium="water",
+        emodulus.viscosity.get_viscosity(medium="water",
                                          temperature=np.arange(-2, 10))
         assert issubclass(w[-1].category,
-                          emodulus_viscosity.TemperatureOutOfRangeWarning)
+                          emodulus.viscosity.TemperatureOutOfRangeWarning)
 
 
 if __name__ == "__main__":

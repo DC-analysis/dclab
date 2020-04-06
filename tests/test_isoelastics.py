@@ -9,7 +9,7 @@ import numpy as np
 
 import dclab
 from dclab import isoelastics as iso
-from dclab.features import emodulus, emodulus_viscosity
+from dclab.features import emodulus
 
 from helper_methods import example_data_dict
 
@@ -202,7 +202,7 @@ def test_with_rtdc():
                                  viscosity=None,
                                  add_px_err=False)
 
-    viscosity = emodulus_viscosity.get_viscosity(
+    viscosity = emodulus.viscosity.get_viscosity(
         medium="CellCarrier",
         channel_width=ds.config["setup"]["channel width"],
         flow_rate=ds.config["setup"]["flow rate"],

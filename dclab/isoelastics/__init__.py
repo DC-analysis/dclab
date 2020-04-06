@@ -12,7 +12,6 @@ import numpy as np
 
 from .. import definitions as dfn
 from ..features import emodulus as feat_emod
-from ..features import emodulus_viscosity as feat_emod_visc
 
 ISOFILES = ["isoel-analytical-area_um-deform.txt",
             "isoel-numerical-area_um-deform.txt",
@@ -344,7 +343,7 @@ class Isoelastics(object):
         cfg = dataset.config
         if viscosity is None:
             if "temperature" in cfg["setup"] and "medium" in cfg["setup"]:
-                viscosity = feat_emod_visc.get_viscosity(
+                viscosity = feat_emod.get_viscosity(
                     medium=cfg["setup"]["medium"],
                     channel_width=cfg["setup"]["channel width"],
                     flow_rate=cfg["setup"]["flow rate"],

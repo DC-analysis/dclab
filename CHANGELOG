@@ -1,3 +1,8 @@
+0.23.1
+ - data: added `scripts/extract_lut_and_iso.py` for extracting
+   Young's modulus LUT and isoelastics from simulation results
+   provided by Lucas Wittwer; this is now the default method for
+   extracting new LUTs and isoelastics
 0.23.0
  - feat: enable emodulus extrapolation for `area_um`/`deform` values
    outside of the given LUT.

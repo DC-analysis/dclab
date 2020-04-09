@@ -5,8 +5,8 @@ that contains the results of FEM simulations. The original HDF5 files
 were provided by Lucas Wittwer. Any LUT added to dclab after version
 0.23.0 was extracted and created using this script.
 
-The following data processing is performed for the LUT (depending on
-the HDF5 root attributes):
+The following data post-processing is performed for the LUT (depending
+on the HDF5 root attributes):
 - If the LUT "model" is "linear elastic" and the LUT "dimensionality"
   is "2Daxis", then the LUT is complemented with analytical values
   from "LUT_analytical_linear-elastic_2Daxis.txt" for small deformation
@@ -24,7 +24,7 @@ the HDF5 root attributes):
   can be reproduced through linear interpolation of the remaining
   values.
 
-The following data processing is performed for the isoelastics:
+The following data post-processing is performed for the isoelastics:
 - If the LUT "model" is "linear elastic" and the LUT "dimensionality"
   is "2Daxis", isoelastics with a maximum deformation above 0.159
   are cropped by a few points (depends on resolution of grid
@@ -48,7 +48,7 @@ import numpy as np
 import scipy.interpolate as spint
 
 
-def get_isoelastics(lut, meta):
+def get_isoelastics(lut, meta, processing=True):
     """Compute equidistant isoelastics from a LUT
 
     The LUT is interpolated on a 200x200 pixel grid and then
@@ -126,11 +126,12 @@ def get_isoelastics(lut, meta):
         ccu[:, 1] = (cc[:, 1] / size * (1 - deform_min) +
                      deform_min) * defo_norm
         # avoid points at the boundary of the LUT for large deformations
-        if (meta["model"] == "linear elastic"
+        if (processing
+            and meta["model"] == "linear elastic"
                 and meta["dimensionality"] == "2Daxis"):
             if ccu[-1, 1] > 0.159:
-                print("...Processing: Cropping isoelastics above deformation "
-                      + "0.159 by {} points.".format(ids))
+                print("...Post-Processing: Cropping isoelastics above "
+                      + "deformation 0.159 by {} points.".format(ids))
                 ccu = ccu[:-ids, :]
         contours.append(ccu)
 
@@ -151,7 +152,7 @@ def get_isoelastics(lut, meta):
     return contours, levels
 
 
-def get_raw_lut(path):
+def get_raw_lut(path, processing=True):
     """Extract the raw LUT from an HDF5 file provided by Lucas Wittwer
 
     Notes
@@ -200,17 +201,19 @@ def get_raw_lut(path):
     lut[:len(emodulus), 1] = deform
     lut[:len(emodulus), 2] = emodulus
 
-    if (meta["model"] == "linear elastic"
-            and meta["dimensionality"] == "2Daxis"):
-        ap = "LUT_analytical_linear-elastic_2Daxis.txt"
-        print("...Processing: Adding analytical solution from {}.".format(ap))
-        # load analytical data
-        lut_ana = np.loadtxt(pathlib.Path(__file__).parent / ap)
-        lut = np.concatenate((lut, lut_ana))
+    if processing:
+        if (meta["model"] == "linear elastic"
+                and meta["dimensionality"] == "2Daxis"):
+            ap = "LUT_analytical_linear-elastic_2Daxis.txt"
+            print("...Post-Processing: Adding analytical LUT from {}.".format(
+                ap))
+            # load analytical data
+            lut_ana = np.loadtxt(pathlib.Path(__file__).parent / ap)
+            lut = np.concatenate((lut, lut_ana))
 
-    if meta["dimensionality"] == "2Daxis":
-        print("...Processing: Cropping LUT at 290um^2.")
-        lut = lut[lut[:, 0] < 290]
+        if meta["dimensionality"] == "2Daxis":
+            print("...Post-Processing: Cropping LUT at 290um^2.")
+            lut = lut[lut[:, 0] < 290]
 
     return lut, meta
 
@@ -260,7 +263,7 @@ def shrink_lut(lut):
     """Remove redundant values in a LUT
 
     This is achieved by checking whether they can be reproduced
-    through linear interpolation of the remaining values.
+    through linear interpolation from the remaining values.
     """
     wlut = np.array(lut, copy=True)
     # normalize
@@ -306,24 +309,31 @@ if __name__ == "__main__":
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('input', metavar="INPUT", type=str,
                         help='Input path (.hdf5 file)')
-    parser.add_argument("-r", "--raw",
-                        help="Do not perform any data processing.",
-                        default=None,
-                        type=str)
+    parser.add_argument("--raw",
+                        dest='raw',
+                        action='store_true',
+                        help="do not perform data post-processing",
+                        )
+    parser.set_defaults(raw=False)
 
     args = parser.parse_args()
     path = pathlib.Path(args.input)
+    raw = args.raw
+
+    if raw:
+        print("Skipping all post-processing steps!")
 
     print("Extracting LUT")
-    lut, meta = get_raw_lut(path)
+    lut, meta = get_raw_lut(path, processing=not raw)
 
     print("Extracting isoelastics")
-    contours, levels = get_isoelastics(lut, meta)
+    contours, levels = get_isoelastics(lut, meta, processing=not raw)
     save_iso(path.with_name(path.name.rsplit(".", 1)[0] + "_iso.txt"),
              contours, levels, meta)
 
     print("Saving LUT")
-    print("...Processing: Removing redundant LUT values")
-    lut = shrink_lut(lut)
+    if not raw:
+        print("...Post-Processing: Removing redundant LUT values")
+        lut = shrink_lut(lut)
     save_lut(path.with_name(path.name.rsplit(
         ".", 1)[0] + "_lut.txt"), lut, meta)

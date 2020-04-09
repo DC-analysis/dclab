@@ -14,7 +14,7 @@ the HDF5 root attributes):
   area, because of discretization problems (deformations smaller than
   0.005 could not be resolved).
 - If the LUT "dimensionality" is "2Daxis" (rotationally symmetric
-  simulation), then the LUT is cropped at a maximum area of 290um.
+  simulation), then the LUT is cropped at a maximum area of 290um^2.
   The reason is that the axis-symmetric model becomes inaccurate when
   the object boundary comes close to the channel walls (the actual
   flow profile in a rectangular cross-section channel is not anymore

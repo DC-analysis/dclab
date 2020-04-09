@@ -30,7 +30,7 @@ The following data processing is performed for the isoelastics:
   are cropped by a few points (depends on resolution of grid
   interpolation).
 
-Not that a matplotlib window will open when the isoelastics are
+Note that a matplotlib window will open when the isoelastics are
 created so you can verify that everything is in order. Just close
 that window to proceed.
 """

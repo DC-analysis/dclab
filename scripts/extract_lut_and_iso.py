@@ -179,6 +179,9 @@ def get_raw_lut(path, processing=True):
         assert h5.attrs["channel_width_unit"].decode("utf-8") == "um"
         assert h5.attrs["fluid_viscosity_unit"].decode("utf-8") == "Pa s"
         meta = dict(h5.attrs)
+        # convert viscosity to mPa*s
+        meta["fluid_viscosity_unit"] = b"mPa s"
+        meta["fluid_viscosity"] = meta["fluid_viscosity"] * 1000
         for key in meta:
             if isinstance(meta[key], bytes):
                 meta[key] = meta[key].decode("utf-8")
@@ -250,7 +253,7 @@ def save_lut(path, lut, meta):
         fd.write("#\r\n")
 
         # Header
-        header = ["area_um [um]", "deform", "emodulus [kPa]"]
+        header = ["area_um [um^2]", "deform", "emodulus [kPa]"]
         fd.write("# " + "\t".join(header) + "\r\n")
 
         # Data
@@ -333,7 +336,7 @@ if __name__ == "__main__":
 
     print("Saving LUT")
     if not raw:
-        print("...Post-Processing: Removing redundant LUT values")
+        print("...Post-Processing: Removing redundant LUT values.")
         lut = shrink_lut(lut)
     save_lut(path.with_name(path.name.rsplit(
         ".", 1)[0] + "_lut.txt"), lut, meta)

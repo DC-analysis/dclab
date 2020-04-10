@@ -85,7 +85,7 @@ def test_nan_warning():
         ds.apply_filter()
         for wi in w:  # sometimes there are ResourceWarnings
             if wi.category == dclab.rtdc_dataset.filter.NanWarning:
-                assert str(w[0].message).count("area_um")
+                assert str(wi.message).count("area_um")
                 break
         else:
             assert False, "Expected NanWarning"

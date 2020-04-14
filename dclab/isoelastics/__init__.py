@@ -108,18 +108,20 @@ class Isoelastics(object):
     def add_px_err(isoel, col1, col2, px_um, inplace=False):
         """Undo pixelation correction
 
-        Isoelasticity lines are already corrected for pixelation
-        effects as described in
+        Since isoelasticity lines are usually computed directly from
+        the simulation data (e.g. the contour data are not discretized
+        on a grid but are extracted from FEM simulations), they are
+        not affected by pixelation effects as described in
 
         Mapping of Deformation to Apparent Young's Modulus
         in Real-Time Deformability Cytometry
         Christoph Herold, arXiv:1704.00572 [cond-mat.soft] (2017)
         https://arxiv.org/abs/1704.00572.
 
-        If the isoealsticity lines are displayed with deformation data
-        that are not corrected, then the lines must be "un"-corrected,
-        i.e. the pixelation error must be added to the lines to match
-        the experimental data.
+        If the isoealsticity lines are displayed alongside experimental
+        data (which are affected by pixelation effects), then the lines
+        must be "un"-corrected, i.e. the pixelation error must be added
+        to the lines to match the experimental data.
 
         Parameters
         ----------

@@ -158,6 +158,7 @@ FEATURES_SCALAR = [
     ["bright_avg", "Brightness average within contour [a.u.]"],
     ["bright_sd", "Brightness SD within contour [a.u.]"],
     ["circ", "Circularity"],
+    # deform is computed from the convex contour
     ["deform", "Deformation"],
     ["emodulus", "Young's Modulus [kPa]"],
     # fl*_area, fl*_pos, and fl*_width values correspond to the

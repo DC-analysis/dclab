@@ -438,21 +438,22 @@ class IntegrityChecker(object):
                                 category="format HDF5"))
             # check length of logs
             with h5py.File(self.ds.path, mode="r") as h5:
-                logs = h5["logs"]
-                for logname in logs.keys():
-                    # ignore tmds meta data log files
-                    logends = [logname.endswith(l) for l in IGNORED_LOG_NAMES]
-                    if sum(logends):
-                        continue
-                    log = logs[logname]
-                    for ii in range(len(log)):
-                        if len(log[ii]) > LOG_MAX_LINE_LENGTH:
-                            cues.append(ICue(
-                                msg="Logs: {} line {} ".format(logname, ii)
-                                        + "exceeds maximum line length "
-                                        + "{}".format(LOG_MAX_LINE_LENGTH),
-                                        level="alert",
-                                        category="format HDF5"))
+                if "logs" in h5:
+                    logs = h5["logs"]
+                    for logname in logs.keys():
+                        # ignore tmds meta data log files
+                        lign = [logname.endswith(l) for l in IGNORED_LOG_NAMES]
+                        if sum(lign):
+                            continue
+                        log = logs[logname]
+                        for ii in range(len(log)):
+                            if len(log[ii]) > LOG_MAX_LINE_LENGTH:
+                                cues.append(ICue(
+                                    msg="Logs: {} line {} ".format(logname, ii)
+                                            + "exceeds maximum line length "
+                                            + "{}".format(LOG_MAX_LINE_LENGTH),
+                                            level="alert",
+                                            category="format HDF5"))
         return cues
 
     def check_info(self, **kwargs):

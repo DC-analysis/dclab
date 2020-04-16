@@ -5,6 +5,10 @@
    extracting new LUTs and isoelastics
  - fix: dclab-verify-dataset failed when the "logs" group was not
    present in HDF5 files
+ - fix: use predefined chunks when writing HDF5 data to avoid
+   exploding file sizes when writing one event at a time
+ - fix: create a deep copy of the metadata dictionary when writing
+   HDF5 data because it leaked to subsequent calls
 0.23.0
  - feat: enable emodulus extrapolation for `area_um`/`deform` values
    outside of the given LUT.

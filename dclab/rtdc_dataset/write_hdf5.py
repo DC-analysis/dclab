@@ -3,6 +3,8 @@
 """RT-DC file format writer"""
 from __future__ import unicode_literals
 
+import copy
+
 import h5py
 import numpy as np
 
@@ -30,11 +32,12 @@ def store_image(h5group, data, compression):
         data = data.reshape(1, data.shape[0], data.shape[1])
     if "image" not in h5group:
         maxshape = (None, data.shape[1], data.shape[2])
+        chunks = (100, data.shape[1], data.shape[2])
         dset = h5group.create_dataset("image",
                                       data=data,
                                       dtype=np.uint8,
                                       maxshape=maxshape,
-                                      chunks=True,
+                                      chunks=chunks,
                                       fletcher32=True,
                                       compression=compression)
         # Create and Set image attributes:
@@ -61,11 +64,12 @@ def store_mask(h5group, data, compression):
         data = data.reshape(1, data.shape[0], data.shape[1])
     if "mask" not in h5group:
         maxshape = (None, data.shape[1], data.shape[2])
+        chunks = (100, data.shape[1], data.shape[2])
         dset = h5group.create_dataset("mask",
                                       data=data,
                                       dtype=np.uint8,
                                       maxshape=maxshape,
-                                      chunks=True,
+                                      chunks=chunks,
                                       fletcher32=True,
                                       compression=compression)
         # Create and Set image attributes
@@ -88,9 +92,10 @@ def store_scalar(h5group, name, data, compression):
         h5group.create_dataset(name,
                                data=data,
                                maxshape=(None,),
-                               chunks=True,
+                               chunks=(100,),
                                fletcher32=True,
-                               compression=compression)
+                               compression=compression
+                               )
     else:
         dset = h5group[name]
         oldsize = dset.shape[0]
@@ -111,10 +116,11 @@ def store_trace(h5group, data, compression):
         # create traces datasets
         if flt not in grp:
             maxshape = (None, data[flt].shape[1])
+            chunks = (100, data[flt].shape[1])
             grp.create_dataset(flt,
                                data=data[flt],
                                maxshape=maxshape,
-                               chunks=True,
+                               chunks=chunks,
                                fletcher32=True,
                                compression=compression)
         else:
@@ -195,6 +201,9 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
         raise ValueError("`mode` must be one of [append, replace, reset]")
     if compression not in [None, "gzip", "lzf", "szip"]:
         raise ValueError("`compression` must be one of [gzip, lzf, szip]")
+
+    # make sure we are not overriding anything
+    meta = copy.deepcopy(meta)
 
     if (not hasattr(data, "__iter__") or
         not hasattr(data, "__contains__") or

@@ -210,6 +210,9 @@ FEATURES_SCALAR = [
     ["temp_amb", "Ambient temperature [°C]"],
     ["tilt", "Absolute tilt of raw contour"],
     ["time", "Event time [s]"],
+    # Volume is computed from the raw contour (i.e. with exclusions).
+    # Fun fact: If we had decided to compute it from the convex contour,
+    # then we would have close to none pixelation effects ¯\_(ツ)_/¯.
     ["volume", "Volume [µm³]"],
 ]
 # Add userdef features

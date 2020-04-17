@@ -1,8 +1,10 @@
 0.23.1
- - data: added `scripts/extract_lut_and_iso.py` for extracting
-   Young's modulus LUT and isoelastics from simulation results
+ - data: added 'scripts/extract_lut_and_iso.py' for extracting
+   Young's modulus LUT and isoelastics from FEM simulation data
    provided by Lucas Wittwer; this is now the default method for
    extracting new LUTs and isoelastics
+ - data: added 'scripts/fem2rtdc.py' for generating in-silico
+   .rtdc datasets from FEM simulation data provided by Lucas Wittwer 
  - fix: dclab-verify-dataset failed when the "logs" group was not
    present in HDF5 files
  - fix: use predefined chunks when writing HDF5 data to avoid

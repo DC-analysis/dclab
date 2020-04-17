@@ -1,0 +1,7 @@
+dclab>=0.23.0
+h5py
+lmfit
+numpy
+matplotlib
+opencv-contrib-python>=4.2.0.34
+scipy

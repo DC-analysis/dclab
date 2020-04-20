@@ -39,8 +39,8 @@ script:
 - coverage report -m
 - flake8 dclab
 - flake8 examples
-- flake8 scripts
 - flake8 tests
+- flake8 scripts
 after_success:
 - codecov
 before_deploy:

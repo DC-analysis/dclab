@@ -40,7 +40,7 @@ script:
 - flake8 dclab
 - flake8 examples
 - flake8 tests
-- flake8 scripts
+- if [ "$TRAVIS_PYTHON_VERSION" != "2.7" ]; then flake8 scripts; fi
 after_success:
 - codecov
 before_deploy:

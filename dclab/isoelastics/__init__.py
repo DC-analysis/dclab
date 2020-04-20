@@ -26,7 +26,15 @@ class IsoelasticsEmodulusMeaninglessWarning(UserWarning):
 
 class Isoelastics(object):
     def __init__(self, paths=[]):
+        """Isoelasticity line management
 
+        .. versionchanged:: 0.24.0
+            The isoelasticity lines of the analytical model
+            :cite:`Mietke201` and the linear-elastic numerical
+            model :cite:`Mokbel2017` were recomputed with an
+            equidistant spacing. The metadata section of the text
+            file format was restructured.
+        """
         self._data = IsoelasticsDict()
 
         for path in paths:
@@ -72,6 +80,7 @@ class Isoelastics(object):
         -----
         The following isoelastics are automatically added for
         user convenience:
+
         - isoelastics with `col1` and `col2` interchanged
         - isoelastics for circularity if deformation was given
         """

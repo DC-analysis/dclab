@@ -320,7 +320,7 @@ def test_emodulus_temp_feat():
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=6e-14)
+                       rtol=0, atol=6.5e-14)
     # ancillary feature priority check
     for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
         if af.method.__name__ == "compute_emodulus_legacy":
@@ -359,7 +359,7 @@ def test_emodulus_temp_feat_2():
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"][1:], ds2["emodulus"][1:], equal_nan=True,
-                       rtol=0, atol=6e-14)
+                       rtol=0, atol=6.5e-14)
     assert not np.allclose(ds["emodulus"][0], ds2["emodulus"][0])
     ds3 = dclab.new_dataset(ddict)
     ds3.config["setup"]["flow rate"] = 0.16

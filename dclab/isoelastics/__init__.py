@@ -5,7 +5,6 @@ from __future__ import division, unicode_literals
 
 import warnings
 
-import pathlib
 from pkg_resources import resource_filename
 
 import numpy as np
@@ -368,57 +367,15 @@ class Isoelastics(object):
     def load_data(self, path):
         """Load isoelastics from a text file
 
-        The text file is loaded with `numpy.loadtxt` and must have
-        three columns, representing the two data columns and the
-        elastic modulus with units defined in `definitions.py`.
-        The file header must have a section defining meta data of the
-        content like so:
-
-            # [...]
-            #
-            # - column 1: area_um
-            # - column 2: deform
-            # - column 3: emodulus
-            # - channel width [um]: 20
-            # - flow rate [ul/s]: 0.04
-            # - viscosity [mPa*s]: 15
-            # - method: analytical
-            #
-            # [...]
-
-
         Parameters
         ----------
         path: str
-            Path to a isoelastics text file
+            Path to an isoelasticity lines text file
         """
-        path = pathlib.Path(path).resolve()
-        # Get metadata
-        meta = {}
-        with path.open("r", errors='replace') as fd:
-            while True:
-                line = fd.readline().strip()
-                if line.startswith("# - "):
-                    line = line.strip("#- ")
-                    var, val = line.split(":")
-                    if val.strip().replace(".", "").isdigit():
-                        # channel width, flow rate, viscosity
-                        val = float(val)
-                    else:
-                        # columns, calculation
-                        val = val.strip().lower()
-                    meta[var.strip()] = val
-                elif line and not line.startswith("#"):
-                    break
-
-        assert meta["column 1"] in dfn.scalar_feature_names
-        assert meta["column 2"] in dfn.scalar_feature_names
-        assert meta["column 3"] == "emodulus"
+        isodata, meta = feat_emod.load_mtext(path)
+        assert len(meta["column features"]) == 3
+        assert meta["column features"][2] == "emodulus"
         assert meta["method"] in VALID_METHODS
-
-        # Load isoelasics
-        with path.open("rb") as isfd:
-            isodata = np.loadtxt(isfd)
 
         # Slice out individual isoelastics
         emoduli = np.unique(isodata[:, 2])
@@ -429,11 +386,11 @@ class Isoelastics(object):
 
         # Add isoelastics to instance
         self.add(isoel=isoel,
-                 col1=meta["column 1"],
-                 col2=meta["column 2"],
-                 channel_width=meta["channel width [um]"],
-                 flow_rate=meta["flow rate [ul/s]"],
-                 viscosity=meta["viscosity [mPa*s]"],
+                 col1=meta["column features"][0],
+                 col2=meta["column features"][1],
+                 channel_width=meta["channel_width"],
+                 flow_rate=meta["flow_rate"],
+                 viscosity=meta["fluid_viscosity"],
                  method=meta["method"])
 
 

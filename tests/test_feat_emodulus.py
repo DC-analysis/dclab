@@ -22,8 +22,8 @@ def test_simple_emod():
                                  temperature=23)
 
     assert np.allclose(emod[10, 50], 1.1875799054283109)
-    assert np.allclose(emod[50, 50], 0.55281291845478731)
-    assert np.allclose(emod[80, 50], 0.45678187644969814)
+    assert np.allclose(emod[50, 50], 0.5527978323425833)
+    assert np.allclose(emod[80, 50], 0.45677680242729324)
 
     assert np.allclose(emod[10, 80], 1.5744560306483262)
     assert np.allclose(emod[50, 80], 0.73534561544655519)
@@ -68,7 +68,7 @@ def test_extrapolate():
             more_than_5perc.append([ids, res])
 
     assert len(more_than_5perc) == 0
-    assert valid_ones == 151
+    assert valid_ones == 149
 
 
 if __name__ == "__main__":

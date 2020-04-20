@@ -1,28 +1,23 @@
-# Isoelastics for spheres deformed
-# in a microfluidic channel.
+# BEGIN METADATA
+# {
+#   "authors": "A. Mietke, C. Herold, J. Guck",
+#   "channel_width": 20.0,
+#   "channel_width_unit": "um",
+#   "date": "2018-01-30",
+#   "dimensionality": "2Daxis",
+#   "flow_rate": 0.04,
+#   "flow_rate_unit": "uL/s",
+#   "fluid_viscosity": 15.0,
+#   "fluid_viscosity_unit": "mPa s",
+#   "method": "analytical",
+#   "model": "linear elastic",
+#   "publication": "https://doi.org/10.1016/j.bpj.2015.09.006",
+#   "software": "custom Matlab code",
+#   "summary": "2D-axis-symmetric analytical solution for a linear elastic sphere"
+# }
+# END METADATA
 #
-# A description of the underlying theory can be found here:
-#
-#   Extracting Cell Stiffness from Real-Time Deformability
-#   Cytometry: Theory and Experiment
-#   A. Mietke, O. Otto, S. Girardo, P. Rosendahl,
-#   A. Taubenberger, S. Golfier, E. Ulbricht,
-#   S. Aland, J. Guck, E. Fischer-Friedrich
-#   Biophysical Journal 109(10) 2015
-#   DOI: 10.1016/j.bpj.2015.09.006
-#
-# These data were generated using a Matlab script
-# written by Alexander Mietke.
-#
-# - column 1: area_um
-# - column 2: deform
-# - column 3: emodulus
-# - channel width [um]: 20
-# - flow rate [ul/s]: 0.04
-# - viscosity [mPa*s]: 15
-# - method: analytical
-#
-# apparent_area_um^2 deformation elastic_modulus_kPa
+# area_um [um^2]	deform	emodulus [kPa]
 0.0000000e+00 0.0000000e+00 0.3
 3.9928815e+00 5.1640556e-03 0.3
 5.1771481e+00 6.7004667e-03 0.3

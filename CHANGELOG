@@ -1,4 +1,12 @@
-0.23.1
+0.24.0
+ - data: refurbished LUT for linear elastic spheres provided by
+   Dominic Mokbel and Lucas Wittwer (based on the FEM simulation
+   results from https://doi.org/10.6084/m9.figshare.12155064.v2);
+   compared to the old LUT, there is a relative error in Young's
+   modulus below 0.1 %, which should not cause any breaking changes
+ - data: updated isoelasticity lines (better spacing): analytical
+   data was made available by Christoph Herold, numerical data
+   was interpolated from the new LUT
  - data: added 'scripts/extract_lut_and_iso.py' for extracting
    Young's modulus LUT and isoelastics from FEM simulation data
    provided by Lucas Wittwer; this is now the default method for
@@ -11,6 +19,9 @@
    exploding file sizes when writing one event at a time
  - fix: create a deep copy of the metadata dictionary when writing
    HDF5 data because it leaked to subsequent calls
+ - ref: changed the way isoelasticity lines and and emodulus LUTs
+   are stored and loaded (e.g. json metadata and a few more sanity
+   checks)
 0.23.0
  - feat: enable emodulus extrapolation for `area_um`/`deform` values
    outside of the given LUT.

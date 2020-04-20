@@ -120,11 +120,7 @@ class Isoelastics(object):
         the simulation data (e.g. the contour data are not discretized
         on a grid but are extracted from FEM simulations), they are
         not affected by pixelation effects as described in
-
-        Mapping of Deformation to Apparent Young's Modulus
-        in Real-Time Deformability Cytometry
-        Christoph Herold, arXiv:1704.00572 [cond-mat.soft] (2017)
-        https://arxiv.org/abs/1704.00572.
+        :cite:`Herold2017`.
 
         If the isoealsticity lines are displayed alongside experimental
         data (which are affected by pixelation effects), then the lines

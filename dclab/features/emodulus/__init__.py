@@ -254,7 +254,9 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
     Notes
     -----
     - The look-up table used was computed with finite elements methods
-      according to :cite:`Mokbel2017`.
+      according to :cite:`Mokbel2017` and complemented with analytical
+      isoelastics from :cite:`Mietke2015`. The original simulation
+      results are available on figshare :cite:`FigshareWittwer2020`.
     - The computation of the Young's modulus takes into account
       corrections for the viscosity (medium, channel width, flow rate,
       and temperature) :cite:`Mietke2015` and corrections for

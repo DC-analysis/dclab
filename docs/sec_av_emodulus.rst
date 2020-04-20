@@ -3,16 +3,22 @@
 ===========================
 Young's modulus computation
 ===========================
-The computation of the Young's modulus uses a look-up table that was
-derived from finite elements methods according to :cite:`Mokbel2017`.
+The computation of the Young's modulus uses a look-up table (LUT) that was
+derived from finite elements methods :cite:`Mokbel2017` and the analytical
+solution :cite:`Mietke2015`. The LUT was computed using a linear elastic
+sphere model in an axis-symmetric channel (2D). The model computations
+take into account the equivalent channel radius for a square channel
+cross-section with the factor 1.094 (see also supplement S3 in
+:cite:`Mietke2015`). The original data used to generate the LUT are
+available on figshare :cite:`FigshareWittwer2020`. 
+
 The computation takes into account corrections for the viscosity
 (medium, channel width, flow rate, and temperature) :cite:`Mietke2015`
 and corrections for pixelation of the area and the deformation which
 are computed from a (pixelated) image :cite:`Herold2017`.
 
 Since the Young's modulus is model-dependent, it is not made available
-right away as an
-:ref:`ancillary feature <sec_features_ancillary>`
+right away as an :ref:`ancillary feature <sec_features_ancillary>`
 (in contrast to e.g. event volume or average event brightness).
 
 .. ipython::

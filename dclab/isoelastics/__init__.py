@@ -30,7 +30,7 @@ class Isoelastics(object):
 
         .. versionchanged:: 0.24.0
             The isoelasticity lines of the analytical model
-            :cite:`Mietke201` and the linear-elastic numerical
+            :cite:`Mietke2015` and the linear-elastic numerical
             model :cite:`Mokbel2017` were recomputed with an
             equidistant spacing. The metadata section of the text
             file format was restructured.

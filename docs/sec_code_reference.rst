@@ -203,7 +203,7 @@ emodulus
 .. automodule:: dclab.features.emodulus
     :members:
 
-.. automodule:: dclab.features.emodulus_viscosity
+.. automodule:: dclab.features.emodulus.viscosity
     :members:
 
 

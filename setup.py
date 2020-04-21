@@ -57,15 +57,23 @@ setup(
     description=description,
     long_description=open('README.rst').read() if exists('README.rst') else '',
     install_requires=["h5py>=2.10.0",
-                      "numpy>=1.10.0",
+                      "numpy>=1.16.0",  # cython includes
                       "pathlib;python_version<='3.4'",
                       "scipy>=0.14.0",
                       ],
     ext_modules=[
+        Extension("dclab.external.skimage._shared.geometry",
+                  sources=["dclab/external/skimage/_shared/geometry.pyx"],
+                  include_dirs=[np.get_include()]
+                  ),
         Extension("dclab.external.skimage._find_contours_cy",
                   sources=["dclab/external/skimage/_find_contours_cy.pyx"],
                   include_dirs=[np.get_include()]
-                  )
+                  ),
+        Extension("dclab.external.skimage._pnpoly",
+                  sources=["dclab/external/skimage/_pnpoly.pyx"],
+                  include_dirs=[np.get_include(), "_shared/"]
+                  ),
         ],
     # not to be confused with definitions in pyproject.toml [build-system]
     setup_requires=["pytest-runner"],

@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 
 from .compat import is_file_obj
+from .external.skimage.measure import points_in_poly
 from .util import hashobj
 
 
@@ -245,9 +246,10 @@ class PolygonFilter(object):
 
     def filter(self, datax, datay):
         """Filter a set of datax and datay according to `self.points`"""
-        f = np.ones(datax.shape, dtype=bool)
-        for i, p in enumerate(zip(datax, datay)):
-            f[i] = PolygonFilter.point_in_poly(p, self.points)
+        points = np.concatenate([datax.reshape(-1, 1),
+                                 datay.reshape(-1, 1)],
+                                axis=1)
+        f = points_in_poly(points=points, verts=self.points)
 
         if self.inverted:
             np.invert(f, f)
@@ -299,7 +301,7 @@ class PolygonFilter(object):
 
         Parameters
         ----------
-        p: float
+        p: tuple of floats
             Coordinates of the point
         poly: array_like of shape (N, 2)
             Polygon (`PolygonFilter.points`)
@@ -313,41 +315,19 @@ class PolygonFilter(object):
         -----
         If `p` lies on a side of the polygon, it is defined as
 
-        - "inside" if it is on the top or right
-        - "outside" if it is on the lower or left
+        - "inside" if it is on the lower or left
+        - "outside" if it is on the top or right
+
+        .. versionchanged:: 0.24.1
+            The new version uses the cython implementation from
+            scikit-image. In the old version, the inside/outside
+            definition was the other way around. In favor of not
+            having to modify upstram code, the scikit-image
+            version was adapted.
         """
-        poly = np.array(poly)
-        n = poly.shape[0]
-        inside = False
-        x, y = p
-
-        # Coarse bounding box exclusion:
-        if (x <= poly[:, 0].max() and x > poly[:, 0].min()
-                and y <= poly[:, 1].max() and y > poly[:, 1].min()):
-            # The point is within the coarse bounding box.
-            p1x, p1y = poly[0]  # point i in contour
-            for ii in range(n):  # also covers (n-1, 0) (circular)
-                p2x, p2y = poly[(ii+1) % n]  # point ii+1 in contour (circular)
-                # Edge-wise fine bounding-ray exclusion.
-                # Determine whether point is in the current ray,
-                # defined by the y-range of p1 and p2 and whether
-                # it is left of p1 and p2.
-                if (y > min(p1y, p2y) and y <= max(p1y, p2y)  # in y-range
-                        and x <= max(p1x, p2x)):  # left of p1 and p2
-                    # Note that always p1y!=p2y due to the above test.
-                    # Only Compute the x-coordinate of the intersection
-                    # between line p1-p2 and the horizontal ray,
-                    # ((y-p1y)*(p2x-p1x)/(p2y-p1y) + p1x),
-                    # if x is not already known to be left of it
-                    # (p1x==p2x in combination with x<=max(p1x, p2x) above).
-                    if p1x == p2x or x <= (y-p1y)*(p2x-p1x)/(p2y-p1y) + p1x:
-                        # Toggle `inside` if the ray intersects
-                        # with the current edge.
-                        inside = not inside
-                # Move on to the next edge of the polygon.
-                p1x, p1y = p2x, p2y
-
-        return inside
+        points = np.array(p).reshape(1, 2)
+        f = points_in_poly(points=points, verts=np.array(poly))
+        return f.item()
 
     @staticmethod
     def remove(unique_id):

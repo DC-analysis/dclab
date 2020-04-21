@@ -1,3 +1,9 @@
+0.24.1
+ - enh: improve polygon filter speed by roughly two orders of
+   magnitude with a cython version taken from scikit-image; there
+   are only minor differences to the old implementation (top right
+   point included vs. lower left point included), so this is not
+   a breaking change (#23)
 0.24.0
  - data: refurbished LUT for linear elastic spheres provided by
    Dominic Mokbel and Lucas Wittwer (based on the FEM simulation

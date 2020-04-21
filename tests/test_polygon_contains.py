@@ -12,11 +12,10 @@ def test_square_edges():
                      [0, 1],
                      [1, 1],
                      [1, 0]])
-
-    assert not PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
-    assert PolygonFilter.point_in_poly(p=(1, .5), poly=poly)
-    assert not PolygonFilter.point_in_poly(p=(.5, 0), poly=poly)
-    assert PolygonFilter.point_in_poly(p=(.5, 1), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
+    assert not PolygonFilter.point_in_poly(p=(1, .5), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(.5, 0), poly=poly)
+    assert not PolygonFilter.point_in_poly(p=(.5, 1), poly=poly)
 
 
 def test_square_corners():
@@ -25,10 +24,10 @@ def test_square_corners():
                      [1, 1],
                      [1, 0]])
 
-    assert not PolygonFilter.point_in_poly(p=(0, 0), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(0, 0), poly=poly)
     assert not PolygonFilter.point_in_poly(p=(1, 0), poly=poly)
     assert not PolygonFilter.point_in_poly(p=(0, 1), poly=poly)
-    assert PolygonFilter.point_in_poly(p=(1, 1), poly=poly)
+    assert not PolygonFilter.point_in_poly(p=(1, 1), poly=poly)
 
 
 def test_modsquare_edges_1():
@@ -38,9 +37,9 @@ def test_modsquare_edges_1():
                      [1, 1],
                      [1, 0]])
 
-    assert not PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
-    assert PolygonFilter.point_in_poly(p=(1, .5), poly=poly)
-    assert not PolygonFilter.point_in_poly(p=(.5, 0), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
+    assert not PolygonFilter.point_in_poly(p=(1, .5), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(.5, 0), poly=poly)
     assert PolygonFilter.point_in_poly(p=(.5, 1), poly=poly)
 
 
@@ -52,10 +51,10 @@ def test_modsquare_edges_2():
                      [1, 0],
                      ])
 
-    assert not PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
     assert PolygonFilter.point_in_poly(p=(1, .5), poly=poly)
-    assert not PolygonFilter.point_in_poly(p=(.5, 0), poly=poly)
-    assert PolygonFilter.point_in_poly(p=(.5, 1), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(.5, 0), poly=poly)
+    assert not PolygonFilter.point_in_poly(p=(.5, 1), poly=poly)
 
 
 def test_modsquare_outside():
@@ -75,10 +74,10 @@ def test_triangle_edges():
                      [1, 1],
                      ])
 
-    assert not PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
+    assert PolygonFilter.point_in_poly(p=(0, .5), poly=poly)
     assert not PolygonFilter.point_in_poly(p=(1, .5), poly=poly)
     assert not PolygonFilter.point_in_poly(p=(.5, 0), poly=poly)
-    assert PolygonFilter.point_in_poly(p=(.5, 1), poly=poly)
+    assert not PolygonFilter.point_in_poly(p=(.5, 1), poly=poly)
 
 
 if __name__ == "__main__":

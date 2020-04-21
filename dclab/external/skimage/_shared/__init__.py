@@ -1,1 +1,1 @@
-from . import geometry
+from . import geometry  # noqa: F401

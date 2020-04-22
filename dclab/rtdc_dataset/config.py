@@ -237,8 +237,7 @@ class Configuration(object):
             if sec not in self._cfg:
                 section = None if self.disable_checks else sec
                 self._cfg[sec] = ConfigurationDict(section=section)
-            for key in newcfg[sec]:
-                self._cfg[sec][key] = newcfg[sec][key]
+            self._cfg[sec].update(newcfg[sec])
 
 
 class CaseInsensitiveDict(ConfigurationDict):

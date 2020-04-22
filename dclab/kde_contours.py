@@ -2,8 +2,7 @@ from __future__ import division
 
 import numpy as np
 
-from .external.skimage.measure import find_contours
-from .polygon_filter import PolygonFilter
+from .external.skimage.measure import find_contours, points_in_poly
 import scipy.interpolate as spint
 
 from .kde_methods import get_bad_vals
@@ -190,6 +189,7 @@ def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
     bad = get_bad_vals(xp, yp)
     xp = xp[~bad]
     yp = yp[~bad]
+    points = np.concatenate((xp.reshape(-1, 1), yp.reshape(-1, 1)), axis=1)
 
     # initial guess
     level = quantile
@@ -205,11 +205,12 @@ def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
         conts = find_contours_level(density, x, y, level, closed=True)
         # compute number of points in contour
         isin = 0
-        for ii in range(nev):
-            for cc in conts:
-                isin += PolygonFilter.point_in_poly((xp[ii], yp[ii]),
-                                                    poly=cc)
-                break  # no need to check other contours
+        pi = np.array(points, copy=True)
+        for cc in conts:
+            pinc = points_in_poly(points=pi, verts=cc)
+            isin += np.sum(pinc)
+            # ignore these points for the other contours
+            pi = pi[~pinc]
         err = quantile - (nev - isin) / nev
         level += err * itfac
         itfac *= .9

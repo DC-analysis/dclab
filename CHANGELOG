@@ -1,3 +1,6 @@
+0.24.3
+ - enh: also use points_in_polygon from scikit-image to determine
+   contour levels
 0.24.2
  - build: import new skimage submodules so that PyInstaller
    will find and use them

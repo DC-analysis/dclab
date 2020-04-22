@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import numpy as np
 import dclab
+from dclab.external import skimage
 from dclab import kde_contours
 from dclab import polygon_filter
 
@@ -47,6 +48,12 @@ def test_contour_basic():
         nump += polygon_filter.PolygonFilter.point_in_poly(p, poly=contours[0])
 
     assert nump == 11, "there should be (1-q)*100 points in the contour"
+
+    # added in dclab 0.24.1
+    nump2 = skimage.measure.points_in_poly(
+        np.concatenate((x0.reshape(-1,1), y0.reshape(-1,1)), axis=1),
+        contours[0])
+    assert nump2.sum() == 11
 
 
 def test_percentile():

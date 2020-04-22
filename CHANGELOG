@@ -1,3 +1,7 @@
+0.24.5
+ - maintenance release
+0.24.4
+ - maintenance release
 0.24.3
  - fix: `ConfigurationDict.update` did not actually perform the
    requested update (does not affect `Configuration.update`)

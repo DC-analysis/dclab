@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from os.path import exists, dirname, realpath
+from os.path import exists, dirname, join, realpath
 from setuptools import setup, Extension, find_packages
 import sys
 
@@ -72,7 +72,10 @@ setup(
                   ),
         Extension("dclab.external.skimage._pnpoly",
                   sources=["dclab/external/skimage/_pnpoly.pyx"],
-                  include_dirs=[np.get_include(), "_shared/"]
+                  include_dirs=[np.get_include(),
+                                join(dirname(realpath(__file__)),
+                                     "dclab/external/skimage/_shared")
+                                ]
                   ),
         ],
     # not to be confused with definitions in pyproject.toml [build-system]

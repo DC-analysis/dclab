@@ -51,7 +51,7 @@ def test_contour_basic():
 
     # added in dclab 0.24.1
     nump2 = skimage.measure.points_in_poly(
-        np.concatenate((x0.reshape(-1,1), y0.reshape(-1,1)), axis=1),
+        np.concatenate((x0.reshape(-1, 1), y0.reshape(-1, 1)), axis=1),
         contours[0])
     assert nump2.sum() == 11
 

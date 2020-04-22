@@ -67,6 +67,27 @@ def test_config_save_load():
         pass
 
 
+def test_config_update():
+    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    assert ds.config["imaging"]["roi size y"] == 96.
+    ds.config["calculation"].update({
+        "crosstalk fl12": 0.1,
+        "crosstalk fl13": 0.2,
+        "crosstalk fl21": 0.3,
+        "crosstalk fl23": 0.4,
+        "crosstalk fl31": 0.5,
+        "crosstalk fl32": 0.6,
+    })
+
+    assert ds.config["calculation"]["crosstalk fl12"] == 0.1
+    assert ds.config["calculation"]["crosstalk fl13"] == 0.2
+    assert ds.config["calculation"]["crosstalk fl21"] == 0.3
+    assert ds.config["calculation"]["crosstalk fl23"] == 0.4
+    assert ds.config["calculation"]["crosstalk fl31"] == 0.5
+    assert ds.config["calculation"]["crosstalk fl32"] == 0.6
+    cleanup()
+
+
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

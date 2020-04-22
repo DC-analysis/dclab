@@ -1,4 +1,6 @@
 0.24.3
+ - fix: `ConfigurationDict.update` did not actually perform the
+   requested update
  - enh: also use points_in_polygon from scikit-image to determine
    contour levels
 0.24.2

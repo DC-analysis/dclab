@@ -439,6 +439,9 @@ def test_trace_wrong_samples_per_event():
     channels = []
     # recreate channels, because the data type might not be correct
     for ch in mdata.groups()[0].channels():
+        if ch.data.size == 0:
+            # not supported by nptdms 0.25.0
+            continue
         channels.append(nptdms.ChannelObject("Cell Track", ch.name, ch.data))
 
     # blank write same data to test that modification works

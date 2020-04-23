@@ -81,8 +81,10 @@ class ConfigurationDict(dict):
                      self).setdefault(self.__class__._k(key), *args, **kwargs)
 
     def update(self, E={}, **F):
-        super(ConfigurationDict, self).update(E)
-        super(ConfigurationDict, self).update(**F)
+        for key in E:
+            self.__setitem__(key, E[key])
+        for key in F:
+            self.__setitem__(key, F[key])
 
 
 class Configuration(object):

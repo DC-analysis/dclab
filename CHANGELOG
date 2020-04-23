@@ -1,3 +1,8 @@
+0.24.7
+ - fix: `ConfigurationDict.update` did not take into account
+   invalid keys (everything is now done with (__setitem__`)
+0.24.6
+ - maintenance release
 0.24.5
  - maintenance release
 0.24.4

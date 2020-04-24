@@ -69,7 +69,7 @@ class Isoelastics(object):
         channel_width: float
             Channel width in µm
         flow_rate: float
-            Flow rate through the channel in µl/s
+            Flow rate through the channel in µL/s
         viscosity: float
             Viscosity of the medium in mPa*s
         method: str
@@ -195,9 +195,9 @@ class Isoelastics(object):
         channel_width_out: float
             Target channel width [µm]
         flow_rate_in: float
-            Original flow rate [µl/s]
+            Original flow rate [µL/s]
         flow_rate_out: float
-            Target flow rate [µl/s]
+            Target flow rate [µL/s]
         viscosity_in: float
             Original viscosity [mPa*s]
         viscosity_out: float
@@ -257,7 +257,7 @@ class Isoelastics(object):
         channel_width: float
             Channel width in µm
         flow_rate: float or `None`
-            Flow rate through the channel in µl/s. If set to
+            Flow rate through the channel in µL/s. If set to
             `None`, the flow rate of the imported data will
             be used (only do this if you do not need the
             correct values for elastic moduli).

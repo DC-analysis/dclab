@@ -27,7 +27,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     channel_width: float
         The channel width in µm
     flow_rate: float
-        Flow rate in µl/s
+        Flow rate in µL/s
     temperature: float or ndarray
         Temperature in °C
 
@@ -52,7 +52,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     if medium not in valmed:
         raise ValueError("Invalid medium: {}".format(medium))
 
-    # convert flow_rate from µl/s to m³/s
+    # convert flow_rate from µL/s to m³/s
     # convert channel_width from µm to m
     term1 = 1.1856 * 6 * flow_rate * 1e-9 / (channel_width * 1e-6)**3 * 2 / 3
 

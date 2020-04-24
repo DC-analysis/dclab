@@ -46,9 +46,9 @@ def convert(area_um, deform, channel_width_in, channel_width_out,
     emodulus: ndarray
         Young's Modulus [kPa]
     flow_rate_in: float
-        Original flow rate [µl/s]
+        Original flow rate [µL/s]
     flow_rate_out: float
-        Target flow rate [µl/s]
+        Target flow rate [µL/s]
     viscosity_in: float
         Original viscosity [mPa*s]
     viscosity_out: float or ndarray
@@ -233,7 +233,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
     channel_width: float
         The channel width [µm]
     flow_rate: float
-        Flow rate [µl/s]
+        Flow rate [µL/s]
     px_um: float
         The detector pixel size [µm] used for pixelation correction.
         Set to zero to disable.

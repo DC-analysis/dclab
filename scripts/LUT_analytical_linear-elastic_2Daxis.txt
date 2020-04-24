@@ -27,7 +27,7 @@
 # }
 # END METADATA
 #
-# area_um [um^2]    deform  emodulus [kPa]
+# area_um [um^2]	deform	emodulus [kPa]
 3.36043e+01	6.36019e-04	7.97000e+00
 3.55935e+01	6.75220e-04	7.97000e+00
 3.75826e+01	7.14718e-04	7.97000e+00

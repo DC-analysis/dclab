@@ -33,6 +33,9 @@ The following data post-processing is performed for the isoelastics:
 Note that a matplotlib window will open when the isoelastics are
 created so you can verify that everything is in order. Just close
 that window to proceed.
+
+An example HDF5 file can be found on figshare
+(https://doi.org/10.6084/m9.figshare.12155064.v2).
 """
 import argparse
 import json
@@ -152,8 +155,8 @@ def get_isoelastics(lut, meta, processing=True):
     return contours, levels
 
 
-def get_raw_lut(path, processing=True):
-    """Extract the raw LUT from an HDF5 file provided by Lucas Wittwer
+def get_lut(path, processing=True):
+    """Extract the LUT from an HDF5 file provided by Lucas Wittwer
 
     Notes
     -----
@@ -221,7 +224,8 @@ def get_raw_lut(path, processing=True):
     return lut, meta
 
 
-def save_iso(path, contours, levels, meta):
+def save_iso(path, contours, levels, meta,
+             header=["area_um [um^2]", "deform", "emodulus [kPa]"]):
     """Save isoelastics to a text file for usage in dclab"""
     lentot = 0
     for cc in contours:
@@ -238,10 +242,11 @@ def save_iso(path, contours, levels, meta):
 
     assert ii == lentot
 
-    save_lut(path, cdat, meta)
+    save_lut(path, cdat, meta, header=header)
 
 
-def save_lut(path, lut, meta):
+def save_lut(path, lut, meta,
+             header=["area_um [um^2]", "deform", "emodulus [kPa]"]):
     """Save LUT to a text file for usage in dclab"""
     with path.open("w") as fd:
         # Metadata
@@ -253,7 +258,6 @@ def save_lut(path, lut, meta):
         fd.write("#\r\n")
 
         # Header
-        header = ["area_um [um^2]", "deform", "emodulus [kPa]"]
         fd.write("# " + "\t".join(header) + "\r\n")
 
         # Data
@@ -327,7 +331,7 @@ if __name__ == "__main__":
         print("Skipping all post-processing steps!")
 
     print("Extracting LUT")
-    lut, meta = get_raw_lut(path, processing=not raw)
+    lut, meta = get_lut(path, processing=not raw)
 
     print("Extracting isoelastics")
     contours, levels = get_isoelastics(lut, meta, processing=not raw)

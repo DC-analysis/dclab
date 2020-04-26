@@ -302,7 +302,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
         deform -= ddelt
 
     if isinstance(visco, np.ndarray):
-        # New in dclab 0.20.0
+        # New in dclab 0.20.0: Computation for viscosities array
         # Convert the input area_um to that of the LUT (deform does not change)
         area_um_4lut, deform_4lut = convert(
             area_um=area_um,
@@ -327,8 +327,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
                               method='linear')
 
         if extrapolate:
-            # New in dclab 0.23.0
-            # Allow to extrapolate the emodulus to values outside the LUT.
+            # New in dclab 0.23.0: Perform extrapolation outside of the LUT
             # This is not well-tested and thus discouraged!
             extrapolate_emodulus(lut=lut,
                                  area_um=area_um_4lut,
@@ -350,7 +349,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
                 inplace=True)
     else:
         # Corrections
-        # We correct the lut, because it contains less points than
+        # We correct the LUT, because it contains less points than
         # the event data. Furthermore, the lut could be cached
         # in the future, if this takes up a lot of time.
         convert(area_um=lut[:, 0],
@@ -380,8 +379,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
                               method='linear')
 
         if extrapolate:
-            # New in dclab 0.23.0
-            # Allow to extrapolate the emodulus to values outside the LUT.
+            # New in dclab 0.23.0: Perform extrapolation outside of the LUT
             # This is not well-tested and thus discouraged!
             extrapolate_emodulus(lut=lut,
                                  area_um=area_um,

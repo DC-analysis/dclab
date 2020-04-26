@@ -8,33 +8,20 @@ import pytest
 from dclab.features import emodulus
 
 
-def test_simple_emod():
-    x = np.linspace(0, 250, 100)
-    y = np.linspace(0, 0.1, 100)
-    x, y = np.meshgrid(x, y)
-
-    emod = emodulus.get_emodulus(area_um=x,
-                                 deform=y,
-                                 medium="CellCarrier",
-                                 channel_width=30,
-                                 flow_rate=0.16,
-                                 px_um=0,  # without pixelation correction
-                                 temperature=23)
-
-    assert np.allclose(emod[10, 50], 1.1875799054283109)
-    assert np.allclose(emod[50, 50], 0.5527978323425833)
-    assert np.allclose(emod[80, 50], 0.45677680242729324)
-
-    assert np.allclose(emod[10, 80], 1.5744560306483262)
-    assert np.allclose(emod[50, 80], 0.73534561544655519)
-    assert np.allclose(emod[80, 80], 0.60737083178222251)
+def test_bad_lut_data():
+    try:
+        emodulus.load_lut("bad_string_asdkubhasd")
+    except ValueError:
+        pass
+    else:
+        assert False, "Invalid `lut_data` results in ValueError"
 
 
 @pytest.mark.filterwarnings(
     'ignore::dclab.features.emodulus.KnowWhatYouAreDoingWarning')
 def test_extrapolate():
     """Test whether spline interpolation gives reasonable results"""
-    lut, _ = emodulus.load_lut("emodulus_lut.txt")
+    lut, _ = emodulus.load_lut("FEM-2Daxis")
 
     area_norm = lut[:, 0].max()
     emodulus.normalize(lut[:, 0], area_norm)
@@ -69,6 +56,28 @@ def test_extrapolate():
 
     assert len(more_than_5perc) == 0
     assert valid_ones == 149
+
+
+def test_simple_emod():
+    x = np.linspace(0, 250, 100)
+    y = np.linspace(0, 0.1, 100)
+    x, y = np.meshgrid(x, y)
+
+    emod = emodulus.get_emodulus(area_um=x,
+                                 deform=y,
+                                 medium="CellCarrier",
+                                 channel_width=30,
+                                 flow_rate=0.16,
+                                 px_um=0,  # without pixelation correction
+                                 temperature=23)
+
+    assert np.allclose(emod[10, 50], 1.1875799054283109)
+    assert np.allclose(emod[50, 50], 0.5527978323425833)
+    assert np.allclose(emod[80, 50], 0.45677680242729324)
+
+    assert np.allclose(emod[10, 80], 1.5744560306483262)
+    assert np.allclose(emod[50, 80], 0.73534561544655519)
+    assert np.allclose(emod[80, 80], 0.60737083178222251)
 
 
 if __name__ == "__main__":

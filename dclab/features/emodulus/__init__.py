@@ -22,6 +22,12 @@ from .viscosity import get_viscosity
 INACCURATE_SPLINE_EXTRAPOLATION = False
 
 
+#: Dictionary of look-up tables shipped with dclab.
+INTERNAL_LUTS = {
+    "FEM-2Daxis": "emodulus_lut.txt",
+    }
+
+
 class KnowWhatYouAreDoingWarning(UserWarning):
     pass
 
@@ -216,6 +222,7 @@ def extrapolate_emodulus(lut, area_um, deform, emod, deform_norm,
 
 def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
                  flow_rate=0.16, px_um=0.34, temperature=23.0,
+                 lut_data="FEM-2Daxis",
                  extrapolate=INACCURATE_SPLINE_EXTRAPOLATION, copy=True):
     """Compute apparent Young's modulus using a look-up table
 
@@ -239,6 +246,12 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
         Set to zero to disable.
     temperature: float, ndarray, or None
         Temperature [°C] of the event(s)
+    lut_data: path, str, or tuple of (np.ndarray of shape (N, 3), dict)
+        The LUT data to use. If it is a key in :const:`INTERNAL_LUTS`,
+        then the respective LUT will be used. Otherwise, a path to a
+        file on disk or a tuple (LUT array, meta data) is possible.
+
+        .. versionadded:: 0.24.9
     extrapolate: bool
         Perform extrapolation using :func:`extrapolate_emodulus`. This
         is discouraged!
@@ -272,7 +285,7 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
     deform = np.array(deform, copy=copy, dtype=float)
     area_um = np.array(area_um, copy=copy, dtype=float)
     # Get lut data
-    lut, lut_meta = load_lut()
+    lut, lut_meta = load_lut(lut_data)
     # Compute viscosity
     if isinstance(medium, numbers.Number):
         visco = medium
@@ -380,9 +393,40 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
     return emod
 
 
-def load_lut(name="emodulus_lut.txt"):
-    lut_path = resource_filename("dclab.features.emodulus", name)
-    lut, meta = load_mtext(lut_path)
+def load_lut(lut_data="FEM-2Daxis"):
+    """Load LUT data from disk
+
+    Parameters
+    ----------
+    lut_data: path, str, or tuple of (np.ndarray of shape (N, 3), dict)
+        The LUT data to use. If it is a key in :const:`INTERNAL_LUTS`,
+        then the respective LUT will be used. Otherwise, a path to a
+        file on disk or a tuple (LUT array, meta data) is possible.
+
+    Returns
+    -------
+    lut: np.ndarray of shape (N, 3)
+        The LUT data for interpolation
+    meta: dict
+        The LUT metadata
+
+    Notes
+    -----
+    If lut_data is a tuple of (lut, meta), then nothing is actually
+    done (this is implemented for user convenience).
+    """
+    if lut_data in INTERNAL_LUTS:
+        lut_path = resource_filename("dclab.features.emodulus",
+                                     INTERNAL_LUTS[lut_data])
+        lut, meta = load_mtext(lut_path)
+    elif isinstance(lut_data, tuple):
+        lut, meta = lut_data
+    elif (isinstance(lut_data, (str, pathlib.Path))
+          and pathlib.Path(lut_data).exists()):
+        lut, meta = load_mtext(lut_data)
+    else:
+        raise ValueError("`name_path_arr` must be path, key, or array, "
+                         "got '{}'!".format(lut_data))
     return lut, meta
 
 

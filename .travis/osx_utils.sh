@@ -2,7 +2,7 @@
 # See: https://github.com/matthew-brett/multibuild/blob/devel/osx_utils.sh
 # See: https://www.python.org/downloads/mac-osx/
 LATEST_2p7=2.7.18
-LATEST_3p6=3.6.10
+LATEST_3p6=3.6.8
 LATEST_3p7=3.7.7
 LATEST_3p8=3.8.2
 
@@ -28,8 +28,6 @@ function fill_pyver {
         echo $ver
     elif [ $ver == 2 ] || [ $ver == "2.7" ]; then
         echo $LATEST_2p7
-    elif [ $ver == "2.6" ]; then
-        echo $LATEST_2p6
     elif [ $ver == 3 ] || [ $ver == "3.7" ]; then
         echo $LATEST_3p7
     elif [ $ver == "3.6" ]; then

@@ -1,13 +1,10 @@
 #!/bin/bash
 # See: https://github.com/matthew-brett/multibuild/blob/devel/osx_utils.sh
-LATEST_2p7=2.7.15
-LATEST_2p6=2.6.6
-LATEST_3p2=3.2.5
-LATEST_3p3=3.3.5
-LATEST_3p4=3.4.4
-LATEST_3p5=3.5.4
-LATEST_3p6=3.6.6
-LATEST_3p7=3.7.0
+# See: https://www.python.org/downloads/mac-osx/
+LATEST_2p7=2.7.18
+LATEST_3p6=3.6.10
+LATEST_3p7=3.7.7
+LATEST_3p8=3.8.2
 
 
 function check_var {
@@ -37,14 +34,8 @@ function fill_pyver {
         echo $LATEST_3p7
     elif [ $ver == "3.6" ]; then
         echo $LATEST_3p6
-    elif [ $ver == "3.5" ]; then
-        echo $LATEST_3p5
-    elif [ $ver == "3.4" ]; then
-        echo $LATEST_3p4
-    elif [ $ver == "3.3" ]; then
-        echo $LATEST_3p3
-    elif [ $ver == "3.2" ]; then
-        echo $LATEST_3p2
+    elif [ $ver == "3.8" ]; then
+        echo $LATEST_3p8
     else
         echo "Can't fill version $ver" 1>&2
         exit 1

@@ -3,20 +3,21 @@ notifications:
 sudo: required
 matrix:
  include:
+ # see https://www.python.org/downloads/mac-osx/ for valid versions
  - os: osx
    language: generic
    env:
-    - MAC_PYTHON_VERSION=3.6
+    - MAC_PYTHON_VERSION=3.6.8
     - MAC_PYTHON_OSX_VERSION=10.6
  - os: osx
    language: generic
    env:
-    - MAC_PYTHON_VERSION=3.7
+    - MAC_PYTHON_VERSION=3.7.7
     - MAC_PYTHON_OSX_VERSION=10.9
  - os: osx
    language: generic
    env:
-    - MAC_PYTHON_VERSION=3.8
+    - MAC_PYTHON_VERSION=3.8.2
     - MAC_PYTHON_OSX_VERSION=10.9
  - os: linux
    language: python

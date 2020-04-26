@@ -43,7 +43,7 @@ def test_extrapolate():
         # "extrapolate" within the grid using the spline
         emodulus.extrapolate_emodulus(
             lut=lut,
-            area_um=area_um,
+            datax=area_um,
             deform=deform,
             emod=emod,
             deform_norm=deform_norm,

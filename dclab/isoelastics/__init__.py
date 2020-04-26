@@ -215,27 +215,20 @@ class Isoelastics(object):
         dclab.features.emodulus.convert: conversion method used
         """
         Isoelastics.check_col12(col1, col2)
-        if col1 == "area_um":
-            area_ax = 0
-            defo_ax = 1
-        else:
-            area_ax = 1
-            defo_ax = 0
-
         new_isoel = []
 
         for iso in isoel:
             iso = np.array(iso, copy=not inplace)
-            feat_emod.convert(area_um=iso[:, area_ax],
-                              deform=iso[:, defo_ax],
-                              emodulus=iso[:, 2],
-                              channel_width_in=channel_width_in,
-                              channel_width_out=channel_width_out,
-                              flow_rate_in=flow_rate_in,
-                              flow_rate_out=flow_rate_out,
-                              viscosity_in=viscosity_in,
-                              viscosity_out=viscosity_out,
-                              inplace=True)
+            scale_kw = {"channel_width_in": channel_width_in,
+                        "channel_width_out": channel_width_out,
+                        "flow_rate_in": flow_rate_in,
+                        "flow_rate_out": flow_rate_out,
+                        "viscosity_in": viscosity_in,
+                        "viscosity_out": viscosity_out,
+                        "inplace": True}
+            feat_emod.scale_feature(col1, data=iso[:, 0], **scale_kw)
+            feat_emod.scale_feature(col2, data=iso[:, 1], **scale_kw)
+            feat_emod.scale_emodulus(emodulus=iso[:, 2], **scale_kw)
             new_isoel.append(iso)
         return new_isoel
 

@@ -1,4 +1,4 @@
-0.24.9
+0.25.0
  - enh: allow to set external LUT files or LUT data when computing
    the Young's modulus with the `lut_data` keyword argument in
    `dclab.features.emodulus.get_emodulus`.

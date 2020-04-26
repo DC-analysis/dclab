@@ -21,7 +21,6 @@ from .viscosity import get_viscosity
 #: a :class:`KnowWhatYouAreDoingWarning` warning will be issued.
 INACCURATE_SPLINE_EXTRAPOLATION = False
 
-
 #: Dictionary of look-up tables shipped with dclab.
 INTERNAL_LUTS = {
     "FEM-2Daxis": "emodulus_lut.txt",
@@ -79,32 +78,27 @@ def convert(area_um, deform, channel_width_in, channel_width_out,
     If all other arguments are not set to None, the emodulus
     is corrected and returned as well.
     """
+    warnings.warn("Usage of the `convert` method is deprecated! Please use "
+                  + "the scale_feature method instead.")
     copy = not inplace
-    # make sure area_um_corr is not an integer array
-    area_um_corr = np.array(area_um, dtype=float, copy=copy)
+
     deform_corr = np.array(deform, copy=copy)
 
     if channel_width_in != channel_width_out:
-        area_um_corr *= (channel_width_out / channel_width_in)**2
+        area_um_corr = scale_area_um(area_um, channel_width_in,
+                                     channel_width_out, inplace)
+    else:
+        area_um_corr = np.array(area_um, copy=copy)
 
-    if emodulus is not None:
-        emodulus_corr = np.array(emodulus, copy=copy)
-
-        if viscosity_in is not None:
-            if isinstance(viscosity_in, np.ndarray):
-                raise ValueError("`viscosity_in` must not be an array!")
-
-        if (flow_rate_in is not None
-            and flow_rate_out is not None
-            and viscosity_in is not None
-            and viscosity_out is not None
-            and (flow_rate_in != flow_rate_out
-                 or (isinstance(viscosity_out, np.ndarray)  # check b4 compare
-                     or viscosity_in != viscosity_out)
-                 or channel_width_in != channel_width_out)):
-            emodulus_corr *= (flow_rate_out / flow_rate_in) \
-                * (viscosity_out / viscosity_in) \
-                * (channel_width_in / channel_width_out)**3
+    if (emodulus is not None
+        and flow_rate_in is not None
+        and flow_rate_out is not None
+        and viscosity_in is not None
+            and viscosity_out is not None):
+        emodulus_corr = scale_emodulus(emodulus, channel_width_in,
+                                       channel_width_out, flow_rate_in,
+                                       flow_rate_out, viscosity_in,
+                                       viscosity_out, inplace)
 
     if emodulus is None:
         return area_um_corr, deform_corr
@@ -157,11 +151,11 @@ def corrpix_deform_delta(area_um, px_um=0.34):
     return delta
 
 
-def extrapolate_emodulus(lut, area_um, deform, emod, deform_norm,
+def extrapolate_emodulus(lut, datax, deform, emod, deform_norm,
                          deform_thresh=.05, inplace=True):
     """Use spline interpolation to fill in nan-values
 
-    When points (`area_um`, `deform`) are outside the convex
+    When points (`datax`, `deform`) are outside the convex
     hull of the lut, then :func:`scipy.interpolate.griddata` returns
     nan-valules.
 
@@ -177,9 +171,9 @@ def extrapolate_emodulus(lut, area_um, deform, emod, deform_norm,
     ----------
     lut: ndarray of shape (N, 3)
         The normalized (!! see :func:`normalize`) LUT (first axis is
-        points, second axis enumerates area_um, deform, and emodulus)
-    area_um: ndarray of size N
-        The normalized area_um (corresponding to `lut[:, 0]`)
+        points, second axis enumerates datax, deform, and emodulus)
+    datax: ndarray of size N
+        The normalized x data (corresponding to `lut[:, 0]`)
     deform: ndarray of size N
         The normalized deform (corresponding to `lut[:, 1]`)
     emod: ndarray of size N
@@ -216,13 +210,13 @@ def extrapolate_emodulus(lut, area_um, deform, emod, deform_norm,
                                       z=lut_crop[:, 2],
                                       )
 
-    emod[unkn] = itp.ev(area_um[unkn], deform[unkn])
+    emod[unkn] = itp.ev(datax[unkn], deform[unkn])
     return emod
 
 
-def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
-                 flow_rate=0.16, px_um=0.34, temperature=23.0,
-                 lut_data="FEM-2Daxis",
+def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
+                 channel_width=20.0, flow_rate=0.16, px_um=0.34,
+                 temperature=23.0, lut_data="FEM-2Daxis",
                  extrapolate=INACCURATE_SPLINE_EXTRAPOLATION, copy=True):
     """Compute apparent Young's modulus using a look-up table
 
@@ -231,7 +225,12 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
     area_um: float or ndarray
         Apparent (2D image) area [µm²] of the event(s)
     deform: float or ndarray
-        The deformation (1-circularity) of the event(s)
+        Deformation (1-circularity) of the event(s)
+    volume: float or ndarray
+        Apparent volume of the event(s). It is not possible to define
+        `volume` and `area_um` at the same time (makes no sense).
+
+        .. versionadded:: 0.25.0
     medium: str or float
         The medium to compute the viscosity for. If a string
         is given, the viscosity is computed. If a float is given,
@@ -250,8 +249,10 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
         The LUT data to use. If it is a key in :const:`INTERNAL_LUTS`,
         then the respective LUT will be used. Otherwise, a path to a
         file on disk or a tuple (LUT array, meta data) is possible.
+        The LUT meta data is used to check whether the given features
+        (e.g. `area_um` and `deform`) are valid interpolation choices.
 
-        .. versionadded:: 0.24.9
+        .. versionadded:: 0.25.0
     extrapolate: bool
         Perform extrapolation using :func:`extrapolate_emodulus`. This
         is discouraged!
@@ -275,17 +276,37 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
       and temperature) :cite:`Mietke2015` and corrections for
       pixelation of the area and the deformation which are computed
       from a (pixelated) image :cite:`Herold2017`.
+    - By using external LUTs, it is possible to interpolate on the
+      volume-deformation plane. This feature was added in version
+      0.25.0.
 
     See Also
     --------
     dclab.features.emodulus.viscosity.get_viscosity: compute viscosity
         for known media
     """
-    # copy input arrays so we can use in-place calculations
-    deform = np.array(deform, copy=copy, dtype=float)
-    area_um = np.array(area_um, copy=copy, dtype=float)
     # Get lut data
     lut, lut_meta = load_lut(lut_data)
+    # copy deform so we can use in-place pixel correction
+    deform = np.array(deform, dtype=float, copy=copy)
+    # Get the correct features (sanity checks)
+    featx, featy, _ = lut_meta["column features"]
+    if featx == "area_um" and featy == "deform":
+        assert volume is None, "Don't define area_um and volume at same time!"
+        datax = np.array(area_um, dtype=float, copy=copy)
+        if px_um:
+            # Correct deformation for pixelation effect (subtract ddelt).
+            ddelt = corrpix_deform_delta(area_um=area_um, px_um=px_um)
+            deform -= ddelt
+    elif featx == "volume" and featy == "deform":
+        assert area_um is None, "Don't define area_um and volume at same time!"
+        datax = np.array(volume, dtype=float, copy=copy)
+        if px_um:
+            raise NotImplementedError(
+                "No pixelation correction for volume-deform!")
+    else:
+        raise KeyError("No recipe for '{}' and '{}'!".format(featx, featy))
+
     # Compute viscosity
     if isinstance(medium, numbers.Number):
         visco = medium
@@ -296,26 +317,20 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
         visco = get_viscosity(medium=medium, channel_width=channel_width,
                               flow_rate=flow_rate, temperature=temperature)
 
-    if px_um:
-        # Correct deformation for pixelation effect (subtract ddelt).
-        ddelt = corrpix_deform_delta(area_um=area_um, px_um=px_um)
-        deform -= ddelt
-
     if isinstance(visco, np.ndarray):
         # New in dclab 0.20.0: Computation for viscosities array
         # Convert the input area_um to that of the LUT (deform does not change)
-        area_um_4lut, deform_4lut = convert(
-            area_um=area_um,
-            deform=deform,
-            channel_width_in=channel_width,
-            channel_width_out=lut_meta["channel_width"],
-            inplace=False)
+        scale_kw = {"channel_width_in": channel_width,
+                    "channel_width_out": lut_meta["channel_width"],
+                    "inplace": False}
+        datax_4lut = scale_feature(feat=featx, data=datax, **scale_kw)
+        deform_4lut = np.array(deform, dtype=float, copy=copy)
 
         # Normalize interpolation data such that the spacing for
         # area and deformation is about the same during interpolation.
-        area_norm = lut[:, 0].max()
-        normalize(lut[:, 0], area_norm)
-        normalize(area_um_4lut, area_norm)
+        featx_norm = lut[:, 0].max()
+        normalize(lut[:, 0], featx_norm)
+        normalize(datax_4lut, featx_norm)
 
         defo_norm = lut[:, 1].max()
         normalize(lut[:, 1], defo_norm)
@@ -323,51 +338,51 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
 
         # Perform interpolation
         emod = spint.griddata((lut[:, 0], lut[:, 1]), lut[:, 2],
-                              (area_um_4lut, deform_4lut),
+                              (datax_4lut, deform_4lut),
                               method='linear')
 
         if extrapolate:
             # New in dclab 0.23.0: Perform extrapolation outside of the LUT
             # This is not well-tested and thus discouraged!
             extrapolate_emodulus(lut=lut,
-                                 area_um=area_um_4lut,
+                                 datax=datax_4lut,
                                  deform=deform_4lut,
                                  emod=emod,
                                  deform_norm=defo_norm,
                                  inplace=True)
 
         # Convert the LUT-interpolated emodulus back
-        convert(area_um=area_um_4lut,
-                deform=deform_4lut,
-                emodulus=emod,
-                channel_width_in=lut_meta["channel_width"],
-                channel_width_out=channel_width,
-                flow_rate_in=lut_meta["flow_rate"],
-                flow_rate_out=flow_rate,
-                viscosity_in=lut_meta["fluid_viscosity"],
-                viscosity_out=visco,
-                inplace=True)
+        backscale_kw = {"channel_width_in": lut_meta["channel_width"],
+                        "channel_width_out": channel_width,
+                        "flow_rate_in": lut_meta["flow_rate"],
+                        "flow_rate_out": flow_rate,
+                        "viscosity_in": lut_meta["fluid_viscosity"],
+                        "viscosity_out": visco,
+                        "inplace": True}
+        # deformation is not scaled (no units)
+        scale_feature(feat=featx, data=datax_4lut, **backscale_kw)
+        scale_emodulus(emod, **backscale_kw)
     else:
         # Corrections
         # We correct the LUT, because it contains less points than
         # the event data. Furthermore, the lut could be cached
         # in the future, if this takes up a lot of time.
-        convert(area_um=lut[:, 0],
-                deform=lut[:, 1],
-                emodulus=lut[:, 2],
-                channel_width_in=lut_meta["channel_width"],
-                channel_width_out=channel_width,
-                flow_rate_in=lut_meta["flow_rate"],
-                flow_rate_out=flow_rate,
-                viscosity_in=lut_meta["fluid_viscosity"],
-                viscosity_out=visco,
-                inplace=True)
+        scale_kw = {"channel_width_in": lut_meta["channel_width"],
+                    "channel_width_out": channel_width,
+                    "flow_rate_in": lut_meta["flow_rate"],
+                    "flow_rate_out": flow_rate,
+                    "viscosity_in": lut_meta["fluid_viscosity"],
+                    "viscosity_out": visco,
+                    "inplace": True}
+        # deformation is not scaled (no units)
+        scale_feature(feat=featx, data=lut[:, 0], **scale_kw)
+        scale_emodulus(lut[:, 2], **scale_kw)
 
         # Normalize interpolation data such that the spacing for
         # area and deformation is about the same during interpolation.
-        area_norm = lut[:, 0].max()
-        normalize(lut[:, 0], area_norm)
-        normalize(area_um, area_norm)
+        featx_norm = lut[:, 0].max()
+        normalize(lut[:, 0], featx_norm)
+        normalize(datax, featx_norm)
 
         defo_norm = lut[:, 1].max()
         normalize(lut[:, 1], defo_norm)
@@ -375,14 +390,14 @@ def get_emodulus(area_um, deform, medium="CellCarrier", channel_width=20.0,
 
         # Perform interpolation
         emod = spint.griddata((lut[:, 0], lut[:, 1]), lut[:, 2],
-                              (area_um, deform),
+                              (datax, deform),
                               method='linear')
 
         if extrapolate:
             # New in dclab 0.23.0: Perform extrapolation outside of the LUT
             # This is not well-tested and thus discouraged!
             extrapolate_emodulus(lut=lut,
-                                 area_um=area_um,
+                                 datax=datax,
                                  deform=deform,
                                  emod=emod,
                                  deform_norm=defo_norm,
@@ -547,6 +562,162 @@ def load_mtext(path):
         meta["method"] = "numerical"
 
     return data, meta
+
+
+def scale_area_um(area_um, channel_width_in, channel_width_out, inplace=False,
+                  **kwargs):
+    """Perform scale conversion for area_um (linear elastic model)
+
+    The area scales with the characteristic length
+    "channel radius" L according to (L'/L)².
+
+    The conversion formula is described in :cite:`Mietke2015`.
+
+    .. versionadded: 0.25.0
+
+    Parameters
+    ----------
+    area_um: ndarray
+        Convex area [µm²]
+    channel_width_in: float
+        Original channel width [µm]
+    channel_width_out: float
+        Target channel width [µm]
+    inplace: bool
+        If True, override input arrays with corrected data
+    kwargs:
+        not used
+
+    Returns
+    -------
+    area_um_corr: ndarray
+        Scaled area [µm²]
+    """
+    copy = not inplace
+    if issubclass(area_um.dtype.type, np.integer) and inplace:
+        raise ValueError("Cannot correct integer `area_um` in-place!")
+    area_um_corr = np.array(area_um, copy=copy)
+
+    if channel_width_in != channel_width_out:
+        area_um_corr *= (channel_width_out / channel_width_in)**2
+    return area_um_corr
+
+
+def scale_emodulus(emodulus, channel_width_in, channel_width_out,
+                   flow_rate_in, flow_rate_out, viscosity_in,
+                   viscosity_out, inplace=False):
+    """Perform scale conversion for area_um (linear elastic model)
+
+    The conversion formula is described in :cite:`Mietke2015`.
+
+    .. versionadded: 0.25.0
+
+    Parameters
+    ----------
+    emodulus: ndarray
+        Young's Modulus [kPa]
+    channel_width_in: float
+        Original channel width [µm]
+    channel_width_out: float
+        Target channel width [µm]
+    flow_rate_in: float
+        Original flow rate [µL/s]
+    flow_rate_out: float
+        Target flow rate [µL/s]
+    viscosity_in: float
+        Original viscosity [mPa*s]
+    viscosity_out: float or ndarray
+        Target viscosity [mPa*s]; This can be an array
+    inplace: bool
+        If True, override input arrays with corrected data
+
+    Returns
+    -------
+    emodulus_corr: ndarray
+        Scaled emodulus [kPa]
+    """
+    copy = not inplace
+
+    emodulus_corr = np.array(emodulus, copy=copy)
+
+    if viscosity_in is not None:
+        if isinstance(viscosity_in, np.ndarray):
+            raise ValueError("`viscosity_in` must not be an array!")
+
+    if (flow_rate_in != flow_rate_out
+        or channel_width_in != channel_width_out
+        or (isinstance(viscosity_out, np.ndarray)  # check b4 compare
+            or viscosity_in != viscosity_out)):
+        emodulus_corr *= (flow_rate_out / flow_rate_in) \
+            * (viscosity_out / viscosity_in) \
+            * (channel_width_in / channel_width_out)**3
+
+    return emodulus_corr
+
+
+def scale_feature(feat, data, inplace=False, **scale_kw):
+    """Convenience function for scale conversions (linear elastic model)
+
+    This method wraps around all the other scale_* methods and also
+    supports deform/circ.
+
+    Parameters
+    ----------
+    feat: str
+        Valid scalar feature name
+    data: float or ndarray
+        Feature data
+    inplace: bool
+        If True, override input arrays with corrected data
+    **scale_kw:
+        Scale keyword arguments for the wrapped methods
+    """
+    if feat == "area_um":
+        return scale_area_um(area_um=data, inplace=inplace, **scale_kw)
+    elif feat in ["circ", "deform"]:
+        # no units
+        return np.array(data, copy=not inplace)
+    elif feat == "emodulus":
+        return scale_emodulus(emodulus=data, inplace=inplace, **scale_kw)
+    elif feat == "volume":
+        return scale_volume(volume=data, inplace=inplace, **scale_kw)
+    else:
+        raise KeyError("No recipe to scale feature '{}'!".format(feat))
+
+
+def scale_volume(volume, channel_width_in, channel_width_out, inplace=False,
+                 **kwargs):
+    """Perform scale conversion for volume (linear elastic model)
+
+    The volume scales with the characteristic length
+    "channel radius" L according to (L'/L)³.
+
+    .. versionadded: 0.25.0
+
+    Parameters
+    ----------
+    volume: ndarray
+        Volume [µm³]
+    channel_width_in: float
+        Original channel width [µm]
+    channel_width_out: float
+        Target channel width [µm]
+    inplace: bool
+        If True, override input arrays with corrected data
+    kwargs:
+        not used
+
+    Returns
+    -------
+    volume_corr: ndarray
+        Scaled volume [µm³]
+    """
+    copy = not inplace
+    volume_corr = np.array(volume, copy=copy)
+
+    if channel_width_in != channel_width_out:
+        volume_corr *= (channel_width_out / channel_width_in)**3
+    return volume_corr
 
 
 def normalize(data, dmax):

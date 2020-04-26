@@ -1,5 +1,6 @@
 0.24.8
  - setup: include Python 3.8 builds and remove Python<=3.5 builds
+ - scripts: renamed 'extract_lut_and_iso.py' to 'fem2lutiso_std.py' 
 0.24.7
  - fix: `ConfigurationDict.update` did not take into account
    invalid keys (everything is now done with (__setitem__`)

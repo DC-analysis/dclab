@@ -134,12 +134,10 @@ class Isoelastics(object):
             line. The first column is defined by `col1`, the second
             by `col2`, and the third column is the emodulus.
         col1, col2: str
-            Define the fist to columns of each isoelasticity line.
-            One of ["area_um", "circ", "deform"]
+            Define the fist two columns of each isoelasticity line.
         px_um: float
             Pixel size [µm]
         """
-        Isoelastics.check_col12(col1, col2)
         new_isoel = []
         for iso in isoel:
             iso = np.array(iso, copy=not inplace)
@@ -152,23 +150,12 @@ class Isoelastics(object):
         return new_isoel
 
     @staticmethod
-    def check_col12(col1, col2):
-        if (col1 not in ["area_um", "circ", "deform"] or
-                col2 not in ["area_um", "circ", "deform"]):
-            raise ValueError("Columns must be one of: area_um, circ, deform!")
-        if col1 == col2:
-            raise ValueError("Columns are the same!")
-        if "area_um" not in [col1, col2]:
-            # avoid [circ, deform]
-            raise ValueError("One column must be set to 'area_um'!")
-
-    @staticmethod
     def convert(isoel, col1, col2,
                 channel_width_in, channel_width_out,
                 flow_rate_in, flow_rate_out,
                 viscosity_in, viscosity_out,
                 inplace=False):
-        """Convert isoelastics in area_um-deform space
+        """Perform isoelastics scale conversion
 
         Parameters
         ----------
@@ -204,7 +191,6 @@ class Isoelastics(object):
         dclab.features.emodulus.scale_linear.scale_feature: scale
             conversion method used
         """
-        Isoelastics.check_col12(col1, col2)
         new_isoel = []
 
         for iso in isoel:

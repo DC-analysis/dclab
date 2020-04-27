@@ -94,6 +94,8 @@ def get_pixelation_delta(feat_corr, feat_absc, data_absc, px_um=0.34):
         delt = np.zeros_like(data_absc, dtype=float)
     elif feat_corr == "volume":
         delt = np.zeros_like(data_absc, dtype=float)
+    elif feat_corr == feat_absc:
+        raise ValueError("Input feature names are identical!")
     else:
         raise KeyError(
             "No rule for feature '{}' with abscissa ".format(feat_corr)

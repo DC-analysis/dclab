@@ -42,6 +42,30 @@ def test_pixel_err():
         assert not np.allclose(isoel[ii], isoel_err[ii])
         assert np.allclose(isoel[ii], isoel_corr[ii])
 
+    try:
+        i1.add_px_err(isoel=isoel,
+                      col1="deform",
+                      col2="deform",
+                      px_um=px_um,
+                      inplace=False)
+    except ValueError:
+        pass
+    else:
+        assert False, "identical columns"
+
+    try:
+        i1.add_px_err(isoel=isoel,
+                      col1="deform",
+                      col2="circ",
+                      px_um=px_um,
+                      inplace=False)
+    except KeyError:
+        pass
+    except BaseException:
+        raise
+    else:
+        assert False, "area_um required"
+
 
 def test_circ():
     i1 = iso.Isoelastics([get_isofile()])
@@ -114,30 +138,12 @@ def test_convert_error():
     try:
         i1.convert(isoel=isoel,
                    col1="deform",
-                   col2="deform",
+                   col2="area_ratio",
                    **kwargs)
-    except ValueError:
+    except KeyError:
         pass
-    else:
-        assert False, "identical columns"
-
-    try:
-        i1.convert(isoel=isoel,
-                   col1="deform",
-                   col2="circ",
-                   **kwargs)
-    except ValueError:
-        pass
-    else:
-        assert False, "area_um required"
-
-    try:
-        i1.convert(isoel=isoel,
-                   col1="deform",
-                   col2="volume",
-                   **kwargs)
-    except ValueError:
-        pass
+    except BaseException:
+        raise
     else:
         assert False, "undefined column volume"
 

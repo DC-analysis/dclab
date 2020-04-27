@@ -10,6 +10,7 @@ import numpy as np
 import dclab
 from dclab import isoelastics as iso
 from dclab.features import emodulus
+from dclab.features.emodulus import pxcorr
 
 from helper_methods import example_data_dict
 
@@ -33,8 +34,8 @@ def test_pixel_err():
     isoel_corr = []
     for iss in isoel_err:
         iss = iss.copy()
-        iss[:, 1] -= emodulus.corrpix_deform_delta(area_um=iss[:, 0],
-                                                   px_um=px_um)
+        iss[:, 1] -= pxcorr.corr_deform_with_area_um(area_um=iss[:, 0],
+                                                     px_um=px_um)
         isoel_corr.append(iss)
 
     for ii in range(len(isoel)):

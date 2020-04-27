@@ -53,7 +53,7 @@ def get_analytical_volume_LUT_2daxis():
     # FEM data
     here = pathlib.Path(__file__).parent
     anap = here / "LUT_analytical_linear-elastic_2Daxis.txt"
-    data, meta = emodulus.load_mtext(anap)
+    _, meta = emodulus.load_mtext(anap)
     assert meta["channel_width"] == 20
     assert meta["method"] == "analytical"
     assert meta["dimensionality"] == "2Daxis"

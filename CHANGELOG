@@ -2,6 +2,8 @@
  - enh: allow to set external LUT files or LUT data when computing
    the Young's modulus with the `lut_data` keyword argument in
    `dclab.features.emodulus.get_emodulus`.
+ - ref: refactored `features.emodulus`: New submodules `pxcorr` and
+   `scale_linear`; `convert` is deprecated in favor of `scale_feature`
 0.24.8
  - setup: include Python 3.8 builds and remove Python<=3.5 builds
  - scripts: renamed 'extract_lut_and_iso.py' to 'fem2lutiso_std.py' 

@@ -203,6 +203,12 @@ emodulus
 .. automodule:: dclab.features.emodulus
     :members:
 
+.. automodule:: dclab.features.emodulus.pxcorr
+    :members:
+
+.. automodule:: dclab.features.emodulus.scale_linear
+    :members:
+
 .. automodule:: dclab.features.emodulus.viscosity
     :members:
 

@@ -140,25 +140,14 @@ class Isoelastics(object):
             Pixel size [µm]
         """
         Isoelastics.check_col12(col1, col2)
-        if "deform" in [col1, col2]:
-            # add error for deformation
-            sign = +1
-        else:
-            # subtract error for circularity
-            sign = -1
-        if col1 == "area_um":
-            area_ax = 0
-            deci_ax = 1
-        else:
-            area_ax = 1
-            deci_ax = 0
-
         new_isoel = []
         for iso in isoel:
             iso = np.array(iso, copy=not inplace)
-            ddeci = feat_emod.corrpix_deform_delta(area_um=iso[:, area_ax],
-                                                   px_um=px_um)
-            iso[:, deci_ax] += sign * ddeci
+            delt1, delt2 = feat_emod.get_pixelation_delta_pair(
+                feat1=col1, feat2=col2, data1=iso[:, 0], data2=iso[:, 1],
+                px_um=px_um)
+            iso[:, 0] += delt1
+            iso[:, 1] += delt2
             new_isoel.append(iso)
         return new_isoel
 
@@ -212,7 +201,8 @@ class Isoelastics(object):
 
         See Also
         --------
-        dclab.features.emodulus.convert: conversion method used
+        dclab.features.emodulus.scale_linear.scale_feature: scale
+            conversion method used
         """
         Isoelastics.check_col12(col1, col2)
         new_isoel = []
@@ -267,10 +257,10 @@ class Isoelastics(object):
 
         See Also
         --------
-        dclab.features.emodulus.convert: conversion in-between
-            channel sizes and viscosities
-        dclab.features.emodulus.corrpix_deform_delta: pixelation
-            error that is applied to the deformation data
+        dclab.features.emodulus.scale_linear.scale_feature: scale
+            conversion method used
+        dclab.features.emodulus.pxcorr.get_pixelation_delta:
+            pixelation correction (applied to the feature data)
         """
         if method not in VALID_METHODS:
             validstr = ",".join(VALID_METHODS)

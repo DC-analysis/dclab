@@ -259,6 +259,18 @@ class IntegrityChecker(object):
             data=data))
         return cues
 
+    def check_feat_index(self, **kwargs):
+        """Up until"""
+        cues = []
+        lends = len(self.ds)
+        if "index" in self.ds:
+            if not np.all(self.ds["index"] == np.arange(1, lends+1)):
+                cues.append(ICue(
+                    msg="The index feature is not enumerated correctly",
+                    level="violation",
+                    category="feature data"))
+        return cues
+
     def check_feature_size(self, **kwargs):
         cues = []
         lends = len(self.ds)

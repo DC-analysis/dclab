@@ -421,7 +421,8 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
               compression=compression)
     elif feat == "index_online":
         if "events/index_online" in h5obj:
-            ido0 = h5obj["events/index"][-1] + 1
+            # index_online is usually larger than index
+            ido0 = h5obj["events/index_online"][-1] + 1
         else:
             ido0 = 0
         write(h5obj,

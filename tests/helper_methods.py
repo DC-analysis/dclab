@@ -46,6 +46,9 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
                 data = np.arange(10 * 20, dtype=np.uint8).reshape(10, 20) + ss
                 imdat.append(data)
             val = imdat
+        elif key == "index":
+            # index starts at 1
+            val = np.arange(1, size+1)
         elif key == "trace":
             trdata = {}
             kk = 1

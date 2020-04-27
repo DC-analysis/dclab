@@ -254,6 +254,49 @@ def test_hdf5_frame():
     shutil.rmtree(edest, ignore_errors=True)
 
 
+def test_hdf5_index_continuous():
+    keys = ["area_um", "deform", "time", "frame", "index"]
+    ddict = example_data_dict(size=10, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5.rtdc")
+    ds1.export.hdf5(f1, keys)
+    with h5py.File(f1, "a") as h5:
+        for feat in keys:
+            dclab.rtdc_dataset.export.hdf5_append(h5obj=h5,
+                                                  rtdc_ds=ds1,
+                                                  feat=feat,
+                                                  time_offset=10,
+                                                  compression="gzip")
+    with h5py.File(f1, "r") as h5:
+        assert "index" in h5["events"]
+        assert np.allclose(h5["events/index"][:], np.arange(1, 21))
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
+def test_hdf5_index_online_replaces_index():
+    keys = ["area_um", "deform", "time", "frame", "index_online"]
+    ddict = example_data_dict(size=10, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5.rtdc")
+    ds1.export.hdf5(f1, keys)
+    with h5py.File(f1, "r") as h5:
+        assert "index" not in h5["events"]
+        assert "index_online" in h5["events"]
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
 def test_hdf5_override():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=212, keys=keys)

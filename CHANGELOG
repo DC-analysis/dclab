@@ -1,4 +1,7 @@
 0.25.0
+ - fix: appending data to an hdf5 file results in a broken "index"
+   feature (re-enumeration from 0), if the given dataset contains
+   the "index_online" feature
  - enh: allow to set external LUT files or LUT data when computing
    the Young's modulus with the `lut_data` keyword argument in
    `dclab.features.emodulus.get_emodulus`.

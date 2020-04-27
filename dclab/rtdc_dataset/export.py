@@ -421,11 +421,11 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
               compression=compression)
     elif feat == "index_online":
         if "events/index_online" in h5obj:
-            idxo_offset = h5obj["events/index"][-1] + 1
+            ido0 = h5obj["events/index"][-1] + 1
         else:
-            idxo_offset = 0
+            ido0 = 0
         write(h5obj,
-              data={"index": rtdc_ds["index_online"][filtarr] + idxo_offset},
+              data={"index_online": rtdc_ds["index_online"][filtarr] + ido0},
               mode="append",
               compression=compression)
     elif feat == "time":

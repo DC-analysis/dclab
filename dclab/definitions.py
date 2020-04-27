@@ -189,6 +189,7 @@ FEATURES_SCALAR = [
     ["fl3_width", "FL-3 width [µs]"],
     ["frame", "Video frame number"],
     ["g_force", "Gravitational force in multiples of g"],
+    # index starts with 1
     ["index", "Event index (Dataset)"],
     # index_online may have missing values (#71)
     ["index_online", "Event index (Online)"],

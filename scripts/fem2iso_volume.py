@@ -107,7 +107,6 @@ def get_lut_volume(path, processing=True):
       rotationally symmetric around the object). In addition, there have
       been numerical errors due to meshing if the area is above 290um^2.
     """
-    area_um = []
     volume = []
     deform = []
     emodulus = []
@@ -131,32 +130,37 @@ def get_lut_volume(path, processing=True):
             assert h5[Ek].attrs["emodulus_unit"].decode("utf-8") == "Pa"
             for simk in h5[Ek].keys():
                 sim = h5[Ek][simk]
-                area_um.append(sim.attrs["area"])
-                assert sim.attrs["area_unit"].decode("utf-8") == "um^2"
                 volume.append(sim.attrs["volume"])
                 assert sim.attrs["volume_unit"].decode("utf-8") == "um^3"
                 deform.append(sim.attrs["deformation"])
                 assert sim.attrs["deformation_unit"].decode("utf-8") == ""
                 emodulus.append(h5[Ek].attrs["emodulus"]/1000)
 
-    lut = np.zeros((len(emodulus), 4), dtype=float)
+    lut = np.zeros((len(emodulus), 3), dtype=float)
     lut[:len(emodulus), 0] = volume
     lut[:len(emodulus), 1] = deform
     lut[:len(emodulus), 2] = emodulus
-    lut[:len(emodulus), 3] = area_um
 
     if processing:
         if meta["dimensionality"] == "2Daxis":
             print("...Post-Processing: Cropping LUT at 290um^2.")
             # the analytical part (below) is anyhow below 200um^2
-            lut = lut[lut[:, 3] < 290]
+            # We cannot crop at 290um^2, because this will result in
+            # a convex lut with interpolation taking place within it.
+            # Converting the 290 to an equivalent sphere volume results
+            # in a value outside the lut (3700 something). So we just
+            # guess a value here:
+            lut = lut[lut[:, 0] < 3200, :]
 
         if (meta["model"] == "linear elastic"
                 and meta["dimensionality"] == "2Daxis"):
             print("...Post-Processing: Complementing analytical volume data.")
             # load analytical data
-            lut_ana = get_analytical_volume_LUT_2daxis()
-            lut = np.concatenate((lut, lut_ana))
+            import warnings
+            warnings.warn("Not adding analytical LUT!")
+            if False:
+                lut_ana = get_analytical_volume_LUT_2daxis()
+                lut = np.concatenate((lut, lut_ana))
 
     return lut, meta
 
@@ -192,3 +196,8 @@ if __name__ == "__main__":
         levels=levels,
         meta=meta,
         header=["volume [um^3]", "deform", "emodulus [kPa]"])
+
+    print("Saving LUT")
+    fem2lutiso_std.save_lut(
+        path.with_name(path.name.rsplit(".", 1)[0] + "_volume_lut.txt"),
+        lut, meta, header=["volume [um^3]", "deform", "emodulus [kPa]"])

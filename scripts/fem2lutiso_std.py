@@ -38,6 +38,7 @@ An example HDF5 file can be found on figshare
 (https://doi.org/10.6084/m9.figshare.12155064.v2).
 """
 import argparse
+import copy
 import json
 import numbers
 import pathlib
@@ -221,6 +222,8 @@ def get_lut(path, processing=True):
             print("...Post-Processing: Cropping LUT at 290um^2.")
             lut = lut[lut[:, 0] < 290]
 
+    meta["column features"] = ["area_um", "deform", "emodulus"]
+
     return lut, meta
 
 
@@ -248,6 +251,13 @@ def save_iso(path, contours, levels, meta,
 def save_lut(path, lut, meta,
              header=["area_um [um^2]", "deform", "emodulus [kPa]"]):
     """Save LUT to a text file for usage in dclab"""
+    meta = copy.deepcopy(meta)
+    if "column features" in meta:
+        # sanity check
+        for ii, kk in enumerate(meta["column features"]):
+            assert kk in header[ii]
+        # remove redundant information; this is stored in the header
+        meta.pop("column features")
     with path.open("w") as fd:
         # Metadata
         dump = json.dumps(meta, sort_keys=True, indent=2)

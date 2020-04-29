@@ -313,12 +313,13 @@ def load_lut(lut_data="FEM-2Daxis"):
     If lut_data is a tuple of (lut, meta), then nothing is actually
     done (this is implemented for user convenience).
     """
-    if lut_data in INTERNAL_LUTS:
+    if isinstance(lut_data, tuple):
+        lut, meta = lut_data
+        lut = np.array(lut, copy=True)  # copy, because of normalization
+    elif isinstance(lut_data, str) and lut_data in INTERNAL_LUTS:
         lut_path = resource_filename("dclab.features.emodulus",
                                      INTERNAL_LUTS[lut_data])
         lut, meta = load_mtext(lut_path)
-    elif isinstance(lut_data, tuple):
-        lut, meta = lut_data
     elif (isinstance(lut_data, (str, pathlib.Path))
           and pathlib.Path(lut_data).exists()):
         lut, meta = load_mtext(lut_data)

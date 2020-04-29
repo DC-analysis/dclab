@@ -43,7 +43,18 @@ import fem2lutiso_std
 
 
 def get_analytical_volume_LUT_2daxis():
-    # analytical area_um-defrom LUT
+    """Compute the volume-deformation analytical part of the LUT
+
+    The data stored in LUT_analytical_linear-elastic_2Daxis.txt
+    do not include the volume information (only the cross-sectional
+    area of the deformed sphere). Since the linear elastic model
+    means that volume is conserved, we can just compute the volume
+    data by redoing the computations in the original Matlab script
+    (CreateAvsChist_Loop_CH4.m). In addition, we have to crop the
+    first 15 and the last data points which were manually removed
+    to better fit in with the numerical values.
+    """
+    # analytical area_um-deform LUT
     ap = "LUT_analytical_linear-elastic_2Daxis.txt"
     lut_area = np.loadtxt(pathlib.Path(__file__).parent / ap)
     lut_volume = np.zeros_like(lut_area)
@@ -61,7 +72,6 @@ def get_analytical_volume_LUT_2daxis():
     # BEGIN MATLAB TRANSLATIONS
     # emodulus
     data1 = np.linspace(7.97**(-1/2), 28.43**(-1/2), 23)**(-2)
-    raise NotImplementedError("nr_p is not correct, 84?")
     nr_p = 100
     d = 20  # um
     # linear spaced area if assumed a sphere (spaced with square root)
@@ -76,6 +86,13 @@ def get_analytical_volume_LUT_2daxis():
     # - The channel width d is always multiplied by the factor 1.094.
     radius = lambd * d/2 * 1.094
     volume = 4/3*np.pi * radius**3
+
+    # The data stored in LUT_analytical_linear-elastic_2Daxis.txt does not
+    # contain the full nr_p=100 points, but it was cropped manually *sigh*.
+    # By manual inspection of of the highest emodulus isoelasticity line
+    # and comparison with area=np.pi*radius**2, I am quite certain that the
+    # first 15 data points and the last datapoint were cropped.
+    volume = volume[15:-1]
 
     for emod in data1:
         eloc = np.abs(emod - lut_volume[:, 2]) < .01
@@ -143,7 +160,7 @@ def get_lut_volume(path, processing=True):
 
     if processing:
         if meta["dimensionality"] == "2Daxis":
-            print("...Post-Processing: Cropping LUT at 290um^2.")
+            print("...Post-Processing: Cropping LUT at 3200um^3.")
             # the analytical part (below) is anyhow below 200um^2
             # We cannot crop at 290um^2, because this will result in
             # a convex lut with interpolation taking place within it.
@@ -156,11 +173,10 @@ def get_lut_volume(path, processing=True):
                 and meta["dimensionality"] == "2Daxis"):
             print("...Post-Processing: Complementing analytical volume data.")
             # load analytical data
-            import warnings
-            warnings.warn("Not adding analytical LUT!")
-            if False:
-                lut_ana = get_analytical_volume_LUT_2daxis()
-                lut = np.concatenate((lut, lut_ana))
+            lut_ana = get_analytical_volume_LUT_2daxis()
+            lut = np.concatenate((lut, lut_ana))
+
+    meta["column features"] = ["volume", "deform", "emodulus"]
 
     return lut, meta
 
@@ -196,8 +212,3 @@ if __name__ == "__main__":
         levels=levels,
         meta=meta,
         header=["volume [um^3]", "deform", "emodulus [kPa]"])
-
-    print("Saving LUT")
-    fem2lutiso_std.save_lut(
-        path.with_name(path.name.rsplit(".", 1)[0] + "_volume_lut.txt"),
-        lut, meta, header=["volume [um^3]", "deform", "emodulus [kPa]"])

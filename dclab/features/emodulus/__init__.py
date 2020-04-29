@@ -12,6 +12,7 @@ import warnings
 import numpy as np
 import scipy.interpolate as spint
 
+from ...compat import str_types
 from ... import definitions as dfn
 from .pxcorr import get_pixelation_delta
 from .pxcorr import get_pixelation_delta_pair  # noqa: F401
@@ -316,11 +317,11 @@ def load_lut(lut_data="FEM-2Daxis"):
     if isinstance(lut_data, tuple):
         lut, meta = lut_data
         lut = np.array(lut, copy=True)  # copy, because of normalization
-    elif isinstance(lut_data, str) and lut_data in INTERNAL_LUTS:
+    elif isinstance(lut_data, str_types) and lut_data in INTERNAL_LUTS:
         lut_path = resource_filename("dclab.features.emodulus",
                                      INTERNAL_LUTS[lut_data])
         lut, meta = load_mtext(lut_path)
-    elif (isinstance(lut_data, (str, pathlib.Path))
+    elif (isinstance(lut_data, (str_types, pathlib.Path))
           and pathlib.Path(lut_data).exists()):
         lut, meta = load_mtext(lut_data)
     else:

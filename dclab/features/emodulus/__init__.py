@@ -3,6 +3,7 @@
 """Computation of apparent Young's modulus for RT-DC measurements"""
 from __future__ import division, print_function, unicode_literals
 
+import copy
 import json
 import numbers
 import pathlib
@@ -317,6 +318,7 @@ def load_lut(lut_data="FEM-2Daxis"):
     if isinstance(lut_data, tuple):
         lut, meta = lut_data
         lut = np.array(lut, copy=True)  # copy, because of normalization
+        meta = copy.deepcopy(meta)  # copy, for the sake of consistency
     elif isinstance(lut_data, str_types) and lut_data in INTERNAL_LUTS:
         lut_path = resource_filename("dclab.features.emodulus",
                                      INTERNAL_LUTS[lut_data])

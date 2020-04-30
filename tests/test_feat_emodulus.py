@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+from pkg_resources import resource_filename
+
 import numpy as np
 import pytest
 
@@ -56,6 +58,42 @@ def test_extrapolate():
 
     assert len(more_than_5perc) == 0
     assert valid_ones == 149
+
+
+def test_load_lut_from_array():
+    ref_lut, ref_meta = emodulus.load_lut("FEM-2Daxis")
+    lut2, meta2 = emodulus.load_lut((ref_lut, ref_meta))
+    assert np.all(ref_lut == lut2)
+    assert ref_meta == meta2
+    assert ref_lut is not lut2, "data should be copied"
+    assert ref_meta is not meta2, "meta data should be copied"
+
+
+def test_load_lut_from_path():
+    ref_lut, ref_meta = emodulus.load_lut("FEM-2Daxis")
+    path = resource_filename("dclab.features.emodulus",
+                             emodulus.INTERNAL_LUTS["FEM-2Daxis"])
+    lut2, meta2 = emodulus.load_lut(path)
+    assert np.all(ref_lut == lut2)
+    assert ref_meta == meta2
+
+
+def test_load_lut_from_badobject():
+    try:
+        emodulus.load_lut({"test": "nonesense"})
+    except ValueError:
+        pass
+    else:
+        assert False, "dict should not be supported"
+
+
+def test_load_lut_from_badpath():
+    try:
+        emodulus.load_lut("peter/pan.txt")
+    except ValueError:
+        pass
+    else:
+        assert False, "dict should not be supported"
 
 
 def test_simple_emod():

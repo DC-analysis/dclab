@@ -157,7 +157,7 @@ def get_isoelastics(lut, meta, processing=True):
 
 
 def get_lut(path, processing=True):
-    """Extract the LUT from an HDF5 file provided by Lucas Wittwer
+    """Extract the LUT from a FEM simulation HDF5 file (Lucas Wittwer)
 
     Notes
     -----
@@ -168,16 +168,53 @@ def get_lut(path, processing=True):
       area, because of discretization problems (deformations smaller than
       0.005 could not be resolved).
     - If the LUT "dimensionality" is "2Daxis" (rotationally symmetric
-      simulation), then the LUT is cropped at a maximum area of 290um.
+      simulation), then the LUT is cropped at a maximum area of 290um^2.
       The reason is that the axis-symmetric model becomes inaccurate when
       the object boundary comes close to the channel walls (the actual
       flow profile in a rectangular cross-section channel is not anymore
       rotationally symmetric around the object). In addition, there have
       been numerical errors due to meshing if the area is above 290um^2.
     """
+    lut_base, meta = get_lut_base(path)
+    lutsize = len(lut_base["emodulus"])
+    lut = np.zeros((lutsize, 3), dtype=float)
+    lut[:, 0] = lut_base["area_um"]
+    lut[:, 1] = lut_base["deform"]
+    lut[:, 2] = lut_base["emodulus"]
+
+    if processing:
+        if (meta["model"] == "linear elastic"
+                and meta["dimensionality"] == "2Daxis"):
+            ap = "LUT_analytical_linear-elastic_2Daxis.txt"
+            print("...Post-Processing: Adding analytical LUT from {}.".format(
+                ap))
+            # load analytical data
+            lut_ana = np.loadtxt(pathlib.Path(__file__).parent / ap)
+            lut = np.concatenate((lut, lut_ana))
+
+        if meta["dimensionality"] == "2Daxis":
+            print("...Post-Processing: Cropping LUT at 290um^2.")
+            lut = lut[lut[:, 0] < 290]
+
+    meta["column features"] = ["area_um", "deform", "emodulus"]
+
+    return lut, meta
+
+
+def get_lut_base(path):
+    """Extract features from a FEM simulation HDF5 file (Lucas Wittwer)
+
+    Returns
+    -------
+    data: dict
+        Each key is a dclab feature, the value is a 1D ndarray
+    meta: dict
+        Metadata extracted from the HDF5 file
+    """
     area_um = []
     deform = []
-    emodulus = []
+    emod = []
+    volume = []
     with h5py.File(path, "r") as h5:
         assert h5.attrs["flow_rate_unit"].decode("utf-8") == "uL/s"
         assert h5.attrs["channel_width_unit"].decode("utf-8") == "um"
@@ -201,30 +238,15 @@ def get_lut(path, processing=True):
                 assert sim.attrs["area_unit"].decode("utf-8") == "um^2"
                 deform.append(sim.attrs["deformation"])
                 assert sim.attrs["deformation_unit"].decode("utf-8") == ""
-                emodulus.append(h5[Ek].attrs["emodulus"]/1000)
-
-    lut = np.zeros((len(emodulus), 3), dtype=float)
-    lut[:len(emodulus), 0] = area_um
-    lut[:len(emodulus), 1] = deform
-    lut[:len(emodulus), 2] = emodulus
-
-    if processing:
-        if (meta["model"] == "linear elastic"
-                and meta["dimensionality"] == "2Daxis"):
-            ap = "LUT_analytical_linear-elastic_2Daxis.txt"
-            print("...Post-Processing: Adding analytical LUT from {}.".format(
-                ap))
-            # load analytical data
-            lut_ana = np.loadtxt(pathlib.Path(__file__).parent / ap)
-            lut = np.concatenate((lut, lut_ana))
-
-        if meta["dimensionality"] == "2Daxis":
-            print("...Post-Processing: Cropping LUT at 290um^2.")
-            lut = lut[lut[:, 0] < 290]
-
-    meta["column features"] = ["area_um", "deform", "emodulus"]
-
-    return lut, meta
+                volume.append(sim.attrs["volume"])
+                assert sim.attrs["volume_unit"].decode("utf-8") == "um^3"
+                emod.append(h5[Ek].attrs["emodulus"]/1000)
+    data = {"area_um": np.array(area_um),
+            "deform": np.array(deform),
+            "emodulus": np.array(emod),
+            "volume": np.array(volume),
+            }
+    return data, meta
 
 
 def save_iso(path, contours, levels, meta,

@@ -12,14 +12,15 @@ interpolation step.
 The following data post-processing is performed for the LUT (depending
 on the HDF5 root attributes):
 - If the LUT "model" is "linear elastic" and the LUT "dimensionality"
-  is "2Daxis", then the LUT is complemented with analytical values.
-  The values for volume are hard-coded and taken from the original
-  Matlab scripts. The values for deformation and emodulus are taken
-  from "LUT_analytical_linear-elastic_2Daxis.txt". As for the area-
-  deformation data, this only affects points with small deformation
-  and area below 200um.
+  is "2Daxis", then the LUT is complemented with analytical values
+  from "LUT_analytical_linear-elastic_2Daxis.txt" (which are extended
+  to volume using the volume data used in the original Matlab script
+  (see `get_analytical_part_2daxis`)) for small deformation and area
+  below 200um. The original FEM simulations did not cover that
+  area, because of discretization problems (deformations smaller than
+  0.005 could not be resolved).
 - If the LUT "dimensionality" is "2Daxis" (rotationally symmetric
-  simulation), then the LUT is cropped at a maximum area of 290um^2.
+  simulation), then the LUT is cropped at a maximum volume of 3200um^3.
   The reason is that the axis-symmetric model becomes inaccurate when
   the object boundary comes close to the channel walls (the actual
   flow profile in a rectangular cross-section channel is not anymore
@@ -32,11 +33,9 @@ An example HDF5 file can be found on figshare
 (https://doi.org/10.6084/m9.figshare.12155064.v2).
 """
 import argparse
-import numbers
 import pathlib
 
 from dclab.features import emodulus
-import h5py
 import numpy as np
 
 import fem2lutiso_std
@@ -117,46 +116,18 @@ def get_lut_volume(path, processing=True):
       area, because of discretization problems (deformations smaller than
       0.005 could not be resolved).
     - If the LUT "dimensionality" is "2Daxis" (rotationally symmetric
-      simulation), then the LUT is cropped at a maximum area of 290um.
+      simulation), then the LUT is cropped at a maximum volume of 3200um^3.
       The reason is that the axis-symmetric model becomes inaccurate when
       the object boundary comes close to the channel walls (the actual
       flow profile in a rectangular cross-section channel is not anymore
       rotationally symmetric around the object). In addition, there have
       been numerical errors due to meshing if the area is above 290um^2.
     """
-    volume = []
-    deform = []
-    emodulus = []
-
-    with h5py.File(path, "r") as h5:
-        assert h5.attrs["flow_rate_unit"].decode("utf-8") == "uL/s"
-        assert h5.attrs["channel_width_unit"].decode("utf-8") == "um"
-        assert h5.attrs["fluid_viscosity_unit"].decode("utf-8") == "Pa s"
-        meta = dict(h5.attrs)
-        # convert viscosity to mPa*s
-        meta["fluid_viscosity_unit"] = b"mPa s"
-        meta["fluid_viscosity"] = meta["fluid_viscosity"] * 1000
-        for key in meta:
-            if isinstance(meta[key], bytes):
-                meta[key] = meta[key].decode("utf-8")
-            elif isinstance(meta[key], numbers.Integral):
-                meta[key] = int(meta[key])
-            else:
-                meta[key] = float(meta[key])
-        for Ek in h5.keys():
-            assert h5[Ek].attrs["emodulus_unit"].decode("utf-8") == "Pa"
-            for simk in h5[Ek].keys():
-                sim = h5[Ek][simk]
-                volume.append(sim.attrs["volume"])
-                assert sim.attrs["volume_unit"].decode("utf-8") == "um^3"
-                deform.append(sim.attrs["deformation"])
-                assert sim.attrs["deformation_unit"].decode("utf-8") == ""
-                emodulus.append(h5[Ek].attrs["emodulus"]/1000)
-
-    lut = np.zeros((len(emodulus), 3), dtype=float)
-    lut[:len(emodulus), 0] = volume
-    lut[:len(emodulus), 1] = deform
-    lut[:len(emodulus), 2] = emodulus
+    lut_base, meta = fem2lutiso_std.get_lut_base(path)
+    lut = np.zeros((len(lut_base["emodulus"]), 3), dtype=float)
+    lut[:, 0] = lut_base["volume"]
+    lut[:, 1] = lut_base["deform"]
+    lut[:, 2] = lut_base["emodulus"]
 
     if processing:
         if meta["dimensionality"] == "2Daxis":

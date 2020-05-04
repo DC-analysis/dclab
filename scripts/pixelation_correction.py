@@ -7,6 +7,11 @@ for emodulus computation and isoelastics.
 This script partially reproduces figures 2, 4, and 5 of Christoph
 Herold's famous arXiv manuscript (https://arxiv.org/abs/1704.00572).
 
+As an argument, you should pass a FEM simulation results HDF5 file
+(https://doi.org/10.6084/m9.figshare.12155064.v2), which is required
+for obtaining a volume-deformation look-up table and for visualizing
+pixelation effects using in-silico data (run fem2rtdc.py first).
+
 Please also see dclab issue #70 for a more broader view on things.
 """
 import argparse

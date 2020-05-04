@@ -21,8 +21,6 @@ def corr_deform_with_area_um(area_um, px_um=0.34):
         Apparent (2D image) area in µm² of the event(s)
     px_um: float
         The detector pixel size in µm.
-    inplace: bool
-        Change the deformation values in-place
 
     Returns
     -------
@@ -41,11 +39,11 @@ def corr_deform_with_area_um(area_um, px_um=0.34):
     # and the deformation.
     # The pixel size correction `pxcorr` takes into account the pixel size
     # in the pixelation correction formula.
-    pxcorr = (.34 / px_um)**2
+    pxscale = (.34 / px_um)**2
     offs = 0.0012
-    exp1 = 0.020 * np.exp(-area_um * pxcorr / 7.1)
-    exp2 = 0.010 * np.exp(-area_um * pxcorr / 38.6)
-    exp3 = 0.005 * np.exp(-area_um * pxcorr / 296)
+    exp1 = 0.020 * np.exp(-area_um * pxscale / 7.1)
+    exp2 = 0.010 * np.exp(-area_um * pxscale / 38.6)
+    exp3 = 0.005 * np.exp(-area_um * pxscale / 296)
     delta = offs + exp1 + exp2 + exp3
 
     return delta

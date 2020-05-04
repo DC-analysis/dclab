@@ -1,7 +1,9 @@
 0.25.1
  - fix: specifying an external LUT as ndarray did not work
- - scripts: finished 'fem2iso_volume.py' for extracting volume-
+ - scripts: finish 'fem2iso_volume.py' for extracting volume-
    deformation isoelasticity lines
+ - scripts: add 'pixelation_correction.py' for visualizing
+   pixelation effects on area_um, volume, and emodulus
 0.25.0
  - fix: appending data to an hdf5 file results in a broken "index"
    feature (re-enumeration from 0), if the given dataset contains

@@ -12,8 +12,9 @@ import numpy as np
 from .. import definitions as dfn
 from ..features import emodulus as feat_emod
 
-ISOFILES = ["isoel-analytical-area_um-deform.txt",
-            "isoel-numerical-area_um-deform.txt",
+ISOFILES = ["isoel-linear-2Daxis-analyt-area_um-deform.txt",
+            "isoel-linear-2Daxis-FEM-area_um-deform.txt",
+            "isoel-linear-2Daxis-FEM-volume-deform.txt",
             ]
 ISOFILES = [resource_filename("dclab.isoelastics", _if) for _if in ISOFILES]
 
@@ -122,7 +123,7 @@ class Isoelastics(object):
         not affected by pixelation effects as described in
         :cite:`Herold2017`.
 
-        If the isoealsticity lines are displayed alongside experimental
+        If the isoelasticity lines are displayed alongside experimental
         data (which are affected by pixelation effects), then the lines
         must be "un"-corrected, i.e. the pixelation error must be added
         to the lines to match the experimental data.
@@ -178,6 +179,11 @@ class Isoelastics(object):
             Original viscosity [mPa*s]
         viscosity_out: float
             Target viscosity [mPa*s]
+
+        Returns
+        -------
+        isoel_scale: list of 2d ndarrays of shape (N, 3)
+            The scale-converted isoelasticity lines.
 
         Notes
         -----
@@ -238,6 +244,7 @@ class Isoelastics(object):
         add_px_err: bool
             If True, add pixelation errors according to
             C. Herold (2017), https://arxiv.org/abs/1704.00572
+            and scripts/pixelation_correction.py
         px_um: float
             Pixel size [µm], used for pixelation error computation
 
@@ -314,6 +321,7 @@ class Isoelastics(object):
         add_px_err: bool
             If True, add pixelation errors according to
             C. Herold (2017), https://arxiv.org/abs/1704.00572
+            and scripts/pixelation_correction.py
         """
         cfg = dataset.config
         if viscosity is None:

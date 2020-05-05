@@ -20,51 +20,72 @@ def get_isofile(name="example_isoelastics.txt"):
     return thisdir / "data" / name
 
 
-def test_pixel_err():
+def test_bad_isoelastic():
     i1 = iso.Isoelastics([get_isofile()])
-    isoel = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
-    px_um = .10
-    # add the error
-    isoel_err = i1.add_px_err(isoel=isoel,
-                              col1="area_um",
-                              col2="deform",
-                              px_um=px_um,
-                              inplace=False)
-    # remove the error manually
-    isoel_corr = []
-    for iss in isoel_err:
-        iss = iss.copy()
-        iss[:, 1] -= pxcorr.corr_deform_with_area_um(area_um=iss[:, 0],
-                                                     px_um=px_um)
-        isoel_corr.append(iss)
-
-    for ii in range(len(isoel)):
-        assert not np.allclose(isoel[ii], isoel_err[ii])
-        assert np.allclose(isoel[ii], isoel_corr[ii])
-
     try:
-        i1.add_px_err(isoel=isoel,
-                      col1="deform",
-                      col2="deform",
-                      px_um=px_um,
-                      inplace=False)
+        i1.get(col1="deform",
+               col2="area_ratio",
+               method="analytical",
+               channel_width=20,
+               flow_rate=0.04,
+               viscosity=15,
+               add_px_err=False,
+               px_um=None)
+    except KeyError:
+        pass
+    else:
+        assert False, "features should not work"
+
+
+def test_bad_isoelastic_2():
+    i1 = iso.Isoelastics([get_isofile()])
+    try:
+        i1.get(col1="deform",
+               col2="area_um",
+               method="numerical",
+               channel_width=20,
+               flow_rate=0.04,
+               viscosity=15,
+               add_px_err=False,
+               px_um=None)
+    except KeyError:
+        pass
+    else:
+        assert False, "only analytical should not work with this set"
+
+
+def test_bad_isoelastic_3():
+    i1 = iso.Isoelastics([get_isofile()])
+    try:
+        i1.get(col1="deform",
+               col2="bad_feature",
+               method="numerical",
+               channel_width=20,
+               flow_rate=0.04,
+               viscosity=15,
+               add_px_err=False,
+               px_um=None)
     except ValueError:
         pass
     else:
-        assert False, "identical columns"
+        assert False, "bad feature does not work"
 
+
+def test_bad_isoelastic_4():
+    i1 = iso.Isoelastics([get_isofile()])
     try:
-        i1.add_px_err(isoel=isoel,
-                      col1="deform",
-                      col2="circ",
-                      px_um=px_um,
-                      inplace=False)
-    except KeyError:
+        i1.get(col1="deform",
+               col2="area_um",
+               method="monsterelastic",
+               channel_width=20,
+               flow_rate=0.04,
+               viscosity=15,
+               add_px_err=False,
+               px_um=None)
+    except ValueError:
         pass
-    except BaseException:
-        raise
     else:
-        assert False, "area_um required"
+        assert False, "bad method does not work"
 
 
 def test_circ():
@@ -189,6 +210,154 @@ def test_get():
 
     for a, b in zip(data, refd):
         assert np.all(a == b)
+
+
+def test_pixel_err():
+    i1 = iso.Isoelastics([get_isofile()])
+    isoel = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
+    px_um = .10
+    # add the error
+    isoel_err = i1.add_px_err(isoel=isoel,
+                              col1="area_um",
+                              col2="deform",
+                              px_um=px_um,
+                              inplace=False)
+    # remove the error manually
+    isoel_corr = []
+    for iss in isoel_err:
+        iss = iss.copy()
+        iss[:, 1] -= pxcorr.corr_deform_with_area_um(area_um=iss[:, 0],
+                                                     px_um=px_um)
+        isoel_corr.append(iss)
+
+    for ii in range(len(isoel)):
+        assert not np.allclose(isoel[ii], isoel_err[ii])
+        assert np.allclose(isoel[ii], isoel_corr[ii])
+
+    try:
+        i1.add_px_err(isoel=isoel,
+                      col1="deform",
+                      col2="deform",
+                      px_um=px_um,
+                      inplace=False)
+    except ValueError:
+        pass
+    else:
+        assert False, "identical columns"
+
+    try:
+        i1.add_px_err(isoel=isoel,
+                      col1="deform",
+                      col2="circ",
+                      px_um=px_um,
+                      inplace=False)
+    except KeyError:
+        pass
+    except BaseException:
+        raise
+    else:
+        assert False, "area_um required"
+
+
+def test_volume_basic():
+    """Reproduce exact data from simulation result"""
+    i1 = iso.get_default()
+    data = i1.get(col1="volume",
+                  col2="deform",
+                  channel_width=20,
+                  flow_rate=0.04,
+                  viscosity=15,
+                  method="numerical",
+                  add_px_err=False,
+                  px_um=None)
+    assert np.allclose(data[0][0], [1.61819e+02, 4.18005e-02, 1.08000e+00])
+    assert np.allclose(data[0][-1], [5.90127e+02, 1.47449e-01, 1.08000e+00])
+    assert np.allclose(data[1][0], [1.61819e+02, 2.52114e-02, 1.36000e+00])
+    assert np.allclose(data[-1][-1], [3.16212e+03, 1.26408e-02, 1.08400e+01])
+
+
+def test_volume_pxcorr():
+    """Deformation is pixelation-corrected using volume"""
+    i1 = iso.get_default()
+    data = i1.get(col1="volume",
+                  col2="deform",
+                  channel_width=20,
+                  flow_rate=None,
+                  viscosity=None,
+                  method="numerical",
+                  add_px_err=True,
+                  px_um=0.34)
+    ddelt = pxcorr.corr_deform_with_volume(1.61819e+02, px_um=0.34)
+    assert np.allclose(data[0][0], [1.61819e+02,
+                                    4.18005e-02 + ddelt,
+                                    1.08000e+00])
+
+
+def test_volume_scale():
+    """Simple volume scale"""
+    i1 = iso.get_default()
+    data = i1.get(col1="volume",
+                  col2="deform",
+                  channel_width=25,
+                  flow_rate=0.04,
+                  viscosity=15,
+                  method="numerical",
+                  add_px_err=False,
+                  px_um=None)
+
+    assert np.allclose(data[0][0], [1.61819e+02 * (25 / 20)**3,
+                                    4.18005e-02,
+                                    1.08000e+00 * (20 / 25)**3])
+
+
+def test_volume_scale_2():
+    """The default values are used if set to None"""
+    i1 = iso.get_default()
+    data = i1.get(col1="volume",
+                  col2="deform",
+                  channel_width=25,
+                  flow_rate=None,
+                  viscosity=None,
+                  method="numerical",
+                  add_px_err=False,
+                  px_um=None)
+    assert np.allclose(data[0][0], [1.61819e+02 * (25 / 20)**3,
+                                    4.18005e-02,
+                                    1.08000e+00 * (20 / 25)**3])
+
+
+def test_volume_switch():
+    """Switch the columns"""
+    i1 = iso.get_default()
+    data = i1.get(col1="deform",
+                  col2="volume",
+                  channel_width=20,
+                  flow_rate=0.04,
+                  viscosity=15,
+                  method="numerical",
+                  add_px_err=False,
+                  px_um=None)
+    assert np.allclose(data[0][0], [4.18005e-02, 1.61819e+02, 1.08000e+00])
+    assert np.allclose(data[-1][-1], [1.26408e-02, 3.16212e+03, 1.08400e+01])
+
+
+def test_volume_switch_scale():
+    """Switch the columns and change the scale"""
+    i1 = iso.get_default()
+    data = i1.get(col1="deform",
+                  col2="volume",
+                  channel_width=25,
+                  flow_rate=0.04,
+                  viscosity=15,
+                  method="numerical",
+                  add_px_err=False,
+                  px_um=None)
+    assert np.allclose(data[0][0], [4.18005e-02,
+                                    1.61819e+02 * (25 / 20)**3,
+                                    1.08000e+00 * (20 / 25)**3])
+    assert np.allclose(data[-1][-1], [1.26408e-02,
+                                      3.16212e+03 * (25 / 20)**3,
+                                      1.08400e+01 * (20 / 25)**3])
 
 
 def test_with_rtdc():

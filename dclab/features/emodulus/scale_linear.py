@@ -163,10 +163,20 @@ def scale_emodulus(emodulus, channel_width_in, channel_width_out,
         if isinstance(viscosity_in, np.ndarray):
             raise ValueError("`viscosity_in` must not be an array!")
 
-    if (flow_rate_in != flow_rate_out
-        or channel_width_in != channel_width_out
-        or (isinstance(viscosity_out, np.ndarray)  # check b4 compare
-            or viscosity_in != viscosity_out)):
+    has_nones = (flow_rate_in is None
+                 or flow_rate_out is None
+                 or viscosity_in is None
+                 or viscosity_out is None
+                 or channel_width_in is None
+                 or channel_width_out is None
+                 )
+    has_changes = (flow_rate_in != flow_rate_out
+                   or channel_width_in != channel_width_out
+                   or (isinstance(viscosity_out, np.ndarray)  # check before
+                       or viscosity_in != viscosity_out)
+                   )
+
+    if not has_nones and has_changes:
         emodulus_corr *= (flow_rate_out / flow_rate_in) \
             * (viscosity_out / viscosity_in) \
             * (channel_width_in / channel_width_out)**3

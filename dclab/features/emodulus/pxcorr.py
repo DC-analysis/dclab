@@ -37,7 +37,7 @@ def corr_deform_with_area_um(area_um, px_um=0.34):
     # obtained contours were analyzed in the same fashion as RT-DC data.
     # A convex hull on the contour was used to calculate the size (as area)
     # and the deformation.
-    # The pixel size correction `pxcorr` takes into account the pixel size
+    # The pixel size correction `pxscale` takes into account the pixel size
     # in the pixelation correction formula.
     pxscale = (.34 / px_um)**2
     offs = 0.0012
@@ -46,6 +46,38 @@ def corr_deform_with_area_um(area_um, px_um=0.34):
     exp3 = 0.005 * np.exp(-area_um * pxscale / 296)
     delta = offs + exp1 + exp2 + exp3
 
+    return delta
+
+
+def corr_deform_with_volume(volume, px_um=0.34):
+    """Deformation correction for volume-deform data
+
+    The contour in RT-DC measurements is computed on a
+    pixelated grid. Due to sampling problems, the measured
+    deformation is overestimated and must be corrected.
+
+    The correction is derived in scripts/pixelation_correction.py.
+
+    Parameters
+    ----------
+    volume: float or ndarray
+        The "volume" feature (rotation of raw contour) [µm³]
+    px_um: float
+        The detector pixel size in µm.
+
+    Returns
+    -------
+    deform_delta: float or ndarray
+        Error of the deformation of the event(s) that must be
+        subtracted from `deform`.
+        deform_corr = deform -  deform_delta
+    """
+    pxscalev = (.34 / px_um)**3
+    offs = 0.0013
+    exp1 = 0.0172 * np.exp(-volume * pxscalev / 40)
+    exp2 = 0.0070 * np.exp(-volume * pxscalev / 450)
+    exp3 = 0.0032 * np.exp(-volume * pxscalev / 6040)
+    delta = offs + exp1 + exp2 + exp3
     return delta
 
 
@@ -87,10 +119,15 @@ def get_pixelation_delta(feat_corr, feat_absc, data_absc, px_um=0.34):
         delt = corr_deform_with_area_um(data_absc, px_um=px_um)
     elif feat_corr == "circ" and feat_absc == "area_um":
         delt = -corr_deform_with_area_um(data_absc, px_um=px_um)
+    elif feat_corr == "deform" and feat_absc == "volume":
+        delt = corr_deform_with_volume(data_absc, px_um=px_um)
+    elif feat_corr == "circ" and feat_absc == "volume":
+        delt = -corr_deform_with_volume(data_absc, px_um=px_um)
     elif feat_corr == "area_um":
         # no correction for area
         delt = np.zeros_like(data_absc, dtype=float)
     elif feat_corr == "volume":
+        # no correction for volume
         delt = np.zeros_like(data_absc, dtype=float)
     elif feat_corr == feat_absc:
         raise ValueError("Input feature names are identical!")

@@ -443,6 +443,10 @@ def load_mtext(path):
             assert un == "um^2"
         elif ft == "emodulus":
             assert un == "kPa"
+        elif ft == "volume":
+            assert un == "um^3"
+        else:
+            assert False, "Please add sanity check for {}!".format(ft)
 
     # TODO:
     # - if everything works as expected, add "FEM" to valid methods

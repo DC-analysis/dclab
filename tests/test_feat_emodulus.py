@@ -96,6 +96,14 @@ def test_load_lut_from_badpath():
         assert False, "dict should not be supported"
 
 
+def test_pixelation_correction_volume():
+    ddelt = emodulus.get_pixelation_delta(feat_corr="deform",
+                                          feat_absc="volume",
+                                          data_absc=100,
+                                          px_um=0.34)
+    assert np.allclose(ddelt, 0.011464479831134636)
+
+
 def test_simple_emod():
     x = np.linspace(0, 250, 100)
     y = np.linspace(0, 0.1, 100)

@@ -50,11 +50,11 @@
  - data: updated isoelasticity lines (better spacing): analytical
    data was made available by Christoph Herold, numerical data
    was interpolated from the new LUT
- - data: added 'scripts/extract_lut_and_iso.py' for extracting
+ - scripts: added 'scripts/extract_lut_and_iso.py' for extracting
    Young's modulus LUT and isoelastics from FEM simulation data
    provided by Lucas Wittwer; this is now the default method for
    extracting new LUTs and isoelastics
- - data: added 'scripts/fem2rtdc.py' for generating in-silico
+ - scripts: added 'scripts/fem2rtdc.py' for generating in-silico
    .rtdc datasets from FEM simulation data provided by Lucas Wittwer 
  - fix: dclab-verify-dataset failed when the "logs" group was not
    present in HDF5 files
@@ -62,7 +62,7 @@
    exploding file sizes when writing one event at a time
  - fix: create a deep copy of the metadata dictionary when writing
    HDF5 data because it leaked to subsequent calls
- - ref: changed the way isoelasticity lines and and emodulus LUTs
+ - ref: changed the way isoelasticity lines and emodulus LUTs
    are stored and loaded (e.g. json metadata and a few more sanity
    checks)
 0.23.0

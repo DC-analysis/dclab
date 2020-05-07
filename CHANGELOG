@@ -1,3 +1,8 @@
+0.26.1
+ - enh: add `dclab.warn.PipelineWarning` which is used as a parent
+   class for warnings that a user might be interested in
+ - fix: temperature warnings during emodulus computation revealed
+   only the lower temperature limit of the data
 0.26.0
  - feat: implement volume-deformation isoelasticity lines (#70)
  - fix: specifying an external LUT as ndarray did not work

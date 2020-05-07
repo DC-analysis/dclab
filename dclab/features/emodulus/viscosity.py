@@ -7,11 +7,14 @@ import warnings
 
 import numpy as np
 
+from ...warn import PipelineWarning
+
+
 #: Media for which computation of viscosity is defined
 KNOWN_MEDIA = ["CellCarrier", "CellCarrierB", "water"]
 
 
-class TemperatureOutOfRangeWarning(UserWarning):
+class TemperatureOutOfRangeWarning(PipelineWarning):
     pass
 
 
@@ -63,7 +66,8 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
         if np.min(temperature) < 16 or np.max(temperature) > 26:
             # see figure (9) in Herold arXiv:1704.00572 (2017)
             warnings.warn("For CellCarrier, the temperature should be in "
-                          + "[18, 26] degC! Got min/max of '{}'.".format(
+                          + "[18, 26] degC! Got min/max of "
+                          + "[{:.1f}, {:.1f}] degC.".format(
                               np.min(temperature), np.max(temperature)),
                           TemperatureOutOfRangeWarning)
     elif medium in ["cellcarrierb", "cellcarrier b"]:
@@ -73,14 +77,16 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
         if np.min(temperature) < 16 or np.max(temperature) > 26:
             # see figure (9) in Herold arXiv:1704.00572 (2017)
             warnings.warn("For CellCarrier B, the temperature should be in "
-                          + "[18, 26] degC! Got min/max of '{}'.".format(
+                          + "[18, 26] degC! Got min/max of "
+                          + "[{:.1f}, {:.1f}] degC.".format(
                               np.min(temperature), np.max(temperature)),
                           TemperatureOutOfRangeWarning)
     elif medium == "water":
         if np.min(temperature) < 0 or np.max(temperature) > 40:
             # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
             warnings.warn("For water, the temperature should be in [0, 40] "
-                          + "degC! Got min/max of '{}'.".format(
+                          + "degC! Got min/max of "
+                          + "[{:.1f}, {:.1f}] degC.".format(
                               np.min(temperature), np.max(temperature)),
                           TemperatureOutOfRangeWarning)
         eta0 = 1.002  # [mPa]

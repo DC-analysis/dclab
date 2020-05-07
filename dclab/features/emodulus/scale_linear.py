@@ -56,7 +56,8 @@ def convert(area_um, deform, channel_width_in, channel_width_out,
     is corrected and returned as well.
     """
     warnings.warn("Usage of the `convert` method is deprecated! Please use "
-                  + "the scale_feature method instead.")
+                  + "the scale_feature method instead.",
+                  DeprecationWarning)
     copy = not inplace
 
     deform_corr = np.array(deform, copy=copy)

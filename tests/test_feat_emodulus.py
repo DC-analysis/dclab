@@ -104,6 +104,8 @@ def test_pixelation_correction_volume():
     assert np.allclose(ddelt, 0.011464479831134636)
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_simple_emod():
     x = np.linspace(0, 250, 100)
     y = np.linspace(0, 0.1, 100)

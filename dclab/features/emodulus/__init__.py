@@ -15,6 +15,7 @@ import scipy.interpolate as spint
 
 from ...compat import str_types
 from ... import definitions as dfn
+from ...warn import PipelineWarning
 from .pxcorr import get_pixelation_delta
 from .pxcorr import get_pixelation_delta_pair  # noqa: F401
 # TODO: remove deprecated `convert`
@@ -34,7 +35,11 @@ INTERNAL_LUTS = {
 }
 
 
-class KnowWhatYouAreDoingWarning(UserWarning):
+class KnowWhatYouAreDoingWarning(PipelineWarning):
+    pass
+
+
+class YoungsModulusLookupTableExceededWarning(PipelineWarning):
     pass
 
 
@@ -289,6 +294,15 @@ def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
                                  emod=emod,
                                  deform_norm=defo_norm,
                                  inplace=True)
+
+    # Let the user know when the emodulus contains too many nan values
+    nans = np.sum(np.isnan(emod))
+    if nans / emod.size > 0.1:
+        warnings.warn("The Young's modulus could not be computed for "
+                      + "{:.0f}% of the data. ".format(nans/emod.size*100)
+                      + "This is because they are not covered by the "
+                      + "look-up table '{}'.".format(lut_data),
+                      YoungsModulusLookupTableExceededWarning)
 
     return emod
 

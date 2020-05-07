@@ -134,6 +134,8 @@ def test_deform():
     assert np.allclose(ds["deform"], 1 - ds["circ"])
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_known_media():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -173,6 +175,8 @@ def test_emodulus_known_media():
 
 @pytest.mark.skipif(sys.version_info < (3, 3),
                     reason="perf_counter requires python3.3 or higher")
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_legacy():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -241,6 +245,8 @@ def test_emodulus_legacy_none2():
 
 @pytest.mark.skipif(sys.version_info < (3, 3),
                     reason="perf_counter requires python3.3 or higher")
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_legacy_viscosity_does_not_matter():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -295,6 +301,8 @@ def test_emodulus_reservoir():
     assert "emodulus" not in ds2
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_temp_feat():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -333,6 +341,8 @@ def test_emodulus_temp_feat():
             assert not af.is_available(ds2)
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_temp_feat_2():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -374,6 +384,8 @@ def test_emodulus_temp_feat_2():
                        atol=6e-14)
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_visc_only():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -415,6 +427,8 @@ def test_emodulus_visc_only():
             assert not af.is_available(ds2)
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_visc_only_2():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)

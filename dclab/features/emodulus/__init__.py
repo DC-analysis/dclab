@@ -198,6 +198,7 @@ def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
     deform = np.array(deform, dtype=float, copy=copy)
     if px_um:
         # Correct deformation for pixelation effect (subtract ddelt).
+        # It is important to do this before scaling datax (area_um/volume).
         deform -= get_pixelation_delta(feat_corr=featy,
                                        feat_absc=featx,
                                        data_absc=datax,
@@ -483,5 +484,6 @@ def normalize(data, dmax):
     reason this does not work well with LUT data, so we
     just normalize it by dividing by the maximum value.
     """
+    assert isinstance(data, np.ndarray)
     data /= dmax
     return data

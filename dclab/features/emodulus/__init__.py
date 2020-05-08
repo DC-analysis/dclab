@@ -164,10 +164,14 @@ def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
       isoelastics from :cite:`Mietke2015`. The original simulation
       results are available on figshare :cite:`FigshareWittwer2020`.
     - The computation of the Young's modulus takes into account
-      corrections for the viscosity (medium, channel width, flow rate,
-      and temperature) :cite:`Mietke2015` and corrections for
-      pixelation of the area and the deformation which are computed
+      a correction for the viscosity (medium, channel width, flow rate,
+      and temperature) :cite:`Mietke2015` and a correction for
+      pixelation for the deformation which were derived
       from a (pixelated) image :cite:`Herold2017`.
+    - Note that while deformation is pixelation-corrected, area_um and
+      volume are scaled to match the LUT data. This is somewhat
+      fortunate, because we don't have to worry about the order of
+      applying pixelation correction and scale conversion.
     - By using external LUTs, it is possible to interpolate on the
       volume-deformation plane. This feature was added in version
       0.25.0.

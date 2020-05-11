@@ -3,7 +3,6 @@
 """Test DCOR format"""
 from __future__ import print_function, unicode_literals
 
-from inspect import signature
 import socket
 
 import dclab
@@ -149,6 +148,7 @@ def test_url():
 
 if __name__ == "__main__":
     # Run all tests
+    from inspect import signature
     loc = locals()
     for key in list(loc.keys()):
         if (key.startswith("test_")

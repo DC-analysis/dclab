@@ -5,7 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 
-from ..compat import PyImportError
+from ..compat import PyImportError, lru_cache
 from .. import definitions as dfn
 from ..util import hashobj
 
@@ -88,6 +88,7 @@ class EventFeature(object):
         for idx in range(len(self)):
             yield self[idx]
 
+    @lru_cache(maxsize=100)
     def __getitem__(self, event):
         data = self.api.get(query="feature", feat=self.feature, event=event)
         return np.asarray(data)
@@ -108,6 +109,7 @@ class EventTrace(object):
         for idx in range(len(self)):
             yield self[idx]
 
+    @lru_cache(maxsize=100)
     def __getitem__(self, event):
         data = self.api.get(query="trace", trace=self.trace, event=event)
         return np.asarray(data)
@@ -123,13 +125,18 @@ class EventTraceFeature(object):
         self.identifier = api.url + ":traces"
         self.api = api
         self.traces = api.get(query="trace_list")
+        self._trace_objects = {}
 
     def __contains__(self, key):
         return key in self.traces
 
     def __getitem__(self, trace):
         if trace in self.traces:
-            return EventTrace(trace, self.api)
+            if trace not in self._trace_objects:
+                self._trace_objects[trace] = EventTrace(trace, self.api)
+            return self._trace_objects[trace]
+        else:
+            raise KeyError("trace '{}' not found!".format(trace))
 
     def keys(self):
         return self.traces
@@ -142,6 +149,7 @@ class FeatureCache(object):
         self.api = api
         self._features = self.api.get(query="feature_list")
         self._scalar_cache = {}
+        self._nonsc_features = {}
 
     def __contains__(self, key):
         return key in self._features
@@ -160,9 +168,13 @@ class FeatureCache(object):
             self._scalar_cache[key] = feat
             return feat
         elif key == "trace":
-            return EventTraceFeature(self.api)
+            if "trace" not in self._nonsc_features:
+                self._nonsc_features["trace"] = EventTraceFeature(self.api)
+            return self._nonsc_features["trace"]
         else:
-            return EventFeature(key, self.api)
+            if key not in self._nonsc_features:
+                self._nonsc_features[key] = EventFeature(key, self.api)
+            return self._nonsc_features[key]
 
     def __iter__(self):
         # dict-like behavior

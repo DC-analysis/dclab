@@ -3,11 +3,23 @@
 """Test DCOR format"""
 from __future__ import print_function, unicode_literals
 
+from inspect import signature
+import socket
+
 import dclab
 from dclab.rtdc_dataset.fmt_dcor import RTDC_DCOR
 import numpy as np
+import pytest
 
 from helper_methods import retrieve_data, cleanup
+
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    try:
+        s.connect(("dcor.mpl.mpg.de", 443))
+        DCOR_AVAILABLE = True
+    except socket.gaierror:
+        DCOR_AVAILABLE = False
 
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):
@@ -60,6 +72,34 @@ def test_dcor_base(monkeypatch):
     cleanup()
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_cache_scalar():
+    # calibration beads
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        # sanity checks
+        assert len(ds) == 5000
+        assert "area_um" in ds
+
+        area_um = ds["area_um"]
+        assert ds["area_um"] is area_um, "Check proper caching"
+        # provoke cache deletion
+        ds._events._scalar_cache.pop("area_um")
+        assert ds["area_um"] is not area_um, "test removal from cache"
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_cache_trace():
+    # calibration beads
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        # sanity checks
+        assert len(ds) == 5000
+        assert "trace" in ds
+
+        trace0 = ds["trace"]["fl1_raw"][0]
+        assert ds["trace"]["fl1_raw"][0] is trace0, "Check proper caching"
+        assert ds["trace"]["fl1_raw"][1] is not trace0, "Check proper caching"
+
+
 def test_dcor_hierarchy(monkeypatch):
     monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor,
                         "APIHandler",
@@ -105,3 +145,13 @@ def test_url():
         url="http://example.com/api/3/action/dcserv?id=123456",
         use_ssl=None,
         host="example.com") == target2
+
+
+if __name__ == "__main__":
+    # Run all tests
+    loc = locals()
+    for key in list(loc.keys()):
+        if (key.startswith("test_")
+            and hasattr(loc[key], "__call__")
+                and "monkeypatch" not in signature(loc[key]).parameters):
+            loc[key]()

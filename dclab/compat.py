@@ -4,6 +4,7 @@ import sys
 
 
 if sys.version_info[0] == 2:
+    from backports.functools_lru_cache import lru_cache  # noqa: F401
     str_types = basestring  # noqa: F821
     hdf5_str = unicode  # noqa: F821
     PyImportError = ImportError
@@ -12,6 +13,7 @@ if sys.version_info[0] == 2:
         return isinstance(obj, file)  # noqa: F821
 
 else:
+    from functools import lru_cache  # noqa: F401
     if sys.version_info[1] <= 5:
         PyImportError = ImportError
     else:

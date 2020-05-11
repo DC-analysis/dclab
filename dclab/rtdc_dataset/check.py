@@ -454,7 +454,7 @@ class IntegrityChecker(object):
                     logs = h5["logs"]
                     for logname in logs.keys():
                         # ignore tmds meta data log files
-                        lign = [logname.endswith(l) for l in IGNORED_LOG_NAMES]
+                        lign = [logname.endswith(n) for n in IGNORED_LOG_NAMES]
                         if sum(lign):
                             continue
                         log = logs[logname]

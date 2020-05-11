@@ -215,7 +215,7 @@ class RTDC_TDMS(RTDCBase):
 
         # Additional information from commented-out log-file (manual)
         with config_paths[0].open("r", errors="replace") as fd:
-            lns = [l[1:].strip() for l in fd.readlines() if l.startswith("#")]
+            lns = [s[1:].strip() for s in fd.readlines() if s.startswith("#")]
             if lns and lns[0] == "[FLUOR]":
                 if ("software version" not in dclab_config["setup"]
                         and lns[1].startswith("fRTDC")):
@@ -251,7 +251,7 @@ class RTDC_TDMS(RTDCBase):
                 log_files.append(pl)
         for pp in log_files:
             with pp.open("r", errors="replace") as f:
-                cfg = [l.strip() for l in f.readlines()]
+                cfg = [s.strip() for s in f.readlines()]
             self.logs[pp.name] = cfg
 
     def _complete_config_tdms(self, residual_config={}):

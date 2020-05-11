@@ -120,7 +120,7 @@ class H5Logs(object):
         if "logs" in self._h5:
             log = list(self._h5["logs"][key])
             if isinstance(log[0], bytes):
-                log = [l.decode("utf") for l in log]
+                log = [li.decode("utf") for li in log]
         else:
             raise KeyError("No logs in {}!".format(self._h5.file.filename))
         return log

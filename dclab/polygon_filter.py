@@ -135,7 +135,7 @@ class PolygonFilter(object):
             data = fd.readlines()
 
         # Get the strings that correspond to self.fileid
-        bool_head = [l.strip().startswith("[") for l in data]
+        bool_head = [li.strip().startswith("[") for li in data]
 
         int_head = np.squeeze(np.where(bool_head))
         int_head = np.atleast_1d(int_head)
@@ -150,7 +150,7 @@ class PolygonFilter(object):
         subdata = data[start:end]
 
         # separate all elements and strip them
-        subdata = [[it.strip() for it in l.split("=")] for l in subdata]
+        subdata = [[it.strip() for it in li.split("=")] for li in subdata]
 
         points = []
 

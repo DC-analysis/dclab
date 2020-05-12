@@ -1,5 +1,5 @@
 0.26.1
- - enh: cache more data online data in fmt_dcor 
+ - enh: cache more online data in fmt_dcor 
  - enh: add `dclab.warn.PipelineWarning` which is used as a parent
    class for warnings that a user might be interested in
  - fix: temperature warnings during emodulus computation revealed

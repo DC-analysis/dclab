@@ -3,6 +3,7 @@
 """RT-DC .tdms file format"""
 from __future__ import division, print_function
 
+from distutils.version import LooseVersion
 import pathlib
 import time
 
@@ -18,6 +19,8 @@ try:
 except PyImportError:
     NPTDMS_AVAILABLE = False
 else:
+    if LooseVersion(nptdms.__version__) < LooseVersion("0.23.0"):
+        raise ValueError("Please install nptdms>=0.23.0")
     NPTDMS_AVAILABLE = True
     from .event_contour import ContourColumn
     from .event_image import ImageColumn

@@ -5,8 +5,10 @@ Young's modulus computation
 ===========================
 The computation of the Young's modulus uses a look-up table (LUT) that was
 derived from finite elements methods :cite:`Mokbel2017` and the analytical
-solution :cite:`Mietke2015`. The LUT was computed using a linear elastic
-sphere model in an axis-symmetric channel (2D). The model computations
+solution :cite:`Mietke2015`. The LUT was generated with an incompressible
+(Poisson's ratio of 0.5) linear elastic sphere model (an artificial viscosity
+was added to avoid division-by-zero errors) in an axis-symmetric channel (2D).
+The model computations
 take into account the equivalent channel radius for a square channel
 cross-section with the factor 1.094 (see also supplement S3 in
 :cite:`Mietke2015`). The original data used to generate the LUT are

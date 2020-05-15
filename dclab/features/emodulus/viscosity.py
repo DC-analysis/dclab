@@ -22,6 +22,20 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
                   temperature=23.0):
     """Returns the viscosity for RT-DC-specific media
 
+    Media that are not pure (e.g. ketchup or polymer solutions)
+    often exhibit a non-linear relationship between shear rate
+    (determined by the velocity profile) and shear stress
+    (determined by pressure differences). If the shear stress
+    grows non-linearly with the shear rate resulting in a slope
+    in log-log space that is less than one, then we are talking about
+    shear thinning. The viscosity is not a constant anymore (as it
+    is e.g. for water). At higher flow rates, the viscosity becomes
+    smaller, following a power law. Christoph Herold characterized
+    shear thinning for the CellCarrier media :cite:`Herold2017`.
+    The resulting formulae for computing the viscosities of these
+    media at different channel widths, flow rates, and temperatures,
+    are implemented here.
+
     Parameters
     ----------
     medium: str

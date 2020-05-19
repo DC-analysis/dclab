@@ -12,11 +12,24 @@ from .external.statsmodels.nonparametric.kernel_density import KDEMultivariate
 
 
 def bin_num_doane(a):
-    """Compute number of bins based on Doane's formula"""
+    """Compute number of bins based on Doane's formula
+
+    Notes
+    -----
+    If the bin width cannot be determined, then a bin
+    number of 5 is returned.
+
+    See Also
+    --------
+    bin_width_doane: method used to compute the bin width
+    """
     bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
     acc = bin_width_doane(a)
-    num = np.int(np.round((data.max() - data.min()) / acc))
+    if acc == 0 or np.isnan(acc):
+        num = 5
+    else:
+        num = np.int(np.round((data.max() - data.min()) / acc))
     return num
 
 
@@ -58,7 +71,7 @@ def bin_width_percentile(a):
     The Freedman–Diaconis rule uses the interquartile range and
     normalizes to the third root of len(a). Such things do not
     work very well for RT-DC data, because len(a) is huge. Here
-    we use just the top an bottom 10th percentiles with a fixed
+    we use just the top and bottom 10th percentiles with a fixed
     normalization.
     """
     bad = np.isnan(a) | np.isinf(a)

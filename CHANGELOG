@@ -1,3 +1,7 @@
+0.26.2
+ - fix: `kde_methods.bin_num_doane` now uses 5 as default if it
+   ecounters nan or zero-division
+ - docs: updates related to Young's modulus computation
 0.26.1
  - enh: cache more online data in fmt_dcor 
  - enh: add `dclab.warn.PipelineWarning` which is used as a parent

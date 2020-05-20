@@ -92,6 +92,20 @@ def test_nan_warning():
     assert np.sum(ds.filter.all) == 4255
 
 
+def test_only_one_boundary_error():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ddict["area_um"][[1, 4, 6]] = np.nan
+    ds = new_dataset(ddict)
+    amin, amax = np.nanmin(ds["area_um"]), np.nanmax(ds["area_um"])
+    ds.config["filtering"]["area_um min"] = (amax + amin) / 2
+    try:
+        ds.apply_filter()
+    except ValueError:
+        pass
+    else:
+        assert False, "setting only half of a box filter should not work"
+
+
 def test_remove_ancillary_feature():
     """When a feature is removed, the box boolean filter must be deleted"""
     ddict = example_data_dict(size=8472, keys=["area_um", "deform",

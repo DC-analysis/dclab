@@ -175,11 +175,6 @@ class Configuration(object):
         self["filtering"]["polygon filters"] = []
         # Defaults to no hierarchy parent
         self["filtering"]["hierarchy parent"] = "none"
-        # Check for missing min/max values and set them to zero
-        for item in dfn.scalar_feature_names:
-            appends = [" min", " max"]
-            for a in appends:
-                self["filtering"][item + a] = 0
 
         # Make sure that all filtering values have a default value
         # (otherwise we will get problems with resetting filters)

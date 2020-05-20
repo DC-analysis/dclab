@@ -150,6 +150,7 @@ def test_manual_exclude_parent_changed():
     c = new_dataset(p)
     c.filter.manual[5] = False
     c.apply_filter()
+    p.config["filtering"]["tilt min"] = 0
     p.config["filtering"]["tilt max"] = .5
     p.apply_filter()
     assert np.sum(p.filter.all) == 21

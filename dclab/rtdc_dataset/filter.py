@@ -155,6 +155,11 @@ class Filter(object):
             must_be_filtered = (fstart in cfg_cur
                                 and fend in cfg_cur
                                 and cfg_cur[fstart] != cfg_cur[fend])
+            if ((fstart in cfg_cur and fend not in cfg_cur)
+                    or (fstart not in cfg_cur and fend in cfg_cur)):
+                # User is responsible for setting min and max values!
+                raise ValueError("Box filter: Please make sure that both "
+                                 "'{}' and '{}' are set!".format(fstart, fend))
             if feat in self.features:
                 # Get the current feature filter
                 feat_filt = self[feat]

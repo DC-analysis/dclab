@@ -9,10 +9,11 @@
    by `dclab.definitions.feature_exists` where applicable
  - ref: replace access of `dclab.definitions.feature_name2label`
    by `dclab.definitions.get_feature_label` where applicable
+ - ref: do not automatically fill up all the box filtering ranges
+   in `RTDCBase.config["filtering"]` with zeros; raise ValueError
+   if user forgets to set both ranges
  - TODO: feat: introduce ancillary feature `ml_class` which is
    defined by the `ml_score_???` features
- - TODO: ref: do not automatically fill up all the filtering ranges
-   in RTDCBase.filter
 0.26.2
  - fix: `kde_methods.bin_num_doane` now uses 5 as default if it
    ecounters nan or zero-division

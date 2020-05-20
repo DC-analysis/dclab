@@ -37,7 +37,7 @@ class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):
                 return ds.config
             elif query == "feature_list":
                 return ds.features
-            elif query == "feature" and feat in dclab.dfn.scalar_feature_names:
+            elif query == "feature" and dclab.dfn.scalar_feature_exists(feat):
                 return ds[feat]
             elif query == "trace_list":
                 return sorted(ds["trace"].keys())

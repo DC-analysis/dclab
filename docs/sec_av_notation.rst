@@ -40,8 +40,8 @@ The following features are supported by dclab:
         ds = dclab.new_dataset("data/example.rtdc")
         ax = plt.subplot(111)
         ax.plot(ds["area_um"], ds["deform"], "o", alpha=.2)
-        ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-        ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+        ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+        ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
         plt.show()
 
 **Example**: event image plot
@@ -105,8 +105,8 @@ Min/max filters are also defined in the *filters* section:
         axes[1].set_title("Deformation <= 0.1")
 
         for ax in axes:
-            ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-            ax.set_ylabel(dclab.dfn.feature_name2label["bright_avg"])
+            ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+            ax.set_ylabel(dclab.dfn.get_feature_label("bright_avg"))
 
         plt.tight_layout()
         plt.show()
@@ -127,8 +127,8 @@ Min/max filters are also defined in the *filters* section:
         
         ax = plt.subplot(111)
         ax.plot(ds["area_um"][fid], ds["deform"][fid], "o", alpha=.2)
-        ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-        ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+        ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+        ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
         plt.show()
 
 .. _sec_experiment_meta:

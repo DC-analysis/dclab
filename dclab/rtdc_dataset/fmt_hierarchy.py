@@ -261,7 +261,7 @@ class RTDC_Hierarchy(RTDCBase):
         # to `self._events` in `self.apply_filter`.
         if key not in self._events:
             item = self.hparent[key]
-            if key in dfn.scalar_feature_names:
+            if dfn.scalar_feature_exists(key):
                 self._events[key] = item[self.hparent.filter.all]
         return self._events[key]
 

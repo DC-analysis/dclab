@@ -440,8 +440,8 @@ def load_mtext(path):
         else:
             ft = hh
             un = ""
-        if ft not in dfn.scalar_feature_names:
-            raise ValueError("Feature not known: '{}'".format(ft))
+        if not dfn.scalar_feature_exists(ft):
+            raise ValueError("Scalar feature not known: '{}'".format(ft))
         feats.append(ft)
         units.append(un)
     # data

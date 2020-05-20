@@ -156,13 +156,13 @@ class FeatureCache(object):
 
     def __getitem__(self, key):
         # user-level checking is done in core.py
-        assert key in dfn.feature_names
+        assert dfn.feature_exists(key)
         if key not in self._features:
             raise KeyError("Feature '{}' not found!".format(key))
 
         if key in self._scalar_cache:
             return self._scalar_cache[key]
-        elif key in dfn.scalar_feature_names:
+        elif dfn.scalar_feature_exists(key):
             # download the feature and cache it
             feat = np.asarray(self.api.get(query="feature", feat=key))
             self._scalar_cache[key] = feat

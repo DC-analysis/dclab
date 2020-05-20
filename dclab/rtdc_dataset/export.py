@@ -119,7 +119,7 @@ class Export(object):
             Path to an .fcs file. The ending .fcs is added automatically.
         features: list of str
             The features in the resulting .fcs file. These are strings
-            that are defined in `dclab.definitions.scalar_feature_names`,
+            that are defined by `dclab.definitions.scalar_feature_exists`,
             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
         meta_data: dict
             User-defined, optional key-value pairs that are stored
@@ -151,14 +151,14 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                 str(path).encode("ascii", "ignore")) +
                 "Please use the `override=True` option.")
-        # Check that features are in dfn.scalar_feature_names
+        # Check that features are valid
         for c in features:
-            if c not in dfn.scalar_feature_names:
-                msg = "Unknown or unsupported feature name: {}".format(c)
+            if c not in ds.features_scalar:
+                msg = "Invalid feature name: {}".format(c)
                 raise ValueError(msg)
 
         # Collect the header
-        chn_names = [dfn.feature_name2label[c] for c in features]
+        chn_names = [dfn.get_feature_label(c, rtdc_ds=ds) for c in features]
 
         # Collect the data
         if filtered:
@@ -185,7 +185,7 @@ class Export(object):
             automatically.
         features: list of str
             The features in the resulting .rtdc file. These are strings
-            that are defined in `dclab.definitions.feature_names`, e.g.
+            that are defined by `dclab.definitions.feature_exists`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "image".
         filtered: bool
             If set to `True`, only the filtered data
@@ -266,7 +266,7 @@ class Export(object):
             Path to a .tsv file. The ending .tsv is added automatically.
         features: list of str
             The features in the resulting .tsv file. These are strings
-            that are defined in `dclab.definitions.scalar_feature_names`,
+            that are defined by `dclab.definitions.scalar_feature_exists`,
             e.g. "area_cvx", "deform", "frame", "fl1_max", "aspect".
         meta_data: dict
             User-defined, optional key-value pairs that are stored
@@ -291,10 +291,10 @@ class Export(object):
             raise OSError("File already exists: {}\n".format(
                 str(path).encode("ascii", "ignore")) +
                 "Please use the `override=True` option.")
-        # Check that features are in dfn.scalar_feature_names
+        # Check that features exist
         for c in features:
-            if c not in dfn.scalar_feature_names:
-                raise ValueError("Unknown feature name {}".format(c))
+            if c not in ds.features_scalar:
+                raise ValueError("Invalid feature name {}".format(c))
         meta_data["dclab version"] = version
         # Write BOM header
         with path.open("wb") as fd:
@@ -308,7 +308,8 @@ class Export(object):
             # write header
             header1 = "\t".join([c for c in features])
             fd.write("# "+header1+"\n")
-            header2 = "\t".join([dfn.feature_name2label[c] for c in features])
+            labels = [dfn.get_feature_label(c, rtdc_ds=ds) for c in features]
+            header2 = "\t".join(labels)
             fd.write("# "+header2+"\n")
 
         with path.open("ab") as fd:

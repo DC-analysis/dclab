@@ -102,9 +102,10 @@ def get_statistics(ds, methods=None, features=None):
         `dclab.statistics.Statistics.available_methods.keys()`
         If set to `None`, statistics for all methods are computed.
     features: list of str
-        Feature name identifiers are defined in
-        `dclab.definitions.scalar_feature_names`.
-        If set to `None`, statistics for all axes are computed.
+        Feature name identifiers are defined by
+        `dclab.definitions.feature_exists`.
+        If set to `None`, statistics for all scalar features
+        available are computed.
 
     Returns
     -------
@@ -122,7 +123,7 @@ def get_statistics(ds, methods=None, features=None):
         methods = me1 + me2
 
     if features is None:
-        features = dfn.scalar_feature_names
+        features = ds.features_scalar
     else:
         features = [a.lower() for a in features]
 
@@ -140,7 +141,8 @@ def get_statistics(ds, methods=None, features=None):
                     values.append(meth(ds=ds, feature=ft))
                 else:
                     values.append(np.nan)
-                header.append(" ".join([mt, dfn.feature_name2label[ft]]))
+                label = dfn.get_feature_label(ft, rtdc_ds=ds)
+                header.append(" ".join([mt, label]))
             else:
                 # Prevent multiple entries of this method.
                 if not header.count(mt):

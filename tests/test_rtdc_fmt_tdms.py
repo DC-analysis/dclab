@@ -331,7 +331,7 @@ def test_mask_img_wrong_config_shape_2():
 
 def test_naming_valid():
     for key in dclab.rtdc_dataset.fmt_tdms.naming.dclab2tdms:
-        assert key in dclab.definitions.feature_names
+        assert dclab.definitions.feature_exists(key)
 
 
 def test_parameters_txt():

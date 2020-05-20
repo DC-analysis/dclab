@@ -8,7 +8,7 @@ import copy
 from .parse_funcs import fbool, fint, fintlist, func_types, lcstr
 
 
-# All configuration keywords editable by the user
+#: All configuration keywords editable by the user
 CFG_ANALYSIS = {
     # filtering parameters
     "filtering": [
@@ -33,7 +33,7 @@ CFG_ANALYSIS = {
     ]
 }
 
-# All read-only configuration keywords for a measurement
+#: All read-only configuration keywords for a measurement
 CFG_METADATA = {
     # All parameters related to the actual experiment
     "experiment": [
@@ -146,7 +146,10 @@ CFG_METADATA = {
     ],
 }
 
-# List of scalar features (one number per event).
+#: List of scalar (one scalar value per event) features. This
+#: list does not include the `ml_score_???` features. If you
+#: need find out whether a feature name is valid, please use
+#: :func:`is_valid_feature`.
 FEATURES_SCALAR = [
     ["area_cvx", "Convex area [px]"],
     # area_msd is the contour moment M00
@@ -198,6 +201,10 @@ FEATURES_SCALAR = [
     ["inert_ratio_cvx", "Inertia ratio of convex contour"],
     ["inert_ratio_prnc", "Principal inertia ratio of raw contour"],
     ["inert_ratio_raw", "Inertia ratio of raw contour"],
+    # This is an ancillary integer feature for visualizing the class
+    # membership of individual events based on the `ml_score_???`
+    # features.
+    ["ml_class", "Total number of events in the same image"],
     ["nevents", "Total number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
@@ -222,7 +229,7 @@ for _i in range(10):
                             "User defined {}".format(_i)
                             ])
 
-# List of non-scalar features
+#: List of non-scalar features
 FEATURES_NON_SCALAR = [
     # This is a (M, 2)-shaped array with integer contour coordinates
     ["contour", "Binary event contour image"],
@@ -233,7 +240,7 @@ FEATURES_NON_SCALAR = [
     ["trace", "Dictionary of fluorescence traces"],
 ]
 
-# List of fluorescence traces
+#: List of fluorescence traces
 FLUOR_TRACES = [
     "fl1_median",
     "fl1_raw",
@@ -283,5 +290,55 @@ feature_name2label = {}
 for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR:
     feature_name2label[_cc[0]] = _cc[1]
 
-#: list of all scalar feature names
+#: list of scalar feature names
 scalar_feature_names = [_cc[0] for _cc in FEATURES_SCALAR]
+
+
+def feature_exists(name, scalar_only=False):
+    """Return True if `name` is a valid feature name
+
+    This function not only checks whether `name` is in
+    :const:`feature_names`, but also validates against
+    the machine learning scores `ml_score_???` (where
+    `?` can be a digit or a lower-case letter in the
+    English alphabet).
+    """
+    valid = False
+    if name in scalar_feature_names:
+        # scalar feature
+        valid = True
+    elif not scalar_only and name in feature_names:
+        # non-scalar feature
+        valid = True
+    else:
+        # check whether we have an `ml_score_???` feature
+        valid_chars = "0123456789abcdefghijklmnopqrstuvwxyz"
+        if (name.startswith("ml_score_")
+            and len(name) == len("ml_score_???")
+            and name[-3] in valid_chars
+            and name[-2] in valid_chars
+                and name[-1] in valid_chars):
+            valid = True
+    return valid
+
+
+def get_feature_label(name, rtdc_ds=None):
+    """Return the label corresponding to a feature name
+
+    This function not only checks :const:`feature_name2label`,
+    but also supports the `ml_score_???` features.
+
+    TODO: If an RTDCBase object is given, then the feature
+    label can be extracted from ancillary information.
+    """
+    assert feature_exists(name)
+    if name in feature_name2label:
+        label = feature_name2label[name]
+    else:
+        label = "ML score {}".format(name[-3:])
+    return label
+
+
+def scalar_feature_exists(name):
+    """Convenience method wrapping `feature_exists(..., scalar_only=True)`"""
+    return feature_exists(name, scalar_only=True)

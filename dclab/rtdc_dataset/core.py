@@ -115,7 +115,7 @@ class RTDCBase(object):
     def __iter__(self):
         """An iterator over all valid scalar features"""
         mycols = []
-        for col in dfn.scalar_feature_names:
+        for col in self._feature_candidates:
             if col in self:
                 mycols.append(col)
         mycols.sort()
@@ -215,6 +215,20 @@ class RTDCBase(object):
             return acc
 
     @property
+    def _feature_candidates(self):
+        """List of feature candidates for this dataset
+
+        Use with caution! Features in this list might not actually
+        be available. Always check against `__contains__`.
+        """
+        feats = list(self._events.keys())
+        feats += list(AncillaryFeature.feature_names)
+        feats = sorted(set(feats))
+        # exclude non-standard features
+        featsv = [ff for ff in feats if dfn.feature_exists(ff)]
+        return featsv
+
+    @property
     def _filter(self):
         """return the current filter boolean array"""
         warnings.warn("RTDCBase._filter is deprecated. Please use "
@@ -244,7 +258,7 @@ class RTDCBase(object):
     def features(self):
         """All available features"""
         mycols = []
-        for col in dfn.feature_names:
+        for col in self._feature_candidates:
             if col in self:
                 mycols.append(col)
         mycols.sort()
@@ -277,6 +291,12 @@ class RTDCBase(object):
                 # only in rare cases.
                 features_loaded.append(feat)
         return features_loaded
+
+    @property
+    def features_scalar(self):
+        """All scalar features available"""
+        sclr = [ft for ft in self.features if dfn.scalar_feature_exists(ft)]
+        return sclr
 
     @abc.abstractproperty
     def hash(self):

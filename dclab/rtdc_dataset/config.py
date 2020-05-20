@@ -264,7 +264,7 @@ def verify_section_key(section, key):
     elif section == "filtering":
         if key.endswith(" min") or key.endswith(" max"):
             feat = key[:-4]
-            if feat not in dfn.scalar_feature_names:
+            if not dfn.scalar_feature_exists(feat):
                 warnings.warn(
                     "A range has been specified for an unknown feature "
                     + "'{}' in the 'filtering' section!".format(feat),
@@ -394,7 +394,7 @@ def keyval_str2typ(var, val):
             return var, False
         elif val[0] in ["'", '"'] and val[-1] in ["'", '"']:
             return var, val.strip("'").strip('"').strip()
-        elif val in dfn.scalar_feature_names:
+        elif dfn.scalar_feature_exists(val):
             return var, val
         else:
             try:

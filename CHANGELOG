@@ -1,3 +1,18 @@
+0.27.0
+ - feat: introduce new feature names `ml_score_???` where `?`
+   can be a digit or a lower-case letter of the alphabet
+ - feat: introduce new functions `dclab.definitions.feature_exists`
+   and `dclab.definitions.scalar_feature_exists` for checking the
+   existence of features (including the `ml_score_???` features
+   which are not in `dclab.definitions.feature_names`)
+ - ref: replace check for `dclab.definitions.feature_names`
+   by `dclab.definitions.feature_exists` where applicable
+ - ref: replace access of `dclab.definitions.feature_name2label`
+   by `dclab.definitions.get_feature_label` where applicable
+ - TODO: feat: introduce ancillary feature `ml_class` which is
+   defined by the `ml_score_???` features
+ - TODO: ref: do not automatically fill up all the filtering ranges
+   in RTDCBase.filter
 0.26.2
  - fix: `kde_methods.bin_num_doane` now uses 5 as default if it
    ecounters nan or zero-division

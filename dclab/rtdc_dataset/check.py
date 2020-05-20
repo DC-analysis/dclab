@@ -293,15 +293,16 @@ class IntegrityChecker(object):
                         category="feature size"))
         return cues
 
-    def check_features_unknown(self, **kwargs):
+    def check_features_unknown_hdf5(self, **kwargs):
         """check for feature column names"""
         cues = []
-        for feat in self.ds._events.keys():
-            if feat not in dfn.feature_names:
-                cues.append(ICue(
-                    msg="Features: Unknown key '{}'".format(feat),
-                    level="violation",
-                    category="feature unknown"))
+        if self.ds.format == "hdf5":
+            for feat in self.ds._h5["events"]:
+                if not dfn.feature_exists(feat):
+                    cues.append(ICue(
+                        msg="Features: Unknown key '{}'".format(feat),
+                        level="violation",
+                        category="feature unknown"))
         return cues
 
     def check_fl_metadata_channel_names(self, **kwargs):

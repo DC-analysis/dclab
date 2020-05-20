@@ -37,7 +37,7 @@ class Filter(object):
 
     def __getitem__(self, key):
         """Return the filter for a feature in `self.features`"""
-        if key in self.features and key in dfn.scalar_feature_names:
+        if key in self.features and dfn.scalar_feature_exists(key):
             if key not in self._box_filters:
                 # Generate filters on-the-fly
                 self._box_filters[key] = np.ones(self.size, dtype=bool)
@@ -47,7 +47,7 @@ class Filter(object):
 
     def _init_rtdc_ds(self, rtdc_ds):
         #: Available feature names
-        self.features = rtdc_ds.features
+        self.features = rtdc_ds.features_scalar
         if hasattr(self, "size") and self.size != len(rtdc_ds):
             raise ValueError("Change of RTDCBase size not supported!")
         self.size = len(rtdc_ds)
@@ -126,23 +126,22 @@ class Filter(object):
         # 1. Invalid filters
         self.invalid[:] = True
         if cfg_cur["remove invalid events"]:
-            for feat in dfn.scalar_feature_names:
-                if feat in self.features:
-                    data = rtdc_ds[feat]
-                    invalid = np.isinf(data) | np.isnan(data)
-                    self.invalid &= ~invalid
+            for feat in self.features:
+                data = rtdc_ds[feat]
+                invalid = np.isinf(data) | np.isnan(data)
+                self.invalid &= ~invalid
 
         # 2. Filter all feature min/max values.
         feat2filter = []
         for k in newkeys:
             # k[:-4] because we want to crop " min" and " max"
-            if (k[:-4] in dfn.scalar_feature_names
+            if (dfn.scalar_feature_exists(k[:-4])
                     and (k.endswith(" min") or k.endswith(" max"))):
                 feat2filter.append(k[:-4])
 
         for f in force:
             # add forced features
-            if f in dfn.scalar_feature_names:
+            if dfn.scalar_feature_exists(f):
                 feat2filter.append(f)
             else:
                 # Make sure the feature name is valid.

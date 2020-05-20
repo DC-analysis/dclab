@@ -140,8 +140,8 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
         The path or the hdf5 file object to write to.
     data: dict-like
         The data to store. Each key of `data` must be a valid
-        feature name (see `dclab.dfn.feature_names`). The data
-        type must be given according to the feature type:
+        feature name (see :func:`dclab.dfn.feature_exists`). The
+        data type must be given according to the feature type:
 
         - scalar feature: 1d ndarray of size `N`, any dtype,
           with the number of events `N`.
@@ -227,7 +227,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
     # Check feature keys
     feat_keys = []
     for kk in data:
-        if kk in dfn.feature_names:
+        if dfn.feature_exists(kk):
             feat_keys.append(kk)
         else:
             raise ValueError("Unknown key '{}'!".format(kk))
@@ -278,7 +278,7 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
                 del events[rk]
     # store experimental data
     for fk in feat_keys:
-        if fk in dfn.scalar_feature_names:
+        if dfn.scalar_feature_exists(fk):
             store_scalar(h5group=events,
                          name=fk,
                          data=data[fk],

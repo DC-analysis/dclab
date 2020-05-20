@@ -22,8 +22,8 @@ SCATTER_Y = "deform"
 # Event index to display
 EVENT_INDEX = 100
 
-xlabel = dclab.dfn.feature_name2label[SCATTER_X]
-ylabel = dclab.dfn.feature_name2label[SCATTER_Y]
+xlabel = dclab.dfn.get_feature_label(SCATTER_X)
+ylabel = dclab.dfn.get_feature_label(SCATTER_Y)
 
 ds = dclab.new_dataset(DATASET_PATH)
 

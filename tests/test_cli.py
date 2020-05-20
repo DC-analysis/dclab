@@ -5,7 +5,7 @@ from __future__ import print_function, unicode_literals
 
 import sys
 
-from dclab import cli, dfn, new_dataset, rtdc_dataset
+from dclab import cli, new_dataset, rtdc_dataset
 import h5py
 import imageio
 import numpy as np
@@ -138,7 +138,7 @@ def test_repack_basic():
         assert len(dsj)
         assert len(dsj) == len(ds0)
         for feat in ds0.features_innate:
-            if feat in dfn.scalar_feature_names:
+            if feat in ds0.features_scalar:
                 assert np.all(dsj[feat] == ds0[feat]), feat
         for ii in range(len(ds0)):
             assert np.all(dsj["contour"][ii] == ds0["contour"][ii])

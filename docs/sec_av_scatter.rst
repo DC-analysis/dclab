@@ -26,8 +26,8 @@ function.
     
     ax = plt.subplot(111, title="scatter plot with {} events".format(len(kde)))
     sc = ax.scatter(ds["area_um"], ds["deform"], c=kde, marker=".")
-    ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-    ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+    ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
     ax.set_xlim(0, 150)
     ax.set_ylim(0.01, 0.12)
     plt.colorbar(sc, label="kernel density estimate [a.u]")
@@ -51,8 +51,8 @@ visualization is almost indistinguishable from the one above.
 
     ax = plt.subplot(111, title="downsampled to {} events".format(len(kde)))
     sc = ax.scatter(xsamp, ysamp, c=kde, marker=".")
-    ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-    ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+    ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
     ax.set_xlim(0, 150)
     ax.set_ylim(0.01, 0.12)
     plt.colorbar(sc, label="kernel density estimate [a.u]")
@@ -84,9 +84,9 @@ offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
     ax2 = plt.subplot(122, title="KDE with logarithmic y-scale")
     sc2 = ax2.scatter(ds["area_um"], ds["deform"], c=kde_log, marker=".")
 
-    ax1.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    ax1.set_ylabel(dclab.dfn.get_feature_label("deform"))
     for ax in [ax1, ax2]:
-        ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
+        ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
         ax.set_xlim(0, 150)
         ax.set_ylim(6e-3, 3e-1)
         ax.set_yscale("log")
@@ -118,8 +118,8 @@ Isoelasticity lines are available via the
     for ss in iso:
         ax.plot(ss[:, 0], ss[:, 1], color="gray", zorder=1)
     sc = ax.scatter(ds["area_um"], ds["deform"], c=kde, marker=".", zorder=2)
-    ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-    ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+    ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
     ax.set_xlim(0, 150)
     ax.set_ylim(0.01, 0.12)
     plt.colorbar(sc, label="kernel density estimate [a.u]")
@@ -161,8 +161,8 @@ using :func:`dclab.kde_contours.get_quantile_levels`.
                     linewidths=[2, 2, 3],
                     zorder=2)
 
-    ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-    ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+    ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
     ax.set_xlim(0, 150)
     ax.set_ylim(0.01, 0.12)
     # label contour lines with percentiles
@@ -201,8 +201,8 @@ in Shape-Out and then import them in dclab.
     ax = plt.subplot(111, title="polygon filtering")
     ax.scatter(ds["area_um"][~val], ds["deform"][~val], c="lightgray", marker=".")
     sc = ax.scatter(ds["area_um"][val], ds["deform"][val], c=kde[val], marker=".")
-    ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-    ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+    ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+    ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
     ax.set_xlim(0, 150)
     ax.set_ylim(0.01, 0.12)
     plt.colorbar(sc, label="kernel density estimate [a.u]")

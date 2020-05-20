@@ -86,14 +86,14 @@ could possibly be available in [setup]: 'temperature'.
     ax1.plot(ds["deform"], ds["emodulus"], ".", color="k", markersize=1, alpha=.3)
     ax1.set_ylim(0.1, 5)
     ax1.set_xlim(0.005, 0.145)
-    ax1.set_xlabel(dclab.dfn.feature_name2label["deform"])
-    ax1.set_ylabel(dclab.dfn.feature_name2label["emodulus"])
+    ax1.set_xlabel(dclab.dfn.get_feature_label("deform"))
+    ax1.set_ylabel(dclab.dfn.get_feature_label("emodulus"))
     
     ax2 = plt.subplot(122)
     ax2.plot(ds["area_um"], ds["emodulus"], ".", color="k", markersize=1, alpha=.3)
     ax2.set_ylim(0.1, 5)
     ax2.set_xlim(30, 120)
-    ax2.set_xlabel(dclab.dfn.feature_name2label["area_um"])
+    ax2.set_xlabel(dclab.dfn.get_feature_label("area_um"))
     
     
     plt.show()

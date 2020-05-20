@@ -18,8 +18,9 @@ class RTDC_Dict(RTDCBase):
         Parameters
         ----------
         ddict: dict
-            Dictionary with keys from `dclab.definitions.feature_names`
-            (e.g. "area_cvx", "deform", "image") with which the class
+            Dictionary with features as keys (valid features like
+            "area_cvx", "deform", "image" are defined by
+            `dclab.definitions.feature_exists`) with which the class
             will be instantiated. The configuration is set to the
             default configuration of dclab.
         *args:

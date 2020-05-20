@@ -194,9 +194,8 @@ def condense(path_out=None, path_in=None):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         with new_dataset(path_in) as ds:
-            feats = [f for f in ds.features if f in dfn.scalar_feature_names]
             ds.export.hdf5(path=path_out,
-                           features=feats,
+                           features=ds.features_scalar,
                            filtered=False,
                            compression="gzip",
                            override=True)

@@ -36,8 +36,8 @@ ax.legend(handles=[line, dotted])
 
 ax.set_xlim(50, 240)
 ax.set_ylim(0, 0.02)
-ax.set_xlabel(dclab.dfn.feature_name2label["area_um"])
-ax.set_ylabel(dclab.dfn.feature_name2label["deform"])
+ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
 
 plt.tight_layout()
 plt.show()

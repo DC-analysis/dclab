@@ -378,7 +378,7 @@ class Isoelastics(object):
 
 class IsoelasticsDict(dict):
     def __getitem__(self, key):
-        if key in VALID_METHODS + dfn.scalar_feature_names:
+        if key in VALID_METHODS or key in dfn.scalar_feature_names:
             if key not in self:
                 self[key] = IsoelasticsDict()
         return super(IsoelasticsDict, self).__getitem__(key)

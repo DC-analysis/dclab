@@ -73,7 +73,7 @@ class H5Events(object):
 
     def __getitem__(self, key):
         # user-level checking is done in core.py
-        assert key in dfn.feature_names
+        assert dfn.feature_exists(key), "Feature '{}' not valid!".format(key)
         data = self._h5["events"][key]
         if key in ["image", "trace"]:
             return data

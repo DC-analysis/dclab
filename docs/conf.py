@@ -193,5 +193,5 @@ intersphinx_mapping = {"python": ('https://docs.python.org/', None),
                        "numpy": ('http://docs.scipy.org/doc/numpy', None),
                        "skimage": ('http://scikit-image.org/docs/stable/', None),
                        "scipy": ('https://docs.scipy.org/doc/scipy/reference/', None),
-                       "shapeout": ('http://shapeout.readthedocs.io/en/stable', None),
+                       "shapeout2": ('http://shapeout2.readthedocs.io/en/stable', None),
                        }

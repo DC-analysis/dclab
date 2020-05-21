@@ -4,20 +4,22 @@
 Young's modulus computation
 ===========================
 The computation of the Young's modulus uses a look-up table (LUT) that was
-derived from finite elements methods :cite:`Mokbel2017` and the analytical
-solution :cite:`Mietke2015`. The LUT was generated with an incompressible
-(Poisson's ratio of 0.5) linear elastic sphere model (an artificial viscosity
-was added to avoid division-by-zero errors) in an axis-symmetric channel (2D).
-The model computations
-take into account the equivalent channel radius for a square channel
-cross-section with the factor 1.094 (see also supplement S3 in
-:cite:`Mietke2015`). The original data used to generate the LUT are
-available on figshare :cite:`FigshareWittwer2020`. 
+derived from simulations based on the finite elements method (FEM)
+:cite:`Mokbel2017` and the analytical solution :cite:`Mietke2015`.
+The LUT was generated with an incompressible (Poisson's ratio of 0.5)
+linear elastic sphere model (an artificial viscosity was added to
+avoid division-by-zero errors) in an axis-symmetric channel (2D).
+Although the simulations were carried out in this cylindrical symmetry,
+they can be mapped onto a square cross-sectional channel by adjusting
+the channel radius to approximately match the desired flow profile.
+This was done with the spatial scaling factor 1.094
+(see also supplement S3 in :cite:`Mietke2015`). The original data
+used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
 
-The computation takes into account corrections for the viscosity
-(medium, channel width, flow rate, and temperature) :cite:`Mietke2015`
-and corrections for pixelation of the area and the deformation which
-are computed from a (pixelated) image :cite:`Herold2017`.
+The computations take into account scale conversions (channel width,
+flow rate) :cite:`Mietke2015`, pixelation effects for deformation
+:cite:`Herold2017`, and shear-thinning (for CellCarrier media)
+:cite:`Herold2017`.
 
 Since the Young's modulus is model-dependent, it is not made available
 right away as an :ref:`ancillary feature <sec_features_ancillary>`
@@ -60,7 +62,7 @@ C) Compute the Young's modulus using the viscosities of known media.
 The key 'emodulus model' currently (2019) only supports the value
 'elastic sphere'. The key 'emodulus medium' must be one of the
 supported media defined in
-:data:`dclab.features.emodulus_viscosity.KNOWN_MEDIA` and can be
+:data:`dclab.features.emodulus.viscosity.KNOWN_MEDIA` and can be
 taken from [setup]: 'medium'.
 The key 'emodulus temperature' is the mean chip temperature and
 could possibly be available in [setup]: 'temperature'.

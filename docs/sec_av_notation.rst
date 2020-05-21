@@ -104,7 +104,10 @@ Min/max filters are also defined in the *filters* section:
     aspect max, Exclude events with an aspect ratio above this value
     ..., ...
 
-**Example**: excluding events with large deformation 
+Examples
+........
+
+**excluding events with large deformation**
 
     .. plot::
         
@@ -131,7 +134,8 @@ Min/max filters are also defined in the *filters* section:
         plt.show()
 
 
-**Example**: excluding random events
+**excluding random events**
+
     This is useful if you need to have a (sub-)dataset of a specified
     size. The downsampling is reproducible (the same points are excluded).
 

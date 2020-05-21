@@ -53,9 +53,13 @@ features
 --------
 Features are discussed in more detail in: :ref:`sec_features`.
 
-.. data:: dclab.dfn.FEATURES_SCALAR
 
-    Scalar features
+.. autofunction:: dclab.dfn.feature_exists
+
+.. autofunction:: dclab.dfn.get_feature_label
+
+.. autofunction:: dclab.dfn.scalar_feature_exists
+
 
 .. data:: dclab.dfn.FEATURES_NON_SCALAR
 

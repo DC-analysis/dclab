@@ -180,7 +180,7 @@ yourself using the function :func:`dclab.kde_contours.find_contours_level`.
 Polygon filters / Shape-Out
 ---------------------------
 Keep in mind that you can combine your dclab analysis pipeline with
-:ref:`Shape-Out <shapeout:index>`. For instance, you can create and export
+:ref:`Shape-Out <shapeout2:index>`. For instance, you can create and export
 :ref:`polygon filters <sec_ref_polygon_filter>`
 in Shape-Out and then import them in dclab.
 

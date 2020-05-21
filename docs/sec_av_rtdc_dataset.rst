@@ -6,12 +6,14 @@ RT-DC datasets
 Knowing and understanding the :ref:`RT-DC dataset classes <sec_ref_rtdc_dataset>`
 is an important prerequisite when working with dclab. They are all
 derived from :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` which
-gives access to feature with a dictionary-like interface, facilitates data export
-and filtering, and comes with several convenience methods that are useful
+gives access to features with a dictionary-like interface, facilitates data export
+or filtering, and comes with several convenience methods that are useful
 for data visualization.
 RT-DC datasets can be based on a data file format
 (:class:`RTDC_TDMS <dclab.rtdc_dataset.RTDC_TDMS>` and
-:class:`RTDC_HDF5 <dclab.rtdc_dataset.RTDC_HDF5>`), created from user-defined
+:class:`RTDC_HDF5 <dclab.rtdc_dataset.RTDC_HDF5>`), accessed
+from an online repository (:class:`RTDC_HDF5 <dclab.rtdc_dataset.RTDC_DCOR>`),
+created from user-defined
 dictionaries (:class:`RTDC_Dict <dclab.rtdc_dataset.RTDC_Dict>`),
 or derived from other RT-DC datasets
 (:class:`RTDC_Hierarchy <dclab.rtdc_dataset.RTDC_Hierarchy>`).
@@ -20,8 +22,7 @@ or derived from other RT-DC datasets
 Basic usage
 ===========
 The convenience function :func:`dclab.new_dataset` takes care of determining
-the data file format (tdms or hdf5) and returns the corresponding derived
-class.
+the data format and returns the corresponding derived class.
 
 .. ipython::
 

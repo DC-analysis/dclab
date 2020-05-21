@@ -54,6 +54,8 @@ Filters are used to mask e.g. debris or doublets from a dataset.
 .. ipython::
 
     # Restrict the deformation to 0.15
+    In [6]: ds.config["filtering"]["deform min"] = 0
+
     In [7]: ds.config["filtering"]["deform max"] = .15
 
     # Manually excluding events using array indices is also possible:
@@ -77,9 +79,11 @@ use hierarchies for keeping track of the individual filtering steps.
 
 .. ipython::
 
-    In [7]: child = dclab.new_dataset(ds)
+    In [5]: child = dclab.new_dataset(ds)
 
-    In [8]: child.config["filtering"]["area_um max"] = 80
+    In [6]: child.config["filtering"]["area_um min"] = 0
+
+    In [7]: child.config["filtering"]["area_um max"] = 80
 
     In [8]: grandchild = dclab.new_dataset(child)
 
@@ -156,6 +160,8 @@ methods to compute simple feature statistics.
 Note that the statistics take into account the applied filters:
 
 .. ipython::
+
+    In [4]: ds.config["filtering"]["deform min"] = 0
 
     In [5]: ds.config["filtering"]["deform max"] = .1
 

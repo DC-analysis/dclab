@@ -1,6 +1,6 @@
 .. _index:
 
-Dclab is a Python library for the post-measurement analysis of
+This is dclab, a Python library for the post-measurement analysis of
 real-time deformability cytometry (RT-DC) datasets.
 This is the documentation of dclab version |release|.
 

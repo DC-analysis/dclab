@@ -12,7 +12,7 @@ To install dclab, use one of the following methods:
 * from `sources <https://github.com/ZellMechanik-Dresden/dclab>`_:
     ``pip install .[all]``
 
-The extra key ``[all]`` can be omitted if you are not working with the
+The extra key ``[all]`` can be omitted if you are not working with DCOR or the
 tdms file format or have no need to export to .avi or .fcs files.
 Then, the basic installation of dclab depends on the Python packages
 `h5py <http://www.h5py.org/>`_,
@@ -20,8 +20,8 @@ Then, the basic installation of dclab depends on the Python packages
 and `scipy <https://docs.scipy.org/doc/scipy/reference/>`_.
 In addition, dclab contains code from `OpenCV <https://opencv.org/>`_
 (computation of moments) and `scikit-image <http://scikit-image.org/>`_
-(computation of contours) to reduce the list of dependencies (these libraries
-are not required by dclab).
+(computation of contours and points in polygons) to reduce the list of
+dependencies (these libraries are not required by dclab).
 
 If you are working with the outdated tdms file format, you have to specify
 the extra key ``[tdms]``, i.e. ``pip install dclab[tdms]`` or ``pip install .[tdms]``.
@@ -31,7 +31,10 @@ This will install the additional libraries
 You may also specify the extra key ``[export]``, which will install imageio
 and  `fcswrite <https://github.com/ZELLMECHANIK-DRESDEN/fcswrite>`_ for .avi
 and .fcs export.
-As mentioned above, using ``[all]`` will install the dependencies for both.
+If you are working with `DCOR <https://dcor.mpl.mpg.de/>`_, then you
+have to specify the extra key ``dcor``, which will install the
+`reqeusts <https://requests.readthedocs.io/en/master/>` module.
+As mentioned above, using ``[all]`` will install all extras.
 
 Note that if you are installing from source or if no binary wheel is
 available for your platform and Python version, `Cython <http://cython.org/>`_
@@ -45,7 +48,7 @@ Use cases
 =========
 If you are a frequent user of RT-DC, you might run into problems that
 cannot (yet) be addressed with the graphical user interface
-`Shape-Out <https://github.com/ZellMechanik-Dresden/ShapeOut>`_.
+`Shape-Out <https://github.com/ZellMechanik-Dresden/ShapeOut2>`_.
 Here is a list of use cases that would motivate an installation of dclab.
 
 - You would like to convert old .tdms-based datasets to the new .rtdc
@@ -55,6 +58,8 @@ Here is a list of use cases that would motivate an installation of dclab.
   multiple measurements at a time. Note that you should keep the original
   .tdms files backed-up somewhere, because there might be future
   improvements or bug fixes from which you would like to benefit.
+  Please note that `DCKit <https://github.com/ZELLMECHANIK-DRESDEN/DCKit/>`_
+  offers a graphical user interface for batch conversion from .tdms to .rtdc.
 - You would like to apply a simple set of filters (e.g. polygon filters that you
   exported from within Shape-Out) to every new measurement you take and
   apply a custom data analysis pipeline to the filtered data. This is a
@@ -93,6 +98,9 @@ Experimental RT-DC datasets are always loaded with the
     ds = dclab.new_dataset("/path/to/measurement/Online/M1.tdms")
     # .rtdc file format
     ds = dclab.new_dataset("/path/to/measurement/M2.rtdc")
+    # DCOR data
+    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
+
 
 The object returned by `new_dataset` is always an instance of
 :class:`RTDCBase <dclab.rtdc_dataset.core.RTDCBase>`. To show all

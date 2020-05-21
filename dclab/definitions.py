@@ -204,7 +204,7 @@ FEATURES_SCALAR = [
     # This is an ancillary integer feature for visualizing the class
     # membership of individual events based on the `ml_score_???`
     # features.
-    ["ml_class", "Total number of events in the same image"],
+    ["ml_class", "Most probable ML class"],
     ["nevents", "Total number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],

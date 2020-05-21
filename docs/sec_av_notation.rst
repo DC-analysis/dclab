@@ -25,13 +25,31 @@ The following features are supported by dclab:
 
 .. _sec_features_scalar:
 
+Scalar features
+...............
+
 .. dclab_features:: scalar
+
+In addition to these scalar features, it is possible to define
+a large number of features dedicated to machine-learning, the
+"ml_score\_???" features: The "?" can be a digit or a lower-case
+letter of the alphabet, e.g. "ml\_score\_rbc" or "ml\_score_3a3".
+If "ml_score\_???" features are defined, then the ancillary
+"ml_class" feature, which identifies the most-probable feature
+for each event, becomes available.  
 
 .. _sec_features_non_scalar:
 
+Non-scalar features
+...................
+
 .. dclab_features:: non-scalar
 
-**Example**: deformation vs. area plot 
+
+Examples
+........
+
+**deformation vs. area plot** 
 
     .. plot::
         
@@ -44,7 +62,7 @@ The following features are supported by dclab:
         ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
         plt.show()
 
-**Example**: event image plot
+**event image plot**
 
     .. plot::
         
@@ -94,6 +112,7 @@ Min/max filters are also defined in the *filters* section:
         import dclab
         ds = dclab.new_dataset("data/example.rtdc")
 
+        ds.config["filtering"]["deform min"] = 0
         ds.config["filtering"]["deform max"] = .1
         ds.apply_filter()
         dif = ds.filter.all

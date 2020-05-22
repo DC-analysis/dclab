@@ -320,8 +320,8 @@ def test_missing_file():
 
 def test_ml_class():
     """Test score data outside boundary"""
-    data = {"ml_score_001": [.1, 10, .1, 0.01, .9],
-            "ml_score_002": [.2, .1, .4, 0, .91],
+    data = {"ml_score_001": [.1, 10, -10, 0.01, .89],
+            "ml_score_002": [.2, .1, .4, 0, .4],
             }
     ds = new_dataset(data)
     with check.IntegrityChecker(ds) as ic:

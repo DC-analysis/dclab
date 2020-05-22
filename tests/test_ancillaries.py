@@ -623,8 +623,8 @@ def test_inert_ratio_raw():
 
 
 def test_ml_class_basic():
-    data = {"ml_score_001": [.1, .2, .1, 0.01, .9],
-            "ml_score_002": [.2, .1, .4, 0, .91],
+    data = {"ml_score_001": [.1, .3, .1, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
             }
     ds = dclab.new_dataset(data)
     assert "ml_class" in ds
@@ -632,32 +632,46 @@ def test_ml_class_basic():
     assert issubclass(ds["ml_class"].dtype.type, np.integer)
 
 
-def test_ml_class_bad_score1():
-    data = {"ml_score_001": [.1, .2, np.nan, 0.01, .9],
-            "ml_score_002": [.2, .1, .4, 0, .91],
+def test_ml_class_bad_score_max():
+    data = {"ml_score_001": [.1, .3, 99, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
             }
     ds = dclab.new_dataset(data)
     assert "ml_class" in ds
     try:
         ds["ml_class"]
-    except ValueError:
-        pass
+    except ValueError as e:
+        assert "> 1" in e.args[0]
+    else:
+        assert False, "99 is not allowed"
+
+
+def test_ml_class_bad_score_min():
+    data = {"ml_score_001": [.1, .3, -.1, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    try:
+        ds["ml_class"]
+    except ValueError as e:
+        assert "< 0" in e.args[0]
+    else:
+        assert False, "negative is not allowed"
+
+
+def test_ml_class_bad_score_nan():
+    data = {"ml_score_001": [.1, .3, np.nan, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    try:
+        ds["ml_class"]
+    except ValueError as e:
+        assert "nan values" in e.args[0]
     else:
         assert False, "nan is not allowed"
-
-
-def test_ml_class_bad_score2():
-    data = {"ml_score_001": [.1, .2, 999, 0.01, .9],
-            "ml_score_002": [.2, .1, .4, 0, .91],
-            }
-    ds = dclab.new_dataset(data)
-    assert "ml_class" in ds
-    try:
-        ds["ml_class"]
-    except ValueError:
-        pass
-    else:
-        assert False, "999 is not allowed"
 
 
 def test_time():

@@ -335,7 +335,7 @@ def get_feature_label(name, rtdc_ds=None):
     if name in feature_name2label:
         label = feature_name2label[name]
     else:
-        label = "ML score {}".format(name[-3:])
+        label = "ML score {}".format(name[-3:].upper())
     return label
 
 

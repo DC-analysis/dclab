@@ -5,6 +5,9 @@ from __future__ import division, print_function, unicode_literals
 
 import time
 
+import numpy as np
+
+from .. import definitions as dfn
 from ..util import hashobj
 
 from .config import Configuration
@@ -23,6 +26,9 @@ class RTDC_Dict(RTDCBase):
             `dclab.definitions.feature_exists`) with which the class
             will be instantiated. The configuration is set to the
             default configuration of dclab.
+
+            .. versionchanged:: 0.27.0
+                Scalar features are automatically converted to arrays.
         *args:
             Arguments for `RTDCBase`
         **kwargs:
@@ -45,7 +51,14 @@ class RTDC_Dict(RTDCBase):
         # Populate events
         self._events = {}
         for key in ddict:
-            self._events[key] = ddict[key]
+            if dfn.feature_exists(key):
+                if dfn.scalar_feature_exists(key):
+                    data = np.array(ddict[key])
+                else:
+                    data = ddict[key]
+            else:
+                raise ValueError("Invalid feature name '{}'".format(key))
+            self._events[key] = data
 
         event_count = len(ddict[list(ddict.keys())[0]])
 

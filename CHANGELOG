@@ -1,10 +1,13 @@
 0.27.0
  - feat: introduce new feature names `ml_score_???` where `?`
-   can be a digit or a lower-case letter of the alphabet
+   can be a digit or a lower-case letter of the alphabet (#77)
  - feat: introduce new functions `dclab.definitions.feature_exists`
    and `dclab.definitions.scalar_feature_exists` for checking the
    existence of features (including the `ml_score_???` features
    which are not in `dclab.definitions.feature_names`)
+ - feat: introduce ancillary feature `ml_class` which is
+   defined by the `ml_score_???` features
+ - enh: fmt_dict automatically converts scalar features to arrays
  - ref: replace check for `dclab.definitions.feature_names`
    by `dclab.definitions.feature_exists` where applicable
  - ref: replace access of `dclab.definitions.feature_name2label`
@@ -12,8 +15,7 @@
  - ref: do not automatically fill up all the box filtering ranges
    in `RTDCBase.config["filtering"]` with zeros; raise ValueError
    if user forgets to set both ranges
- - TODO: feat: introduce ancillary feature `ml_class` which is
-   defined by the `ml_score_???` features
+ - docs: major revision (promote Shape-Out 2 and DCOR)
 0.26.2
  - fix: `kde_methods.bin_num_doane` now uses 5 as default if it
    ecounters nan or zero-division

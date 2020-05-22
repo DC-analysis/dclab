@@ -622,6 +622,16 @@ def test_inert_ratio_raw():
     cleanup()
 
 
+def test_ml_class_basic():
+    data = {"ml_score_001": [.1, .2, .1, 0.01, .9],
+            "ml_score_002": [.2, .1, .4, 0, .91],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    assert np.allclose(ds["ml_class"], [1, 0, 1, 0, 1])
+    assert issubclass(ds["ml_class"].dtype.type, np.integer)
+
+
 def test_time():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     tt = ds["time"]

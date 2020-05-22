@@ -144,6 +144,14 @@ TDMS format
 
 .. _sec_ref_rtdc_config:
 
+
+Ancillaries
+-----------
+.. automodule:: dclab.rtdc_dataset.ancillaries.ancillary_feature
+    :members:
+    :undoc-members:
+
+
 config
 ------
 .. autoclass:: dclab.rtdc_dataset.config.Configuration

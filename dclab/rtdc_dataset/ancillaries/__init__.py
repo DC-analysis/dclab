@@ -5,6 +5,7 @@ from . import af_basic
 from . import af_emodulus
 from . import af_fl_max_ctc
 from . import af_image_contour
+from . import af_ml_class
 
 
 #: features whose computation is fast
@@ -22,3 +23,4 @@ af_basic.register()
 af_emodulus.register()
 af_fl_max_ctc.register()
 af_image_contour.register()
+af_ml_class.register()

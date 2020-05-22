@@ -3,16 +3,28 @@
 """Computation of ancillary features
 
 Ancillary features are computed on-the-fly in dclab if the
-required data is available. The features are registered here
+required data are available. The features are registered here
 and are computed when `RTDCBase.__getitem__` is called with
 the respective feature name. When `RTDCBase.__contains__` is
 called with the feature name, then the feature is not yet
 computed, but the prerequisites are evaluated:
 
-In [1]: "emodulus" in rtdc_dataset  # nothing is computed
-Out[1]: True
-In [2]: rtdc_dataset["emodulus"]
-Out[2]: ndarray([...])  # now data is computed and cached
+.. ipython::
+    :okwarning:
+
+    In [1]: import dclab
+
+    In [2]: ds = dclab.new_dataset("data/example.rtdc")
+
+    In [3]: ds.config["calculation"]["emodulus medium"] = "CellCarrier"
+
+    In [4]: ds.config["calculation"]["emodulus model"] = "elastic sphere"
+
+    In [5]: ds.config["calculation"]["emodulus temperature"] = 23.0
+
+    In [6]: "emodulus" in ds  # nothing is computed
+
+    In [7]: ds["emodulus"] # now data is computed and cached
 
 Once the data has been computed, `RTDCBase` caches it in
 the `_ancillaries` property dict together with a hash
@@ -35,8 +47,9 @@ class BadFeatureSizeWarning(UserWarning):
 
 
 class AncillaryFeature():
-    # Holds all instances of this class
+    #: All ancillary features registered
     features = []
+    #: All feature names registered
     feature_names = []
 
     def __init__(self, feature_name, method, req_config=[], req_features=[],
@@ -61,10 +74,15 @@ class AncillaryFeature():
             argument and checks whether any other necessary criteria
             are met. By default, this is a lambda function that returns
             True. The function should return False if the necessary
-            criteria are not met. You must make sure to use
-            `req_config` and `req_features` whenever possible, because
-            these lists are used for cache hashes. This also implies
-            that `req_func` should not rely on mutable parameters.
+            criteria are not met. This function may also return a
+            hashable object (via :func:`dclab.util.objstr`) instead of
+            True, if the criteria are subject to change. In this case,
+            the return value is used for identifying the cached
+            ancillary feature.
+
+            .. versionchanged:: 0.27.0
+                Support non-boolean return values for caching purposes.
+
         priority: int
             The priority of the feature; if there are multiple
             AncillaryFeature defined for the same feature_name,
@@ -179,6 +197,11 @@ class AncillaryFeature():
                 val = rtdc_ds.config[sec][key]
                 data = "{}:{}={}".format(sec, key, val)
                 hasher.update(obj2str(data))
+        # custom requirement function hash
+        reqret = self.req_func(rtdc_ds)
+        if not isinstance(reqret, bool):
+            # add to hash if not a boolean
+            hasher.update(obj2str(reqret))
         return hasher.hexdigest()
 
     def is_available(self, rtdc_ds, verbose=False):

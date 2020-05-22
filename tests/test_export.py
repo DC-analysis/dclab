@@ -321,6 +321,32 @@ def test_hdf5_index_online_replaces_index():
     shutil.rmtree(edest, ignore_errors=True)
 
 
+def test_hdf5_ml_score():
+    data = {"ml_score_ds9": [.80, .31, .12, .01, .59, .40, .52],
+            "ml_score_dsc": [.12, .52, .21, .24, .30, .22, .79],
+            "ml_score_ent": [.42, .11, .78, .11, .54, .24, .15],
+            "ml_score_pic": [.30, .30, .10, .99, .59, .55, .19],
+            "ml_score_tng": [.13, .33, .13, .01, .79, .11, .22],
+            "ml_score_tos": [.14, .34, .12, .01, .59, .56, .17],
+            "ml_score_voy": [.25, .12, .42, .33, .21, .55, .82],
+            }
+    ds0 = dclab.new_dataset(data)
+    ds0.config["experiment"]["sample"] = "test"
+    ds0.config["experiment"]["run index"] = 1
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.rtdc")
+    ds0.export.hdf5(f1, list(data.keys()), override=True)
+
+    with dclab.new_dataset(f1) as ds:
+        assert np.allclose(ds["ml_class"], np.arange(7))
+        assert "ml_class" not in ds._events
+        assert "ml_class" in ds._ancillaries
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
 def test_hdf5_override():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=212, keys=keys)

@@ -632,6 +632,34 @@ def test_ml_class_basic():
     assert issubclass(ds["ml_class"].dtype.type, np.integer)
 
 
+def test_ml_class_bad_score1():
+    data = {"ml_score_001": [.1, .2, np.nan, 0.01, .9],
+            "ml_score_002": [.2, .1, .4, 0, .91],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    try:
+        ds["ml_class"]
+    except ValueError:
+        pass
+    else:
+        assert False, "nan is not allowed"
+
+
+def test_ml_class_bad_score2():
+    data = {"ml_score_001": [.1, .2, 999, 0.01, .9],
+            "ml_score_002": [.2, .1, .4, 0, .91],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    try:
+        ds["ml_class"]
+    except ValueError:
+        pass
+    else:
+        assert False, "999 is not allowed"
+
+
 def test_time():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     tt = ds["time"]

@@ -318,6 +318,18 @@ def test_missing_file():
     cleanup()
 
 
+def test_ml_class():
+    """Test score data outside boundary"""
+    data = {"ml_score_001": [.1, 10, .1, 0.01, .9],
+            "ml_score_002": [.2, .1, .4, 0, .91],
+            }
+    ds = new_dataset(data)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_ml_class()
+        assert len(cues) == 1
+        assert "ml_score_001" in cues[0].msg
+
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')

@@ -614,6 +614,19 @@ class IntegrityChecker(object):
                     cfg_key="temperature"))
         return cues
 
+    def check_ml_class(self, **kwargs):
+        """Try to comput ml_class feature and display error message"""
+        cues = []
+        if "ml_class" in self.ds:
+            try:
+                self.ds["ml_class"]
+            except ValueError as e:
+                cues.append(ICue(
+                    msg=e.args[0],
+                    level="violation",
+                    category="feature data"))
+        return cues
+
 
 def check_dataset(path_or_ds):
     """Check whether a dataset is complete

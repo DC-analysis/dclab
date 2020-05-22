@@ -674,6 +674,14 @@ def test_ml_class_bad_score_nan():
         assert False, "nan is not allowed"
 
 
+def test_ml_class_single():
+    data = {"ml_score_001": [.1, .3, .1, 0.01, .59],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    assert np.allclose(ds["ml_class"], 0)
+
+
 def test_time():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     tt = ds["time"]

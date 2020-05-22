@@ -89,7 +89,7 @@ class Isoelastics(object):
             validstr = ",".join(VALID_METHODS)
             raise ValueError("`method` must be one of {}!".format(validstr))
         for col in [col1, col2]:
-            if col not in dfn.scalar_feature_names:
+            if not dfn.scalar_feature_exists(col):
                 raise ValueError("Not a valid feature name: {}".format(col))
 
         meta = [channel_width, flow_rate, viscosity]
@@ -259,7 +259,7 @@ class Isoelastics(object):
             validstr = ",".join(VALID_METHODS)
             raise ValueError("`method` must be one of {}!".format(validstr))
         for col in [col1, col2]:
-            if col not in dfn.scalar_feature_names:
+            if not dfn.scalar_feature_exists(col):
                 raise ValueError("Not a valid feature name: {}".format(col))
 
         if "isoelastics" not in self._data[method][col2][col1]:
@@ -378,7 +378,7 @@ class Isoelastics(object):
 
 class IsoelasticsDict(dict):
     def __getitem__(self, key):
-        if key in VALID_METHODS or key in dfn.scalar_feature_names:
+        if key in VALID_METHODS or dfn.scalar_feature_exists(key):
             if key not in self:
                 self[key] = IsoelasticsDict()
         return super(IsoelasticsDict, self).__getitem__(key)

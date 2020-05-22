@@ -632,6 +632,17 @@ def test_ml_class_basic():
     assert issubclass(ds["ml_class"].dtype.type, np.integer)
 
 
+def test_ml_class_bad_feature():
+    data = {"ml_score_0-1": [.1, .3, .1, 0.01, .59],
+            }
+    try:
+        dclab.new_dataset(data)
+    except ValueError:
+        pass
+    else:
+        assert False, "This is not a valid feature name"
+
+
 def test_ml_class_bad_score_max():
     data = {"ml_score_001": [.1, .3, 99, 0.01, .59],
             "ml_score_002": [.2, .1, .4, 0, .8],

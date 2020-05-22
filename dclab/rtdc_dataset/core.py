@@ -272,7 +272,7 @@ class RTDCBase(object):
 
     @property
     def features_loaded(self):
-        """All features including ancillary that have been computed
+        """All features including ancillaries that have been computed
 
         Notes
         -----

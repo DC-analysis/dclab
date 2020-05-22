@@ -282,8 +282,20 @@ class RTDC_Hierarchy(RTDCBase):
             self.filter.apply_manual_indices(self, manual_pidx)
 
     @property
+    def features(self):
+        return self.hparent.features
+
+    @property
+    def features_innate(self):
+        return self.hparent.features_innate
+
+    @property
     def features_loaded(self):
         return self.hparent.features_loaded
+
+    @property
+    def features_scalar(self):
+        return self.hparent.features_scalar
 
     @property
     def hash(self):

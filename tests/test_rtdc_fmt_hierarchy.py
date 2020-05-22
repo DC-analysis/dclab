@@ -81,14 +81,29 @@ def test_feat_trace():
 
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+def test_features():
+    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    ds = new_dataset(path)
+    ch = new_dataset(ds)
+    assert ds.features == ch.features
+    assert ds.features_innate == ch.features_innate
+    assert ds.features_loaded == ch.features_loaded
+    assert ds.features_scalar == ch.features_scalar
+    cleanup()
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_features_loaded():
     path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(path)
-    assert "volume" in ds.features
-    assert "volume" not in ds.features_loaded
-    assert "volume" not in ds.features_innate
+    ch = new_dataset(ds)
+    assert "volume" in ch.features
+    assert "volume" not in ch.features_loaded
+    assert "volume" not in ch.features_innate
     # compute volume, now it should be loaded
-    ds["volume"]
+    ch["volume"]
+    assert "volume" in ch.features_loaded
     assert "volume" in ds.features_loaded
     cleanup()
 

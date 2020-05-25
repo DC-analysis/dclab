@@ -451,6 +451,9 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         # load and export dataset
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
+            # ignore "ResourceWarning: unclosed file <_io.BufferedReader...>"
+            warnings.simplefilter("ignore", ResourceWarning)
+
             with new_dataset(ff) as ds:
                 # determine features to export
                 if compute_features:

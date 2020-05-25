@@ -43,7 +43,7 @@ install:
 # install all other dependencies
 - travis_retry pip install -e .[all]
 # Python2: download ffmpeg (required by imageio)
-- if [ "$TRAVIS_PYTHON_VERSION" != "2.7" ]; then travis_retry imageio_download_bin --package-dir ffmpeg; fi
+- if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then travis_retry imageio_download_bin --package-dir ffmpeg; fi
 # for tests:
 - travis_retry pip install codecov coverage flake8
 - pip freeze

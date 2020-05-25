@@ -1,3 +1,7 @@
+0.27.1
+ - setup: bump imageio to 2.8.0 for Python>=3.4
+ - ref: removed NoImageWarning during export (warning is already
+   issued by fmt_tdms.event_image)
 0.27.0
  - feat: introduce new feature names `ml_score_???` where `?`
    can be a digit or a lower-case letter of the alphabet (#77)

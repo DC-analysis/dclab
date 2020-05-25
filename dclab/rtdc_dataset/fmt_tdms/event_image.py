@@ -9,8 +9,8 @@ import pathlib
 import sys
 import warnings
 
-import numpy as np
 import imageio
+import numpy as np
 
 from .exc import InvalidVideoFileError
 
@@ -52,13 +52,13 @@ class ImageColumn(object):
         else:
             if hasattr(imageio.plugins.ffmpeg, "CannotReadFrameError"):
                 # imageio<2.5.0
-                UsedException = imageio.plugins.ffmpeg.CannotReadFrameError
+                excs = IndexError, imageio.plugins.ffmpeg.CannotReadFrameError
             else:
                 # imageio>=2.5.0
-                UsedException = IndexError
+                excs = IndexError
             try:
                 cdata = self._image_data[idnew]
-            except UsedException:
+            except excs:
                 # The avi is corrupt. Return a dummy image.
                 warnings.warn("Frame {} in {} ".format(idnew, self.identifier)
                               + "is corrupt; replacing with dummy image!",

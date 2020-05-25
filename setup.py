@@ -24,20 +24,16 @@ except BaseException:
 extras_require = {
         "dcor": ["requests"],
         "tdms": ["nptdms>=0.23.0",  # read tdms files
-                 # "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
-                 # "imageio[ffmpeg]>=2.5.0;python_version>='3.4'",  # avi (new)
-                 # Currently, the above option of using imageio>=2.5.0 makes
-                 # the tdms tests fail (SegFault at the end).
-                 # Related to github.com/imageio/imageio-ffmpeg/issues/20
-                 # Workaround for now:
-                 "imageio>=2.3.0,<2.5.0",  # read tdms avi data
+                 "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
+                 "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
                  ],
         "export": ["fcswrite>=0.5.0",  # fcs export
-                   "imageio",  # avi export
-                   "imageio-ffmpeg;python_version>='3.4'"  # just in case
+                   "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
+                   "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
                    ],
         "all": ["fcswrite>=0.5.0",
-                "imageio>=2.3.0,<2.5.0",
+                "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
+                "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
                 "nptdms>=0.23.0",
                 "requests",
                 ]

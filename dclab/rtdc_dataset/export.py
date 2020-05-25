@@ -32,9 +32,6 @@ from .._version import version
 from .write_hdf5 import write
 
 
-class NoImageWarning(UserWarning):
-    pass
-
 
 class LimitingExportSizeWarning(UserWarning):
     pass
@@ -90,16 +87,7 @@ class Export(object):
                 # skip frames that were filtered out
                 if filtered and not ds.filter.all[evid]:
                     continue
-                try:
-                    image = ds["image"][evid]
-                except BaseException:
-                    warnings.warn("Could not read image {}!".format(evid),
-                                  NoImageWarning)
-                    continue
-                else:
-                    if np.isnan(image[0, 0]):
-                        # This is a nan-valued image
-                        image = np.zeros_like(image, dtype=np.uint8)
+                image = ds["image"][evid]
                 # Convert image to RGB
                 image = image.reshape(image.shape[0], image.shape[1], 1)
                 image = np.repeat(image, 3, axis=2)

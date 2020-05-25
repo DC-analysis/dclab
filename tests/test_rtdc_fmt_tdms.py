@@ -194,14 +194,15 @@ def test_image_corrupt():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_image.CorruptFrameWarning')
 def test_image_out_of_bounds():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
-    try:
-        ds["image"][5]
-    except IndexError:
-        pass
-    else:
-        raise ValueError("IndexError should have been raised!")
+    assert len(ds["image"]) == 3
+    assert np.allclose(ds["image"][0], 0)  # dummy
+    assert not np.allclose(ds["image"][1], 0)
+    assert not np.allclose(ds["image"][2], 0)
+    assert np.allclose(ds["image"][3], 0)  # causes warning
     cleanup()
 
 

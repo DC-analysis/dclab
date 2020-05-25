@@ -1,3 +1,5 @@
+0.27.2
+ - maintenance build
 0.27.1
  - setup: bump imageio to 2.8.0 for Python>=3.4
  - ref: removed NoImageWarning during export (warning is already

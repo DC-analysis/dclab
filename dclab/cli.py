@@ -453,7 +453,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
             warnings.simplefilter("always")
             if pyver > 2:
                 # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
-                warnings.simplefilter("ignore", ResourceWarning)
+                warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
 
             with new_dataset(ff) as ds:
                 # determine features to export

@@ -32,8 +32,8 @@ install:
   - "appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest
   - "appveyor-retry pip install -e .[all]"
-  # Download ffmpeg binary for imageio
-  - "appveyor-retry imageio_download_bin --package-dir ffmpeg"
+  # Python2 Download ffmpeg binary for imageio (not applicable to Python3)
+  - "appveyor-retry imageio_download_bin --package-dir ffmpeg || exit 0"
   - "python -m pip freeze"
 
 build: off

@@ -32,7 +32,6 @@ from .._version import version
 from .write_hdf5 import write
 
 
-
 class LimitingExportSizeWarning(UserWarning):
     pass
 

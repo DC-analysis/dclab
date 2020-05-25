@@ -42,8 +42,8 @@ install:
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 # install all other dependencies
 - travis_retry pip install -e .[all]
-# download ffmpeg (required by imageio)
-- travis_retry imageio_download_bin --package-dir ffmpeg
+# Python2: download ffmpeg (required by imageio)
+- if [ "$TRAVIS_PYTHON_VERSION" != "2.7" ]; then travis_retry imageio_download_bin --package-dir ffmpeg; fi
 # for tests:
 - travis_retry pip install codecov coverage flake8
 - pip freeze
@@ -53,6 +53,7 @@ script:
 - flake8 dclab
 - flake8 examples
 - flake8 tests
+# Python2: No flake8 because it's written in Python3
 - if [ "$TRAVIS_PYTHON_VERSION" != "2.7" ]; then flake8 scripts; fi
 after_success:
 - codecov

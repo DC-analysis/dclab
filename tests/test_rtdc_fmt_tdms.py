@@ -164,6 +164,9 @@ def test_fluorescence_config():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_image.'
+                            + 'InitialFrameMissingWarning')
 def test_image_basic():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     # Transition image
@@ -206,6 +209,9 @@ def test_image_out_of_bounds():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_image.'
+                            + 'InitialFrameMissingWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
@@ -272,6 +278,9 @@ def test_load_tdms_simple():
     cleanup()
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_image.'
+                            + 'InitialFrameMissingWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')

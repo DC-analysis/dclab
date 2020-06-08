@@ -55,7 +55,7 @@ class ContourColumn(object):
                     break
                 self.pxfeat[key] = rtdc_dataset[key] / px_size
         if "image" in rtdc_dataset:
-            self.shape = rtdc_dataset["image"][0].shape
+            self.shape = rtdc_dataset["image"].shape
         else:
             self.shape = None
         self.event_offset = 0

@@ -1,3 +1,9 @@
+0.27.6
+ - fix: video seek issue workaround also for the first 100 frames
+ - cli: also skip the final event in tdms2rtdc if the image is empty
+ - cli: renamed kwarg `--include-initial-empty-image`
+   to `include-empty-boundary-images`
+ - enh: improve detection and recovery of missing images for fmt_tdms
 0.27.5
  - maintenance build
 0.27.4

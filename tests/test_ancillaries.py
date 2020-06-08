@@ -80,6 +80,9 @@ def test_area_ratio():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_image.'
+                            + 'InitialFrameMissingWarning')
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_brightness():

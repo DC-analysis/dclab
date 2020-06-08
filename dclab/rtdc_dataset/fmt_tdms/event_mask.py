@@ -36,7 +36,7 @@ class MaskColumn(object):
             cfgim = self.config["imaging"]
             if self.image:
                 # get shape from image column
-                self._shape = self.image[0].shape
+                self._shape = self.image.shape
             elif "roi size x" in cfgim and "roi size y" in cfgim:
                 # get shape from config (this is less reliable than getting
                 # the shape from the image; there were measurements with

@@ -22,6 +22,10 @@ class CorruptFrameWarning(UserWarning):
     pass
 
 
+class InitialFrameMissingWarning(CorruptFrameWarning):
+    pass
+
+
 class SlowVideoWarning(UserWarning):
     pass
 
@@ -43,11 +47,15 @@ class ImageColumn(object):
         conf = rtdc_dataset.config
         self.event_offset = int(conf["fmt_tdms"]["video frame offset"])
         self.video_file = fname
+        self._shape = None
 
     def __getitem__(self, idx):
         idnew = int(idx-self.event_offset)
         if idnew < 0:
             # No data - show a dummy image instead
+            warnings.warn("Frame {} in {} ".format(idnew, self.identifier)
+                          + "is not defined; replacing with dummy image!",
+                          InitialFrameMissingWarning)
             cdata = self.dummy
         else:
             if hasattr(imageio.plugins.ffmpeg, "CannotReadFrameError"):
@@ -75,8 +83,15 @@ class ImageColumn(object):
     @property
     def dummy(self):
         """Returns a dummy image"""
-        cdata = np.zeros_like(self._image_data[0])
+        cdata = np.zeros(self.shape, dtype=np.uint8)
         return cdata
+
+    @property
+    def shape(self):
+        if self._shape is None:
+            f0 = self._image_data[0].shape
+            self._shape = (f0[0], f0[1])
+        return self._shape
 
     @staticmethod
     def find_video_file(rtdc_dataset):
@@ -147,9 +162,13 @@ class ImageMap(object):
     def __getitem__(self, idx):
         """Returns the requested frame from the video in gray scale"""
         cap = self.video_handle
-        cellimg = cap.get_data(idx)
-        if np.all(cellimg == 0):
-            cellimg = self._get_image_workaround_seek(idx)
+        try:
+            cellimg = cap.get_data(idx)
+        except IndexError:
+            self._get_image_workaround_seek(idx)
+        else:
+            if np.all(cellimg == 0):
+                cellimg = self._get_image_workaround_seek(idx)
         # Convert to grayscale
         if len(cellimg.shape) == 3:
             cellimg = np.array(cellimg[:, :, 0])
@@ -183,13 +202,18 @@ class ImageMap(object):
 
         This is a workaround for an all-zero image returned by `imageio`.
         """
-        warnings.warn("Seeking video file does not work, using workaround "
-                      + "which is slow!", SlowVideoWarning)
         cap = self.video_handle
         mult = 50
+        # get the first frame to be on the safe side
+        cap.get_data(101)  # frame above 100 (don't know why)
+        cap.get_data(0)  # seek to zero
         for ii in range(idx//mult):
             cap.get_data(ii*mult)
         final = cap.get_data(idx)
+        if not np.all(final == 0):
+            # This means we succeeded
+            warnings.warn("Seeking video file does not work, used workaround "
+                          + "which is slow!", SlowVideoWarning)
         return final
 
     @property

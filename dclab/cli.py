@@ -386,7 +386,8 @@ def repack_parser():
 
 
 def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
-              skip_initial_empty_image=True, verbose=False):
+              skip_initial_empty_image=True, skip_final_empty_image=True,
+              verbose=False):
     """Convert .tdms datasets to the hdf5-based .rtdc file format
 
     Parameters
@@ -403,6 +404,10 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         not stored in the resulting .avi file. In dclab, such images
         are represented as zero-valued images. If `True` (default),
         this first image is not included in the resulting .rtdc file.
+    skip_final_empty_image: bool
+        In other versions of Shape-In, the final image is sometimes
+        also not stored in the .avi file. If `True` (default), this
+        final image is not included in the resulting .rtdc file.
     verbose: bool
         If `True`, print messages to stoud
     """
@@ -413,7 +418,8 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         path_tdms = pathlib.Path(args.tdms_path).resolve()
         path_rtdc = pathlib.Path(args.rtdc_path)
         compute_features = args.compute_features
-        skip_initial_empty_image = not args.include_initial_empty_image
+        skip_initial_empty_image = not args.include_empty_boundary_images
+        skip_final_empty_image = not args.include_empty_boundary_images
         verbose = True
 
     if not path_tdms.suffix == ".tdms":
@@ -454,6 +460,15 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
             if pyver > 2:
                 # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
                 warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
+                # ignore SlowVideoWarning
+                warnings.simplefilter("ignore",
+                                      fmt_tdms.event_image.SlowVideoWarning)
+                if skip_initial_empty_image:
+                    # If the initial frame is skipped when empty,
+                    # suppress any related warning messages.
+                    warnings.simplefilter(
+                        "ignore",
+                        fmt_tdms.event_image.InitialFrameMissingWarning)
 
             with new_dataset(ff) as ds:
                 # determine features to export
@@ -474,7 +489,19 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                                 and np.all(ds["contour"][0] == 0))):
                         ds.filter.manual[0] = False
                         ds.apply_filter()
-
+                if skip_final_empty_image:
+                    # This is not easy to test, because we need a corrupt
+                    # frame.
+                    if "image" in ds:
+                        idfin = len(ds) - 1
+                        with warnings.catch_warnings(record=True) as wfin:
+                            warnings.simplefilter(
+                                "always",
+                                fmt_tdms.event_image.CorruptFrameWarning)
+                            ds["image"][idfin]
+                            if wfin:
+                                ds.filter.manual[idfin] = False
+                                ds.apply_filter()
                 # export as hdf5
                 ds.export.hdf5(path=fr,
                                features=features,
@@ -522,16 +549,16 @@ def tdms2rtdc_parser():
                              + 'compatibility with future versions and '
                              + 'allows to isolate the original data.')
     parser.set_defaults(compute_features=False)
-    parser.add_argument('--include-initial-empty-image',
-                        dest='include_initial_empty_image',
+    parser.add_argument('--include-empty-boundary-images',
+                        dest='include_empty_boundary_images',
                         action='store_true',
-                        help='In old versions of Shape-In, the first image '
-                             + 'was sometimes not stored in the resulting '
-                             + '.avi file. In dclab, such images are '
-                             + 'represented as zero-valued images. Set '
+                        help='In old versions of Shape-In, the first or last '
+                             + 'images were sometimes not stored in the '
+                             + 'resulting .avi file. In dclab, such images '
+                             + 'are represented as zero-valued images. Set '
                              + 'this option, if you wish to include the '
                              + 'first event with empty image data.')
-    parser.set_defaults(include_initial_empty_image=False)
+    parser.set_defaults(include_empty_boundary_images=False)
     parser.add_argument('tdms_path', metavar="TDMS_PATH", type=str,
                         help='Input path (tdms file or folder containing '
                              + 'tdms files)')

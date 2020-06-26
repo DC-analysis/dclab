@@ -82,7 +82,7 @@ and publish them on PyPI.
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
 .. |Build Status Unix| image:: https://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg?label=build_linux_osx
-   :target: https://travis-ci.org/ZELLMECHANIK-DRESDEN/dclab
+   :target: https://travis-ci.com/ZELLMECHANIK-DRESDEN/dclab
 .. |Build Status Win| image:: https://img.shields.io/appveyor/ci/paulmueller/dclab/master.svg?label=build_win
    :target: https://ci.appveyor.com/project/paulmueller/dclab
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/ZELLMECHANIK-DRESDEN/dclab/master.svg

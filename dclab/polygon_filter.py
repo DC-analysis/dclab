@@ -202,7 +202,7 @@ class PolygonFilter(object):
 
     @property
     def points(self):
-        # make sure points always is an array (so we can use .tostring())
+        # make sure points always is an array (so we can use .tobytes())
         return np.array(self._points)
 
     @points.setter

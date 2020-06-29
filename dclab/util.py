@@ -55,7 +55,7 @@ def obj2str(obj):
     elif obj is None:
         return b"none"
     elif isinstance(obj, np.ndarray):
-        return obj.tostring()
+        return obj.tobytes()
     elif isinstance(obj, tuple):
         return obj2str(list(obj))
     elif isinstance(obj, list):

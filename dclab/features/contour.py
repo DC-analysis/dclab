@@ -20,7 +20,7 @@ class LazyContourList(object):
         self.masks = masks
         self.contours = [None] * len(masks)
         #: used for hashing in ancillary features
-        self.identifier = str(masks[0][:].tostring())
+        self.identifier = str(masks[0][:].tobytes())
 
     def __getitem__(self, idx):
         """Compute contour if it does not already exists"""

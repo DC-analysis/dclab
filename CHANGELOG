@@ -1,3 +1,5 @@
+0.27.7
+ - ref: replace deprecated .tostring() with .tobytes()
 0.27.6
  - fix: video seek issue workaround also for the first 100 frames
  - cli: also skip the final event in tdms2rtdc if the image is empty

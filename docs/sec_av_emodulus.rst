@@ -21,6 +21,18 @@ flow rate) :cite:`Mietke2015`, pixelation effects for deformation
 :cite:`Herold2017`, and shear-thinning (for CellCarrier media)
 :cite:`Herold2017`.
 
+.. figure:: figures/emodulus_20um.png
+    :target: images/emodulus_20um.png
+
+    Visualizations of the support and the values of the look-up table (LUT)
+    used for determining the Young's modulus from deformation and
+    cell area. The values of the Young's moduli in the regions
+    shown depend on the channel size, the flow rate, the temperature,
+    and the viscosity of the medium :cite:`Mietke2015`.
+    Here, they are computed for a 20 µm wide channel at 23°C with an
+    effective pixel size of 0.34 µm. The data are corrected for pixelation
+    effects according to :cite:`Herold2017`.
+
 Since the Young's modulus is model-dependent, it is not made available
 right away as an :ref:`ancillary feature <sec_features_ancillary>`
 (in contrast to e.g. event volume or average event brightness).

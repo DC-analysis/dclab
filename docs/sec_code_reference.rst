@@ -163,7 +163,7 @@ config
 
 export
 ------
-.. autoexception:: dclab.rtdc_dataset.export.NoImageWarning
+.. autoexception:: dclab.rtdc_dataset.export.LimitingExportSizeWarning
 
 .. autoclass:: dclab.rtdc_dataset.export.Export
     :members:

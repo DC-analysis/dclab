@@ -16,10 +16,46 @@ This was done with the spatial scaling factor 1.094
 (see also supplement S3 in :cite:`Mietke2015`). The original data
 used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
 
-The computations take into account scale conversions (channel width,
-flow rate) :cite:`Mietke2015`, pixelation effects for deformation
-:cite:`Herold2017`, and shear-thinning (for CellCarrier media)
-:cite:`Herold2017`.
+All computations take into account:
+
+- **scaling laws:** The original LUT was computed for a specific
+  channel width :math:`L`, flow rate :math:`Q`, and viscosity :math:`\eta`.
+  If the experimental values of these parameters differ from those in
+  the simulation, then they must be scaled before interpolating the
+  Young's modulus. The scale conversion rules can be derived from the
+  characteristic length :math:`L` and stress :math:`\sigma=\eta \cdot Q/L^3`
+  :cite:`Mietke2015`. For instance, the event area scales with
+  :math:`(L_\text{exp}/L_\text{LUT})^2`, the Young's modulus scales with
+  :math:`\sigma_\text{exp}/\sigma_\text{LUT}`, and the deformation is not scaled
+  as it has no units. Please note that the scaling laws were derived for
+  linear elastic materials and may not be accurate for other materials
+  (e.g. hyperelastic). The scaling laws are implemented in the submodule
+  :mod:`dclab.features.emodulus.scale_linear`.
+
+- **pixelation effects**: All features (including deformation and area) are
+  computed from a pixelated contour. This has the effect that deformation
+  is overestimated and area is underestimated (compared to features computed
+  from a "smooth" contour). While a slight change in area does not have a
+  significant effect on the interpolated Young's modulus, a systematic error
+  in deformation may lead to a strong underestimation of the Young's modulus.
+  A deeper analysis is visualized in the plot
+  `pixelation_correction.png <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/scripts/pixelation_correction.png>`_
+  which was created with
+  `pixelation_correction.py <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/scripts/pixelation_correction.py>`_.
+  Thus, before interpolation, the measured deformation must be corrected
+  using a hard-coded correction function :cite:`Herold2017`.
+  The pixelation correction is implemented in the submodule
+  :mod:`dclab.features.emodulus.pxcorr`.
+
+- **shear-thinning and temperature-dependence**: The viscosity of a medium
+  usually is a function of temperature. In addition, complex media, such as
+  0.6\% methyl cellulose (CellCarrier B), may also exhibit
+  `shear-thinning <https://en.wikipedia.org/wiki/Shear_thinning>`_.
+  The viscosity of such media decreases with increasing flow rates. Since the
+  viscosity is required to apply the scaling laws (above), it must be
+  corrected which is done using hard-coded correction functions
+  :cite:`Herold2017`. The computation of viscosity is implemented in the
+  submodule :mod:`dclab.features.emodulus.viscosity`.
 
 .. figure:: figures/emodulus_20um.png
     :target: images/emodulus_20um.png

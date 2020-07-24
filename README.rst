@@ -1,5 +1,5 @@
-dclab
-=====
+|dclab|
+=======
 
 |PyPI Version| |Build Status Unix| |Build Status Win| |Coverage Status| |Docs Status|
 
@@ -79,6 +79,7 @@ Appveyor and TravisCI will then automatically build source package and wheels
 and publish them on PyPI.
 
 
+.. |dclab| image:: https://raw.github.com/ZELLMECHANIK-DRESDEN/dclab/master/docs/logo/dclab.png
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
 .. |Build Status Unix| image:: https://img.shields.io/travis/ZELLMECHANIK-DRESDEN/dclab.svg?label=build_linux_osx

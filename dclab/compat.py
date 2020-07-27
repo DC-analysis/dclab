@@ -1,4 +1,5 @@
 # python 2+3 compatibility functions
+from __future__ import unicode_literals
 import io
 import sys
 
@@ -12,6 +13,8 @@ if sys.version_info[0] == 2:
 
     def is_file_obj(obj):
         return isinstance(obj, file)  # noqa: F821
+    def to_unicode(obj):
+        return unicode(obj)
 else:
     pyver = 3
     from functools import lru_cache  # noqa: F401
@@ -24,3 +27,5 @@ else:
 
     def is_file_obj(obj):
         return isinstance(obj, io.IOBase)
+    def to_unicode(obj):
+        return str(obj)

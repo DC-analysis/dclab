@@ -3,6 +3,7 @@
 """RT-DC hdf5 format"""
 from __future__ import division, print_function, unicode_literals
 
+import codecs
 from distutils.version import LooseVersion
 import pathlib
 
@@ -14,6 +15,7 @@ from ..util import hashobj, hashfile
 
 from .config import Configuration
 from .core import RTDCBase
+from ..compat import to_unicode
 
 
 #: rtdc files exported with dclab prior to this version are not supported
@@ -269,7 +271,11 @@ class RTDC_HDF5(RTDCBase):
                 config[section][pname] = h5attrs[key]
             else:
                 typ = dfn.config_funcs[section][pname]
+                if typ is str:
+                    # Python 2 compat
+                    typ = to_unicode
                 config[section][pname] = typ(h5attrs[key])
+
         return config
 
     @property

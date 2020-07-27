@@ -1,3 +1,6 @@
+0.27.11
+ - docs: add example for loading data from DCOR and computing
+   the Young's modulus
 0.27.10
  - fix: support unicode characters when writing HDF5 in Python2
 0.27.9

@@ -54,7 +54,7 @@ instead of
 ::
 
 	git pull
-	
+
 to prevent confusions in the commit history.
 
 Tests

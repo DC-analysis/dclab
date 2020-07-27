@@ -13,6 +13,7 @@ import numpy as np
 from .core import RTDCBase
 from .load import load_file
 
+from ..compat import str_types
 from .. import definitions as dfn
 
 
@@ -486,13 +487,16 @@ class IntegrityChecker(object):
         # check for meta data types
         for sec in self.ds.config:
             for key in self.ds.config[sec]:
+                val = self.ds.config[sec][key]
+                typ = dfn.config_types[sec][key]
+                if typ is str:
+                    typ = str_types
                 if sec in dfn.CFG_ANALYSIS:
                     # TODO:
                     # - properly test against analysis keywords
                     #   (filtering, calculation)
                     pass
-                elif not isinstance(self.ds.config[sec][key],
-                                    dfn.config_types[sec][key]):
+                elif not isinstance(val, typ):
                     cues.append(ICue(
                         msg="Metadata: Datatype of [{}] '{}'".format(sec, key)
                             + "must be '{}'".format(

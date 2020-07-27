@@ -266,7 +266,10 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
         for ck in meta[sec]:
             idk = "{}:{}".format(sec, ck)
             conffunc = dfn.config_funcs[sec][ck]
-            h5obj.attrs[idk] = conffunc(meta[sec][ck])
+            if conffunc is str:
+                h5obj.attrs[idk] = np.string_(meta[sec][ck].encode("utf-8"))
+            else:
+                h5obj.attrs[idk] = conffunc(meta[sec][ck])
 
     # Write data
     # create events group

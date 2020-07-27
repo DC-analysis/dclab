@@ -59,7 +59,7 @@ fig = plt.figure(figsize=(8, 4))
 # box plot for deformation
 ax1 = plt.subplot(121)
 ax1.set_ylabel(dclab.dfn.get_feature_label("deform"))
-data_deform = [ds["deform"] for ds in ds_list]
+data_deform = [di["deform"] for di in ds_list]
 # Uncomment this line if you are not filtering invalid events (above)
 # data_deform = [d[~np.isnan(d)] for d in data_deform]
 bplot1 = ax1.boxplot(data_deform,
@@ -71,7 +71,7 @@ bplot1 = ax1.boxplot(data_deform,
 # box plot for Young's modulus
 ax2 = plt.subplot(122)
 ax2.set_ylabel(dclab.dfn.get_feature_label("emodulus"))
-data_emodulus = [ds["emodulus"] for ds in ds_list]
+data_emodulus = [di["emodulus"] for di in ds_list]
 # Uncomment this line if you are not filtering invalid events (above)
 # data_emodulus = [d[~np.isnan(d)] for d in data_emodulus]
 bplot2 = ax2.boxplot(data_emodulus,

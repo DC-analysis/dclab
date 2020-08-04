@@ -14,6 +14,31 @@ from helper_methods import example_data_dict, example_data_sets, cleanup, \
     retrieve_data
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
+def test_config_calculation():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    ds = new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                "emodulus model": "elastic sphere",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity": 0.5
+                                }
+    ch = new_dataset(ds)
+    assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
+    ds.config["calculation"]["emodulus temperature"] = 24.0
+    assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
+    # the user still has to call `apply_filter` to update the config:
+    assert not ch.config["calculation"]["emodulus temperature"] == 24.0
+    ch.apply_filter()
+    assert ch.config["calculation"]["emodulus temperature"] == 24.0
+    cleanup()
+
+
 def test_event_count():
     tdms_path = retrieve_data(example_data_sets[1])
     ds = new_dataset(tdms_path)

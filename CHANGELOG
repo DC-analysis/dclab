@@ -1,4 +1,10 @@
 0.27.11
+ - fix: do not cache hierarchy child feature values; this might lead
+   to intransparent situations where a child has different features
+   than its parent (you cannot always rely on the user to call
+   `apply_filter`)
+ - fix: hierarchy child configuration section "calculation" was not
+   updated with the hierarchy parent values
  - docs: add example for loading data from DCOR and computing
    the Young's modulus
 0.27.10

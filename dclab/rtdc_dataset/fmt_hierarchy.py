@@ -231,22 +231,8 @@ class RTDC_Hierarchy(RTDCBase):
 
         self.filter = HierarchyFilter(self)
 
-        # Copy configuration
-        cfg = hparent.config.copy()
-
-        # Remove previously applied filters
-        pops = []
-        for key in cfg["filtering"]:
-            if (key.endswith("min") or
-                key.endswith("max") or
-                    key == "polygon filters"):
-                pops.append(key)
-
-        [cfg["filtering"].pop(key) for key in pops]
-        # Add parent information in dictionary
-        cfg["filtering"]["hierarchy parent"] = hparent.identifier
-
-        self.config = Configuration(cfg=cfg)
+        self.config = self._create_config()  # init config
+        self._update_config()  # sets e.g. event count
 
         if apply_filter:
             # Apply the filter
@@ -259,11 +245,11 @@ class RTDC_Hierarchy(RTDCBase):
     def __getitem__(self, key):
         # contour, image, and traces are added automatically
         # to `self._events` in `self.apply_filter`.
-        if key not in self._events:
+        if key in self._events:
+            return self._events[key]
+        else:
             item = self.hparent[key]
-            if dfn.scalar_feature_exists(key):
-                self._events[key] = item[self.hparent.filter.all]
-        return self._events[key]
+            return item[self.hparent.filter.all]
 
     def __len__(self):
         return np.sum(self.hparent.filter.all)
@@ -280,6 +266,33 @@ class RTDC_Hierarchy(RTDCBase):
             manual_pidx = self.filter.retrieve_manual_indices(self)
             self.filter = HierarchyFilter(self)
             self.filter.apply_manual_indices(self, manual_pidx)
+
+    def _create_config(self):
+        """Return a stripped configuration from the parent"""
+        # create a new configuration
+        cfg = self.hparent.config.copy()
+        # Remove previously applied filters
+        pops = []
+        for key in cfg["filtering"]:
+            if (key.endswith(" min") or
+                key.endswith(" max") or
+                    key == "polygon filters"):
+                pops.append(key)
+        [cfg["filtering"].pop(key) for key in pops]
+        # Add parent information in dictionary
+        cfg["filtering"]["hierarchy parent"] = self.hparent.identifier
+        return Configuration(cfg=cfg)
+
+    def _update_config(self):
+        """Update varying config values from self.hparent"""
+        # event count
+        self.config["experiment"]["event count"] = np.sum(
+            self.hparent.filter.all)
+        # calculation
+        if "calculation" in self.hparent.config:
+            self.config["calculation"].clear()
+            self.config["calculation"].update(
+                self.hparent.config["calculation"])
 
     @property
     def features(self):
@@ -332,8 +345,8 @@ class RTDC_Hierarchy(RTDCBase):
                 if flname in self.hparent["trace"]:
                     trdict[flname] = ChildTrace(self, flname)
             self._events["trace"] = trdict
-        # update config
-        self.config["experiment"]["event count"] = event_count
+        # Update configuration
+        self._update_config()
 
         # create a new filter if the parent changed
         self._check_parent_filter()

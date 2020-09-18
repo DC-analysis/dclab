@@ -385,6 +385,143 @@ def repack_parser():
     return parser
 
 
+def skip_empty_image_events(ds, initial=True, final=True):
+    """Set a manual filter to skip inital or final empty image events"""
+    if initial:
+        if (("image" in ds and ds.format == "tdms"
+             and ds.config["fmt_tdms"]["video frame offset"])
+            or ("contour" in ds and np.all(ds["contour"][0] == 0))
+                or ("image" in ds and np.all(ds["image"][0] == 0))):
+            ds.filter.manual[0] = False
+            ds.apply_filter()
+    if final:
+        # This is not easy to test, because we need a corrupt
+        # frame.
+        if "image" in ds:
+            idfin = len(ds) - 1
+            if ds.format == "tdms":
+                with warnings.catch_warnings(record=True) as wfin:
+                    warnings.simplefilter(
+                        "always",
+                        fmt_tdms.event_image.CorruptFrameWarning)
+                    ds["image"][idfin]
+                    if wfin:
+                        ds.filter.manual[idfin] = False
+                        ds.apply_filter()
+            elif np.all(ds["image"][idfin] == 0):
+                ds.filter.manual[idfin] = False
+                ds.apply_filter()
+
+
+def split(path_in=None, path_out=None, split_events=10000,
+          skip_initial_empty_image=True, skip_final_empty_image=True,
+          ret_out_paths=False, verbose=False):
+    """Split a measurement file
+
+    Parameters
+    ----------
+    path_in: str or pathlib.Path
+        Path of input measurement file
+    path_out: str or pathlib.Path
+        Path to output directory (optional)
+    split_events: int
+        Maximum number of events in each output file
+    verbose: bool
+        If `True`, print messages to stdout
+    """
+    if path_in is None:
+        parser = split_parser()
+        args = parser.parse_args()
+
+        path_in = pathlib.Path(args.path_in).resolve()
+        path_out = args.path_out
+        split_events = args.split_events
+        skip_initial_empty_image = not args.include_empty_boundary_images
+        skip_final_empty_image = not args.include_empty_boundary_images
+        verbose = True
+    if path_out in ["PATH_IN", None]:  # default to input directory
+        path_out = path_in.parent
+    path_in = pathlib.Path(path_in)
+    path_out = pathlib.Path(path_out)
+    logs = {}
+    logs["dclab-split"] = get_command_log(paths=[path_in])
+    paths_gen = []
+    with warnings.catch_warnings(record=True) as w:
+        if pyver > 2:
+            warnings.simplefilter("always")
+            # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
+            warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
+            # ignore SlowVideoWarning
+            warnings.simplefilter("ignore",
+                                  fmt_tdms.event_image.SlowVideoWarning)
+            if skip_initial_empty_image:
+                # If the initial frame is skipped when empty,
+                # suppress any related warning messages.
+                warnings.simplefilter(
+                    "ignore",
+                    fmt_tdms.event_image.InitialFrameMissingWarning)
+
+        with new_dataset(path_in) as ds:
+            for ll in ds.logs:
+                logs["src-{}".format(ll)] = ds.logs[ll]
+            num_files = len(ds) // split_events
+            if 10 % 4:
+                num_files += 1
+            for ii in range(num_files):
+                pp = path_out / "{}_{:04d}.rtdc".format(path_in.stem, ii+1)
+                paths_gen.append(pp)
+                if verbose:
+                    print(
+                        "Generating {:d}/{:d}: {}".format(ii+1, num_files, pp))
+                ds.filter.manual[:] = False  # reset filter
+                ds.filter.manual[ii*split_events:(ii+1)*split_events] = True
+                skip_empty_image_events(ds, initial=skip_initial_empty_image,
+                                        final=skip_final_empty_image)
+                ds.apply_filter()
+                ds.export.hdf5(
+                    path=pp, features=ds.features_innate, filtered=True)
+        if w:
+            logs["dclab-split-warnings"] = assemble_warnings(w)
+        sample_name = ds.config["experiment"]["sample"]
+
+    # Add the logs and update sample name
+    for ii, pp in enumerate(paths_gen):
+        meta = {"experiment": {"sample": "{} {}/{}".format(sample_name,
+                                                           ii+1,
+                                                           num_files)}}
+        with write_hdf5.write(pp, logs=logs, meta=meta, mode="append",
+                              compression="gzip"):
+            pass
+
+    if ret_out_paths:
+        return paths_gen
+
+
+def split_parser():
+    descr = "Split an RT-DC measurement file (.tdms or .rtdc) into multiple " \
+            + "smaller .rtdc files."
+    parser = argparse.ArgumentParser(description=descr)
+    parser.add_argument('path_in', metavar="PATH_IN", type=str,
+                        help='Input path (.tdms or .rtdc file)')
+    parser.add_argument('--path_out', metavar="PATH_OUT", type=str,
+                        default="PATH_IN",
+                        help='Output directory (defaults to same directory)')
+    parser.add_argument('--split-events', type=int, default=10000,
+                        help='Maximum number of events in each output file')
+    parser.add_argument('--include-empty-boundary-images',
+                        dest='include_empty_boundary_images',
+                        action='store_true',
+                        help='In old versions of Shape-In, the first or last '
+                             + 'images were sometimes not stored in the '
+                             + 'resulting .avi file. In dclab, such images '
+                             + 'are represented as zero-valued images. Set '
+                             + 'this option, if you wish to include these '
+                             + 'events with empty image data.')
+    parser.set_defaults(include_empty_boundary_images=False)
+
+    return parser
+
+
 def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
               skip_initial_empty_image=True, skip_final_empty_image=True,
               verbose=False):
@@ -409,7 +546,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         also not stored in the .avi file. If `True` (default), this
         final image is not included in the resulting .rtdc file.
     verbose: bool
-        If `True`, print messages to stoud
+        If `True`, print messages to stdout
     """
     if path_tdms is None or path_rtdc is None:
         parser = tdms2rtdc_parser()
@@ -482,26 +619,8 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                     # "contour" because it is original data.
                     features = ds.features_innate
 
-                if skip_initial_empty_image:
-                    if (("image" in ds
-                         and ds.config["fmt_tdms"]["video frame offset"])
-                            or ("contour" in ds
-                                and np.all(ds["contour"][0] == 0))):
-                        ds.filter.manual[0] = False
-                        ds.apply_filter()
-                if skip_final_empty_image:
-                    # This is not easy to test, because we need a corrupt
-                    # frame.
-                    if "image" in ds:
-                        idfin = len(ds) - 1
-                        with warnings.catch_warnings(record=True) as wfin:
-                            warnings.simplefilter(
-                                "always",
-                                fmt_tdms.event_image.CorruptFrameWarning)
-                            ds["image"][idfin]
-                            if wfin:
-                                ds.filter.manual[idfin] = False
-                                ds.apply_filter()
+                skip_empty_image_events(ds, initial=skip_initial_empty_image,
+                                        final=skip_final_empty_image)
                 # export as hdf5
                 ds.export.hdf5(path=fr,
                                features=features,
@@ -556,8 +675,8 @@ def tdms2rtdc_parser():
                              + 'images were sometimes not stored in the '
                              + 'resulting .avi file. In dclab, such images '
                              + 'are represented as zero-valued images. Set '
-                             + 'this option, if you wish to include the '
-                             + 'first event with empty image data.')
+                             + 'this option, if you wish to include these '
+                             + 'events with empty image data.')
     parser.set_defaults(include_empty_boundary_images=False)
     parser.add_argument('tdms_path', metavar="TDMS_PATH", type=str,
                         help='Input path (tdms file or folder containing '

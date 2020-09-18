@@ -47,6 +47,17 @@ dclab-repack
    :prog: dclab-repack
 
 
+.. _sec_split:
+
+dclab-split
+-----------
+
+.. simple_argparse::
+   :module: dclab.cli
+   :func: split_parser
+   :prog: dclab-split
+
+
 .. _sec_tdms2rtdc:
 
 dclab-tdms2rtdc

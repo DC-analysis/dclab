@@ -82,6 +82,7 @@ setup(
            "dclab-condense = dclab.cli:condense",
            "dclab-join = dclab.cli:join",
            "dclab-repack = dclab.cli:repack",
+           "dclab-split = dclab.cli:split",
            "dclab-tdms2rtdc = dclab.cli:tdms2rtdc [tdms]",
            "dclab-verify-dataset = dclab.cli:verify_dataset",
             ],

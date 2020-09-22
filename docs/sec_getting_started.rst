@@ -154,3 +154,14 @@ Non-scalar features do not support fancy indexing (i.e.
 If you need more information to get started on your particular problem,
 you might want to check out the :ref:`examples section <sec_examples>` and the
 :ref:`advanced scripting section <sec_advanced_scripting>`.
+
+
+Citing dclab
+============
+If you use dclab in a scientific publication, please cite it with:
+
+.. pull-quote::
+
+   Paul Müller and others (2015), dclab version X.X.X: Python library for the
+   post-measurement analysis of real-time deformability cytometry data sets
+   [Software]. Available at https://github.com/ZELLMECHANIK-DRESDEN/dclab.

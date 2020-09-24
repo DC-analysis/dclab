@@ -40,7 +40,7 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
                                  5, 5]).reshape(-1, 2)
                 cdata.append(cont + ss)
             val = cdata
-        elif key == "image":
+        elif key in ["image", "image_bg"]:
             imdat = []
             for ss in range(size):
                 data = np.arange(10 * 20, dtype=np.uint8).reshape(10, 20) + ss

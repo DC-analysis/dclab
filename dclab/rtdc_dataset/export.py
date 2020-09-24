@@ -181,7 +181,7 @@ class Export(object):
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
         compression: str or None
-            Compression method for "contour", "image", and "trace" data
+            Compression method for e.g. "contour", "image", and "trace" data
             as well as logs; one of [None, "lzf", "gzip", "szip"].
         """
         path = pathlib.Path(path)
@@ -359,7 +359,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
               data={"contour": cont_list},
               mode="append",
               compression=compression)
-    elif feat in ["mask", "image"]:
+    elif feat in ["mask", "image", "image_bg"]:
         # store image stacks (reduced file size and save time)
         m = 64
         im0 = rtdc_ds[feat][0]

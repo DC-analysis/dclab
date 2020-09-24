@@ -256,6 +256,28 @@ def test_hdf5_frame():
     shutil.rmtree(edest, ignore_errors=True)
 
 
+def test_hdf5_image_bg():
+    N = 65
+    keys = ["image", "image_bg"]
+    ddict = example_data_dict(size=N, keys=keys)
+
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image_bg.rtdc")
+    ds1.export.hdf5(f1, keys, filtered=False)
+    ds2 = dclab.new_dataset(f1)
+
+    for ii in range(N):
+        assert np.all(ds1["image"][ii] == ds2["image"][ii])
+        assert np.all(ds1["image_bg"][ii] == ds2["image_bg"][ii])
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
 def test_hdf5_index_continuous():
     keys = ["area_um", "deform", "time", "frame", "index"]
     ddict = example_data_dict(size=10, keys=keys)

@@ -43,6 +43,14 @@ class ChildImage(ChildBase):
         return hp["image"][pidx]
 
 
+class ChildImageBG(ChildBase):
+    def __getitem__(self, idx):
+        pidx = map_indices_child2parent(child=self.child,
+                                        child_indices=[idx])[0]
+        hp = self.child.hparent
+        return hp["image_bg"][pidx]
+
+
 class ChildMask(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
@@ -337,6 +345,8 @@ class RTDC_Hierarchy(RTDCBase):
             self._events["contour"] = ChildContour(self)
         if "image" in self.hparent:
             self._events["image"] = ChildImage(self)
+        if "image_bg" in self.hparent:
+            self._events["image_bg"] = ChildImageBG(self)
         if "mask" in self.hparent:
             self._events["mask"] = ChildMask(self)
         if "trace" in self.hparent:

@@ -227,6 +227,20 @@ def test_ic_fmt_hdf5_image3():
     cleanup()
 
 
+def test_ic_fmt_hdf5_image_bg():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # add a fake image_bg column
+    with h5py.File(h5path, "a") as h5:
+        image_bg = h5["events"]["image"][:] // 2
+        write(h5, data={"image_bg": image_bg}, mode="append")
+        del h5["events/image_bg"].attrs["CLASS"]
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check_fmt_hdf5()
+    assert cues[0].category == "format HDF5"
+    assert cues[0].msg == "HDF5: '/image_bg': missing attribute 'CLASS'"
+    assert cues[0].level == "alert"
+
+
 def test_ic_fmt_hdf5_logs():
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     write(h5path, logs={

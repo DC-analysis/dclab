@@ -1,3 +1,6 @@
+0.29.0
+ - feat: support the "image_bg" feature which contains the
+   rolling mean background image computed by Shape-In
 0.28.0
  - feat: new CLI command dclab-split to split a large dataset into
    multiple smaller datasets

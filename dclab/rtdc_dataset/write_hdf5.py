@@ -26,14 +26,34 @@ def store_contour(h5group, data, compression):
                            compression=compression)
 
 
-def store_image(h5group, data, compression):
+def store_image(h5group, data, compression, background=False):
+    """Store image data in an HDF5 group
+
+    Parameters
+    ----------
+    h5group: h5py.Group
+        The group (usually "events") where to store the image data
+    data: 2d or 3d ndarray
+        The image data. If 3d, then the first axis enumerates
+        the images.
+    compression: str
+        Dataset compression method
+    background: bool
+        If set to False (default), then the regular "image" is stored;
+        If set to True, then the background image ("image_bg") is
+        stored.
+    """
+    if background:
+        image_key = "image_bg"
+    else:
+        image_key = "image"
     if len(data.shape) == 2:
         # single event
         data = data.reshape(1, data.shape[0], data.shape[1])
-    if "image" not in h5group:
+    if image_key not in h5group:
         maxshape = (None, data.shape[1], data.shape[2])
         chunks = (100, data.shape[1], data.shape[2])
-        dset = h5group.create_dataset("image",
+        dset = h5group.create_dataset(image_key,
                                       data=data,
                                       dtype=np.uint8,
                                       maxshape=maxshape,
@@ -48,7 +68,7 @@ def store_image(h5group, data, compression):
         dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
         dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
     else:
-        dset = h5group["image"]
+        dset = h5group[image_key]
         oldsize = dset.shape[0]
         dset.resize(oldsize + data.shape[0], axis=0)
         dset[oldsize:] = data
@@ -293,7 +313,13 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
         elif fk == "image":
             store_image(h5group=events,
                         data=data["image"],
-                        compression=compression)
+                        compression=compression,
+                        background=False)
+        elif fk == "image_bg":
+            store_image(h5group=events,
+                        data=data["image_bg"],
+                        compression=compression,
+                        background=True)
         elif fk == "mask":
             store_mask(h5group=events,
                        data=data["mask"],

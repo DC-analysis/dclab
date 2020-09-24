@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" Test filter hierarchies
-"""
+"""Test filter hierarchies"""
 from __future__ import print_function
 
+import h5py
 import numpy as np
 import pytest
 
 from dclab import new_dataset
-from dclab.rtdc_dataset import fmt_hierarchy
+from dclab.rtdc_dataset import fmt_hierarchy, write
 
 from helper_methods import example_data_dict, example_data_sets, cleanup, \
     retrieve_data
@@ -73,6 +73,23 @@ def test_feat_image():
     ch = new_dataset(ds)
     assert np.all(ch["image"][0] == ds["image"][1])
     assert np.all(ch["image"][1] == ds["image"][3])
+    cleanup()
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+def test_feat_image_bg():
+    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    # add a fake image_bg column
+    with h5py.File(path, mode="a") as h5:
+        image_bg = h5["events"]["image"][:] // 2
+        write(h5, data={"image_bg": image_bg}, mode="append")
+    ds = new_dataset(path)
+    ds.filter.manual[0] = False
+    ds.filter.manual[2] = False
+    ch = new_dataset(ds)
+    assert np.all(ch["image_bg"][0] == ds["image_bg"][1])
+    assert np.all(ch["image_bg"][1] == ds["image_bg"][3])
     cleanup()
 
 

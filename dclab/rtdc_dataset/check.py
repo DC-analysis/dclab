@@ -424,7 +424,7 @@ class IntegrityChecker(object):
         # hdf5-based checks
         if self.ds.format == "hdf5":
             # check meta data of images
-            for feat in ["image", "mask"]:
+            for feat in ["image", "image_bg", "mask"]:
                 if feat in self.ds._events:
                     imdat = self.ds[feat]
                     for key, val in [['CLASS', b'IMAGE'],
@@ -510,7 +510,7 @@ class IntegrityChecker(object):
             and "roi size x" in self.ds.config["imaging"]
                 and "roi size y" in self.ds.config["imaging"]):
             for ii, roi in enumerate(["roi size y", "roi size x"]):
-                for feat in ["image", "mask"]:
+                for feat in ["image", "image_bg", "mask"]:
                     if feat in self.ds:
                         soll = self.ds[feat][0].shape[ii]
                         ist = self.ds.config["imaging"][roi]

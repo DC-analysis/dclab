@@ -76,6 +76,21 @@ def test_image_basic():
     cleanup()
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+def test_image_bg():
+    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    # add a fake image_bg column
+    with h5py.File(path, mode="a") as h5:
+        image_bg = h5["events"]["image"][:] // 2
+        rtdc_dataset.write(h5, data={"image_bg": image_bg}, mode="append")
+
+    with new_dataset(path) as ds:
+        for ii in range(len(ds)):
+            assert np.all(ds["image"][ii] // 2 == ds["image_bg"][ii])
+    cleanup()
+
+
 def test_logs():
     path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
 

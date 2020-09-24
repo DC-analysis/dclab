@@ -234,6 +234,7 @@ FEATURES_NON_SCALAR = [
     # This is a (M, 2)-shaped array with integer contour coordinates
     ["contour", "Binary event contour image"],
     ["image", "Gray scale event image"],
+    ["image_bg", "Gray scale event background image"],
     # This is the contour with holes filled
     ["mask", "Binary region labeling the event in the image"],
     # See FLUOR_TRACES for valid keys

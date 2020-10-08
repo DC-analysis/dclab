@@ -529,9 +529,9 @@ class IntegrityChecker(object):
         for sec in self.ds.config:
             for key in self.ds.config[sec]:
                 val = self.ds.config[sec][key]
-                if isinstance(val, str_types) and len(val) == 0:
+                if isinstance(val, str_types) and len(val.strip()) == 0:
                     cues.append(ICue(
-                        msg="Metadata: Empty value [{}]:{}".format(sec, key),
+                        msg="Metadata: Empty value [{}] '{}'".format(sec, key),
                         level="violation",
                         category="metadata missing",
                         cfg_section=sec,

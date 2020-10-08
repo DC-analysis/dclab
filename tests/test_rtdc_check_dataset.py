@@ -268,13 +268,24 @@ def test_ic_metadata_bad():
     assert cues[0].cfg_key == "run index"
 
 
-def test_ic_metadata_choices():
+def test_ic_metadata_choices_medium():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
     ds.config["setup"]["medium"] = "honey"
     with check.IntegrityChecker(ds) as ic:
         cues = ic.check_metadata_choices()
-    assert cues[0].category == "metadata wrong"
+    # changed in 0.29.1: medium can now be an arbitrary string
+    # except for an empty string.
+    assert len(cues) == 0
+
+
+def test_ic_metadata_empty_string():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["setup"]["medium"] = ""
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_metadata_empty_string()
+    assert cues[0].category == "metadata missing"
     assert cues[0].level == "violation"
     assert cues[0].cfg_section == "setup"
     assert cues[0].cfg_key == "medium"
@@ -292,7 +303,9 @@ def test_invalid_medium():
     cfg.insert(3, "Buffer Medium = unknown_bad!")
     para.write_text("\n".join(cfg))
     viol, _, _ = check_dataset(h5path)
-    assert "Metadata: Invalid value [setup] medium: 'unknown_bad!'" in viol
+    # changed in 0.29.1: medium can now be an arbitrary string
+    # except for an empty string.
+    assert "Metadata: Invalid value [setup] medium: 'unknown_bad!'" not in viol
     cleanup()
 
 

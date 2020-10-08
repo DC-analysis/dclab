@@ -76,11 +76,9 @@ OPTIONAL_KEYS = {
 }
 
 #: valid metadata choices
-VALID_CHOICES = {
-    "setup": {
-        "medium": ["CellCarrier", "CellCarrierB", "water", "other"],
-    }
-}
+#: .. versionchanged:: 0.29.1
+#:    medium not anymore restricted to certain set of choices
+VALID_CHOICES = {}
 
 
 @functools.total_ordering
@@ -524,6 +522,20 @@ class IntegrityChecker(object):
                                         category="metadata wrong",
                                         cfg_section="imaging",
                                         cfg_key=roi))
+        return cues
+
+    def check_metadata_empty_string(self, **kwargs):
+        cues = []
+        for sec in self.ds.config:
+            for key in self.ds.config[sec]:
+                val = self.ds.config[sec][key]
+                if isinstance(val, str_types) and len(val) == 0:
+                    cues.append(ICue(
+                        msg="Metadata: Empty value [{}]:{}".format(sec, key),
+                        level="violation",
+                        category="metadata missing",
+                        cfg_section=sec,
+                        cfg_key=key))
         return cues
 
     def check_metadata_choices(self, **kwargs):

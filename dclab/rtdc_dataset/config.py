@@ -187,6 +187,17 @@ class Configuration(object):
         """Return copy of current configuration"""
         return Configuration(cfg=copy.deepcopy(self._cfg))
 
+    def get(self, key, other):
+        """Famous `dict.get` function
+
+        .. versionadded:: 0.29.1
+
+        """
+        if key in self:
+            return self[key]
+        else:
+            return other
+
     def keys(self):
         """Return the configuration keys (sections)"""
         return self._cfg.keys()

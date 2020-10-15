@@ -72,3 +72,5 @@ _version_save.py
 *.bib.bak
 .pytest_cache
 pip-wheel-metadata
+
+.idea

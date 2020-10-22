@@ -12,29 +12,23 @@ To install dclab, use one of the following methods:
 * from `sources <https://github.com/ZellMechanik-Dresden/dclab>`_:
     ``pip install .[all]``
 
-The extra key ``[all]`` can be omitted if you are not working with DCOR or the
-tdms file format or have no need to export to .avi or .fcs files.
-Then, the basic installation of dclab depends on the Python packages
-`h5py <http://www.h5py.org/>`_,
-`numpy <https://docs.scipy.org/doc/numpy/>`_,
-and `scipy <https://docs.scipy.org/doc/scipy/reference/>`_.
-In addition, dclab contains code from `OpenCV <https://opencv.org/>`_
+The extra key ``[all]`` installs all possible dependencies in any
+context of RT-DC data analysis. You might prefer to only install
+a subset of these:
+
+- ``pip install dclab``: for the basic dclab functionalities
+- ``pip install dclab[dcor]``: to interface with `DCOR <https://dcor.mpl.mpg.de/>`_
+- ``pip install dclab[ml]``: for machine-learning applications
+- ``pip install dclab[tdms]``: for the (outdated) .tdms file format
+- ``pip install dclab[export]``: for .avi and .fcs export
+
+You may also combine these dependencies, i.e. ``pip install dclab[dcor,ml]``
+for DCOR and machine-learning support.
+
+In addition, dclab already comes with code from `OpenCV <https://opencv.org/>`_
 (computation of moments) and `scikit-image <http://scikit-image.org/>`_
 (computation of contours and points in polygons) to reduce the list of
 dependencies (these libraries are not required by dclab).
-
-If you are working with the outdated tdms file format, you have to specify
-the extra key ``[tdms]``, i.e. ``pip install dclab[tdms]`` or ``pip install .[tdms]``.
-This will install the additional libraries
-`nptdms <http://nptdms.readthedocs.io/en/latest/>`_ and
-`imageio <https://imageio.github.io/>`_.
-You may also specify the extra key ``[export]``, which will install imageio
-and  `fcswrite <https://github.com/ZELLMECHANIK-DRESDEN/fcswrite>`_ for .avi
-and .fcs export.
-If you are working with `DCOR <https://dcor.mpl.mpg.de/>`_, then you
-have to specify the extra key ``dcor``, which will install the
-`reqeusts <https://requests.readthedocs.io/en/master/>` module.
-As mentioned above, using ``[all]`` will install all extras.
 
 Note that if you are installing from source or if no binary wheel is
 available for your platform and Python version, `Cython <http://cython.org/>`_

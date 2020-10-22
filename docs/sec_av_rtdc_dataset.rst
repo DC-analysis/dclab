@@ -119,6 +119,9 @@ Here are a few useful functionalities for scripting with dclab.
     # available features
     In [16]: ds.features
 
+    # available scalar features
+    In [16]: ds.features_scalar
+
     # test feature availability (success)
     In [17]: "area_um" in ds
 

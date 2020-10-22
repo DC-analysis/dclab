@@ -1,3 +1,7 @@
+0.30.0
+ - feat: new machine learning (ML) submodule `dclab.ml`
+ - feat: implement ML model file format *.modc (#78)
+ - feat: add tensorflow helper functions for RT-DC data
 0.29.1
  - enh: lift restrictions on valid options for [setup]:medium
    (can now be any arbitrary string)

@@ -23,6 +23,7 @@ except BaseException:
 
 extras_require = {
         "dcor": ["requests"],
+        "ml": ["tensorflow>=2.0"],
         "tdms": ["nptdms>=0.23.0",  # read tdms files
                  "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
                  "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
@@ -36,6 +37,7 @@ extras_require = {
                 "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
                 "nptdms>=0.23.0",
                 "requests",
+                "tensorflow>=2.0",
                 ]
         }
 

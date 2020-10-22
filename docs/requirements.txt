@@ -6,3 +6,5 @@ h5py
 ipython
 scipy
 sphinx_rtd_theme
+tensorflow
+

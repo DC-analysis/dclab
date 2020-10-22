@@ -1,8 +1,10 @@
-"""Distinguishing beads from cells using machine-learning
+"""Distinguishing beads from cells with machine-learning
 
 We use tensorflow to distinguish between beads and cells using
-scalar features only. The example data is taken from a reference
-dataset on DCOR.
+scalar features only. The example data is taken from a `reference
+dataset on DCOR <https://dcor.mpl.mpg.de/dataset/figshare-7771184-v2>`_.
+The classification accuracy using only the inputs ``area_ratio``,
+``area_um``, ``bright_sd``, and ``deform`` reaches values above 95%.
 
 .. warning::
 
@@ -15,7 +17,7 @@ dataset on DCOR.
 
 .. note::
 
-   What happens when you add `bright_avg` to the `features` list?
+   What happens when you add ``"bright_avg"`` to the ``features`` list?
    Can you explain the result?
 """
 import matplotlib.pylab as plt
@@ -55,7 +57,7 @@ loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
 model.fit(train, epochs=5)
 
-# show accuracy using test data
+# show accuracy using test data (loss: 0.1139 - accuracy: 0.9659)
 model.evaluate(test, verbose=2)
 
 # predict classes of the test data
@@ -91,7 +93,6 @@ for ii in range(num_events):
     ax2 = plt.subplot(num_events, 2, 2*(ii + 1), title=title_false)
     ax1.axis("off")
     ax2.axis("off")
-    true_images[ii][:10] = 0
     ax1.imshow(true_images[ii], cmap="gray")
     ax2.imshow(false_images[ii], cmap="gray")
 

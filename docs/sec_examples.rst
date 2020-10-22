@@ -12,5 +12,7 @@ Examples
 
 .. fancy_include:: emodulus_dcor.py
 
+.. fancy_include:: ml_classification.py
+
 .. fancy_include:: isoelastics.py
 

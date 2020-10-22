@@ -12,4 +12,4 @@ Notes
 =====
 To view the sphinx inventory of DryMass, run
 
-   python -m sphinx.ext.intersphinx 'http://dclab.readthedocs.io/en/latest/objects.inv'
+   python -m sphinx.ext.intersphinx 'https://dclab.readthedocs.io/en/latest/objects.inv'

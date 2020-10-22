@@ -12,6 +12,8 @@ import warnings
 from .mllibs import tensorflow as tf
 
 
+#: Supported file formats (including instructions on how to open
+#: and save them).
 SUPPORTED_FORMATS = {
     "tensorflow-SavedModel": {
         "requirements": ["tensorflow"],
@@ -50,7 +52,10 @@ def hash_path(path):
 
 
 def export_model(path, model, enforce_formats=[]):
-    """Export a model to a directory
+    """Export an ML model
+
+    The model must be exportable with at least one method
+    listed in :const:`SUPPORTED_FORMATS`.
 
     Parameters
     ----------
@@ -111,9 +116,9 @@ def export_model(path, model, enforce_formats=[]):
 
 
 def load_modc(path):
-    """Load a models from a .modc file for inference
+    """Load models from a .modc file for inference
 
-    The first available model from :const:`SUPPORTED_FORMATS`
+    The first available format from :const:`SUPPORTED_FORMATS`
     will be used.
     """
     # unpack everything
@@ -168,7 +173,7 @@ def save_modc(path, models, inputs, outputs, model_names=None,
         The names of the models
     output_labels: list of str
         List of more descriptive labels for the features, e.g.
-        "red blood cell".
+        ``["red blood cell"]``.
 
     Returns
     -------

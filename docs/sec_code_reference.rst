@@ -285,3 +285,24 @@ statistics
    :undoc-members:
 
 
+machine learning
+================
+
+.. _sec_ref_ml_mllibs:
+
+.. automodule:: dclab.ml.mllibs
+   :members:
+   :undoc-members:
+   :exclude-members: MockPackage
+
+.. _sec_ref_ml_modc:
+
+.. automodule:: dclab.ml.modc
+   :members:
+   :undoc-members:
+
+.. _sec_ref_ml_tf_dataset:
+
+.. automodule:: dclab.ml.tf_dataset
+   :members:
+   :undoc-members:

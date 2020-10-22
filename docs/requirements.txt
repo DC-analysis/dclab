@@ -4,8 +4,7 @@ numpy
 matplotlib
 h5py
 ipython
-# caused builds to fail
-pillow<8
+pip!=20.2.4
 scipy
 sphinx_rtd_theme
 tensorflow

@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Testing script for volume.py
 An ellipse is created and the analytical and numerical solution are compared
 """
-from __future__ import division
 
 import itertools as IT
 

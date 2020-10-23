@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Isoelastics management"""
-from __future__ import division, unicode_literals
 
 import warnings
 

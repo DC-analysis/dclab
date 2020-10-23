@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Computation of apparent Young's modulus for RT-DC measurements"""
-from __future__ import division, print_function, unicode_literals
 
 import copy
 import json

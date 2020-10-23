@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Computation of ancillary features
 
 Ancillary features are computed on-the-fly in dclab if the
@@ -32,7 +30,6 @@ that is computed with `AncillaryFeature.hash`. The hash
 is computed from the feature data `req_features` and the
 configuration metadata `req_config`.
 """
-from __future__ import division, print_function, unicode_literals
 
 import hashlib
 import warnings

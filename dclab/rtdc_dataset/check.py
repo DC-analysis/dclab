@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Check RT-DC datasets for completeness"""
-from __future__ import unicode_literals
 
 import copy
 import functools

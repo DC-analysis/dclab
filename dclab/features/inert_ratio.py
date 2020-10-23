@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Computation of inertia ratio from contour data"""
-from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 import scipy.spatial as ssp

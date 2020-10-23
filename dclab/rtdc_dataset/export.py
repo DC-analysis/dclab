@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Export RT-DC measurement data"""
-from __future__ import division, print_function, unicode_literals
 
 import codecs
 import pathlib

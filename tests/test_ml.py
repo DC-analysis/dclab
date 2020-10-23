@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Test machine learning tools"""
-from __future__ import division
 
 import pathlib
 import tempfile

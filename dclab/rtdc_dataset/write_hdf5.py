@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """RT-DC file format writer"""
-from __future__ import unicode_literals
 
 import copy
 

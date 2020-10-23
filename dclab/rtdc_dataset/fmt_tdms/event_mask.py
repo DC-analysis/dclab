@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Class for on-the-fly conversion of contours to masks"""
-from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 import scipy.ndimage as ndi

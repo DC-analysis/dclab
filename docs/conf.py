@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # dclab documentation build configuration file, created by
 # sphinx-quickstart on Tue Sep 26 17:55:31 2017.
@@ -90,7 +88,7 @@ author = 'Paul Müller'
 # built documents.
 #
 # The short X.Y version.
-# 
+#
 # The full version, including alpha/beta/rc tags.
 # This gets 'version'
 release = dclab.__version__
@@ -122,7 +120,7 @@ html_theme = 'sphinx_rtd_theme'
 html_logo = "logo/dclab_large_white.png"
 html_theme_options = {
     'logo_only': True,
-    }
+}
 html_favicon = "logo/favicon.ico"
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -192,8 +190,6 @@ texinfo_documents = [
      author, 'dclab', 'post-measurement analysis of RT-DC data sets',
      'Scientific'),
 ]
-
-
 
 
 # Example configuration for intersphinx: refer to the Python standard library.

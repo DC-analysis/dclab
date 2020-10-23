@@ -1,9 +1,6 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """
 Cache for fast "recomputation"
 """
-from __future__ import division, print_function, unicode_literals
 
 import gc
 import hashlib

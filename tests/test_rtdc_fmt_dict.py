@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Test dictionary format"""
-from __future__ import print_function, unicode_literals
 
 from dclab import new_dataset
 

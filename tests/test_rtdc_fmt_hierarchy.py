@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Test filter hierarchies"""
-from __future__ import print_function
 
 import h5py
 import numpy as np

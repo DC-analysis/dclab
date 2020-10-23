@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """RT-DC .tdms file format"""
-from __future__ import division, print_function
 
 from distutils.version import LooseVersion
 import pathlib

@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 from .ancillary_feature import AncillaryFeature  # noqa: F401
 from . import af_basic
 from . import af_emodulus

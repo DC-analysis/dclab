@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Test tdms file format"""
-from __future__ import print_function
 
 import os
 import pathlib

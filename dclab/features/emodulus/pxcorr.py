@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Pixelation correction definitions"""
-from __future__ import division, unicode_literals
 
 import numpy as np
 

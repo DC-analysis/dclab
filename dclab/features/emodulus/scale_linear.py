@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Scale conversion applicable to a linear elastic model"""
-from __future__ import division, unicode_literals
 
 import warnings
 

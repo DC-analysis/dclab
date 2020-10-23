@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Load RT-DC datasets"""
-from __future__ import unicode_literals
 
 import pathlib
 import warnings

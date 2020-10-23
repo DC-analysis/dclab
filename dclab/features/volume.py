@@ -1,8 +1,5 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Computation of volume for RT-DC measurements based on a rotation
 of the contours"""
-from __future__ import division, print_function, unicode_literals
 import numpy as np
 
 

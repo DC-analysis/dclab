@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Determine package version from git repository tag
 
 Each time this file is imported it checks whether the package version
@@ -44,7 +43,6 @@ Changelog
  - check whether this file is versioned and its location is correct
  - code cleanup and docs update
 """
-from __future__ import print_function
 
 # Put the entire script into a `True` statement and add the hint
 # `pragma: no cover` to ignore code coverage here.

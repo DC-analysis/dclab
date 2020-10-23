@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Kernel Density Estimation methods"""
-from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 from scipy.interpolate import RectBivariateSpline

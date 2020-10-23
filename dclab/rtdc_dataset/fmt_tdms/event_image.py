@@ -1,9 +1,6 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """
 Class for efficiently handling image/video data
 """
-from __future__ import division, print_function, unicode_literals
 
 import pathlib
 import sys

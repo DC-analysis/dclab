@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Class for efficiently handling contour data"""
-from __future__ import division, print_function, unicode_literals
 
 import sys
 import warnings

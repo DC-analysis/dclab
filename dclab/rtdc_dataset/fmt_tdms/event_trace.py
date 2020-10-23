@@ -1,7 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Handling fluorescence trace data"""
-from __future__ import division, print_function, unicode_literals
 
 import pathlib
 import warnings

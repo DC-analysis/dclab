@@ -27,7 +27,7 @@ class Base(Directive):
     optional_arguments = 0
 
     def generate_rst(self):
-        pass        
+        pass
 
     def run(self):
         rst = self.generate_rst()
@@ -58,23 +58,24 @@ class Config(Base):
         for key in sorted(cfg.keys()):
             rst.append("")
             rst.append(".. csv-table::")
-            rst.append("    :header: {}, parsed, description [units]".format(key))
+            rst.append(
+                "    :header: {}, parsed, description [units]".format(key))
             rst.append("    :widths: 30, 10, 60")
             rst.append("    :delim: tab")
             rst.append("")
 
-            
             for item in sorted(cfg[key]):
                 if item[1] is str:
                     ref = ":class:`str`"
                 elif item[1] is float:
                     ref = ":class:`float`"
                 else:
-                    ref = ":func:`{f} <dclab.parse_funcs.{f}>`".format(f=item[1].__name__)
+                    ref = ":func:`{f} <dclab.parse_funcs.{f}>`".format(
+                        f=item[1].__name__)
                 rst.append("    {}\t {}\t {}".format(item[0],
                                                      ref,
                                                      item[2]))
-            
+
             rst.append("")
 
         return rst
@@ -90,17 +91,18 @@ class Features(Base):
         elif which == "scalar":
             feats = sorted(dfn.FEATURES_SCALAR)
         elif which == "non-scalar":
-            feats = sorted(dfn.FEATURES_NON_SCALAR)    
+            feats = sorted(dfn.FEATURES_NON_SCALAR)
 
         rst.append(".. csv-table::")
-        rst.append("    :header: {} features, description [units]".format(which))
+        rst.append(
+            "    :header: {} features, description [units]".format(which))
         rst.append("    :widths: 2, 7")
         rst.append("    :delim: tab")
         rst.append("")
 
         for item in feats:
             rst.append("    {}\t {}".format(item[0], item[1]))
-        
+
         rst.append("")
 
         return rst

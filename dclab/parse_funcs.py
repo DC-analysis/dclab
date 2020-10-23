@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, unicode_literals
 
-from .compat import str_types
-
 
 def fbool(value):
     """boolean"""
-    if isinstance(value, str_types):
+    if isinstance(value, str):
         value = value.lower()
         if value == "false":
             value = False
@@ -24,7 +22,7 @@ def fbool(value):
 
 def fint(value):
     """integer"""
-    if isinstance(value, str_types):
+    if isinstance(value, str):
         # strings might have been saved wrongly as booleans
         value = value.lower()
         if value == "false":
@@ -61,4 +59,4 @@ def lcstr(astr):
 func_types = {fbool: bool,
               fint: int,
               fintlist: list,
-              lcstr: str_types}
+              lcstr: str}

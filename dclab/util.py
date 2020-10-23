@@ -9,8 +9,6 @@ import pathlib
 import h5py
 import numpy as np
 
-from .compat import str_types
-
 
 def hashfile(fname, blocksize=65536, count=0, hasher_class=hashlib.md5):
     """Compute md5 hex-hash of a file
@@ -46,7 +44,7 @@ def hashobj(obj):
 
 def obj2str(obj):
     """String representation of an object for hashing"""
-    if isinstance(obj, str_types):
+    if isinstance(obj, str):
         return obj.encode("utf-8")
     elif isinstance(obj, pathlib.Path):
         return obj2str(str(obj))

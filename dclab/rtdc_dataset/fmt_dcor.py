@@ -1,11 +1,8 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 """DCOR client interface"""
-from __future__ import division, print_function, unicode_literals
+from functools import lru_cache
 
 import numpy as np
 
-from ..compat import PyImportError, lru_cache
 from .. import definitions as dfn
 from ..util import hashobj
 
@@ -14,7 +11,7 @@ from .core import RTDCBase
 
 try:
     import requests
-except PyImportError:
+except ModuleNotFoundError:
     REQUESTS_AVAILABLE = False
 else:
     REQUESTS_AVAILABLE = True
@@ -219,7 +216,8 @@ class RTDC_DCOR(RTDCBase):
             Full URL to the DCOR resource
         """
         if not REQUESTS_AVAILABLE:
-            raise PyImportError("Package `requests` required for DCOR format!")
+            raise ModuleNotFoundError(
+                "Package `requests` required for DCOR format!")
 
         super(RTDC_DCOR, self).__init__(*args, **kwargs)
 

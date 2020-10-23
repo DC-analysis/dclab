@@ -5,7 +5,6 @@ regression, plus some utilities.
 import numpy as np
 
 from . import kernels
-from dclab.compat import str_types as string_types
 
 
 kernel_func = dict(gaussian=kernels.gaussian)
@@ -38,7 +37,7 @@ class GenericKDE(object):
         if bw is None:
             bw = 'normal_reference'
 
-        if not isinstance(bw, string_types):
+        if not isinstance(bw, str):
             self._bw_method = "user-specified"
             res = np.asarray(bw)
         else:

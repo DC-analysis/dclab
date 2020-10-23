@@ -13,7 +13,6 @@ import warnings
 import numpy as np
 import scipy.interpolate as spint
 
-from ...compat import str_types
 from ... import definitions as dfn
 from ...warn import PipelineWarning
 from .pxcorr import get_pixelation_delta
@@ -338,11 +337,11 @@ def load_lut(lut_data="FEM-2Daxis"):
         lut, meta = lut_data
         lut = np.array(lut, copy=True)  # copy, because of normalization
         meta = copy.deepcopy(meta)  # copy, for the sake of consistency
-    elif isinstance(lut_data, str_types) and lut_data in INTERNAL_LUTS:
+    elif isinstance(lut_data, str) and lut_data in INTERNAL_LUTS:
         lut_path = resource_filename("dclab.features.emodulus",
                                      INTERNAL_LUTS[lut_data])
         lut, meta = load_mtext(lut_path)
-    elif (isinstance(lut_data, (str_types, pathlib.Path))
+    elif (isinstance(lut_data, (str, pathlib.Path))
           and pathlib.Path(lut_data).exists()):
         lut, meta = load_mtext(lut_data)
     else:
@@ -445,8 +444,7 @@ def load_mtext(path):
         feats.append(ft)
         units.append(un)
     # data
-    with path.open("rb") as lufd:
-        data = np.loadtxt(lufd)
+    data = np.loadtxt(path)
 
     meta["column features"] = feats
     meta["column units"] = units

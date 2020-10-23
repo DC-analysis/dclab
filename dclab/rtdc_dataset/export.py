@@ -9,18 +9,16 @@ import warnings
 
 import h5py
 
-from ..compat import PyImportError
-
 try:
     import imageio
-except PyImportError:
+except ModuleNotFoundError:
     IMAGEIO_AVAILABLE = False
 else:
     IMAGEIO_AVAILABLE = True
 
 try:
     import fcswrite
-except PyImportError:
+except ModuleNotFoundError:
     FCSWRITE_AVAILABLE = False
 else:
     FCSWRITE_AVAILABLE = True
@@ -60,7 +58,8 @@ class Export(object):
         Raises OSError if current dataset does not contain image data
         """
         if not IMAGEIO_AVAILABLE:
-            raise PyImportError("Package `imageio` required for avi export!")
+            raise ModuleNotFoundError(
+                "Package `imageio` required for avi export!")
         path = pathlib.Path(path)
         ds = self.rtdc_ds
         # Make sure that path ends with .avi
@@ -125,7 +124,8 @@ class Export(object):
         NaN-valued features are not exported.
         """
         if not FCSWRITE_AVAILABLE:
-            raise PyImportError("Package `fcswrite` required for fcs export!")
+            raise ModuleNotFoundError(
+                "Package `fcswrite` required for fcs export!")
         features = [c.lower() for c in features]
         ds = self.rtdc_ds
 

@@ -12,16 +12,13 @@ matrix:
  - os: osx
    language: generic
    env:
-    - MAC_PYTHON_VERSION=3.7.7
+    - MAC_PYTHON_VERSION=3.7.9
     - MAC_PYTHON_OSX_VERSION=10.9
  - os: osx
    language: generic
    env:
-    - MAC_PYTHON_VERSION=3.8.2
+    - MAC_PYTHON_VERSION=3.8.6
     - MAC_PYTHON_OSX_VERSION=10.9
- - os: linux
-   language: python
-   python: 2.7
  - os: linux
    language: python
    python: 3.6
@@ -42,8 +39,6 @@ install:
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 # install all other dependencies
 - travis_retry pip install -e .[all]
-# Python2: download ffmpeg (required by imageio)
-- if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then travis_retry imageio_download_bin --package-dir ffmpeg; fi
 # for tests:
 - travis_retry pip install codecov coverage flake8
 - pip freeze
@@ -53,8 +48,7 @@ script:
 - flake8 dclab
 - flake8 examples
 - flake8 tests
-# Python2: No flake8 because it's written in Python3
-- if [ "$TRAVIS_PYTHON_VERSION" != "2.7" ]; then flake8 scripts; fi
+- flake8 scripts
 after_success:
 - codecov
 before_deploy:

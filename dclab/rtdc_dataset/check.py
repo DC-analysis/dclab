@@ -13,7 +13,6 @@ import numpy as np
 from .core import RTDCBase
 from .load import load_file
 
-from ..compat import str_types
 from .. import definitions as dfn
 
 
@@ -487,8 +486,6 @@ class IntegrityChecker(object):
             for key in self.ds.config[sec]:
                 val = self.ds.config[sec][key]
                 typ = dfn.config_types[sec][key]
-                if typ is str:
-                    typ = str_types
                 if sec in dfn.CFG_ANALYSIS:
                     # TODO:
                     # - properly test against analysis keywords
@@ -529,7 +526,7 @@ class IntegrityChecker(object):
         for sec in self.ds.config:
             for key in self.ds.config[sec]:
                 val = self.ds.config[sec][key]
-                if isinstance(val, str_types) and len(val.strip()) == 0:
+                if isinstance(val, str) and len(val.strip()) == 0:
                     cues.append(ICue(
                         msg="Metadata: Empty value [{}] '{}'".format(sec, key),
                         level="violation",

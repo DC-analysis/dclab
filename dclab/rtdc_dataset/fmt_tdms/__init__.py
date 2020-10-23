@@ -7,8 +7,6 @@ from distutils.version import LooseVersion
 import pathlib
 import time
 
-from ...compat import PyImportError
-
 from .exc import ContourIndexingError  # noqa:F401
 from .exc import InvalidTDMSFileFormatError  # noqa:F401
 from .exc import IncompleteTDMSFileFormatError  # noqa:F401
@@ -16,7 +14,7 @@ from .exc import InvalidVideoFileError  # noqa:F401
 
 try:
     import nptdms
-except PyImportError:
+except ModuleNotFoundError:
     NPTDMS_AVAILABLE = False
 else:
     if LooseVersion(nptdms.__version__) < LooseVersion("0.23.0"):
@@ -56,7 +54,8 @@ class RTDC_TDMS(RTDCBase):
             Path to the experimental dataset (main .tdms file)
         """
         if not NPTDMS_AVAILABLE:
-            raise PyImportError("Package `nptdms` required for TDMS format!")
+            raise ModuleNotFoundError(
+                "Package `nptdms` required for TDMS format!")
         # Initialize RTDCBase
         super(RTDC_TDMS, self).__init__(*args, **kwargs)
 

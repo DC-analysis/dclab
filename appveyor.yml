@@ -11,13 +11,8 @@ environment:
     secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
   PYPI_USR: ci_zmdd
   matrix:
-    - PYTHON: "C:\\Python27"
-    - PYTHON: "C:\\Python27-x64"
-    - PYTHON: "C:\\Python36"
     - PYTHON: "C:\\Python36-x64"
-    - PYTHON: "C:\\Python37"
     - PYTHON: "C:\\Python37-x64"
-    - PYTHON: "C:\\Python38"
     - PYTHON: "C:\\Python38-x64"
 
 install:

@@ -6,8 +6,6 @@ from __future__ import unicode_literals
 import pathlib
 import warnings
 
-from ..compat import str_types
-
 from .core import RTDCBase
 from . import fmt_dict, fmt_dcor, fmt_hdf5, fmt_tdms, fmt_hierarchy
 
@@ -56,7 +54,7 @@ def new_dataset(data, identifier=None, **kwargs):
     """
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
-    elif isinstance(data, (str_types)) or isinstance(data, pathlib.Path):
+    elif isinstance(data, str) or isinstance(data, pathlib.Path):
         if (isinstance(data, pathlib.Path)
                 or (not data.count("://")  # prevent Pathing it on Windows
                     and pathlib.Path(data).exists())):

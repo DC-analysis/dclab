@@ -8,7 +8,6 @@ import copy
 import h5py
 import numpy as np
 
-from ..compat import hdf5_str
 from .. import definitions as dfn
 from .._version import version
 
@@ -337,10 +336,10 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
             for rl in logs:
                 if rl in log_group:
                     del log_group[rl]
-        dt = h5py.special_dtype(vlen=hdf5_str)
+        dt = h5py.special_dtype(vlen=str)
         for lkey in logs:
             ldata = logs[lkey]
-            if isinstance(ldata, (str, hdf5_str)):
+            if isinstance(ldata, str):
                 # single event
                 ldata = [ldata]
             lnum = len(ldata)

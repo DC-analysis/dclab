@@ -24,22 +24,15 @@ except BaseException:
 extras_require = {
         "dcor": ["requests"],
         "ml": ["tensorflow>=2.0"],
-        "tdms": ["nptdms>=0.23.0",  # read tdms files
-                 "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
-                 "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
+        "tdms": ["imageio[ffmpeg]",
+                 "nptdms>=0.23.0",
                  ],
         "export": ["fcswrite>=0.5.0",  # fcs export
-                   "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
-                   "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
+                   "imageio[ffmpeg]",  # avi export
                    ],
-        "all": ["fcswrite>=0.5.0",
-                "imageio>=2.3.0,<2.5.0;python_version<'3.4'",  # avi (old)
-                "imageio[ffmpeg]>=2.8.0;python_version>='3.4'",  # avi (new)
-                "nptdms>=0.23.0",
-                "requests",
-                "tensorflow>=2.0",
-                ]
         }
+# concatenate all other dependencies into "all"
+extras_require["all"] = list(set(sum(list(extras_require.values()), [])))
 
 
 setup(
@@ -76,6 +69,7 @@ setup(
         ],
     # not to be confused with definitions in pyproject.toml [build-system]
     setup_requires=["pytest-runner"],
+    python_requires=">=3.6",
     tests_require=["pytest", "urllib3"] + extras_require["all"],
     extras_require=extras_require,
     entry_points={
@@ -91,8 +85,7 @@ setup(
        },
     keywords=["RT-DC", "deformation", "cytometry", "zellmechanik"],
     classifiers=['Operating System :: OS Independent',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3.6',
+                 'Programming Language :: Python :: 3',
                  'Topic :: Scientific/Engineering :: Visualization',
                  'Intended Audience :: Science/Research',
                  ],

@@ -8,8 +8,6 @@ import pathlib
 import sys
 import warnings
 
-
-from ..compat import str_types
 from .. import definitions as dfn
 
 
@@ -55,7 +53,7 @@ class ConfigurationDict(dict):
     @classmethod
     def _k(cls, key):
         """Convert a key to lower case"""
-        return key.lower() if isinstance(key, str_types) else key
+        return key.lower() if isinstance(key, str) else key
 
     def _convert_keys(self):
         for k in list(self.keys()):
@@ -378,7 +376,7 @@ def keyval_str2typ(var, val):
     --------
     keyval_typ2str: the opposite
     """
-    if not (isinstance(val, str_types)):
+    if not (isinstance(val, str)):
         # already a type:
         return var.strip(), val
     var = var.strip().lower()

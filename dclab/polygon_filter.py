@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, unicode_literals
 
+import io
 import pathlib
 import warnings
 
 import numpy as np
 
-from .compat import is_file_obj
 from .external.skimage.measure import points_in_poly
 from .util import hashobj
 
@@ -346,7 +346,7 @@ class PolygonFilter(object):
         If `ret_fobj` is `True`, then the file object will not be
         closed and returned.
         """
-        if is_file_obj(polyfile):
+        if isinstance(polyfile, io.IOBase):
             fobj = polyfile
         else:
             fobj = pathlib.Path(polyfile).open("a")

@@ -13,18 +13,17 @@ import numpy as np
 from .rtdc_dataset import check_dataset, export, fmt_tdms, new_dataset, \
     write_hdf5
 from . import definitions as dfn
-from .compat import PyImportError, pyver
 from . import util
 from ._version import version
 
 try:
     import imageio
-except PyImportError:
+except ModuleNotFoundError:
     imageio = None
 
 try:
     import nptdms
-except PyImportError:
+except ModuleNotFoundError:
     nptdms = None
 
 
@@ -447,19 +446,18 @@ def split(path_in=None, path_out=None, split_events=10000,
     logs["dclab-split"] = get_command_log(paths=[path_in])
     paths_gen = []
     with warnings.catch_warnings(record=True) as w:
-        if pyver > 2:
-            warnings.simplefilter("always")
-            # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
-            warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
-            # ignore SlowVideoWarning
-            warnings.simplefilter("ignore",
-                                  fmt_tdms.event_image.SlowVideoWarning)
-            if skip_initial_empty_image:
-                # If the initial frame is skipped when empty,
-                # suppress any related warning messages.
-                warnings.simplefilter(
-                    "ignore",
-                    fmt_tdms.event_image.InitialFrameMissingWarning)
+        warnings.simplefilter("always")
+        # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
+        warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
+        # ignore SlowVideoWarning
+        warnings.simplefilter("ignore",
+                              fmt_tdms.event_image.SlowVideoWarning)
+        if skip_initial_empty_image:
+            # If the initial frame is skipped when empty,
+            # suppress any related warning messages.
+            warnings.simplefilter(
+                "ignore",
+                fmt_tdms.event_image.InitialFrameMissingWarning)
 
         with new_dataset(path_in) as ds:
             for ll in ds.logs:
@@ -594,18 +592,17 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         # load and export dataset
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            if pyver > 2:
-                # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
-                warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
-                # ignore SlowVideoWarning
-                warnings.simplefilter("ignore",
-                                      fmt_tdms.event_image.SlowVideoWarning)
-                if skip_initial_empty_image:
-                    # If the initial frame is skipped when empty,
-                    # suppress any related warning messages.
-                    warnings.simplefilter(
-                        "ignore",
-                        fmt_tdms.event_image.InitialFrameMissingWarning)
+            # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
+            warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
+            # ignore SlowVideoWarning
+            warnings.simplefilter("ignore",
+                                  fmt_tdms.event_image.SlowVideoWarning)
+            if skip_initial_empty_image:
+                # If the initial frame is skipped when empty,
+                # suppress any related warning messages.
+                warnings.simplefilter(
+                    "ignore",
+                    fmt_tdms.event_image.InitialFrameMissingWarning)
 
             with new_dataset(ff) as ds:
                 # determine features to export

@@ -6,7 +6,7 @@ from ..rtdc_dataset import new_dataset
 from .mllibs import tensorflow as tf
 
 
-def assemble_tf_dataset_scalars(paths, labels, feature_inputs, split=0.0,
+def assemble_tf_dataset_scalars(dc_data, labels, feature_inputs, split=0.0,
                                 shuffle=True, batch_size=32, dtype=np.float32):
     """Assemble a `tensorflow.data.Dataset` for scalar features
 
@@ -14,7 +14,7 @@ def assemble_tf_dataset_scalars(paths, labels, feature_inputs, split=0.0,
 
     Parameters
     ----------
-    paths: list of pathlib.Path, str, or dclab.rtdc_dataset.RTDCBase
+    dc_data: list of pathlib.Path, str, or dclab.rtdc_dataset.RTDCBase
         List of source datasets (can be anything
         :func:`dclab.new_dataset` accepts).
     labels: list
@@ -29,6 +29,9 @@ def assemble_tf_dataset_scalars(paths, labels, feature_inputs, split=0.0,
     shuffle: bool
         If True (default), shuffle the dataset (A hard-coded seed
         is used for reproducibility).
+    batch_size: int
+        Batch size for training. The function `tf.data.Dataset.batch`
+        is called with `batch_size` as its argument.
     dtype: numpy.dtype
         Desired dtype of the output data
 
@@ -41,7 +44,7 @@ def assemble_tf_dataset_scalars(paths, labels, feature_inputs, split=0.0,
         if not dfn.scalar_feature_exists(feat):
             raise ValueError("'{}' is not a scalar feature!".format(feat))
 
-    dcds = [new_dataset(pp) for pp in paths]
+    dcds = [new_dataset(pp) for pp in dc_data]
 
     size = sum([len(ds) for ds in dcds])
 
@@ -79,7 +82,7 @@ def assemble_tf_dataset_scalars(paths, labels, feature_inputs, split=0.0,
         return tfdata
 
 
-def get_dataset_event_feature(paths, feature, dataset_indices, split_index,
+def get_dataset_event_feature(dc_data, feature, dataset_indices, split_index=0,
                               split=0.0, shuffle=True):
     """Return RT-DC features for tensorflow Dataset indices
 
@@ -91,7 +94,7 @@ def get_dataset_event_feature(paths, feature, dataset_indices, split_index,
 
     Parameters
     ----------
-    paths: list of pathlib.Path, str, or dclab.rtdc_dataset.RTDCBase
+    dc_data: list of pathlib.Path, str, or dclab.rtdc_dataset.RTDCBase
         List of source datasets (Must match the path list used
         to create the `tf.data.Dataset`).
     feature: str
@@ -114,7 +117,7 @@ def get_dataset_event_feature(paths, feature, dataset_indices, split_index,
         Feature list with elements corresponding to the events
         given by `dataset_indices`.
     """
-    dcds = [new_dataset(pp) for pp in paths]
+    dcds = [new_dataset(pp) for pp in dc_data]
     ds_sizes = [len(ds) for ds in dcds]
     size = sum(ds_sizes)
     index = np.arange(size)
@@ -147,6 +150,10 @@ def get_dataset_event_feature(paths, feature, dataset_indices, split_index,
 
 
 def shuffle_array(arr, seed=42):
-    """Shuffle a numpy array reproducibly with a fixed seed"""
+    """Shuffle a numpy array in-place reproducibly with a fixed seed
+
+    The shuffled array is also returned.
+    """
     rng = np.random.default_rng(seed=seed)
     rng.shuffle(arr)
+    return arr

@@ -55,7 +55,7 @@ setup(
     description=description,
     long_description=open('README.rst').read() if exists('README.rst') else '',
     install_requires=["h5py>=2.10.0",
-                      "numpy>=1.16.0",  # cython includes
+                      "numpy>=1.17.0",  # numpy.random.default_rng
                       "pathlib;python_version<='3.4'",
                       "backports.functools_lru_cache;python_version<'3.3'",
                       "scipy>=0.14.0",

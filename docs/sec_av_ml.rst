@@ -17,7 +17,7 @@ The .modc file format
 The .modc file format is not a reinvention of the wheel. It is merely
 a wrapper around other ML file formats that describes which input
 features (e.g. ``deform``, ``area_um``, ``image``, etc.) a neural net
-maps onto which output features (e.g. ``ml_rbc``). A .modc file is
+maps onto which output features (e.g. ``ml_score_rbc``). A .modc file is
 a simple .zip file containing an index.json file that lists all
 models. A model may be stored in multiple file formats (e.g. as a
 `tensorflow SavedModel <https://www.tensorflow.org/guide/saved_model>`_

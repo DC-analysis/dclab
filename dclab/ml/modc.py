@@ -25,32 +25,6 @@ SUPPORTED_FORMATS = {
 }
 
 
-def hash_path(path):
-    """Create a SHA256 hash of a file or all files in a directory
-
-    The files are sorted before hashing for reproducibility.
-    """
-    path = pathlib.Path(path)
-    assert path.is_dir()
-    hasher = hashlib.sha256()
-    if path.is_dir():
-        paths = sorted(path.rglob("*"))
-    else:
-        paths = [path]
-    for pp in paths:
-        hasher.update(pp.name.encode())
-        if pp.is_dir():
-            continue
-        with pp.open("rb") as fd:
-            while True:
-                chunk = fd.read(65536)
-                if chunk:
-                    hasher.update(chunk)
-                else:
-                    break
-    return hasher.hexdigest()
-
-
 def export_model(path, model, enforce_formats=[]):
     """Export an ML model
 
@@ -113,6 +87,32 @@ def export_model(path, model, enforce_formats=[]):
               "date": time.strftime("%Y-%m-%d %H:%M"),
               }
     return m_dict
+
+
+def hash_path(path):
+    """Create a SHA256 hash of a file or all files in a directory
+
+    The files are sorted before hashing for reproducibility.
+    """
+    path = pathlib.Path(path)
+    assert path.is_dir()
+    hasher = hashlib.sha256()
+    if path.is_dir():
+        paths = sorted(path.rglob("*"))
+    else:
+        paths = [path]
+    for pp in paths:
+        hasher.update(pp.name.encode())
+        if pp.is_dir():
+            continue
+        with pp.open("rb") as fd:
+            while True:
+                chunk = fd.read(65536)
+                if chunk:
+                    hasher.update(chunk)
+                else:
+                    break
+    return hasher.hexdigest()
 
 
 def load_modc(path):

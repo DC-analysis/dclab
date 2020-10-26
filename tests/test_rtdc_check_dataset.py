@@ -8,7 +8,7 @@ import pytest
 from dclab.rtdc_dataset import check, check_dataset, fmt_tdms, new_dataset, \
     write
 
-from helper_methods import cleanup, example_data_dict, retrieve_data
+from helper_methods import example_data_dict, retrieve_data
 
 
 @pytest.mark.filterwarnings(
@@ -42,7 +42,6 @@ def test_basic():
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     assert "Compression: Partial (1 of 25)" in info
-    cleanup()
 
 
 def test_complete():
@@ -52,7 +51,6 @@ def test_complete():
     assert len(aler) == 0
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
-    cleanup()
 
 
 def test_exact():
@@ -80,7 +78,6 @@ def test_exact():
     assert set(viol) == set(known_viol)
     assert set(aler) == set(known_aler)
     assert set(info) == set(known_info)
-    cleanup()
 
 
 def test_icue():
@@ -93,7 +90,6 @@ def test_icue():
     assert levels["alert"] == 0
     assert levels["violation"] == 0
     assert cues[0].msg in cues[0].__repr__()
-    cleanup()
 
 
 def test_ic_expand_section():
@@ -194,7 +190,6 @@ def test_ic_fmt_hdf5_image1():
     assert cues[0].msg == "HDF5: '/image': attribute 'CLASS' should be " \
                           + "fixed-length ASCII string"
     assert cues[0].level == "alert"
-    cleanup()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 0),
@@ -209,7 +204,6 @@ def test_ic_fmt_hdf5_image2():
     assert cues[0].msg == "HDF5: '/image': attribute 'CLASS' should have " \
                           + "value 'b'IMAGE''"
     assert cues[0].level == "alert"
-    cleanup()
 
 
 def test_ic_fmt_hdf5_image3():
@@ -221,7 +215,6 @@ def test_ic_fmt_hdf5_image3():
     assert cues[0].category == "format HDF5"
     assert cues[0].msg == "HDF5: '/image': missing attribute 'CLASS'"
     assert cues[0].level == "alert"
-    cleanup()
 
 
 def test_ic_fmt_hdf5_image_bg():
@@ -250,7 +243,6 @@ def test_ic_fmt_hdf5_logs():
     assert cues[0].category == "format HDF5"
     assert cues[0].msg == 'Logs: test line 0 exceeds maximum line length 100'
     assert cues[0].level == "alert"
-    cleanup()
 
 
 def test_ic_metadata_bad():
@@ -303,7 +295,6 @@ def test_invalid_medium():
     # changed in 0.29.1: medium can now be an arbitrary string
     # except for an empty string.
     assert "Metadata: Invalid value [setup] medium: 'unknown_bad!'" not in viol
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -327,7 +318,6 @@ def test_load_with():
         viol, aler, _ = check_dataset(ds)
         assert set(viol) == set(known_viol)
         assert set(aler) == set(known_aler)
-    cleanup()
 
 
 def test_missing_file():
@@ -339,7 +329,6 @@ def test_missing_file():
         pass
     else:
         assert False
-    cleanup()
 
 
 def test_ml_class():
@@ -366,7 +355,6 @@ def test_no_fluorescence():
         'Fluorescence: False',
     ]
     assert set(info) == set(known_info)
-    cleanup()
 
 
 def test_temperature():
@@ -388,7 +376,6 @@ def test_wrong_samples_per_event():
           + "(expected 10, got 566)"
     viol, _, _ = check_dataset(h5path)
     assert msg in viol
-    cleanup()
 
 
 if __name__ == "__main__":

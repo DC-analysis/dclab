@@ -10,7 +10,7 @@ import numpy as np
 from dclab.rtdc_dataset import new_dataset
 import dclab.rtdc_dataset.config as dccfg
 
-from helper_methods import retrieve_data, example_data_sets, cleanup
+from helper_methods import retrieve_data, example_data_sets
 
 
 def equals(a, b):
@@ -32,7 +32,6 @@ def equals(a, b):
 def test_config_basic():
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert ds.config["imaging"]["roi size y"] == 96.
-    cleanup()
 
 
 def test_config_invalid_key():
@@ -46,7 +45,6 @@ def test_config_invalid_key():
         assert len(w) == 1
         assert issubclass(w[-1].category, dccfg.UnknownConfigurationKeyWarning)
         assert "invalid_key" in str(w[-1].message)
-    cleanup()
 
 
 def test_config_save_load():
@@ -57,7 +55,6 @@ def test_config_save_load():
     ds.config.save(cfg_file)
     loaded = dccfg.Configuration(files=[cfg_file])
     assert equals(loaded, ds.config)
-    cleanup()
     try:
         os.remove(cfg_file)
     except OSError:
@@ -82,7 +79,6 @@ def test_config_update():
     assert ds.config["calculation"]["crosstalk fl23"] == 0.4
     assert ds.config["calculation"]["crosstalk fl31"] == 0.5
     assert ds.config["calculation"]["crosstalk fl32"] == 0.6
-    cleanup()
 
 
 if __name__ == "__main__":

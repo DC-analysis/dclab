@@ -13,7 +13,7 @@ import dclab
 from dclab import dfn, new_dataset
 
 from helper_methods import example_data_dict, retrieve_data, \
-    example_data_sets, cleanup
+    example_data_sets
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -26,7 +26,6 @@ def test_avi_export():
     assert os.stat(
         f1)[6] > 1e4, "Resulting file to small, Something went wrong!"
     shutil.rmtree(edest, ignore_errors=True)
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -46,7 +45,6 @@ def test_avi_override():
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)
-    cleanup()
 
 
 def test_avi_no_images():

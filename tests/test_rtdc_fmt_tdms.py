@@ -13,7 +13,7 @@ import pytest
 from dclab import new_dataset
 import dclab.rtdc_dataset.fmt_tdms.naming
 
-from helper_methods import retrieve_data, example_data_sets, cleanup
+from helper_methods import retrieve_data, example_data_sets
 
 
 def test_compatibility_minimal():
@@ -22,7 +22,6 @@ def test_compatibility_minimal():
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.12
     assert ds.config["imaging"]["pixel size"] == 0.34
-    cleanup()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 6),
@@ -36,7 +35,6 @@ def test_compatibility_channel_width():
     para.write_text(pardata)
     ds = new_dataset(path)
     assert ds.config["setup"]["channel width"] == 34
-    cleanup()
 
 
 def test_compatibility_shapein201():
@@ -48,7 +46,6 @@ def test_compatibility_shapein201():
     assert ds.config["imaging"]["flash duration"] == 2
     assert ds.config["experiment"]["date"] == "2017-10-12"
     assert ds.config["experiment"]["time"] == "12:54:31"
-    cleanup()
 
 
 def test_contains_non_scalar():
@@ -65,7 +62,6 @@ def test_contains_non_scalar():
     assert "image" not in ds3
     assert "mask" not in ds3
     assert "trace" not in ds3
-    cleanup()
 
 
 def test_contour_basic():
@@ -73,7 +69,6 @@ def test_contour_basic():
     assert len(ds["contour"]) == 12
     assert np.allclose(np.average(ds["contour"][0]), 38.488764044943821)
     assert ds["contour"]._initialized
-    cleanup()
 
 
 def test_contour_corrupt():
@@ -91,7 +86,6 @@ def test_contour_corrupt():
         pass
     else:
         assert False
-    cleanup()
 
 
 def test_contour_naming():
@@ -136,7 +130,6 @@ def test_contour_naming():
     # This will issue a warning that no contour data was found.
     ds5 = new_dataset(dp)
     assert ds5["contour"].identifier is None
-    cleanup()
 
 
 def test_contour_negative_offset():
@@ -144,13 +137,11 @@ def test_contour_negative_offset():
     ds["contour"][0]
     ds["contour"].event_offset = 1
     assert np.all(ds["contour"][0] == np.zeros((2, 2), dtype=int))
-    cleanup()
 
 
 def test_contour_not_initialized():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert not ds["contour"]._initialized
-    cleanup()
 
 
 def test_fluorescence_config():
@@ -158,7 +149,6 @@ def test_fluorescence_config():
     assert "fluorescence" not in ds1.config
     ds2 = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
     assert "fluorescence" in ds2.config
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -170,13 +160,11 @@ def test_image_basic():
     assert np.allclose(ds["image"][0], 0)
     # Real image
     assert np.allclose(np.average(ds["image"][1]), 45.1490478515625)
-    cleanup()
 
 
 def test_image_column_length():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert len(ds["image"]) == 3
-    cleanup()
 
 
 def test_image_corrupt():
@@ -191,7 +179,6 @@ def test_image_corrupt():
         pass
     else:
         assert False
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -203,7 +190,6 @@ def test_image_out_of_bounds():
     assert not np.allclose(ds["image"][1], 0)
     assert not np.allclose(ds["image"][2], 0)
     assert np.allclose(ds["image"][3], 0)  # causes warning
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -228,14 +214,12 @@ def test_large_fov():
     bavg = ds._events.pop("bright_avg")
     bcom = ds["bright_avg"]
     assert np.allclose(bavg[1], bcom[1])
-    cleanup()
 
 
 def test_load_tdms_all():
     for ds in example_data_sets:
         tdms_path = retrieve_data(ds)
         ds = new_dataset(tdms_path)
-    cleanup()
 
 
 def test_load_tdms_avi_files_1():
@@ -253,7 +237,6 @@ def test_load_tdms_avi_files_1():
     with new_dataset(tdms_path) as ds3:
         # ignore any other videos
         assert pathlib.Path(ds3["image"].video_file).name == "M1_imag.avi"
-    cleanup()
 
 
 def test_load_tdms_avi_files_2():
@@ -265,14 +248,12 @@ def test_load_tdms_avi_files_2():
     with new_dataset(tdms_path) as ds4:
         # use available video if ima* not there
         assert pathlib.Path(ds4["image"].video_file).name == "M1_test.avi"
-    cleanup()
 
 
 def test_load_tdms_simple():
     tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
     assert ds.filter.all.shape[0] == 156
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -289,7 +270,6 @@ def test_mask_basic():
     bavg1 = ds["bright_avg"][1]
     bavg2 = np.mean(ds["image"][1][ds["mask"][1]])
     assert np.allclose(bavg1, bavg2), "mask is correctly computed from contour"
-    cleanup()
 
 
 def test_mask_img_shape_1():
@@ -297,7 +277,6 @@ def test_mask_img_shape_1():
     # shape from image data
     with new_dataset(path) as ds:
         assert ds["mask"]._img_shape == (96, 256)
-    cleanup()
 
 
 def test_mask_img_shape_2():
@@ -312,7 +291,6 @@ def test_mask_img_shape_2():
         ds.config["imaging"].pop("roi size y")
         assert ds["mask"]._img_shape == (0, 0)
         assert len(ds["mask"]) == 0
-    cleanup()
 
 
 def test_mask_img_wrong_config_shape_1():
@@ -322,7 +300,6 @@ def test_mask_img_wrong_config_shape_1():
         ds.config["imaging"]["roi size x"] = 200
         ds.config["imaging"]["roi size y"] = 200
         assert ds["mask"]._img_shape == (96, 256)
-    cleanup()
 
 
 def test_mask_img_wrong_config_shape_2():
@@ -333,7 +310,6 @@ def test_mask_img_wrong_config_shape_2():
         ds.config["imaging"]["roi size x"] = 200
         ds.config["imaging"]["roi size y"] = 200
         assert ds["mask"]._img_shape == (200, 200)
-    cleanup()
 
 
 def test_naming_valid():
@@ -359,7 +335,6 @@ def test_parameters_txt():
     assert ds.config["fluorescence"]["laser 1 power"] == 5
     assert ds.config["fluorescence"]["laser 2 power"] == 0
     assert ds.config["fluorescence"]["laser 3 power"] == 0
-    cleanup()
 
 
 def test_pixel_size():
@@ -371,7 +346,6 @@ def test_pixel_size():
         fd.write(newdata)
     ds = new_dataset(path)
     assert ds.config["imaging"]["pixel size"] == 0.12
-    cleanup()
 
 
 def test_project_path():
@@ -394,7 +368,6 @@ def test_project_path():
     assert a == e
     assert a == c
     assert a == d
-    cleanup()
 
 
 def test_trace_basic():
@@ -404,7 +377,6 @@ def test_trace_basic():
     assert len(ds["trace"]) == 2
     assert np.allclose(np.average(
         ds["trace"]["fl1_median"][0]), 287.08999999999997)
-    cleanup()
 
 
 def test_trace_import_fail():
@@ -416,7 +388,6 @@ def test_trace_import_fail():
     # clean up
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map.pop("peter")
     dclab.definitions.FLUOR_TRACES.pop(-1)
-    cleanup()
 
 
 def test_trace_methods():
@@ -426,7 +397,6 @@ def test_trace_methods():
     for k in ds["trace"]:
         assert k in dclab.definitions.FLUOR_TRACES
     assert ds["trace"].__repr__().count("<loaded into memory>")
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -474,7 +444,6 @@ def test_trace_wrong_samples_per_event():
 
     with dclab.new_dataset(tdms) as ds:
         assert "trace" not in ds
-    cleanup()
 
 
 def test_unicode_paths():
@@ -487,7 +456,6 @@ def test_unicode_paths():
     ds = new_dataset(pp2 / path.name)
     ds.__repr__()
     shutil.rmtree(str(pp2), ignore_errors=True)
-    cleanup()
 
 
 if __name__ == "__main__":

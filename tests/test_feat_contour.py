@@ -10,7 +10,7 @@ from dclab import new_dataset
 from dclab.features.contour import get_contour, get_contour_lazily
 from dclab.features.volume import get_volume
 
-from helper_methods import retrieve_data, cleanup
+from helper_methods import retrieve_data
 
 
 def test_artefact():
@@ -19,7 +19,6 @@ def test_artefact():
     # Event 1, No contour found!" in dclab version <= 0.22.1
     cont = ds["contour"][1]
     assert len(cont) == 37, "just to be sure there really is something"
-    cleanup()
 
 
 def test_lazy_contour_basic():
@@ -29,7 +28,6 @@ def test_lazy_contour_basic():
     cont2 = get_contour(masks)
     for ii in range(len(ds)):
         assert np.all(cont1[ii] == cont2[ii])
-    cleanup()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 3),
@@ -43,7 +41,6 @@ def test_lazy_contour_timing():
     get_contour(masks)
     t2 = time.perf_counter()
     assert t2-t1 > 10*(t1-t0)
-    cleanup()
 
 
 def test_lazy_contour_type():
@@ -54,7 +51,6 @@ def test_lazy_contour_type():
     c2 = ds1["contour"]
     assert isinstance(c1, dclab.rtdc_dataset.fmt_hdf5.H5ContourEvent)
     assert isinstance(c2, dclab.features.contour.LazyContourList)
-    cleanup()
 
 
 def test_simple_contour():
@@ -76,7 +72,6 @@ def test_simple_contour():
             break
     else:
         assert False, "contours not matching, check orientation?"
-    cleanup()
 
 
 def test_volume():
@@ -93,7 +88,6 @@ def test_volume():
     v2 = get_volume(cont=cont2, **kw)
 
     assert np.allclose(v1, v2)
-    cleanup()
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import numpy as np
 from dclab import new_dataset
 from dclab.features import inert_ratio as ir
 
-from helper_methods import retrieve_data, cleanup
+from helper_methods import retrieve_data
 
 
 def test_inert_ratio_raw():
@@ -14,7 +14,6 @@ def test_inert_ratio_raw():
     ref = np.array([4.25854232,  1.22342663,  4.64971179,  1.70914857,
                     3.62797492, 1.51502192,  2.74757573,  1.79841136])
     assert np.allclose(ref, raw, rtol=0, atol=5e-9)
-    cleanup()
 
 
 def test_inert_ratio_prnc():

@@ -8,7 +8,7 @@ import imageio
 import numpy as np
 import pytest
 
-from helper_methods import retrieve_data, cleanup
+from helper_methods import retrieve_data
 
 
 def test_condense():
@@ -23,7 +23,6 @@ def test_condense():
         assert len(dsj) == len(ds0)
         for feat in dsj.features:
             assert np.all(dsj[feat] == ds0[feat])
-    cleanup()
 
 
 def test_compress():
@@ -42,7 +41,6 @@ def test_compress():
                     assert np.all(dsj[feat][ii] == ds0[feat][ii]), feat
             else:
                 assert np.all(dsj[feat] == ds0[feat]), feat
-    cleanup()
 
 
 def test_join_tdms():
@@ -60,7 +58,6 @@ def test_join_tdms():
         assert np.all(dsj["circ"][:100] == ds0["circ"][:100])
         assert np.all(dsj["circ"][len(ds0):len(ds0)+100] == ds0["circ"][:100])
         assert set(dsj.features) == set(ds0.features)
-    cleanup()
 
 
 def test_join_tdms_logs():
@@ -78,7 +75,6 @@ def test_join_tdms_logs():
         for key in ds0.logs:
             jkey = "src-#1_" + key
             assert np.all(np.array(ds0.logs[key]) == np.array(dsj.logs[jkey]))
-    cleanup()
 
 
 def test_join_rtdc():
@@ -95,7 +91,6 @@ def test_join_rtdc():
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
-    cleanup()
 
 
 def test_join_times():
@@ -121,7 +116,6 @@ def test_join_times():
                            np.concatenate((ds0["time"], ds0["time"]+offset)),
                            rtol=0,
                            atol=.0001)
-    cleanup()
 
 
 def test_repack_basic():
@@ -141,7 +135,6 @@ def test_repack_basic():
             assert np.all(dsj["contour"][ii] == ds0["contour"][ii])
             assert np.all(dsj["image"][ii] == ds0["image"][ii])
             assert np.all(dsj["mask"][ii] == ds0["mask"][ii])
-    cleanup()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 6),
@@ -170,8 +163,6 @@ def test_repack_remove_secrets():
         data = fd.read()
         assert not str(data).count("my dirty secret")
 
-    cleanup()
-
 
 def test_repack_strip_logs():
     path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
@@ -189,7 +180,6 @@ def test_repack_strip_logs():
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert ds0.logs
         assert not dsj.logs
-    cleanup()
 
 
 def test_split():
@@ -204,7 +194,6 @@ def test_split():
                         continue
                     assert np.all(ds[feat][ecount:ecount+len(di)] == di[feat])
                 ecount += len(di)
-    cleanup()
 
 
 def test_tdms2rtdc():
@@ -223,7 +212,6 @@ def test_tdms2rtdc():
         assert set(ds2._events.keys()) < set(ds1.features)
         for feat in ds1:
             assert np.all(ds1[feat] == ds2[feat])
-    cleanup()
 
 
 def test_tdms2rtdc_features():
@@ -240,7 +228,6 @@ def test_tdms2rtdc_features():
         assert set(ds1.features) == set(ds2.features)
         # features were computed
         assert set(ds2._events.keys()) == set(ds1.features)
-    cleanup()
 
 
 def test_tdms2rtdc_remove_nan_image():
@@ -280,7 +267,6 @@ def test_tdms2rtdc_remove_nan_image():
         assert len(ds2) == video_length
         assert not np.all(ds2["image"][0] == 0)
         assert ds2.config["experiment"]["event count"] == video_length
-    cleanup()
 
 
 def test_tdms2rtdc_update_roi_size():
@@ -310,7 +296,6 @@ def test_tdms2rtdc_update_roi_size():
         assert dsj.config["imaging"]["roi size y"] == 96
         wlog = "dclab-tdms2rtdc-warnings"
         assert "LimitingExportSizeWarning" in dsj.logs[wlog]
-    cleanup()
 
 
 def test_tdms2rtdc_update_sample_per_events():
@@ -331,7 +316,6 @@ def test_tdms2rtdc_update_sample_per_events():
 
     with new_dataset(path_out) as ds2:
         assert ds2.config["fluorescence"]["samples per event"] == 566
-    cleanup()
 
 
 if __name__ == "__main__":

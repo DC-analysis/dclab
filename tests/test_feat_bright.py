@@ -4,7 +4,7 @@ import numpy as np
 from dclab import new_dataset
 from dclab.features.bright import get_bright
 
-from helper_methods import retrieve_data, cleanup
+from helper_methods import retrieve_data
 
 
 def test_simple_bright():
@@ -16,7 +16,6 @@ def test_simple_bright():
         avg, std = get_bright(mask=mask, image=image, ret_data="avg,sd")
         assert np.allclose(avg, ds["bright_avg"][ii])
         assert np.allclose(std, ds["bright_sd"][ii])
-    cleanup()
 
 
 if __name__ == "__main__":

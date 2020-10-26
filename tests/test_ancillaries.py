@@ -10,7 +10,7 @@ import dclab
 from dclab.rtdc_dataset import ancillaries
 
 from helper_methods import example_data_dict, retrieve_data, \
-    example_data_sets, cleanup
+    example_data_sets
 
 
 def test_0basic():
@@ -43,8 +43,6 @@ def test_0basic():
                ]:
         assert cc in ds
 
-    cleanup()
-
 
 def test_0error():
     keys = ["circ"]
@@ -64,7 +62,6 @@ def test_aspect():
     aspect = ds["aspect"]
     assert np.sum(aspect > 1) == 904
     assert np.sum(aspect < 1) == 48
-    cleanup()
 
 
 def test_area_ratio():
@@ -73,7 +70,6 @@ def test_area_ratio():
     # The convex area is always >= the raw area
     assert np.all(comp_ratio >= 1)
     assert np.allclose(comp_ratio[0], 1.0196464)
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -98,7 +94,6 @@ def test_brightness():
     idcompare[0] = False
     assert np.allclose(real_avg[idcompare], comp_avg[idcompare])
     assert np.allclose(real_sd[idcompare], comp_sd[idcompare])
-    cleanup()
 
 
 def test_contour_basic():
@@ -124,7 +119,6 @@ def test_contour_basic():
                 break
         else:
             assert False, "contours not matching, check orientation?"
-    cleanup()
 
 
 def test_deform():
@@ -582,7 +576,6 @@ def test_inert_ratio_cvx():
     # ignore first event (no image data)
     idcompare[0] = False
     assert np.allclose(real_ir[idcompare], comp_ir[idcompare])
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -600,7 +593,6 @@ def test_inert_ratio_prnc():
     diff = (prnc - raw)[idcompare]
     # only compare the first valid event which seems to be quite close
     assert np.allclose(diff[0], 0, atol=1.2e-3, rtol=0)
-    cleanup()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -619,7 +611,6 @@ def test_inert_ratio_raw():
     # ignore first event (no image data)
     idcompare[0] = False
     assert np.allclose(real_ir[idcompare], comp_ir[idcompare])
-    cleanup()
 
 
 def test_ml_class_basic():
@@ -699,7 +690,6 @@ def test_time():
     assert tt[0] == 0
     assert np.allclose(tt[1], 0.0385)
     assert np.all(np.diff(tt) > 0)
-    cleanup()
 
 
 def test_volume():

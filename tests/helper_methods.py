@@ -1,5 +1,4 @@
 import pathlib
-import shutil
 import tempfile
 import zipfile
 
@@ -7,16 +6,6 @@ import numpy as np
 
 from dclab.rtdc_dataset import fmt_tdms
 from dclab import definitions as dfn
-
-_tempdirs = []
-
-
-def cleanup():
-    """Removes all extracted directories"""
-    global _tempdirs
-    for _i in range(len(_tempdirs)):
-        tdir = _tempdirs.pop(0)
-        shutil.rmtree(tdir, ignore_errors=True)
 
 
 def example_data_dict(size=100, keys=["area_um", "deform"]):
@@ -87,7 +76,6 @@ def find_data(path):
 def retrieve_data(zip_file):
     """Eytract contents of data zip file and return data files
     """
-    global _tempdirs
     zpath = pathlib.Path(__file__).resolve().parent / "data" / zip_file
     # unpack
     arc = zipfile.ZipFile(str(zpath))
@@ -95,8 +83,6 @@ def retrieve_data(zip_file):
     # extract all files to a temporary directory
     edest = tempfile.mkdtemp(prefix=zpath.name)
     arc.extractall(edest)
-
-    _tempdirs.append(edest)
 
     # Load RT-DC dataset
     # find tdms files

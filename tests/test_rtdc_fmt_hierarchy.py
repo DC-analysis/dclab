@@ -7,8 +7,7 @@ import pytest
 from dclab import new_dataset
 from dclab.rtdc_dataset import fmt_hierarchy, write
 
-from helper_methods import example_data_dict, example_data_sets, cleanup, \
-    retrieve_data
+from helper_methods import example_data_dict, example_data_sets, retrieve_data
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -33,7 +32,6 @@ def test_config_calculation():
     assert not ch.config["calculation"]["emodulus temperature"] == 24.0
     ch.apply_filter()
     assert ch.config["calculation"]["emodulus temperature"] == 24.0
-    cleanup()
 
 
 def test_event_count():
@@ -44,7 +42,6 @@ def test_event_count():
     assert ds.config["experiment"]["event count"] == len(ds)
     assert ch.config["experiment"]["event count"] == len(ch)
     assert len(ds) == len(ch) + 1
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -57,7 +54,6 @@ def test_feat_contour():
     ch = new_dataset(ds)
     assert np.all(ch["contour"][0] == ds["contour"][1])
     assert np.all(ch["contour"][1] == ds["contour"][3])
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -70,7 +66,6 @@ def test_feat_image():
     ch = new_dataset(ds)
     assert np.all(ch["image"][0] == ds["image"][1])
     assert np.all(ch["image"][1] == ds["image"][3])
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -87,7 +82,6 @@ def test_feat_image_bg():
     ch = new_dataset(ds)
     assert np.all(ch["image_bg"][0] == ds["image_bg"][1])
     assert np.all(ch["image_bg"][1] == ds["image_bg"][3])
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -100,7 +94,6 @@ def test_feat_mask():
     ch = new_dataset(ds)
     assert np.all(ch["mask"][0] == ds["mask"][1])
     assert np.all(ch["mask"][1] == ds["mask"][3])
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -115,7 +108,6 @@ def test_feat_trace():
                   == ds["trace"]["fl1_median"][1])
     assert np.all(ch["trace"]["fl1_median"][1]
                   == ds["trace"]["fl1_median"][3])
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -128,7 +120,6 @@ def test_features():
     assert ds.features_innate == ch.features_innate
     assert ds.features_loaded == ch.features_loaded
     assert ds.features_scalar == ch.features_scalar
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -144,7 +135,6 @@ def test_features_loaded():
     ch["volume"]
     assert "volume" in ch.features_loaded
     assert "volume" in ds.features_loaded
-    cleanup()
 
 
 def test_hierarchy_from_tdms():
@@ -156,7 +146,6 @@ def test_hierarchy_from_tdms():
     ds2.apply_filter()
     assert ds2.filter.all.shape[0] == ds1.filter.all.shape[0] - 1
     assert ds2["area_um"][0] == ds1["area_um"][1]
-    cleanup()
 
 
 def test_index_deep_contour():
@@ -239,7 +228,6 @@ def test_same_hash_different_identifier():
     assert len(ch1) == len(ds1) - 1
     assert ch1.hash == ch2.hash
     assert ch1.identifier != ch2.identifier
-    cleanup()
 
 
 if __name__ == "__main__":

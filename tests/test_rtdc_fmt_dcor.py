@@ -8,7 +8,7 @@ from dclab.rtdc_dataset.fmt_dcor import RTDC_DCOR
 import numpy as np
 import pytest
 
-from helper_methods import retrieve_data, cleanup
+from helper_methods import retrieve_data
 
 
 if sys.version_info[0] >= 3:
@@ -70,7 +70,6 @@ def test_dcor_base(monkeypatch):
         assert np.all(dso["trace"]["fl1_raw"][1] == ds["trace"]["fl1_raw"][1])
         for t1, t2 in zip(dso["trace"]["fl1_raw"], ds["trace"]["fl1_raw"]):
             assert np.all(t1 == t2)
-    cleanup()
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
@@ -108,7 +107,6 @@ def test_dcor_hierarchy(monkeypatch):
     dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id=1")
     dsh = dclab.new_dataset(dso)
     assert np.all(dso["area_um"] == dsh["area_um"])
-    cleanup()
 
 
 def test_url():

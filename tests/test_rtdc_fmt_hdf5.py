@@ -8,7 +8,7 @@ import pytest
 
 from dclab import new_dataset, rtdc_dataset
 
-from helper_methods import retrieve_data, cleanup
+from helper_methods import retrieve_data
 
 
 @pytest.mark.filterwarnings(
@@ -19,7 +19,6 @@ def test_config():
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.16
     assert ds.config["imaging"]["pixel size"] == 0.34
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -29,7 +28,6 @@ def test_contour_basic():
     assert len(ds) == 5
     assert len(ds["contour"]) == 5
     assert np.allclose(np.average(ds["contour"][0]), 30.75)
-    cleanup()
 
 
 def test_defective_feature_aspect():
@@ -52,7 +50,6 @@ def test_defective_feature_aspect():
     # verify original value of aspect
     with new_dataset(h5path) as ds2:
         assert np.allclose(ds2["aspect"][0], aspect0)
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -61,7 +58,6 @@ def test_hash():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert ds.hash == "2c436daba22d2c7397b74d53d80f8931"
     assert ds.format == "hdf5"
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -70,7 +66,6 @@ def test_image_basic():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
     assert np.allclose(np.average(ds["image"][1]), 125.37133333333334)
     assert len(ds["image"]) == 5
-    cleanup()
 
 
 @pytest.mark.filterwarnings(
@@ -85,7 +80,6 @@ def test_image_bg():
     with new_dataset(path) as ds:
         for ii in range(len(ds)):
             assert np.all(ds["image"][ii] // 2 == ds["image_bg"][ii])
-    cleanup()
 
 
 def test_logs():
@@ -114,7 +108,6 @@ def test_logs():
             ds.logs["test_log"]
         except KeyError:  # no log data
             pass
-    cleanup()
 
 
 def test_no_suffix():
@@ -134,7 +127,6 @@ def test_trace():
     assert ds["trace"]["fl1_raw"].shape == (5, 100)
     assert np.allclose(np.average(
         ds["trace"]["fl1_median"][0]), 0.027744706519425219)
-    cleanup()
 
 
 if __name__ == "__main__":

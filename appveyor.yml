@@ -28,6 +28,9 @@ install:
   - "appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest
   - "appveyor-retry pip install -e .[all]"
+  # Pin numpy to 1.18.5 b/c tensorflow depends on it and pip did not
+  # resolve this dependency somehow.
+  - "appveyor-retry pip install numpy==1.18.5"
   - "python -m pip freeze"
 
 build: off

@@ -3,7 +3,7 @@ import tempfile
 import time
 
 TMPDIR = tempfile.mkdtemp(prefix=time.strftime(
-    "dclab_test_%Y-%m-%d_%H.%M.%S_"))
+    "dclab_test_%H.%M_"))
 
 
 def pytest_configure(config):

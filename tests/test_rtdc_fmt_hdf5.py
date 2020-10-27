@@ -82,6 +82,14 @@ def test_image_bg():
             assert np.all(ds["image"][ii] // 2 == ds["image_bg"][ii])
 
 
+def test_image_bg_2():
+    path = retrieve_data("rtdc_data_hdf5_image_bg.zip")
+    with new_dataset(path) as ds:
+        assert "image_bg" in ds
+        bgc = ds["image"][0] - ds["image_bg"][0]
+        assert bgc[10, 11] == 6
+
+
 def test_logs():
     path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
 

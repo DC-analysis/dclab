@@ -6,8 +6,9 @@ from ..rtdc_dataset import new_dataset
 from .mllibs import tensorflow as tf
 
 
-def assemble_tf_dataset_scalars(dc_data, labels, feature_inputs, split=0.0,
-                                shuffle=True, batch_size=32, dtype=np.float32):
+def assemble_tf_dataset_scalars(dc_data, feature_inputs, labels=None,
+                                split=0.0, shuffle=True, batch_size=32,
+                                dtype=np.float32):
     """Assemble a `tensorflow.data.Dataset` for scalar features
 
     Scalar feature data are loaded directly into memory.
@@ -17,11 +18,11 @@ def assemble_tf_dataset_scalars(dc_data, labels, feature_inputs, split=0.0,
     dc_data: list of pathlib.Path, str, or dclab.rtdc_dataset.RTDCBase
         List of source datasets (can be anything
         :func:`dclab.new_dataset` accepts).
-    labels: list
-        Labels (e.g. an integer that classifies each element of
-        `path`) used for training.
     feature_inputs: list of str
         List of scalar feature names to extract from `paths`.
+    labels: list
+        Labels (e.g. an integer that classifies each element of
+        `path`) used for training. Defaults to None (no labels).
     split: float
         If set to zero, only one dataset is returned; If set to
         a float between 0 and 1, a train and test dataset is
@@ -49,11 +50,12 @@ def assemble_tf_dataset_scalars(dc_data, labels, feature_inputs, split=0.0,
     size = sum([len(ds) for ds in dcds])
 
     # assemble label data
-    ldat = np.zeros(size, dtype=type(labels[0]))
-    ii = 0
-    for jj, ds in enumerate(dcds):
-        ldat[ii:ii+len(ds)] = labels[jj]
-        ii += len(ds)
+    if labels is not None:
+        ldat = np.zeros(size, dtype=type(labels[0]))
+        ii = 0
+        for jj, ds in enumerate(dcds):
+            ldat[ii:ii+len(ds)] = labels[jj]
+            ii += len(ds)
 
     # assemble feature data
     data = np.zeros((size, len(feature_inputs)), dtype=dtype)
@@ -66,9 +68,14 @@ def assemble_tf_dataset_scalars(dc_data, labels, feature_inputs, split=0.0,
     if shuffle:
         # shuffle features and labels with same seed
         shuffle_array(data)
-        shuffle_array(ldat)
+        if labels is not None:
+            shuffle_array(ldat)
 
-    tfdata = tf.data.Dataset.from_tensor_slices((data, ldat))
+    if labels is not None:
+        # include labels if given
+        data = (data, ldat)
+
+    tfdata = tf.data.Dataset.from_tensor_slices(data)
 
     if split:
         if not 0 < split < 1:

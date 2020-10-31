@@ -274,8 +274,8 @@ class RTDC_HDF5(RTDCBase):
     def hash(self):
         """Hash value based on file name and content"""
         if self._hash is None:
-            tohash = [self.path.name]
-            # Hash a maximum of ~1MB of the hdf5 file
-            tohash.append(hashfile(self.path, blocksize=65536, count=20))
+            tohash = [self.path.name,
+                      # Hash a maximum of ~1MB of the hdf5 file
+                      hashfile(self.path, blocksize=65536, count=20)]
             self._hash = hashobj(tohash)
         return self._hash

@@ -6,16 +6,17 @@ import tempfile
 import numpy as np
 import tensorflow as tf
 
-from dclab import ml
+from dclab import ml, new_dataset
 
 from helper_methods import example_data_dict
 
 
-def make_data(add_feats=["area_um", "deform"]):
+def make_data(add_feats=["area_um", "deform"], sizes=[100, 130]):
     keys = add_feats + ["time", "frame", "fl3_width"]
-    ddict1 = example_data_dict(size=100, keys=keys)
-    ddict2 = example_data_dict(size=130, keys=keys)
-    return [ddict1, ddict2]
+    data = []
+    for size in sizes:
+        data.append(new_dataset(example_data_dict(size=size, keys=keys)))
+    return data
 
 
 def make_model(ml_feats=["area_um", "deform"]):
@@ -44,16 +45,6 @@ def make_model(ml_feats=["area_um", "deform"]):
     model.fit(tfdata, epochs=1)
 
     return model
-
-
-def test_save_modc():
-    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
-    model = make_model()
-    pout = tmpdir / "test.modc"
-    ml.save_modc(path=pout,
-                 models=model,
-                 inputs=["image"],
-                 outputs=["ml_score_tst"])
 
 
 def test_assemble_tf_dataset_scalars_shuffle():
@@ -108,6 +99,57 @@ def test_get_dataset_event_feature():
         shuffle=True
     )
     assert actual_area_um[event_index] == np.float32(event_area_um)
+
+
+def test_models_get_dataset_features():
+    ml_feats = ["area_um", "deform"]
+    model = make_model(ml_feats=ml_feats)
+    mod = ml.models.TensorflowModel(model=model,
+                                    inputs=ml_feats,
+                                    outputs=["ml_score_t01", "ml_score_t01"])
+    ds = make_data(add_feats=ml_feats, sizes=[42])[0]
+    fdata = mod.get_dataset_features(ds, dtype=np.float32)
+    assert np.all(fdata[:, 0] == np.array(ds["area_um"], dtype=np.float32))
+
+
+def test_models_get_dataset_features_with_tensorlow():
+    ml_feats = ["area_um", "deform"]
+    model = make_model(ml_feats=ml_feats)
+    mod = ml.models.TensorflowModel(model=model,
+                                    inputs=ml_feats,
+                                    outputs=["ml_score_t01",
+                                             "ml_score_t01"])
+    ds = make_data(add_feats=ml_feats, sizes=[42])[0]
+    fdata = mod.get_dataset_features(ds, dtype=np.float32)
+    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=[ds],
+        feature_inputs=ml_feats,
+        shuffle=False
+    )
+    tf_area_um = np.concatenate([x[:, 0] for x in tfdata], axis=0)
+    assert np.all(fdata[:, 0] == tf_area_um)
+
+
+def test_models_prediction_runs_through():
+    ml_feats = ["area_um", "deform"]
+    model = make_model(ml_feats=ml_feats)
+    mod = ml.models.TensorflowModel(model=model,
+                                    inputs=ml_feats,
+                                    outputs=["ml_score_t01", "ml_score_t02"])
+    ds = make_data(add_feats=ml_feats, sizes=[42])[0]
+    out = mod.predict(ds)
+    assert "ml_score_t01" in out
+    assert "ml_score_t02" in out
+
+
+def test_save_modc():
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    model = make_model()
+    pout = tmpdir / "test.modc"
+    ml.save_modc(path=pout,
+                 models=model,
+                 inputs=["image"],
+                 outputs=["ml_score_tst"])
 
 
 if __name__ == "__main__":

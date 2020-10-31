@@ -39,4 +39,4 @@ Helper functions
 If you are working with `tensorflow <https://www.tensorflow.org/>`_,
 you might find the functions in the :ref:`dclab.ml.tf_dataset
 <sec_ref_ml_tf_dataset>` submodule helpful. Please also have a look
-at the :ref:`machine-learning examples <example_ml_classification>`.
+at the :ref:`machine-learning examples <example_ml_tensorflow>`.

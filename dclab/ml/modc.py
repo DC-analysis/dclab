@@ -57,8 +57,8 @@ def export_model(path, model, enforce_formats=[]):
                     + "one of {}!".format(", ".join(SUPPORTED_FORMATS.keys())))
     exported_formats = {}
     for fmt in SUPPORTED_FORMATS:
+        tmp = tempfile.mkdtemp(prefix="dclab_ml_{}".format(fmt))
         try:
-            tmp = tempfile.mkdtemp(prefix="dclab_ml_{}".format(fmt))
             suffix = SUPPORTED_FORMATS[fmt]["suffix"]
             tmp_out = pathlib.Path(tmp) / (fmt + suffix)
             save = SUPPORTED_FORMATS[fmt]["func:save"]
@@ -75,7 +75,8 @@ def export_model(path, model, enforce_formats=[]):
             pout = path / tmp_out.name
             pathlib.Path(tmp_out).rename(pout)
             exported_formats[fmt] = tmp_out.name
-        shutil.rmtree(tmp, ignore_errors=True)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
 
     if not exported_formats:
         raise ValueError("Export failed for all model formats!")

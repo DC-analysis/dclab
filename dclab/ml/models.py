@@ -10,12 +10,11 @@ from .mllibs import tensorflow as tf
 class BaseModel(abc.ABC):
     def __init__(self, bare_model, inputs, outputs, model_name=None,
                  output_labels=None):
-        """Base model for dealing with RT-DC data
-
+        """
         Parameters
         ----------
         bare_model: object
-            The bare model (e.g. from tensorflow)
+            Underlying ML model
         inputs: list of str
             List of model input features, e.g.
             ``["deform", "area_um"]``
@@ -130,6 +129,7 @@ class BaseModel(abc.ABC):
 
 
 class TensorflowModel(BaseModel):
+    """Handle tensorflow models"""
     @staticmethod
     def supported_formats():
         return [{"name": "tensorflow-SavedModel",

@@ -301,6 +301,12 @@ machine learning
    :members:
    :undoc-members:
 
+.. _sec_ref_ml_models:
+
+.. automodule:: dclab.ml.models
+   :members:
+   :undoc-members:
+
 .. _sec_ref_ml_tf_dataset:
 
 .. automodule:: dclab.ml.tf_dataset

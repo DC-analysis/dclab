@@ -19,7 +19,7 @@ def make_data(add_feats=["area_um", "deform"], sizes=[100, 130]):
     return data
 
 
-def make_model(ml_feats=["area_um", "deform"]):
+def make_bare_model(ml_feats=["area_um", "deform"]):
     dc_data = make_data(ml_feats)
     # obtain train and test datasets
     tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
@@ -103,8 +103,8 @@ def test_get_dataset_event_feature():
 
 def test_models_get_dataset_features():
     ml_feats = ["area_um", "deform"]
-    model = make_model(ml_feats=ml_feats)
-    mod = ml.models.TensorflowModel(model=model,
+    bare_model = make_bare_model(ml_feats=ml_feats)
+    mod = ml.models.TensorflowModel(bare_model=bare_model,
                                     inputs=ml_feats,
                                     outputs=["ml_score_t01", "ml_score_t01"])
     ds = make_data(add_feats=ml_feats, sizes=[42])[0]
@@ -114,8 +114,8 @@ def test_models_get_dataset_features():
 
 def test_models_get_dataset_features_with_tensorlow():
     ml_feats = ["area_um", "deform"]
-    model = make_model(ml_feats=ml_feats)
-    mod = ml.models.TensorflowModel(model=model,
+    bare_model = make_bare_model(ml_feats=ml_feats)
+    mod = ml.models.TensorflowModel(bare_model=bare_model,
                                     inputs=ml_feats,
                                     outputs=["ml_score_t01",
                                              "ml_score_t01"])
@@ -132,8 +132,8 @@ def test_models_get_dataset_features_with_tensorlow():
 
 def test_models_prediction_runs_through():
     ml_feats = ["area_um", "deform"]
-    model = make_model(ml_feats=ml_feats)
-    mod = ml.models.TensorflowModel(model=model,
+    bare_model = make_bare_model(ml_feats=ml_feats)
+    mod = ml.models.TensorflowModel(bare_model=bare_model,
                                     inputs=ml_feats,
                                     outputs=["ml_score_t01", "ml_score_t02"])
     ds = make_data(add_feats=ml_feats, sizes=[42])[0]
@@ -144,12 +144,12 @@ def test_models_prediction_runs_through():
 
 def test_save_modc():
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
-    model = make_model()
+    bare_model = make_bare_model()
+    model = ml.models.TensorflowModel(bare_model=bare_model,
+                                      inputs=["image"],
+                                      outputs=["ml_score_tst"])
     pout = tmpdir / "test.modc"
-    ml.save_modc(path=pout,
-                 models=model,
-                 inputs=["image"],
-                 outputs=["ml_score_tst"])
+    ml.save_modc(path=pout, dc_models=model)
 
 
 if __name__ == "__main__":

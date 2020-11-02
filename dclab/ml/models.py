@@ -8,16 +8,74 @@ from .mllibs import tensorflow as tf
 
 
 class BaseModel(abc.ABC):
-    def __init__(self, model, inputs, outputs, model_name=None,
-                 output_names=None):
-        self.model = model
+    def __init__(self, bare_model, inputs, outputs, model_name=None,
+                 output_labels=None):
+        """Base model for dealing with RT-DC data
+
+        Parameters
+        ----------
+        bare_model: object
+            The bare model (e.g. from tensorflow)
+        inputs: list of str
+            List of model input features, e.g.
+            ``["deform", "area_um"]``
+        outputs: list of str
+            List of output features the model provides in that order, e.g.
+            ``["ml_score_rbc", "ml_score_rt1", "ml_score_tfe"]``
+        model_name: str or None
+            The name of the models
+        output_labels: list of str
+            List of more descriptive labels for the features, e.g.
+            ``["red blood cell", "type 1 cell", "troll cell"]``.
+        """
+        self.bare_model = bare_model
         self.inputs = inputs
         self.outputs = outputs
         self.name = model_name or str(uuid.uuid4())[:5]
-        self.output_names = output_names or inputs
+        self.output_labels = output_labels or inputs
+
+    @staticmethod
+    @abc.abstractmethod
+    def supported_formats():
+        """List of dictionaries containing model formats
+
+        Returns
+        -------
+        fmts: list
+            Each item contains the keys "name" (format name),
+            "suffix" (saved file suffix), "requires" (Python
+            dependencies).
+        """
+        return []
+
+    @staticmethod
+    @abc.abstractmethod
+    def load_bare_model(path):
+        """Load an implementation-specific model from a file
+
+        This will set the `self.model` attribute. Make sure that
+        the other attributes are set properly as well.
+        """
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def save_bare_model(path, bare_model, save_format=None):
+        """Save an implementation-specific model to a file
+
+        Parameters
+        ----------
+        path: str or path-like
+            Path to store model to
+        bare_model: object
+            The implementation-specific bare model
+        save_format: str
+            Must be in `supported_formats`
+        """
+        pass
 
     @abc.abstractmethod
-    def predict(self, ds, *args, **kwargs):
+    def predict(self, ds):
         """Return the probabilities of `self.outputs` for `ds`
 
         Parameters
@@ -45,7 +103,7 @@ class BaseModel(abc.ABC):
         ----------
         ds: dclab.rtdc_dataset.RTDCBase
             Dataset from which to retrieve the feature data
-        dtype: np.dtype
+        dtype: dtype
             All features are cast to this dtype
 
         Returns
@@ -72,6 +130,25 @@ class BaseModel(abc.ABC):
 
 
 class TensorflowModel(BaseModel):
+    @staticmethod
+    def supported_formats():
+        return [{"name": "tensorflow-SavedModel",
+                 "suffix": ".tf",
+                 "requirements": "tensorflow"}
+                ]
+
+    @staticmethod
+    def load_bare_model(path):
+        """Load a tensorflow model"""
+        bare_model = tf.saved_model.load(str(path))
+        return bare_model
+
+    @staticmethod
+    def save_bare_model(path, bare_model, save_format="tensorflow-SavedModel"):
+        """Save a tensorflow model"""
+        assert save_format == "tensorflow-SavedModel"
+        tf.saved_model.save(obj=bare_model, export_dir=str(path))
+
     def predict(self, ds, batch_size=32):
         """Return the probabilities of `self.outputs` for `ds`
 
@@ -93,7 +170,7 @@ class TensorflowModel(BaseModel):
         To obtain the probabilities, `tf.keras.layers.Softmax()`
         is used.
         """
-        probability_model = tf.keras.Sequential([self.model,
+        probability_model = tf.keras.Sequential([self.bare_model,
                                                  tf.keras.layers.Softmax()])
         fdata = self.get_dataset_features(ds)
         tfdata = tf.data.Dataset.from_tensor_slices(fdata).batch(batch_size)

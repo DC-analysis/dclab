@@ -9,24 +9,21 @@ import time
 import traceback as tb
 import warnings
 
-from .mllibs import tensorflow as tf
-
+from . import models
 
 #: Supported file formats (including instructions on how to open
 #: and save them).
-SUPPORTED_FORMATS = {
-    "tensorflow-SavedModel": {
-        "requirements": ["tensorflow"],
-        "suffix": ".tf",
-        "func:load": lambda path: tf.saved_model.load(str(path)),
-        "func:save": lambda path, model: tf.saved_model.save(
-            obj=model, export_dir=str(path)),
-    }
-}
+SUPPORTED_FORMATS = {}
+for _md in [models.TensorflowModel]:
+
+    for _fmt in _md.supported_formats():
+        SUPPORTED_FORMATS[_fmt["name"]] = {"requirements": _fmt["requirements"],
+                                           "suffix": _fmt["suffix"],
+                                           "class": _md}
 
 
-def export_model(path, model, enforce_formats=[]):
-    """Export an ML model
+def export_model(path, model, enforce_formats=None):
+    """Export an ML model to all possible formats
 
     The model must be exportable with at least one method
     listed in :const:`SUPPORTED_FORMATS`.
@@ -36,12 +33,14 @@ def export_model(path, model, enforce_formats=[]):
     path: str or pathlib.Path
         Directory where the model is stored to. For each supported
         model, a new subdirectory or file is created.
-    model: An instance of an ML model
+    model: An instance of an ML model, NOT dclab.ml.models.BaseModel
         Trained model instance
     enforce_formats: list of str
         Enforced file formats for export. If the export for one
         of these file formats fails, a ValueError is raised.
     """
+    if enforce_formats is None:
+        enforce_formats = []
     path = pathlib.Path(path)
     if not path.is_dir():
         raise ValueError(
@@ -61,11 +60,10 @@ def export_model(path, model, enforce_formats=[]):
         try:
             suffix = SUPPORTED_FORMATS[fmt]["suffix"]
             tmp_out = pathlib.Path(tmp) / (fmt + suffix)
-            save = SUPPORTED_FORMATS[fmt]["func:save"]
-            save(tmp_out, model)
+            cls = SUPPORTED_FORMATS[fmt]["class"]
+            cls.save_bare_model(tmp_out, model, save_format=fmt)
             # attempt to load the model to see if it worked
-            load = SUPPORTED_FORMATS[fmt]["func:load"]
-            load(tmp_out)
+            cls.load_bare_model(tmp_out)
         except BaseException:
             warnings.warn("Could not export to '{}': {}".format(
                 fmt, tb.format_exc(limit=1)))
@@ -116,11 +114,24 @@ def hash_path(path):
     return hasher.hexdigest()
 
 
-def load_modc(path):
+def load_modc(path, from_format=None):
     """Load models from a .modc file for inference
 
-    The first available format from :const:`SUPPORTED_FORMATS`
-    will be used.
+    Parameters
+    ----------
+    path: str or path-like
+        Path to a .modc file
+    from_format: str
+        If set to None, the first available format in
+        :const:`SUPPORTED_FORMATS` is used. If set to
+        a key in :const:`SUPPORTED_FORMATS`, then this
+        format will take precedence and an error will
+        be raised if loading with this format fails.
+
+    Returns
+    -------
+    model: dclab.ml.models.BaseModel
+        Model that can be used for inference via `model.predict`
     """
     # unpack everything
     t_dir = pathlib.Path(tempfile.mkdtemp(prefix="modc_load_"))
@@ -132,18 +143,35 @@ def load_modc(path):
         meta = json.load(fd)
 
     assert meta["model count"] == len(meta["models"])
-    for model in meta["models"]:
-        mpath = t_dir / model["path"]
+    for model_dict in meta["models"]:
+        mpath = t_dir / model_dict["path"]
 
-        for fmt in model["formats"]:
+        formats = model_dict["formats"]
+        if from_format:
+            formats = [from_format] + formats
+
+        for fmt in formats:
             if fmt in SUPPORTED_FORMATS:
-                load = SUPPORTED_FORMATS[fmt]["func:load"]
+                cls = SUPPORTED_FORMATS[fmt]["class"]
+                load = cls.load_bare_model
                 try:
-                    model = load(mpath / model["formats"][fmt])
+                    bare_model = load(mpath / model_dict["formats"][fmt])
                 except BaseException:
-                    pass
+                    if from_format and fmt == from_format:
+                        # user requested this format specifically
+                        raise
                 else:
+                    # Convert `bare_model` to BaseModel
+                    model = cls(bare_model=bare_model,
+                                inputs=model_dict["input features"],
+                                outputs=model_dict["output features"],
+                                output_labels=model_dict["output labels"],
+                                model_name=model_dict["name"]
+                                )
                     break
+            elif from_format and fmt == from_format:
+                raise ValueError("The format specified via `from_format` "
+                                 + " '{}' is not supported!".format(fmt))
         else:
             raise ValueError("No compatible model file format found!")
 
@@ -151,68 +179,46 @@ def load_modc(path):
     cleanup()
     atexit.unregister(cleanup)
 
-    return model, meta
+    return model
 
 
-def save_modc(path, models, inputs, outputs, model_names=None,
-              output_labels=None):
-    """Save an ML model to a .modc file
+def save_modc(path, dc_models):
+    """Save ML models to a .modc file
 
     Parameters
     ----------
     path: str, pathlib.Path
         Output .modc path
-    models: list of ML model instances
-        Model(s) to save, e.g. ``[tf.keras.Model, tf.keras.Model]``
-    inputs: list of str
-        List of features for each model in that order, e.g.
-        ``[["image", "deform"], ["area_um"]]``
-    outputs: list of str
-        List of output features the model provides in that order, e.g.
-        ``[["ml_score_rbc"], ["ml_score_rt1", "ml_score_tfe"]]``
-    model_names: str or None
-        The names of the models
-    output_labels: list of str
-        List of more descriptive labels for the features, e.g.
-        ``["red blood cell"]``.
+    dc_models: list of dclab.ml.models.BaseModel or dclab.ml.models.BaseModel
+        Models to save
 
     Returns
     -------
     meta: dict
         Dictionary written to index.json in the .modc file
     """
-    if not isinstance(models, list):
-        models = [models]
-        inputs = [inputs]
-        outputs = [outputs]
-        if output_labels:
-            output_labels = [output_labels]
-        if model_names:
-            model_names = [model_names]
+    if not isinstance(dc_models, list):
+        dc_models = [dc_models]
 
     # save all models to a temporary directory
     t_dir = pathlib.Path(tempfile.mkdtemp(prefix="modc_save_"))
     cleanup = atexit.register(lambda: shutil.rmtree(t_dir, ignore_errors=True))
 
     model_data = []
-    for ii, mm in enumerate(models):
+    for ii, mm in enumerate(dc_models):
         p_mod = t_dir / "model_{}".format(ii)
         p_mod.mkdir()
-        m_dict = export_model(p_mod, mm)
+        m_dict = export_model(p_mod, mm.bare_model)
         m_dict["index"] = ii
-        m_dict["input features"] = inputs[ii]
-        m_dict["output features"] = outputs[ii]
-        if output_labels:
-            m_dict["output labels"] = output_labels[ii]
-        else:
-            m_dict["output labels"] = outputs[ii]
-        name = model_names[ii] if model_names else m_dict["sha256"][:6]
-        m_dict["name"] = name
+        m_dict["input features"] = mm.inputs
+        m_dict["output features"] = mm.outputs
+        m_dict["output labels"] = mm.output_labels
+        m_dict["name"] = mm.name
         m_dict["path"] = p_mod.name
         model_data.append(m_dict)
 
     meta = {
-        "model count": len(models),
+        "model count": len(dc_models),
         "models": model_data,
     }
 

@@ -26,11 +26,15 @@ def make_bare_model(ml_feats=["area_um", "deform"]):
         dc_data=dc_data,
         labels=[0, 1],
         feature_inputs=ml_feats)
+    return standard_model(tfdata)
 
+
+def standard_model(tfdata, epochs=1):
     # build the model
+    num_feats = tfdata.as_numpy_iterator().next()[0].shape[1]
     model = tf.keras.Sequential(
         layers=[
-            tf.keras.layers.Input(shape=(len(ml_feats),)),
+            tf.keras.layers.Input(shape=(num_feats,)),
             tf.keras.layers.Dense(128, activation='relu'),
             tf.keras.layers.Dense(32),
             tf.keras.layers.Dropout(0.2),
@@ -42,7 +46,7 @@ def make_bare_model(ml_feats=["area_um", "deform"]):
     # fit the model to the training data
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
-    model.fit(tfdata, epochs=1)
+    model.fit(tfdata, epochs=epochs)
 
     return model
 
@@ -68,6 +72,42 @@ def test_assemble_tf_dataset_scalars_shuffle():
     actual_area_um = tffeats[:, 1]
     assert np.all(np.array(deform, dtype=np.float32) == actual_deform)
     assert np.all(np.array(area_um, dtype=np.float32) == actual_area_um)
+
+
+def test_basic_inference():
+    # setup
+    dict1 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict1["deform"] = np.linspace(.01, .02, 1000)
+    dict2 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict2["deform"] = np.linspace(.02, .03, 1000)
+    ds1 = new_dataset(dict1)
+    ds2 = new_dataset(dict2)
+    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=[ds1, ds2],
+        labels=[0, 1],
+        feature_inputs=["deform"])
+    bare_model = standard_model(tfdata, epochs=10)
+    # test dataset
+    dictt = example_data_dict(size=6, keys=["area_um", "aspect", "fl1_max"])
+    dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
+    dst = new_dataset(dictt)
+    # DC model
+    model = ml.models.TensorflowModel(
+        bare_model=bare_model,
+        inputs=["deform"],
+        outputs=["ml_score_low", "ml_score_hig"])
+    scores = model.predict(dst)
+    # get the class from the predicted values
+    low = scores["ml_score_low"]
+    hig = scores["ml_score_hig"]
+    hl = np.concatenate((low.reshape(-1, 1), hig.reshape(-1, 1)), axis=1)
+    actual = np.argmax(hl, axis=1)
+    # these are the expected classes
+    expected = dictt["deform"] > 0.02
+    # sanity check
+    assert np.sum(expected) == np.sum(~expected)
+    # actual verification of test case
+    assert np.all(expected == actual)
 
 
 def test_get_dataset_event_feature():

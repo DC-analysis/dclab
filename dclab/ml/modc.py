@@ -17,9 +17,10 @@ SUPPORTED_FORMATS = {}
 for _md in [models.TensorflowModel]:
 
     for _fmt in _md.supported_formats():
-        SUPPORTED_FORMATS[_fmt["name"]] = {"requirements": _fmt["requirements"],
-                                           "suffix": _fmt["suffix"],
-                                           "class": _md}
+        SUPPORTED_FORMATS[_fmt["name"]] = {
+            "requirements": _fmt["requirements"],
+            "suffix": _fmt["suffix"],
+            "class": _md}
 
 
 def export_model(path, model, enforce_formats=None):

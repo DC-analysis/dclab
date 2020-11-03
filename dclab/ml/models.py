@@ -53,7 +53,6 @@ class BaseModel(abc.ABC):
             "suffix" (saved file suffix), "requires" (Python
             dependencies).
         """
-        return []
 
     @staticmethod
     @abc.abstractmethod
@@ -63,7 +62,6 @@ class BaseModel(abc.ABC):
         This will set the `self.model` attribute. Make sure that
         the other attributes are set properly as well.
         """
-        pass
 
     @staticmethod
     @abc.abstractmethod
@@ -79,7 +77,6 @@ class BaseModel(abc.ABC):
         save_format: str
             Must be in `supported_formats`
         """
-        pass
 
     @abc.abstractmethod
     def predict(self, ds):
@@ -101,7 +98,6 @@ class BaseModel(abc.ABC):
         This function calls :func:`BaseModel.get_dataset_features`
         to obtain the input feature matrix.
         """
-        pass
 
     def get_dataset_features(self, ds, dtype=np.float32):
         """Return the dataset features used for inference

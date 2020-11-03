@@ -74,6 +74,62 @@ def test_assemble_tf_dataset_scalars_shuffle():
     assert np.all(np.array(area_um, dtype=np.float32) == actual_area_um)
 
 
+def test_assemble_tf_dataset_scalars_split():
+    ml_feats = ["deform", "area_um"]
+    dc_data = make_data(ml_feats)
+    # create a shuffled dataset
+    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=dc_data,
+        labels=[0, 1],
+        feature_inputs=ml_feats,
+        shuffle=True
+    )
+    tfsplit1, tfsplit2 = ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=dc_data,
+        labels=[0, 1],
+        feature_inputs=ml_feats,
+        split=.8,
+        shuffle=True,
+    )
+    # reproduce the splitting
+    tffeats = np.concatenate([dd for dd, ll in tfdata], axis=0)
+    s1feats = np.concatenate([dd for dd, ll in tfsplit1], axis=0)
+    s2feats = np.concatenate([dd for dd, ll in tfsplit2], axis=0)
+    assert np.all(tffeats[:len(s1feats)] == s1feats)
+    assert np.all(tffeats[len(s1feats):] == s2feats)
+
+
+def test_assemble_tf_dataset_scalars_split_bad():
+    ml_feats = ["deform", "area_um"]
+    dc_data = make_data(ml_feats)
+    try:
+        ml.tf_dataset.assemble_tf_dataset_scalars(
+            dc_data=dc_data,
+            labels=[0, 1],
+            feature_inputs=ml_feats,
+            split=43,
+            shuffle=True)
+    except ValueError:
+        pass
+    else:
+        assert False, "Invalid split parameter"
+
+
+def test_assemble_tf_dataset_scalars_non_scalar():
+    ml_feats = ["deform", "area_um", "image"]
+    dc_data = make_data(ml_feats)
+    # create a shuffled dataset
+    try:
+        ml.tf_dataset.assemble_tf_dataset_scalars(
+            dc_data=dc_data,
+            labels=[0, 1],
+            feature_inputs=ml_feats)
+    except ValueError:
+        pass
+    else:
+        assert False, "'image' should not be supported for scalar dataset"
+
+
 def test_basic_inference():
     # setup
     dict1 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
@@ -139,6 +195,91 @@ def test_get_dataset_event_feature():
         shuffle=True
     )
     assert actual_area_um[event_index] == np.float32(event_area_um)
+
+
+def test_get_dataset_event_feature_bad_index():
+    ml_feats = ["deform", "area_um"]
+    dc_data = make_data(ml_feats)
+    try:
+        ml.tf_dataset.get_dataset_event_feature(
+            dc_data=dc_data,
+            feature="area_um",
+            dataset_indices=[10 * np.sum([len(ds) for ds in dc_data])],
+            shuffle=True
+        )
+    except IndexError:
+        pass
+    else:
+        assert False, "Event index too large"
+
+
+def test_get_dataset_event_feature_split():
+    ml_feats = ["deform", "area_um"]
+    dc_data = make_data(ml_feats)
+    tfsplit1, tfsplit2 = ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=dc_data,
+        labels=[0, 1],
+        feature_inputs=ml_feats,
+        split=.8,
+        shuffle=True,
+    )
+    event_index = 5
+    event_area_um = ml.tf_dataset.get_dataset_event_feature(
+        dc_data=dc_data,
+        feature="area_um",
+        dataset_indices=[event_index],
+        split=.8,
+        split_index=0,
+        shuffle=True
+    )
+    s1feats = np.concatenate([dd for dd, ll in tfsplit1], axis=0)
+    assert s1feats[event_index, 1] == np.float32(event_area_um)
+    event_area_um2 = ml.tf_dataset.get_dataset_event_feature(
+        dc_data=dc_data,
+        feature="area_um",
+        dataset_indices=[event_index],
+        split=.8,
+        split_index=1,
+        shuffle=True
+    )
+    s2feats = np.concatenate([dd for dd, ll in tfsplit2], axis=0)
+    assert s2feats[event_index, 1] == np.float32(event_area_um2)
+
+
+def test_get_dataset_event_feature_split_bad():
+    ml_feats = ["deform", "area_um"]
+    dc_data = make_data(ml_feats)
+    try:
+        ml.tf_dataset.get_dataset_event_feature(
+            dc_data=dc_data,
+            feature="area_um",
+            dataset_indices=[1],
+            split=-1,
+            split_index=1,
+            shuffle=True
+        )
+    except ValueError:
+        pass
+    else:
+        assert False, "Invalid split parameter"
+
+
+def test_get_dataset_event_feature_split_bad2():
+    ml_feats = ["deform", "area_um"]
+    dc_data = make_data(ml_feats)
+    try:
+        ml.tf_dataset.get_dataset_event_feature(
+            dc_data=dc_data,
+            feature="area_um",
+            dataset_indices=[1],
+            split=0,
+            split_index=1,
+            shuffle=True
+        )
+    except IndexError:
+        pass
+    else:
+        assert False, "Invalid split parameter"
 
 
 def test_models_get_dataset_features():

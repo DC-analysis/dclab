@@ -140,6 +140,8 @@ def get_dataset_event_feature(dc_data, feature, dataset_indices, split_index=0,
             index = index[:nsplit]
         else:
             index = index[nsplit:]
+    elif split_index != 0:
+        raise IndexError("`split_index` must be 0 if `split` is 0!")
 
     feature_data = []
     for ds_index in dataset_indices:
@@ -150,8 +152,6 @@ def get_dataset_event_feature(dc_data, feature, dataset_indices, split_index=0,
                 continue
             else:
                 break
-        else:
-            assert False
         feature_data.append(ds[feature][idx])
     return feature_data
 

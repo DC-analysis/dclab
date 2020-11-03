@@ -38,7 +38,7 @@ install:
 # install fcswrite
 - travis_retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
 # install all other dependencies
-- travis_retry pip install -e .[all]
+- travis_retry pip install --use-feature=2020-resolver -e .[all]
 # for tests:
 - travis_retry pip install codecov coverage flake8
 - pip freeze

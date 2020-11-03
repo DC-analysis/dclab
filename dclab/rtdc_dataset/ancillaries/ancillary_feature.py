@@ -88,7 +88,7 @@ class AncillaryFeature():
             means a higher priority.
         data: object
             Any other data relevant for the feature (e.g. the ML
-            model for computing 'ml_score_???' features)
+            model for computing 'ml_score_xxx' features)
 
         Notes
         -----

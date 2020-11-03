@@ -32,7 +32,7 @@ class BaseModel(abc.ABC):
         self.inputs = inputs
         self.outputs = outputs
         self.name = model_name or str(uuid.uuid4())[:5]
-        self.output_labels = output_labels or inputs
+        self.output_labels = output_labels or outputs
 
     def __enter__(self):
         self.register()

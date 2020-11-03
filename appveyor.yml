@@ -27,7 +27,8 @@ install:
   # latest version of fcswrite
   - "appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps"
   # the rest
-  - "appveyor-retry pip install --use-feature=2020-resolver -e .[all]"
+  # add tensorflow here so its numpy/h5py deps get resolved
+  - "appveyor-retry pip install --use-feature=2020-resolver -e .[all] tensorflow"
   - "python -m pip freeze"
 
 build: off

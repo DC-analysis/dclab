@@ -50,7 +50,7 @@ class AncillaryFeature():
     feature_names = []
 
     def __init__(self, feature_name, method, req_config=[], req_features=[],
-                 req_func=lambda x: True, priority=0):
+                 req_func=lambda x: True, priority=0, data=None):
         """A data feature that is computed from existing data
 
         Parameters
@@ -86,6 +86,9 @@ class AncillaryFeature():
             then the priority of the features defines which feature
             returns True in `self.is_available`. A higher value
             means a higher priority.
+        data: object
+            Any other data relevant for the feature (e.g. the ML
+            model for computing 'ml_score_???' features)
 
         Notes
         -----
@@ -98,6 +101,7 @@ class AncillaryFeature():
         self.req_features = req_features
         self.req_func = req_func
         self.priority = priority
+        self.data = data
 
         # register this feature
         AncillaryFeature.features.append(self)

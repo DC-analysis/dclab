@@ -19,7 +19,7 @@ def compute_ml_class(mm):
     This method also checks whether
 
     - there are any nan values in the ml_score features
-    - the ml_score features are in the interval [0,1]
+    - the ml_score features are in the interval [0, 1]
 
     Notes
     -----

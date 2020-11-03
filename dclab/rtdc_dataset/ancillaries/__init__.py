@@ -4,6 +4,7 @@ from . import af_emodulus
 from . import af_fl_max_ctc
 from . import af_image_contour
 from . import af_ml_class
+from . import af_ml_score  # noqa: F401
 
 
 #: features whose computation is fast

@@ -5,6 +5,7 @@ import uuid
 import numpy as np
 
 from .mllibs import tensorflow as tf
+from ..rtdc_dataset.ancillaries import af_ml_score
 
 
 class BaseModel(abc.ABC):
@@ -32,6 +33,13 @@ class BaseModel(abc.ABC):
         self.outputs = outputs
         self.name = model_name or str(uuid.uuid4())[:5]
         self.output_labels = output_labels or inputs
+
+    def __enter__(self):
+        self.register()
+        return self
+
+    def __exit__(self, *args):
+        self.unregister()
 
     @staticmethod
     @abc.abstractmethod
@@ -119,13 +127,11 @@ class BaseModel(abc.ABC):
 
     def register(self):
         """Register this model to the dclab ancillary features"""
-        # TODO
-        pass
+        af_ml_score.register(self)
 
     def unregister(self):
         """Unregister from dclab ancillary features"""
-        # TODO
-        pass
+        af_ml_score.unregister(self)
 
 
 class TensorflowModel(BaseModel):

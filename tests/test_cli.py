@@ -192,7 +192,8 @@ def test_split():
                 for feat in ds.features_scalar:
                     if feat == "index":
                         continue
-                    assert np.all(ds[feat][ecount:ecount+len(di)] == di[feat])
+                    assert np.all(
+                        ds[feat][ecount:ecount+len(di)] == di[feat]), feat
                 ecount += len(di)
 
 

@@ -11,8 +11,7 @@ import warnings
 
 from . import models
 
-#: Supported file formats (including instructions on how to open
-#: and save them).
+#: Supported file formats (including respective model classes).
 SUPPORTED_FORMATS = {}
 for _md in [models.TensorflowModel]:
 

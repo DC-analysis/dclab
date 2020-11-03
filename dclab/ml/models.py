@@ -142,7 +142,9 @@ class TensorflowModel(BaseModel):
     @staticmethod
     def load_bare_model(path):
         """Load a tensorflow model"""
-        bare_model = tf.saved_model.load(str(path))
+        # We don't use tf.saved_model.load, because it does not
+        # return a keras layer.
+        bare_model = tf.keras.models.load_model(str(path))
         return bare_model
 
     @staticmethod

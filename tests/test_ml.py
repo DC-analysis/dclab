@@ -1,9 +1,9 @@
 """Test machine learning tools"""
-
 import pathlib
 import tempfile
 
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from dclab import ml, new_dataset
@@ -282,6 +282,166 @@ def test_get_dataset_event_feature_split_bad2():
         assert False, "Invalid split parameter"
 
 
+@pytest.mark.filterwarnings('ignore::dclab.ml.modc.'
+                            + 'ModelFormatExportFailedWarning')
+def test_modc_export_model_bad_model():
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    try:
+        ml.modc.export_model(path=tmpdir,
+                             model=object()
+                             )
+    except ValueError:
+        pass
+    else:
+        assert False, "bad model cannot be exported"
+
+
+def test_modc_export_model_bad_path_1():
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    afile = tmpdir / "afile"
+    afile.write_text("test")
+    try:
+        ml.modc.export_model(path=afile,
+                             model=bare_model,
+                             )
+    except ValueError:
+        pass
+    else:
+        assert False, "path should be directory"
+
+
+def test_modc_export_model_bad_path_2():
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    afile = tmpdir / "afile"
+    afile.write_text("test")
+    try:
+        ml.modc.export_model(path=tmpdir,
+                             model=bare_model,
+                             )
+    except ValueError:
+        pass
+    else:
+        assert False, "path should be empty"
+
+
+def test_modc_export_model_enforce_format():
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    ml.modc.export_model(path=tmpdir,
+                         model=bare_model,
+                         enforce_formats=["tensorflow-SavedModel"]
+                         )
+
+
+def test_modc_export_model_enforce_format_bad_format():
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    try:
+        ml.modc.export_model(path=tmpdir,
+                             model=bare_model,
+                             enforce_formats=["library-format-does-not-exist"]
+                             )
+    except ValueError:
+        pass
+    else:
+        assert False, "non-existent format cannot be enforced"
+
+
+@pytest.mark.filterwarnings('ignore::dclab.ml.modc.'
+                            + 'ModelFormatExportFailedWarning')
+def test_modc_export_model_enforce_format_bad_model():
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    try:
+        ml.modc.export_model(path=tmpdir,
+                             model=object(),
+                             enforce_formats=["tensorflow-SavedModel"]
+                             )
+    except ValueError:
+        pass
+    else:
+        assert False, "bad model cannot be exported"
+
+
+def test_modc_load_basic():
+    # setup
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    model = ml.models.TensorflowModel(bare_model=bare_model,
+                                      inputs=["image"],
+                                      outputs=["ml_score_tst"])
+    pout = tmpdir / "test.modc"
+    ml.save_modc(path=pout, dc_models=model)
+    # assert
+    ml.load_modc(path=pout)
+
+
+def test_modc_load_bad_format():
+    # setup
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    model = ml.models.TensorflowModel(bare_model=bare_model,
+                                      inputs=["image"],
+                                      outputs=["ml_score_tst"])
+    pout = tmpdir / "test.modc"
+    ml.save_modc(path=pout, dc_models=model)
+    # assert
+    try:
+        ml.load_modc(path=pout, from_format="format-does-not-exist")
+    except ValueError:
+        pass
+    else:
+        assert False, "bad format should not work"
+
+
+def test_modc_save_basic():
+    # setup
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    model = ml.models.TensorflowModel(bare_model=bare_model,
+                                      inputs=["deform"],
+                                      outputs=["ml_score_tst"])
+    pout = tmpdir / "test.modc"
+    # assert
+    ml.save_modc(path=pout, dc_models=model)
+
+
+def test_modc_save_load_infer():
+    # setup
+    dict1 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict1["deform"] = np.linspace(.01, .02, 1000)
+    dict2 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict2["deform"] = np.linspace(.02, .03, 1000)
+    ds1 = new_dataset(dict1)
+    ds2 = new_dataset(dict2)
+    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=[ds1, ds2],
+        labels=[0, 1],
+        feature_inputs=["deform"])
+    bare_model = standard_model(tfdata, epochs=10)
+    # DC model
+    model = ml.models.TensorflowModel(
+        bare_model=bare_model,
+        inputs=["deform"],
+        outputs=["ml_score_low", "ml_score_hig"])
+    # save model
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml_modc"))
+    pout = tmpdir / "test.modc"
+    ml.save_modc(path=pout, dc_models=model)
+    # load model
+    model_loaded = ml.load_modc(path=pout)
+    # test dataset
+    dictt = example_data_dict(size=6, keys=["area_um", "aspect", "fl1_max"])
+    dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
+    dst = new_dataset(dictt)
+    expected = model.predict(dst)
+    actual = model_loaded.predict(dst)
+    # assert
+    assert np.all(expected["ml_score_low"] == actual["ml_score_low"])
+    assert np.all(expected["ml_score_hig"] == actual["ml_score_hig"])
+
+
 def test_models_get_dataset_features():
     ml_feats = ["area_um", "deform"]
     bare_model = make_bare_model(ml_feats=ml_feats)
@@ -321,16 +481,6 @@ def test_models_prediction_runs_through():
     out = mod.predict(ds)
     assert "ml_score_t01" in out
     assert "ml_score_t02" in out
-
-
-def test_save_modc():
-    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
-    bare_model = make_bare_model()
-    model = ml.models.TensorflowModel(bare_model=bare_model,
-                                      inputs=["image"],
-                                      outputs=["ml_score_tst"])
-    pout = tmpdir / "test.modc"
-    ml.save_modc(path=pout, dc_models=model)
 
 
 if __name__ == "__main__":

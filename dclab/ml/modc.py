@@ -22,6 +22,10 @@ for _md in [models.TensorflowModel]:
             "class": _md}
 
 
+class ModelFormatExportFailedWarning(UserWarning):
+    pass
+
+
 def export_model(path, model, enforce_formats=None):
     """Export an ML model to all possible formats
 
@@ -66,7 +70,8 @@ def export_model(path, model, enforce_formats=None):
             cls.load_bare_model(tmp_out)
         except BaseException:
             warnings.warn("Could not export to '{}': {}".format(
-                fmt, tb.format_exc(limit=1)))
+                fmt, tb.format_exc(limit=1)),
+                ModelFormatExportFailedWarning)
             if fmt in enforce_formats:
                 raise
         else:
@@ -146,7 +151,7 @@ def load_modc(path, from_format=None):
     for model_dict in meta["models"]:
         mpath = t_dir / model_dict["path"]
 
-        formats = model_dict["formats"]
+        formats = list(model_dict["formats"].keys())
         if from_format:
             formats = [from_format] + formats
 
@@ -161,7 +166,7 @@ def load_modc(path, from_format=None):
                         # user requested this format specifically
                         raise
                 else:
-                    # Convert `bare_model` to BaseModel
+                    # load `bare_model` into BaseModel
                     model = cls(bare_model=bare_model,
                                 inputs=model_dict["input features"],
                                 outputs=model_dict["output features"],

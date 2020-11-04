@@ -43,7 +43,7 @@ dcor_ids = ["fb719fb2-bd9f-817a-7d70-f4002af916f0",
 labels = [0, 1]  # 0: beads, 1: cells
 features = ["area_ratio", "area_um", "bright_sd", "deform"]
 
-tf_kw = {"dc_data":dcor_ids,
+tf_kw = {"dc_data": dcor_ids,
          "split": .8,
          "shuffle": True,
          }

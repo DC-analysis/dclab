@@ -198,15 +198,6 @@ class TensorflowModel(BaseModel):
             ofdict[key] = ret[:, ii]
         return ofdict
 
-    def has_softmax_layer(self, layer_config=None):
-        """Return True if final layer is a Softmax layer"""
-        if layer_config is None:
-            layer_config = self.bare_model.get_config()
-        if "layers" in layer_config:
-            return self.has_softmax_layer(layer_config["layers"][-1])
-        else:
-            return layer_config["class_name"] == "Softmax"
-
     def has_sigmoid_activation(self, layer_config=None):
         """Return True if final layer has "sigmoid" activation function"""
         if layer_config is None:
@@ -216,3 +207,12 @@ class TensorflowModel(BaseModel):
         else:
             activation = layer_config.get("config", "").get("activation", "")
             return activation == "sigmoid"
+
+    def has_softmax_layer(self, layer_config=None):
+        """Return True if final layer is a Softmax layer"""
+        if layer_config is None:
+            layer_config = self.bare_model.get_config()
+        if "layers" in layer_config:
+            return self.has_softmax_layer(layer_config["layers"][-1])
+        else:
+            return layer_config["class_name"] == "Softmax"

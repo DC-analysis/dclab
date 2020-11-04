@@ -163,7 +163,7 @@ def load_modc(path, from_format=None):
                     bare_model = load(mpath / model_dict["formats"][fmt])
                 except BaseException:
                     if from_format and fmt == from_format:
-                        # user requested this format specifically
+                        # user requested this format explicitly
                         raise
                 else:
                     # load `bare_model` into BaseModel

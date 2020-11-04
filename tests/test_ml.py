@@ -29,7 +29,7 @@ def make_bare_model(ml_feats=["area_um", "deform"]):
     return standard_model(tfdata)
 
 
-def standard_model(tfdata, epochs=1):
+def standard_model(tfdata, epochs=1, final_size=2):
     # build the model
     num_feats = tfdata.as_numpy_iterator().next()[0].shape[1]
     model = tf.keras.Sequential(
@@ -38,13 +38,17 @@ def standard_model(tfdata, epochs=1):
             tf.keras.layers.Dense(128, activation='relu'),
             tf.keras.layers.Dense(32),
             tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(2)
+            tf.keras.layers.Dense(final_size)
         ],
         name="scalar_features"
     )
 
     # fit the model to the training data
-    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    if final_size == 1:
+        loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+    else:
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(
+            from_logits=True)
     model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
     model.fit(tfdata, epochs=epochs)
 
@@ -166,6 +170,39 @@ def test_basic_inference():
     assert np.all(expected == actual)
 
 
+def test_basic_inference_one_output():
+    # setup
+    dict1 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict1["deform"] = np.linspace(.01, .02, 1000)
+    dict2 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict2["deform"] = np.linspace(.02, .03, 1000)
+    ds1 = new_dataset(dict1)
+    ds2 = new_dataset(dict2)
+    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=[ds1, ds2],
+        labels=[0, 1],
+        feature_inputs=["deform"])
+    bare_model = standard_model(tfdata, epochs=10, final_size=1)
+    # test dataset
+    dictt = example_data_dict(size=6, keys=["area_um", "aspect", "fl1_max"])
+    dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
+    dst = new_dataset(dictt)
+    # DC model
+    model = ml.models.TensorflowModel(
+        bare_model=bare_model,
+        inputs=["deform"],
+        outputs=["ml_score_loh"])
+    scores = model.predict(dst)
+    # get the class from the predicted values
+    actual = scores["ml_score_loh"] > 0.5
+    # these are the expected classes
+    expected = dictt["deform"] > 0.02
+    # sanity check
+    assert np.sum(expected) == np.sum(~expected)
+    # actual verification of test case
+    assert np.all(expected == actual)
+
+
 def test_get_dataset_event_feature():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
@@ -211,6 +248,26 @@ def test_get_dataset_event_feature_bad_index():
         pass
     else:
         assert False, "Event index too large"
+
+
+def test_get_dataset_event_feature_no_tf_indices():
+    ml_feats = ["deform", "area_um"]
+    dc_data = make_data(ml_feats)
+    indices0 = ml.tf_dataset.get_dataset_event_feature(
+        dc_data=dc_data,
+        feature="index",
+        dc_data_indices=[0],
+        shuffle=False
+    )
+    assert list(range(1, len(dc_data[0]) + 1)) == indices0
+
+    indices1 = ml.tf_dataset.get_dataset_event_feature(
+        dc_data=dc_data,
+        feature="index",
+        dc_data_indices=[1],
+        shuffle=False
+    )
+    assert list(range(1, len(dc_data[1]) + 1)) == indices1
 
 
 def test_get_dataset_event_feature_split():
@@ -280,6 +337,51 @@ def test_get_dataset_event_feature_split_bad2():
         pass
     else:
         assert False, "Invalid split parameter"
+
+
+def test_model_tensorflow_has_sigmoid_activation_1():
+    ml_feats = ["deform", "area_um"]
+    stock_model = make_bare_model(ml_feats)
+    bare_model = tf.keras.Sequential([stock_model, tf.keras.layers.Dense(1)])
+    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
+                                         inputs=ml_feats,
+                                         outputs=["ml_score_tst"])
+    assert not dc_model.has_sigmoid_activation()
+
+
+def test_model_tensorflow_has_sigmoid_activation_2():
+    ml_feats = ["deform", "area_um"]
+    stock_model = make_bare_model(ml_feats)
+    bare_model = tf.keras.Sequential(
+        [stock_model, tf.keras.layers.Dense(1, activation="sigmoid")])
+    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
+                                         inputs=ml_feats,
+                                         outputs=["ml_score_tst"])
+    assert dc_model.has_sigmoid_activation()
+
+
+def test_model_tensorflow_has_softmax_layer_1():
+    ml_feats = ["deform", "area_um"]
+    stock_model = make_bare_model(ml_feats)
+    bare_model = tf.keras.Sequential(
+        [stock_model, tf.keras.layers.Dense(2)])
+    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
+                                         inputs=ml_feats,
+                                         outputs=["ml_score_tst",
+                                                  "ml_score_ts2"])
+    assert not dc_model.has_softmax_layer()
+
+
+def test_model_tensorflow_has_softmax_layer_2():
+    ml_feats = ["deform", "area_um"]
+    stock_model = make_bare_model(ml_feats)
+    bare_model = tf.keras.Sequential(
+        [stock_model, tf.keras.layers.Dense(2), tf.keras.layers.Softmax()])
+    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
+                                         inputs=ml_feats,
+                                         outputs=["ml_score_tst",
+                                                  "ml_score_ts2"])
+    assert dc_model.has_softmax_layer()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.ml.modc.'

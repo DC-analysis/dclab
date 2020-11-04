@@ -1,10 +1,10 @@
 """Test DCOR format"""
-
+import pathlib
 import socket
 import sys
 
 import dclab
-from dclab.rtdc_dataset.fmt_dcor import RTDC_DCOR
+from dclab.rtdc_dataset.fmt_dcor import RTDC_DCOR, is_dcor_url
 import numpy as np
 import pytest
 
@@ -109,7 +109,7 @@ def test_dcor_hierarchy(monkeypatch):
     assert np.all(dso["area_um"] == dsh["area_um"])
 
 
-def test_url():
+def test_get_full_url():
     target = "https://example.com/api/3/action/dcserv?id=123456"
     assert RTDC_DCOR.get_full_url(
         url="123456",
@@ -144,6 +144,28 @@ def test_url():
         url="http://example.com/api/3/action/dcserv?id=123456",
         use_ssl=None,
         host="example.com") == target2
+
+
+def test_is_dcor_url():
+    assert is_dcor_url("2cea205f-2d9d-26d0-b44c-0a11d5379152")
+    assert not is_dcor_url("2cea205f-2d9d")
+    assert is_dcor_url("https://example.com/api/3/action/dcserv?id=123456")
+    assert is_dcor_url("http://example.com/api/3/action/dcserv?id=123456")
+    assert is_dcor_url("example.com/api/3/action/dcserv?id=123456")
+    assert not is_dcor_url(
+        pathlib.Path("example.com/api/3/action/dcserv?id=123456"))
+    assert not is_dcor_url(2.0)
+    assert not is_dcor_url("/home/peter/pan")
+
+
+def test_load_nonexistent_file_issue81():
+    """https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/81"""
+    try:
+        dclab.new_dataset("path/does/not/exist.rtdc")
+    except FileNotFoundError:
+        pass
+    else:
+        assert False, "Non-existent files should raise FileNotFoundError"
 
 
 if __name__ == "__main__":

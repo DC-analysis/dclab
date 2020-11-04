@@ -1,5 +1,6 @@
 """DCOR client interface"""
 from functools import lru_cache
+import uuid
 
 import numpy as np
 
@@ -301,3 +302,25 @@ class RTDC_DCOR(RTDCBase):
             tohash = [self.path]
             self._hash = hashobj(tohash)
         return self._hash
+
+
+def is_dcor_url(string):
+    if not isinstance(string, str):
+        return False
+    elif is_uuid(string):
+        return True
+    else:  # we have a string
+        if string.startswith("http://") or string.startswith("https://"):
+            return True  # pretty safe bet
+        elif string.count("/api/3/action/dcserv?id="):
+            return True  # not so safe, but highly improbable folder structure
+        else:
+            return False
+
+
+def is_uuid(string):
+    try:
+        uuid_obj = uuid.UUID(string)
+    except ValueError:
+        return False
+    return str(uuid_obj) == string

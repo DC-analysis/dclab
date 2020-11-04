@@ -51,16 +51,16 @@ def new_dataset(data, identifier=None, **kwargs):
     """
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
-    elif isinstance(data, str) or isinstance(data, pathlib.Path):
-        if (isinstance(data, pathlib.Path)
-                or (not data.count("://")  # prevent Pathing it on Windows
-                    and pathlib.Path(data).exists())):
-            return load_file(data, identifier=identifier, **kwargs)
-        else:
-            return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
+    elif fmt_dcor.is_dcor_url(data):
+        return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
     elif isinstance(data, RTDCBase):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
                                             **kwargs)
+    elif isinstance(data, (pathlib.Path, str)):
+        if not pathlib.Path(data).exists():
+            raise FileNotFoundError("Could not find file '{}'!".format(data))
+        else:
+            return load_file(data, identifier=identifier, **kwargs)
     else:
         msg = "data type not supported: {}".format(data.__class__)
         raise NotImplementedError(msg)

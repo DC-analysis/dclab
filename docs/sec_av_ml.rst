@@ -73,6 +73,9 @@ statement:
     with dc_model:
         prediction = ds["ml_score_rbc"]  # same result as above
 
+Please have a look at :ref:`this example <example_ml_builtin>` to see
+dclab models in action.
+
 
 The .modc file format
 =====================

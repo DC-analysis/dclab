@@ -11,8 +11,15 @@ make sure that you have installed dclab with the *ml* extra
 (``pip install dclab[ml]``).
 
 
+.. _sec_av_ml_models:
+
 Using models in dclab
 =====================
+
+For RT-DC analysis, the most common task for ML is to determine the probability
+for a specific event (e.g. a cell) to belong to a specific class (e.g. red
+blood cell). Since RT-DC data always has a very specific format, it is
+worthwile to standardize this regression/classification process.
 
 In dclab, you are not directly using the *bare* models that you would e.g.
 get from tensorflow/keras. Instead, models are wrapped via a specific
@@ -30,6 +37,9 @@ where ``x`` can be any alphanumeric character (you are free to choose).
 
     # do your magic
     bare_model = tf.keras.Sequential(...)
+    bare_model.compile(...)
+    bare_model.fit(...)
+
     # create a dclab model
     dc_model = dclab.ml.models.TensorflowModel(
         bare_model=bare_model,
@@ -37,6 +47,7 @@ where ``x`` can be any alphanumeric character (you are free to choose).
         outputs=["ml_score_rbc"],
         model_name="RBC identification",
         output_labels="red blood cells")
+
     # once you get here, you can use your model directly for inference
     ds = dclab.new_dataset("path/to/a/dataset")
     # `prediction` is a dictionary with the key "ml_score_rbc" mapping
@@ -44,7 +55,7 @@ where ``x`` can be any alphanumeric character (you are free to choose).
     prediction = dc_model.predict(ds)["ml_score_rbc"]
 
 For user convenience, a model can also be registered with dclab as
-an ancillary feature.
+an :ref:`ancillary feature <sec_features_ancillary>`.
 
 .. code:: python
 
@@ -52,9 +63,10 @@ an ancillary feature.
     prediction = ds["ml_score_rbc"]  # same result as above
     dc_model.unregister()  # optional
 
-If you would like to test several models, then it is inconvenient to
-call the ``register()`` and ``unregister`` methods. Instead, you can
-use ``dc_model`` in combination with the ``with`` statement:
+If it is inconvenient for you to call the ``register()`` and ``unregister``
+methods (e.g. when you would like to perform predictions for multiple
+models), then you can use ``dc_model`` in combination with the ``with``
+statement:
 
 .. code:: python
 
@@ -97,7 +109,7 @@ checksums, and the creation date:
                 ├── variables.data-00000-of-00001
                 └── variables.index
 
-The corresponding index.json file would look like this:
+The corresponding index.json file could look like this:
 
 .. code:: json
 

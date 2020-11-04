@@ -1,4 +1,4 @@
-"""Distinguishing beads from cells with machine-learning
+"""ML: Using RT-DC data with tensorflow
 
 We use tensorflow to distinguish between beads and cells using
 scalar features only. The example data is taken from a `reference
@@ -8,17 +8,23 @@ The classification accuracy using only the inputs ``area_ratio``,
 
 .. warning::
 
-   Please do not use this example as a template for machine-learning
-   in RT-DC applications. This example does not cover a lot of
-   important things (e.g. brightness normalization) and it is a very
-   simple task (beads are smaller than cells). Thus, this example should
-   only be considered as a technical guide on how dclab is used in
-   the context of ML applications.
+   This example neglects a lot of important aspects of machine learning
+   with RT-DC data (e.g. brightness normalization) and it is a very
+   easy task (beads are smaller than cells). Thus, this example should
+   only be considered as a technical guide on how tensorflow can be used
+   with RT-DC data.
 
 .. note::
 
    What happens when you add ``"bright_avg"`` to the ``features`` list?
    Can you explain the result?
+
+Apparently, debris in the cell dataset is classified as beads.
+We could have gotten around that by filtering the input data before
+inference. In addition, some beads get classified as cells as well.
+This is a result of the limited features used for training/inference.
+Under normal cirumstances, you would investigate other features in
+order to improve the model prediction.
 """
 import matplotlib.pylab as plt
 import numpy as np

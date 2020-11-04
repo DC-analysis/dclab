@@ -80,7 +80,8 @@ Ancillary features
 ------------------
 Not all features available in dclab are recorded online during the
 acquisition of the experimental dataset. Some of the features are
-computed offline by dclab, such as "volume" or "emodulus". These
+computed offline by dclab, such as "volume", "emodulus", or
+scores from imported machine learning models ("ml_score_xxx"). These
 ancillary features are computed on-the-fly and are made available
 seamlessly through the same interface.
 

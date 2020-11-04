@@ -14,5 +14,7 @@ Examples
 
 .. fancy_include:: ml_tensorflow.py
 
+.. fancy_include:: ml_builtin.py
+
 .. fancy_include:: isoelastics.py
 

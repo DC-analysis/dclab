@@ -171,9 +171,9 @@ class TensorflowModel(BaseModel):
 
         Notes
         -----
-        Before prediction, it is made sure that the outputs of the
+        Before prediction, this method asserts that the outputs of the
         model are converted to probabilities. If the final layer
-        is one dimensional and does not have a sigmoid activation,
+        is one-dimensional and does not have a sigmoid activation,
         then a sigmoid activation layer is added (binary
         classification) ``tf.keras.layers.Activation("sigmoid")``.
         If the final layer has more dimensions and is not a

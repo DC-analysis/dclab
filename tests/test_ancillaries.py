@@ -722,6 +722,31 @@ def test_ml_score_basic():
     assert np.all(expected == actual)
 
 
+def test_ml_score_label_fallback():
+    """Test whether the correct label is returned"""
+    label1 = dclab.dfn.get_feature_label("ml_score_low")
+    label2 = dclab.dfn.get_feature_label("ml_score_hig")
+    assert label1 == "ML score LOW"
+    assert label2 == "ML score HIG"
+
+
+def test_ml_score_label_registered():
+    """Test whether the correct label is returned"""
+    ml_feats = ["area_um", "deform"]
+    bare_model = test_ml.make_bare_model(ml_feats=ml_feats)
+    model = dclab.ml.models.TensorflowModel(
+        bare_model=bare_model,
+        inputs=ml_feats,
+        outputs=["ml_score_low", "ml_score_hig"],
+        output_labels=["Low label", "High label"])
+    with model:
+        # get labels
+        label1 = dclab.dfn.get_feature_label("ml_score_low")
+        label2 = dclab.dfn.get_feature_label("ml_score_hig")
+    assert label1 == "Low label"
+    assert label2 == "High label"
+
+
 def test_ml_score_registration_sanity_checks():
     ml_feats = ["area_um", "deform"]
     model = dclab.ml.models.TensorflowModel(

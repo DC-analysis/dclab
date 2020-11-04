@@ -14,7 +14,7 @@ class BaseModel(abc.ABC):
         """
         Parameters
         ----------
-        bare_model: object
+        bare_model:
             Underlying ML model
         inputs: list of str
             List of model input features, e.g.
@@ -171,11 +171,25 @@ class TensorflowModel(BaseModel):
 
         Notes
         -----
-        To obtain the probabilities, `tf.keras.layers.Softmax()`
-        is used.
+        Before prediction, it is made sure that the outputs of the
+        model are converted to probabilities. If the final layer
+        is one dimensional and does not have a sigmoid activation,
+        then a sigmoid activation layer is added (binary
+        classification) ``tf.keras.layers.Activation("sigmoid")``.
+        If the final layer has more dimensions and is not a
+        ``tf.keras.layers.Softmax()`` layer, then a softmax layer
+        is added.
         """
-        probability_model = tf.keras.Sequential([self.bare_model,
-                                                 tf.keras.layers.Softmax()])
+        probability_model = tf.keras.Sequential([self.bare_model])
+        if self.bare_model.output_shape[1] > 1:
+            # Multiple outputs; check for softmax
+            if not self.has_softmax_layer():
+                probability_model.add(tf.keras.layers.Softmax())
+        else:
+            # Binary classification; check for sigmoid
+            if not self.has_sigmoid_activation():
+                probability_model.add(tf.keras.layers.Activation("sigmoid"))
+
         fdata = self.get_dataset_features(ds)
         tfdata = tf.data.Dataset.from_tensor_slices(fdata).batch(batch_size)
         ret = probability_model.predict(tfdata)
@@ -183,3 +197,22 @@ class TensorflowModel(BaseModel):
         for ii, key in enumerate(self.outputs):
             ofdict[key] = ret[:, ii]
         return ofdict
+
+    def has_softmax_layer(self, layer_config=None):
+        """Return True if final layer is a Softmax layer"""
+        if layer_config is None:
+            layer_config = self.bare_model.get_config()
+        if "layers" in layer_config:
+            return self.has_softmax_layer(layer_config["layers"][-1])
+        else:
+            return layer_config["class_name"] == "Softmax"
+
+    def has_sigmoid_activation(self, layer_config=None):
+        """Return True if final layer has "sigmoid" activation function"""
+        if layer_config is None:
+            layer_config = self.bare_model.get_config()
+        if "layers" in layer_config:
+            return self.has_sigmoid_activation(layer_config["layers"][-1])
+        else:
+            activation = layer_config.get("config", "").get("activation", "")
+            return activation == "sigmoid"

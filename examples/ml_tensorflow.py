@@ -73,14 +73,14 @@ num_events = min(4, min(len(true_cl), len(false_cl)))
 false_images = tf_dataset.get_dataset_event_feature(
     dc_data=dcor_ids,
     feature="image",
-    dataset_indices=false_cl[:num_events],
+    tf_dataset_indices=false_cl[:num_events],
     split_index=1,
     split=.8)
 
 true_images = tf_dataset.get_dataset_event_feature(
     dc_data=dcor_ids,
     feature="image",
-    dataset_indices=true_cl[:num_events],
+    tf_dataset_indices=true_cl[:num_events],
     split_index=1,
     split=.8)
 

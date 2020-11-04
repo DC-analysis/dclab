@@ -1,6 +1,7 @@
 """Naming conventions"""
 import copy
 
+from .rtdc_dataset.ancillaries import AncillaryFeature
 from .parse_funcs import fbool, fint, fintlist, func_types, lcstr
 
 
@@ -323,16 +324,25 @@ def get_feature_label(name, rtdc_ds=None):
     """Return the label corresponding to a feature name
 
     This function not only checks :const:`feature_name2label`,
-    but also supports the `ml_score_???` features.
+    but also supports registered `ml_score_???` features.
 
-    TODO: If an RTDCBase object is given, then the feature
-    label can be extracted from ancillary information.
+    TODO: extract feature label from ancillary information
+    when an rtdc_ds is given.
     """
     assert feature_exists(name)
     if name in feature_name2label:
         label = feature_name2label[name]
     else:
-        label = "ML score {}".format(name[-3:].upper())
+        # First check whether an ancillary feature with that
+        # name exists.
+        for af in AncillaryFeature.features:
+            if af.feature_name == name:
+                labelid = af.data.outputs.index(name)
+                label = af.data.output_labels[labelid]
+                break
+        else:
+            # If that did not work, use a generic name.
+            label = "ML score {}".format(name[-3:].upper())
     return label
 
 

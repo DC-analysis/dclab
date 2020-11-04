@@ -89,8 +89,9 @@ def assemble_tf_dataset_scalars(dc_data, feature_inputs, labels=None,
         return tfdata
 
 
-def get_dataset_event_feature(dc_data, feature, dataset_indices, split_index=0,
-                              split=0.0, shuffle=True):
+def get_dataset_event_feature(dc_data, feature, tf_dataset_indices=None,
+                              dc_data_indices=None, split_index=0, split=0.0,
+                              shuffle=True):
     """Return RT-DC features for tensorflow Dataset indices
 
     The functions `assemble_tf_dataset_*` return a
@@ -106,9 +107,12 @@ def get_dataset_event_feature(dc_data, feature, dataset_indices, split_index=0,
         to create the `tf.data.Dataset`).
     feature: str
         Name of the feature to retrieve
-    dataset_indices: list-like
+    tf_dataset_indices: list-like
         `tf.data.Dataset` indices corresponding to the events
-        of interest.
+        of interest. If None, all indices are used.
+    dc_data_indices: list of int
+        List with indices that correspond to the only items in `dc_data`
+        for which the features should be returned.
     split_index: int
         The split index; 0 for the first part, 1 for the second part.
     split: float
@@ -128,6 +132,8 @@ def get_dataset_event_feature(dc_data, feature, dataset_indices, split_index=0,
     ds_sizes = [len(ds) for ds in dcds]
     size = sum(ds_sizes)
     index = np.arange(size)
+    if dc_data_indices is None:
+        dc_data_indices = range(len(dc_data))
 
     if shuffle:
         shuffle_array(index)
@@ -143,16 +149,21 @@ def get_dataset_event_feature(dc_data, feature, dataset_indices, split_index=0,
     elif split_index != 0:
         raise IndexError("`split_index` must be 0 if `split` is 0!")
 
+    if tf_dataset_indices is None:
+        tf_dataset_indices = range(index.size)
+
     feature_data = []
-    for ds_index in dataset_indices:
-        idx = index[ds_index]
-        for ds in dcds:
+    for tf_index in tf_dataset_indices:
+        idx = index[tf_index]
+        for ds_index, ds in enumerate(dcds):
             if idx > (len(ds) - 1):
                 idx -= len(ds)
                 continue
             else:
                 break
-        feature_data.append(ds[feature][idx])
+        if ds_index in dc_data_indices:
+            # only add feature if user also required dc dataset index
+            feature_data.append(ds[feature][idx])
     return feature_data
 
 

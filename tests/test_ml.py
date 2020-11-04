@@ -184,14 +184,14 @@ def test_get_dataset_event_feature():
     event_deform = ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="deform",
-        dataset_indices=[event_index],
+        tf_dataset_indices=[event_index],
         shuffle=True
     )[0]
     assert actual_deform[event_index] == np.float32(event_deform)
     event_area_um = ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="area_um",
-        dataset_indices=[event_index],
+        tf_dataset_indices=[event_index],
         shuffle=True
     )
     assert actual_area_um[event_index] == np.float32(event_area_um)
@@ -204,7 +204,7 @@ def test_get_dataset_event_feature_bad_index():
         ml.tf_dataset.get_dataset_event_feature(
             dc_data=dc_data,
             feature="area_um",
-            dataset_indices=[10 * np.sum([len(ds) for ds in dc_data])],
+            tf_dataset_indices=[10 * np.sum([len(ds) for ds in dc_data])],
             shuffle=True
         )
     except IndexError:
@@ -227,7 +227,7 @@ def test_get_dataset_event_feature_split():
     event_area_um = ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="area_um",
-        dataset_indices=[event_index],
+        tf_dataset_indices=[event_index],
         split=.8,
         split_index=0,
         shuffle=True
@@ -237,7 +237,7 @@ def test_get_dataset_event_feature_split():
     event_area_um2 = ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="area_um",
-        dataset_indices=[event_index],
+        tf_dataset_indices=[event_index],
         split=.8,
         split_index=1,
         shuffle=True
@@ -253,7 +253,7 @@ def test_get_dataset_event_feature_split_bad():
         ml.tf_dataset.get_dataset_event_feature(
             dc_data=dc_data,
             feature="area_um",
-            dataset_indices=[1],
+            tf_dataset_indices=[1],
             split=-1,
             split_index=1,
             shuffle=True
@@ -271,7 +271,7 @@ def test_get_dataset_event_feature_split_bad2():
         ml.tf_dataset.get_dataset_event_feature(
             dc_data=dc_data,
             feature="area_um",
-            dataset_indices=[1],
+            tf_dataset_indices=[1],
             split=0,
             split_index=1,
             shuffle=True

@@ -46,7 +46,7 @@ where ``x`` can be any alphanumeric character (you are free to choose).
         inputs=["deform", "area_um"],
         outputs=["ml_score_rbc"],
         model_name="RBC identification",
-        output_labels="red blood cells")
+        output_labels=["Red Blood Cells"])
 
     # once you get here, you can use your model directly for inference
     ds = dclab.new_dataset("path/to/a/dataset")

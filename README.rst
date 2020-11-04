@@ -10,21 +10,19 @@ real-time deformability cytometry (RT-DC) datasets; an essential part of
 
 Documentation
 -------------
-
 The documentation, including the code reference and examples, is available at
 `dclab.readthedocs.io <https://dclab.readthedocs.io/en/stable/>`__.
 
 
 Installation
 ------------
-To install the latest release, simply run
 
 ::
 
-    pip install dclab  # for a minimal install
-    pip install dclab[tdms]  # if you are also working with tdms files
-    pip install dclab[export]  # if you need avi and fcs export
-    pip install dclab[all]  # for all of the above
+    pip install dclab[all]
+
+For more options, please check out the `documentation
+<https://dclab.readthedocs.io/en/latest/sec_getting_started.html#installation>`__.
 
 
 Information for developers

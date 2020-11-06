@@ -4,6 +4,11 @@ import dclab
 from dclab.lme4 import Rlme4, rsetup
 
 
+def test_import_rpy2():
+    from rpy2 import situation
+    assert situation.get_r_home() is not None
+
+
 def test_basic_setup():
     assert rsetup.has_r()
     rsetup.install_lme4()

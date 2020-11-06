@@ -1,12 +1,16 @@
 notifications:
   email: false
 sudo: required
+dist: focal
 addons:
   apt:
     packages:
     - r-base
     - r-recommended
     - r-cran-lme4
+  homebrew:
+    casks:
+    - r
 matrix:
  include:
  # see https://www.python.org/downloads/mac-osx/ for valid versions

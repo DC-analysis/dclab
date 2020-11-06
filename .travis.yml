@@ -19,16 +19,19 @@ matrix:
    env:
     - MAC_PYTHON_VERSION=3.6.8
     - MAC_PYTHON_OSX_VERSION=10.6
+    - RPY2_CFFI_MODE=ABI
  - os: osx
    language: generic
    env:
     - MAC_PYTHON_VERSION=3.7.9
     - MAC_PYTHON_OSX_VERSION=10.9
+    - RPY2_CFFI_MODE=ABI
  - os: osx
    language: generic
    env:
     - MAC_PYTHON_VERSION=3.8.6
     - MAC_PYTHON_OSX_VERSION=10.9
+    - RPY2_CFFI_MODE=ABI
  - os: linux
    language: python
    python: 3.6

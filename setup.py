@@ -23,6 +23,7 @@ except BaseException:
 
 extras_require = {
         "dcor": ["requests"],
+        "lme4": ["rpy2>=3.3.0"],
         "ml": ["tensorflow>=2.0"],
         "tdms": ["imageio[ffmpeg]",
                  "nptdms>=0.23.0",

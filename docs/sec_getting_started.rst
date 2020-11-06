@@ -18,6 +18,7 @@ a subset of these:
 
 - ``pip install dclab``: for the basic dclab functionalities
 - ``pip install dclab[dcor]``: to interface with `DCOR <https://dcor.mpl.mpg.de/>`_
+- ``pip install dclab[lme4]``: for linear mixed effects model analysis using `R/lme4 <https://cran.r-project.org/web/packages/lme4/index.html>`_
 - ``pip install dclab[ml]``: for machine-learning applications
 - ``pip install dclab[tdms]``: for the (outdated) .tdms file format
 - ``pip install dclab[export]``: for .avi and .fcs export

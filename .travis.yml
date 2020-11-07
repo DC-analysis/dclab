@@ -5,7 +5,8 @@ dist: focal
 cache:
   directories:
     - $HOME/Library/Caches/Homebrew
-    - /usr/local/Homebrew
+before_cache:
+  - brew cleanup
 addons:
   apt:
     packages:
@@ -17,18 +18,24 @@ matrix:
  # see https://www.python.org/downloads/mac-osx/ for valid versions
  - os: osx
    language: r
+   r_packages:
+     - lme4
    cache: packages
    env:
     - MAC_PYTHON_VERSION=3.6.8
     - MAC_PYTHON_OSX_VERSION=10.6
  - os: osx
    language: r
+   r_packages:
+     - lme4
    cache: packages
    env:
     - MAC_PYTHON_VERSION=3.7.9
     - MAC_PYTHON_OSX_VERSION=10.9
  - os: osx
    language: r
+   r_packages:
+     - lme4
    cache: packages
    env:
     - MAC_PYTHON_VERSION=3.8.6

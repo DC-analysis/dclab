@@ -2,37 +2,37 @@ notifications:
   email: false
 sudo: required
 dist: focal
+cache:
+  directories:
+    - $HOME/Library/Caches/Homebrew
+    - /usr/local/Homebrew
 addons:
   apt:
     packages:
     - r-base
     - r-recommended
     - r-cran-lme4
-  homebrew:
-    packages:
-    - r
-    update: true
 matrix:
  include:
  # see https://www.python.org/downloads/mac-osx/ for valid versions
  - os: osx
-   language: generic
+   language: r
+   cache: packages
    env:
     - MAC_PYTHON_VERSION=3.6.8
     - MAC_PYTHON_OSX_VERSION=10.6
-    - RPY2_CFFI_MODE=ABI
  - os: osx
-   language: generic
+   language: r
+   cache: packages
    env:
     - MAC_PYTHON_VERSION=3.7.9
     - MAC_PYTHON_OSX_VERSION=10.9
-    - RPY2_CFFI_MODE=ABI
  - os: osx
-   language: generic
+   language: r
+   cache: packages
    env:
     - MAC_PYTHON_VERSION=3.8.6
     - MAC_PYTHON_OSX_VERSION=10.9
-    - RPY2_CFFI_MODE=ABI
  - os: linux
    language: python
    python: 3.6

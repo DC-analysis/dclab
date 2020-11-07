@@ -9,8 +9,7 @@ from dclab.lme4 import Rlme4, rsetup, rlibs
 def test_import_rpy2():
     import rpy2
     from rpy2 import situation
-    assert LooseVersion(rlibs.LIB_MIN_VERSIONS["rpy2"]) < LooseVersion(
-        rpy2.__version__)
+    assert LooseVersion(rlibs.R_MIN_VERSION) < LooseVersion(rpy2.__version__)
     assert situation.get_r_home() is not None
 
 

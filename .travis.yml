@@ -9,8 +9,9 @@ addons:
     - r-recommended
     - r-cran-lme4
   homebrew:
-    casks:
+    packages:
     - r
+    update: true
 matrix:
  include:
  # see https://www.python.org/downloads/mac-osx/ for valid versions

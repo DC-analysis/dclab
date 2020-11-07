@@ -2,10 +2,14 @@ import logging
 import os
 import subprocess as sp
 
-from .rlibs import rpy2
+from .rlibs import rpy2, import_r_submodules
 
 # Disable rpy2 logger because of unnecessary prints to stdout
 logging.getLogger("rpy2.rinterface_lib.callbacks").disabled = True
+
+
+class RNotFoundError(BaseException):
+    pass
 
 
 class AutoRConsole(object):
@@ -94,8 +98,16 @@ class AutoRConsole(object):
         return warnerrors
 
 
+def check_r():
+    """Make sure R is installed an R HOME is set"""
+    if not has_r():
+        raise RNotFoundError("Cannot find R, please set its path with the "
+                             + "`set_r_path` function.")
+
+
 def has_lme4():
     """Return True if the lme4 package is installed"""
+    check_r()
     return rpy2.robjects.packages.isinstalled("lme4")
 
 
@@ -105,6 +117,7 @@ def has_r():
 
 
 def import_lme4():
+    check_r()
     if has_lme4():
         lme4pkg = rpy2.robjects.packages.importr("lme4")
     else:
@@ -122,6 +135,7 @@ def install_lme4():
     The packages are installed to the user data directory
     given in :const:`lib_path`.
     """
+    check_r()
     if not has_lme4():
         # import R's utility package
         utils = rpy2.robjects.packages.importr('utils')
@@ -140,6 +154,7 @@ def get_r_path():
 
 
 def get_r_version():
+    check_r()
     return rpy2.situation.r_version_from_subprocess()
 
 
@@ -152,3 +167,4 @@ def set_r_path(r_path):
     else:
         res = r_home[0].strip()
     os.environ["R_HOME"] = res
+    import_r_submodules()

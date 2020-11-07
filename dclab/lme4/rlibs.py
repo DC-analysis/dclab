@@ -1,40 +1,39 @@
 from distutils.version import LooseVersion
 import importlib
 
-LIB_MIN_VERSIONS = {
-    "rpy2": "3.3.0",
-}
+R_MIN_VERSION = "3.3.0"
 
-LIB_SUBMODULES = {
-    "rpy2": ["rpy2.robjects.packages",
-             "rpy2.situation",
-             "rpy2.robjects.vectors",
-             "rpy2.rinterface_lib.callbacks"
-             ]
-}
+R_SUBMODULES = [
+    "rpy2.robjects.packages",
+    "rpy2.situation",
+    "rpy2.robjects.vectors",
+    "rpy2.rinterface_lib.callbacks",
+    ]
 
 
-class MockPackage(object):
-    def __init__(self, name):
-        self.name = name
+class VersionError(BaseException):
+    pass
 
+
+class MockRPackage(object):
     def __getattr__(self, item):
-        raise ImportError("Please install '{}>={}'!".format(
-            self.name, LIB_MIN_VERSIONS[self.name]))
+        raise ImportError("Please install 'rpy2>={}'!".format(R_MIN_VERSION))
 
 
-for _lib in LIB_MIN_VERSIONS:
-    _mods = {}
-    try:
-        _mods[_lib] = importlib.import_module(_lib)
-        _v_req = LIB_MIN_VERSIONS[_lib]
-        if LooseVersion(_mods[_lib].__version__) < LooseVersion(_v_req):
-            raise ValueError("Please install '{}>={}'!".format(_lib, _v_req))
-    except (ImportError, ValueError):
-        _mods[_lib] = MockPackage(_lib)
+def import_r_submodules():
+    importlib.import_module("rpy2.situation")
+    if rpy2.situation.get_r_home() is None:
+        return False
     else:
-        # import submodules
-        if _lib in LIB_SUBMODULES:
-            for _sm in LIB_SUBMODULES[_lib]:
-                _mods[_sm] = importlib.import_module(_sm)
-    locals().update(_mods)
+        for _sm in R_SUBMODULES:
+            importlib.import_module(_sm)
+
+
+try:
+    rpy2 = importlib.import_module("rpy2")
+    if LooseVersion(rpy2.__version__) < LooseVersion(R_MIN_VERSION):
+        raise VersionError("Please install 'rpy2>={}'!".format(R_MIN_VERSION))
+except ImportError:
+    rpy2 = MockRPackage()
+else:
+    import_r_submodules()

@@ -31,7 +31,7 @@ install:
 #  - set R_HOME="C:\\Users\\appveyor\\R"
 #  - set RPY2_CFFI_MODE="ABI"
 #  - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
-  - choco install -y r.project
+  - choco install -y r.project --version 3.6.3
   - set PATH=%PATH%;"C:\\Program Files\\R\\R-4.0.3\\bin"
   - R RHOME
   - set PATH=%PATH%;"C:\\python36-x64\\Scripts"

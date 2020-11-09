@@ -13,9 +13,9 @@ environment:
   RPY2_CFFI_MODE: ABI
   R_HOME: "C:\\Program Files\\R\\R-3.6.3"
   matrix:
-    - PYTHON: "C:\\Python36-x64"
-    - PYTHON: "C:\\Python37-x64"
-    - PYTHON: "C:\\Python38-x64"
+    - PYTHON: "C:\Miniconda36-x64"
+#    - PYTHON: "C:\\Python37-x64"
+#    - PYTHON: "C:\\Python38-x64"
 
 install:
   # actual install
@@ -37,6 +37,8 @@ install:
   - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3"
   - R RHOME
   - set PATH=%PATH%;"C:\\python36-x64\\Scripts"
+  # conda
+  - conda install -c conda-forge rpy2
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip
   # install

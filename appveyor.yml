@@ -10,11 +10,11 @@ environment:
   PYPI_PWD:
     secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
   PYPI_USR: ci_zmdd
+  R_VERSION: 3.6.3
   matrix:
     - PYTHON: "C:\\Python36-x64"
-#    - PYTHON: "C:\\Miniconda36-x64"
-#    - PYTHON: "C:\\Python37-x64"
-#    - PYTHON: "C:\\Python38-x64"
+    - PYTHON: "C:\\Python37-x64"
+    - PYTHON: "C:\\Python38-x64"
 
 install:
   # actual install
@@ -23,29 +23,12 @@ install:
   - python --version
   # Install R
   - choco install -y wget --version 1.20
-  - wget -q https://cran.r-project.org/bin/windows/base/old/3.6.3/R-3.6.3-win.exe
-  - R-3.6.3-win.exe /SILENT /DIR="C:\\Users\\appveyor\\R"
-  - set PATH=%PATH%;C:\Users\appveyor\R\bin\x64
-  - set PATH=%PATH%;C:\Users\appveyor\\R\bin\i386
+  - wget -q https://cran.r-project.org/bin/windows/base/old/%R_VERSION%/R-%R_VERSION%-win.exe
+  - R-%R_VERSION%-win.exe /SILENT /DIR="C:\\Users\\appveyor\\R"
   - set R_HOME=C:\Users\appveyor\R
   - set RPY2_CFFI_MODE="ABI"
   - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   - echo %PATH%
-#  - choco install -y r.project --version 3.6.3
-#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\x64"
-#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin"
-#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3"
-#  - R RHOME
-#  - set PATH=%PATH%;"C:\\python36-x64\\Scripts"
-  # conda
-#  - conda install -y -c conda-forge rpy2
-#  - set R_HOME="C:\\Miniconda36-x64\\Lib\\R"
-#  - set R_HOME="C:\\Program Files\\R\\R-3.6.3"
-#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin"
-#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\i386"
-#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\x64"
-  - pip install rpy2==2.9.4
-  - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip
   # install
@@ -56,6 +39,8 @@ install:
   # add tensorflow here so its numpy/h5py deps get resolved
   - appveyor-retry pip install --use-feature=2020-resolver -e .[all] tensorflow
   - python -m pip freeze
+  # verify R installation
+  - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
 
 build: off
 

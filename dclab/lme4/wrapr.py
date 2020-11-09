@@ -49,8 +49,9 @@ class Rlme4(object):
         #: list of [RTDCBase, column, repetition, chip_region]
         self.data = []
 
-        #: modeling function
+        #: model function
         self.r_func_model = "feature ~ group + (1 + group | repetition)"
+        #: null model function
         self.r_func_nullmodel = "feature ~ (1 + group | repetition)"
 
         self.set_options(model=model, feature=feature)
@@ -62,13 +63,43 @@ class Rlme4(object):
             rsetup.install_lme4()
 
     def add_dataset(self, ds, group, repetition):
+        """Add a dataset to the analysis list
+
+        Parameters
+        ----------
+        ds: RTDCBase
+            Dataset
+        group: str
+            The group the measurement belongs to ("control" or
+            "treatment")
+        repetition: int
+            Repetition of the measurement
+
+        Notes
+        -----
+        - For each repetition, there must be a "treatment" and a
+          "control" ``group``.
+        - If you would like to perform a differential feature analysis,
+          then you need to pass at least a reservoir and a channel
+          dataset (with same parameters for `group` and `repetition`).
+        """
         assert group in ["treatment", "control"]
         assert isinstance(ds, RTDCBase)
         assert isinstance(repetition, numbers.Integral)
-        self.data.append([ds, group, repetition,
-                          ds.config["setup"]["chip region"]])
+
+        region = ds.config["setup"]["chip region"]
+        # make sure there are no doublets
+        for ii, dd in enumerate(self.data):
+            if dd[1] == group and dd[2] == repetition and dd[3] == region:
+                raise ValueError("A dataset with group '{}', ".format(group)
+                                 + "repetition '{}', and ".format(repetition)
+                                 + "'{}' region has already ".format(region)
+                                 + "been added (index {})!".format(ii))
+
+        self.data.append([ds, group, repetition, region])
 
     def check_data(self):
+        """Perform sanity checks on ``self.data``"""
         # Check that we have enough data
         if len(self.data) < 3:
             msg = "Linear Mixed Models require repeated measurements. " + \
@@ -76,7 +107,24 @@ class Rlme4(object):
             raise ValueError(msg)
 
     def fit(self, model=None, feature=None):
-        """Perform G(LMM) fit
+        """Perform G(LMM) model fit
+
+        The response variable is modeled using two linear mixed effect
+        models:
+
+        - model :const:`Rlme4.r_func_model` (random intercept +
+          random slope model)
+        - the null model :const:`Rlme4.r_func_nullmodel` (without
+          the fixed effect introduced by the "treatment" group).
+
+        Both models are compared in R using "anova" (from the
+        R-package "stats") which performs a likelihood ratio
+        test to obtain the p-Value for the significance of the
+        fixed effect (treatment).
+
+        If the input datasets contain data from the "reservoir"
+        region, then the analysis is performed for the differential
+        feature.
 
         Parameters
         ----------
@@ -85,15 +133,15 @@ class Rlme4(object):
 
             - "lmer": linear mixed model using lme4's ``lmer``
             - "glmer+loglink": generalized linear mixed model using
-              lme4's ``glmer`` with an additional a log-link function
-              via the ``family=Gamma(link='log'))`` keyword.
+              lme4's ``glmer`` with an additional log-link function
+              via ``family=Gamma(link='log'))``.
         feature: str (optional)
-            Dclab feature for which to compute the model
+            dclab feature for which to compute the model
 
         Returns
         -------
         results: dict
-            The results of the entire fitting process:
+            The results of the fitting process:
 
             - "is differential": Boolean indicating whether or not
               the analysis was performed for the differential (bootstrapped
@@ -111,7 +159,6 @@ class Rlme4(object):
             - "r_err": errors and warnings from R
             - "r_out": standard output from R
         """
-
         self.set_options(model=model, feature=feature)
         self.check_data()
 
@@ -199,7 +246,7 @@ class Rlme4(object):
         return ret_dict
 
     def get_differential_dataset(self):
-        """
+        """Return the differential dataset for channel/reservoir data
 
         The most famous use case is differential deformation. The idea
         is that you cannot tell what the difference in deformation
@@ -228,6 +275,22 @@ class Rlme4(object):
         return features, groups, repetitions
 
     def get_feature_data(self, group, repetition, region="channel"):
+        """Return array containing feature data
+
+        Parameters
+        ----------
+        group: str
+            Measurement group ("control" or "treatment")
+        repetition: int
+            Measurement repetition
+        region: str
+            Either "channel" or "reservoir"
+
+        Returns
+        -------
+        fdata: 1d ndarray
+            Feature data (Nans and Infs removed)
+        """
         assert group in ["control", "treatment"]
         assert isinstance(repetition, numbers.Integral)
         assert region in ["reservoir", "channel"]
@@ -260,6 +323,7 @@ class Rlme4(object):
             return False
 
     def set_options(self, model=None, feature=None):
+        """Set analysis options"""
         if model is not None:
             assert model in ["lmer", "glmer+loglink"]
             self.model = model
@@ -269,7 +333,7 @@ class Rlme4(object):
 
 
 def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
-    """Compute a bootstrapped median distribution.
+    """Compute the bootstrapped distributions for two arrays.
 
     Parameters
     ----------
@@ -284,7 +348,19 @@ def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
     Returns
     -------
     median_dist_a, median_dist_b: 1d arrays of length bs_iter
-        Boostrap distribution of medians of `arr`
+        Boostrap distribution of medians for ``a`` and ``b``.
+
+    See Also
+    --------
+    https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
+
+    Notes
+    -----
+    From a programmatical point of view, it would have been better
+    to implement this method for just one input array (because of
+    redundant code). However, due to historical reasons (testing
+    and comparability to Shape-Out 1), bootstrapping is done
+    interleaved for the two arrays.
     """
     # Seed random numbers that are reproducible on different machines
     prng_object = np.random.RandomState(rs)
@@ -298,8 +374,7 @@ def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
     lena = len(a)
     lenb = len(b)
     for q in range(bs_iter):
-        # Channel data:
-        # Compute random indices and draw from y
+        # Compute random indices and draw from a, b
         draw_a_idx = prng_object.randint(0, lena, lena)
         median_a[q] = np.median(a[draw_a_idx])
         draw_b_idx = prng_object.randint(0, lenb, lenb)

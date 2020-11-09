@@ -22,13 +22,13 @@ install:
   # Check that we have the expected version and architecture for Python
   - python --version
   # Install R
-#  - choco install -y wget --version 1.20
-#  - wget -q https://cran.r-project.org/bin/windows/base/old/3.6.3/R-3.6.3-win.exe
-#  - R-3.6.3-win.exe /SILENT /DIR="C:\\Users\\appveyor\\R"
-#  - set PATH=%PATH%;"C:\\Users\\appveyor\\R\\bin\\x64"
-#  - set PATH=%PATH%;"C:\\Users\\appveyor\\R\\bin\\i386"
-#  - set R_HOME="C:\\Users\\appveyor\\R"
-#  - set RPY2_CFFI_MODE="ABI"
+  - choco install -y wget --version 1.20
+  - wget -q https://cran.r-project.org/bin/windows/base/old/3.6.3/R-3.6.3-win.exe
+  - R-3.6.3-win.exe /SILENT /DIR="C:\\Users\\appveyor\\R"
+  - set PATH=%PATH%;"C:\\Users\\appveyor\\R\\bin\\x64"
+  - set PATH=%PATH%;"C:\\Users\\appveyor\\R\\bin\\i386"
+  - set R_HOME="C:\\Users\\appveyor\\R"
+  - set RPY2_CFFI_MODE="ABI"
 #  - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   - choco install -y r.project --version 3.6.3
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\x64"
@@ -39,10 +39,10 @@ install:
   # conda
 #  - conda install -y -c conda-forge rpy2
 #  - set R_HOME="C:\\Miniconda36-x64\\Lib\\R"
-  - set R_HOME="C:\\Program Files\\R\\R-3.6.3"
-  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin"
-  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\i386"
-  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\x64"
+#  - set R_HOME="C:\\Program Files\\R\\R-3.6.3"
+#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin"
+#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\i386"
+#  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\x64"
   - pip install rpy2==2.9.4
   - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
   # upgrade pip

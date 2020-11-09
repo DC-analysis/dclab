@@ -41,6 +41,7 @@ install:
   - conda install -y -c conda-forge rpy2
   # list packages
   - conda list
+  - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip
   # install

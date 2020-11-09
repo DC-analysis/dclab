@@ -14,6 +14,7 @@ addons:
     - r-recommended
     - r-cran-lme4
   homebrew:
+    packages:
     - r
     update: True
 matrix:

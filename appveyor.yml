@@ -35,8 +35,12 @@ install:
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3"
 #  - R RHOME
 #  - set PATH=%PATH%;"C:\\python36-x64\\Scripts"
+  - set PATH=%PATH%;"C:\\Miniconda36-x64\\Library\\mingw-w64\\lib"
+  - set PATH=%PATH%;"C:\\Miniconda36-x64\\Library\\mingw-w64\\bin"
   # conda
   - conda install -y -c conda-forge rpy2
+  # list packages
+  - conda list
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip
   # install

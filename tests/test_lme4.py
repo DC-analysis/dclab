@@ -57,7 +57,7 @@ def test_basic_setup():
 def test_import_rpy2():
     import rpy2
     from rpy2 import situation
-    assert LooseVersion(rlibs.R_MIN_VERSION) < LooseVersion(rpy2.__version__)
+    assert LooseVersion(rpy2.__version__) >= LooseVersion(rlibs.R_MIN_VERSION)
     assert situation.get_r_home() is not None
 
 

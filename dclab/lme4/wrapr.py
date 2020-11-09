@@ -213,7 +213,10 @@ class Rlme4(object):
 
             # Anova analysis
             anova = r["anova"](r_model, r_nullmodel, test="Chisq")
-            pvalue = anova.rx["Pr(>Chisq)"][0][1]
+            try:
+                pvalue = anova.rx["Pr(>Chisq)"][0][1]
+            except ValueError:  # rpy2 2.9.4
+                pvalue = anova[7][1]
             model_summary = r["summary"](r_model)
             coeff_summary = r["coef"](r_model)
 

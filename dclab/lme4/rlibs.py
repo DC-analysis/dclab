@@ -7,8 +7,11 @@ R_SUBMODULES = [
     "rpy2.robjects.packages",
     "rpy2.situation",
     "rpy2.robjects.vectors",
-    "rpy2.rinterface_lib.callbacks",
     ]
+
+R_SUBMODULES_3 = [
+    "rpy2.rinterface_lib.callbacks",
+]
 
 
 class VersionError(BaseException):
@@ -25,8 +28,12 @@ def import_r_submodules():
     if rpy2.situation.get_r_home() is None:
         return False
     else:
-        for _sm in R_SUBMODULES:
-            importlib.import_module(_sm)
+        if rpy2_is_version_3:
+            mods = R_SUBMODULES + R_SUBMODULES_3
+        else:
+            mods = R_SUBMODULES
+        for sm in mods:
+            importlib.import_module(sm)
 
 
 try:
@@ -35,5 +42,7 @@ try:
         raise VersionError("Please install 'rpy2>={}'!".format(R_MIN_VERSION))
 except ImportError:
     rpy2 = MockRPackage()
+    rpy2_is_version_3 = False
 else:
+    rpy2_is_version_3 = LooseVersion(rpy2.__version__) >= LooseVersion("3.0")
     import_r_submodules()

@@ -11,6 +11,7 @@ environment:
     secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
   PYPI_USR: ci_zmdd
   matrix:
+#    - PYTHON: "C:\\Python36-x64"
     - PYTHON: "C:\\Miniconda36-x64"
 #    - PYTHON: "C:\\Python37-x64"
 #    - PYTHON: "C:\\Python38-x64"
@@ -39,8 +40,7 @@ install:
   - set PATH=%PATH%;"C:\\Miniconda36-x64\\Library\\mingw-w64\\bin"
   # conda
   - conda install -y -c conda-forge rpy2
-  # list packages
-  - conda list
+  - set R_HOME="C:\\Miniconda36-x64\\Lib\\R"
   - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip

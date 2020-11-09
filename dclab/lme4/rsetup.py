@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess as sp
 
-from .rlibs import rpy2, import_r_submodules
+from .rlibs import rpy2, rpy2_is_version_3, import_r_submodules
 
 # Disable rpy2 logger because of unnecessary prints to stdout
 logging.getLogger("rpy2.rinterface_lib.callbacks").disabled = True
@@ -15,6 +15,7 @@ class RNotFoundError(BaseException):
 class AutoRConsole(object):
     """Helper class for catching R console output"""
     lock = False
+    perform_lock = rpy2_is_version_3
 
     def __init__(self):
         """
@@ -24,24 +25,25 @@ class AutoRConsole(object):
         recorded in `self.stream`.
         """
         self.stream = [["init", "Starting RConsole class\n"]]
-        if AutoRConsole.lock:
-            raise ValueError("Only one RConsole instance allowed!")
-        AutoRConsole.lock = True
-        self.original_funcs = {
-            "consoleread": rpy2.rinterface_lib.callbacks.consoleread,
-            "consolewrite_print":
-                rpy2.rinterface_lib.callbacks.consolewrite_print,
-            "consolewrite_warnerror":
-                rpy2.rinterface_lib.callbacks.consolewrite_warnerror,
-        }
-        rpy2.rinterface_lib.callbacks.consoleread = self.consoleread
-        rpy2.rinterface_lib.callbacks.consolewrite_print = \
-            self.consolewrite_print
-        rpy2.rinterface_lib.callbacks.showmessage = \
-            self.consolewrite_print
+        if AutoRConsole.perform_lock:
+            if AutoRConsole.lock:
+                raise ValueError("Only one RConsole instance allowed!")
+            AutoRConsole.lock = True
+            self.original_funcs = {
+                "consoleread": rpy2.rinterface_lib.callbacks.consoleread,
+                "consolewrite_print":
+                    rpy2.rinterface_lib.callbacks.consolewrite_print,
+                "consolewrite_warnerror":
+                    rpy2.rinterface_lib.callbacks.consolewrite_warnerror,
+            }
+            rpy2.rinterface_lib.callbacks.consoleread = self.consoleread
+            rpy2.rinterface_lib.callbacks.consolewrite_print = \
+                self.consolewrite_print
+            rpy2.rinterface_lib.callbacks.showmessage = \
+                self.consolewrite_print
 
-        rpy2.rinterface_lib.callbacks.consolewrite_warnerror = \
-            self.consolewrite_warnerror
+            rpy2.rinterface_lib.callbacks.consolewrite_warnerror = \
+                self.consolewrite_warnerror
         # Set locale (to get always English messages)
         rpy2.robjects.r('Sys.setlocale("LC_MESSAGES", "C")')
         rpy2.robjects.r('Sys.setlocale("LC_CTYPE", "C")')
@@ -50,13 +52,14 @@ class AutoRConsole(object):
         return self
 
     def __exit__(self, *args):
-        AutoRConsole.lock = False
-        rpy2.rinterface_lib.callbacks.consoleread = \
-            self.original_funcs["consoleread"]
-        rpy2.rinterface_lib.callbacks.consolewrite_print = \
-            self.original_funcs["consolewrite_print"]
-        rpy2.rinterface_lib.callbacks.consolewrite_warnerror = \
-            self.original_funcs["consolewrite_warnerror"]
+        if AutoRConsole.perform_lock:
+            AutoRConsole.lock = False
+            rpy2.rinterface_lib.callbacks.consoleread = \
+                self.original_funcs["consoleread"]
+            rpy2.rinterface_lib.callbacks.consolewrite_print = \
+                self.original_funcs["consolewrite_print"]
+            rpy2.rinterface_lib.callbacks.consolewrite_warnerror = \
+                self.original_funcs["consolewrite_warnerror"]
 
     def close(self):
         """Remove the rpy2 monkeypatches"""

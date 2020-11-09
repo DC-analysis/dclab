@@ -25,6 +25,8 @@ install:
   - wget -q https://cran.r-project.org/bin/windows/base/old/3.6.3/R-3.6.3-win.exe
   - R-3.6.3-win.exe /silent
   - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\i386"
+  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\x64"
+  - set R_HOME="C:\\Program Files\\R\\R-3.6.3"
   - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip

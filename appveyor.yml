@@ -21,8 +21,9 @@ install:
   # Check that we have the expected version and architecture for Python
   - python --version
   # Install R
-  - appveyor-retry choco install r
-  - appveyor-retry choco install rtools
+  - wget -q https://cran.r-project.org/bin/windows/base/old/3.6.3/R-3.6.3-win.exe
+  - R-3.6.3-win.exe /silent
+  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\i386"
   - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip

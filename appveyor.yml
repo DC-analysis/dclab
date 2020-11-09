@@ -13,7 +13,7 @@ environment:
   RPY2_CFFI_MODE: ABI
   R_HOME: "C:\\Program Files\\R\\R-3.6.3"
   matrix:
-    - PYTHON: "C:\Miniconda36-x64"
+    - PYTHON: "C:\\Miniconda36-x64"
 #    - PYTHON: "C:\\Python37-x64"
 #    - PYTHON: "C:\\Python38-x64"
 

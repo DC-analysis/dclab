@@ -10,6 +10,7 @@ environment:
   PYPI_PWD:
     secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
   PYPI_USR: ci_zmdd
+  RPY2_CFFI_MODE: ABI
   matrix:
     - PYTHON: "C:\\Python36-x64"
     - PYTHON: "C:\\Python37-x64"

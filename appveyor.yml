@@ -11,8 +11,8 @@ environment:
     secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
   PYPI_USR: ci_zmdd
   matrix:
-#    - PYTHON: "C:\\Python36-x64"
-    - PYTHON: "C:\\Miniconda36-x64"
+    - PYTHON: "C:\\Python36-x64"
+#    - PYTHON: "C:\\Miniconda36-x64"
 #    - PYTHON: "C:\\Python37-x64"
 #    - PYTHON: "C:\\Python38-x64"
 
@@ -30,17 +30,16 @@ install:
 #  - set R_HOME="C:\\Users\\appveyor\\R"
 #  - set RPY2_CFFI_MODE="ABI"
 #  - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
-#  - choco install -y r.project --version 3.6.3
+  - choco install -y r.project --version 3.6.3
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\x64"
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin"
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3"
 #  - R RHOME
 #  - set PATH=%PATH%;"C:\\python36-x64\\Scripts"
-  - set PATH=%PATH%;"C:\\Miniconda36-x64\\Library\\mingw-w64\\lib"
-  - set PATH=%PATH%;"C:\\Miniconda36-x64\\Library\\mingw-w64\\bin"
   # conda
-  - conda install -y -c conda-forge rpy2
-  - set R_HOME="C:\\Miniconda36-x64\\Lib\\R"
+#  - conda install -y -c conda-forge rpy2
+#  - set R_HOME="C:\\Miniconda36-x64\\Lib\\R"
+  - pip install rpy2==2.9.4
   - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip

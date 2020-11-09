@@ -39,6 +39,7 @@ install:
   # conda
 #  - conda install -y -c conda-forge rpy2
 #  - set R_HOME="C:\\Miniconda36-x64\\Lib\\R"
+  - set R_HOME="C:\\Program Files\\R\\R-3.6.3"
   - pip install rpy2==2.9.4
   - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
   # upgrade pip

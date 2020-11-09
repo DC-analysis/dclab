@@ -32,6 +32,7 @@ install:
 #  - set RPY2_CFFI_MODE="ABI"
 #  - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   - choco install -y r.project
+  - set PATH=%PATH%;"C:\\Program Files\\R\\R-4.0.3\\bin"
   - R RHOME
   - set PATH=%PATH%;"C:\\python36-x64\\Scripts"
   # upgrade pip

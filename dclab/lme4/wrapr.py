@@ -30,17 +30,6 @@ class Rlme4(object):
               via the ``family=Gamma(link='log'))`` keyword.
         feature: str
             Dclab feature for which to compute the model
-
-        References
-        ----------
-        .. [1] R package "lme4":
-               Bates D, Maechler M, Bolker B and Walker S (2015). lme4:
-               Linear mixed- effects models using Eigen and S4. R package
-               version 1.1-9, https://CRAN.R-project.org/package=lme4.
-
-        .. [2] R function "anova" from package "stats":
-               Chambers, J. M. and Hastie, T. J. (1992) Statistical Models
-               in S, Wadsworth & Brooks/Cole
         """
         #: modeling method to use (e.g. "lmer")
         self.model = None
@@ -61,6 +50,7 @@ class Rlme4(object):
             warnings.warn("Installing lme4, this may take a while!",
                           Lme4InstallWarning)
             rsetup.install_lme4()
+        rsetup.import_lme4()
 
     def add_dataset(self, ds, group, repetition):
         """Add a dataset to the analysis list
@@ -107,7 +97,7 @@ class Rlme4(object):
             raise ValueError(msg)
 
     def fit(self, model=None, feature=None):
-        """Perform G(LMM) model fit
+        """Perform (generalized) linear mixed-effects model fit
 
         The response variable is modeled using two linear mixed effect
         models:
@@ -118,9 +108,9 @@ class Rlme4(object):
           the fixed effect introduced by the "treatment" group).
 
         Both models are compared in R using "anova" (from the
-        R-package "stats") which performs a likelihood ratio
-        test to obtain the p-Value for the significance of the
-        fixed effect (treatment).
+        R-package "stats" :cite:`Everitt1992`) which performs a
+        likelihood ratio test to obtain the p-Value for the
+        significance of the fixed effect (treatment).
 
         If the input datasets contain data from the "reservoir"
         region, then the analysis is performed for the differential
@@ -134,24 +124,27 @@ class Rlme4(object):
             - "lmer": linear mixed model using lme4's ``lmer``
             - "glmer+loglink": generalized linear mixed model using
               lme4's ``glmer`` with an additional log-link function
-              via ``family=Gamma(link='log'))``.
+              via ``family=Gamma(link='log'))`` :cite:`lme4`
         feature: str (optional)
             dclab feature for which to compute the model
 
         Returns
         -------
         results: dict
-            The results of the fitting process:
+            Dictionary with the results of the fitting process:
 
             - "is differential": Boolean indicating whether or not
               the analysis was performed for the differential (bootstrapped
               and subtracted reservoir from channel data) feature
             - "feature": name of the feature used for the analysis
-              `self.feature``
-            - "fixed effects intercept": Mean of ``feature`` for all controls
+              ``self.feature``
+            - "fixed effects intercept": Mean of ``self.feature`` for all
+              controls; In the case of the "glmer+loglink" model, the intercept
+              is already backtransformed from log space.
             - "fixed effects treatment": The fixed effect size between the mean
-              of the controls and the mean of the treatments
-              relative to "fixed effects intercept"
+              of the controls and the mean of the treatments relative to
+              "fixed effects intercept"; In the case of the "glmer+loglink"
+              model, the fixed effect is already backtransformed from log space.
             - "model": model name used for the analysis ``self.model``
             - "anova p-value": Anova likelyhood ratio test (significance)
             - "model summary": Summary of the model (exposed from R)
@@ -355,7 +348,7 @@ def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
 
     See Also
     --------
-    https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
+    `<https://en.wikipedia.org/wiki/Bootstrapping_(statistics)>`_
 
     Notes
     -----

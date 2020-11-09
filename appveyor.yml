@@ -22,6 +22,7 @@ install:
   - python --version
   # Install R
   - appveyor-retry choco install r
+  - appveyor-retry choco install rtools
   - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip

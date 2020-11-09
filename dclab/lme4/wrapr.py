@@ -144,7 +144,8 @@ class Rlme4(object):
             - "fixed effects treatment": The fixed effect size between the mean
               of the controls and the mean of the treatments relative to
               "fixed effects intercept"; In the case of the "glmer+loglink"
-              model, the fixed effect is already backtransformed from log space.
+              model, the fixed effect is already backtransformed from log
+              space.
             - "model": model name used for the analysis ``self.model``
             - "anova p-value": Anova likelyhood ratio test (significance)
             - "model summary": Summary of the model (exposed from R)

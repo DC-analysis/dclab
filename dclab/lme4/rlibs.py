@@ -7,7 +7,7 @@ R_SUBMODULES = [
     "rpy2.robjects.packages",
     "rpy2.situation",
     "rpy2.robjects.vectors",
-    ]
+]
 
 R_SUBMODULES_3 = [
     "rpy2.rinterface_lib.callbacks",

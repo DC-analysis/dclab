@@ -11,6 +11,7 @@ environment:
     secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
   PYPI_USR: ci_zmdd
   RPY2_CFFI_MODE: ABI
+  R_HOME: C:\Program Files\R\R-4.0.3\
   matrix:
     - PYTHON: "C:\\Python36-x64"
     - PYTHON: "C:\\Python37-x64"

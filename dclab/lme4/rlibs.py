@@ -1,7 +1,7 @@
 from distutils.version import LooseVersion
 import importlib
 
-R_MIN_VERSION = "3.3.0"
+R_MIN_VERSION = "2.9.4"
 
 R_SUBMODULES = [
     "rpy2.robjects.packages",

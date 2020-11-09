@@ -44,7 +44,7 @@ install:
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin"
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\i386"
 #  - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\x64"
-  - pip install rpy2==3.3.3
+  - pip install rpy2==2.9.4
   - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip

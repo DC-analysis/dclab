@@ -26,6 +26,7 @@ install:
   - wget -q https://cran.r-project.org/bin/windows/base/old/%R_VERSION%/R-%R_VERSION%-win.exe
   - R-%R_VERSION%-win.exe /SILENT /DIR="C:\\Users\\appveyor\\R"
   - set R_HOME=C:\Users\appveyor\R
+  - set PATH=%PATH%;C:\Users\appveyor\R\bin\x64
   - set RPY2_CFFI_MODE="ABI"
   - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   - echo %PATH%

@@ -41,6 +41,7 @@ install:
   - appveyor-retry python -m pip install --upgrade pip
   # install
   - appveyor-retry pip install wheel
+  - appveyor-retry pip install rpy2==3.3.3
   # latest version of fcswrite
   - appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
   # the rest

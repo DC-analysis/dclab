@@ -6,17 +6,16 @@ model system for SSCs) using a likelihood ratio test based on LMM.
 
 This example illustrates a basic LMM analysis. The data is loaded
 from DCOR (:cite:`FigshareLMM`, `DCOR:figshare-11662773-v2
-<https://dcor.mpl.mpg.de/dataset/figshare-11662773-v2>`_.
-
-In this example, we treat SSC as our "treatment" and MG-63 as our "control".
+<https://dcor.mpl.mpg.de/dataset/figshare-11662773-v2>`_).
+We treat SSC as our "treatment" and MG-63 as our "control" group.
 These are just names that remind us that we are comparing one type of sample
 against another type.
 
 We are interested in the p-value, which is 0.01256 for
-Deformation. We repeat the analysis with Area (0.0002183) and Young's
+deformation. We repeat the analysis with area (0.0002183) and Young's
 modulus (0.0002771). The p-values indicate that MG-63 (mean elastic
-modulus 1.26 kPa) cells are softer than SSCs (mean elastic modulus 1.54 kPa)
-:cite:`Herbig2018`.
+modulus 1.26 kPa) cells are softer than SSCs (mean elastic modulus 1.54 kPa).
+The figure reproduces the last subplot of figure 6b im :cite:`Herbig2018`.
 """
 import dclab
 from dclab import lme4
@@ -91,6 +90,7 @@ numstars = sum([res["anova p-value"] < .05,
                 res["anova p-value"] < .01,
                 res["anova p-value"] < .001,
                 res["anova p-value"] < .0001])
+# significance bars
 h = .1
 y1 = 6
 y2 = 4.2

@@ -119,7 +119,48 @@ def test_lmer_basic():
         rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
 
     res = rlme4.fit()
+    assert np.allclose(res["anova p-value"], 0.8434625179432129)
     assert np.allclose(res["fixed effects intercept"], 136.6365047987075)
+    assert np.allclose(res["fixed effects treatment"], 1.4085644911191584)
+    assert not res["is differential"]
+    assert res["feature"] == "deform"
+    assert res["model"] == "lmer"
+
+
+def test_lmer_basic_filtering():
+    groups = ['control', 'treatment', 'control', 'treatment']
+    repetitions = [1, 1, 2, 2]
+    features = [
+        [100, 99, 80, 120, 140, 150, 100, 100, 110, 111, 140, 145],
+        [115, 110, 90, 110, 145, 155, 110, 120, 115, 120, 120, 150,
+         100, 90, 100],
+        [150, 150, 130, 170, 190, 250, 150, 150, 160,
+         161, 180, 195, 130, 120, 125, 130, 125],
+        [155, 155, 135, 175, 195, 255, 155, 155, 165, 165,
+         185, 200, 135, 125, 130, 135, 140, 150, 135, 140]
+    ]
+    datasets = []
+    for ff in features:
+        ds = dclab.new_dataset({"deform": ff})
+        ds.config["setup"]["chip region"] = "channel"
+        # apply some filters
+        datasets.append(ds)
+
+    rlme4 = Rlme4(model="lmer", feature="deform")
+    for ii in range(len(datasets)):
+        rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
+
+    res = rlme4.fit()
+    assert np.allclose(res["anova p-value"], 0.8434625179432129)
+
+    # filters should have an effect
+
+    for ds in datasets:
+        ds.filter.manual[:4] = False
+        ds.apply_filter()
+
+    res2 = rlme4.fit()
+    assert not np.allclose(res["anova p-value"], res2["anova p-value"])
 
 
 def test_lmer_basic_larger():

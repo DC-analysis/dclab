@@ -133,9 +133,7 @@ class Rlme4(object):
         results: dict
             Dictionary with the results of the fitting process:
 
-            - "is differential": Boolean indicating whether or not
-              the analysis was performed for the differential (bootstrapped
-              and subtracted reservoir from channel data) feature
+            - "anova p-value": Anova likelyhood ratio test (significance)
             - "feature": name of the feature used for the analysis
               ``self.feature``
             - "fixed effects intercept": Mean of ``self.feature`` for all
@@ -146,12 +144,14 @@ class Rlme4(object):
               "fixed effects intercept"; In the case of the "glmer+loglink"
               model, the fixed effect is already backtransformed from log
               space.
+            - "is differential": Boolean indicating whether or not
+              the analysis was performed for the differential (bootstrapped
+              and subtracted reservoir from channel data) feature
             - "model": model name used for the analysis ``self.model``
-            - "anova p-value": Anova likelyhood ratio test (significance)
-            - "model summary": Summary of the model (exposed from R)
-            - "model coefficients": Model coefficient table (exposed from R)
-            - "r_err": errors and warnings from R
-            - "r_out": standard output from R
+            - "summary model": Summary of the model (exposed from R)
+            - "summary coefficients": Model coefficient table (exposed from R)
+            - "r err": errors and warnings from R
+            - "r out": standard output from R
         """
         self.set_options(model=model, feature=feature)
         self.check_data()
@@ -222,7 +222,7 @@ class Rlme4(object):
             # r("coefs$p.normal=2*(1-pnorm(abs(coefs$t.value)))")
 
             fe_icept = coeffs[0][0]
-            fe_treat = coeffs[1][0]
+            fe_treat = coeffs[0][1]
             if self.model == "glmer+loglink":
                 # transform back from log
                 fe_icept = np.exp(fe_icept)
@@ -230,15 +230,15 @@ class Rlme4(object):
 
         ret_dict = {
             "anova p-value": pvalue,
-            "differential feature": self.is_differential(),
             "feature": self.feature,
             "fixed effects intercept": fe_icept,
             "fixed effects treatment": fe_treat,  # aka "fixed effect"
+            "is differential": self.is_differential(),
             "model": self.model,
-            "summary_model": model_summary,
-            "summary_coefficients": coeff_summary,
-            "r_err": ac.get_warnerrors(),
-            "r_out": ac.get_prints(),
+            "summary model": model_summary,
+            "summary coefficients": coeff_summary,
+            "r err": ac.get_warnerrors(),
+            "r out": ac.get_prints(),
         }
         return ret_dict
 
@@ -299,7 +299,7 @@ class Rlme4(object):
             raise ValueError("Dataset for group '{}', repetition".format(group)
                              + " '{}', and region".format(repetition)
                              + " '{}' not found!".format(region))
-        fdata = ds[self.feature]
+        fdata = ds[self.feature][ds.filter.all]
         fdata_valid = fdata[~np.logical_or(np.isnan(fdata), np.isinf(fdata))]
         return fdata_valid
 

@@ -12,6 +12,8 @@ Examples
 
 .. fancy_include:: emodulus_dcor.py
 
+.. fancy_include:: lme4_lmer.py
+
 .. fancy_include:: ml_tensorflow.py
 
 .. fancy_include:: ml_builtin.py

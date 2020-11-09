@@ -23,7 +23,7 @@ if __name__ == "__main__":
         if not op.exists(fname):
             exec_str = open(f).read()
             if exec_str.count("plt.show()"):
-                exec(exec_str)
+                exec(exec_str.replace("plt.show()", ""))
                 plt.savefig(fname, dpi=DPI)
                 print("Image created: '{}'".format(fname))
             else:

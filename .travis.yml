@@ -13,30 +13,24 @@ addons:
     - r-base
     - r-recommended
     - r-cran-lme4
+  homebrew:
+    - r
+    update: True
 matrix:
  include:
  # see https://www.python.org/downloads/mac-osx/ for valid versions
  - os: osx
-   language: r
-   r_packages:
-     - lme4
-   cache: packages
+   language: generic
    env:
     - MAC_PYTHON_VERSION=3.6.8
     - MAC_PYTHON_OSX_VERSION=10.6
  - os: osx
-   language: r
-   r_packages:
-     - lme4
-   cache: packages
+   language: generic
    env:
     - MAC_PYTHON_VERSION=3.7.9
     - MAC_PYTHON_OSX_VERSION=10.9
  - os: osx
-   language: r
-   r_packages:
-     - lme4
-   cache: packages
+   language: generic
    env:
     - MAC_PYTHON_VERSION=3.8.6
     - MAC_PYTHON_OSX_VERSION=10.9

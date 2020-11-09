@@ -38,7 +38,7 @@ install:
   - R RHOME
   - set PATH=%PATH%;"C:\\python36-x64\\Scripts"
   # conda
-  - conda install -c conda-forge rpy2
+  - conda install -y -c conda-forge rpy2
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip
   # install

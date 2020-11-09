@@ -27,6 +27,7 @@ install:
   - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\i386"
   - set PATH=%PATH%;"C:\\Program Files\\R\\R-3.6.3\\bin\\x64"
   - set R_HOME="C:\\Program Files\\R\\R-3.6.3"
+  - set RPY2_CFFI_MODE="ABI"
   - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip

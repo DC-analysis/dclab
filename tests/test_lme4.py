@@ -3,7 +3,55 @@ from distutils.version import LooseVersion
 import numpy as np
 
 import dclab
-from dclab.lme4 import Rlme4, rsetup, rlibs
+from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup, rlibs
+
+
+def standard_datasets(set_region=True):
+    features = [
+        [100, 99, 80, 120, 140, 150, 100, 100, 110, 111,
+         140, 145],  # Larger values (Control Channel1)
+        [20, 10, 5, 16, 14, 22, 27, 26, 5, 10, 11, 8, 15, 17,
+         20, 9],  # Smaller values (Control Reservoir1)
+        [115, 110, 90, 110, 145, 155, 110, 120, 115, 120, 120,
+         150, 100, 90, 100],  # Larger values (Control Channel2)
+        [30, 30, 15, 26, 24, 32, 37, 36, 15, 20, 21, 18, 25,
+         27, 30, 19],  # Smaller values (Control Reservoir2)
+        [150, 150, 130, 170, 190, 250, 150, 150, 160, 161, 180, 195, 130,
+         120, 125, 130, 125],  # Larger values (Treatment Channel1)
+        [2, 1, 5, 6, 4, 2, 7, 6, 5, 10, 1, 8, 5, 7, 2, 9, 11,
+         8, 13],  # Smaller values (Treatment Reservoir1)
+        [155, 155, 135, 175, 195, 255, 155, 155, 165, 165, 185, 200, 135, 125,
+         130, 135, 140, 150, 135, 140],  # Larger values (Treatment Channel2)
+        [25, 15, 19, 26, 44, 42, 35, 20, 15, 10, 11, 28, 35, 10, 25,
+         13]]  # Smaller values (Treatment Reservoir2)
+    regions = ["channel", "reservoir"] * 4
+    datasets = []
+    for ii, ff in enumerate(features):
+        ds = dclab.new_dataset({"deform": ff})
+        if set_region:
+            region = regions[ii]
+        else:
+            region = "channel"
+        ds.config["setup"]["chip region"] = region
+        assert ds.config["setup"]["chip region"] == region
+        datasets.append(ds)
+    return datasets
+
+
+def test_differential():
+    # Larger values (Channel1)
+    a = np.array([100, 99, 80, 120, 140, 150, 100, 100, 110, 111, 140, 145])
+    # Smaller values (Reservoir1)
+    b = np.array([20, 10, 5, 16, 14, 22, 27, 26, 5, 10, 11, 8, 15, 17, 20, 9])
+    result = bootstrapped_median_distributions(a, b, bs_iter=1000)
+    assert np.allclose([np.median(result[0])], [110.5])
+    assert np.allclose([np.median(result[1])], [14.5])
+
+
+def test_basic_setup():
+    assert rsetup.has_r()
+    rsetup.install_lme4()
+    assert rsetup.has_lme4()
 
 
 def test_import_rpy2():
@@ -13,16 +61,44 @@ def test_import_rpy2():
     assert situation.get_r_home() is not None
 
 
-def test_basic_setup():
-    assert rsetup.has_r()
-    rsetup.install_lme4()
-    assert rsetup.has_lme4()
+def test_glmer_basic_larger():
+    """Original values in a generalized linear mixed model"""
+    groups = ['treatment', 'control', 'treatment', 'control',
+              'treatment', 'control', 'treatment', 'control']
+    repetitions = [1, 1, 2, 2, 3, 3, 4, 4]
+    datasets = standard_datasets(set_region=False)
+
+    rlme4 = Rlme4(model="glmer+loglink", feature="deform")
+    for ii in range(len(datasets)):
+        rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
+
+    res = rlme4.fit()
+    assert np.allclose(res["fixed effects intercept"], 15.083832084641697)
+    assert np.allclose(res["anova p-value"], 0.00365675950677214)
+    assert not rlme4.is_differential()
 
 
-def test_lmm_basic():
+def test_glmer_differential():
+    """Differential Deformation in a generalized linear mixed model"""
+    groups = ['control', 'control', 'control', 'control', 'treatment',
+              'treatment', 'treatment', 'treatment']
+    repetitions = [1, 1, 2, 2, 1, 1, 2, 2]
+    datasets = standard_datasets()
+    rlme4 = Rlme4(model="glmer+loglink", feature="deform")
+    for ii in range(len(datasets)):
+        rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
+
+    res = rlme4.fit()
+    assert np.allclose(res["fixed effects intercept"], 93.55789706339498)
+    assert rlme4.is_differential()
+    assert rlme4.model == "glmer+loglink"
+    assert np.allclose(res["anova p-value"], 0.000556063024310929)
+
+
+def test_lmer_basic():
     groups = ['control', 'treatment', 'control', 'treatment']
     repetitions = [1, 1, 2, 2]
-    xs = [
+    features = [
         [100, 99, 80, 120, 140, 150, 100, 100, 110, 111, 140, 145],
         [115, 110, 90, 110, 145, 155, 110, 120, 115, 120, 120, 150,
          100, 90, 100],
@@ -32,8 +108,8 @@ def test_lmm_basic():
          185, 200, 135, 125, 130, 135, 140, 150, 135, 140]
     ]
     datasets = []
-    for x in xs:
-        ds = dclab.new_dataset({"deform": x})
+    for ff in features:
+        ds = dclab.new_dataset({"deform": ff})
         ds.config["setup"]["chip region"] = "channel"
         assert ds.config["setup"]["chip region"] == "channel"
         datasets.append(ds)
@@ -46,47 +122,32 @@ def test_lmm_basic():
     assert np.allclose(res["fixed effects intercept"], 136.6365047987075)
 
 
-def test_lmm_basic_larger():
+def test_lmer_basic_larger():
+    """Original values in a linear mixed model
+
+    'Reservoir' measurements are now Controls and 'Channel'
+    measurements are Treatments. This does not use differential
+    deformation.
+    """
     groups = ['treatment', 'control', 'treatment', 'control',
               'treatment', 'control', 'treatment', 'control']
     repetitions = [1, 1, 2, 2, 3, 3, 4, 4]
-    xs = [
-        [100, 99, 80, 120, 140, 150, 100, 100, 110, 111,
-         140, 145],
-        [20, 10, 5, 16, 14, 22, 27, 26, 5, 10, 11, 8, 15, 17,
-         20, 9],
-        [115, 110, 90, 110, 145, 155, 110, 120, 115, 120, 120,
-         150, 100, 90, 100],
-        [30, 30, 15, 26, 24, 32, 37, 36, 15, 20, 21, 18, 25,
-         27, 30, 19],
-        [150, 150, 130, 170, 190, 250, 150, 150, 160, 161, 180, 195, 130,
-         120, 125, 130, 125],
-        [2, 1, 5, 6, 4, 2, 7, 6, 5, 10, 1, 8, 5, 7, 2, 9, 11,
-         8, 13],
-        [155, 155, 135, 175, 195, 255, 155, 155, 165, 165, 185, 200, 135, 125,
-         130, 135, 140, 150, 135, 140],  # Larger values (Treatment Channel2)
-        [25, 15, 19, 26, 44, 42, 35, 20, 15, 10, 11, 28, 35, 10, 25,
-         13]]
-
-    datasets = []
-    for x in xs:
-        ds = dclab.new_dataset({"deform": x})
-        ds.config["setup"]["chip region"] = "channel"
-        assert ds.config["setup"]["chip region"] == "channel"
-        datasets.append(ds)
+    datasets = standard_datasets(set_region=False)
 
     rlme4 = Rlme4(model="lmer", feature="deform")
     for ii in range(len(datasets)):
         rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
 
     res = rlme4.fit()
+    assert np.allclose(res["fixed effects intercept"], 17.171341507432501)
     assert np.allclose(res["anova p-value"], 0.000331343267412872)
+    assert not rlme4.is_differential()
 
 
-def test_lmm_basic_nan():
+def test_lmer_basic_nan():
     groups = ['control', 'treatment', 'control', 'treatment']
     repetitions = [1, 1, 2, 2]
-    xs = [
+    features = [
         [100, np.inf, 80, np.nan, 140, 150, 100, 100, 110, 111, 140, 145],
         [115, 110, 90, 110, 145, 155, 110, 120, 115, 120, 120, 150,
          100, 90, 100],
@@ -96,8 +157,8 @@ def test_lmm_basic_nan():
          185, 200, 135, 125, 130, 135, 140, 150, 135, 140]
     ]
     datasets = []
-    for x in xs:
-        ds = dclab.new_dataset({"deform": x})
+    for ff in features:
+        ds = dclab.new_dataset({"deform": ff})
         ds.config["setup"]["chip region"] = "channel"
         assert ds.config["setup"]["chip region"] == "channel"
         datasets.append(ds)
@@ -108,6 +169,23 @@ def test_lmm_basic_nan():
 
     res = rlme4.fit()
     assert np.allclose(res["fixed effects intercept"], 137.37179302516199186)
+
+
+def test_lmer_differential():
+    """Differential Deformation in a linear mixed model"""
+    groups = ['control', 'control', 'control', 'control', 'treatment',
+              'treatment', 'treatment', 'treatment']
+    repetitions = [1, 1, 2, 2, 1, 1, 2, 2]
+    datasets = standard_datasets()
+    rlme4 = Rlme4(model="lmer", feature="deform")
+    for ii in range(len(datasets)):
+        rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
+
+    res = rlme4.fit()
+    assert np.allclose(res["fixed effects intercept"], 93.693750004463098)
+    assert rlme4.is_differential()
+    assert rlme4.model == "lmer"
+    assert np.allclose(res["anova p-value"], 0.000602622503360039)
 
 
 if __name__ == "__main__":

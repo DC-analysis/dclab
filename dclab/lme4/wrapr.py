@@ -15,7 +15,7 @@ class Lme4InstallWarning(UserWarning):
     pass
 
 
-class Rlme4():
+class Rlme4(object):
     def __init__(self, model="lmer", feature="deform"):
         """Perform an R-lme4 analysis with RT-DC data
 
@@ -42,7 +42,7 @@ class Rlme4():
                Chambers, J. M. and Hastie, T. J. (1992) Statistical Models
                in S, Wadsworth & Brooks/Cole
         """
-        #: modeling method to use (lmer or glmer)
+        #: modeling method to use (e.g. "lmer")
         self.model = None
         #: dclab feature for which to perform the analysis
         self.feature = None
@@ -75,17 +75,6 @@ class Rlme4():
                   "Please select more treatment repetitions."
             raise ValueError(msg)
 
-    def set_options(self, model=None, feature=None):
-        if model is not None:
-            assert model in ["lmer", "glmer+loglink"]
-            self.model = model
-        if feature is not None:
-            assert dfn.scalar_feature_exists(feature)
-            self.feature = feature
-
-    def bootstrap(self, features, groups, repetitions, regions):
-        raise NotImplementedError("Boostrapping not yet implemented!")
-
     def fit(self, model=None, feature=None):
         """Perform G(LMM) fit
 
@@ -106,13 +95,19 @@ class Rlme4():
         results: dict
             The results of the entire fitting process:
 
-            - "fxed effects intercept": Mean of ``feature`` for all controls
+            - "is differential": Boolean indicating whether or not
+              the analysis was performed for the differential (bootstrapped
+              and subtracted reservoir from channel data) feature
+            - "feature": name of the feature used for the analysis
+              `self.feature``
+            - "fixed effects intercept": Mean of ``feature`` for all controls
             - "fixed effects treatment": The fixed effect size between the mean
               of the controls and the mean of the treatments
               relative to "fixed effects intercept"
+            - "model": model name used for the analysis ``self.model``
             - "anova p-value": Anova likelyhood ratio test (significance)
-            - "model summary": Summary of the model
-            - "model coefficients": Model coefficient table
+            - "model summary": Summary of the model (exposed from R)
+            - "model coefficients": Model coefficient table (exposed from R)
             - "r_err": errors and warnings from R
             - "r_out": standard output from R
         """
@@ -120,24 +115,19 @@ class Rlme4():
         self.set_options(model=model, feature=feature)
         self.check_data()
 
-        # Assemble data
-        features = []
-        groups = []
-        regions = []
-        repetitions = []
-        for dd in self.data:
-            fdata = dd[0][self.feature]
-            # remove nan/inf
-            fdata = fdata[~np.logical_or(np.isnan(fdata), np.isinf(fdata))]
-            features.append(fdata)
-            groups.append(dd[1])
-            repetitions.append(dd[2])
-            regions.append(dd[3])
-
-        # perform bootstrapping with reservoir data if applicable
-        if "reservoir" in regions:
-            features, groups, repetitions = self.bootstrap(
-                features, groups, repetitions, regions)
+        # Assemble dataset
+        if self.is_differential():
+            # bootstrap and compute differential features using reservoir
+            features, groups, repetitions = self.get_differential_dataset()
+        else:
+            # regular feature analysis
+            features = []
+            groups = []
+            repetitions = []
+            for dd in self.data:
+                features.append(self.get_feature_data(dd[1], dd[2]))
+                groups.append(dd[1])
+                repetitions.append(dd[2])
 
         # Fire up R
         with rsetup.AutoRConsole() as ac:
@@ -195,12 +185,123 @@ class Rlme4():
                 fe_treat = np.exp(fe_icept + fe_treat) - np.exp(fe_icept)
 
         ret_dict = {
+            "anova p-value": pvalue,
+            "differential feature": self.is_differential(),
+            "feature": self.feature,
             "fixed effects intercept": fe_icept,
             "fixed effects treatment": fe_treat,  # aka "fixed effect"
-            "anova p-value": pvalue,
+            "model": self.model,
             "summary_model": model_summary,
             "summary_coefficients": coeff_summary,
             "r_err": ac.get_warnerrors(),
             "r_out": ac.get_prints(),
         }
         return ret_dict
+
+    def get_differential_dataset(self):
+        """
+
+        The most famous use case is differential deformation. The idea
+        is that you cannot tell what the difference in deformation
+        from channel to reservoir is, because you never measure the
+        same object in the reservoir and the channel. You usually just
+        have two distributions. Comparing distributions is possible
+        via bootstrapping. And then, instead of running the lme4
+        analysis with the channel deformation data, it is run with
+        the differential deformation (subtraction of the bootstrapped
+        deformation distributions for channel and reservoir).
+        """
+        features = []
+        groups = []
+        repetitions = []
+        # compute differential features
+        for grp in sorted(set([dd[1] for dd in self.data])):
+            for rep in sorted(set([dd[2] for dd in self.data])):
+                feat_cha = self.get_feature_data(grp, rep, region="channel")
+                feat_res = self.get_feature_data(grp, rep, region="reservoir")
+                bs_cha, bs_res = bootstrapped_median_distributions(feat_cha,
+                                                                   feat_res)
+                # differential feature
+                features.append(bs_cha - bs_res)
+                groups.append(grp)
+                repetitions.append(rep)
+        return features, groups, repetitions
+
+    def get_feature_data(self, group, repetition, region="channel"):
+        assert group in ["control", "treatment"]
+        assert isinstance(repetition, numbers.Integral)
+        assert region in ["reservoir", "channel"]
+        for dd in self.data:
+            if dd[1] == group and dd[2] == repetition and dd[3] == region:
+                ds = dd[0]
+                break
+        else:
+            raise ValueError("Dataset for group '{}', repetition".format(group)
+                             + " '{}', and region".format(repetition)
+                             + " '{}' not found!".format(region))
+        fdata = ds[self.feature]
+        fdata_valid = fdata[~np.logical_or(np.isnan(fdata), np.isinf(fdata))]
+        return fdata_valid
+
+    def is_differential(self):
+        """Return True if the differential feature is computed for analysis
+
+        This effectively just checks the regions of the datasets
+        and returns True if any one of the regions is "reservoir".
+
+        See Also
+        --------
+        get_differential_features: for an explanation
+        """
+        for dd in self.data:
+            if dd[3] == "reservoir":
+                return True
+        else:
+            return False
+
+    def set_options(self, model=None, feature=None):
+        if model is not None:
+            assert model in ["lmer", "glmer+loglink"]
+            self.model = model
+        if feature is not None:
+            assert dfn.scalar_feature_exists(feature)
+            self.feature = feature
+
+
+def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
+    """Compute a bootstrapped median distribution.
+
+    Parameters
+    ----------
+    a, b: 1d ndarray of length N
+        Input data
+    bs_iter: int
+        Number of bootstrapping iterations to perform
+        (outtput size).
+    rs: int
+        Random state seed for random number generator
+
+    Returns
+    -------
+    median_dist_a, median_dist_b: 1d arrays of length bs_iter
+        Boostrap distribution of medians of `arr`
+    """
+    # Seed random numbers that are reproducible on different machines
+    prng_object = np.random.RandomState(rs)
+    # Initialize median arrays
+    median_a = np.zeros(bs_iter)
+    median_b = np.zeros(bs_iter)
+    # If this loop is still too slow, we could get rid of it and
+    # do everything with arrays. Depends on whether we will
+    # eventually run into memory problems with array sizes
+    # of y*bs_iter and yR*bs_iter.
+    lena = len(a)
+    lenb = len(b)
+    for q in range(bs_iter):
+        # Channel data:
+        # Compute random indices and draw from y
+        draw_a_idx = prng_object.randint(0, lena, lena)
+        median_a[q] = np.median(a[draw_a_idx])
+        draw_b_idx = prng_object.randint(0, lenb, lenb)
+        median_b[q] = np.median(b[draw_b_idx])
+    return median_a, median_b

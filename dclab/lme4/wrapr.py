@@ -92,8 +92,8 @@ class Rlme4(object):
         """Perform sanity checks on ``self.data``"""
         # Check that we have enough data
         if len(self.data) < 3:
-            msg = "Linear Mixed Models require repeated measurements. " + \
-                  "Please select more treatment repetitions."
+            msg = "Linear mixed effects models require repeated " \
+                  + "measurements. Please add more repetitions."
             raise ValueError(msg)
 
     def fit(self, model=None, feature=None):
@@ -150,7 +150,7 @@ class Rlme4(object):
               thus the shape is (2, number of repetitions) and
               ``np.mean(results["fixed effects repetitions"], axis=1)`` is
               equivalent to the tuple (``results["fixed effects intercept"]``,
-              ``results["fixed effects treatment"])`` for the "lmer" model.
+              ``results["fixed effects treatment"]``) for the "lmer" model.
               This does not hold for the "glmer+loglink" model, because
               of the non-linear inverse transform back from log space.
             - "is differential": Boolean indicating whether or not

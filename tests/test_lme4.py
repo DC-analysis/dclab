@@ -1,6 +1,7 @@
 from distutils.version import LooseVersion
 
 import numpy as np
+import pytest
 
 import dclab
 from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup, rlibs
@@ -59,6 +60,42 @@ def test_import_rpy2():
     from rpy2 import situation
     assert LooseVersion(rpy2.__version__) >= LooseVersion(rlibs.R_MIN_VERSION)
     assert situation.get_r_home() is not None
+
+
+def test_fail_add_same_dataset():
+    datasets = standard_datasets(set_region=False)
+
+    rlme4 = Rlme4(model="lmer", feature="deform")
+    rlme4.add_dataset(datasets[0], "control", 1)
+
+    with pytest.raises(ValueError, match="has already"):
+        rlme4.add_dataset(datasets[1], "control", 1)
+
+
+def test_fail_too_few_dataset():
+    datasets = standard_datasets(set_region=False)
+
+    rlme4 = Rlme4(model="lmer", feature="deform")
+    rlme4.add_dataset(datasets[0], "control", 1)
+    rlme4.add_dataset(datasets[1], "treatment", 1)
+
+    with pytest.raises(ValueError, match="Linear mixed effects models"
+                                         + " require repeated measurements"):
+        rlme4.fit()
+
+
+def test_fail_get_non_existent_data():
+    datasets = standard_datasets(set_region=False)
+
+    rlme4 = Rlme4(model="lmer", feature="deform")
+    rlme4.add_dataset(datasets[0], "control", 1)
+    rlme4.add_dataset(datasets[1], "treatment", 1)
+    rlme4.add_dataset(datasets[2], "control", 2)
+    rlme4.add_dataset(datasets[3], "treatment", 2)
+    rlme4.add_dataset(datasets[3], "treatment", 3)
+
+    with pytest.raises(ValueError, match="Dataset for group 'control'"):
+        rlme4.get_feature_data(group="control", repetition=3)
 
 
 def test_glmer_basic_larger():

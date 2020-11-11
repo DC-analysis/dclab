@@ -1,4 +1,4 @@
-0.31
+0.31.0
  - feat: implement (generalized) linear mixed-effects models
    via a wrapper around R/lme4 using rpy2 (install with extra
    "lme4")

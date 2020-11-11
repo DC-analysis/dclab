@@ -9,7 +9,7 @@ This is somewhat counter-intuitive, because one could assume
 that the large number of events in a single dataset should be
 enough to compare two datasets. However, Focus changes, chip-to-chip
 variations, etc. may generate systematic offsets which make a
-direct comparison (e.g. t-Test) impossible. Linear mixed eddect
+direct comparison (e.g. t-Test) impossible. Linear mixed effect
 models (LMM) allow to assign a significance to a treatment measurement
 compared to a control measuerement (fixed effect) while considering the
 systematic bias in-between the measurement repetitions (random effect).
@@ -28,8 +28,8 @@ dclab exposes two models from lme4:
   way of determining whether or not a treatment has an effect.
 - **generalized linear mixed-effects models with a log-link function** ("glmer+loglink"):
   This model makes use of lme4's generalized linear effects model (GLMM)
-  ``glmer`` function with ``family=Gamma(link='log')``. This is used for
-  data that is log-normally distributed. Log-normal behaviour
+  ``glmer`` function with a log-link function (``family=Gamma(link='log')``).
+  This is used for data that is log-normally distributed. Log-normal behaviour
   is quite common, especially in biology. When a physical parameter has a
   lower limit, and the measured values are close to that limit, the
   resulting distribution will be skewed, resembling a log-normal distribution.

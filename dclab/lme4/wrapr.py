@@ -148,9 +148,9 @@ class Rlme4(object):
               treatment) for each repetition. The first axis defines
               intercept/treatment; the second axis enumerates the repetitions;
               thus the shape is (2, number of repetitions) and
-              ``np.mean(results["fixed effects repetitions"], axis=1) ==
-              (results["fixed effects intercept"],
-              results["fixed effects treatment"])`` for the "lmer" model.
+              ``np.mean(results["fixed effects repetitions"], axis=1)`` is
+              equivalent to the tuple (``results["fixed effects intercept"]``,
+              ``results["fixed effects treatment"])`` for the "lmer" model.
               This does not hold for the "glmer+loglink" model, because
               of the non-linear inverse transform back from log space.
             - "is differential": Boolean indicating whether or not

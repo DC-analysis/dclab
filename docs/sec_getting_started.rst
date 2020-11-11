@@ -17,9 +17,9 @@ context of RT-DC data analysis. You might prefer to only install
 a subset of these:
 
 - ``pip install dclab``: for the basic dclab functionalities
-- ``pip install dclab[dcor]``: to interface with `DCOR <https://dcor.mpl.mpg.de/>`_
-- ``pip install dclab[lme4]``: for linear mixed effects model analysis using `R/lme4 <https://cran.r-project.org/web/packages/lme4/index.html>`_
-- ``pip install dclab[ml]``: for machine-learning applications
+- ``pip install dclab[dcor]``: to :ref:`access online data <sec_av_dcor>` from `DCOR <https://dcor.mpl.mpg.de/>`_
+- ``pip install dclab[lme4]``: for :ref:`linear mixed effects model analysis <sec_av_lme4>` using `R/lme4 <https://cran.r-project.org/web/packages/lme4/index.html>`_
+- ``pip install dclab[ml]``: for :ref:`machine-learning applications <sec_av_ml>`
 - ``pip install dclab[tdms]``: for the (outdated) .tdms file format
 - ``pip install dclab[export]``: for .avi and .fcs export
 

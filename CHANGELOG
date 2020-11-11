@@ -1,6 +1,7 @@
 0.31
- - feat: implement (general) linear mixed-effects models
-   via the "lme4" submodule (extras "lme4")
+ - feat: implement (generalized) linear mixed-effects models
+   via a wrapper around R/lme4 using rpy2 (install with extra
+   "lme4")
 0.30.1
  - fix: `new_dataset` attempts to load DCOR dataset when
    given a non-existent path as a string (#81)

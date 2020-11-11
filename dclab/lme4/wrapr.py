@@ -144,14 +144,24 @@ class Rlme4(object):
               "fixed effects intercept"; In the case of the "glmer+loglink"
               model, the fixed effect is already backtransformed from log
               space.
+            - "fixed effects repetitions": The effects (intercept and
+              treatment) for each repetition. The first axis defines
+              intercept/treatment; the second axis enumerates the repetitions;
+              thus the shape is (2, number of repetitions) and
+              ``np.mean(results["fixed effects repetitions"], axis=1) ==
+              (results["fixed effects intercept"],
+              results["fixed effects treatment"])`` for the "lmer" model.
+              This does not hold for the "glmer+loglink" model, because
+              of the non-linear inverse transform back from log space.
             - "is differential": Boolean indicating whether or not
               the analysis was performed for the differential (bootstrapped
               and subtracted reservoir from channel data) feature
             - "model": model name used for the analysis ``self.model``
-            - "summary model": Summary of the model (exposed from R)
-            - "summary coefficients": Model coefficient table (exposed from R)
-            - "r err": errors and warnings from R
-            - "r out": standard output from R
+            - "r anova": Anova model (exposed from R)
+            - "r model summary": Summary of the model (exposed from R)
+            - "r model coefficients": Model coefficient table (exposed from R)
+            - "r stderr": errors and warnings from R
+            - "r stdout": standard output from R
         """
         self.set_options(model=model, feature=feature)
         self.check_data()
@@ -205,40 +215,48 @@ class Rlme4(object):
                 r_model = r["lmer"](self.r_func_model, r_data)
                 r_nullmodel = r["lmer"](self.r_func_nullmodel, r_data)
 
-            # Anova analysis
-            anova = r["anova"](r_model, r_nullmodel, test="Chisq")
+            # Anova analysis (increase verbosity by making models global)
+            # Using anova is a very conservative way of determining
+            # p values.
+            rpy2.robjects.globalenv["Model"] = r_model
+            rpy2.robjects.globalenv["NullModel"] = r_nullmodel
+            r_anova = r("Anova = anova(Model, NullModel)")
             try:
-                pvalue = anova.rx["Pr(>Chisq)"][0][1]
+                pvalue = r_anova.rx2["Pr(>Chisq)"][1]
             except ValueError:  # rpy2 2.9.4
-                pvalue = anova[7][1]
-            model_summary = r["summary"](r_model)
-            coeff_summary = r["coef"](r_model)
+                pvalue = r_anova[7][1]
+            r_model_summary = r["summary"](r_model)
+            r_model_coefficients = r["coef"](r_model)
+            fe_reps = np.array(r_model_coefficients)[0]
 
-            coeffs = r["data.frame"](r["coef"](model_summary))
-
-            # TODO: find out what p.normal are for:
-            # rpy2.robjects.globalenv["model"] = r_model
-            # r("coefs <- data.frame(coef(summary(model)))")
-            # r("coefs$p.normal=2*(1-pnorm(abs(coefs$t.value)))")
-
-            fe_icept = coeffs[0][0]
-            fe_treat = coeffs[0][1]
+            r_effects = r["data.frame"](r["coef"](r_model_summary))
+            try:
+                fe_icept = r_effects.rx2["Estimate"][0]
+                fe_treat = r_effects.rx2["Estimate"][1]
+            except ValueError:  # rpy2 2.9.4?
+                fe_icept = r_effects[0][0]
+                fe_treat = r_effects[0][1]
             if self.model == "glmer+loglink":
                 # transform back from log
-                fe_icept = np.exp(fe_icept)
                 fe_treat = np.exp(fe_icept + fe_treat) - np.exp(fe_icept)
+                fe_icept = np.exp(fe_icept)
+                fe_reps[:, 1] = np.exp(fe_reps[:, 0] + fe_reps[:, 1]) \
+                    - np.exp(fe_reps[:, 0])
+                fe_reps[:, 0] = np.exp(fe_reps[:, 0])
 
         ret_dict = {
             "anova p-value": pvalue,
             "feature": self.feature,
             "fixed effects intercept": fe_icept,
             "fixed effects treatment": fe_treat,  # aka "fixed effect"
+            "fixed effects repetitions": fe_reps,
             "is differential": self.is_differential(),
             "model": self.model,
-            "summary model": model_summary,
-            "summary coefficients": coeff_summary,
-            "r err": ac.get_warnerrors(),
-            "r out": ac.get_prints(),
+            "r anova": r_anova,
+            "r model summary": r_model_summary,
+            "r model coefficients": r_model_coefficients,
+            "r stderr": ac.get_warnerrors(),
+            "r stdout": ac.get_prints(),
         }
         return ret_dict
 
@@ -260,7 +278,9 @@ class Rlme4(object):
         repetitions = []
         # compute differential features
         for grp in sorted(set([dd[1] for dd in self.data])):
-            for rep in sorted(set([dd[2] for dd in self.data])):
+            # repetitions per groups
+            grp_rep = sorted(set([dd[2] for dd in self.data if dd[1] == grp]))
+            for rep in grp_rep:
                 feat_cha = self.get_feature_data(grp, rep, region="channel")
                 feat_res = self.get_feature_data(grp, rep, region="reservoir")
                 bs_cha, bs_res = bootstrapped_median_distributions(feat_cha,

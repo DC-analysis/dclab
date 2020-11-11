@@ -1,10 +1,10 @@
-"""lme4: Basic linear mixed-effects model analysis
+"""lme4: Linear mixed-effects models
 
 We would like to quantify the difference between human skeletal stem cells
 (SSC) and the human osteosarcoma cell line MG-63 (which is often used as a
 model system for SSCs) using a likelihood ratio test based on LMM.
 
-This example illustrates a basic LMM analysis. The data is loaded
+This example illustrates a basic LMM analysis. The data are loaded
 from DCOR (:cite:`FigshareLMM`, `DCOR:figshare-11662773-v2
 <https://dcor.mpl.mpg.de/dataset/figshare-11662773-v2>`_).
 We treat SSC as our "treatment" and MG-63 as our "control" group.

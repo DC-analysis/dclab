@@ -73,19 +73,37 @@ An LMM analysis is straight-forward in dclab:
     print("p-value:", result["anova p-value"])
     print("fixed effect:", result["fixed effects treatment"])
 
-The ``fit()`` function returns the most important results and also
-exposes some of the underlying R objects. For more information, please
-see :func:`dclab.lme4.wrapr.Rlme4.fit`.
+The ``fit()`` function returns the most important results and also exposes
+some of the underlying R objects (see :func:`dclab.lme4.wrapr.Rlme4.fit`).
+An LMM example is also given in the :ref:`example section <example_lme4_lmer>`.
+
+.. note::
+    If a treatment and a control share the same repetition number, it
+    is implied that they are paired. For those measurements, lme4 will
+    perform a paired test. In your experimental design you determine
+    which measurements are paired, before doing any experiments. Pairing
+    can be done e.g. for measurements done on the same day or on the
+    same chip. In cases where you perform the control measurements on
+    one day and the treatment measurements on another day, you could
+    still pair them. Just keep in mind that this could introduce
+    systematic errors, if the measurement conditions (temperature,
+    illumination, etc.) were not identical. Under no circumstances,
+    choose a pairing that yields the lowest p-value (p-hacking!).
+
+    Alternatively, you can also run an an unpaired test by just giving
+    each measurement a different repetition number. For example for
+    3x control and 3x treatment measurements, you could enumerate the
+    repetition number from 1 to 6.
 
 
 Differential feature analysis with reservoir data
 =================================================
 The (G)LMM analysis is only applicable if the feature chosen is not pronounced
-visibly in the reservoir measurements.
-For instance, if a treatment results in non-spherical cells in the reservoir,
-then the deformation recorded for the treatment might be biased towards
-higher values. In this case, the information of the reservoir measurement
-has to be included by means of differential deformation :cite:`Herbig2018`.
+visibly in the reservoir measurements. For instance, if a treatment results
+in a significant change in deformation already in the reservoir, then the
+p-value determined for the channel data might be underestimated (too many
+stars). In this case, the information of the reservoir measurement
+must be included by means of differential deformation :cite:`Herbig2018`.
 The idea of differential deformation is to subtract the reservoir from the
 channel deformation. Since it is not possible to assign the events in the
 reservoir to the events in the channel (two different measurements),
@@ -95,7 +113,8 @@ another. Then, for the actual LMM analysis, only the differential
 deformation is used.
 
 To perform a differential feature analysis, simply add the reservoir
-measurements to the :class:`dclab.lme4.wrapr.Rlme4` class.
+measurements to the :class:`dclab.lme4.wrapr.Rlme4` class (they are
+recognized as reservoir measurements via their meta data).
 
 .. code:: python
 
@@ -117,6 +136,8 @@ measurements to the :class:`dclab.lme4.wrapr.Rlme4` class.
     assert results["is differential"]  # adding "reservoir" data forces differential analysis
 
 Keep in mind that the analysis is now performed using the differential
-features and not the actual features (``results["is differential"]``).
+features and not the actual features (``result["is differential"]``).
 For more information, please see :func:`dclab.lme4.wrapr.Rlme4.get_differential_dataset`
 and :func:`dclab.lme4.wrapr.bootstrapped_median_distributions`.
+A full example, including GLMM and differential deformation, is given in the
+:ref:`example section <example_lme4_glmer_diff>`.

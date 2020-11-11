@@ -121,7 +121,12 @@ def test_lmer_basic():
     res = rlme4.fit()
     assert np.allclose(res["anova p-value"], 0.8434625179432129)
     assert np.allclose(res["fixed effects intercept"], 136.6365047987075)
-    assert np.allclose(res["fixed effects treatment"], 1.4085644911191584)
+    assert np.allclose(res["fixed effects treatment"], 1.4085644911191584,
+                       atol=0, rtol=1e-3)
+    assert np.allclose(res["fixed effects intercept"],
+                       np.mean(res["fixed effects repetitions"], axis=1)[0])
+    assert np.allclose(res["fixed effects treatment"],
+                       np.mean(res["fixed effects repetitions"], axis=1)[1])
     assert not res["is differential"]
     assert res["feature"] == "deform"
     assert res["model"] == "lmer"
@@ -227,6 +232,10 @@ def test_lmer_differential():
     assert rlme4.is_differential()
     assert rlme4.model == "lmer"
     assert np.allclose(res["anova p-value"], 0.000602622503360039)
+    assert np.allclose(res["fixed effects intercept"],
+                       np.mean(res["fixed effects repetitions"], axis=1)[0])
+    assert np.allclose(res["fixed effects treatment"],
+                       np.mean(res["fixed effects repetitions"], axis=1)[1])
 
 
 if __name__ == "__main__":

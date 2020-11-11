@@ -14,6 +14,8 @@ Examples
 
 .. fancy_include:: lme4_lmer.py
 
+.. fancy_include:: lme4_glmer_diff.py
+
 .. fancy_include:: ml_tensorflow.py
 
 .. fancy_include:: ml_builtin.py

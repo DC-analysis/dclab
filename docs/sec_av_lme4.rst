@@ -88,9 +88,9 @@ An LMM example is also given in the :ref:`example section <example_lme4_lmer>`.
     still pair them. Just keep in mind that this could introduce
     systematic errors, if the measurement conditions (temperature,
     illumination, etc.) were not identical. Under no circumstances,
-    choose a pairing that yields the lowest p-value (p-hacking!).
+    choose a pairing that yields the lowest p-value (p-hacking).
 
-    Alternatively, you can also run an an unpaired test by just giving
+    Alternatively, you can also run an unpaired test by just giving
     each measurement a different repetition number. For example for
     3x control and 3x treatment measurements, you could enumerate the
     repetition number from 1 to 6.

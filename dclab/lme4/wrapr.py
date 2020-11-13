@@ -157,6 +157,8 @@ class Rlme4(object):
               the analysis was performed for the differential (bootstrapped
               and subtracted reservoir from channel data) feature
             - "model": model name used for the analysis ``self.model``
+            - "model converged": boolean indicating whether the model
+              converged
             - "r anova": Anova model (exposed from R)
             - "r model summary": Summary of the model (exposed from R)
             - "r model coefficients": Model coefficient table (exposed from R)
@@ -227,13 +229,19 @@ class Rlme4(object):
                 pvalue = r_anova[7][1]
             r_model_summary = r["summary"](r_model)
             r_model_coefficients = r["coef"](r_model)
-            fe_reps = np.array(r_model_coefficients)[0]
+            try:
+                fe_reps = np.array(r_model_coefficients.rx2["repetition"])
+            except ValueError:  # rpy2 2.9.4
+                fe_reps = np.concatenate((
+                    np.array(r_model_coefficients[0][0]).reshape(1, -1),
+                    np.array(r_model_coefficients[0][1]).reshape(1, -1)),
+                    axis=0)
 
             r_effects = r["data.frame"](r["coef"](r_model_summary))
             try:
                 fe_icept = r_effects.rx2["Estimate"][0]
                 fe_treat = r_effects.rx2["Estimate"][1]
-            except ValueError:  # rpy2 2.9.4?
+            except ValueError:  # rpy2 2.9.4
                 fe_icept = r_effects[0][0]
                 fe_treat = r_effects[0][1]
             if self.model == "glmer+loglink":
@@ -244,6 +252,20 @@ class Rlme4(object):
                     - np.exp(fe_reps[:, 0])
                 fe_reps[:, 0] = np.exp(fe_reps[:, 0])
 
+            # convergence
+            try:
+                lme4l = r_model_summary.rx2["optinfo"].rx2["conv"].rx2["lme4"]
+            except ValueError:  # rpy2 2.9.4
+                lme4l = r_model_summary[17][3][1]
+
+            if lme4l and "code" in lme4l.names:
+                try:
+                    conv_code = lme4l.rx2["code"]
+                except ValueError:  # rpy2 2.9.4
+                    conv_code = lme4l[0]
+            else:
+                conv_code = 0
+
         ret_dict = {
             "anova p-value": pvalue,
             "feature": self.feature,
@@ -252,6 +274,7 @@ class Rlme4(object):
             "fixed effects repetitions": fe_reps,
             "is differential": self.is_differential(),
             "model": self.model,
+            "model converged": conv_code == 0,
             "r anova": r_anova,
             "r model summary": r_model_summary,
             "r model coefficients": r_model_coefficients,

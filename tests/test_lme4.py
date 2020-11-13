@@ -113,6 +113,7 @@ def test_glmer_basic_larger():
     assert np.allclose(res["fixed effects intercept"], 15.083832084641697)
     assert np.allclose(res["anova p-value"], 0.00365675950677214)
     assert not rlme4.is_differential()
+    assert res["model converged"]
 
 
 def test_glmer_differential():
@@ -130,6 +131,7 @@ def test_glmer_differential():
     assert rlme4.is_differential()
     assert rlme4.model == "glmer+loglink"
     assert np.allclose(res["anova p-value"], 0.000556063024310929)
+    assert res["model converged"]
 
 
 def test_lmer_basic():
@@ -167,6 +169,7 @@ def test_lmer_basic():
     assert not res["is differential"]
     assert res["feature"] == "deform"
     assert res["model"] == "lmer"
+    assert res["model converged"]
 
 
 def test_lmer_basic_filtering():
@@ -225,6 +228,7 @@ def test_lmer_basic_larger():
     assert np.allclose(res["fixed effects intercept"], 17.171341507432501)
     assert np.allclose(res["anova p-value"], 0.000331343267412872)
     assert not rlme4.is_differential()
+    assert res["model converged"]
 
 
 def test_lmer_basic_nan():
@@ -252,6 +256,7 @@ def test_lmer_basic_nan():
 
     res = rlme4.fit()
     assert np.allclose(res["fixed effects intercept"], 137.37179302516199186)
+    assert res["model converged"]
 
 
 def test_lmer_differential():
@@ -273,6 +278,7 @@ def test_lmer_differential():
                        np.mean(res["fixed effects repetitions"], axis=1)[0])
     assert np.allclose(res["fixed effects treatment"],
                        np.mean(res["fixed effects repetitions"], axis=1)[1])
+    assert res["model converged"]
 
 
 if __name__ == "__main__":

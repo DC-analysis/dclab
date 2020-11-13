@@ -72,6 +72,7 @@ An LMM analysis is straight-forward in dclab:
     result = rlme4.fit()
     print("p-value:", result["anova p-value"])
     print("fixed effect:", result["fixed effects treatment"])
+    print("model converged:", result["model converged"])
 
 The ``fit()`` function returns the most important results and also exposes
 some of the underlying R objects (see :func:`dclab.lme4.wrapr.Rlme4.fit`).

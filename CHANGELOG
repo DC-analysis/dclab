@@ -1,3 +1,6 @@
+0.31.1
+ - enh: add boolean "model converged" key to return dictionary of
+   `Rlme4.fit` (#85)
 0.31.0
  - feat: implement (generalized) linear mixed-effects models
    via a wrapper around R/lme4 using rpy2 (install with extra

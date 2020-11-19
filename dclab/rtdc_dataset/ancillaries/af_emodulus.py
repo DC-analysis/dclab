@@ -9,6 +9,7 @@ def compute_emodulus_legacy(mm):
     model = calccfg["emodulus model"]
     assert model == "elastic sphere"
     medium = calccfg["emodulus medium"]
+    assert isinstance(medium, str), "'emodulus medium' must be a string!"
     viscosity = calccfg["emodulus viscosity"]
     temperature = mm.config["calculation"]["emodulus temperature"]
     if medium.lower() == "other":
@@ -35,6 +36,7 @@ def compute_emodulus_known_media(mm):
     model = calccfg["emodulus model"]
     assert model == "elastic sphere"
     medium = calccfg["emodulus medium"]
+    assert isinstance(medium, str), "'emodulus medium' must be a string!"
     if medium not in features.emodulus.viscosity.KNOWN_MEDIA:
         raise ValueError("Only the following media are supported: {}".format(
                          features.emodulus.viscosity.KNOWN_MEDIA))
@@ -56,6 +58,7 @@ def compute_emodulus_temp_feat(mm):
     model = calccfg["emodulus model"]
     assert model == "elastic sphere"
     medium = calccfg["emodulus medium"]
+    assert isinstance(medium, str), "'emodulus medium' must be a string!"
     assert medium != "other"
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(

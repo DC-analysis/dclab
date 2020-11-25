@@ -282,10 +282,14 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
         for ck in meta[sec]:
             idk = "{}:{}".format(sec, ck)
             conffunc = dfn.config_funcs[sec][ck]
-            if conffunc is str:
-                h5obj.attrs[idk] = np.string_(meta[sec][ck].encode("utf-8"))
-            else:
-                h5obj.attrs[idk] = conffunc(meta[sec][ck])
+            value = meta[sec][ck]
+            if isinstance(value, bytes):
+                # We never store byte attribute values.
+                # In this case, `conffunc` should be `str` or `lcstr` or
+                # somesuch. But we don't test that, because no other datatype
+                # competes with str for bytes.
+                value = value.decode("utf-8")
+            h5obj.attrs[idk] = conffunc(value)
 
     # Write data
     # create events group

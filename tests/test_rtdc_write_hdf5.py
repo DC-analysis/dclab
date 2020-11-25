@@ -183,10 +183,10 @@ def test_meta():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
     meta = {"setup": {
         "channel width": 20,
-        "chip region": "Channel",
+        "chip region": "Channel",  # should be made lower-case
     },
         "online_contour": {
-        "no absdiff": "True",
+        "no absdiff": "True",  # should be converted to bool
         "image blur": 3.0,
     },
     }
@@ -202,6 +202,27 @@ def test_meta():
         assert isinstance(anint, numbers.Integral)
         assert rtdc_data.attrs["setup:channel width"] == 20
         assert rtdc_data.attrs["setup:chip region"] == "channel"
+    cleanup(rtdc_file)
+
+
+def test_meta_bytes():
+    data = {"area_um": np.linspace(100.7, 110.9, 100)}
+    meta = {
+        "setup": {
+            "channel width": 20,
+            "chip region": b"channel"  # bytes should be converted to str
+        },
+        "experiment": {
+            "date": b"2020-08-12"  # bytes should be converted to str
+        }}
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_meta_")
+    write(rtdc_file, data, meta=meta)
+    # Read the file:
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        assert rtdc_data.attrs["setup:channel width"] == 20
+        assert rtdc_data.attrs["setup:chip region"] == "channel"
+        assert rtdc_data.attrs["experiment:date"] == "2020-08-12"
     cleanup(rtdc_file)
 
 

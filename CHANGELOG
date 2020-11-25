@@ -1,6 +1,8 @@
 0.31.2
  - enh: add soft type check (assertion) for "emodulus medium"
    key in ancillary features (#86)
+ - fix: make sure that strings are not written as bytes in
+   hdf5 files
 0.31.1
  - enh: add boolean "model converged" key to return dictionary of
    `Rlme4.fit` (#85)

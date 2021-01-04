@@ -1,4 +1,4 @@
-name: Checks on Linux
+name: Checks
 
 on:
   push:
@@ -11,10 +11,11 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: ['3.7', '3.8']
+        os: [macos-latest, ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,7 +29,7 @@ jobs:
         python -m pip install --upgrade pip wheel
         python -m pip install codecov coverage flake8 pytest
         # install dependencies
-        pip install -e .
+        pip install -e .[all]
         # show installed packages
         pip freeze
     - name: Test with pytest

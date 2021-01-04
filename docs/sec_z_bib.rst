@@ -2,4 +2,4 @@
 Bilbliography
 =============
 
-.. bibliography:: dclab.bib
+.. bibliography::

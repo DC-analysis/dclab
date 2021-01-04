@@ -62,6 +62,9 @@ extensions = ['sphinx.ext.autodoc',
               'simple_argparse',
               ]
 
+# specify bibtex files (required for sphinxcontrib.bibtex>=2.0)
+bibtex_bibfiles = ['dclab.bib']
+
 # enable enumeration of figures
 numfig = True
 

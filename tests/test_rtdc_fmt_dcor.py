@@ -1,7 +1,6 @@
 """Test DCOR format"""
 import pathlib
 import socket
-import sys
 
 import dclab
 from dclab.rtdc_dataset.fmt_dcor import RTDC_DCOR, is_dcor_url
@@ -11,16 +10,12 @@ import pytest
 from helper_methods import retrieve_data
 
 
-if sys.version_info[0] >= 3:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.connect(("dcor.mpl.mpg.de", 443))
-            DCOR_AVAILABLE = True
-        except socket.gaierror:
-            DCOR_AVAILABLE = False
-else:
-    # skip test on python2
-    DCOR_AVAILABLE = False
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    try:
+        s.connect(("dcor.mpl.mpg.de", 443))
+        DCOR_AVAILABLE = True
+    except (socket.gaierror, OSError):
+        DCOR_AVAILABLE = False
 
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):

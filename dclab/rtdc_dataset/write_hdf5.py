@@ -146,13 +146,13 @@ def store_trace(h5group, data, compression):
             dset[oldsize:] = data[flt]
 
 
-def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
+def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
           compression=None):
     """Write data to an RT-DC file
 
     Parameters
     ----------
-    path: path or h5py.File
+    path_or_h5file: path or h5py.File
         The path or the hdf5 file object to write to.
     data: dict-like
         The data to store. Each key of `data` must be a valid
@@ -213,6 +213,12 @@ def write(path_or_h5file, data={}, meta={}, logs={}, mode="reset",
     If `data` is an instance of RTDCBase, then `meta` must be set to
     `data.config`, otherwise no meta data will be saved.
     """
+    if logs is None:
+        logs = {}
+    if meta is None:
+        meta = {}
+    if data is None:
+        data = {}
     if mode not in ["append", "replace", "reset"]:
         raise ValueError("`mode` must be one of [append, replace, reset]")
     if compression not in [None, "gzip", "lzf", "szip"]:

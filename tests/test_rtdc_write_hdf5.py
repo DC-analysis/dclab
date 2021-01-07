@@ -86,7 +86,12 @@ def test_bulk_logs():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         outlog = rtdc_data["logs"]["testlog"]
         for ii in range(len(outlog)):
-            assert outlog[ii] == log[ii]
+            if isinstance(outlog[ii], bytes):
+                # h5py 3 reads strings as bytes by default
+                outii = outlog[ii].decode("utf-8")
+            else:
+                outii = outlog[ii]
+            assert outii == log[ii]
 
 
 def test_bulk_trace():
@@ -158,7 +163,12 @@ def test_logs_append():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         outlog = rtdc_data["logs"]["testlog"]
         for ii in range(len(outlog)):
-            assert outlog[ii] == (log1 + log2)[ii]
+            if isinstance(outlog[ii], bytes):
+                # h5py 3 reads strings as bytes by default
+                outii = outlog[ii].decode("utf-8")
+            else:
+                outii = outlog[ii]
+            assert outii == (log1 + log2)[ii]
 
 
 def test_meta():

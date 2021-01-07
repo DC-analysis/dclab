@@ -236,7 +236,7 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
 
     # Check meta data
     for sec in meta:
-        if sec not in dfn.config_keys:
+        if sec not in dfn.CFG_METADATA:
             # only allow writing of meta data that are not editable
             # by the user (not dclab.dfn.CFG_ANALYSIS)
             msg = "Meta data section not defined in dclab: {}".format(sec)

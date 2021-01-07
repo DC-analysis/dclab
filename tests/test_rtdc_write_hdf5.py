@@ -1,19 +1,10 @@
 import numbers
-import os
 import tempfile
 
 import h5py
 import numpy as np
 
 from dclab.rtdc_dataset import write
-
-
-def cleanup(afile):
-    # cleanup
-    try:
-        os.remove(afile)
-    except OSError:
-        pass
 
 
 def test_bulk_scalar():
@@ -26,7 +17,6 @@ def test_bulk_scalar():
         events = rtdc_data["events"]
         assert "area_um" in events.keys()
         assert np.all(events["area_um"][:] == data["area_um"])
-    cleanup(rtdc_file)
 
 
 def test_bulk_contour():
@@ -46,7 +36,6 @@ def test_bulk_contour():
         assert "contour" in events.keys()
         assert np.allclose(events["contour"]["6"], contour[6])
         assert events["contour"]["1"].shape == (2, 6)
-    cleanup(rtdc_file)
 
 
 def test_bulk_image():
@@ -63,7 +52,6 @@ def test_bulk_image():
         events = rtdc_data["events"]
         assert "image" in events.keys()
         assert np.allclose(events["image"][6], image[6])
-    cleanup(rtdc_file)
 
 
 def test_bulk_mask():
@@ -85,7 +73,6 @@ def test_bulk_mask():
         # Masks are stored as uint8
         assert np.allclose(events["mask"][6], mask[6]*255)
         assert events["mask"][1].shape == (20, 10)
-    cleanup(rtdc_file)
 
 
 def test_bulk_logs():
@@ -100,7 +87,6 @@ def test_bulk_logs():
         outlog = rtdc_data["logs"]["testlog"]
         for ii in range(len(outlog)):
             assert outlog[ii] == log[ii]
-    cleanup(rtdc_file)
 
 
 def test_bulk_trace():
@@ -118,7 +104,6 @@ def test_bulk_trace():
         events = rtdc_data["events"]
         assert "trace" in events.keys()
         assert np.allclose(events["trace"]["fl1_raw"], trace["fl1_raw"])
-    cleanup(rtdc_file)
 
 
 def test_data_error():
@@ -155,8 +140,6 @@ def test_data_error():
     else:
         assert False, "ValueError should have been raised (trace name)"
 
-    cleanup(rtdc_file)
-
 
 def test_logs_append():
     log1 = ["This is a test log that contains two lines.",
@@ -176,7 +159,6 @@ def test_logs_append():
         outlog = rtdc_data["logs"]["testlog"]
         for ii in range(len(outlog)):
             assert outlog[ii] == (log1 + log2)[ii]
-    cleanup(rtdc_file)
 
 
 def test_meta():
@@ -202,7 +184,6 @@ def test_meta():
         assert isinstance(anint, numbers.Integral)
         assert rtdc_data.attrs["setup:channel width"] == 20
         assert rtdc_data.attrs["setup:chip region"] == "channel"
-    cleanup(rtdc_file)
 
 
 def test_meta_bytes():
@@ -223,7 +204,6 @@ def test_meta_bytes():
         assert rtdc_data.attrs["setup:channel width"] == 20
         assert rtdc_data.attrs["setup:chip region"] == "channel"
         assert rtdc_data.attrs["experiment:date"] == "2020-08-12"
-    cleanup(rtdc_file)
 
 
 def test_meta_error():
@@ -237,7 +217,7 @@ def test_meta_error():
     except ValueError:
         pass
     else:
-        assert False, "ValueError should have been raised (unkwn section)"
+        assert False, "ValueError should have been raised (unknown section)"
 
     meta2 = {"setup": {"rediculous_key": 4}}
     try:
@@ -245,9 +225,22 @@ def test_meta_error():
     except ValueError:
         pass
     else:
-        assert False, "ValueError should have been raised (unkwn key)"
+        assert False, "ValueError should have been raised (unknown key)"
 
-    cleanup(rtdc_file)
+
+def test_meta_no_analysis():
+    """The "filtering" section should not be written to the dataset"""
+    data = {"area_um": np.linspace(100.7, 110.9, 100)}
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_meta_no_analysis")
+
+    meta1 = {"filtering": {"enable filters": True}}
+    try:
+        write(rtdc_file, data, meta=meta1)
+    except ValueError:
+        pass
+    else:
+        assert False, "ValueError should have been raised (unknown section)"
 
 
 def test_mode():
@@ -271,7 +264,6 @@ def test_mode():
         assert "area_um" in events2.keys()
         assert "deform" in events2.keys()
         assert len(events2["area_um"]) == len(data["area_um"])
-    cleanup(rtdc_file)
 
 
 def test_mode_return():
@@ -289,8 +281,6 @@ def test_mode_return():
 
     ret3 = write(rtdc_file, data=data, mode="reset")
     assert ret3 is None
-
-    cleanup(rtdc_file)
 
 
 def test_real_time():
@@ -337,8 +327,6 @@ def test_real_time():
         assert np.dtype(events["area_um"]) == np.float
         assert np.dtype(events["area_cvx"]) == np.int
 
-    cleanup(rtdc_file)
-
 
 def test_real_time_single():
     # Create huge array
@@ -379,8 +367,6 @@ def test_real_time_single():
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == N
 
-    cleanup(rtdc_file)
-
 
 def test_replace_contour():
     num = 7
@@ -404,7 +390,6 @@ def test_replace_contour():
         assert "contour" in events.keys()
         assert not np.allclose(events["contour"]["6"], contour[6])
         assert np.allclose(events["contour"]["6"], contour2[6])
-    cleanup(rtdc_file)
 
 
 def test_replace_logs():
@@ -419,7 +404,6 @@ def test_replace_logs():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == 1
-    cleanup(rtdc_file)
 
 
 if __name__ == "__main__":

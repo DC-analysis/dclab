@@ -10,6 +10,6 @@ To compile the documentation, run
 
 Notes
 =====
-To view the sphinx inventory of DryMass, run
+To view the sphinx inventory of dclab, run
 
    python -m sphinx.ext.intersphinx 'https://dclab.readthedocs.io/en/latest/objects.inv'

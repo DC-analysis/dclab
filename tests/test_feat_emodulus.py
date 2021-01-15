@@ -69,7 +69,7 @@ def test_load_lut_from_array():
 def test_load_lut_from_path():
     ref_lut, ref_meta = emodulus.load_lut("FEM-2Daxis")
     path = resource_filename("dclab.features.emodulus",
-                             emodulus.INTERNAL_LUTS["FEM-2Daxis"])
+                             emodulus.load.INTERNAL_LUTS["FEM-2Daxis"])
     lut2, meta2 = emodulus.load_lut(path)
     assert np.all(ref_lut == lut2)
     assert ref_meta == meta2

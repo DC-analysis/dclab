@@ -3,20 +3,13 @@
 ===========================
 Young's modulus computation
 ===========================
-The computation of the Young's modulus uses a look-up table (LUT) that was
-derived from simulations based on the finite elements method (FEM)
-:cite:`Mokbel2017` and the analytical solution :cite:`Mietke2015`.
-The LUT was generated with an incompressible (Poisson's ratio of 0.5)
-linear elastic sphere model (an artificial viscosity was added to
-avoid division-by-zero errors) in an axis-symmetric channel (2D).
-Although the simulations were carried out in this cylindrical symmetry,
-they can be mapped onto a square cross-sectional channel by adjusting
-the channel radius to approximately match the desired flow profile.
-This was done with the spatial scaling factor 1.094
-(see also supplement S3 in :cite:`Mietke2015`). The original data
-used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
 
-All computations take into account:
+
+Background
+==========
+The computation of the Young's modulus makes use of look-up tables (LUTs)
+which are discussed in detail further below. All LUTs are treated identically
+with respect to the following correction terms:
 
 - **scaling laws:** The original LUT was computed for a specific
   channel width :math:`L`, flow rate :math:`Q`, and viscosity :math:`\eta`.
@@ -69,6 +62,46 @@ All computations take into account:
     effective pixel size of 0.34 µm. The data are corrected for pixelation
     effects according to :cite:`Herold2017`.
 
+
+LUT selection
+=============
+When computing the Young's modulus, the user has to select a LUT via a
+keyword argument (see next section). The LUT initially implemented in dclab
+has the identifier "LE-2D-FEM-19".
+
+
+LE-2D-FEM-19
+------------
+This LUT was derived from simulations based on the finite elements method (FEM)
+:cite:`Mokbel2017` and the analytical solution :cite:`Mietke2015`.
+The LUT was generated with an incompressible (Poisson's ratio of 0.5)
+linear elastic sphere model (an artificial viscosity was added to
+avoid division-by-zero errors) in an axis-symmetric channel (2D).
+Although the simulations were carried out in this cylindrical symmetry,
+they can be mapped onto a square cross-sectional channel by adjusting
+the channel radius to approximately match the desired flow profile.
+This was done with the spatial scaling factor 1.094
+(see also supplement S3 in :cite:`Mietke2015`). The original data
+used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
+
+
+external LUT
+------------
+If you are generating LUTs yourself, you may register them in dclab using
+the function :func:`dclab.features.emodulus.load.register_lut`:
+
+.. code:: python
+
+    import dclab
+    dclab.features.emodulus.register_lut("/path/to/lut.txt")
+
+Please make sure that you adhere to the file format. An example can be found
+`here <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/dclab/features/emodulus/emodulus_lut_LE-2D-FEM-19.txt>`_.
+
+
+
+Usage
+=====
 Since the Young's modulus is model-dependent, it is not made available
 right away as an :ref:`ancillary feature <sec_features_ancillary>`
 (in contrast to e.g. event volume or average event brightness).
@@ -107,9 +140,8 @@ C) Compute the Young's modulus using the viscosities of known media.
   Note that if 'emodulus temperature' is given, then this temperature
   is used, even if the `temp` feature exists (scenario A).
 
-The key 'emodulus lut' currently (version 0.32.0) only supports the value
-'LE-2D-FEM-19'. The key 'emodulus medium' must be one of the
-supported media defined in
+The key 'emodulus lut' is the LUT identifier (see previous section).
+The key 'emodulus medium' must be one of the supported media defined in
 :data:`dclab.features.emodulus.viscosity.KNOWN_MEDIA` and can be
 taken from [setup]: 'medium'.
 The key 'emodulus temperature' is the mean chip temperature and

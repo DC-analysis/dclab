@@ -15,7 +15,7 @@ from matplotlib.ticker import MultipleLocator
 sns.set_style("whitegrid")
 
 
-lut_name = "FEM-2Daxis"
+lut_name = "LE-2D-FEM-19"
 media = ["CellCarrier", "CellCarrier B", "water"]
 matrix = {  # channel width: flow rates
     15: [0.016, 0.032, 0.048],
@@ -95,5 +95,6 @@ for channel_width in matrix:
     plt.colorbar(pc, orientation="vertical", cax=cax, extend="both",
                  label="apparent Young's modulus ({}) [kPa]".format(lut_name))
 
-    plt.savefig("_emodulus_{}um.png".format(channel_width), dpi=150)
+    plt.savefig("_emodulus_{}um_{}.png".format(channel_width, lut_name),
+                dpi=150)
     plt.close()

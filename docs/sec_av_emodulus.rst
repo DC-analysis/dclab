@@ -50,18 +50,6 @@ with respect to the following correction terms:
   :cite:`Herold2017`. The computation of viscosity is implemented in the
   submodule :mod:`dclab.features.emodulus.viscosity`.
 
-.. figure:: figures/emodulus_20um.png
-    :target: images/emodulus_20um.png
-
-    Visualizations of the support and the values of the look-up table (LUT)
-    used for determining the Young's modulus from deformation and
-    cell area. The values of the Young's moduli in the regions
-    shown depend on the channel size, the flow rate, the temperature,
-    and the viscosity of the medium :cite:`Mietke2015`.
-    Here, they are computed for a 20 µm wide channel at 23°C with an
-    effective pixel size of 0.34 µm. The data are corrected for pixelation
-    effects according to :cite:`Herold2017`.
-
 
 LUT selection
 =============
@@ -83,6 +71,19 @@ the channel radius to approximately match the desired flow profile.
 This was done with the spatial scaling factor 1.094
 (see also supplement S3 in :cite:`Mietke2015`). The original data
 used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
+
+
+.. figure:: figures/emodulus_20um_LE-2D-FEM-19.png
+    :target: images/emodulus_20um_LE-2D-FEM-19.png
+
+    Visualizations of the support and the values of the look-up table (LUT)
+    'LE-2D-FEM-19' used for determining the Young's modulus from deformation and
+    cell area. The values of the Young's moduli in the regions
+    shown depend on the channel size, the flow rate, the temperature,
+    and the viscosity of the medium :cite:`Mietke2015`.
+    Here, they are computed for a 20 µm wide channel at 23°C with an
+    effective pixel size of 0.34 µm. The data are corrected for pixelation
+    effects according to :cite:`Herold2017`.
 
 
 external LUT

@@ -1,10 +1,12 @@
-
 from pkg_resources import resource_filename
 
 import numpy as np
 import pytest
 
+import dclab
 from dclab.features import emodulus
+
+from helper_methods import example_data_dict
 
 
 def test_bad_lut_data():
@@ -69,7 +71,7 @@ def test_load_lut_from_array():
 def test_load_lut_from_path():
     ref_lut, ref_meta = emodulus.load_lut("FEM-2Daxis")
     path = resource_filename("dclab.features.emodulus",
-                             emodulus.load.INTERNAL_LUTS["FEM-2Daxis"])
+                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
     lut2, meta2 = emodulus.load_lut(path)
     assert np.all(ref_lut == lut2)
     assert ref_meta == meta2
@@ -99,6 +101,49 @@ def test_pixelation_correction_volume():
                                           data_absc=100,
                                           px_um=0.34)
     assert np.allclose(ddelt, 0.011464479831134636)
+
+
+def test_register_external_lut():
+    """Load an external LUT and compute YM data"""
+    identifier = "test-test_register_external_lut"
+    path = resource_filename("dclab.features.emodulus",
+                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
+    emodulus.register_lut(path, identifier=identifier)
+    # cleanup
+    emodulus.load.EXTERNAL_LUTS.clear()
+
+
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
+def test_register_external_lut_and_get_emodulus():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # from internal LUT
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
+                                "emodulus temperature": 23.0
+                                }
+    assert np.sum(~np.isnan(ds["emodulus"])) > 0
+    # from external LUT
+    identifier = "test-test_register_external_lut"
+    path = resource_filename("dclab.features.emodulus",
+                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
+    emodulus.register_lut(path, identifier=identifier)
+    ds2 = dclab.new_dataset(ddict)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    ds2.config["calculation"] = {"emodulus lut": identifier,
+                                 "emodulus medium": "CellCarrier",
+                                 "emodulus temperature": 23.0
+                                 }
+    assert np.sum(~np.isnan(ds2["emodulus"])) > 0
+    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
+                       rtol=0, atol=1e-15)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'

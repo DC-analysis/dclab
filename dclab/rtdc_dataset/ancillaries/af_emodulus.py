@@ -1,3 +1,4 @@
+import warnings
 
 from ... import features
 from .ancillary_feature import AncillaryFeature
@@ -6,8 +7,8 @@ from .ancillary_feature import AncillaryFeature
 def compute_emodulus_legacy(mm):
     """This is how it was done in Shape-Out 1"""
     calccfg = mm.config["calculation"]
-    model = calccfg["emodulus model"]
-    assert model == "elastic sphere"
+    deprecation_check_model_lut(calccfg)
+    lut_identifier = calccfg["emodulus lut"]
     medium = calccfg["emodulus medium"]
     assert isinstance(medium, str), "'emodulus medium' must be a string!"
     viscosity = calccfg["emodulus viscosity"]
@@ -23,7 +24,9 @@ def compute_emodulus_legacy(mm):
         channel_width=mm.config["setup"]["channel width"],
         flow_rate=mm.config["setup"]["flow rate"],
         px_um=mm.config["imaging"]["pixel size"],
-        temperature=temperature)
+        temperature=temperature,
+        lut_data=lut_identifier,
+    )
     return emod
 
 
@@ -33,8 +36,8 @@ def compute_emodulus_known_media(mm):
     This is a special case in :func:`compute_emodulus_legacy`.
     """
     calccfg = mm.config["calculation"]
-    model = calccfg["emodulus model"]
-    assert model == "elastic sphere"
+    deprecation_check_model_lut(calccfg)
+    lut_identifier = calccfg["emodulus lut"]
     medium = calccfg["emodulus medium"]
     assert isinstance(medium, str), "'emodulus medium' must be a string!"
     if medium not in features.emodulus.viscosity.KNOWN_MEDIA:
@@ -48,15 +51,17 @@ def compute_emodulus_known_media(mm):
         channel_width=mm.config["setup"]["channel width"],
         flow_rate=mm.config["setup"]["flow rate"],
         px_um=mm.config["imaging"]["pixel size"],
-        temperature=mm.config["calculation"]["emodulus temperature"])
+        temperature=mm.config["calculation"]["emodulus temperature"],
+        lut_data=lut_identifier,
+    )
     return emod
 
 
 def compute_emodulus_temp_feat(mm):
     """Use the "temperature" feature"""
     calccfg = mm.config["calculation"]
-    model = calccfg["emodulus model"]
-    assert model == "elastic sphere"
+    deprecation_check_model_lut(calccfg)
+    lut_identifier = calccfg["emodulus lut"]
     medium = calccfg["emodulus medium"]
     assert isinstance(medium, str), "'emodulus medium' must be a string!"
     assert medium != "other"
@@ -68,7 +73,9 @@ def compute_emodulus_temp_feat(mm):
         channel_width=mm.config["setup"]["channel width"],
         flow_rate=mm.config["setup"]["flow rate"],
         px_um=mm.config["imaging"]["pixel size"],
-        temperature=mm["temp"])
+        temperature=mm["temp"],
+        lut_data=lut_identifier,
+    )
     return emod
 
 
@@ -78,8 +85,8 @@ def compute_emodulus_visc_only(mm):
     This is a special case in :func:`compute_emodulus_legacy`.
     """
     calccfg = mm.config["calculation"]
-    model = calccfg["emodulus model"]
-    assert model == "elastic sphere"
+    deprecation_check_model_lut(calccfg)
+    lut_identifier = calccfg["emodulus lut"]
     viscosity = calccfg["emodulus viscosity"]
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(
@@ -89,8 +96,19 @@ def compute_emodulus_visc_only(mm):
         channel_width=mm.config["setup"]["channel width"],
         flow_rate=mm.config["setup"]["flow rate"],
         px_um=mm.config["imaging"]["pixel size"],
-        temperature=None)
+        temperature=None,
+        lut_data=lut_identifier,
+    )
     return emod
+
+
+def deprecation_check_model_lut(calccfg):
+    if "emodulus model" in calccfg:
+        warnings.warn("The 'emodulus model' keyword is deprecated. Please "
+                      + "use the 'emodulus lut' keyword instead.",
+                      DeprecationWarning)
+        assert calccfg["emodulus model"] == "elastic sphere"
+        calccfg["emodulus lut"] = "LE-2D-FEM-19"
 
 
 def is_channel(mm):
@@ -117,7 +135,10 @@ def is_channel(mm):
 def register():
     # Please note that registering these things is a delicate business,
     # because the priority has to be chosen carefully.
-    AncillaryFeature(feature_name="emodulus",
+    # DEPRECATION NOTICE:
+    # All ancillary features with "emodulus model" are deprecated and
+    # will be removed at some point.
+    AncillaryFeature(feature_name="emodulus",  # DEPRECATED
                      method=compute_emodulus_legacy,
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus medium",
@@ -130,6 +151,18 @@ def register():
                      req_func=is_channel,
                      priority=3)
     AncillaryFeature(feature_name="emodulus",
+                     method=compute_emodulus_legacy,
+                     req_features=["area_um", "deform"],
+                     req_config=[["calculation", ["emodulus lut",
+                                                  "emodulus medium",
+                                                  "emodulus temperature",
+                                                  "emodulus viscosity"]],
+                                 ["imaging", ["pixel size"]],
+                                 ["setup", ["flow rate", "channel width"]]
+                                 ],
+                     req_func=is_channel,
+                     priority=3)
+    AncillaryFeature(feature_name="emodulus",  # DEPRECATED
                      method=compute_emodulus_known_media,
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus medium",
@@ -141,6 +174,17 @@ def register():
                      req_func=is_channel,
                      priority=2)
     AncillaryFeature(feature_name="emodulus",
+                     method=compute_emodulus_known_media,
+                     req_features=["area_um", "deform"],
+                     req_config=[["calculation", ["emodulus lut",
+                                                  "emodulus medium",
+                                                  "emodulus temperature"]],
+                                 ["imaging", ["pixel size"]],
+                                 ["setup", ["flow rate", "channel width"]]
+                                 ],
+                     req_func=is_channel,
+                     priority=2)
+    AncillaryFeature(feature_name="emodulus",  # DEPRECATED
                      method=compute_emodulus_visc_only,
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus model",
@@ -151,10 +195,30 @@ def register():
                      req_func=is_channel,
                      priority=1)
     AncillaryFeature(feature_name="emodulus",
+                     method=compute_emodulus_visc_only,
+                     req_features=["area_um", "deform"],
+                     req_config=[["calculation", ["emodulus lut",
+                                                  "emodulus viscosity"]],
+                                 ["imaging", ["pixel size"]],
+                                 ["setup", ["flow rate", "channel width"]]
+                                 ],
+                     req_func=is_channel,
+                     priority=1)
+    AncillaryFeature(feature_name="emodulus",  # DEPRECATED
                      method=compute_emodulus_temp_feat,
                      req_features=["area_um", "deform", "temp"],
                      req_config=[["calculation", ["emodulus medium",
                                                   "emodulus model"]],
+                                 ["imaging", ["pixel size"]],
+                                 ["setup", ["flow rate", "channel width"]]
+                                 ],
+                     req_func=is_channel,
+                     priority=0)
+    AncillaryFeature(feature_name="emodulus",
+                     method=compute_emodulus_temp_feat,
+                     req_features=["area_um", "deform", "temp"],
+                     req_config=[["calculation", ["emodulus lut",
+                                                  "emodulus medium"]],
                                  ["imaging", ["pixel size"]],
                                  ["setup", ["flow rate", "channel width"]]
                                  ],

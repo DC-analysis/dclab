@@ -1,3 +1,11 @@
+0.32.0
+ - feat: allow to register external look-up tables for Young's
+   modulus computation (#88)
+ - ref: restructure look-up table file handling
+ - ref: deprecated [analysis]: "emodulus model" metadata key in favor
+   of the more descriptive "emodulus lut" key.
+ - ref: the "method" argument in the context of isoelasticity lines
+   is deprecated in favor of the "lut_identifier" argument
 0.31.5
  - fix: writing "filtering" and "calculation" metadata sections
    to .rtdc files should not be allowed

@@ -48,8 +48,8 @@ for ds in datasets:
     ds.config["filtering"]["deform max"] = 0.1
     ds.apply_filter()
     # enable computation of Young's modulus
+    ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
     ds.config["calculation"]["emodulus medium"] = "CellCarrier"
-    ds.config["calculation"]["emodulus model"] = "elastic sphere"
     ds.config["calculation"]["emodulus temperature"] = 23.0
 
 # setup lme4 analysis

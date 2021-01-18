@@ -32,8 +32,8 @@ for loc in ds_loc:
     ds = dclab.new_dataset(loc)
     labels.append("{:.2f}".format(ds.config["setup"]["flow rate"]))
     # emodulus computation
+    ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
     ds.config["calculation"]["emodulus medium"] = ds.config["setup"]["medium"]
-    ds.config["calculation"]["emodulus model"] = "elastic sphere"
     ds.config["calculation"]["emodulus temperature"] = \
         ds.config["setup"]["temperature"]
     # filtering

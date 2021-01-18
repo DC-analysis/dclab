@@ -22,7 +22,7 @@ def test_bad_isoelastic():
     try:
         i1.get(col1="deform",
                col2="area_ratio",
-               method="analytical",
+               lut_identifier="test-LE-2D-ana-18",
                channel_width=20,
                flow_rate=0.04,
                viscosity=15,
@@ -87,8 +87,8 @@ def test_bad_isoelastic_4():
 
 def test_circ():
     i1 = iso.Isoelastics([get_isofile()])
-    iso1 = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
-    iso2 = i1._data["analytical"]["area_um"]["circ"]["isoelastics"]
+    iso1 = i1._data["test-LE-2D-ana-18"]["area_um"]["deform"]["isoelastics"]
+    iso2 = i1._data["test-LE-2D-ana-18"]["area_um"]["circ"]["isoelastics"]
     assert np.allclose(iso1[0][:, 1], 1 - iso2[0][:, 1])
 
 
@@ -96,13 +96,13 @@ def test_circ_get():
     i1 = iso.Isoelastics([get_isofile()])
     iso_circ = i1.get(col1="area_um",
                       col2="circ",
-                      method="analytical",
+                      lut_identifier="test-LE-2D-ana-18",
                       channel_width=15,
                       flow_rate=0.04,
                       viscosity=15)
     iso_deform = i1.get(col1="area_um",
                         col2="deform",
-                        method="analytical",
+                        lut_identifier="test-LE-2D-ana-18",
                         channel_width=15,
                         flow_rate=0.04,
                         viscosity=15)
@@ -115,7 +115,7 @@ def test_circ_get():
 
 def test_convert():
     i1 = iso.Isoelastics([get_isofile()])
-    isoel = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
+    isoel = i1._data["test-LE-2D-ana-18"]["area_um"]["deform"]["isoelastics"]
     isoel15 = i1.convert(isoel=isoel,
                          col1="area_um",
                          col2="deform",
@@ -143,7 +143,7 @@ def test_convert_error():
     i1 = iso.Isoelastics([get_isofile()])
     isoel = i1.get(col1="area_um",
                    col2="deform",
-                   method="analytical",
+                   lut_identifier="test-LE-2D-ana-18",
                    channel_width=15)
 
     kwargs = dict(channel_width_in=15,
@@ -168,8 +168,8 @@ def test_convert_error():
 
 def test_data_slicing():
     i1 = iso.Isoelastics([get_isofile()])
-    iso1 = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
-    iso2 = i1._data["analytical"]["deform"]["area_um"]["isoelastics"]
+    iso1 = i1._data["test-LE-2D-ana-18"]["area_um"]["deform"]["isoelastics"]
+    iso2 = i1._data["test-LE-2D-ana-18"]["deform"]["area_um"]["isoelastics"]
     for ii in range(len(iso1)):
         assert np.all(iso1[ii][:, 2] == iso2[ii][:, 2])
         assert np.all(iso1[ii][:, 0] == iso2[ii][:, 1])
@@ -179,19 +179,19 @@ def test_data_slicing():
 def test_data_structure():
     i1 = iso.Isoelastics([get_isofile()])
     # basic import
-    assert "analytical" in i1._data
-    assert "deform" in i1._data["analytical"]
-    assert "area_um" in i1._data["analytical"]["deform"]
-    assert "area_um" in i1._data["analytical"]
-    assert "deform" in i1._data["analytical"]["area_um"]
+    assert "test-LE-2D-ana-18" in i1._data
+    assert "deform" in i1._data["test-LE-2D-ana-18"]
+    assert "area_um" in i1._data["test-LE-2D-ana-18"]["deform"]
+    assert "area_um" in i1._data["test-LE-2D-ana-18"]
+    assert "deform" in i1._data["test-LE-2D-ana-18"]["area_um"]
     # circularity
-    assert "circ" in i1._data["analytical"]
-    assert "area_um" in i1._data["analytical"]["circ"]
-    assert "area_um" in i1._data["analytical"]
-    assert "circ" in i1._data["analytical"]["area_um"]
+    assert "circ" in i1._data["test-LE-2D-ana-18"]
+    assert "area_um" in i1._data["test-LE-2D-ana-18"]["circ"]
+    assert "area_um" in i1._data["test-LE-2D-ana-18"]
+    assert "circ" in i1._data["test-LE-2D-ana-18"]["area_um"]
     # metadata
-    meta1 = i1._data["analytical"]["area_um"]["deform"]["meta"]
-    meta2 = i1._data["analytical"]["deform"]["area_um"]["meta"]
+    meta1 = i1._data["test-LE-2D-ana-18"]["area_um"]["deform"]["meta"]
+    meta2 = i1._data["test-LE-2D-ana-18"]["deform"]["area_um"]["meta"]
     assert meta1 == meta2
 
 
@@ -202,8 +202,8 @@ def test_get():
                   channel_width=20,
                   flow_rate=0.04,
                   viscosity=15,
-                  method="analytical")
-    refd = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
+                  lut_identifier="test-LE-2D-ana-18")
+    refd = i1._data["test-LE-2D-ana-18"]["area_um"]["deform"]["isoelastics"]
 
     for a, b in zip(data, refd):
         assert np.all(a == b)
@@ -211,7 +211,7 @@ def test_get():
 
 def test_pixel_err():
     i1 = iso.Isoelastics([get_isofile()])
-    isoel = i1._data["analytical"]["area_um"]["deform"]["isoelastics"]
+    isoel = i1._data["test-LE-2D-ana-18"]["area_um"]["deform"]["isoelastics"]
     px_um = .10
     # add the error
     isoel_err = i1.add_px_err(isoel=isoel,
@@ -408,7 +408,7 @@ def test_with_rtdc_warning():
         # Trigger a warning (temperature missing).
         i1.get_with_rtdcbase(col1="area_um",
                              col2="deform",
-                             method="numerical",
+                             lut_identifier="LE-2D-FEM-19",
                              dataset=ds,
                              viscosity=None,
                              add_px_err=False)

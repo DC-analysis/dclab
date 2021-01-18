@@ -215,6 +215,9 @@ emodulus
 .. automodule:: dclab.features.emodulus
     :members:
 
+.. automodule:: dclab.features.emodulus.load
+    :members:
+
 .. automodule:: dclab.features.emodulus.pxcorr
     :members:
 

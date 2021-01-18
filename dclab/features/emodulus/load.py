@@ -10,8 +10,35 @@ from ... import definitions as dfn
 
 #: Dictionary of look-up tables shipped with dclab.
 INTERNAL_LUTS = {
-    "FEM-2Daxis": "emodulus_lut.txt",
+    "LE-2D-FEM-19": "emodulus_lut_LE-2D-FEM-19.txt",
 }
+
+#: Dictionary of look-up tables that the user added via :func:`register_lut`.
+EXTERNAL_LUTS = {}
+
+
+def get_lut_path(path_or_id):
+    """Find the path to a LUT
+
+    path_or_id: str or pathlib.Path
+        Identifier of a LUT. This can be either an existing path
+        (checked first), or an internal identifier (see
+        :const:`INTERNAL_LUTS`).
+    """
+    if path_or_id == "FEM-2Daxis":
+        # backwards compatibility
+        path_or_id = "LE-2D-FEM-19"
+    if pathlib.Path(path_or_id).exists():
+        lut_path = pathlib.Path(path_or_id)
+    elif path_or_id in INTERNAL_LUTS:
+        lut_path = resource_filename("dclab.features.emodulus",
+                                     INTERNAL_LUTS[path_or_id])
+    elif path_or_id in EXTERNAL_LUTS:
+        lut_path = EXTERNAL_LUTS[path_or_id]
+    else:
+        raise ValueError("File or LUT identifier does not exist: "
+                         + "'{}'".format(path_or_id))
+    return lut_path
 
 
 def load_lut(lut_data="FEM-2Daxis"):
@@ -40,15 +67,11 @@ def load_lut(lut_data="FEM-2Daxis"):
         lut, meta = lut_data
         lut = np.array(lut, copy=True)  # copy, because of normalization
         meta = copy.deepcopy(meta)  # copy, for the sake of consistency
-    elif isinstance(lut_data, str) and lut_data in INTERNAL_LUTS:
-        lut_path = resource_filename("dclab.features.emodulus",
-                                     INTERNAL_LUTS[lut_data])
+    elif isinstance(lut_data, (str, pathlib.Path)):
+        lut_path = get_lut_path(lut_data)
         lut, meta = load_mtext(lut_path)
-    elif (isinstance(lut_data, (str, pathlib.Path))
-          and pathlib.Path(lut_data).exists()):
-        lut, meta = load_mtext(lut_data)
     else:
-        raise ValueError("`name_path_arr` must be path, key, or array, "
+        raise ValueError("`name_path_arr` must be path, identifier, or array, "
                          "got '{}'!".format(lut_data))
     return lut, meta
 
@@ -78,6 +101,7 @@ def load_mtext(path):
         #   "flow_rate_unit": "uL/s",
         #   "fluid_viscosity": 15.0,
         #   "fluid_viscosity_unit": "mPa s",
+        #   "identifier": "LE-2D-ana-18",
         #   "method": "analytical",
         #   "model": "linear elastic",
         #   "publication": "https://doi.org/10.1016/j.bpj.2015.09.006",
@@ -168,10 +192,39 @@ def load_mtext(path):
         else:
             assert False, "Please add sanity check for {}!".format(ft)
 
-    # TODO:
-    # - if everything works as expected, add "FEM" to valid methods
-    #   and implement in Shape-Out 2
-    if meta["method"] == "FEM":
-        meta["method"] = "numerical"
-
     return data, meta
+
+
+def register_lut(path, identifier=None):
+    """Register an external LUT file in dclab
+
+    This will add it to :const:`EXTERNAL_LUTS`, which is required
+    for emodulus computation as an ancillary feature.
+
+    Parameters
+    ----------
+    path: str or pathlib.Path
+        Path to the external LUT file
+    identifier: str or None
+        The identifier is used for ancillary emodulus computation
+        via the "emodulus model" key. It is also used as the key
+        in :const:`EXTERNAL_LUTS` during registration. If not specified,
+        (default) then the identifier given as JSON metadata in `path`
+        is used.
+    """
+    if identifier is None:
+        md = load_mtext(path)
+        try:
+            identifier = md["identifier"]
+        except KeyError:
+            raise ValueError("The given LUT file '{}' does ".format(path)
+                             + "not contain the 'identifier' keyword. You may "
+                             + "specify it via the `identifier` keyword to "
+                             + "this function.")
+    if identifier in EXTERNAL_LUTS:
+        raise ValueError("A LUT with an identifier '{}' ".format(identifier)
+                         + "has already been registered!")
+    elif identifier in INTERNAL_LUTS:
+        raise ValueError("The identifier '{}' is already ".format(identifier)
+                         + "in use by an internal LUT!")
+    EXTERNAL_LUTS[identifier] = path

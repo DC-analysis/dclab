@@ -9,6 +9,7 @@
 #   "flow_rate_unit": "uL/s",
 #   "fluid_viscosity": 15.0,
 #   "fluid_viscosity_unit": "mPa s",
+#   "lut identifier": "test-LE-2D-ana-18",
 #   "method": "analytical",
 #   "model": "linear elastic",
 #   "publication": "https://doi.org/10.1016/j.bpj.2015.09.006",

@@ -6,7 +6,7 @@ import numpy as np
 import scipy.interpolate as spint
 
 from ...warn import PipelineWarning
-from .load import load_lut, load_mtext  # noqa: F401
+from .load import load_lut, load_mtext, register_lut  # noqa: F401
 from .pxcorr import get_pixelation_delta
 from .pxcorr import get_pixelation_delta_pair  # noqa: F401
 # TODO: remove deprecated `convert`

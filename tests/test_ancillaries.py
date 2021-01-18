@@ -1,4 +1,3 @@
-
 import pathlib
 import time
 import sys
@@ -238,8 +237,6 @@ def test_emodulus_legacy_none2():
     assert "emodulus" not in ds, "emodulus model should be missing"
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
                             + 'YoungsModulusLookupTableExceededWarning')
 def test_emodulus_legacy_viscosity_does_not_matter():

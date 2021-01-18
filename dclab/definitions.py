@@ -17,7 +17,10 @@ CFG_ANALYSIS = {
     ],
     # Addition user-defined data
     "calculation": [
-        ["emodulus model", lcstr, "Model for computing elastic moduli"],
+        # "emodulus lut" was introduced in 0.32.0 and will replace
+        # the deprecated "emodulus model".
+        ["emodulus lut", str, "Look-up table identifier"],
+        ["emodulus model", lcstr, "Model [DEPRECATED]"],
         ["emodulus medium", str, "Medium used (e.g. CellCarrierB, water)"],
         ["emodulus temperature", float, "Chip temperature [°C]"],
         ["emodulus viscosity", float, "Viscosity [Pa*s] if 'medium' unknown"],

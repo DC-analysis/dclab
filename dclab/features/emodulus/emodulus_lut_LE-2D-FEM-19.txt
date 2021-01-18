@@ -22,6 +22,7 @@
 #   "fluid_density_unit": "kg m^-3",
 #   "fluid_viscosity": 15.0,
 #   "fluid_viscosity_unit": "mPa s",
+#   "identifier": "LE-2D-FEM-19",
 #   "method": "FEM",
 #   "model": "linear elastic",
 #   "publication": "https://doi.org/10.1021/acsbiomaterials.6b00558",

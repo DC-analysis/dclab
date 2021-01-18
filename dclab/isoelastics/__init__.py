@@ -1,5 +1,5 @@
 """Isoelastics management"""
-
+import functools
 import warnings
 
 from pkg_resources import resource_filename
@@ -15,15 +15,13 @@ ISOFILES = ["isoel-linear-2Daxis-analyt-area_um-deform.txt",
             ]
 ISOFILES = [resource_filename("dclab.isoelastics", _if) for _if in ISOFILES]
 
-VALID_METHODS = ["analytical", "numerical"]
-
 
 class IsoelasticsEmodulusMeaninglessWarning(UserWarning):
     pass
 
 
 class Isoelastics(object):
-    def __init__(self, paths=[]):
+    def __init__(self, paths=None):
         """Isoelasticity line management
 
         .. versionchanged:: 0.24.0
@@ -33,23 +31,26 @@ class Isoelastics(object):
             equidistant spacing. The metadata section of the text
             file format was restructured.
         """
-        self._data = IsoelasticsDict()
+        if paths is None:
+            paths = []
+        self._data = AutoRecursiveDict()
 
         for path in paths:
             self.load_data(path)
 
-    def _add(self, isoel, col1, col2, method, meta):
+    def _add(self, isoel, col1, col2, lut_identifier, meta):
         """Convenience method for population self._data"""
-        self._data[method][col1][col2]["isoelastics"] = isoel
-        self._data[method][col1][col2]["meta"] = meta
+        self._data[lut_identifier][col1][col2]["isoelastics"] = isoel
+        self._data[lut_identifier][col1][col2]["meta"] = meta
 
         # Use advanced slicing to flip the data columns
         isoel_flip = [iso[:, [1, 0, 2]] for iso in isoel]
-        self._data[method][col2][col1]["isoelastics"] = isoel_flip
-        self._data[method][col2][col1]["meta"] = meta
+        self._data[lut_identifier][col2][col1]["isoelastics"] = isoel_flip
+        self._data[lut_identifier][col2][col1]["meta"] = meta
 
     def add(self, isoel, col1, col2, channel_width,
-            flow_rate, viscosity, method):
+            flow_rate, viscosity, method=None,
+            lut_identifier=None):
         """Add isoelastics
 
         Parameters
@@ -72,7 +73,13 @@ class Isoelastics(object):
             Viscosity of the medium in mPa*s
         method: str
             The method used to compute the isoelastics
-            (must be one of `VALID_METHODS`).
+            DEPRECATED since 0.32.0. Please use
+            `lut_identifier` instead.
+        lut_identifier: str:
+            Look-up table identifier used to identify which
+            isoelasticity lines to show. The function
+            :func:`get_available_identifiers` returns a list
+            of available identifiers.
 
         Notes
         -----
@@ -82,9 +89,8 @@ class Isoelastics(object):
         - isoelastics with `col1` and `col2` interchanged
         - isoelastics for circularity if deformation was given
         """
-        if method not in VALID_METHODS:
-            validstr = ",".join(VALID_METHODS)
-            raise ValueError("`method` must be one of {}!".format(validstr))
+        lut_identifier = check_lut_identifier(lut_identifier, method)
+
         for col in [col1, col2]:
             if not dfn.scalar_feature_exists(col):
                 raise ValueError("Not a valid feature name: {}".format(col))
@@ -92,7 +98,7 @@ class Isoelastics(object):
         meta = [channel_width, flow_rate, viscosity]
 
         # Add the feature data
-        self._add(isoel, col1, col2, method, meta)
+        self._add(isoel, col1, col2, lut_identifier, meta)
 
         # Also add the feature data for circularity
         if "deform" in [col1, col2]:
@@ -108,7 +114,7 @@ class Isoelastics(object):
                 iso = iso.copy()
                 iso[:, deform_ax] = 1 - iso[:, deform_ax]
                 iso_circ.append(iso)
-            self._add(iso_circ, col1c, col2c, method, meta)
+            self._add(iso_circ, col1c, col2c, lut_identifier, meta)
 
     @staticmethod
     def add_px_err(isoel, col1, col2, px_um, inplace=False):
@@ -135,6 +141,8 @@ class Isoelastics(object):
             Define the fist two columns of each isoelasticity line.
         px_um: float
             Pixel size [µm]
+        inplace: bool
+            If True, do not create a copy of the data in `isoel`
         """
         new_isoel = []
         for iso in isoel:
@@ -176,6 +184,8 @@ class Isoelastics(object):
             Original viscosity [mPa*s]
         viscosity_out: float
             Target viscosity [mPa*s]
+        inplace: bool
+            If True, do not create a copy of the data in `isoel`
 
         Returns
         -------
@@ -211,8 +221,8 @@ class Isoelastics(object):
             new_isoel.append(iso)
         return new_isoel
 
-    def get(self, col1, col2, method, channel_width, flow_rate=None,
-            viscosity=None, add_px_err=False, px_um=None):
+    def get(self, col1, col2, channel_width, method=None, lut_identifier=None,
+            flow_rate=None, viscosity=None, add_px_err=False, px_um=None):
         """Get isoelastics
 
         Parameters
@@ -223,11 +233,17 @@ class Isoelastics(object):
         col2: str
             Name of the second feature of all isoelastics
             (e.g. isoel[0][:,1])
-        method: str
-            The method used to compute the isoelastics
-            (must be one of `VALID_METHODS`).
         channel_width: float
             Channel width in µm
+        method: str
+            The method used to compute the isoelastics
+            DEPRECATED since 0.32.0. Please use
+            `lut_identifier` instead.
+        lut_identifier: str:
+            Look-up table identifier used to identify which
+            isoelasticity lines to show. The function
+            :func:`get_available_identifiers` returns a list
+            of available identifiers.
         flow_rate: float or `None`
             Flow rate through the channel in µL/s. If set to
             `None`, the flow rate of the imported data will
@@ -252,20 +268,19 @@ class Isoelastics(object):
         dclab.features.emodulus.pxcorr.get_pixelation_delta:
             pixelation correction (applied to the feature data)
         """
-        if method not in VALID_METHODS:
-            validstr = ",".join(VALID_METHODS)
-            raise ValueError("`method` must be one of {}!".format(validstr))
+        lut_identifier = check_lut_identifier(lut_identifier, method)
+
         for col in [col1, col2]:
             if not dfn.scalar_feature_exists(col):
                 raise ValueError("Not a valid feature name: {}".format(col))
 
-        if "isoelastics" not in self._data[method][col2][col1]:
+        if "isoelastics" not in self._data[lut_identifier][col2][col1]:
             msg = "No isoelastics matching {}, {}, {}".format(col1, col2,
-                                                              method)
+                                                              lut_identifier)
             raise KeyError(msg)
 
-        isoel = self._data[method][col1][col2]["isoelastics"]
-        meta = self._data[method][col1][col2]["meta"]
+        isoel = self._data[lut_identifier][col1][col2]["isoelastics"]
+        meta = self._data[lut_identifier][col1][col2]["meta"]
 
         if flow_rate is None:
             flow_rate = meta[1]
@@ -291,8 +306,9 @@ class Isoelastics(object):
 
         return isoel_ret
 
-    def get_with_rtdcbase(self, col1, col2, method, dataset,
-                          viscosity=None, add_px_err=False):
+    def get_with_rtdcbase(self, col1, col2, dataset, method=None,
+                          lut_identifier=None, viscosity=None,
+                          add_px_err=False):
         """Convenience method that extracts the metadata from RTDCBase
 
         Parameters
@@ -305,7 +321,13 @@ class Isoelastics(object):
             (e.g. isoel[0][:,1])
         method: str
             The method used to compute the isoelastics
-            (must be one of `VALID_METHODS`).
+            DEPRECATED since 0.32.0. Please use
+            `lut_identifier` instead.
+        lut_identifier: str:
+            Look-up table identifier used to identify which
+            isoelasticity lines to show. The function
+            :func:`get_available_identifiers` returns a list
+            of available identifiers.
         dataset: dclab.rtdc_dataset.RTDCBase
             The dataset from which to obtain the metadata.
         viscosity: float, `None`, or False
@@ -320,6 +342,8 @@ class Isoelastics(object):
             C. Herold (2017), https://arxiv.org/abs/1704.00572
             and scripts/pixelation_correction.py
         """
+        lut_identifier = check_lut_identifier(lut_identifier, method)
+
         cfg = dataset.config
         if viscosity is None:
             if "temperature" in cfg["setup"] and "medium" in cfg["setup"]:
@@ -336,7 +360,7 @@ class Isoelastics(object):
                               IsoelasticsEmodulusMeaninglessWarning)
         return self.get(col1=col1,
                         col2=col2,
-                        method=method,
+                        lut_identifier=lut_identifier,
                         channel_width=cfg["setup"]["channel width"],
                         flow_rate=cfg["setup"]["flow rate"],
                         viscosity=viscosity,
@@ -354,7 +378,7 @@ class Isoelastics(object):
         isodata, meta = feat_emod.load_mtext(path)
         assert len(meta["column features"]) == 3
         assert meta["column features"][2] == "emodulus"
-        assert meta["method"] in VALID_METHODS
+        assert meta["lut identifier"]
 
         # Slice out individual isoelastics
         emoduli = np.unique(isodata[:, 2])
@@ -370,15 +394,44 @@ class Isoelastics(object):
                  channel_width=meta["channel_width"],
                  flow_rate=meta["flow_rate"],
                  viscosity=meta["fluid_viscosity"],
-                 method=meta["method"])
+                 lut_identifier=meta["lut identifier"])
 
 
-class IsoelasticsDict(dict):
+class AutoRecursiveDict(dict):
     def __getitem__(self, key):
-        if key in VALID_METHODS or dfn.scalar_feature_exists(key):
-            if key not in self:
-                self[key] = IsoelasticsDict()
-        return super(IsoelasticsDict, self).__getitem__(key)
+        if key not in self:
+            self[key] = AutoRecursiveDict()
+        return super(AutoRecursiveDict, self).__getitem__(key)
+
+
+def check_lut_identifier(lut_identifier, method):
+    """Transitional function that can be removed once `method` is removed"""
+    if lut_identifier is None:
+        if method is not None:
+            warnings.warn("The `method` argument is deprecated "
+                          + "please use `lut_identifier` instead!",
+                          DeprecationWarning)
+            if method == "analytical":
+                lut_identifier = "LE-2D-ana-18"
+            elif method == "numerical":
+                lut_identifier = "LE-2D-FEM-19"
+            else:
+                raise ValueError("Please read the docstring")
+    # Now check again (this can be removed once lut_identifier becomes
+    # a non-keyword argument)
+    if lut_identifier is None:
+        raise ValueError("Please specify `lut_identifier`!")
+    return lut_identifier
+
+
+@functools.lru_cache()
+def get_available_identifiers():
+    """Return a list of available LUT identifiers"""
+    ids = []
+    for ff in ISOFILES:
+        _, meta = feat_emod.load_mtext(ff)
+        ids.append(meta["lut identifier"])
+    return sorted(set(ids))
 
 
 def get_default():

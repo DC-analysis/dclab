@@ -20,8 +20,8 @@ kwargs = {"col1": "area_um",  # x-axis
           }
 
 isos = dclab.isoelastics.get_default()
-analy = isos.get(method="analytical", **kwargs)
-numer = isos.get(method="numerical", **kwargs)
+analy = isos.get(lut_identifier="LE-2D-ana-18", **kwargs)
+numer = isos.get(lut_identifier="LE-2D-FEM-19", **kwargs)
 
 plt.figure(figsize=(8, 4))
 ax = plt.subplot(111, title="elastic sphere isoelasticity lines")

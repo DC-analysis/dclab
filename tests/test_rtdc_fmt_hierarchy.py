@@ -19,8 +19,8 @@ def test_config_calculation():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }

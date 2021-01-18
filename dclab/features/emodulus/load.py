@@ -207,10 +207,10 @@ def register_lut(path, identifier=None):
         Path to the external LUT file
     identifier: str or None
         The identifier is used for ancillary emodulus computation
-        via the "emodulus model" key. It is also used as the key
-        in :const:`EXTERNAL_LUTS` during registration. If not specified,
-        (default) then the identifier given as JSON metadata in `path`
-        is used.
+        via the [calculation]: "emodulus lut" key. It is also used as
+        the key in :const:`EXTERNAL_LUTS` during registration. If not
+        specified, (default) then the identifier given as JSON metadata
+        in `path` is used.
     """
     if identifier is None:
         md = load_mtext(path)

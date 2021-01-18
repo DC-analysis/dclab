@@ -14,9 +14,9 @@ computed, but the prerequisites are evaluated:
 
     In [2]: ds = dclab.new_dataset("data/example.rtdc")
 
-    In [3]: ds.config["calculation"]["emodulus medium"] = "CellCarrier"
+    In [4]: ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
 
-    In [4]: ds.config["calculation"]["emodulus model"] = "elastic sphere"
+    In [3]: ds.config["calculation"]["emodulus medium"] = "CellCarrier"
 
     In [5]: ds.config["calculation"]["emodulus temperature"] = 23.0
 
@@ -62,7 +62,7 @@ class AncillaryFeature():
             takes an instance of `RTDCBase` as argument.
         req_config: list
             Required configuration parameters to compute the feature,
-            e.g. ["calculation", ["emodulus model", "emodulus viscosity"]]
+            e.g. ["calculation", ["emodulus lut", "emodulus viscosity"]]
         req_features: list
             Required existing features in the dataset,
             e.g. ["area_cvx", "deform"]

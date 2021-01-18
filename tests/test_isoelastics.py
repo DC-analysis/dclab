@@ -39,7 +39,7 @@ def test_bad_isoelastic_2():
     try:
         i1.get(col1="deform",
                col2="area_um",
-               method="numerical",
+               lut_identifier="LE-2D-FEM-19",
                channel_width=20,
                flow_rate=0.04,
                viscosity=15,
@@ -56,7 +56,7 @@ def test_bad_isoelastic_3():
     try:
         i1.get(col1="deform",
                col2="bad_feature",
-               method="numerical",
+               lut_identifier="LE-2D-FEM-19",
                channel_width=20,
                flow_rate=0.04,
                viscosity=15,
@@ -73,16 +73,16 @@ def test_bad_isoelastic_4():
     try:
         i1.get(col1="deform",
                col2="area_um",
-               method="monsterelastic",
+               lut_identifier="LE-2D-FEM-99-nonexistent",
                channel_width=20,
                flow_rate=0.04,
                viscosity=15,
                add_px_err=False,
                px_um=None)
-    except ValueError:
+    except KeyError:
         pass
     else:
-        assert False, "bad method does not work"
+        assert False, "bad lut_identifier does not work"
 
 
 def test_circ():
@@ -264,7 +264,7 @@ def test_volume_basic():
                   channel_width=20,
                   flow_rate=0.04,
                   viscosity=15,
-                  method="numerical",
+                  lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
     assert np.allclose(data[0][0], [1.61819e+02, 4.18005e-02, 1.08000e+00])
@@ -281,7 +281,7 @@ def test_volume_pxcorr():
                   channel_width=20,
                   flow_rate=None,
                   viscosity=None,
-                  method="numerical",
+                  lut_identifier="LE-2D-FEM-19",
                   add_px_err=True,
                   px_um=0.34)
     ddelt = pxcorr.corr_deform_with_volume(1.61819e+02, px_um=0.34)
@@ -298,7 +298,7 @@ def test_volume_scale():
                   channel_width=25,
                   flow_rate=0.04,
                   viscosity=15,
-                  method="numerical",
+                  lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
 
@@ -315,7 +315,7 @@ def test_volume_scale_2():
                   channel_width=25,
                   flow_rate=None,
                   viscosity=None,
-                  method="numerical",
+                  lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
     assert np.allclose(data[0][0], [1.61819e+02 * (25 / 20)**3,
@@ -331,7 +331,7 @@ def test_volume_switch():
                   channel_width=20,
                   flow_rate=0.04,
                   viscosity=15,
-                  method="numerical",
+                  lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
     assert np.allclose(data[0][0], [4.18005e-02, 1.61819e+02, 1.08000e+00])
@@ -346,7 +346,7 @@ def test_volume_switch_scale():
                   channel_width=25,
                   flow_rate=0.04,
                   viscosity=15,
-                  method="numerical",
+                  lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
     assert np.allclose(data[0][0], [4.18005e-02,
@@ -370,7 +370,7 @@ def test_with_rtdc():
     i1 = iso.get_default()
     data1 = i1.get_with_rtdcbase(col1="area_um",
                                  col2="deform",
-                                 method="numerical",
+                                 lut_identifier="LE-2D-FEM-19",
                                  dataset=ds,
                                  viscosity=None,
                                  add_px_err=False)
@@ -382,7 +382,7 @@ def test_with_rtdc():
         temperature=ds.config["setup"]["temperature"])
     data2 = i1.get(col1="area_um",
                    col2="deform",
-                   method="numerical",
+                   lut_identifier="LE-2D-FEM-19",
                    channel_width=ds.config["setup"]["channel width"],
                    flow_rate=ds.config["setup"]["flow rate"],
                    viscosity=viscosity,

@@ -139,6 +139,7 @@ def register():
     # All ancillary features with "emodulus model" are deprecated and
     # will be removed at some point.
     AncillaryFeature(feature_name="emodulus",  # DEPRECATED
+                     data="DEPRECATED",  # for tests to pass
                      method=compute_emodulus_legacy,
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus medium",
@@ -163,6 +164,7 @@ def register():
                      req_func=is_channel,
                      priority=3)
     AncillaryFeature(feature_name="emodulus",  # DEPRECATED
+                     data="DEPRECATED",  # for tests to pass
                      method=compute_emodulus_known_media,
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus medium",
@@ -185,6 +187,7 @@ def register():
                      req_func=is_channel,
                      priority=2)
     AncillaryFeature(feature_name="emodulus",  # DEPRECATED
+                     data="DEPRECATED",  # for tests to pass
                      method=compute_emodulus_visc_only,
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus model",
@@ -205,6 +208,7 @@ def register():
                      req_func=is_channel,
                      priority=1)
     AncillaryFeature(feature_name="emodulus",  # DEPRECATED
+                     data="DEPRECATED",  # for tests to pass
                      method=compute_emodulus_temp_feat,
                      req_features=["area_um", "deform", "temp"],
                      req_config=[["calculation", ["emodulus medium",

@@ -138,8 +138,8 @@ def test_emodulus_known_media():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -148,7 +148,7 @@ def test_emodulus_known_media():
     ds2.config["setup"]["flow rate"] = 0.16
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                  "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.0
                                  }
@@ -157,6 +157,8 @@ def test_emodulus_known_media():
                        rtol=0, atol=1e-15)
     # ancillary feature priority check
     for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+        if af.data == "DEPRECATED":
+            continue
         if af.method.__name__ == "compute_emodulus_legacy":
             assert af.is_available(ds)
         else:
@@ -178,8 +180,8 @@ def test_emodulus_legacy():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -204,8 +206,8 @@ def test_emodulus_legacy_area():
     assert "emodulus" not in ds, "not config for emodulus"
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -217,8 +219,8 @@ def test_emodulus_legacy_none():
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
     assert "emodulus" not in ds, "not config for emodulus"
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -234,7 +236,7 @@ def test_emodulus_legacy_none2():
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
-    assert "emodulus" not in ds, "emodulus model should be missing"
+    assert "emodulus" not in ds, "emodulus lut should be missing"
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -246,8 +248,8 @@ def test_emodulus_legacy_viscosity_does_not_matter():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5  # irrelevant
                                 }
@@ -255,8 +257,8 @@ def test_emodulus_legacy_viscosity_does_not_matter():
     ds2.config["setup"]["flow rate"] = 0.16
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                 "emodulus model": "elastic sphere",
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.0,
                                  "emodulus viscosity": 0.1  # irrelevant
                                  }
@@ -274,8 +276,8 @@ def test_emodulus_reservoir():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -284,8 +286,8 @@ def test_emodulus_reservoir():
     ds2.config["setup"]["flow rate"] = 0.16
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                 "emodulus model": "elastic sphere",
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.0,
                                  "emodulus viscosity": 0.5
                                  }
@@ -303,8 +305,8 @@ def test_emodulus_temp_feat():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -315,14 +317,16 @@ def test_emodulus_temp_feat():
     ds2.config["setup"]["flow rate"] = 0.16
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                 "emodulus model": "elastic sphere",
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus medium": "CellCarrier",
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
                        rtol=0, atol=6.5e-14)
     # ancillary feature priority check
     for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+        if af.data == "DEPRECATED":
+            continue
         if af.method.__name__ == "compute_emodulus_legacy":
             assert af.is_available(ds)
         else:
@@ -343,8 +347,8 @@ def test_emodulus_temp_feat_2():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -357,7 +361,7 @@ def test_emodulus_temp_feat_2():
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
     ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                 "emodulus model": "elastic sphere",
+                                 "emodulus lut": "LE-2D-FEM-19",
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"][1:], ds2["emodulus"][1:], equal_nan=True,
@@ -367,8 +371,8 @@ def test_emodulus_temp_feat_2():
     ds3.config["setup"]["flow rate"] = 0.16
     ds3.config["setup"]["channel width"] = 30
     ds3.config["imaging"]["pixel size"] = .34
-    ds3.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                 "emodulus model": "elastic sphere",
+    ds3.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.5,
                                  "emodulus viscosity": 0.5
                                  }
@@ -386,8 +390,8 @@ def test_emodulus_visc_only():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "CellCarrier",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5  # irrelevant
                                 }
@@ -401,7 +405,7 @@ def test_emodulus_visc_only():
         channel_width=30,
         flow_rate=0.16,
         temperature=23.0)
-    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                  "emodulus viscosity": visc
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
@@ -409,6 +413,8 @@ def test_emodulus_visc_only():
                        rtol=0, atol=1e-15)
     # ancillary feature priority check
     for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+        if af.data == "DEPRECATED":
+            continue
         if af.method.__name__ == "compute_emodulus_legacy":
             assert af.is_available(ds)
         else:
@@ -434,8 +440,8 @@ def test_emodulus_visc_only_2():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus medium": "other",
-                                "emodulus model": "elastic sphere",
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "other",
                                 "emodulus temperature": 47.0,  # irrelevant
                                 "emodulus viscosity": visc
                                 }
@@ -444,7 +450,7 @@ def test_emodulus_visc_only_2():
     ds2.config["setup"]["flow rate"] = 0.16
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus model": "elastic sphere",
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                  "emodulus viscosity": visc
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0

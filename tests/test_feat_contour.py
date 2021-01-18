@@ -1,4 +1,4 @@
-
+import pathlib
 import sys
 import time
 
@@ -11,6 +11,31 @@ from dclab.features.contour import get_contour, get_contour_lazily
 from dclab.features.volume import get_volume
 
 from helper_methods import retrieve_data
+
+
+def test_af_contour_basic():
+    ds1 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    # export all data except for contour data
+    features = ds1.features
+    features.remove("contour")
+    dspath = pathlib.Path(ds1.path)
+    tempout = dspath.parent / (dspath.name + "without_contour.rtdc")
+    ds1.export.hdf5(tempout, features=features)
+    ds2 = dclab.new_dataset(tempout)
+
+    for ii in range(len(ds1)):
+        cin = ds1["contour"][ii]
+        cout = ds2["contour"][ii]
+        # simple presence test
+        for ci in cin:
+            assert ci in cout
+        # order
+        for ii in range(1, len(cin)):
+            c2 = np.roll(cin, ii, axis=0)
+            if np.all(c2 == cout):
+                break
+        else:
+            assert False, "contours not matching, check orientation?"
 
 
 def test_artefact():

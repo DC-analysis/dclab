@@ -1,7 +1,116 @@
-
 import numpy as np
 
+import dclab
 from dclab.features.fl_crosstalk import correct_crosstalk
+from dclab.rtdc_dataset import ancillaries
+
+from helper_methods import retrieve_data
+
+
+def test_af_fl_crosstalk_2chan():
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
+    # simple example
+    analysis = {"calculation": {"crosstalk fl12": 0,
+                                "crosstalk fl21": .1}}
+    ds.config.update(analysis)
+    # normalization is c11 = c22 = c33 = 1
+    assert np.allclose(ds["fl2_max"], ds["fl2_max_ctc"])
+    assert not np.allclose(ds["fl1_max"], ds["fl1_max_ctc"])
+    # advanced example
+    ct12 = .5
+    ct21 = .3
+    analysis2 = {"calculation": {"crosstalk fl12": ct12,
+                                 "crosstalk fl21": ct21}}
+    # AncillaryColumn uses hashes to check whether a particular calculation
+    # was already performed. Thus, just updating the config will trigger
+    # a new crosstalk correction once the data is requested.
+    ds.config.update(analysis2)
+    fl1_max = ds["fl1_max_ctc"] + ct21 * ds["fl2_max_ctc"]
+    fl2_max = ds["fl2_max_ctc"] + ct12 * ds["fl1_max_ctc"]
+    assert np.allclose(fl1_max, ds["fl1_max"])
+    assert np.allclose(fl2_max, ds["fl2_max"])
+
+
+def test_af_fl_crosstalk_3chanvs2chan():
+    data = {"fl1_max": np.linspace(1, 1.1, 10),
+            "fl2_max": np.linspace(0, 4.1, 10),
+            "fl3_max": np.linspace(3, 2.5, 10),
+            }
+    ds = dclab.new_dataset(data)
+    analysis = {"calculation": {"crosstalk fl12": .4,
+                                "crosstalk fl21": .05,
+                                }}
+    ds.config.update(analysis)
+    assert "fl2_max_ctc" in ds
+    try:
+        ds["fl2_max_ctc"]
+    except ancillaries.af_fl_max_ctc.MissingCrosstalkMatrixElementsError:
+        pass
+    else:
+        assert False, "Crosstalk correction from missing data should not work"
+    # add missing matrix elements
+    analysis = {"calculation": {"crosstalk fl13": .1,
+                                "crosstalk fl23": .7,
+                                "crosstalk fl31": .2,
+                                "crosstalk fl32": .2,
+                                }}
+    ds.config.update(analysis)
+    ds["fl1_max_ctc"]
+    ds["fl2_max_ctc"]
+    ds["fl3_max_ctc"]
+    ds.config.update(analysis)
+
+
+def test_af_fl_crosstalk_missing():
+    data = {"fl1_max": np.linspace(1, 1.1, 10),
+            "fl2_max": np.linspace(0, 4.1, 10),
+            }
+    ds = dclab.new_dataset(data)
+    analysis = {"calculation": {"crosstalk fl12": .4,
+                                }}
+    ds.config.update(analysis)
+    assert "fl2_max_ctc" not in ds
+
+
+def test_af_fl_crosstalk_priority():
+    data = {"fl1_max": np.linspace(1, 1.1, 10),
+            "fl2_max": np.linspace(0, 4.1, 10),
+            "fl3_max": np.linspace(3, 2.5, 10),
+            }
+    ds = dclab.new_dataset(data)
+    analysis = {"calculation": {"crosstalk fl12": .4,
+                                "crosstalk fl21": .05,
+                                }}
+    ds.config.update(analysis)
+    av = ancillaries.AncillaryFeature.available_features(ds)
+    avkeys = list(av.keys())
+    assert "fl1_max_ctc" in avkeys
+    assert "fl2_max_ctc" in avkeys
+    assert "fl3_max_ctc" not in avkeys
+    reqconf = [['calculation', ['crosstalk fl21', 'crosstalk fl12']]]
+    assert av["fl1_max_ctc"].req_config == reqconf
+    analysis = {"calculation": {"crosstalk fl13": .1,
+                                "crosstalk fl23": .7,
+                                "crosstalk fl31": .2,
+                                "crosstalk fl32": .2,
+                                }}
+    ds.config.update(analysis)
+    # If there are three fl features and the corresponding crosstalk
+    # values, then we must always have triple crosstalk correction.
+    av2 = ancillaries.AncillaryFeature.available_features(ds)
+    av2keys = list(av2.keys())
+    assert "fl1_max_ctc" in av2keys
+    assert "fl2_max_ctc" in av2keys
+    assert "fl3_max_ctc" in av2keys
+    reqconf2 = [['calculation', ["crosstalk fl21",
+                                 "crosstalk fl31",
+                                 "crosstalk fl12",
+                                 "crosstalk fl32",
+                                 "crosstalk fl13",
+                                 "crosstalk fl23"]]]
+    assert av2["fl1_max_ctc"].req_config == reqconf2
+    assert av2["fl2_max_ctc"].req_config == reqconf2
+    assert av2["fl3_max_ctc"].req_config == reqconf2
 
 
 def test_simple_crosstalk():

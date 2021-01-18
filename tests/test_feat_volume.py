@@ -2,12 +2,14 @@
 Testing script for volume.py
 An ellipse is created and the analytical and numerical solution are compared
 """
-
 import itertools as IT
 
 import numpy as np
 
+import dclab
 from dclab.features.volume import get_volume
+
+from helper_methods import retrieve_data
 
 
 def area_of_polygon(x, y):
@@ -63,6 +65,15 @@ def get_ellipse_coords(a, b, x=0.0, y=0.0, angle=0.0, k=2):
     pts[:, 1] = y + (a * cos_alpha * sin_beta + b * sin_alpha * cos_beta)
 
     return pts
+
+
+def test_af_volume():
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    vol = ds["volume"]
+    # There are a lot of nans, because the contour is not given everywhere
+    vol = vol[~np.isnan(vol)]
+    assert np.allclose(vol[0], 574.60368907528346)
+    assert np.allclose(vol[12], 1010.5669523203878)
 
 
 def test_orientation():

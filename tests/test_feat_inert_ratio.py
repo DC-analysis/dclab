@@ -1,10 +1,64 @@
-
 import numpy as np
+import pytest
 
+import dclab
 from dclab import new_dataset
 from dclab.features import inert_ratio as ir
 
 from helper_methods import retrieve_data
+
+
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
+def test_af_inert_ratio_cvx():
+    # Brightness of the image
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    # This is something low-level and should not be done in a script.
+    # Remove the brightness columns from RTDCBase to force computation with
+    # the image and contour columns.
+    real_ir = ds._events.pop("inert_ratio_cvx")
+    # This will cause a zero-padding warning:
+    comp_ir = ds["inert_ratio_cvx"]
+    idcompare = ~np.isnan(comp_ir)
+    # ignore first event (no image data)
+    idcompare[0] = False
+    assert np.allclose(real_ir[idcompare], comp_ir[idcompare])
+
+
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
+def test_af_inert_ratio_prnc():
+    # Brightness of the image
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    # This will cause a zero-padding warning:
+    prnc = ds["inert_ratio_prnc"]
+    raw = ds["inert_ratio_raw"]
+    idcompare = ~np.isnan(prnc)
+    # ignore first event (no image data)
+    idcompare[0] = False
+    diff = (prnc - raw)[idcompare]
+    # only compare the first valid event which seems to be quite close
+    assert np.allclose(diff[0], 0, atol=1.2e-3, rtol=0)
+
+
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'ancillaries.ancillary_feature.'
+                            + 'BadFeatureSizeWarning')
+def test_af_inert_ratio_raw():
+    # Brightness of the image
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    # This is something low-level and should not be done in a script.
+    # Remove the brightness columns from RTDCBase to force computation with
+    # the image and contour columns.
+    real_ir = ds._events.pop("inert_ratio_raw")
+    # This will cause a zero-padding warning:
+    comp_ir = ds["inert_ratio_raw"]
+    idcompare = ~np.isnan(comp_ir)
+    # ignore first event (no image data)
+    idcompare[0] = False
+    assert np.allclose(real_ir[idcompare], comp_ir[idcompare])
 
 
 def test_inert_ratio_raw():

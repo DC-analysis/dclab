@@ -6,9 +6,180 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+import dclab
 from dclab import ml, new_dataset
 
 from helper_methods import example_data_dict
+
+
+def test_af_ml_class_basic():
+    data = {"ml_score_001": [.1, .3, .1, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    assert np.allclose(ds["ml_class"], [1, 0, 1, 0, 1])
+    assert issubclass(ds["ml_class"].dtype.type, np.integer)
+
+
+def test_af_ml_class_bad_feature():
+    data = {"ml_score_0-1": [.1, .3, .1, 0.01, .59],
+            }
+    try:
+        dclab.new_dataset(data)
+    except ValueError:
+        pass
+    else:
+        assert False, "This is not a valid feature name"
+
+
+def test_af_ml_class_bad_score_max():
+    data = {"ml_score_001": [.1, .3, 99, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    try:
+        ds["ml_class"]
+    except ValueError as e:
+        assert "> 1" in e.args[0]
+    else:
+        assert False, "99 is not allowed"
+
+
+def test_af_ml_class_bad_score_min():
+    data = {"ml_score_001": [.1, .3, -.1, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    try:
+        ds["ml_class"]
+    except ValueError as e:
+        assert "< 0" in e.args[0]
+    else:
+        assert False, "negative is not allowed"
+
+
+def test_af_ml_class_bad_score_nan():
+    data = {"ml_score_001": [.1, .3, np.nan, 0.01, .59],
+            "ml_score_002": [.2, .1, .4, 0, .8],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    try:
+        ds["ml_class"]
+    except ValueError as e:
+        assert "nan values" in e.args[0]
+    else:
+        assert False, "nan is not allowed"
+
+
+def test_af_ml_class_single():
+    data = {"ml_score_001": [.1, .3, .1, 0.01, .59],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    assert np.allclose(ds["ml_class"], 0)
+
+
+def test_af_ml_score_basic():
+    """Slight modification of related test in test_ml.py using ancillaries"""
+    # setup
+    dict1 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict1["deform"] = np.linspace(.01, .02, 1000)
+    dict2 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict2["deform"] = np.linspace(.02, .03, 1000)
+    ds1 = dclab.new_dataset(dict1)
+    ds2 = dclab.new_dataset(dict2)
+    tfdata = dclab.ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=[ds1, ds2],
+        labels=[0, 1],
+        feature_inputs=["deform"])
+    bare_model = standard_model(tfdata, epochs=10)
+    # test dataset
+    dictt = example_data_dict(size=6, keys=["area_um", "aspect", "fl1_max"])
+    dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
+    dst = dclab.new_dataset(dictt)
+    # DC model
+    model = dclab.ml.models.TensorflowModel(
+        bare_model=bare_model,
+        inputs=["deform"],
+        outputs=["ml_score_low", "ml_score_hig"])
+    with model:
+        # get the class from the predicted values
+        low = dst["ml_score_low"]
+        hig = dst["ml_score_hig"]
+    hl = np.concatenate((low.reshape(-1, 1), hig.reshape(-1, 1)), axis=1)
+    actual = np.argmax(hl, axis=1)
+    # these are the expected classes
+    expected = dictt["deform"] > 0.02
+    # sanity check
+    assert np.sum(expected) == np.sum(~expected)
+    # actual verification of test case
+    assert np.all(expected == actual)
+
+
+def test_af_ml_score_label_fallback():
+    """Test whether the correct label is returned"""
+    label1 = dclab.dfn.get_feature_label("ml_score_low")
+    label2 = dclab.dfn.get_feature_label("ml_score_hig")
+    assert label1 == "ML score LOW"
+    assert label2 == "ML score HIG"
+
+
+def test_af_ml_score_label_registered():
+    """Test whether the correct label is returned"""
+    ml_feats = ["area_um", "deform"]
+    bare_model = make_bare_model(ml_feats=ml_feats)
+    model = dclab.ml.models.TensorflowModel(
+        bare_model=bare_model,
+        inputs=ml_feats,
+        outputs=["ml_score_low", "ml_score_hig"],
+        output_labels=["Low label", "High label"])
+    with model:
+        # get labels
+        label1 = dclab.dfn.get_feature_label("ml_score_low")
+        label2 = dclab.dfn.get_feature_label("ml_score_hig")
+    assert label1 == "Low label"
+    assert label2 == "High label"
+
+
+def test_af_ml_score_registration_sanity_checks():
+    ml_feats = ["area_um", "deform"]
+    model = dclab.ml.models.TensorflowModel(
+        bare_model=make_bare_model(),
+        inputs=ml_feats,
+        outputs=["ml_score_abc", "ml_score_cde"]
+    )
+    dictt = example_data_dict(size=6, keys=["area_um", "aspect", "fl1_max"])
+    dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
+    dst = dclab.new_dataset(dictt)
+    assert "ml_score_abc" not in dst, "before model registration"
+    with model:
+        assert "ml_score_abc" in dst, "after model registration"
+    assert "ml_score_abc" not in dst, "after model unregistration"
+
+
+def test_af_ml_score_register_same_output_feature_should_fail():
+    ml_feats = ["area_um", "deform"]
+    model = dclab.ml.models.TensorflowModel(
+        bare_model=make_bare_model(),
+        inputs=ml_feats,
+        outputs=["ml_score_abc", "ml_score_cde"]
+    )
+    with model:
+        model2 = dclab.ml.models.TensorflowModel(
+            bare_model=make_bare_model(),
+            inputs=ml_feats,
+            outputs=["ml_score_abc", "ml_score_rge"]
+        )
+        try:
+            model2.register()
+        except ValueError:
+            pass
+        else:
+            assert False, "register same output feature should not be possible"
 
 
 def make_data(add_feats=["area_um", "deform"], sizes=[100, 130]):

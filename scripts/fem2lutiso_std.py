@@ -252,6 +252,12 @@ def get_lut_base(path):
 def save_iso(path, contours, levels, meta,
              header=["area_um [um^2]", "deform", "emodulus [kPa]"]):
     """Save isoelastics to a text file for usage in dclab"""
+    # change identifier to lut identifier
+    meta = copy.deepcopy(meta)
+    if "identifier" in meta:
+        idx = meta.pop("identifier")
+        meta["lut identifier"] = idx
+
     lentot = 0
     for cc in contours:
         lentot += len(cc)

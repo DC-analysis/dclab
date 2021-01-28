@@ -1,6 +1,7 @@
-"""Test tdms file format"""
-
+"""Test command-line interface"""
+import hashlib
 import sys
+import time
 
 from dclab import cli, new_dataset, rtdc_dataset
 import h5py
@@ -41,6 +42,46 @@ def test_compress():
                     assert np.all(dsj[feat][ii] == ds0[feat][ii]), feat
             else:
                 assert np.all(dsj[feat] == ds0[feat]), feat
+
+
+def test_compress_already_compressed():
+    """By default, an already compressed dataset should not be compressed"""
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out1 = path_in.with_name("compressed_1.rtdc")
+    path_out2 = path_in.with_name("compressed_2.rtdc")
+    path_out3 = path_in.with_name("compressed_copy_of_1.rtdc")
+    # this is straight-forward
+    cli.compress(path_out=path_out1, path_in=path_in)
+    # just for the sake of comparison
+    time.sleep(1)  # we need different time stamps in path_out2
+    cli.compress(path_out=path_out2, path_in=path_in)
+    # this is is not trivial
+    cli.compress(path_out=path_out3, path_in=path_out1)
+
+    # the first two files should not be the same (dates are written, etc)
+    h1 = hashlib.md5(path_out1.read_bytes()).hexdigest()
+    h2 = hashlib.md5(path_out2.read_bytes()).hexdigest()
+    h3 = hashlib.md5(path_out3.read_bytes()).hexdigest()
+    assert h1 != h2
+    assert h1 == h3
+
+
+def test_compress_already_compressed_force():
+    """An extension of the above test to make sure "force" works"""
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out1 = path_in.with_name("compressed_1.rtdc")
+    path_out2 = path_in.with_name("compressed_not_a_copy_of_1.rtdc")
+    # this is straight-forward
+    cli.compress(path_out=path_out1, path_in=path_in)
+    # just for the sake of comparison
+    cli.compress(path_out=path_out2, path_in=path_out1, force=True)
+
+    # the first two files should not be the same (dates are written, etc)
+    h1 = hashlib.md5(path_out1.read_bytes()).hexdigest()
+    h2 = hashlib.md5(path_out2.read_bytes()).hexdigest()
+    assert h1 != h2
 
 
 def test_join_tdms():

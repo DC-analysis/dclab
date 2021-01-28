@@ -5,6 +5,7 @@ import hashlib
 import json
 import pathlib
 import platform
+import shutil
 import warnings
 
 import h5py
@@ -12,6 +13,7 @@ import numpy as np
 
 from .rtdc_dataset import check_dataset, export, fmt_tdms, new_dataset, \
     write_hdf5
+from .rtdc_dataset.check import IntegrityChecker
 from . import definitions as dfn
 from . import util
 from ._version import version
@@ -120,13 +122,14 @@ def print_violation(string):
     print_info("\033[31m{}".format(string))
 
 
-def compress(path_out=None, path_in=None):
+def compress(path_out=None, path_in=None, force=False):
     """Create a new dataset with all features compressed losslessly"""
     if path_out is None or path_in is None:
         parser = compress_parser()
         args = parser.parse_args()
         path_in = args.input
         path_out = args.output
+        force = args.force
 
     path_in = pathlib.Path(path_in)
     path_out = pathlib.Path(path_out)
@@ -136,6 +139,16 @@ def compress(path_out=None, path_in=None):
 
     if path_out.suffix != ".rtdc":
         path_out = path_out.with_name(path_out.name + ".rtdc")
+
+    if not force:
+        # Check whether the input file is already compressed
+        # (This is not done in force-mode)
+        ic = IntegrityChecker(path_in)
+        cue = ic.check_compression()[0]
+        if cue.data["uncompressed"] == 0:
+            # we are done here
+            shutil.copy2(path_in, path_out)  # copy with metadata
+            return
 
     logs = {}
 
@@ -171,6 +184,12 @@ def compress_parser():
                         help='Input path (.rtdc file)')
     parser.add_argument('output', metavar="OUTPUT", type=str,
                         help='Output path (.rtdc file)')
+    parser.add_argument('--force',
+                        dest='force',
+                        action='store_true',
+                        help='Force compression, even if the input dataset '
+                             + 'is already compressed.')
+    parser.set_defaults(force=False)
     return parser
 
 

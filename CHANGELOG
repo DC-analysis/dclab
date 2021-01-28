@@ -1,3 +1,9 @@
+0.32.1
+ - enh: dclab-compress now by default does not compress any input
+   files that are already fully compressed (fully compressed means
+   that all HDF5 datasets are compressed somehow); to get the old
+   behavior back (compress in any case, use the "force" keyword
+   argument)
 0.32.0
  - feat: allow to register external look-up tables for Young's
    modulus computation (#88)

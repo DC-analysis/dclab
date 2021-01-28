@@ -45,13 +45,13 @@ Please make sure to edit the
 
 ::
 
-	git pull --rebase
+    git pull --rebase
 
 instead of
 
 ::
 
-	git pull
+    git pull
 
 to prevent confusions in the commit history.
 
@@ -70,8 +70,8 @@ permissions to do so):
 
 ::
 
-	git tag -a "0.1.3"
-	git push --tags origin
+    git tag -a "0.1.3"
+    git push --tags origin
 
 Appveyor and TravisCI will then automatically build source package and wheels 
 and publish them on PyPI.

@@ -382,7 +382,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
             for cc in range(len(rtdc_ds) // CHUNK_SIZE):
                 trstack = rtdc_ds["trace"][tr][cc*CHUNK_SIZE:(cc+1)*CHUNK_SIZE]
                 write(h5obj,
-                      data={"trace": {tr: np.array(trstack, dtype=np.uint16)}},
+                      data={"trace": {tr: np.array(trstack, dtype=np.int16)}},
                       mode="append",
                       compression=compression)
             # write rest
@@ -390,7 +390,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
             if srest:
                 trstack = rtdc_ds["trace"][tr][-srest:]
                 write(h5obj,
-                      data={"trace": {tr: np.array(trstack, dtype=np.uint16)}},
+                      data={"trace": {tr: np.array(trstack, dtype=np.int16)}},
                       mode="append",
                       compression=compression)
     elif feat == "index":

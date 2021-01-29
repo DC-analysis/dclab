@@ -146,9 +146,9 @@ def test_hdf5():
 
 
 def test_hdf5_contour_image_trace():
-    N = 65
+    n = 65
     keys = ["contour", "image", "trace"]
-    ddict = example_data_dict(size=N, keys=keys)
+    ddict = example_data_dict(size=n, keys=keys)
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
@@ -159,7 +159,7 @@ def test_hdf5_contour_image_trace():
     ds1.export.hdf5(f1, keys, filtered=False)
     ds2 = dclab.new_dataset(f1)
 
-    for ii in range(N):
+    for ii in range(n):
         assert np.all(ds1["image"][ii] == ds2["image"][ii])
         assert np.all(ds1["contour"][ii] == ds2["contour"][ii])
 
@@ -186,7 +186,7 @@ def test_hdf5_contour_image_trace_large():
     ds2 = dclab.new_dataset(f1)
 
     # the trace may have negative values, it's int16, not uint16.
-    assert ds1["trace"]["fl1_median"][0] == -1, "sanity check"
+    assert ds1["trace"]["fl1_median"][0][0] == -1, "sanity check"
 
     for ii in range(n):
         assert np.all(ds1["image"][ii] == ds2["image"][ii])
@@ -200,9 +200,9 @@ def test_hdf5_contour_image_trace_large():
 
 
 def test_hdf5_filtered():
-    N = 10
+    n = 10
     keys = ["area_um", "image"]
-    ddict = example_data_dict(size=N, keys=keys)
+    ddict = example_data_dict(size=n, keys=keys)
     ddict["image"][3] = np.arange(10 * 20, dtype=np.uint8).reshape(10, 20) + 22
 
     ds1 = dclab.new_dataset(ddict)
@@ -229,10 +229,10 @@ def test_hdf5_filtered():
 
 def test_hdf5_filtered_index():
     """Make sure that exported index is always re-enumerated"""
-    N = 10
+    n = 10
     keys = ["area_um", "deform", "index"]
-    ddict = example_data_dict(size=N, keys=keys)
-    ddict["index"] = np.arange(1, N+1)
+    ddict = example_data_dict(size=n, keys=keys)
+    ddict["index"] = np.arange(1, n+1)
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
@@ -246,9 +246,9 @@ def test_hdf5_filtered_index():
 
     ds2 = dclab.new_dataset(f1)
 
-    assert len(ds2) == N - 1
-    assert np.all(ds2["index"] == np.arange(1, N))
-    assert ds2.config["experiment"]["event count"] == N - 1
+    assert len(ds2) == n - 1
+    assert np.all(ds2["index"] == np.arange(1, n))
+    assert ds2.config["experiment"]["event count"] == n - 1
 
     # cleanup
     shutil.rmtree(edest, ignore_errors=True)
@@ -281,9 +281,9 @@ def test_hdf5_frame():
 
 
 def test_hdf5_image_bg():
-    N = 65
+    n = 65
     keys = ["image", "image_bg"]
-    ddict = example_data_dict(size=N, keys=keys)
+    ddict = example_data_dict(size=n, keys=keys)
 
     ds1 = dclab.new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
@@ -294,7 +294,7 @@ def test_hdf5_image_bg():
     ds1.export.hdf5(f1, keys, filtered=False)
     ds2 = dclab.new_dataset(f1)
 
-    for ii in range(N):
+    for ii in range(n):
         assert np.all(ds1["image"][ii] == ds2["image"][ii])
         assert np.all(ds1["image_bg"][ii] == ds2["image_bg"][ii])
 

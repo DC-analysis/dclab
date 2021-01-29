@@ -113,7 +113,7 @@ class TraceColumn(object):
                         pass
                     else:
                         if trdat is not None and trdat.size != 0:
-                            # Split the input trace data into equally-saced
+                            # Split the input trace data into equally-spaced
                             # sections (we already tested that sampleids is
                             # equally-spaced).
                             spe = sampleids[1] - sampleids[0]

@@ -32,8 +32,8 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
         elif key in ["image", "image_bg"]:
             imdat = []
             for ss in range(size):
-                data = np.arange(10 * 20, dtype=np.uint8).reshape(10, 20) + ss
-                imdat.append(data)
+                data = np.arange(10 * 20).reshape(10, 20) + ss
+                imdat.append(np.array(data, dtype=np.uint8))
             val = imdat
         elif key == "index":
             # index starts at 1
@@ -42,7 +42,7 @@ def example_data_dict(size=100, keys=["area_um", "deform"]):
             trdata = {}
             kk = 1
             for tr in dfn.FLUOR_TRACES:
-                trac = np.arange(100 * size, dtype=np.int64).reshape(size, -1)
+                trac = np.arange(100 * size, dtype=np.int16).reshape(size, -1)
                 trdata[tr] = trac - kk
                 kk += 1
             val = trdata

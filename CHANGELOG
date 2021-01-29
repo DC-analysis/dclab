@@ -1,3 +1,8 @@
+0.32.2
+ - fix: export trace data in chunks to avoid out-of-memory
+   errors when compressing large files
+ - ref: introduce CHUNK_SIZE in write_hdf5.py and use it when
+   exporting to .rtdc
 0.32.1
  - enh: dclab-compress now by default does not compress any input
    files that are already fully compressed (fully compressed means

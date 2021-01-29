@@ -170,6 +170,35 @@ def test_hdf5_contour_image_trace():
     shutil.rmtree(edest, ignore_errors=True)
 
 
+def test_hdf5_contour_image_trace_large():
+    """Same test for large event numbers (to test chunking)"""
+    n = 653
+    keys = ["contour", "image", "trace"]
+    ddict = example_data_dict(size=n, keys=keys)
+
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
+    ds1.export.hdf5(f1, keys, filtered=False)
+    ds2 = dclab.new_dataset(f1)
+
+    # the trace may have negative values, it's int16, not uint16.
+    assert ds1["trace"]["fl1_median"][0] == -1, "sanity check"
+
+    for ii in range(n):
+        assert np.all(ds1["image"][ii] == ds2["image"][ii])
+        assert np.all(ds1["contour"][ii] == ds2["contour"][ii])
+
+    for key in dfn.FLUOR_TRACES:
+        assert np.all(ds1["trace"][key] == ds2["trace"][key])
+
+    # cleanup
+    shutil.rmtree(edest, ignore_errors=True)
+
+
 def test_hdf5_filtered():
     N = 10
     keys = ["area_um", "image"]
@@ -446,7 +475,7 @@ def test_tsv_not_filtered():
 
 if __name__ == "__main__":
     # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()
+    _loc = locals()
+    for _key in list(_loc.keys()):
+        if _key.startswith("test_") and hasattr(_loc[_key], "__call__"):
+            _loc[_key]()

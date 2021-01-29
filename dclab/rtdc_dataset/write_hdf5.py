@@ -9,6 +9,10 @@ from .. import definitions as dfn
 from .._version import version
 
 
+#: Chunk size for storing HDF5 data
+CHUNK_SIZE = 100
+
+
 def store_contour(h5group, data, compression):
     if not isinstance(data, (list, tuple)):
         # single event
@@ -48,7 +52,7 @@ def store_image(h5group, data, compression, background=False):
         data = data.reshape(1, data.shape[0], data.shape[1])
     if image_key not in h5group:
         maxshape = (None, data.shape[1], data.shape[2])
-        chunks = (100, data.shape[1], data.shape[2])
+        chunks = (CHUNK_SIZE, data.shape[1], data.shape[2])
         dset = h5group.create_dataset(image_key,
                                       data=data,
                                       dtype=np.uint8,
@@ -80,7 +84,7 @@ def store_mask(h5group, data, compression):
         data = data.reshape(1, data.shape[0], data.shape[1])
     if "mask" not in h5group:
         maxshape = (None, data.shape[1], data.shape[2])
-        chunks = (100, data.shape[1], data.shape[2])
+        chunks = (CHUNK_SIZE, data.shape[1], data.shape[2])
         dset = h5group.create_dataset("mask",
                                       data=data,
                                       dtype=np.uint8,
@@ -108,7 +112,7 @@ def store_scalar(h5group, name, data, compression):
         h5group.create_dataset(name,
                                data=data,
                                maxshape=(None,),
-                               chunks=(100,),
+                               chunks=(CHUNK_SIZE,),
                                fletcher32=True,
                                compression=compression
                                )
@@ -132,7 +136,7 @@ def store_trace(h5group, data, compression):
         # create traces datasets
         if flt not in grp:
             maxshape = (None, data[flt].shape[1])
-            chunks = (100, data[flt].shape[1])
+            chunks = (CHUNK_SIZE, data[flt].shape[1])
             grp.create_dataset(flt,
                                data=data[flt],
                                maxshape=maxshape,

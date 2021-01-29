@@ -24,7 +24,7 @@ import numpy as np
 
 from .. import definitions as dfn
 from .._version import version
-from .write_hdf5 import write
+from .write_hdf5 import write, CHUNK_SIZE
 
 
 class LimitingExportSizeWarning(UserWarning):
@@ -346,28 +346,23 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     # - there might be memory issues
     if feat == "contour":
         cont_list = []
-        cmax = 0
         for ii in range(len(rtdc_ds)):
             if filtarr[ii]:
-                dat = rtdc_ds["contour"][ii]
-                cont_list.append(dat)
-                cmax = max(cmax, dat.max())
+                cont_list.append(rtdc_ds["contour"][ii])
         write(h5obj,
               data={"contour": cont_list},
               mode="append",
               compression=compression)
     elif feat in ["mask", "image", "image_bg"]:
-        # store image stacks (reduced file size and save time)
-        m = 64
+        # store image stacks (reduces file size, memory usage, and saves time)
         im0 = rtdc_ds[feat][0]
-        imstack = np.zeros((m, im0.shape[0], im0.shape[1]),
+        imstack = np.zeros((CHUNK_SIZE, im0.shape[0], im0.shape[1]),
                            dtype=im0.dtype)
         jj = 0
         for ii in range(len(rtdc_ds)):
             if filtarr[ii]:
-                dat = rtdc_ds[feat][ii]
-                imstack[jj] = dat
-                if (jj + 1) % m == 0:
+                imstack[jj] = rtdc_ds[feat][ii]
+                if (jj + 1) % CHUNK_SIZE == 0:
                     jj = 0
                     write(h5obj,
                           data={feat: imstack},
@@ -382,18 +377,22 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
                   mode="append",
                   compression=compression)
     elif feat == "trace":
+        # store trace stacks (reduces file size, memory usage, and saves time)
         for tr in rtdc_ds["trace"].keys():
-            tr0 = rtdc_ds["trace"][tr][0]
-            trdat = np.zeros((nev, tr0.size), dtype=tr0.dtype)
-            jj = 0
-            for ii in range(len(rtdc_ds)):
-                if filtarr[ii]:
-                    trdat[jj] = rtdc_ds["trace"][tr][ii]
-                    jj += 1
-            write(h5obj,
-                  data={"trace": {tr: trdat}},
-                  mode="append",
-                  compression=compression)
+            for cc in range(len(rtdc_ds) // CHUNK_SIZE):
+                trstack = rtdc_ds["trace"][tr][cc*CHUNK_SIZE:(cc+1)*CHUNK_SIZE]
+                write(h5obj,
+                      data={"trace": {tr: np.array(trstack, dtype=np.uint16)}},
+                      mode="append",
+                      compression=compression)
+            # write rest
+            srest = len(rtdc_ds) % CHUNK_SIZE
+            if srest:
+                trstack = rtdc_ds["trace"][tr][-srest:]
+                write(h5obj,
+                      data={"trace": {tr: np.array(trstack, dtype=np.uint16)}},
+                      mode="append",
+                      compression=compression)
     elif feat == "index":
         # re-enumerate data index feature (filtered data)
         if "events/index" in h5obj:

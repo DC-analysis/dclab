@@ -1,8 +1,6 @@
-
 import io
 import os
 from os.path import join
-import shutil
 import tempfile
 
 import h5py
@@ -25,7 +23,6 @@ def test_avi_export():
     ds.export.avi(path=f1)
     assert os.stat(
         f1)[6] > 1e4, "Resulting file to small, Something went wrong!"
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -43,9 +40,6 @@ def test_avi_override():
     else:
         raise ValueError("Should append .avi and not override!")
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_avi_no_images():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
@@ -60,7 +54,6 @@ def test_avi_no_images():
         pass
     else:
         raise ValueError("There should be no image data to write!")
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_fcs_export():
@@ -85,9 +78,6 @@ def test_fcs_export():
     assert a1 == a2
     assert len(a1) != 0
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_fcs_override():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
@@ -104,9 +94,6 @@ def test_fcs_override():
     else:
         raise ValueError("Should append .fcs and not override!")
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_fcs_not_filtered():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
@@ -116,9 +103,6 @@ def test_fcs_not_filtered():
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
     ds.export.fcs(f1, keys, filtered=False)
-
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_hdf5():
@@ -141,9 +125,6 @@ def test_hdf5():
     assert np.allclose(ds2["frame"], ds1["frame"])
     assert np.allclose(ds2["fl3_width"], ds1["fl3_width"])
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_hdf5_contour_image_trace():
     n = 65
@@ -165,9 +146,6 @@ def test_hdf5_contour_image_trace():
 
     for key in dfn.FLUOR_TRACES:
         assert np.all(ds1["trace"][key] == ds2["trace"][key])
-
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_hdf5_contour_image_trace_large():
@@ -195,9 +173,6 @@ def test_hdf5_contour_image_trace_large():
     for key in dfn.FLUOR_TRACES:
         assert np.all(ds1["trace"][key] == ds2["trace"][key])
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_hdf5_filtered():
     n = 10
@@ -223,9 +198,6 @@ def test_hdf5_filtered():
     assert np.allclose(ds2["image"][2], ds1["image"][3])
     assert np.all(ds2["image"][2] != ds1["image"][2])
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_hdf5_filtered_index():
     """Make sure that exported index is always re-enumerated"""
@@ -250,9 +222,6 @@ def test_hdf5_filtered_index():
     assert np.all(ds2["index"] == np.arange(1, n))
     assert ds2.config["experiment"]["event count"] == n - 1
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_hdf5_frame():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
@@ -276,9 +245,6 @@ def test_hdf5_frame():
     ds2 = dclab.new_dataset(f1)
     assert ds2["frame"][10] == 20000
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_hdf5_image_bg():
     n = 65
@@ -297,9 +263,6 @@ def test_hdf5_image_bg():
     for ii in range(n):
         assert np.all(ds1["image"][ii] == ds2["image"][ii])
         assert np.all(ds1["image_bg"][ii] == ds2["image_bg"][ii])
-
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_hdf5_index_continuous():
@@ -323,8 +286,6 @@ def test_hdf5_index_continuous():
     with h5py.File(f1, "r") as h5:
         assert "index" in h5["events"]
         assert np.allclose(h5["events/index"][:], np.arange(1, 21))
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_hdf5_index_online_continuous():
@@ -347,8 +308,6 @@ def test_hdf5_index_online_continuous():
                                                   compression="gzip")
     with h5py.File(f1, "r") as h5:
         assert "index_online" in h5["events"]
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_hdf5_index_online_replaces_index():
@@ -365,8 +324,6 @@ def test_hdf5_index_online_replaces_index():
     with h5py.File(f1, "r") as h5:
         assert "index" not in h5["events"]
         assert "index_online" in h5["events"]
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 def test_hdf5_ml_score():
@@ -391,9 +348,6 @@ def test_hdf5_ml_score():
         assert "ml_class" not in ds._events
         assert "ml_class" in ds._ancillaries
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_hdf5_override():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
@@ -411,8 +365,19 @@ def test_hdf5_override():
     else:
         raise ValueError("Should append .rtdc and not override!")
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
+
+def test_hdf5_trace_from_tdms():
+    ds = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.rtdc")
+    ds.export.hdf5(f1, ["trace"])
+
+    ds2 = new_dataset(f1)
+
+    for key in ds["trace"]:
+        for ii in range(len(ds)):
+            assert np.all(ds["trace"][key][ii] == ds2["trace"][key][ii])
 
 
 def test_tsv_export():
@@ -437,9 +402,6 @@ def test_tsv_export():
     assert a1 == a2
     assert len(a1) != 0
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_tsv_override():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
@@ -456,9 +418,6 @@ def test_tsv_override():
     else:
         raise ValueError("Should append .tsv and not override!")
 
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
-
 
 def test_tsv_not_filtered():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
@@ -468,9 +427,6 @@ def test_tsv_not_filtered():
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
     ds.export.tsv(f1, keys, filtered=False)
-
-    # cleanup
-    shutil.rmtree(edest, ignore_errors=True)
 
 
 if __name__ == "__main__":

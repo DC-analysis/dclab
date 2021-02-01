@@ -28,7 +28,7 @@ jobs:
         python -m pip install codecov coverage flake8 pytest
         # install dependencies
         # first, pin numpy and h5py for tensorflow
-        pip install h5py==2.10.0 numpy==0.19.5
+        pip install h5py==2.10.0 numpy==1.19.5
         pip install -e .[all]
         # show installed packages
         pip freeze

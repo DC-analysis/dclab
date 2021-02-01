@@ -1,3 +1,4 @@
 [build-system]
 # Defined by PEP 518:
-requires = ["cython", "numpy", "setuptools", "wheel"]
+# use oldest-supported-numpy (https://github.com/pypa/pip/issues/9542#issuecomment-771200755)
+requires = ["cython", "oldest-supported-numpy", "setuptools", "wheel"]

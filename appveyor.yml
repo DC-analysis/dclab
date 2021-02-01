@@ -32,14 +32,11 @@ install:
   - appveyor R -e "install.packages('lme4', repos='http://cran.r-project.org')"
   - echo %PATH%
   # upgrade pip
-  - appveyor-retry python -m pip install --upgrade pip
-  # install
-  - appveyor-retry pip install wheel
+  - appveyor-retry python -m pip install --upgrade pip wheel
   # latest version of fcswrite
   - appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
   # the rest
-  # add tensorflow here so its numpy/h5py deps get resolved
-  - appveyor-retry pip install --use-feature=2020-resolver -e .[all] tensorflow
+  - appveyor-retry pip install -e .[all]
   - python -m pip freeze
   # verify R installation
   - python -c "from rpy2 import situation; [print(ss) for ss in situation.iter_info()]"

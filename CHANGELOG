@@ -1,5 +1,5 @@
 0.32.3
- - build: pin numpy to 1.19.5 in pyproject.toml
+ - build: use oldest-supported-numpy in pyproject.toml
 0.32.2
  - fix: export trace data in chunks to avoid out-of-memory
    errors when compressing large files

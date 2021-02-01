@@ -27,7 +27,8 @@ jobs:
         python -m pip install --upgrade pip wheel
         python -m pip install codecov coverage flake8 pytest
         # install dependencies
-        pip install -e .[all]
+        # (add tensorflow, otherwise wrong version of numpy may be installed)
+        pip install -e .[all] tensorflow
         # show installed packages
         pip freeze
     - name: Test with pytest

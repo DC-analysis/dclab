@@ -200,7 +200,7 @@ class IntegrityChecker(object):
         cues = []
         funcs = IntegrityChecker.__dict__
         for ff in sorted(funcs.keys()):
-            if (ff.startswith("check_fl_") and not self.has_fluorescence):
+            if ff.startswith("check_fl_") and not self.has_fluorescence:
                 # skip
                 continue
             elif ff.startswith("check_"):

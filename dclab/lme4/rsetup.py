@@ -108,6 +108,17 @@ def check_r():
                              + "`set_r_path` function.")
 
 
+def get_r_path():
+    """Get the path of the R executable/binary from rpy2"""
+    r_home = rpy2.situation.get_r_home()
+    return rpy2.situation.get_r_exec(r_home)
+
+
+def get_r_version():
+    check_r()
+    return rpy2.situation.r_version_from_subprocess()
+
+
 def has_lme4():
     """Return True if the lme4 package is installed"""
     check_r()
@@ -148,17 +159,6 @@ def install_lme4():
         with AutoRConsole() as rc:
             utils.install_packages(rpy2.robjects.vectors.StrVector(["lme4"]))
         return rc
-
-
-def get_r_path():
-    """Get the path of the R executable/binary from rpy2"""
-    r_home = rpy2.situation.get_r_home()
-    return rpy2.situation.get_r_exec(r_home)
-
-
-def get_r_version():
-    check_r()
-    return rpy2.situation.r_version_from_subprocess()
 
 
 def set_r_path(r_path):

@@ -2,15 +2,17 @@
 This library contains classes and methods for the analysis
 of real-time deformability cytometry (RT-DC) datasets.
 """
+# flake8: noqa: F401
+from . import definitions as dfn
+from . import features
+from . import isoelastics
+from . import kde_contours
+from . import kde_methods
+from . import lme4
+from . import ml
+from .polygon_filter import PolygonFilter
+from . import rtdc_dataset
+from .rtdc_dataset import new_dataset
+from . import statistics
 
-from . import definitions as dfn  # noqa: F401
-from . import features  # noqa: F401
-from . import isoelastics  # noqa: F401
-from . import kde_contours  # noqa: F401
-from . import kde_methods  # noqa: F401
-from .polygon_filter import PolygonFilter  # noqa: F401
-from . import rtdc_dataset  # noqa: F401
-from .rtdc_dataset import new_dataset  # noqa: F401
-from . import statistics  # noqa: F401
-
-from ._version import version as __version__  # noqa: F401
+from ._version import version as __version__

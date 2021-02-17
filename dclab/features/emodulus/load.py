@@ -213,7 +213,7 @@ def register_lut(path, identifier=None):
         in `path` is used.
     """
     if identifier is None:
-        md = load_mtext(path)
+        _, md = load_mtext(path)
         try:
             identifier = md["identifier"]
         except KeyError:

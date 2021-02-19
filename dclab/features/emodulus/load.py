@@ -77,7 +77,7 @@ def load_lut(lut_data="LE-2D-FEM-19"):
 
 
 def load_mtext(path):
-    """Load colunm-based data from text files with metadata
+    """Load column-based data from text files with metadata
 
     This file format is used for isoelasticity lines and look-up
     table data in dclab.

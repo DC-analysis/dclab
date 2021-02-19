@@ -213,7 +213,7 @@ class RTDC_Hierarchy(RTDCBase):
         hparent: instance of RTDCBase
             The hierarchy parent
         apply_filter: bool
-            Whether to apply the filter durint instantiation;
+            Whether to apply the filter during instantiation;
             If set to `False`, `apply_filter` must be called
             manually.
         *args:

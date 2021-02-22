@@ -29,7 +29,7 @@ def cont_moments_cv(cont,
     """
     # Make sure we have no unsigned integers
     if np.issubdtype(cont.dtype, np.unsignedinteger):
-        cont = cont.astype(np.int)
+        cont = cont.astype(int)
 
     xi = cont[:, 0]
     yi = cont[:, 1]

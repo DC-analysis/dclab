@@ -26,7 +26,7 @@ def bin_num_doane(a):
     if acc == 0 or np.isnan(acc):
         num = 5
     else:
-        num = np.int(np.round((data.max() - data.min()) / acc))
+        num = int(np.round((data.max() - data.min()) / acc))
     return num
 
 

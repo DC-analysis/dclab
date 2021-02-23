@@ -478,7 +478,7 @@ class RTDCBase(object):
             Identifier for Y axis
         positions: list of two 1d ndarrays or ndarray of shape (2, N)
             The positions where the KDE will be computed. Note that
-            the KDE estimate is computed from the the points that
+            the KDE estimate is computed from the points that
             are set in `self.filter.all`.
         kde_type: str
             The KDE method to use

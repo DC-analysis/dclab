@@ -303,7 +303,7 @@ def test_real_time():
     shy = 32
     contours = [np.arange(20).reshape(10, 2)] * M
     images = np.zeros((M, shy, shx), dtype=np.uint8)
-    masks = np.zeros((M, shy, shx), dtype=np.bool)
+    masks = np.zeros((M, shy, shx), dtype=np.bool_)
     traces = {"fl1_median": np.arange(M * 55).reshape(M, 55)}
     axis1 = np.linspace(0, 1, M)
     axis2 = np.arange(M)
@@ -334,8 +334,8 @@ def test_real_time():
         assert events["area_um"].shape == (N,)
         assert events["contour"]["0"].shape == (10, 2)
         assert events["trace"]["fl1_median"].shape == (N, 55)
-        assert np.dtype(events["area_um"]) == np.float
-        assert np.dtype(events["area_cvx"]) == np.int
+        assert np.dtype(events["area_um"]) == float
+        assert np.dtype(events["area_cvx"]) == int
 
 
 def test_real_time_single():
@@ -344,7 +344,7 @@ def test_real_time_single():
     shx = 30
     shy = 10
     image = np.zeros((shy, shx), dtype=np.uint8)
-    mask = np.zeros((shy, shx), dtype=np.bool)
+    mask = np.zeros((shy, shx), dtype=np.bool_)
     contour = np.arange(22).reshape(11, 2)
     trace = {"fl1_median": np.arange(43)}
 
@@ -372,8 +372,8 @@ def test_real_time_single():
         assert events["area_um"].shape == (N,)
         assert events["contour"]["0"].shape == (11, 2)
         assert events["trace"]["fl1_median"].shape == (N, 43)
-        assert np.dtype(events["area_um"]) == np.float
-        assert np.dtype(events["area_cvx"]) == np.int
+        assert np.dtype(events["area_um"]) == float
+        assert np.dtype(events["area_cvx"]) == int
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == N
 

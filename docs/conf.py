@@ -177,7 +177,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'dclab.tex', 'dclab Documentation',
-     'Paul Müller', 'manual'),
+     author, 'manual'),
 ]
 
 
@@ -187,7 +187,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'dclab', 'dclab Documentation',
-     [author], 1)
+     authors, 1)
 ]
 
 

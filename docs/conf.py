@@ -15,6 +15,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
+import pathlib
 import os.path as op
 import sys
 
@@ -83,8 +84,15 @@ master_doc = 'index'
 # General information about the project.
 project = 'dclab'
 github_project = 'ZELLMECHANIK-DRESDEN/' + project
-copyright = '2015, Paul Müller'
-author = 'Paul Müller'
+credits_path = pathlib.Path(__file__).parent.parent / "CREDITS"
+if credits_path.exists():
+    authors = [c.strip() for c in credits_path.read_text().split("\n")
+               if c and not c.startswith("#")]
+else:
+    authors = ["Paul Müller"]
+author = ", ".join(authors)
+copyright = '2015, ' + author
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

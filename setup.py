@@ -7,12 +7,11 @@ import sys
 # numpy and cython are installed via pyproject.toml [build-system]
 import numpy as np
 
-author = u"Paul Müller"
-authors = [author]
+maintainer = u"Paul Müller"
+maintainer_email = "dev@craban.de"
 description = 'Library for real-time deformability cytometry (RT-DC)'
-name = 'dclab'
+name = "dclab"
 year = "2015"
-
 
 sys.path.insert(0, realpath(dirname(__file__))+"/"+name)
 try:
@@ -35,11 +34,10 @@ extras_require = {
 # concatenate all other dependencies into "all"
 extras_require["all"] = list(set(sum(list(extras_require.values()), [])))
 
-
 setup(
     name=name,
-    author=author,
-    author_email='dev@craban.de',
+    maintainer=maintainer,
+    maintainer_email=maintainer_email,
     url='https://github.com/ZELLMECHANIK-DRESDEN/dclab',
     version=version,
     packages=find_packages(),

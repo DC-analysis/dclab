@@ -157,7 +157,7 @@ The corresponding index.json file could look like this:
             "ml_score_sad"
           ],
           "output labels": [
-            "red boold cells",
+            "red blood cells",
             "sad cells"
           ],
           "path": "model_1",

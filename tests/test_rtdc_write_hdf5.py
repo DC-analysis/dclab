@@ -335,7 +335,7 @@ def test_real_time():
         assert events["contour"]["0"].shape == (10, 2)
         assert events["trace"]["fl1_median"].shape == (N, 55)
         assert np.dtype(events["area_um"]) == float
-        assert np.dtype(events["area_cvx"]) == int
+        assert np.dtype(events["area_cvx"]) == float
 
 
 def test_real_time_single():
@@ -373,7 +373,7 @@ def test_real_time_single():
         assert events["contour"]["0"].shape == (11, 2)
         assert events["trace"]["fl1_median"].shape == (N, 43)
         assert np.dtype(events["area_um"]) == float
-        assert np.dtype(events["area_cvx"]) == int
+        assert np.dtype(events["area_cvx"]) == float
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == N
 

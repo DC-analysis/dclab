@@ -1,5 +1,7 @@
 0.32.5
  - ref: int/bool deprecation warnings in numpy 1.20.0 (#93)
+ - tests: test for area_cvx as a float, consistent with output from
+   Shape-In (#96)
  - setup: added new file CREDITS for docs and only use maintainer
    in setup.py
 0.32.4

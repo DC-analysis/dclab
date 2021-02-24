@@ -306,7 +306,7 @@ def test_real_time():
     masks = np.zeros((M, shy, shx), dtype=np.bool_)
     traces = {"fl1_median": np.arange(M * 55).reshape(M, 55)}
     axis1 = np.linspace(0, 1, M)
-    axis2 = np.arange(M)
+    axis2 = np.arange(float(M))
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_realtime_")
     with h5py.File(rtdc_file, "w") as fobj:
@@ -354,7 +354,7 @@ def test_real_time_single():
         # simulate real time and write one image at a time
         for ii in range(N):
             data = {"area_um": ii * .1,
-                    "area_cvx": ii * 5,
+                    "area_cvx": ii * 5.,
                     "image": image * ii,
                     "contour": contour,
                     "mask": mask,

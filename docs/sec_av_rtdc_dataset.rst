@@ -116,11 +116,17 @@ Here are a few useful functionalities for scripting with dclab.
     # dataset format
     In [15]: ds.format
 
-    # available features
+    # all available features
     In [16]: ds.features
 
-    # available scalar features
+    # scalar (one number per event) features
     In [16]: ds.features_scalar
+
+    # innate (present in the underlying data file) features
+    In [16]: ds.features_innate
+
+    # loaded (innate and computed ancillaries) features
+    In [16]: ds.features_loaded
 
     # test feature availability (success)
     In [17]: "area_um" in ds

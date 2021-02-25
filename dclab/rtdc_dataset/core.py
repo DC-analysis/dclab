@@ -2,7 +2,6 @@
 
 import abc
 import random
-import sys
 import warnings
 
 import numpy as np
@@ -57,6 +56,9 @@ class RTDCBase(object):
         self.logs = {}
         #: Title of the measurement
         self.title = None
+        #: Path or DCOR identifier of the dataset (set to "none"
+        #: for :class:`RTDC_Dict`)
+        self.path = None
         # Unique identifier
         if identifier is None:
             # Generate a unique identifier for this dataset
@@ -135,10 +137,7 @@ class RTDCBase(object):
                                         self.identifier,
                                         hex(id(self)))
         if self.path != "none":
-            if sys.version_info[0] == 2:
-                repre += " ({})>".format(str(self.path).decode("utf-8"))
-            else:
-                repre += " ({})>".format(self.path)
+            repre += " ({})>".format(self.path)
         return repre
 
     @staticmethod
@@ -184,7 +183,7 @@ class RTDCBase(object):
 
     @staticmethod
     def get_kde_spacing(a, scale="linear", method=kde_methods.bin_width_doane,
-                        method_kw={}, feat="undefined", ret_scaled=False):
+                        method_kw=None, feat="undefined", ret_scaled=False):
         """Convenience function for computing the contour spacing
 
         Parameters
@@ -199,9 +198,11 @@ class RTDCBase(object):
             keyword arguments to `method`
         feat: str
             feature name for debugging
-        ret_scale: bol
+        ret_scaled: bol
             whether or not to return the scaled array of `a`
         """
+        if method_kw is None:
+            method_kw = {}
         # Apply scale (no change for linear scale)
         asc = RTDCBase._apply_scale(a, scale, feat)
         # Apply multiplicator
@@ -295,12 +296,15 @@ class RTDCBase(object):
         sclr = [ft for ft in self.features if dfn.scalar_feature_exists(ft)]
         return sclr
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def hash(self):
         """Reproducible dataset hash (defined by derived classes)"""
 
-    def apply_filter(self, force=[]):
+    def apply_filter(self, force=None):
         """Compute the filters for the dataset"""
+        if force is None:
+            force = []
         self.filter.update(rtdc_ds=self, force=force)
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform",
@@ -376,7 +380,7 @@ class RTDCBase(object):
             return x[idx], y[idx]
 
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None,
-                        yacc=None, kde_type="histogram", kde_kwargs={},
+                        yacc=None, kde_type="histogram", kde_kwargs=None,
                         xscale="linear", yscale="linear"):
         """Evaluate the kernel density estimate for contour plots
 
@@ -406,6 +410,8 @@ class RTDCBase(object):
         X, Y, Z : coordinates
             The kernel density Z evaluated on a rectangular grid (X,Y).
         """
+        if kde_kwargs is None:
+            kde_kwargs = {}
         xax = xax.lower()
         yax = yax.lower()
         kde_type = kde_type.lower()
@@ -466,7 +472,7 @@ class RTDCBase(object):
         return xmesh, ymesh, density
 
     def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
-                        kde_type="histogram", kde_kwargs={}, xscale="linear",
+                        kde_type="histogram", kde_kwargs=None, xscale="linear",
                         yscale="linear"):
         """Evaluate the kernel density estimate for scatter plots
 
@@ -496,6 +502,8 @@ class RTDCBase(object):
         density : 1d ndarray
             The kernel density evaluated for the filtered data points.
         """
+        if kde_kwargs is None:
+            kde_kwargs = {}
         xax = xax.lower()
         yax = yax.lower()
         kde_type = kde_type.lower()

@@ -25,7 +25,7 @@ def get_volume(cont, pos_x, pos_y, pix):
         e.g. obtained using `mm.pos_y`
     px_um: float
         The detector pixel size in µm.
-        e.g. obtained using: `mm.config["image"]["pix size"]`
+        e.g. obtained using: `mm.config["imaging"]["pixel size"]`
 
     Returns
     -------

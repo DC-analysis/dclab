@@ -229,7 +229,7 @@ for _i in range(10):
                             "User defined {}".format(_i)
                             ])
 
-#: List of non-scalar features
+#: list of non-scalar features
 FEATURES_NON_SCALAR = [
     # This is a (M, 2)-shaped array with integer contour coordinates
     ["contour", "Binary event contour image"],

@@ -50,6 +50,10 @@ coverage.xml
 # Django stuff:
 *.log
 
+# Vim stuff:
+*~
+*.swp
+*.swo
 
 # Cython
 *.c

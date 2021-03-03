@@ -25,28 +25,20 @@ Valid configuration sections and keys are described in:
 :ref:`sec_analysis_meta` and :ref:`sec_experiment_meta`.
 
 
-.. data:: dclab.dfn.CFG_ANALYSIS
+.. autodata:: dclab.definitions.CFG_ANALYSIS
+   :no-value:
 
-    User-editable configuration for data analysis.
-    
-.. data:: dclab.dfn.CFG_METADATA
+.. autodata:: dclab.definitions.CFG_METADATA
+   :no-value:
 
-    Measurement-specific metadata.
+.. autodata:: dclab.definitions.config_funcs
+   :no-value:
 
-.. data:: dclab.dfn.config_funcs
+.. autodata:: dclab.definitions.config_keys
+   :no-value:
 
-    Dictionary of dictionaries containing functions to convert input data
-    to the predefined data type
-
-.. data:: dclab.dfn.config_keys
-
-    Dictionary with sections as keys and configuration parameter
-    names as values
-
-.. data:: dclab.dfn.config_types
-
-    Dictionary of dictionaries containing the data type of each
-    configuration parameter
+.. autodata:: dclab.definitions.config_types
+   :no-value:
 
 
 features
@@ -54,32 +46,27 @@ features
 Features are discussed in more detail in: :ref:`sec_features`.
 
 
-.. autofunction:: dclab.dfn.feature_exists
+.. autofunction:: dclab.definitions.feature_exists
 
-.. autofunction:: dclab.dfn.get_feature_label
+.. autofunction:: dclab.definitions.get_feature_label
 
-.. autofunction:: dclab.dfn.scalar_feature_exists
+.. autofunction:: dclab.definitions.scalar_feature_exists
 
 
-.. data:: dclab.dfn.FEATURES_NON_SCALAR
+.. autodata:: dclab.definitions.FEATURES_NON_SCALAR
+   :no-value:
 
-    Non-scalar features
+.. autodata:: dclab.definitions.feature_names
+   :no-value:
 
-.. data:: dclab.dfn.feature_names
+.. autodata:: dclab.definitions.feature_labels
+   :no-value:
 
-    List of valid feature names
+.. autodata:: dclab.definitions.feature_name2label
+   :no-value:
 
-.. data:: dclab.dfn.feature_labels
-
-    List of human-readable labels for each valid feature
-
-.. data:: dclab.dfn.feature_name2label
-
-    Dictionary that maps feature names to feature labels
-
-.. data:: dclab.dfn.scalar_feature_names
-
-    List of valid scalar feature names
+.. autodata:: dclab.definitions.scalar_feature_names
+   :no-value:
 
 parse functions
 ---------------

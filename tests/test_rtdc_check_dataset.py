@@ -180,6 +180,17 @@ def test_ic_fl_num_lasers():
     assert cues[0].cfg_key == "laser count"
 
 
+def test_ic_flow_rate_not_zero():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_flow_rate_not_zero()
+    assert cues[0].category == "metadata wrong"
+    assert cues[0].cfg_section == "setup"
+    assert cues[0].cfg_key == "flow rate"
+
+
 def test_ic_fmt_hdf5_image1():
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with h5py.File(h5path, "a") as h5:

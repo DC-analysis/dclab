@@ -1,13 +1,14 @@
 0.32.5
+ - fix: add check for zero-flow rate in dclab-verify-dataset
+ - setup: added new file CREDITS for docs and only use maintainer
+   in setup.py
  - docs: add autodoc to constant variables (#94)
- - ref: int/bool deprecation warnings in numpy 1.20.0 (#93)
- - tests: test for area_cvx as a float, consistent with output from
-   Shape-In (#96)
  - docs: add "features_innate" and "features_loaded" to scripting
    goodies section
  - ref: cleanup of RTDCBase class
- - setup: added new file CREDITS for docs and only use maintainer
-   in setup.py
+ - ref: int/bool deprecation warnings in numpy 1.20.0 (#93)
+ - tests: test for area_cvx as a float, consistent with output from
+   Shape-In (#96)
 0.32.4
  - fix: TypeError when registering emodulus LUT (#91)
  - ref: minor cleanup

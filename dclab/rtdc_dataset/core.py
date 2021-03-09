@@ -37,11 +37,13 @@ class RTDCBase(object):
         self.format = self.__class__.__name__.split("_")[-1].lower()
 
         self._polygon_filter_ids = []
-        # Events have the feature name as keys and contain 1D ndarrays.
+        # Events have the feature name as keys and contain nD ndarrays.
         self._events = {}
         # Ancillaries have the feature name as keys and a
         # tuple containing feature and hash as value.
         self._ancillaries = {}
+        # Temporary features are defined by the user ad hoc at runtime.
+        self._usertemp = {}
         #: Configuration of the measurement
         self.config = None
         #: Export functionalities; instance of
@@ -69,7 +71,7 @@ class RTDCBase(object):
 
     def __contains__(self, key):
         ct = False
-        if key in self._events:
+        if key in self._events or key in self._usertemp:
             ct = True
         else:
             # Check ancillary features data
@@ -89,8 +91,9 @@ class RTDCBase(object):
 
     def __getitem__(self, key):
         if key in self._events:
-            data = self._events[key]
-            return data
+            return self._events[key]
+        elif key in self._usertemp:
+            return self._usertemp[key]
         # Try to find the feature in the ancillary features
         # (see ancillaries submodule for more information).
         # These features are cached in `self._ancillaries`.
@@ -220,6 +223,7 @@ class RTDCBase(object):
         be available. Always check against `__contains__`.
         """
         feats = list(self._events.keys())
+        feats += list(self._usertemp.keys())
         feats += list(AncillaryFeature.feature_names)
         feats = sorted(set(feats))
         # exclude non-standard features
@@ -264,7 +268,7 @@ class RTDCBase(object):
 
     @property
     def features_innate(self):
-        """All features excluding ancillary features"""
+        """All features excluding ancillary or temporary features"""
         innate = [ft for ft in self.features if ft in self._events]
         return innate
 
@@ -283,6 +287,7 @@ class RTDCBase(object):
         for feat in self.features:
             if (feat in features_innate
                 or feat in FEATURES_RAPID
+                or feat in self._usertemp
                     or feat in self._ancillaries):
                 # Note that there is no hash checking here for
                 # ancillary features. This might be interesting

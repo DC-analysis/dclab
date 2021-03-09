@@ -46,7 +46,6 @@ class RTDC_Dict(RTDCBase):
         self.title = "{}_{:02d}_{:02d}/{}.dict".format(t[0], t[1], t[2], ids)
 
         # Populate events
-        self._events = {}
         for key in ddict:
             if dfn.feature_exists(key):
                 if dfn.scalar_feature_exists(key):

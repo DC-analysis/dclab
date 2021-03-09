@@ -13,6 +13,8 @@ from . import ml
 from .polygon_filter import PolygonFilter
 from . import rtdc_dataset
 from .rtdc_dataset import new_dataset
+from .rtdc_dataset.feat_temp import register_temporary_feature, \
+    set_temporary_feature
 from . import statistics
 
 from ._version import version as __version__

@@ -65,9 +65,7 @@ setup(
                   ),
         ],
     # not to be confused with definitions in pyproject.toml [build-system]
-    setup_requires=["pytest-runner"],
     python_requires=">=3.6",
-    tests_require=["pytest", "urllib3"] + extras_require["all"],
     extras_require=extras_require,
     entry_points={
        "console_scripts": [

@@ -47,7 +47,7 @@ test_script:
   - appveyor-retry pip install pytest
   - appveyor-retry pip install coverage
   - appveyor-retry pip install codecov
-  - coverage run --source=dclab ./setup.py test
+  - coverage run --source=dclab -m pytest tests
   - coverage report -m
   # Allow codecov to fail
   - codecov || exit 0

@@ -41,15 +41,12 @@ once you are done making your changes.
 Please make sure to edit the 
 `Changelog <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/CHANGELOG>`__. 
 
-**Very important:** Please always try to use 
+**Very important:** Please always try to use ::
 
-::
 
     git pull --rebase
 
-instead of
-
-::
+instead of::
 
     git pull
 
@@ -58,7 +55,10 @@ to prevent confusions in the commit history.
 Tests
 ~~~~~
 dclab is tested using pytest. If you have the time, please write test
-methods for your code and put them in the ``tests`` directory.
+methods for your code and put them in the ``tests`` directory. To run
+the tests, install `pytest` and run::
+
+    pytest tests
 
 
 Incrementing version
@@ -66,9 +66,7 @@ Incrementing version
 Dclab currently gets its version from the latest git tag.
 If you think that a new version should be published,
 create a tag on the master branch (if you have the necessary
-permissions to do so):
-
-::
+permissions to do so)::
 
     git tag -a "0.1.3"
     git push --tags origin

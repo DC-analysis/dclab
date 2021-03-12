@@ -391,6 +391,36 @@ class IntegrityChecker(object):
                             cfg_key="samples per event"))
         return cues
 
+    def check_fl_max_positive(self, **kwargs):
+        """ Check if all fl?_max values are >0.1 """
+        cues = []
+        neg_feats = []
+        for fl in ['fl1_max', 'fl2_max', 'fl3_max']:
+            if fl in self.ds:
+                if min(self.ds[fl]) <= 0.1:
+                    neg_feats.append(fl)
+        if neg_feats:
+            cues.append(ICue(
+                msg="Negative value for feature {}".format(neg_feats),
+                level="alert",
+                category="feature data"))
+        return cues
+
+    def check_fl_max_ctc_positive(self, **kwargs):
+        """ Check if all fl?_max_ctc values are > 0.1 """
+        cues = []
+        neg_feats = []
+        for fl in ['fl1_max_ctc', 'fl2_max_ctc', 'fl3_max_ctc']:
+            if fl in self.ds:
+                if min(self.ds[fl]) <= 0.1:
+                    neg_feats.append(fl)
+        if neg_feats:
+            cues.append(ICue(
+                msg="Negative value for feature {}".format(neg_feats),
+                level="alert",
+                category="feature data"))
+        return cues
+
     def check_flow_rate(self, **kwargs):
         """Make sure sheath and sample flow rates add up"""
         cues = []

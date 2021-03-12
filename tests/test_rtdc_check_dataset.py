@@ -69,6 +69,7 @@ def test_exact():
         "Metadata: Missing key [online_contour] 'no absdiff'",
         "Metadata: Missing key [setup] 'identifier'",
         "Metadata: Missing key [setup] 'module composition'",
+        "Negative value for feature ['fl2_max']",
     ]
     known_info = [
         'Compression: None',
@@ -289,6 +290,44 @@ def test_ic_metadata_empty_string():
     assert cues[0].level == "violation"
     assert cues[0].cfg_section == "setup"
     assert cues[0].cfg_key == "medium"
+
+
+def test_ic_fl_max():
+    # Testing dataset with negative fl_max values
+    ddict = example_data_dict(size=8472, keys=["fl1_max"])
+    ddict["fl1_max"] -= min(ddict["fl1_max"]) + 1
+    ds = new_dataset(ddict)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_max_positive()
+    assert cues[0].level == "alert"
+    assert cues[0].category == "feature data"
+
+    # Testing dataset without negative fl_max values
+    ddict = example_data_dict(size=8472, keys=["fl1_max"])
+    ddict["fl1_max"] -= min(ddict["fl1_max"]) - 1
+    ds = new_dataset(ddict)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_max_positive()
+    assert not cues
+
+
+def test_ic_fl_max_ctc():
+    # Testing dataset with negative fl_max_ctc values
+    ddict = example_data_dict(size=8472, keys=["fl1_max_ctc"])
+    ddict["fl1_max_ctc"] -= min(ddict["fl1_max_ctc"]) + 1
+    ds = new_dataset(ddict)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_max_ctc_positive()
+    assert cues[0].level == "alert"
+    assert cues[0].category == "feature data"
+
+    # Testing dataset without negative fl_max_ctc values
+    ddict = example_data_dict(size=8472, keys=["fl1_max_ctc"])
+    ddict["fl1_max_ctc"] -= min(ddict["fl1_max_ctc"]) - 1
+    ds = new_dataset(ddict)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_fl_max_ctc_positive()
+    assert not cues
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'

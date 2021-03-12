@@ -392,7 +392,7 @@ class IntegrityChecker(object):
         return cues
 
     def check_fl_max_positive(self, **kwargs):
-        """ Check if all fl?_max values are >0.1 """
+        """Check if all fl?_max values are >0.1"""
         cues = []
         neg_feats = []
         for fl in ['fl1_max', 'fl2_max', 'fl3_max']:
@@ -401,13 +401,14 @@ class IntegrityChecker(object):
                     neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(
-                msg="Negative value for feature {}".format(neg_feats),
+                msg="Negative value for feature(s): {}".format(
+                    ", ".join(neg_feats)),
                 level="alert",
                 category="feature data"))
         return cues
 
     def check_fl_max_ctc_positive(self, **kwargs):
-        """ Check if all fl?_max_ctc values are > 0.1 """
+        """Check if all fl?_max_ctc values are > 0.1"""
         cues = []
         neg_feats = []
         for fl in ['fl1_max_ctc', 'fl2_max_ctc', 'fl3_max_ctc']:
@@ -416,7 +417,8 @@ class IntegrityChecker(object):
                     neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(
-                msg="Negative value for feature {}".format(neg_feats),
+                msg="Negative value for feature(s): {}".format(
+                    ", ".join(neg_feats)),
                 level="alert",
                 category="feature data"))
         return cues

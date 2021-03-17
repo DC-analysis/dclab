@@ -1,4 +1,5 @@
 0.33.0
+ - fix: catch errors for integrity checks on non-raw datasets (#102)
  - fix: add check for negative fluorescence values (#101)
  - feat: introduce user-defined temporary features (point 2 in #98)
  - setup: remove deprecated setup.py test

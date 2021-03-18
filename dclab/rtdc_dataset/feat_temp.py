@@ -44,7 +44,8 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
     Parameters
     ----------
     feature: str
-        All lower-case feature name (underscores allowed)
+        Feature name; allowed characters are lower-case lettersm
+        digits, and underscores
     label: str
         Feature label used e.g. for plotting
     is_scalar: bool
@@ -52,10 +53,11 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
 
     .. versionadded: 0.33.0
     """
-    _feat = "".join([f for f in feature if f in "abcdefghijklmnopqrstuvwxyz_"])
+    allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
+    _feat = "".join([f for f in feature if f in allowed_chars])
     if _feat != feature:
-        raise ValueError("Feature name `{}` must only ".format(feature)
-                         + "contain lower-case characters and underscores!")
+        raise ValueError("`feature` must only contain lower-case characters, "
+                         "digits, and underscores; got '{}'!".format(feature))
     if label is None:
         label = "User defined feature {}".format(feature)
     if dfn.feature_exists(feature):
@@ -73,7 +75,8 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
 
 def set_temporary_feature(rtdc_ds, feature, data):
     if not dfn.feature_exists(feature):
-        raise ValueError("Feature '{}' does not exist!".format(feature))
+        raise ValueError(
+            "Temporary feature '{}' has not been registered!".format(feature))
     if isinstance(rtdc_ds, RTDC_Hierarchy):
         raise NotImplementedError("Setting temporary features for hierarchy "
                                   "children not implemented yet!")

@@ -1,4 +1,5 @@
 0.33.0
+ - feat: add metadata keys for baseline offset (#107)
  - fix: add check for negative fluorescence values (#101)
  - feat: introduce user-defined temporary features (point 2 in #98)
  - setup: remove deprecated setup.py test

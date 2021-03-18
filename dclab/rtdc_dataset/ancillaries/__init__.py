@@ -11,7 +11,7 @@ from . import af_ml_score  # noqa: F401
 FEATURES_RAPID = [
     "area_ratio",
     "area_um",
-    "aspec",
+    "aspect",
     "deform",
     "index",
     "time",

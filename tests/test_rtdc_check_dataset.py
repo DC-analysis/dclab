@@ -348,6 +348,27 @@ def test_ic_fl_max_ctc():
     assert not cues
 
 
+def test_ic_invalid_dataset():
+    # Testing if IC throws NotImplementedError for hierarchy datasets
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds_child = new_dataset(ds)
+    with check.IntegrityChecker(ds_child) as ic:
+        with pytest.raises(NotImplementedError):
+            ic.check()
+
+    # Testing if IC throws NotImplementedError for raw-datasets with
+    # applied filters
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.config["filtering"]["area_um max"] = 100
+    ds.config["filtering"]["area_um min"] = 1
+    ds.apply_filter()
+    with check.IntegrityChecker(ds) as ic:
+        with pytest.raises(NotImplementedError):
+            ic.check()
+
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')

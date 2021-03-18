@@ -8,6 +8,7 @@ import h5py
 import numpy as np
 
 from .core import RTDCBase
+from .fmt_hierarchy import RTDC_Hierarchy
 from .load import load_file
 
 from .. import definitions as dfn
@@ -199,6 +200,14 @@ class IntegrityChecker(object):
         """
         cues = []
         funcs = IntegrityChecker.__dict__
+        if not len(self.ds) == np.sum(self.ds.filter.all):
+            raise NotImplementedError(
+                    "Integrity checks for datasets with active event filters "
+                    "are not supported!")
+        elif self.ds.__class__ == RTDC_Hierarchy:
+            raise NotImplementedError(
+                    "Integrity checks for 'RTDC_Hierarchy' instances are "
+                    "not supported!")
         for ff in sorted(funcs.keys()):
             if ff.startswith("check_fl_") and not self.has_fluorescence:
                 # skip

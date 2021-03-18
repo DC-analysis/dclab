@@ -72,6 +72,9 @@ CFG_METADATA = {
         ["signal max", float, "Upper voltage detection limit [V]"],
         ["signal min", float, "Lower voltage detection limit [V]"],
         ["trace median", fint, "Rolling median filter size for traces"],
+        ["baseline 1 offset", fint, "Baseline offset channel 1"],
+        ["baseline 2 offset", fint, "Baseline offset channel 2"],
+        ["baseline 3 offset", fint, "Baseline offset channel 3"],
     ],
     # All tdms-related parameters
     "fmt_tdms": [

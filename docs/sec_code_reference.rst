@@ -139,6 +139,15 @@ Ancillaries
     :undoc-members:
 
 
+.. _cr_temp_feat:
+
+temporary features
+------------------
+.. automodule:: dclab.rtdc_dataset.feat_temp
+    :members:
+    :undoc-members:
+
+
 config
 ------
 .. autoclass:: dclab.rtdc_dataset.config.Configuration

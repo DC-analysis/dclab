@@ -1,3 +1,9 @@
+"""
+.. versionadded:: 0.33.0
+"""
+
+import numpy as np
+
 from .. import definitions as dfn
 
 from .fmt_hierarchy import RTDC_Hierarchy
@@ -38,8 +44,7 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
     features are not enough, e.g. for prototyping, testing, or
     collating with other data. Temporary features allow you to
     leverage the full functionality of :class:`RTDCBase` with
-    your custom features (no need to go for custom
-    `pandas.Dataframe`s),
+    your custom features (no need to go for a custom `pandas.Dataframe`).
 
     Parameters
     ----------
@@ -50,8 +55,6 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
         Feature label used e.g. for plotting
     is_scalar: bool
         Whether or not the feature is a scalar feature
-
-    .. versionadded: 0.33.0
     """
     allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
     _feat = "".join([f for f in feature if f in allowed_chars])
@@ -74,6 +77,20 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
 
 
 def set_temporary_feature(rtdc_ds, feature, data):
+    """Set temporary feature data for a dataset
+
+    Parameters
+    ----------
+    rtdc_ds: dclab.RTDCBase
+        Dataset for which to set the feature. Note that temporary
+        features cannot be set for hierarchy children and that the
+        length of the feature `data` must match the number of events
+        in `rtdc_ds`.
+    feature: str
+        Feature name
+    data: np.ndarray
+        The data
+    """
     if not dfn.feature_exists(feature):
         raise ValueError(
             "Temporary feature '{}' has not been registered!".format(feature))
@@ -84,4 +101,11 @@ def set_temporary_feature(rtdc_ds, feature, data):
         raise ValueError("The temporary feature `data` must have same length "
                          "as the dataset. Expected length {}, got length "
                          "{}!".format(len(rtdc_ds), len(data)))
+    data = np.array(data)
+    if len(data.shape) == 1 and not dfn.scalar_feature_exists(feature):
+        raise ValueError("Feature '{}' is not a scalar feature, but a "
+                         "1D array was given for `data`!".format(feature))
+    elif len(data.shape) != 1 and dfn.scalar_feature_exists(feature):
+        raise ValueError("Feature '{}' is a scalar feature, but the `data` "
+                         "array is not 1D!".format(feature))
     rtdc_ds._usertemp[feature] = data

@@ -65,7 +65,10 @@ class H5Events(object):
         if self._is_defective_feature(key):
             contained = False
         else:
-            contained = key in self._features
+            if key in self._features and dfn.feature_exists(key):
+                contained = True
+            else:
+                contained = False
         return contained
 
     def __getitem__(self, key):

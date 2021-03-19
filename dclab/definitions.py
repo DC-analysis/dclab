@@ -46,6 +46,17 @@ CFG_METADATA = {
     # All special keywords related to RT-FDC
     # This section should not be present for regular RT-DC measurements.
     "fluorescence": [
+        # The baseline offset was introduced in 0.33.0. It is added to
+        # the trace data to obtain the actual signal used for data
+        # processing (e.g. obtaining the fl1_max feature). This is more
+        # robust than adding the offset directly to the trace data, because
+        # of the possibility of integer overflows. Furthermore, DCKit can
+        # set this parameter without modifying the original trace data
+        # to correct/remove negative trace data
+        # (see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/101).
+        ["baseline 1 offset", fint, "Baseline offset channel 1"],
+        ["baseline 2 offset", fint, "Baseline offset channel 2"],
+        ["baseline 3 offset", fint, "Baseline offset channel 3"],
         ["bit depth", fint, "Trace bit depth"],
         # If a fluorescence channel is used, a channel name *must* be
         # present. If a channel is not used, the channel name *must not*
@@ -72,9 +83,6 @@ CFG_METADATA = {
         ["signal max", float, "Upper voltage detection limit [V]"],
         ["signal min", float, "Lower voltage detection limit [V]"],
         ["trace median", fint, "Rolling median filter size for traces"],
-        ["baseline 1 offset", fint, "Baseline offset channel 1"],
-        ["baseline 2 offset", fint, "Baseline offset channel 2"],
-        ["baseline 3 offset", fint, "Baseline offset channel 3"],
     ],
     # All tdms-related parameters
     "fmt_tdms": [

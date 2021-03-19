@@ -1,5 +1,4 @@
 """Check RT-DC datasets for completeness"""
-
 import copy
 import functools
 import warnings
@@ -12,7 +11,6 @@ from .fmt_hierarchy import RTDC_Hierarchy
 from .load import load_file
 
 from .. import definitions as dfn
-
 
 #: log names that end with these strings are not checked
 IGNORED_LOG_NAMES = {
@@ -80,17 +78,19 @@ VALID_CHOICES = {}
 
 @functools.total_ordering
 class ICue(object):
-    def __init__(self, msg, level, category, data=None,
+    def __init__(self, msg, level, category, data=None, identifier=None,
                  cfg_section=None, cfg_key=None, cfg_choices=None):
         """Integrity cue"""
         #: human readable message
         self.msg = msg
-        #: machine-readable data associated with the check
-        self.data = data
         #: severity level ("violation", "alert", or "info")
         self.level = level
+        #: machine-readable data associated with the check
+        self.data = data
         #: fail category
         self.category = category
+        #: identifier e.g. for UI manipulation in DCKit
+        self.identifier = identifier
         #: section (only for categories "missing metadata", "bad metadata")
         self.cfg_section = cfg_section
         #: key (only for categories "missing metadata", "bad metadata");
@@ -181,8 +181,8 @@ class IntegrityChecker(object):
     @property
     def has_fluorescence(self):
         if ("fluorescence" in self.ds
-            or "fl1_max" in self.ds
-            or "fl2_max" in self.ds
+                or "fl1_max" in self.ds
+                or "fl2_max" in self.ds
                 or "fl3_max" in self.ds):
             fl = True
         else:
@@ -202,12 +202,12 @@ class IntegrityChecker(object):
         funcs = IntegrityChecker.__dict__
         if not len(self.ds) == np.sum(self.ds.filter.all):
             raise NotImplementedError(
-                    "Integrity checks for datasets with active event filters "
-                    "are not supported!")
+                "Integrity checks for datasets with active event filters "
+                "are not supported!")
         elif self.ds.__class__ == RTDC_Hierarchy:
             raise NotImplementedError(
-                    "Integrity checks for 'RTDC_Hierarchy' instances are "
-                    "not supported!")
+                "Integrity checks for 'RTDC_Hierarchy' instances are "
+                "not supported!")
         for ff in sorted(funcs.keys()):
             if ff.startswith("check_fl_") and not self.has_fluorescence:
                 # skip
@@ -242,15 +242,16 @@ class IntegrityChecker(object):
                     else:
                         raise ValueError("Unknown object: {}".format(obj))
                 return comp, noco
+
             comp, noco = iter_count_compression(self.ds._h5)
             if noco == 0:
                 compression = "All"
             elif comp == 0:
                 compression = "None"
             else:
-                compression = "Partial ({} of {})".format(comp, noco+comp)
+                compression = "Partial ({} of {})".format(comp, noco + comp)
             data = {"compressed": comp,
-                    "total": noco+comp,
+                    "total": noco + comp,
                     "uncompressed": noco,
                     }
         else:
@@ -268,7 +269,7 @@ class IntegrityChecker(object):
         cues = []
         lends = len(self.ds)
         if "index" in self.ds:
-            if not np.all(self.ds["index"] == np.arange(1, lends+1)):
+            if not np.all(self.ds["index"] == np.arange(1, lends + 1)):
                 cues.append(ICue(
                     msg="The index feature is not enumerated correctly",
                     level="violation",
@@ -436,13 +437,13 @@ class IntegrityChecker(object):
         """Make sure sheath and sample flow rates add up"""
         cues = []
         if ("setup" in self.ds.config
-            and "flow rate" in self.ds.config["setup"]
-            and "flow rate sample" in self.ds.config["setup"]
+                and "flow rate" in self.ds.config["setup"]
+                and "flow rate sample" in self.ds.config["setup"]
                 and "flow rate sheath" in self.ds.config["setup"]):
             frsum = self.ds.config["setup"]["flow rate"]
             frsam = self.ds.config["setup"]["flow rate sample"]
             frshe = self.ds.config["setup"]["flow rate sheath"]
-            if not np.allclose(frsum, frsam+frshe):
+            if not np.allclose(frsum, frsam + frshe):
                 for k in ["flow rate", "flow rate sheath", "flow rate sample"]:
                     cues.append(ICue(
                         msg="Metadata: Flow rates don't add up (sheath "
@@ -458,7 +459,7 @@ class IntegrityChecker(object):
         """Make sure the flow rate is not zero"""
         cues = []
         if ("setup" in self.ds.config
-            and "flow rate" in self.ds.config["setup"]
+                and "flow rate" in self.ds.config["setup"]
                 and self.ds.config["setup"]["flow rate"] == 0):
             cues.append(ICue(
                 msg="Metadata: Flow rate is zero!",
@@ -513,10 +514,10 @@ class IntegrityChecker(object):
                             if len(log[ii]) > LOG_MAX_LINE_LENGTH:
                                 cues.append(ICue(
                                     msg="Logs: {} line {} ".format(logname, ii)
-                                            + "exceeds maximum line length "
-                                            + "{}".format(LOG_MAX_LINE_LENGTH),
-                                            level="alert",
-                                            category="format HDF5"))
+                                        + "exceeds maximum line length "
+                                        + "{}".format(LOG_MAX_LINE_LENGTH),
+                                    level="alert",
+                                    category="format HDF5"))
         return cues
 
     def check_info(self, **kwargs):
@@ -547,14 +548,14 @@ class IntegrityChecker(object):
                     cues.append(ICue(
                         msg="Metadata: Datatype of [{}] '{}'".format(sec, key)
                             + "must be '{}'".format(
-                                dfn.config_types[sec][key]),
+                            dfn.config_types[sec][key]),
                         level="violation",
                         category="metadata dtype",
                         cfg_section=sec,
                         cfg_key=key))
         # check for ROI size
         if ("imaging" in self.ds.config
-            and "roi size x" in self.ds.config["imaging"]
+                and "roi size x" in self.ds.config["imaging"]
                 and "roi size y" in self.ds.config["imaging"]):
             for ii, roi in enumerate(["roi size y", "roi size x"]):
                 for feat in ["image", "image_bg", "mask"]:
@@ -564,13 +565,13 @@ class IntegrityChecker(object):
                         if soll != ist:
                             cues.append(ICue(
                                 msg="Metadata: Mismatch [imaging] "
-                                        + "'{}' and feature {} ".format(roi,
-                                                                        feat)
-                                        + "({} vs {})".format(ist, soll),
-                                        level="violation",
-                                        category="metadata wrong",
-                                        cfg_section="imaging",
-                                        cfg_key=roi))
+                                    + "'{}' and feature {} ".format(roi,
+                                                                    feat)
+                                    + "({} vs {})".format(ist, soll),
+                                level="violation",
+                                category="metadata wrong",
+                                cfg_section="imaging",
+                                cfg_key=roi))
         return cues
 
     def check_metadata_empty_string(self, **kwargs):
@@ -690,6 +691,35 @@ class IntegrityChecker(object):
                     msg=e.args[0],
                     level="violation",
                     category="feature data"))
+        return cues
+
+    def check_shapein_issue3_bad_medium(self, **kwargs):
+        """Some versions of Shape-In stored wrong [setup]: medium
+
+        The problem only affects selection of "CellCarrier" which had
+        index 0 and as a result "CellCarrierB" was written to the file.
+        This means we only have to check for the Shape-In version and
+        whether the medium is 'CellCarrierB'. In DCKit, the user can
+        then manually edit the medium.
+
+        Affected Shape-In versions: >=2.2.1.0,<2.2.2.3
+
+        https://github.com/ZELLMECHANIK-DRESDEN/ShapeIn_Issues/issues/3
+        """
+        cues = []
+        medium = self.ds.config["setup"].get("medium", "")
+        si_ver = self.ds.config["setup"].get("software version", "")
+        si_ver = si_ver.strip("dev")  # for e.g. "2.2.1.0dev"
+        if (medium == "CellCarrierB"
+                and si_ver in ["2.2.1.0", "2.2.2.0", "2.2.2.1", "2.2.2.2"]):
+            cues.append(ICue(
+                msg="Metadata: Please verify that 'medium' is really "
+                    + "'CellCarrierB' (Shape-In issue #3)",
+                level="alert",
+                category="metadata wrong",
+                identifier="Shape-In issue #3",
+                cfg_section="setup",
+                cfg_key="medium"))
         return cues
 
 

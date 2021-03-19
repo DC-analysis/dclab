@@ -446,6 +446,34 @@ def test_no_fluorescence():
     assert set(info) == set(known_info)
 
 
+@pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",
+                                        "2.2.2.0", "2.2.2.1", "2.2.2.2"])
+def test_shapein_issue3_bad_medium(si_version):
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:software version"] = si_version
+        h5.attrs["setup:medium"] = "CellCarrierB"
+    ds = new_dataset(h5path)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_shapein_issue3_bad_medium()
+        assert len(cues) == 1
+        assert cues[0].cfg_key == "medium"
+        assert cues[0].cfg_section == "setup"
+        assert cues[0].category == "metadata wrong"
+
+
+@pytest.mark.parametrize("si_version", ["2.2.0.3", "2.2.2.3"])
+def test_shapein_issue3_bad_medium_control(si_version):
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:software version"] = si_version
+        h5.attrs["setup:medium"] = "CellCarrierB"
+    ds = new_dataset(h5path)
+    with check.IntegrityChecker(ds) as ic:
+        cues = ic.check_shapein_issue3_bad_medium()
+        assert len(cues) == 0
+
+
 def test_temperature():
     # there are probably a million things wrong with this dataset, but
     # we are only looking for the temperature thing

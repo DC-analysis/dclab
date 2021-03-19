@@ -1,8 +1,12 @@
+0.33.1
+ - fix: add dataset check for wrong medium written to .rtdc file
+   by Shape-In
+ - enh: allow to set ICue identifier for integrity checking
 0.33.0
- - fix: catch errors for integrity checks on non-raw datasets (#102)
- - feat: add metadata keys for baseline offset (#107)
- - fix: add check for negative fluorescence values (#101)
  - feat: introduce user-defined temporary features (point 2 in #98)
+ - fix: catch errors for integrity checks on non-raw datasets (#102)
+ - fix: add check for negative fluorescence values (#101)
+ - enh: add metadata keys for baseline offset (#107)
  - setup: remove deprecated setup.py test
 0.32.5
  - fix: add check for zero-flow rate in dclab-verify-dataset

@@ -91,13 +91,12 @@ class Export(object):
             msg = "No image data to export: dataset {} !".format(ds.title)
             raise OSError(msg)
 
-    def fcs(self, path, features, meta_data={}, filtered=True, override=False):
+    def fcs(self, path, features, meta_data=None, filtered=True,
+            override=False):
         """Export the data of an RT-DC dataset to an .fcs file
 
         Parameters
         ----------
-        mm: instance of dclab.RTDCBase
-            The dataset that will be exported.
         path: str
             Path to an .fcs file. The ending .fcs is added automatically.
         features: list of str
@@ -120,6 +119,8 @@ class Export(object):
         Due to incompatibility with the .fcs file format, all events with
         NaN-valued features are not exported.
         """
+        if meta_data is None:
+            meta_data = {}
         if not FCSWRITE_AVAILABLE:
             raise ModuleNotFoundError(
                 "Package `fcswrite` required for fcs export!")
@@ -241,7 +242,8 @@ class Export(object):
             # update configuration
             hdf5_autocomplete_config(h5obj)
 
-    def tsv(self, path, features, meta_data={}, filtered=True, override=False):
+    def tsv(self, path, features, meta_data=None, filtered=True,
+            override=False):
         """Export the data of the current instance to a .tsv file
 
         Parameters
@@ -264,6 +266,8 @@ class Export(object):
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
         """
+        if meta_data is None:
+            meta_data = {}
         features = [c.lower() for c in features]
         path = pathlib.Path(path)
         ds = self.rtdc_ds
@@ -379,18 +383,24 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     elif feat == "trace":
         # store trace stacks (reduces file size, memory usage, and saves time)
         for tr in rtdc_ds["trace"].keys():
-            for cc in range(len(rtdc_ds) // CHUNK_SIZE):
-                trstack = rtdc_ds["trace"][tr][cc*CHUNK_SIZE:(cc+1)*CHUNK_SIZE]
-                write(h5obj,
-                      data={"trace": {tr: np.array(trstack, dtype=np.int16)}},
-                      mode="append",
-                      compression=compression)
+            tr0 = rtdc_ds["trace"][tr][0]
+            trstack = np.zeros((CHUNK_SIZE, len(tr0)), dtype=tr0.dtype)
+            jj = 0
+            for ii in range(len(rtdc_ds)):
+                if filtarr[ii]:
+                    trstack[jj] = rtdc_ds["trace"][tr][ii]
+                    if (jj + 1) % CHUNK_SIZE == 0:
+                        jj = 0
+                        write(h5obj,
+                              data={"trace": {tr: trstack}},
+                              mode="append",
+                              compression=compression)
+                    else:
+                        jj += 1
             # write rest
-            srest = len(rtdc_ds) % CHUNK_SIZE
-            if srest:
-                trstack = rtdc_ds["trace"][tr][-srest:]
+            if jj:
                 write(h5obj,
-                      data={"trace": {tr: np.array(trstack, dtype=np.int16)}},
+                      data={"trace": {tr: trstack[:jj, :]}},
                       mode="append",
                       compression=compression)
     elif feat == "index":
@@ -452,7 +462,7 @@ def hdf5_autocomplete_config(path_or_h5obj):
 
     Parameters
     ----------
-    path: pathlib.Path or str or h5py.File
+    path_or_h5obj: pathlib.Path or str or h5py.File
         Path to or opened RT-DC measurement
 
     """

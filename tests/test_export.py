@@ -380,6 +380,79 @@ def test_hdf5_trace_from_tdms():
             assert np.all(ds["trace"][key][ii] == ds2["trace"][key][ii])
 
 
+def test_hdf5_traces():
+    """Length of traces is preserved (no filtering)"""
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+
+    # sanity check
+    assert len(ds) == 7
+    assert len(ds["trace"]["fl1_median"]) == 7
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.rtdc")
+    ds.export.hdf5(f1, ["deform", "trace"])
+
+    ds2 = new_dataset(f1)
+    assert len(ds2) == 7
+    assert len(ds2["trace"]["fl1_median"]) == 7
+
+
+def test_hdf5_traces_filter():
+    """Length of traces was wrong when filters were applied #112
+
+    Test dataset length with additional feature.
+    """
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+
+    # applying some filters
+    ds.config["filtering"]["deform min"] = 0.01
+    ds.config["filtering"]["deform max"] = 0.1
+    ds.apply_filter()
+
+    # sanity check
+    assert np.sum(ds.filter.all) == 3
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.rtdc")
+    ds.export.hdf5(f1, ["deform", "trace"])
+
+    ds2 = new_dataset(f1)
+    assert len(ds2) == 3
+    assert len(ds2["deform"]) == 3
+    assert len(ds2["trace"]["fl1_median"]) == 3
+    assert np.all(ds["trace"]["fl1_raw"][3] == ds2["trace"]["fl1_raw"][0])
+    assert np.all(ds["trace"]["fl1_raw"][5] == ds2["trace"]["fl1_raw"][1])
+    assert np.all(ds["trace"]["fl1_raw"][6] == ds2["trace"]["fl1_raw"][2])
+
+
+def test_hdf5_traces_filter2():
+    """Length of traces was wrong when filters were applied #112
+
+    Test dataset lenght only with trace.
+    """
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+
+    # applying some filters
+    ds.config["filtering"]["deform min"] = 0.01
+    ds.config["filtering"]["deform max"] = 0.1
+    ds.apply_filter()
+
+    # sanity check
+    assert np.sum(ds.filter.all) == 3
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "test.rtdc")
+    ds.export.hdf5(f1, ["deform", "trace"])
+
+    ds2 = new_dataset(f1)
+    assert len(ds2) == 3
+    assert len(ds2["deform"]) == 3
+    assert len(ds2["trace"]["fl1_median"]) == 3
+    assert np.all(ds["trace"]["fl1_raw"][3] == ds2["trace"]["fl1_raw"][0])
+    assert np.all(ds["trace"]["fl1_raw"][5] == ds2["trace"]["fl1_raw"][1])
+    assert np.all(ds["trace"]["fl1_raw"][6] == ds2["trace"]["fl1_raw"][2])
+
+
 def test_tsv_export():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=222, keys=keys)

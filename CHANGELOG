@@ -1,7 +1,9 @@
 0.33.1
  - fix: add dataset check for wrong medium written to .rtdc file
    by Shape-In
+ - fix: filters were ignored when exporting trace data to hdf5 (#112)
  - enh: allow to set ICue identifier for integrity checking
+ - ref: code cleanup in export.py
 0.33.0
  - feat: introduce user-defined temporary features (point 2 in #98)
  - fix: catch errors for integrity checks on non-raw datasets (#102)

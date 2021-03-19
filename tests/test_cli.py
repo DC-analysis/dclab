@@ -238,6 +238,21 @@ def test_split():
                 ecount += len(di)
 
 
+def test_split_traces():
+    path_in = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    paths = cli.split(path_in=path_in, split_events=3, ret_out_paths=True)
+    with new_dataset(path_in) as ds:
+        ecount = 0
+        for pp in paths:
+            with new_dataset(pp) as di:
+                for flkey in ds["trace"].keys():
+                    trace1 = ds["trace"][flkey][ecount:ecount+len(di)]
+                    trace2 = di["trace"][flkey][:]
+                    assert len(trace1) == len(trace2)
+                    assert np.all(trace1 == trace2), flkey
+                ecount += len(di)
+
+
 def test_tdms2rtdc():
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)

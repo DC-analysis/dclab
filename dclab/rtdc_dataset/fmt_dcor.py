@@ -1,5 +1,7 @@
 """DCOR client interface"""
 from functools import lru_cache
+import json
+import time
 import uuid
 
 import numpy as np
@@ -44,7 +46,8 @@ class APIHandler(object):
         if api_key.strip() and api_key not in APIHandler.api_keys:
             APIHandler.api_keys.append(api_key)
 
-    def _get(self, query, feat=None, trace=None, event=None, api_key=""):
+    def _get(self, query, feat=None, trace=None, event=None, api_key="",
+             retries=3):
         qstr = "&query={}".format(query)
         if feat is not None:
             qstr += "&feature={}".format(feat)
@@ -53,8 +56,21 @@ class APIHandler(object):
         if event is not None:
             qstr += "&event={}".format(event)
         apicall = self.url + qstr
-        req = requests.get(apicall, headers={"Authorization": api_key})
-        return req.json()
+        for ii in range(retries):
+            req = requests.get(apicall, headers={"Authorization": api_key})
+            try:
+                jreq = req.json()
+            except json.decoder.JSONDecodeError:
+                time.sleep(0.1)  # wait a bit, maybe the server is overloaded
+                continue
+            else:
+                break
+        else:
+            raise DCORAccessError("Could not complete query '{}', because "
+                                  "the response did not contain any JSON-"
+                                  "parseable data. Retried {} times.".format(
+                                    apicall, retries))
+        return jreq
 
     def get(self, query, feat=None, trace=None, event=None):
         if query in APIHandler.cache_queries and query in self._cache:

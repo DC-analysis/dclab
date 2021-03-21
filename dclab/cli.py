@@ -70,7 +70,7 @@ def get_command_log(paths, custom_dict=None):
     data["files"] = []
     for ii, pp in enumerate(paths):
         fdict = {"name": pathlib.Path(pp).name,
-                 "sha256": util.hashfile(pp, hasher_class=hashlib.sha256),
+                 "sha256": util.hashfile(pp, constructor=hashlib.sha256),
                  "index": ii+1
                  }
         data["files"].append(fdict)

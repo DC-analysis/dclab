@@ -36,7 +36,7 @@ import warnings
 
 import numpy as np
 
-from ...util import obj2str
+from ...util import obj2bytes
 
 
 class BadFeatureSizeWarning(UserWarning):
@@ -191,18 +191,18 @@ class AncillaryFeature():
         hasher = hashlib.md5()
         # data columns
         for col in self.req_features:
-            hasher.update(obj2str(rtdc_ds[col]))
+            hasher.update(obj2bytes(rtdc_ds[col]))
         # config keys
         for sec, keys in self.req_config:
             for key in keys:
                 val = rtdc_ds.config[sec][key]
                 data = "{}:{}={}".format(sec, key, val)
-                hasher.update(obj2str(data))
+                hasher.update(obj2bytes(data))
         # custom requirement function hash
         reqret = self.req_func(rtdc_ds)
         if not isinstance(reqret, bool):
             # add to hash if not a boolean
-            hasher.update(obj2str(reqret))
+            hasher.update(obj2bytes(reqret))
         return hasher.hexdigest()
 
     def is_available(self, rtdc_ds, verbose=False):

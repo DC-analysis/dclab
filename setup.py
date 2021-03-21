@@ -7,6 +7,7 @@ import sys
 # numpy and cython are installed via pyproject.toml [build-system]
 import numpy as np
 
+
 maintainer = u"Paul Müller"
 maintainer_email = "dev@craban.de"
 description = 'Library for real-time deformability cytometry (RT-DC)'
@@ -14,10 +15,7 @@ name = "dclab"
 year = "2015"
 
 sys.path.insert(0, realpath(dirname(__file__))+"/"+name)
-try:
-    from _version import version  # @UnresolvedImport
-except BaseException:
-    version = "unknown"
+from _version import version  # noqa: E402
 
 
 extras_require = {

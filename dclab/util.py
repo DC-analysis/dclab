@@ -1,5 +1,4 @@
 """Utility methods"""
-
 import hashlib
 import pathlib
 
@@ -12,7 +11,7 @@ def hashfile(fname, blocksize=65536, count=0, hasher_class=hashlib.md5):
 
     Parameters
     ----------
-    fname: str
+    fname: str or pathlib.Path
         path to the file
     blocksize: int
         block size in bytes read from the file

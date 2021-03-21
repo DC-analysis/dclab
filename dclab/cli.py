@@ -52,7 +52,7 @@ def assemble_warnings(w):
     return wlog
 
 
-def get_command_log(paths, custom_dict={}):
+def get_command_log(paths, custom_dict=None):
     """Return a json dump of system parameters
 
     Parameters
@@ -64,6 +64,8 @@ def get_command_log(paths, custom_dict={}):
         additional user-defined entries; must contain simple
         Python objects (json.dumps must still work)
     """
+    if custom_dict is None:
+        custom_dict = {}
     data = get_job_info()
     data["files"] = []
     for ii, pp in enumerate(paths):
@@ -80,6 +82,14 @@ def get_command_log(paths, custom_dict={}):
 
 
 def get_job_info():
+    """Return dictionary with current job information
+
+    Returns
+    -------
+    info: dict of dicts
+        Job information including details about time, system,
+        python version, and libraries used.
+    """
     data = {
         "utc": {
             "date": time.strftime("%Y-%m-%d", time.gmtime()),
@@ -244,9 +254,10 @@ def condense_parser():
     return parser
 
 
-def join(path_out=None, paths_in=None,
-         metadata={"experiment": {"run index": 1}}):
+def join(path_out=None, paths_in=None, metadata=None):
     """Join multiple RT-DC measurements into a single .rtdc file"""
+    if metadata is None:
+        metadata = {"experiment": {"run index": 1}}
     if path_out is None or paths_in is None:
         parser = join_parser()
         args = parser.parse_args()
@@ -348,13 +359,14 @@ def join_parser():
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('input', metavar="INPUT", nargs="*", type=str,
                         help='Input paths (.tdms or .rtdc files)')
-    requiredNamed = parser.add_argument_group('required named arguments')
-    requiredNamed.add_argument('-o', '--output', metavar="OUTPUT", type=str,
-                               help='Output path (.rtdc file)', required=True)
+    required_named = parser.add_argument_group('required named arguments')
+    required_named.add_argument('-o', '--output', metavar="OUTPUT", type=str,
+                                help='Output path (.rtdc file)', required=True)
     return parser
 
 
 def repack(path_in=None, path_out=None, strip_logs=False):
+    """Repack/recreate an .rtdc file, optionally stripping the logs"""
     if path_in is None and path_out is None:
         parser = repack_parser()
         args = parser.parse_args()
@@ -422,7 +434,7 @@ def skip_empty_image_events(ds, initial=True, final=True):
                     warnings.simplefilter(
                         "always",
                         fmt_tdms.event_image.CorruptFrameWarning)
-                    ds["image"][idfin]
+                    _ = ds["image"][idfin]  # provoke a warning
                     if wfin:
                         ds.filter.manual[idfin] = False
                         ds.apply_filter()
@@ -444,8 +456,19 @@ def split(path_in=None, path_out=None, split_events=10000,
         Path to output directory (optional)
     split_events: int
         Maximum number of events in each output file
+    skip_initial_empty_image: bool
+        Remove the first event of the dataset if the image is zero.
+    skip_final_empty_image: bool
+        Remove the final event of the dataset if the image is zero.
+    ret_out_paths:
+        If True, return the list of output file paths.
     verbose: bool
         If `True`, print messages to stdout
+
+    Returns
+    -------
+    [out_paths]: list of pathlib.Path
+        List of generated files (only if `ret_out_paths` is specified)
     """
     if path_in is None:
         parser = split_parser()
@@ -461,8 +484,7 @@ def split(path_in=None, path_out=None, split_events=10000,
         path_out = path_in.parent
     path_in = pathlib.Path(path_in)
     path_out = pathlib.Path(path_out)
-    logs = {}
-    logs["dclab-split"] = get_command_log(paths=[path_in])
+    logs = {"dclab-split": get_command_log(paths=[path_in])}
     paths_gen = []
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -550,7 +572,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         Path to input .tdms file
     path_rtdc: str or pathlib.Path
         Path to output .rtdc file
-    compute_featues: bool
+    compute_features: bool
         If `True`, compute all ancillary features and store them in the
         output file
     skip_initial_empty_image: bool
@@ -653,10 +675,9 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                     cfeats.append("mask")
                 custom_dict["ancillary features"] = sorted(cfeats)
 
-                logs = {}
                 # command log
-                logs["dclab-tdms2rtdc"] = get_command_log(
-                    paths=[ff], custom_dict=custom_dict)
+                logs = {"dclab-tdms2rtdc": get_command_log(
+                    paths=[ff], custom_dict=custom_dict)}
                 # warnings log
                 if w:
                     logs["dclab-tdms2rtdc-warnings"] = assemble_warnings(w)

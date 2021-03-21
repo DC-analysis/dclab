@@ -1,3 +1,5 @@
+0.33.2
+ - ref: cleanup cli.py
 0.33.1
  - fix: add dataset check for wrong medium written to .rtdc file
    by Shape-In

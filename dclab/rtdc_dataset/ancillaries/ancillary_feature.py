@@ -95,6 +95,7 @@ class AncillaryFeature():
         `req_config` and `req_features` are used to test whether the
         feature can be computed in `self.is_available`.
         """
+        super(AncillaryFeature, self).__init__()
         self.feature_name = feature_name
         self.method = method
         self.req_config = req_config

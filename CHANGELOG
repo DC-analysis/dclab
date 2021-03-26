@@ -1,4 +1,5 @@
 0.33.0
+ - feat: add offset correction to cli-functions
  - fix: catch errors for integrity checks on non-raw datasets (#102)
  - feat: add metadata keys for baseline offset (#107)
  - fix: add check for negative fluorescence values (#101)

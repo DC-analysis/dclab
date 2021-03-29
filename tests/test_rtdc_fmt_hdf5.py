@@ -76,7 +76,7 @@ def test_ignore_empty_hdf5_meta_data_attribute():
 
 
 def test_ignore_unknown_hdf5_meta_data_attribute():
-    """Ignore empty hdf5 attributes / dclab metadata"""
+    """Ignore unknown hdf5 attributes / dclab metadata"""
     # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
     path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     # add empty attribute

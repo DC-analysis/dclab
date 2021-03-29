@@ -62,14 +62,7 @@ class H5Events(object):
             self._features.remove("trace")
 
     def __contains__(self, key):
-        if self._is_defective_feature(key):
-            contained = False
-        else:
-            if key in self._features and dfn.feature_exists(key):
-                contained = True
-            else:
-                contained = False
-        return contained
+        return key in self.keys()
 
     def __getitem__(self, key):
         # user-level checking is done in core.py
@@ -104,10 +97,16 @@ class H5Events(object):
         return defective
 
     def keys(self):
+        """Returns list of valid features
+
+        Checks for
+        - defective features
+        - existing feature names
+        """
         features = []
         for key in self._features:
             # check for defective features
-            if not self._is_defective_feature(key):
+            if dfn.feature_exists(key) and not self._is_defective_feature(key):
                 features.append(key)
         return features
 

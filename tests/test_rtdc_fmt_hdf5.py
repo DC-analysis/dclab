@@ -127,6 +127,17 @@ def test_no_suffix():
     assert(len(ds) == 8)
 
 
+def test_open_with_invalid_feature_names():
+    """Loading an .rtdc file that has wrong feature name"""
+    path = str(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    # add wrong feature name right at the top of the list
+    with h5py.File(path, "r+") as h5:
+        h5["events"]["a0"] = h5["events"]["deform"]
+    # see if we can open the file without any error
+    ds = new_dataset(path)
+    assert len(ds) == 8
+
+
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_trace():

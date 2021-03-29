@@ -1,4 +1,6 @@
 0.33.2
+ - fix: some datasets with unknown feature names could not be
+   opened (AssertionError regression in 0.33.1)
  - fix: workaround for sporadic JSONDecodeError when accessing DCOR
  - ref: cleanup cli.py
  - ref: cleanup util.py and deprecate `hash_class` argument in

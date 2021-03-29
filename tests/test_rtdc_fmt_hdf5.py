@@ -75,6 +75,21 @@ def test_ignore_empty_hdf5_meta_data_attribute():
         new_dataset(path)
 
 
+def test_ignore_unknown_hdf5_meta_data_attribute():
+    """Ignore empty hdf5 attributes / dclab metadata"""
+    # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
+    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # add empty attribute
+    with h5py.File(path, "r+") as h5:
+        h5.attrs["setup:shizzle"] = ""
+
+    # assert
+    with pytest.warns(config.UnknownConfigurationKeyWarning,
+                      match=r"Unknown key 'shizzle' in the 'setup' section!"
+                      ):
+        new_dataset(path)
+
+
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_image_basic():

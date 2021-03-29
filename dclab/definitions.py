@@ -144,6 +144,7 @@ CFG_METADATA = {
     # All setup-related keywords, except imaging
     "setup": [
         ["channel width", float, "Width of microfluidic channel [µm]"],
+        ["chip identifier", lcstr, "Unique identifier of the chip used"],
         ["chip region", lcstr, "Imaged chip region (channel or reservoir)"],
         ["flow rate", float, "Flow rate in channel [µL/s]"],
         ["flow rate sample", float, "Sample flow rate [µL/s]"],

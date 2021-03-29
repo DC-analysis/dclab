@@ -67,7 +67,9 @@ LOG_MAX_LINE_LENGTH = 100
 #: keys that are optional
 OPTIONAL_KEYS = {
     "setup": [
-        "temperature"],
+        "temperature",
+        "chip identifier",
+    ],
 }
 
 #: valid metadata choices

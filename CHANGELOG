@@ -1,4 +1,6 @@
 0.33.3
+ - fix: add "chip identifier" to "setup" configuration section and
+   make it optional during dataset checks (#109)
  - fix: ignore empty metadata strings (partly #109); removed the
    `check_metadata_empty_string` check function because it does
    not apply anymore

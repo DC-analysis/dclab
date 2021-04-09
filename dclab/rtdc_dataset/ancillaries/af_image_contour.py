@@ -24,6 +24,14 @@ def compute_bright_sd(mm):
     return bstd
 
 
+def compute_bright(mm):
+    avg, sd = features.bright.get_bright(mask=mm["mask"],
+                                      image=mm["image"],
+                                      ret_data="avg,sd",
+                                      )
+    return {"bright_avg": avg, "bright_sd": sd}
+
+
 def compute_inert_ratio_cvx(mm):
     return features.inert_ratio.get_inert_ratio_cvx(cont=mm["contour"])
 
@@ -55,11 +63,11 @@ def register():
                      req_features=["mask"])
 
     AncillaryFeature(feature_name="bright_avg",
-                     method=compute_bright_avg,
+                     method=compute_bright,
                      req_features=["image", "mask"])
 
     AncillaryFeature(feature_name="bright_sd",
-                     method=compute_bright_sd,
+                     method=compute_bright,
                      req_features=["image", "mask"])
 
     AncillaryFeature(feature_name="inert_ratio_cvx",

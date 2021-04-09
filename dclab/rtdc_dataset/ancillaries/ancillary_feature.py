@@ -145,14 +145,6 @@ class AncillaryFeature():
                 feats.append(ft)
         return feats
 
-    @staticmethod
-    def populate_related_ancill_features(feature, rtdc_ds, cols):
-
-        for name, inst in cols.items():
-            if not feature == inst:
-                if feature.method == inst.method:
-                    _ = inst.compute(rtdc_ds)
-
     def compute(self, rtdc_ds):
         """Compute the feature with self.method
 
@@ -166,35 +158,38 @@ class AncillaryFeature():
         feature: array- or list-like
             The computed data feature (read-only).
         """
-        data = self.method(rtdc_ds)
-        dsize = len(rtdc_ds) - len(data)
+        data_dict = self.method(rtdc_ds)
+        if not isinstance(data_dict, dict):
+            data_dict = {self.feature_name: data_dict}
 
-        data = self.check_data_size(rtdc_ds, data, dsize)
+        data_dict = self.check_data_size(rtdc_ds, data_dict)
 
-        self.data = data
-        return {self.feature_name: self.data}
+        self.data = data_dict[self.feature_name]
+        return data_dict
 
+    def check_data_size(self, rtdc_ds, data_dict):
+        for key in data_dict:
+            dsize = len(rtdc_ds) - len(data_dict[key])
 
-    def check_data_size(self, rtdc_ds, data, dsize):
-        if dsize > 0:
-            msg = "Growing feature {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)),
-                          BadFeatureSizeWarning)
-            data.resize(len(rtdc_ds), refcheck=False)
-            data[-dsize:] = np.nan
-        elif dsize < 0:
-            msg = "Shrinking feature {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)),
-                          BadFeatureSizeWarning)
-            data.resize(len(rtdc_ds), refcheck=False)
+            if dsize > 0:
+                msg = "Growing feature {} in {} by {} to match event number!"
+                warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
+                              BadFeatureSizeWarning)
+                data_dict[key].resize(len(rtdc_ds), refcheck=False)
+                data_dict[key][-dsize:] = np.nan
+            elif dsize < 0:
+                msg = "Shrinking feature {} in {} by {} to match event number!"
+                warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
+                              BadFeatureSizeWarning)
+                data_dict[key].resize(len(rtdc_ds), refcheck=False)
 
-        if isinstance(data, np.ndarray):
-            data.setflags(write=False)
-        elif isinstance(data, list):
-            for item in data:
-                if isinstance(item, np.ndarray):
-                    item.setflags(write=False)
-        return data
+            if isinstance(data_dict[key], np.ndarray):
+                data_dict[key].setflags(write=False)
+            elif isinstance(data_dict[key], list):
+                for item in data_dict[key]:
+                    if isinstance(item, np.ndarray):
+                        item.setflags(write=False)
+        return data_dict
 
     def hash(self, rtdc_ds):
         """Used for identifying an ancillary computation

@@ -100,8 +100,6 @@ class RTDCBase(object):
         ancol = AncillaryFeature.available_features(self)
         if key in ancol:
             # The feature is available.
-            AncillaryFeature.populate_related_ancill_features(
-                ancol[key], self, ancol)
             anhash = ancol[key].hash(self)
             if (key in self._ancillaries and
                     self._ancillaries[key][0] == anhash):
@@ -109,9 +107,11 @@ class RTDCBase(object):
                 data = self._ancillaries[key][1]
             else:
                 # Compute new value
-                data = ancol[key].compute(self)[key]
-                # Store computed value in `self._ancillaries`.
-                self._ancillaries[key] = (anhash, data)
+                data_dict = ancol[key].compute(self)
+                for okey in data_dict:
+                    # Store computed value in `self._ancillaries`.
+                    self._ancillaries[okey] = (anhash, data_dict[okey])
+                data = data_dict[key]
             return data
         else:
             raise KeyError("Feature '{}' does not exist!".format(key))

@@ -100,6 +100,8 @@ class RTDCBase(object):
         ancol = AncillaryFeature.available_features(self)
         if key in ancol:
             # The feature is available.
+            AncillaryFeature.populate_related_ancill_features(
+                ancol[key], self, ancol)
             anhash = ancol[key].hash(self)
             if (key in self._ancillaries and
                     self._ancillaries[key][0] == anhash):
@@ -107,7 +109,7 @@ class RTDCBase(object):
                 data = self._ancillaries[key][1]
             else:
                 # Compute new value
-                data = ancol[key].compute(self)
+                data = ancol[key].compute(self)[key]
                 # Store computed value in `self._ancillaries`.
                 self._ancillaries[key] = (anhash, data)
             return data

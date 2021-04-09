@@ -145,6 +145,14 @@ class AncillaryFeature():
                 feats.append(ft)
         return feats
 
+    @staticmethod
+    def populate_related_ancill_features(feature, rtdc_ds, cols):
+
+        for name, inst in cols.items():
+            if not feature == inst:
+                if feature.method == inst.method:
+                    _ = inst.compute(rtdc_ds)
+
     def compute(self, rtdc_ds):
         """Compute the feature with self.method
 
@@ -161,6 +169,13 @@ class AncillaryFeature():
         data = self.method(rtdc_ds)
         dsize = len(rtdc_ds) - len(data)
 
+        data = self.check_data_size(rtdc_ds, data, dsize)
+
+        self.data = data
+        return {self.feature_name: self.data}
+
+
+    def check_data_size(self, rtdc_ds, data, dsize):
         if dsize > 0:
             msg = "Growing feature {} in {} by {} to match event number!"
             warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)),
@@ -179,7 +194,6 @@ class AncillaryFeature():
             for item in data:
                 if isinstance(item, np.ndarray):
                     item.setflags(write=False)
-
         return data
 
     def hash(self, rtdc_ds):

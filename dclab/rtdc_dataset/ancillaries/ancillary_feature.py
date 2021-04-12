@@ -164,7 +164,6 @@ class AncillaryFeature():
 
         data_dict = self.check_data_size(rtdc_ds, data_dict)
 
-        self.data = data_dict[self.feature_name]
         return data_dict
 
     def check_data_size(self, rtdc_ds, data_dict):

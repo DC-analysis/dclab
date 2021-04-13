@@ -15,11 +15,10 @@ def test_af_brightness():
         real_sd = h5["events"]["bright_sd"][:]
         del h5["events"]["bright_avg"]
         del h5["events"]["bright_sd"]
-    # Brightness of the image
     ds = dclab.new_dataset(path)
+    # sanity checks
     assert "bright_avg" not in ds.features_innate
     assert "bright_sd" not in ds.features_innate
-    # This will cause a zero-padding warning:
     comp_avg = ds["bright_avg"]
     comp_sd = ds["bright_sd"]
     idcompare = ~np.isnan(comp_avg)

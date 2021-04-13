@@ -1,5 +1,6 @@
 
 from ... import features
+from ...util import calltracker
 from .ancillary_feature import AncillaryFeature
 
 
@@ -24,11 +25,12 @@ def compute_bright_sd(mm):
     return bstd
 
 
+@calltracker
 def compute_bright(mm):
     avg, sd = features.bright.get_bright(mask=mm["mask"],
-                                      image=mm["image"],
-                                      ret_data="avg,sd",
-                                      )
+                                         image=mm["image"],
+                                         ret_data="avg,sd",
+                                         )
     return {"bright_avg": avg, "bright_sd": sd}
 
 

@@ -73,3 +73,12 @@ def obj2bytes(obj):
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))
+
+
+def calltracker(func):
+    """ Decorator to track how many times a function is called """
+    def wrapped(*args, **kwargs):
+        wrapped.calls += 1
+        return func(*args, **kwargs)
+    wrapped.calls = 0
+    return wrapped

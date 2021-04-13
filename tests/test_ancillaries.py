@@ -98,6 +98,20 @@ def test_af_populate_both_brightness():
         assert af_key in feats
 
 
+def test_if_bright_method_run_twice():
+    """ Use a calltracker wrapper on `compute_bright` to verify it is only
+    called once """
+    from dclab.rtdc_dataset.ancillaries.af_image_contour import (
+        compute_bright as cb)
+    assert cb.calls == 1
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    _ = ds._events.pop("bright_avg")
+    _ = ds._events.pop("bright_sd")
+    _ = ds["bright_sd"]
+    assert cb.calls == 2
+    assert len(ds._ancillaries) == 3
+
+
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

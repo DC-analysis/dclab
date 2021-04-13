@@ -17,6 +17,8 @@ def test_af_brightness():
         del h5["events"]["bright_sd"]
     # Brightness of the image
     ds = dclab.new_dataset(path)
+    assert "bright_avg" not in ds.features_innate
+    assert "bright_sd" not in ds.features_innate
     # This will cause a zero-padding warning:
     comp_avg = ds["bright_avg"]
     comp_sd = ds["bright_sd"]

@@ -41,6 +41,11 @@ def test_simple_bright():
         avg, std = get_bright(mask=mask, image=image, ret_data="avg,sd")
         assert np.allclose(avg, ds["bright_avg"][ii])
         assert np.allclose(std, ds["bright_sd"][ii])
+        # cover single `ret_data` input
+        assert np.allclose(
+            avg, get_bright(mask=mask, image=image, ret_data="avg"))
+        assert np.allclose(
+            std, get_bright(mask=mask, image=image, ret_data="sd"))
 
 
 if __name__ == "__main__":

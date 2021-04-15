@@ -73,12 +73,34 @@ def test_af_deform():
     assert np.allclose(ds["deform"], 1 - ds["circ"])
 
 
-def test_af_time():
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
-    tt = ds["time"]
-    assert tt[0] == 0
-    assert np.allclose(tt[1], 0.0385)
-    assert np.all(np.diff(tt) > 0)
+def test_af_populated_by_shared_method_hdf5():
+    """Calling ancillary features will automatically populate other features
+    that share the same method.
+    """
+    from dclab.rtdc_dataset.ancillaries.af_image_contour import (
+        compute_bright as cb)
+    cb.calls = 0
+    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(path, "r+") as h5:
+        _ = h5["events"]["bright_avg"][:]
+        _ = h5["events"]["bright_sd"][:]
+        del h5["events"]["bright_avg"]
+        del h5["events"]["bright_sd"]
+    ds = dclab.new_dataset(path)
+    # sanity checks
+    assert "bright_avg" not in ds.features_innate
+    assert "bright_sd" not in ds.features_innate
+    assert cb.calls == 0
+    assert len(ds._ancillaries) == 0
+    _ = ds["bright_avg"]
+    # both "bright_avg" and "bright_sd" will be populated by one call
+    assert cb.calls == 1
+    assert len(ds._ancillaries) == 2
+    feats = ["bright_sd", "bright_avg"]
+    for af_key in ds._ancillaries:
+        assert af_key in feats
+    # clean up for further tests
+    cb.calls = 0
 
 
 def test_af_populated_by_shared_method_tdms():
@@ -109,34 +131,12 @@ def test_af_populated_by_shared_method_tdms():
     cb.calls = 0
 
 
-def test_af_populated_by_shared_method_hdf5():
-    """Calling ancillary features will automatically populate other features
-    that share the same method.
-    """
-    from dclab.rtdc_dataset.ancillaries.af_image_contour import (
-        compute_bright as cb)
-    cb.calls = 0
-    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
-    with h5py.File(path, "r+") as h5:
-        _ = h5["events"]["bright_avg"][:]
-        _ = h5["events"]["bright_sd"][:]
-        del h5["events"]["bright_avg"]
-        del h5["events"]["bright_sd"]
-    ds = dclab.new_dataset(path)
-    # sanity checks
-    assert "bright_avg" not in ds.features_innate
-    assert "bright_sd" not in ds.features_innate
-    assert cb.calls == 0
-    assert len(ds._ancillaries) == 0
-    _ = ds["bright_avg"]
-    # both "bright_avg" and "bright_sd" will be populated by one call
-    assert cb.calls == 1
-    assert len(ds._ancillaries) == 2
-    feats = ["bright_sd", "bright_avg"]
-    for af_key in ds._ancillaries:
-        assert af_key in feats
-    # clean up for further tests
-    cb.calls = 0
+def test_af_time():
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    tt = ds["time"]
+    assert tt[0] == 0
+    assert np.allclose(tt[1], 0.0385)
+    assert np.all(np.diff(tt) > 0)
 
 
 if __name__ == "__main__":

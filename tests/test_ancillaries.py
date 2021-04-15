@@ -82,8 +82,9 @@ def test_af_time():
 
 
 def test_af_populated_by_shared_method_tdms():
-    """ Calling ancillary features will automatically populate other features
-    that share methods. """
+    """Calling ancillary features will automatically populate other features
+    that share the same method.
+    """
     from dclab.rtdc_dataset.ancillaries.af_image_contour import (
         compute_bright as cb)
     cb.calls = 0
@@ -109,8 +110,9 @@ def test_af_populated_by_shared_method_tdms():
 
 
 def test_af_populated_by_shared_method_hdf5():
-    """ Calling ancillary features will automatically populate other features
-    that share methods. """
+    """Calling ancillary features will automatically populate other features
+    that share the same method.
+    """
     from dclab.rtdc_dataset.ancillaries.af_image_contour import (
         compute_bright as cb)
     cb.calls = 0

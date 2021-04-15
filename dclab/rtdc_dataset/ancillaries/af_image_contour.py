@@ -9,29 +9,13 @@ def compute_contour(mm):
     return cont
 
 
-def compute_bright_avg(mm):
-    bavg = features.bright.get_bright(mask=mm["mask"],
-                                      image=mm["image"],
-                                      ret_data="avg",
-                                      )
-    return bavg
-
-
-def compute_bright_sd(mm):
-    bstd = features.bright.get_bright(mask=mm["mask"],
-                                      image=mm["image"],
-                                      ret_data="sd",
-                                      )
-    return bstd
-
-
 @calltracker
 def compute_bright(mm):
-    avg, sd = features.bright.get_bright(mask=mm["mask"],
-                                         image=mm["image"],
-                                         ret_data="avg,sd",
-                                         )
-    return {"bright_avg": avg, "bright_sd": sd}
+    bavg, bsd = features.bright.get_bright(mask=mm["mask"],
+                                           image=mm["image"],
+                                           ret_data="avg,sd",
+                                           )
+    return {"bright_avg": bavg, "bright_sd": bsd}
 
 
 def compute_inert_ratio_cvx(mm):

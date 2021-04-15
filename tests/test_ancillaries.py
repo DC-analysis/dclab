@@ -104,7 +104,7 @@ def test_af_populated_by_shared_method_tdms():
     feats = ["time", "bright_sd", "bright_avg"]
     for af_key in ds._ancillaries:
         assert af_key in feats
-    # clean up for furthur tests
+    # clean up for further tests
     cb.calls = 0
 
 
@@ -133,7 +133,7 @@ def test_af_populated_by_shared_method_hdf5():
     feats = ["bright_sd", "bright_avg"]
     for af_key in ds._ancillaries:
         assert af_key in feats
-    # clean up for furthur tests
+    # clean up for further tests
     cb.calls = 0
 
 

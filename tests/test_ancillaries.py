@@ -1,3 +1,4 @@
+import h5py
 import numpy as np
 
 import dclab
@@ -80,16 +81,18 @@ def test_af_time():
     assert np.all(np.diff(tt) > 0)
 
 
-def test_af_populate_both_brightness():
+def test_af_populated_by_shared_method_tdms():
     """ Calling ancillary features will automatically populate other features
     that share methods. """
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
-    assert len(ds._ancillaries) == 1  # time is populated
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
     # the image and contour columns.
     _ = ds._events.pop("bright_avg")
     _ = ds._events.pop("bright_sd")
+    assert "bright_avg" not in ds.features_innate
+    assert "bright_sd" not in ds.features_innate
+    assert len(ds._ancillaries) == 1  # time is populated
     _ = ds["bright_avg"]
     # both "bright_avg" and "bright_sd" will be populated
     assert len(ds._ancillaries) == 3
@@ -98,17 +101,41 @@ def test_af_populate_both_brightness():
         assert af_key in feats
 
 
-def test_if_bright_method_run_twice():
+def test_af_populated_by_shared_method_hdf5():
+    """ Calling ancillary features will automatically populate other features
+    that share methods. """
+    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(path, "r+") as h5:
+        _ = h5["events"]["bright_avg"][:]
+        _ = h5["events"]["bright_sd"][:]
+        del h5["events"]["bright_avg"]
+        del h5["events"]["bright_sd"]
+    ds = dclab.new_dataset(path)
+    # sanity checks
+    assert "bright_avg" not in ds.features_innate
+    assert "bright_sd" not in ds.features_innate
+    assert len(ds._ancillaries) == 0
+    _ = ds["bright_avg"]
+    # both "bright_avg" and "bright_sd" will be populated
+    assert len(ds._ancillaries) == 2
+    feats = ["bright_sd", "bright_avg"]
+    for af_key in ds._ancillaries:
+        assert af_key in feats
+
+
+def test_shared_method_only_run_once():
     """ Use a calltracker wrapper on `compute_bright` to verify it is only
     called once """
     from dclab.rtdc_dataset.ancillaries.af_image_contour import (
         compute_bright as cb)
-    assert cb.calls == 1
+    cb.calls = 0
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     _ = ds._events.pop("bright_avg")
     _ = ds._events.pop("bright_sd")
+    assert len(ds._ancillaries) == 1  # time is populated
+    assert cb.calls == 0
     _ = ds["bright_sd"]
-    assert cb.calls == 2
+    assert cb.calls == 1
     assert len(ds._ancillaries) == 3
 
 

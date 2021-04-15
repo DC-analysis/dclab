@@ -1,4 +1,12 @@
+0.33.3
+ - fix: add "chip identifier" to "setup" configuration section and
+   make it optional during dataset checks (#109)
+ - fix: ignore empty metadata strings (partly #109); removed the
+   `check_metadata_empty_string` check function because it does
+   not apply anymore
 0.33.2
+ - fix: some datasets with unknown feature names could not be
+   opened (AssertionError regression in 0.33.1)
  - fix: workaround for sporadic JSONDecodeError when accessing DCOR
  - ref: cleanup cli.py
  - ref: cleanup util.py and deprecate `hash_class` argument in

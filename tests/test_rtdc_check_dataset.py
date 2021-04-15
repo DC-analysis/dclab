@@ -280,12 +280,17 @@ def test_ic_metadata_choices_medium():
     assert len(cues) == 0
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.EmptyConfigurationKeyWarning')
 def test_ic_metadata_empty_string():
-    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
-    ds = new_dataset(ddict)
-    ds.config["setup"]["medium"] = ""
+    """Empty metadata values are ignored with a warning in dclab>0.33.2"""
+    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # add empty attribute
+    with h5py.File(path, "r+") as h5:
+        h5.attrs["setup:medium"] = ""
+    ds = new_dataset(path)
     with check.IntegrityChecker(ds) as ic:
-        cues = ic.check_metadata_empty_string()
+        cues = ic.check_metadata_missing()
     assert cues[0].category == "metadata missing"
     assert cues[0].level == "violation"
     assert cues[0].cfg_section == "setup"

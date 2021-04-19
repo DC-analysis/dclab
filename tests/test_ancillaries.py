@@ -3,6 +3,7 @@ import numpy as np
 from unittest.mock import Mock
 
 import dclab
+from dclab.rtdc_dataset.ancillaries import AncillaryFeature
 
 from helper_methods import example_data_dict, retrieve_data, \
     example_data_sets
@@ -133,6 +134,54 @@ def test_af_populated_by_shared_method_tdms():
     feats = ["time", "bright_sd", "bright_avg"]
     for af_key in ds._ancillaries:
         assert af_key in feats
+
+
+def test_af_recomputed_on_hash_change():
+    """Check whether features are recomputed when the hash changes"""
+    def method(rtdc_ds):
+        cw = rtdc_ds.config["setup"]["channel width"]
+        data_dict = {
+            "userdef1": np.arange(1, len(rtdc_ds) + 1) * cw,
+            "userdef2": np.arange(1, len(rtdc_ds) + 1) * cw * 2
+        }
+        return data_dict
+
+    af1 = AncillaryFeature(feature_name="userdef1",
+                           method=method,
+                           req_config=[["setup", ["channel width"]]])
+    af2 = AncillaryFeature(feature_name="userdef2",
+                           method=method,
+                           req_config=[["setup", ["channel width"]]])
+
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "userdef1" not in ds.features_innate
+    assert "userdef2" not in ds.features_innate
+    assert "userdef1" in ds
+    assert "userdef2" in ds
+
+    ud1a = ds["userdef1"]
+    ud2a = ds["userdef2"]
+
+    ds.config["setup"]["channel width"] *= 1.1
+
+    ud1b = ds["userdef1"]
+    ud2b = ds["userdef2"]
+
+    assert np.all(ud1a != ud1b)
+    assert np.allclose(ud1a * 1.1, ud1b)
+    assert np.all(ud2a != ud2b)
+    assert np.allclose(ud2a * 1.1, ud2b)
+
+    # cleanup
+    AncillaryFeature.features.remove(af1)
+    AncillaryFeature.features.remove(af2)
+    AncillaryFeature.feature_names.remove("userdef1")
+    AncillaryFeature.feature_names.remove("userdef2")
+
+    # make sure cleanup worked
+    ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "userdef1" not in ds2
+    assert "userdef2" not in ds2
 
 
 def test_af_time():

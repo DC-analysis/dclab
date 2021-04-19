@@ -1,6 +1,5 @@
 
 from ... import features
-from ...util import calltracker
 from .ancillary_feature import AncillaryFeature
 
 
@@ -9,7 +8,6 @@ def compute_contour(mm):
     return cont
 
 
-@calltracker
 def compute_bright(mm):
     bavg, bsd = features.bright.get_bright(mask=mm["mask"],
                                            image=mm["image"],

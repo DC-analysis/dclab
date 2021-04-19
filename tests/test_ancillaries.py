@@ -74,64 +74,6 @@ def test_af_deform():
     assert np.allclose(ds["deform"], 1 - ds["circ"])
 
 
-def test_af_populated_by_shared_method_hdf5():
-    """Calling ancillary features will automatically populate other features
-    that share the same method.
-    """
-    from dclab.rtdc_dataset.ancillaries.af_image_contour import (
-        compute_bright as cb)
-    cb.calls = 0
-    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
-    with h5py.File(path, "r+") as h5:
-        _ = h5["events"]["bright_avg"][:]
-        _ = h5["events"]["bright_sd"][:]
-        del h5["events"]["bright_avg"]
-        del h5["events"]["bright_sd"]
-    ds = dclab.new_dataset(path)
-    # sanity checks
-    assert "bright_avg" not in ds.features_innate
-    assert "bright_sd" not in ds.features_innate
-    assert cb.calls == 0
-    assert len(ds._ancillaries) == 0
-    _ = ds["bright_avg"]
-    # both "bright_avg" and "bright_sd" will be populated by one call
-    assert cb.calls == 1
-    assert len(ds._ancillaries) == 2
-    feats = ["bright_sd", "bright_avg"]
-    for af_key in ds._ancillaries:
-        assert af_key in feats
-    # clean up for further tests
-    cb.calls = 0
-
-
-def test_af_populated_by_shared_method_tdms():
-    """Calling ancillary features will automatically populate other features
-    that share the same method.
-    """
-    from dclab.rtdc_dataset.ancillaries.af_image_contour import (
-        compute_bright as cb)
-    cb.calls = 0
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
-    # This is something low-level and should not be done in a script.
-    # Remove the brightness columns from RTDCBase to force computation with
-    # the image and contour columns.
-    _ = ds._events.pop("bright_avg")
-    _ = ds._events.pop("bright_sd")
-    assert "bright_avg" not in ds.features_innate
-    assert "bright_sd" not in ds.features_innate
-    assert cb.calls == 0
-    assert len(ds._ancillaries) == 1  # time is populated
-    _ = ds["bright_avg"]
-    # both "bright_avg" and "bright_sd" will be populated by one call
-    assert cb.calls == 1
-    assert len(ds._ancillaries) == 3
-    feats = ["time", "bright_sd", "bright_avg"]
-    for af_key in ds._ancillaries:
-        assert af_key in feats
-    # clean up for further tests
-    cb.calls = 0
-
-
 def test_af_get_bright_called_only_once(monkeypatch):
     """Test that `get_bright` is only called once, which is desired when
     creating ancillary features that share the same pipeline"""
@@ -147,6 +89,50 @@ def test_af_get_bright_called_only_once(monkeypatch):
 
     mock_run.assert_called_once()
     mock_run.reset_mock()
+
+
+def test_af_populated_by_shared_method_hdf5():
+    """Calling ancillary features will automatically populate other features
+    that share the same method.
+    """
+    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with h5py.File(path, "r+") as h5:
+        del h5["events"]["bright_avg"]
+        del h5["events"]["bright_sd"]
+    ds = dclab.new_dataset(path)
+    # sanity checks
+    assert "bright_avg" not in ds.features_innate
+    assert "bright_sd" not in ds.features_innate
+    assert len(ds._ancillaries) == 0
+
+    # both "bright_avg" and "bright_sd" will be populated by one call
+    _ = ds["bright_avg"]
+    assert len(ds._ancillaries) == 2
+    feats = ["bright_sd", "bright_avg"]
+    for af_key in ds._ancillaries:
+        assert af_key in feats
+
+
+def test_af_populated_by_shared_method_tdms():
+    """Calling ancillary features will automatically populate other features
+    that share the same method.
+    """
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    # This is something low-level and should not be done in a script.
+    # Remove the brightness columns from RTDCBase to force computation with
+    # the image and contour columns.
+    _ = ds._events.pop("bright_avg")
+    _ = ds._events.pop("bright_sd")
+    assert "bright_avg" not in ds.features_innate
+    assert "bright_sd" not in ds.features_innate
+    assert len(ds._ancillaries) == 1  # time is populated
+
+    # both "bright_avg" and "bright_sd" will be populated by one call
+    _ = ds["bright_avg"]
+    assert len(ds._ancillaries) == 3
+    feats = ["time", "bright_sd", "bright_avg"]
+    for af_key in ds._ancillaries:
+        assert af_key in feats
 
 
 def test_af_time():

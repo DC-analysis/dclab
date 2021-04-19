@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+from unittest.mock import Mock
 
 import dclab
 
@@ -129,6 +130,23 @@ def test_af_populated_by_shared_method_tdms():
         assert af_key in feats
     # clean up for further tests
     cb.calls = 0
+
+
+def test_af_get_bright_called_only_once(monkeypatch):
+    """Test that `get_bright` is only called once, which is desired when
+    creating ancillary features that share the same pipeline"""
+    def wrapper_on_get_bright(mm):
+        dclab.features.bright.get_bright(
+            mask=mm["mask"], image=mm["image"], ret_data="avg,sd")
+
+    mock_run = Mock()
+    monkeypatch.setattr('dclab.features.bright.get_bright', mock_run)
+
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    wrapper_on_get_bright(ds)
+
+    mock_run.assert_called_once()
+    mock_run.reset_mock()
 
 
 def test_af_time():

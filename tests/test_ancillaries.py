@@ -34,7 +34,7 @@ def setup_fake_af(feature_name1, feature_name2,
     af2 = AncillaryFeature(feature_name=feature_name2,
                            method=example_shared_af_method,
                            req_config=[["setup", ["channel width"]]])
-    example_shared_af_method.calls = 0
+
     ds = dclab.new_dataset(retrieve_data(path))
     assert feature_name1 not in ds.features_innate
     assert feature_name2 not in ds.features_innate
@@ -53,6 +53,9 @@ def cleanup_fake_af(af1, af2, path="rtdc_data_hdf5_rtfdc.zip"):
     ds2 = dclab.new_dataset(retrieve_data(path))
     assert af1_feature_name not in ds2
     assert af2_feature_name not in ds2
+    # cleanup the calltracker
+    example_shared_af_method.calls = 0
+
 
 
 def test_af_0basic():

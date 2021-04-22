@@ -51,8 +51,8 @@ def test_af_brightness_called_once(monkeypatch):
     # assert (access both brightness features and make sure that the
     # original function is only called once)
     ds = dclab.new_dataset(path)
-    ds["bright_sd"]
-    ds["bright_avg"]
+    _ = ds["bright_sd"]
+    _ = ds["bright_avg"]
 
     assert wrap_get_bright.calls == 1
 

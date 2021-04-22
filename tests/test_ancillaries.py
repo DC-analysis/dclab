@@ -126,7 +126,7 @@ def test_af_method_called_once_with_shared_pipeline(
     # handle tdms "time" `AncillaryFeature`
     tdms_time_feature = False
     feats = [af1.feature_name, af2.feature_name]
-    if "tdms" in ds.identifier:
+    if ds.format == "tdms":
         tdms_time_feature = True
         feats.append("time")
 

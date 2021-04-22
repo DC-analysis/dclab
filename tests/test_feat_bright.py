@@ -5,7 +5,7 @@ import dclab
 from dclab import new_dataset
 from dclab.features.bright import get_bright
 
-from helper_methods import retrieve_data
+from helper_methods import calltracker, retrieve_data
 
 
 def test_af_brightness():
@@ -26,6 +26,35 @@ def test_af_brightness():
     idcompare[0] = False
     assert np.allclose(real_avg[idcompare], comp_avg[idcompare])
     assert np.allclose(real_sd[idcompare], comp_sd[idcompare])
+
+
+def test_af_brightness_called_once(monkeypatch):
+    """Make sure dclab.features.bright.get_bright is only called once"""
+    path = retrieve_data("rtdc_data_hdf5_image_bg.zip")
+    # remove brightness features
+    with h5py.File(path, "r+") as h5:
+        del h5["events"]["bright_avg"]
+        del h5["events"]["bright_sd"]
+
+    # wrap the original brightness retrieval function
+    old_get_bright = dclab.features.bright.get_bright
+
+    @calltracker
+    def wrap_get_bright(*args, **kwargs):
+        return old_get_bright(*args, **kwargs)
+    # Monkeypatch the imported function used in the ancillaries submodule,
+    # otherwise (dclab.features.bright.get_bright) it is not called.
+    monkeypatch.setattr("dclab.rtdc_dataset.ancillaries.af_image_contour"
+                        ".features.bright.get_bright",
+                        wrap_get_bright)
+
+    # assert (access both brightness features and make sure that the
+    # original function is only called once)
+    ds = dclab.new_dataset(path)
+    ds["bright_sd"]
+    ds["bright_avg"]
+
+    assert wrap_get_bright.calls == 1
 
 
 def test_simple_bright():

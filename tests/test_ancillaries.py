@@ -1,23 +1,29 @@
 import numpy as np
+import pytest
 
 import dclab
 from dclab.rtdc_dataset.ancillaries import AncillaryFeature
 
-from helper_methods import example_data_dict, retrieve_data, \
-    example_data_sets
+from helper_methods import (
+    example_data_dict, retrieve_data, example_data_sets, calltracker)
 
 
-def calltracker(func):
-    """ Decorator to track how many times a function is called """
-    def wrapped(*args, **kwargs):
-        wrapped.calls += 1
-        return func(*args, **kwargs)
-    wrapped.calls = 0
-    return wrapped
+@pytest.fixture
+def fake_af_cleanup_fixture():
+    """Fixture used to setup and cleanup some fake ancillary features"""
+    # code run before the test
+    af1, af2 = setup_fake_af()
+    # variables yielded (input) to the test, then the test is run
+    yield af1, af2
+    # code run after the test
+    shared_fake_af_method.calls = 0
 
 
 @calltracker
-def example_shared_af_method(rtdc_ds):
+def shared_fake_af_method(rtdc_ds):
+    """An example of an `AncillaryFeature.method` that is used to calculate two
+    different ancillary features.
+    """
     cw = rtdc_ds.config["setup"]["channel width"]
     data_dict = {
         "userdef1": np.arange(1, len(rtdc_ds) + 1) * cw,
@@ -26,36 +32,15 @@ def example_shared_af_method(rtdc_ds):
     return data_dict
 
 
-def setup_fake_af(feature_name1, feature_name2,
-                  path="rtdc_data_hdf5_rtfdc.zip"):
-    af1 = AncillaryFeature(feature_name=feature_name1,
-                           method=example_shared_af_method,
+def setup_fake_af():
+    """Creates some example ancillary features"""
+    af1 = AncillaryFeature(feature_name="userdef1",
+                           method=shared_fake_af_method,
                            req_config=[["setup", ["channel width"]]])
-    af2 = AncillaryFeature(feature_name=feature_name2,
-                           method=example_shared_af_method,
+    af2 = AncillaryFeature(feature_name="userdef2",
+                           method=shared_fake_af_method,
                            req_config=[["setup", ["channel width"]]])
-
-    ds = dclab.new_dataset(retrieve_data(path))
-    assert feature_name1 not in ds.features_innate
-    assert feature_name2 not in ds.features_innate
-    assert feature_name1 in ds
-    assert feature_name2 in ds
-    return ds, af1, af2
-
-
-def cleanup_fake_af(af1, af2, path="rtdc_data_hdf5_rtfdc.zip"):
-    af1_feature_name, af2_feature_name = af1.feature_name, af2.feature_name
-    AncillaryFeature.features.remove(af1)
-    AncillaryFeature.features.remove(af2)
-    AncillaryFeature.feature_names.remove(af1_feature_name)
-    AncillaryFeature.feature_names.remove(af2_feature_name)
-    # make sure cleanup worked
-    ds2 = dclab.new_dataset(retrieve_data(path))
-    assert af1_feature_name not in ds2
-    assert af2_feature_name not in ds2
-    # cleanup the calltracker
-    example_shared_af_method.calls = 0
-
+    return af1, af2
 
 
 def test_af_0basic():
@@ -124,74 +109,62 @@ def test_af_deform():
     assert np.allclose(ds["deform"], 1 - ds["circ"])
 
 
-def test_af_shared_af_method_pipeline_called_once_hdf5():
-    """Uses `setup_cleanup_fake_ancillary_features` as a fixture"""
-    path = "rtdc_data_hdf5_rtfdc.zip"
-    feature_name1, feature_name2 = "userdef1", "userdef2"
-    ds, af1, af2 = setup_fake_af(feature_name1, feature_name2, path)
-
-    assert example_shared_af_method.calls == 0
-    assert len(ds._ancillaries) == 0
-
-    _ = ds[feature_name1]
-    assert example_shared_af_method.calls == 1
-    assert len(ds._ancillaries) == 2
-
-    _ = ds[feature_name2]
-    assert example_shared_af_method.calls == 1, "method is not called again"
-    assert len(ds._ancillaries) == 2
-    feats = [feature_name1, feature_name2]
-    for af_key in ds._ancillaries:
-        assert af_key in feats
-    cleanup_fake_af(af1, af2, path)
-
-
-def test_af_shared_af_method_pipeline_called_once_tdms():
-    """Calling ancillary features will automatically populate other features
-    that share the same method.
+@pytest.mark.parametrize("path", example_data_sets)
+def test_af_method_called_once_with_shared_pipeline(
+        fake_af_cleanup_fixture, path):
+    """Verifies that when an `AncillaryFeature.method` is shared between
+    ancillary features, the `method` itself is only called once. All ancillary
+    features that share the `method` will be populated in this single call.
     """
-    path = "rtdc_data_traces_video_bright.zip"
-    feature_name1, feature_name2 = "userdef1", "userdef2"
-    ds, af1, af2 = setup_fake_af(feature_name1, feature_name2, path)
+    af1, af2 = fake_af_cleanup_fixture
+    ds = dclab.new_dataset(retrieve_data(path))
+    assert af1.feature_name not in ds.features_innate
+    assert af2.feature_name not in ds.features_innate
+    assert af1.feature_name in ds
+    assert af2.feature_name in ds
 
-    assert example_shared_af_method.calls == 0
-    assert len(ds._ancillaries) == 1  # time is populated
-    # both "bright_avg" and "bright_sd" will be populated by one call
-    _ = ds[feature_name1]
-    assert example_shared_af_method.calls == 1
-    assert len(ds._ancillaries) == 3
+    # handle tdms "time" `AncillaryFeature`
+    tdms_time_feature = False
+    feats = [af1.feature_name, af2.feature_name]
+    if "tdms" in ds.identifier:
+        tdms_time_feature = True
+        feats.append("time")
 
-    _ = ds[feature_name2]
-    assert example_shared_af_method.calls == 1, "method is not called again"
-    assert len(ds._ancillaries) == 3
+    assert shared_fake_af_method.calls == 0
+    assert len(ds._ancillaries) == 0 + tdms_time_feature
 
-    feats = ["time", feature_name1, feature_name2]
-    for af_key in ds._ancillaries:
-        assert af_key in feats
-    cleanup_fake_af(af1, af2, path)
+    _ = ds[af1.feature_name]
+    assert shared_fake_af_method.calls == 1
+    assert len(ds._ancillaries) == 2 + tdms_time_feature
+    assert all(k in ds._ancillaries for k in feats)
+
+    _ = ds[af2.feature_name]
+    assert shared_fake_af_method.calls == 1, "method is not called again"
+    assert len(ds._ancillaries) == 2 + tdms_time_feature
 
 
-def test_af_recomputed_on_hash_change():
-    """Check whether features are recomputed when the hash changes.
-    Uses `setup_cleanup_fake_ancillary_features` as a fixture.
-    """
-    path = "rtdc_data_hdf5_rtfdc.zip"
-    feature_name1, feature_name2 = "userdef1", "userdef2"
-    ds, af1, af2 = setup_fake_af(feature_name1, feature_name2, path)
+@pytest.mark.parametrize("path", example_data_sets)
+def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
+    """Check whether features are recomputed when the hash changes"""
+    af1, af2 = fake_af_cleanup_fixture
+    ds = dclab.new_dataset(retrieve_data(path))
+    assert af1.feature_name not in ds.features_innate
+    assert af2.feature_name not in ds.features_innate
+    assert af1.feature_name in ds
+    assert af2.feature_name in ds
 
-    ud1a = ds[feature_name1]
-    ud2a = ds[feature_name2]
+    ud1a = ds[af1.feature_name]
+    ud2a = ds[af2.feature_name]
 
     ds.config["setup"]["channel width"] *= 1.1
 
-    ud1b = ds[feature_name1]
-    ud2b = ds[feature_name2]
+    ud1b = ds[af1.feature_name]
+    ud2b = ds[af2.feature_name]
 
     assert np.all(ud1a != ud1b)
     assert np.allclose(ud1a * 1.1, ud1b)
     assert np.all(ud2a != ud2b)
     assert np.allclose(ud2a * 1.1, ud2b)
-    cleanup_fake_af(af1, af2, path)
 
 
 def test_af_time():
@@ -200,32 +173,6 @@ def test_af_time():
     assert tt[0] == 0
     assert np.allclose(tt[1], 0.0385)
     assert np.all(np.diff(tt) > 0)
-
-
-# def test_af_mock_with_patch(monkeypatch):
-
-    # def calltracker(func):
-    #     """ Decorator to track how many times a function is called """
-    #     def wrap_mock():
-    #         mock_run = Mock()
-    #         return mock_run
-    #     return wrap_mock
-
-    # old_get_bright = dclab.features.bright.get_bright
-
-    # @calltracker
-    # def wrapper_get_bright(mm):
-    #     old_get_bright(mask=mm["mask"], image=mm["image"], ret_data="avg,sd")
-    # mock_run = Mock()
-    # monkeypatch.setattr(
-    #     'dclab.rtdc_dataset.core.RTDCBase.__getitem__.compute', mock_run)
-    #
-    # ds = dclab.new_dataset(retrieve_data(
-    #     "rtdc_data_traces_video_bright.zip"))
-    # _ = ds["bright_sd"]
-    # # _ = ds["bright_avg"]
-    # mock_run.assert_called_once()
-    # mock_run.reset_mock()
 
 
 if __name__ == "__main__":

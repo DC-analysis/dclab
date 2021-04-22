@@ -12,11 +12,20 @@ from helper_methods import (
 def fake_af_cleanup_fixture():
     """Fixture used to setup and cleanup some fake ancillary features"""
     # code run before the test
+    # set the method calls of our shared method to zero (just in case)
+    shared_fake_af_method.calls = 0
+    # setup fake ancillary features
     af1, af2 = setup_fake_af()
     # variables yielded (input) to the test, then the test is run
     yield af1, af2
     # code run after the test
+    # set the method calls of our shared method to zero
     shared_fake_af_method.calls = 0
+    # remove our fake ancillary feature instances from the registry
+    AncillaryFeature.features.remove(af1)
+    AncillaryFeature.features.remove(af2)
+    AncillaryFeature.feature_names.remove(af1.feature_name)
+    AncillaryFeature.feature_names.remove(af2.feature_name)
 
 
 @calltracker

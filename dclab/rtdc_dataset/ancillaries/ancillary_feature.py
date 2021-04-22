@@ -145,8 +145,48 @@ class AncillaryFeature():
                 feats.append(ft)
         return feats
 
+    @staticmethod
+    def check_data_size(rtdc_ds, data_dict):
+        """Check the feature data is the correct size. If it isn't, resize it.
+
+        Parameters
+        ----------
+        rtdc_ds: instance of RTDCBase
+            The dataset from which the features are computed
+        data_dict: dict
+            Dictionary with `AncillaryFeature.feature_name` as keys and the
+            computed data features (to be resized) as values.
+
+        Returns
+        -------
+        data_dict: dict
+            Dictionary with `feature_name` as keys and the correctly resized
+            data features as values.
+        """
+        for key in data_dict:
+            dsize = len(rtdc_ds) - len(data_dict[key])
+            if dsize > 0:
+                msg = "Growing feature {} in {} by {} to match event number!"
+                warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
+                              BadFeatureSizeWarning)
+                data_dict[key].resize(len(rtdc_ds), refcheck=False)
+                data_dict[key][-dsize:] = np.nan
+            elif dsize < 0:
+                msg = "Shrinking feature {} in {} by {} to match event number!"
+                warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
+                              BadFeatureSizeWarning)
+                data_dict[key].resize(len(rtdc_ds), refcheck=False)
+            if isinstance(data_dict[key], np.ndarray):
+                data_dict[key].setflags(write=False)
+            elif isinstance(data_dict[key], list):
+                for item in data_dict[key]:
+                    if isinstance(item, np.ndarray):
+                        item.setflags(write=False)
+        return data_dict
+
     def compute(self, rtdc_ds):
-        """Compute the feature with self.method
+        """Compute the feature with self.method. All ancillary features that
+        share the same method will also be populated automatically.
 
         Parameters
         ----------
@@ -155,32 +195,15 @@ class AncillaryFeature():
 
         Returns
         -------
-        feature: array- or list-like
-            The computed data feature (read-only).
+        data_dict: dict
+            Dictionary with `AncillaryFeature.feature_name` as keys and the
+            computed data features (read-only) as values.
         """
-        data = self.method(rtdc_ds)
-        dsize = len(rtdc_ds) - len(data)
-
-        if dsize > 0:
-            msg = "Growing feature {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)),
-                          BadFeatureSizeWarning)
-            data.resize(len(rtdc_ds), refcheck=False)
-            data[-dsize:] = np.nan
-        elif dsize < 0:
-            msg = "Shrinking feature {} in {} by {} to match event number!"
-            warnings.warn(msg.format(self.feature_name, rtdc_ds, abs(dsize)),
-                          BadFeatureSizeWarning)
-            data.resize(len(rtdc_ds), refcheck=False)
-
-        if isinstance(data, np.ndarray):
-            data.setflags(write=False)
-        elif isinstance(data, list):
-            for item in data:
-                if isinstance(item, np.ndarray):
-                    item.setflags(write=False)
-
-        return data
+        data_dict = self.method(rtdc_ds)
+        if not isinstance(data_dict, dict):
+            data_dict = {self.feature_name: data_dict}
+        data_dict = AncillaryFeature.check_data_size(rtdc_ds, data_dict)
+        return data_dict
 
     def hash(self, rtdc_ds):
         """Used for identifying an ancillary computation

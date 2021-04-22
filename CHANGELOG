@@ -1,6 +1,7 @@
-0.33.3
+0.33.4
  - enh: `AncillaryFeature` now populates other ancillary features when they
-   share the same method (#104).
+   share the same method (#104)
+0.33.3
  - fix: add "chip identifier" to "setup" configuration section and
    make it optional during dataset checks (#109)
  - fix: ignore empty metadata strings (partly #109); removed the

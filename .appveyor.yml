@@ -8,7 +8,7 @@ notifications:
 
 environment:
   PYPI_PWD:
-    secure: 1kFM+4EzTyV0hF7cMxkKQFDuWGhiXfUXCeUGJOTgSbKukTOL9U05/nHi69AtQGpG
+    secure: u3JJYpvKB9aFJvpURLRKIol/Y5IdKVZQ5gNZ2jefc0RC67Jeq3yBgVTTcTSSV4tm
   PYPI_USR: ci_zmdd
   R_VERSION: 3.6.3
   matrix:

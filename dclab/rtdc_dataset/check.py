@@ -67,7 +67,9 @@ LOG_MAX_LINE_LENGTH = 100
 #: keys that are optional
 OPTIONAL_KEYS = {
     "setup": [
-        "temperature"],
+        "temperature",
+        "chip identifier",
+    ],
 }
 
 #: valid metadata choices
@@ -572,20 +574,6 @@ class IntegrityChecker(object):
                                 category="metadata wrong",
                                 cfg_section="imaging",
                                 cfg_key=roi))
-        return cues
-
-    def check_metadata_empty_string(self, **kwargs):
-        cues = []
-        for sec in self.ds.config:
-            for key in self.ds.config[sec]:
-                val = self.ds.config[sec][key]
-                if isinstance(val, str) and len(val.strip()) == 0:
-                    cues.append(ICue(
-                        msg="Metadata: Empty value [{}] '{}'".format(sec, key),
-                        level="violation",
-                        category="metadata missing",
-                        cfg_section=sec,
-                        cfg_key=key))
         return cues
 
     def check_metadata_choices(self, **kwargs):

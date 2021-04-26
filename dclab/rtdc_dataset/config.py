@@ -8,6 +8,10 @@ import warnings
 from .. import definitions as dfn
 
 
+class EmptyConfigurationKeyWarning(UserWarning):
+    pass
+
+
 class UnknownConfigurationKeyWarning(UserWarning):
     pass
 
@@ -31,8 +35,16 @@ class ConfigurationDict(dict):
 
     def __setitem__(self, key, value):
         key = self.__class__._k(key)
+        # make sure "section: key" exists
         if self.section:
             valid = verify_section_key(self.section, key)
+            # check for empty string values
+            if valid and isinstance(value, str) and len(value) == 0:
+                warnings.warn(
+                    "Empty value for [{}]: '{}'!".format(self.section, key),
+                    EmptyConfigurationKeyWarning,
+                )
+                valid = False
         else:
             valid = True
         if valid:

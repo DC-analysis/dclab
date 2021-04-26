@@ -107,9 +107,11 @@ class RTDCBase(object):
                 data = self._ancillaries[key][1]
             else:
                 # Compute new value
-                data = ancol[key].compute(self)
-                # Store computed value in `self._ancillaries`.
-                self._ancillaries[key] = (anhash, data)
+                data_dict = ancol[key].compute(self)
+                for okey in data_dict:
+                    # Store computed value in `self._ancillaries`.
+                    self._ancillaries[okey] = (anhash, data_dict[okey])
+                data = data_dict[key]
             return data
         else:
             raise KeyError("Feature '{}' does not exist!".format(key))

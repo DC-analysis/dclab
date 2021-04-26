@@ -8,6 +8,15 @@ from dclab.rtdc_dataset import fmt_tdms
 from dclab import definitions as dfn
 
 
+def calltracker(func):
+    """Decorator to track how many times a function is called"""
+    def wrapped(*args, **kwargs):
+        wrapped.calls += 1
+        return func(*args, **kwargs)
+    wrapped.calls = 0
+    return wrapped
+
+
 def example_data_dict(size=100, keys=["area_um", "deform"]):
     """Example dict with which an RTDCBase can be instantiated.
     """

@@ -49,7 +49,7 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
     Parameters
     ----------
     feature: str
-        Feature name; allowed characters are lower-case lettersm
+        Feature name; allowed characters are lower-case letters,
         digits, and underscores
     label: str
         Feature label used e.g. for plotting

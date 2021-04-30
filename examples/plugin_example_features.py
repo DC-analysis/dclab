@@ -10,6 +10,8 @@ def compute_some_new_features(rtdc_ds):
 info = {
     "method": compute_some_new_features,
     "description": "This plugin will compute some possibly useless features",
+    "long description": "Even longer description that "
+                        "can span multiple lines",
     "feature names": ["circ_per_area", "circ_times_area"],
     "feature labels": ["", ""],
     "features required": ["circ", "area_um"],

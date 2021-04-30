@@ -17,14 +17,14 @@ def create_new_plugin_feature(plugin_path):
     info = find_plugin_feature_script(plugin_path)
     plugin_list = []
     for ii in range(len(info["feature names"])):
-        ref_info = {
+        ancill_info = {
             "feature_name": info["feature names"][ii],
             "method": info["method"],
             "req_config": info["config required"],
             "req_features": info["features required"],
             "priority": info["priority"],
         }
-        plugin_list.append(PlugInFeature(**ref_info))
+        plugin_list.append(PlugInFeature(info, **ancill_info))
         # add feature label etc
     return plugin_list
 
@@ -55,11 +55,10 @@ def remove_all_plugin_features():
 
 
 class PlugInFeature(AncillaryFeature):
-    def __init__(self, **kwargs):
+    def __init__(self, info, **kwargs):
         """Child class of `AncillaryFeature` which allows a user to create
         their own features. See the dclab repo examples/plugins folder for
         example plugins.
         """
         super().__init__(**kwargs)
-        self.plugin_registered = True
-        self.plugin_info = kwargs
+        self.plugin_metadata = info

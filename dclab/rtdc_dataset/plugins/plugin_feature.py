@@ -9,9 +9,6 @@ import sys
 from ..ancillaries import AncillaryFeature
 
 
-_registered_plugin_instances = []
-
-
 def create_new_plugin_feature(plugin_path):
     """find an instanciate a PlugInFeature from a user-defined script"""
     info = find_plugin_feature_script(plugin_path)
@@ -47,11 +44,10 @@ def remove_plugin_feature(plugin_instance):
 
 
 def remove_all_plugin_features():
-    # I guess because we are built on AncillaryFeature, we don't need something
-    # like temp feats' _registered_temporary_features = []?
-    # I have done this below anyway...
-    for plugin in _registered_plugin_instances:
-        remove_plugin_feature(plugin)
+    """Convenience function for removing all plugin instances"""
+    for plugin_instance in reversed(PlugInFeature.features):
+        if isinstance(plugin_instance, PlugInFeature):
+            remove_plugin_feature(plugin_instance)
 
 
 class PlugInFeature(AncillaryFeature):

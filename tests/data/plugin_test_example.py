@@ -16,7 +16,7 @@ info = {
     "feature labels": ["", ""],
     "features required": ["circ", "area_um"],
     "config required": [],
-    "method check required": "",
+    "method check required": lambda x: True,
     "priority": 1,
     "version": "0.1.0",
 }

@@ -19,6 +19,7 @@ def load_plugin_feature(plugin_path):
             "method": info["method"],
             "req_config": info["config required"],
             "req_features": info["features required"],
+            "req_func": info["method check required"],
             "priority": info["priority"],
         }
         plugin_list.append(PlugInFeature(info, **ancill_info))

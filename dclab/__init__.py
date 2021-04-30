@@ -16,7 +16,7 @@ from .rtdc_dataset import new_dataset
 from .rtdc_dataset.feat_temp import register_temporary_feature, \
     set_temporary_feature
 from .rtdc_dataset.plugins.plugin_feature import (
-    PlugInFeature, create_new_plugin_feature)
+    PlugInFeature, load_plugin_feature)
 from . import statistics
 
 from ._version import version as __version__

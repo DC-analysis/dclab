@@ -39,8 +39,9 @@ def find_plugin_feature_script(plugin_path):
 
 def remove_plugin_feature(plugin_instance):
     """Convenience function for removing a plugin instance"""
-    PlugInFeature.features.remove(plugin_instance)
-    PlugInFeature.feature_names.remove(plugin_instance.feature_name)
+    if isinstance(plugin_instance, PlugInFeature):
+        PlugInFeature.features.remove(plugin_instance)
+        PlugInFeature.feature_names.remove(plugin_instance.feature_name)
 
 
 def remove_all_plugin_features():

@@ -30,10 +30,14 @@ def find_plugin_feature_script(plugin_path):
     # find script, return info dict
     path = pathlib.Path(plugin_path)
     # insert the plugin directory to sys.path so we can import it
-    sys.path.insert(-1, str(path.parent))
-    plugin = importlib.import_module(path.stem)
-    # undo our path insertion
-    sys.path.pop(0)
+    try:
+        plugin = importlib.import_module(path.stem)
+    except ModuleNotFoundError:
+        sys.path.insert(-1, str(path.parent))
+        plugin = importlib.import_module(path.stem)
+        # undo our path insertion
+        sys.path.pop(0)
+
     return plugin.info
 
 

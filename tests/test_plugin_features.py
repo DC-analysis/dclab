@@ -28,7 +28,7 @@ def get_plugin_file(plugin_name="plugin_test_example.py"):
 
 def test_create_plugin():
     plugin_path = get_plugin_file()
-    plugin_list = dclab.create_new_plugin_feature(plugin_path)
+    plugin_list = dclab.load_plugin_feature(plugin_path)
     assert isinstance(plugin_list[0], PlugInFeature)
     assert isinstance(plugin_list[1], PlugInFeature)
 
@@ -43,7 +43,7 @@ def test_create_plugin():
 
 def test_remove_all_plugin_features():
     plugin_path = get_plugin_file()
-    _ = dclab.create_new_plugin_feature(plugin_path)
+    _ = dclab.load_plugin_feature(plugin_path)
 
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" in ds
@@ -57,7 +57,7 @@ def test_remove_all_plugin_features():
 
 def test_plugin_metadata():
     plugin_path = get_plugin_file()
-    plugin_list = dclab.create_new_plugin_feature(plugin_path)
+    plugin_list = dclab.load_plugin_feature(plugin_path)
     pf1, pf2 = plugin_list
 
     plugin_file_info = find_plugin_feature_script(plugin_path)

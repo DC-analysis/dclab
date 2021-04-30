@@ -9,7 +9,7 @@ import sys
 from ..ancillaries import AncillaryFeature
 
 
-def create_new_plugin_feature(plugin_path):
+def load_plugin_feature(plugin_path):
     """find an instanciate a PlugInFeature from a user-defined script"""
     info = find_plugin_feature_script(plugin_path)
     plugin_list = []

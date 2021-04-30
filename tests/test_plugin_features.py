@@ -4,12 +4,12 @@ import pytest
 
 import dclab
 from dclab.rtdc_dataset.plugins.plugin_feature import (
-    PlugInFeature, find_plugin_feature_script)
+    PlugInFeature, find_plugin_feature_script, remove_all_plugin_features)
 
 from helper_methods import retrieve_data
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def cleanup_plugin_features():
     """Fixture used to setup and cleanup some fake ancillary features"""
     # code run before the test
@@ -18,8 +18,7 @@ def cleanup_plugin_features():
     yield
     # code run after the test
     # remove our test plugin examples
-    pass
-    # remove_plugins()
+    remove_all_plugin_features()
 
 
 def get_plugin_file(plugin_name="plugin_test_example.py"):
@@ -41,13 +40,19 @@ def test_create_plugin():
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
     assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
 
-    PlugInFeature.features.remove(plugin_list[0])
-    PlugInFeature.feature_names.remove(plugin_list[0].feature_name)
-    PlugInFeature.features.remove(plugin_list[1])
-    PlugInFeature.feature_names.remove(plugin_list[1].feature_name)
-    ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    assert "circ_per_area" not in ds2
-    assert "circ_times_area" not in ds2
+
+def test_remove_all_plugin_features():
+    plugin_path = get_plugin_file()
+    _ = dclab.create_new_plugin_feature(plugin_path)
+
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "circ_per_area" in ds
+    assert "circ_times_area" in ds
+
+    remove_all_plugin_features()
+
+    assert "circ_per_area" not in ds
+    assert "circ_times_area" not in ds
 
 
 def test_plugin_metadata():
@@ -59,14 +64,6 @@ def test_plugin_metadata():
 
     assert pf1.plugin_metadata == plugin_file_info
     assert pf2.plugin_metadata == plugin_file_info
-
-    PlugInFeature.features.remove(plugin_list[0])
-    PlugInFeature.feature_names.remove(plugin_list[0].feature_name)
-    PlugInFeature.features.remove(plugin_list[1])
-    PlugInFeature.feature_names.remove(plugin_list[1].feature_name)
-    ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    assert "circ_per_area" not in ds2
-    assert "circ_times_area" not in ds2
 
 
 def compute_single_plugin_feature(rtdc_ds):
@@ -91,20 +88,16 @@ def test_single_plugin_feature():
         "req_features": ["circ", "area_um"],
         "priority": 1,
     }
-    pf = PlugInFeature(other_info, **feature_info)
+    _ = PlugInFeature(other_info, **feature_info)
+    assert "circ_per_area" in ds
+
     circ_per_area = ds["circ_per_area"]
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
 
-    assert "circ_per_area" in ds
+    # check that PlugInFeature exists independent of loaded ds
     with pytest.raises(AssertionError):
         ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
         assert "circ_per_area" not in ds2
-
-    # ensure that the PlugInFeatures are no longer available
-    PlugInFeature.features.remove(pf)
-    PlugInFeature.feature_names.remove(pf.feature_name)
-    ds3 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    assert "circ_per_area" not in ds3
 
 
 def test_multiple_plugin_features():
@@ -123,20 +116,13 @@ def test_multiple_plugin_features():
         }
         plugin_list.append(PlugInFeature(other_info, **feature_info))
 
-    _ = ds["circ_per_area"]
-    _ = ds["circ_times_area"]
-
     assert "circ_per_area" in ds
     assert "circ_times_area" in ds
 
-    # ensure that the PlugInFeatures are no longer available
-    PlugInFeature.features.remove(plugin_list[0])
-    PlugInFeature.feature_names.remove(plugin_list[0].feature_name)
-    PlugInFeature.features.remove(plugin_list[1])
-    PlugInFeature.feature_names.remove(plugin_list[1].feature_name)
-    ds4 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    assert "circ_per_area" not in ds4
-    assert "circ_times_area" not in ds4
+    circ_per_area = ds["circ_per_area"]
+    circ_times_area = ds["circ_times_area"]
+    assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
+    assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
 
 
 if __name__ == "__main__":
@@ -145,4 +131,4 @@ if __name__ == "__main__":
     for key in list(loc.keys()):
         if key.startswith("test_") and hasattr(loc[key], "__call__"):
             loc[key]()
-            # use cleanup/deregister plugin function here also
+            remove_all_plugin_features()

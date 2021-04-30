@@ -20,8 +20,8 @@ def create_new_plugin_feature(plugin_path):
         ref_info = {
             "feature_name": info["feature names"][ii],
             "method": info["method"],
-            "req_config": info["config required"][ii],
-            "req_features": info["features required"][ii],
+            "req_config": info["config required"],
+            "req_features": info["features required"],
             "priority": info["priority"],
         }
         plugin_list.append(PlugInFeature(**ref_info))

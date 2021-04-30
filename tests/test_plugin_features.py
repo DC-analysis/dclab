@@ -27,8 +27,8 @@ def compute_single_plugin_feature(rtdc_ds):
 
 def compute_multiple_plugin_features(rtdc_ds):
     circ_per_area = rtdc_ds["circ"] / rtdc_ds["area_um"]
-    bright_per_area = rtdc_ds["bright_avg"] / rtdc_ds["area_um"]
-    return {"circ_per_area": circ_per_area, "bright_per_area": bright_per_area}
+    circ_times_area = rtdc_ds["circ"] * rtdc_ds["area_um"]
+    return {"circ_per_area": circ_per_area, "circ_times_area": circ_times_area}
 
 
 def test_single_plugin_feature():
@@ -63,23 +63,23 @@ def test_single_plugin_feature():
 def test_multiple_plugin_features():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
 
-    feature_names = ["circ_per_area", "bright_per_area"]
+    feature_names = ["circ_per_area", "circ_times_area"]
     plugin_list = []
     for feature_name in feature_names:
         feature_info = {
             "feature_name": feature_name,
             "method": compute_multiple_plugin_features,
             "req_config": [],
-            "req_features": ["circ", "area_um", "bright_avg"],
+            "req_features": ["circ", "area_um"],
             "priority": 1,
         }
         plugin_list.append(PlugInFeature(**feature_info))
 
     _ = ds["circ_per_area"]
-    _ = ds["bright_per_area"]
+    _ = ds["circ_times_area"]
 
     assert "circ_per_area" in ds
-    assert "bright_per_area" in ds
+    assert "circ_times_area" in ds
 
     # ensure that the PlugInFeatures are no longer available
     PlugInFeature.features.remove(plugin_list[0])
@@ -88,7 +88,7 @@ def test_multiple_plugin_features():
     PlugInFeature.feature_names.remove(plugin_list[1].feature_name)
     ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" not in ds2
-    assert "bright_per_area" not in ds2
+    assert "circ_times_area" not in ds2
 
 
 if __name__ == "__main__":

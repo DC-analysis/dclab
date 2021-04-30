@@ -86,6 +86,7 @@ def test_single_plugin_feature():
         "method": compute_single_plugin_feature,
         "req_config": [],
         "req_features": ["circ", "area_um"],
+        "req_func": lambda x: True,
         "priority": 1,
     }
     _ = PlugInFeature(other_info, **feature_info)
@@ -112,6 +113,7 @@ def test_multiple_plugin_features():
             "method": compute_multiple_plugin_features,
             "req_config": [],
             "req_features": ["circ", "area_um"],
+            "req_func": lambda x: True,
             "priority": 1,
         }
         plugin_list.append(PlugInFeature(other_info, **feature_info))

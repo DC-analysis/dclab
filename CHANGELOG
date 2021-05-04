@@ -1,6 +1,8 @@
 0.33.4
  - enh: `AncillaryFeature` now populates other ancillary features when they
    share the same method (#104)
+ - enh: dclab-verify-dataset now returns a non-zero exit code if there
+   were errors, alerts, or violations (#120)
 0.33.3
  - fix: add "chip identifier" to "setup" configuration section and
    make it optional during dataset checks (#109)

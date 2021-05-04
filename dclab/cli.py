@@ -6,6 +6,7 @@ import json
 import pathlib
 import platform
 import shutil
+import sys
 import warnings
 
 import h5py
@@ -730,6 +731,11 @@ def verify_dataset():
     args = parser.parse_args()
     path_in = pathlib.Path(args.path).resolve()
     print_info("Checking {}".format(path_in))
+    # The exit status of this script: Non-zero exit status means that
+    # there were errors, alerts, or violations (used e.g. for Shape-In
+    # testing pipeline). Defaults to `1` because this is least
+    # error-prone.
+    exit_status = 1
     try:
         viol, aler, info = check_dataset(path_in)
     except fmt_tdms.InvalidTDMSFileFormatError:
@@ -749,6 +755,11 @@ def verify_dataset():
             print_violation(vio)
         print_info("Check Complete: {} violations and ".format(len(viol))
                    + "{} alerts".format(len(aler)))
+        if len(aler) + len(viol) == 0:
+            # everything is ok
+            exit_status = 0
+
+        sys.exit(exit_status)
 
 
 def verify_dataset_parser():

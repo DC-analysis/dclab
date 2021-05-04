@@ -716,7 +716,7 @@ def check_dataset(path_or_ds):
 
     Parameters
     ----------
-    path_or_ds: str or RTDCBase
+    path_or_ds: str or pathlib.Path or RTDCBase
         Full path to a dataset on disk or an instance of RTDCBase
 
     Returns

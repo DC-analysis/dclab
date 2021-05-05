@@ -1,4 +1,5 @@
 0.33.4
+ - fix: dclab-verify-dataset now also prints other errors it encounters
  - enh: `AncillaryFeature` now populates other ancillary features when they
    share the same method (#104)
  - enh: dclab-verify-dataset now returns a non-zero exit code if there

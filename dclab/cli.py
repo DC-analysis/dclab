@@ -747,6 +747,8 @@ def verify_dataset():
         print_violation("Invalid contour data!")
     except fmt_tdms.InvalidVideoFileError:
         print_violation("Invalid image data!")
+    except BaseException as e:
+        print_violation(", ".join(e.args))
     else:
         for inf in info:
             print_info(inf)
@@ -772,9 +774,9 @@ def verify_dataset():
 def verify_dataset_parser():
     descr = "Check experimental datasets for completeness. This command " \
             + "is used e.g. to enforce data integrity with Shape-In. The " \
-            + "following exit codes are defined: ``0: success``, " \
-            + "``1: alerts``, ``2: violations``, " \
-            + "``3: alerts and violations``, ``4: other errors``."
+            + "following exit codes are defined: ``0: valid dataset``, " \
+            + "``1: alerts encountered``, ``2: violations encountered``, " \
+            + "``3: alerts and violations``, ``4: other error``."
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('path', metavar='PATH', type=str,
                         help='Path to experimental dataset')

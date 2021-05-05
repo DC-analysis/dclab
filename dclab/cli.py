@@ -731,11 +731,12 @@ def verify_dataset():
     args = parser.parse_args()
     path_in = pathlib.Path(args.path).resolve()
     print_info("Checking {}".format(path_in))
-    # The exit status of this script: Non-zero exit status means that
-    # there were errors, alerts, or violations (used e.g. for Shape-In
-    # testing pipeline). Defaults to `1` because this is least
-    # error-prone.
-    exit_status = 1
+    # The exit status of this script: Non-zero exit status means:
+    # 1: alerts
+    # 2: violations
+    # 3: alerts and violations
+    # 4: other errors
+    exit_status = 4
     try:
         viol, aler, info = check_dataset(path_in)
     except fmt_tdms.InvalidTDMSFileFormatError:
@@ -755,18 +756,25 @@ def verify_dataset():
             print_violation(vio)
         print_info("Check Complete: {} violations and ".format(len(viol))
                    + "{} alerts".format(len(aler)))
-        if len(aler) + len(viol) == 0:
+        if aler and viol:
+            exit_status = 3
+        elif aler:
+            exit_status = 1
+        elif viol:
+            exit_status = 2
+        else:
             # everything is ok
             exit_status = 0
-
+    finally:
         sys.exit(exit_status)
 
 
 def verify_dataset_parser():
-    descr = "Check experimental datasets for completeness. Note that old " \
-            + "measurements will most likely fail this verification step. " \
-            + "This program is used to enforce data integrity with future " \
-            + "implementations of RT-DC recording software (e.g. Shape-In)."
+    descr = "Check experimental datasets for completeness. This command " \
+            + "is used e.g. to enforce data integrity with Shape-In. The " \
+            + "following exit codes are defined: ``0: success``, " \
+            + "``1: alerts``, ``2: violations``, " \
+            + "``3: alerts and violations``, ``4: other errors``."
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('path', metavar='PATH', type=str,
                         help='Path to experimental dataset')

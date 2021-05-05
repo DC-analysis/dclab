@@ -731,11 +731,11 @@ def verify_dataset():
     args = parser.parse_args()
     path_in = pathlib.Path(args.path).resolve()
     print_info("Checking {}".format(path_in))
-    # The exit status of this script: Non-zero exit status means:
+    # The exit status of this script. Non-zero exit status means:
     # 1: alerts
     # 2: violations
     # 3: alerts and violations
-    # 4: other errors
+    # 4: other error
     exit_status = 4
     try:
         viol, aler, info = check_dataset(path_in)

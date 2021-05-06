@@ -364,3 +364,37 @@ def get_feature_label(name, rtdc_ds=None):
 def scalar_feature_exists(name):
     """Convenience method wrapping `feature_exists(..., scalar_only=True)`"""
     return feature_exists(name, scalar_only=True)
+
+
+def update_dfn_with_feature_info(feature, label, is_scalar):
+    """Used by temporary features and plugin features to update the feature
+    names and labels.
+    """
+    allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
+    _feat = "".join([f for f in feature if f in allowed_chars])
+    if _feat != feature:
+        raise ValueError("`feature` must only contain lower-case characters, "
+                         "digits, and underscores; got '{}'!".format(feature))
+    if label is None:
+        label = "User defined feature {}".format(feature)
+    if feature_exists(feature):
+        raise ValueError("Feature '{}' already exists!".format(feature))
+
+    # Populate the new feature in all dictionaries and lists
+    # in `dclab.definitions`
+    feature_names.append(feature)
+    feature_labels.append(label)
+    feature_name2label[feature] = label
+    if is_scalar:
+        scalar_feature_names.append(feature)
+
+
+def remove_dfn_feature_info(feature, label):
+    """Used by temporary features and plugin features to remove the feature
+    names and labels from `dclab.definitions`.
+    """
+    feature_names.remove(feature)
+    feature_labels.remove(label)
+    feature_name2label.pop(feature)
+    if feature in scalar_feature_names:
+        scalar_feature_names.remove(feature)

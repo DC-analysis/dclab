@@ -6,6 +6,7 @@ import pathlib
 import importlib
 import sys
 
+from ... import definitions as dfn
 from ..ancillaries import AncillaryFeature
 
 
@@ -22,7 +23,10 @@ def load_plugin_feature(plugin_path):
             "req_func": info["method check required"],
             "priority": info["priority"],
         }
-        plugin_list.append(PlugInFeature(info, **ancill_info))
+        feature_label = info["feature labels"][ii]
+        is_scalar = info["scalar feature"]
+        plugin_list.append(PlugInFeature(
+            feature_label, is_scalar, plugin_path, info, **ancill_info))
         # add feature label etc
     return plugin_list
 
@@ -47,6 +51,9 @@ def remove_plugin_feature(plugin_instance):
     if isinstance(plugin_instance, PlugInFeature):
         PlugInFeature.features.remove(plugin_instance)
         PlugInFeature.feature_names.remove(plugin_instance.feature_name)
+        dfn.remove_dfn_feature_info(
+            plugin_instance.feature_name,
+            plugin_instance.feature_label)
 
 
 def remove_all_plugin_features():
@@ -57,10 +64,17 @@ def remove_all_plugin_features():
 
 
 class PlugInFeature(AncillaryFeature):
-    def __init__(self, info, **kwargs):
+    def __init__(self, feature_label, is_scalar,
+                 plugin_path, info, **kwargs):
         """Child class of `AncillaryFeature` which allows a user to create
         their own features. See the dclab repo examples/plugins folder for
         example plugins.
         """
         super().__init__(**kwargs)
-        self.plugin_metadata = info
+        self.plugin_path = plugin_path
+        self.plugin_info = info
+        self.feature_label = feature_label
+        self.is_scalar = is_scalar
+
+        dfn.update_dfn_with_feature_info(
+            self.feature_name, self.feature_label, self.is_scalar)

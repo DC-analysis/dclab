@@ -10,6 +10,10 @@ from ... import definitions as dfn
 from ..ancillaries import AncillaryFeature
 
 
+class PluginImportError(BaseException):
+    pass
+
+
 def load_plugin_feature(plugin_path):
     """find an instanciate a PlugInFeature from a user-defined script"""
     info = import_plugin_feature_script(plugin_path)
@@ -34,12 +38,14 @@ def load_plugin_feature(plugin_path):
 def import_plugin_feature_script(plugin_path):
     # find script, return info dict
     path = pathlib.Path(plugin_path)
-    # insert the plugin directory to sys.path so we can import it
     try:
-        plugin = importlib.import_module(path.stem)
-    except ModuleNotFoundError:
+        # insert the plugin directory to sys.path so we can import it
         sys.path.insert(-1, str(path.parent))
         plugin = importlib.import_module(path.stem)
+    except ModuleNotFoundError:
+        raise PluginImportError("The plugin could be not be found at "
+                                f"'{plugin_path}'")
+    finally:
         # undo our path insertion
         sys.path.pop(0)
 

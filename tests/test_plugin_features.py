@@ -5,9 +5,13 @@ import pytest
 import dclab
 from dclab.rtdc_dataset.plugins.plugin_feature import (
     PlugInFeature, import_plugin_feature_script,
-    remove_plugin_feature, remove_all_plugin_features)
+    remove_plugin_feature, remove_all_plugin_features,
+    PluginImportError,
+)
 
 from helper_methods import retrieve_data
+
+data_dir = pathlib.Path(__file__).parent / "data"
 
 
 @pytest.fixture(autouse=True)
@@ -22,11 +26,6 @@ def cleanup_plugin_features():
     remove_all_plugin_features()
 
 
-def get_plugin_file(plugin_name="plugin_test_example.py"):
-    plugin_path = pathlib.Path(__file__).parent / "data" / plugin_name
-    return plugin_path
-
-
 def compute_single_plugin_feature(rtdc_ds):
     circ_per_area = rtdc_ds["circ"] / rtdc_ds["area_um"]
     return circ_per_area
@@ -38,8 +37,8 @@ def compute_multiple_plugin_features(rtdc_ds):
     return {"circ_per_area": circ_per_area, "circ_times_area": circ_times_area}
 
 
-def test_create_plugin():
-    plugin_path = get_plugin_file()
+def test_import_plugin():
+    plugin_path = data_dir / "plugin_test_example.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert isinstance(plugin_list[0], PlugInFeature)
     assert isinstance(plugin_list[1], PlugInFeature)
@@ -53,8 +52,14 @@ def test_create_plugin():
     assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
 
 
+def test_import_plugin_fail():
+    bad_plugin_path = "not/a/real/path/plugin.py"
+    with pytest.raises(PluginImportError):
+        _ = dclab.load_plugin_feature(bad_plugin_path)
+
+
 def test_remove_plugin_feature():
-    plugin_path = get_plugin_file()
+    plugin_path = data_dir / "plugin_test_example.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert len(plugin_list) == 2
 
@@ -78,7 +83,7 @@ def test_remove_plugin_feature():
 
 
 def test_remove_all_plugin_features():
-    plugin_path = get_plugin_file()
+    plugin_path = data_dir / "plugin_test_example.py"
     _ = dclab.load_plugin_feature(plugin_path)
 
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
@@ -96,7 +101,7 @@ def test_remove_all_plugin_features():
 
 
 def test_plugin_attributes():
-    plugin_path = get_plugin_file()
+    plugin_path = data_dir / "plugin_test_example.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     pf1, pf2 = plugin_list
 

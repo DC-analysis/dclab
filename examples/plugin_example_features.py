@@ -13,10 +13,11 @@ info = {
     "long description": "Even longer description that "
                         "can span multiple lines",
     "feature names": ["circ_per_area", "circ_times_area"],
-    "feature labels": ["", ""],
+    "feature labels": ["Circularity per Area", "Circularity times Area"],
     "features required": ["circ", "area_um"],
     "config required": [],
     "method check required": lambda x: True,
     "priority": 1,
+    "scalar feature": True,
     "version": "0.1.0",
 }

@@ -12,7 +12,7 @@ from ..ancillaries import AncillaryFeature
 
 def load_plugin_feature(plugin_path):
     """find an instanciate a PlugInFeature from a user-defined script"""
-    info = find_plugin_feature_script(plugin_path)
+    info = import_plugin_feature_script(plugin_path)
     plugin_list = []
     for ii in range(len(info["feature names"])):
         ancill_info = {
@@ -31,7 +31,7 @@ def load_plugin_feature(plugin_path):
     return plugin_list
 
 
-def find_plugin_feature_script(plugin_path):
+def import_plugin_feature_script(plugin_path):
     # find script, return info dict
     path = pathlib.Path(plugin_path)
     # insert the plugin directory to sys.path so we can import it
@@ -54,6 +54,9 @@ def remove_plugin_feature(plugin_instance):
         dfn.remove_dfn_feature_info(
             plugin_instance.feature_name,
             plugin_instance.feature_label)
+    else:
+        raise TypeError(f"Type {type(plugin_instance)} should be an instance "
+                        "of PlugInFeature.")
 
 
 def remove_all_plugin_features():

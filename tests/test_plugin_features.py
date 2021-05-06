@@ -4,7 +4,8 @@ import pytest
 
 import dclab
 from dclab.rtdc_dataset.plugins.plugin_feature import (
-    PlugInFeature, find_plugin_feature_script, remove_all_plugin_features)
+    PlugInFeature, import_plugin_feature_script,
+    remove_plugin_feature, remove_all_plugin_features)
 
 from helper_methods import retrieve_data
 
@@ -52,6 +53,30 @@ def test_create_plugin():
     assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
 
 
+def test_remove_plugin_feature():
+    plugin_path = get_plugin_file()
+    plugin_list = dclab.load_plugin_feature(plugin_path)
+    assert len(plugin_list) == 2
+
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "circ_per_area" in ds
+    assert "circ_times_area" in ds
+    assert dclab.dfn.feature_exists("circ_per_area")
+    assert dclab.dfn.feature_exists("circ_times_area")
+
+    remove_plugin_feature(plugin_list[0])
+    remove_plugin_feature(plugin_list[1])
+
+    assert "circ_per_area" not in ds
+    assert "circ_times_area" not in ds
+    assert not dclab.dfn.feature_exists("circ_per_area")
+    assert not dclab.dfn.feature_exists("circ_times_area")
+
+    with pytest.raises(TypeError):
+        not_a_plugin_instance = [4, 6, 5]
+        remove_plugin_feature(not_a_plugin_instance)
+
+
 def test_remove_all_plugin_features():
     plugin_path = get_plugin_file()
     _ = dclab.load_plugin_feature(plugin_path)
@@ -75,7 +100,7 @@ def test_plugin_attributes():
     plugin_list = dclab.load_plugin_feature(plugin_path)
     pf1, pf2 = plugin_list
 
-    plugin_file_info = find_plugin_feature_script(plugin_path)
+    plugin_file_info = import_plugin_feature_script(plugin_path)
 
     assert pf1.plugin_path == plugin_path
     assert pf2.plugin_path == plugin_path

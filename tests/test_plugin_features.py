@@ -1,4 +1,5 @@
 import pathlib
+import h5py
 import numpy as np
 import pytest
 
@@ -35,6 +36,18 @@ def compute_multiple_plugin_features(rtdc_ds):
     circ_per_area = rtdc_ds["circ"] / rtdc_ds["area_um"]
     circ_times_area = rtdc_ds["circ"] * rtdc_ds["area_um"]
     return {"circ_per_area": circ_per_area, "circ_times_area": circ_times_area}
+
+
+def example_plugin_feature_info():
+    feature_info = {
+        "feature_name": "circ_per_area",
+        "method": compute_single_plugin_feature,
+        "req_config": [],
+        "req_features": ["circ", "area_um"],
+        "req_func": lambda x: True,
+        "priority": 1,
+    }
+    return feature_info
 
 
 def test_import_plugin():
@@ -115,18 +128,8 @@ def test_plugin_attributes():
     assert pf2.feature_label == plugin_file_info["feature labels"][1]
     assert pf1.is_scalar
     assert pf2.is_scalar
-
-
-def example_plugin_feature_info():
-    feature_info = {
-        "feature_name": "circ_per_area",
-        "method": compute_single_plugin_feature,
-        "req_config": [],
-        "req_features": ["circ", "area_um"],
-        "req_func": lambda x: True,
-        "priority": 1,
-    }
-    return feature_info
+    assert pf1.feature_name == plugin_file_info["feature names"][0]
+    assert pf2.feature_name == plugin_file_info["feature names"][1]
 
 
 def test_single_plugin_feature():
@@ -177,7 +180,7 @@ def test_multiple_plugin_features():
 
 def test_plugin_with_no_feature_label():
     """Show that an empty `feature_label` will still give a descriptive
-    feature label.
+    feature label. See `dclab.dfn.update_dfn_with_feature_info` for details.
     """
     plugin_path = ''
     other_info = {}
@@ -188,9 +191,56 @@ def test_plugin_with_no_feature_label():
     pf = PlugInFeature(feature_label, is_scalar, plugin_path,
                        other_info, **feature_info)
 
+    assert dclab.dfn.feature_exists(feature_name)
     assert pf.feature_label != ""
     assert pf.feature_label == "User defined feature {}".format(feature_name)
-    assert dclab.dfn.feature_exists(feature_name)
+
+
+def test_export_and_load():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # Create PlugInFeature instance
+    plugin_path = ''
+    other_info = {}
+    feature_label = ""
+    is_scalar = True
+    feature_info = example_plugin_feature_info()
+    pf = PlugInFeature(feature_label, is_scalar, plugin_path,
+                       other_info, **feature_info)
+
+    with dclab.new_dataset(h5path) as ds:
+        # extract the feature information from the dataset
+        circ_per_area = ds[pf.feature_name]
+
+        # export the data to a new file
+        expath = h5path.with_name("exported.rtdc")
+        ds.export.hdf5(expath, features=ds.features_innate + [pf.feature_name])
+
+    # make sure that worked
+    with h5py.File(expath, "r") as h5:
+        assert pf.feature_name in h5["events"]
+        assert np.allclose(h5["events"][pf.feature_name], circ_per_area)
+
+    # now check again with dclab
+    with dclab.new_dataset(expath) as ds2:
+        assert pf.feature_name in ds2
+        assert np.allclose(ds2[pf.feature_name], circ_per_area)
+
+        # and a control check
+        remove_plugin_feature(pf)
+        assert pf.feature_name not in ds2
+
+
+def test_bad_plugin_feature_name():
+    """Basic test of a bad name for PlugInFeature"""
+    plugin_path = ''
+    other_info = {}
+    feature_label = ""
+    is_scalar = True
+    feature_info = example_plugin_feature_info()
+    feature_info["feature_name"] = "Peter-Pan's Best Friend!"
+    with pytest.raises(ValueError):
+        PlugInFeature(feature_label, is_scalar, plugin_path,
+                      other_info, **feature_info)
 
 
 if __name__ == "__main__":

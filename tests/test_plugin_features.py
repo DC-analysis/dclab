@@ -209,6 +209,7 @@ def test_export_and_load():
 
     with dclab.new_dataset(h5path) as ds:
         # extract the feature information from the dataset
+        assert pf in PlugInFeature.features
         circ_per_area = ds[pf.feature_name]
 
         # export the data to a new file
@@ -222,6 +223,7 @@ def test_export_and_load():
 
     # now check again with dclab
     with dclab.new_dataset(expath) as ds2:
+        assert pf in PlugInFeature.features
         assert pf.feature_name in ds2
         assert np.allclose(ds2[pf.feature_name], circ_per_area)
 
@@ -267,6 +269,55 @@ def test_filtering_with_plugin_feature():
         ds.apply_filter()
         assert np.sum(ds.filter.all) == 1
         assert ds.filter.all[4]
+
+
+def test_plugin_exists_in_hierarchy():
+    """Test for RTDCHierarchy"""
+    plugin_path = ''
+    other_info = {}
+    feature_label = ""
+    is_scalar = True
+    feature_info = example_plugin_feature_info()
+    pf = PlugInFeature(feature_label, is_scalar, plugin_path,
+                       other_info, **feature_info)
+
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with dclab.new_dataset(h5path) as ds:
+        assert pf.feature_name in ds
+        assert dclab.dfn.feature_exists(pf.feature_name)
+        child = dclab.new_dataset(ds)
+        assert pf.feature_name in child
+
+
+def test_create_plugin_after_loading():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with dclab.new_dataset(h5path) as ds:
+        circ_per_area = compute_single_plugin_feature(ds)
+    with h5py.File(h5path, "a") as h5:
+        h5["events"]["circ_per_area"] = circ_per_area
+    with dclab.new_dataset(h5path) as ds:
+        assert "circ_per_area" not in ds
+        plugin_path = ''
+        other_info = {}
+        feature_label = ""
+        is_scalar = True
+        feature_info = example_plugin_feature_info()
+        PlugInFeature(feature_label, is_scalar, plugin_path,
+                      other_info, **feature_info)
+        assert "circ_per_area" in ds
+
+
+def test_try_existing_feature_fails():
+    """Basic test of a temporary feature"""
+    plugin_path = ''
+    other_info = {}
+    feature_label = ""
+    is_scalar = True
+    feature_info = example_plugin_feature_info()
+    feature_info["feature_name"] = "deform"
+    with pytest.raises(ValueError):
+        PlugInFeature(feature_label, is_scalar, plugin_path,
+                      other_info, **feature_info)
 
 
 if __name__ == "__main__":

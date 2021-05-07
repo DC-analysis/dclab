@@ -394,8 +394,11 @@ def remove_dfn_feature_info(feature, label):
     """Used by temporary features and plugin features to remove the feature
     names and labels from `dclab.definitions`.
     """
-    feature_names.remove(feature)
-    feature_labels.remove(label)
-    feature_name2label.pop(feature)
+    if feature in feature_names:
+        feature_names.remove(feature)
+    if label in feature_labels:
+        feature_labels.remove(label)
+    if feature in feature_name2label:
+        feature_name2label.pop(feature)
     if feature in scalar_feature_names:
         scalar_feature_names.remove(feature)

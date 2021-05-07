@@ -2,8 +2,6 @@
 .. versionadded:: 0.33.0
 """
 
-import numpy as np
-
 from .. import definitions as dfn
 
 from .fmt_hierarchy import RTDC_Hierarchy
@@ -81,11 +79,5 @@ def set_temporary_feature(rtdc_ds, feature, data):
         raise ValueError("The temporary feature `data` must have same length "
                          "as the dataset. Expected length {}, got length "
                          "{}!".format(len(rtdc_ds), len(data)))
-    data = np.array(data)
-    if len(data.shape) == 1 and not dfn.scalar_feature_exists(feature):
-        raise ValueError("Feature '{}' is not a scalar feature, but a "
-                         "1D array was given for `data`!".format(feature))
-    elif len(data.shape) != 1 and dfn.scalar_feature_exists(feature):
-        raise ValueError("Feature '{}' is a scalar feature, but the `data` "
-                         "array is not 1D!".format(feature))
+    dfn.check_feature_shape(feature, data)
     rtdc_ds._usertemp[feature] = data

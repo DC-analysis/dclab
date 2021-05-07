@@ -84,6 +84,13 @@ class PlugInFeature(AncillaryFeature):
         self.plugin_info = info
         self.feature_label = feature_label
         self.is_scalar = is_scalar
+        self._update_feature_info()
 
+    def _update_feature_info(self):
+        """Wrapper on the `dclab.dfn.update_dfn_with_feature_info` function for
+        handling cases when `feature_label=""`
+        """
+        if self.feature_label == "":
+            self.feature_label = None
         dfn.update_dfn_with_feature_info(
             self.feature_name, self.feature_label, self.is_scalar)

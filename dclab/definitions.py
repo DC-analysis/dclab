@@ -1,5 +1,6 @@
 """Naming conventions"""
 import copy
+import numpy as np
 
 from .rtdc_dataset.ancillaries import AncillaryFeature
 from .parse_funcs import fbool, fint, fintlist, func_types, lcstr
@@ -394,11 +395,22 @@ def remove_dfn_feature_info(feature, label):
     """Used by temporary features and plugin features to remove the feature
     names and labels from `dclab.definitions`.
     """
-    if feature in feature_names:
-        feature_names.remove(feature)
-    if label in feature_labels:
-        feature_labels.remove(label)
-    if feature in feature_name2label:
-        feature_name2label.pop(feature)
+    feature_names.remove(feature)
+    feature_labels.remove(label)
+    feature_name2label.pop(feature)
     if feature in scalar_feature_names:
         scalar_feature_names.remove(feature)
+
+
+def check_feature_shape(feature, data):
+    data = np.array(data)
+    # bug: reloaded contour is of the form: array([array([[1,2],[...]...])])
+    # which means len(data.shape) == 1.
+    if feature == "contour" and len(data.shape) == 1:
+        pass
+    elif len(data.shape) == 1 and not scalar_feature_exists(feature):
+        raise ValueError("Feature '{}' is not a scalar feature, but a "
+                         "1D array was given for `data`!".format(feature))
+    elif len(data.shape) != 1 and scalar_feature_exists(feature):
+        raise ValueError("Feature '{}' is a scalar feature, but the `data` "
+                         "array is not 1D!".format(feature))

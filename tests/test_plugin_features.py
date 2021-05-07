@@ -243,6 +243,32 @@ def test_bad_plugin_feature_name():
                       other_info, **feature_info)
 
 
+def test_plugin_feature_exists():
+    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_list = dclab.load_plugin_feature(plugin_path)
+    assert dclab.dfn.feature_exists(plugin_list[0].feature_name)
+    assert dclab.dfn.feature_exists(plugin_list[1].feature_name)
+
+
+def test_filtering_with_plugin_feature():
+    """Filtering with features"""
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with dclab.new_dataset(h5path) as ds:
+        plugin_path = ''
+        other_info = {}
+        feature_label = ""
+        is_scalar = True
+        feature_info = example_plugin_feature_info()
+        pf = PlugInFeature(feature_label, is_scalar, plugin_path,
+                           other_info, **feature_info)
+
+        ds.config["filtering"][f"{pf.feature_name} min"] = 0.030
+        ds.config["filtering"][f"{pf.feature_name} max"] = 0.031
+        ds.apply_filter()
+        assert np.sum(ds.filter.all) == 1
+        assert ds.filter.all[4]
+
+
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

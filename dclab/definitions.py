@@ -387,6 +387,7 @@ def update_dfn_with_feature_info(feature, label, is_scalar):
     feature_name2label[feature] = label
     if is_scalar:
         scalar_feature_names.append(feature)
+    return label
 
 
 def remove_dfn_feature_info(feature, label):

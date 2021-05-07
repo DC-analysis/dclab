@@ -117,13 +117,7 @@ def test_plugin_attributes():
     assert pf2.is_scalar
 
 
-def test_single_plugin_feature():
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-
-    plugin_path = ''
-    other_info = {}
-    feature_label = "Circularity per Area"
-    is_scalar = True
+def example_plugin_feature_info():
     feature_info = {
         "feature_name": "circ_per_area",
         "method": compute_single_plugin_feature,
@@ -132,8 +126,19 @@ def test_single_plugin_feature():
         "req_func": lambda x: True,
         "priority": 1,
     }
-    _ = PlugInFeature(feature_label, is_scalar,
-                      plugin_path, other_info, **feature_info)
+    return feature_info
+
+
+def test_single_plugin_feature():
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+
+    plugin_path = ''
+    other_info = {}
+    feature_label = "Circularity per Area"
+    is_scalar = True
+    feature_info = example_plugin_feature_info()
+    _ = PlugInFeature(feature_label, is_scalar, plugin_path,
+                      other_info, **feature_info)
     assert "circ_per_area" in ds
 
     circ_per_area = ds["circ_per_area"]
@@ -150,29 +155,42 @@ def test_multiple_plugin_features():
 
     plugin_path = ''
     other_info = {}
+    feature_info = example_plugin_feature_info()
     feature_names = ["circ_per_area", "circ_times_area"]
     feature_labels = ["Circularity per Area", "Circularity times Area"]
     is_scalar = True
-    plugin_list = []
     for feature_name, feature_label in zip(feature_names, feature_labels):
-        feature_info = {
-            "feature_name": feature_name,
-            "method": compute_multiple_plugin_features,
-            "req_config": [],
-            "req_features": ["circ", "area_um"],
-            "req_func": lambda x: True,
-            "priority": 1,
-        }
-        plugin_list.append(PlugInFeature(
-            feature_label, is_scalar, plugin_path, other_info, **feature_info))
+        feature_info["feature_name"] = feature_name
+        feature_info["method"] = compute_multiple_plugin_features
+        PlugInFeature(feature_label, is_scalar, plugin_path,
+                      other_info, **feature_info)
 
     assert "circ_per_area" in ds
     assert "circ_times_area" in ds
-
+    assert dclab.dfn.feature_exists("circ_per_area")
+    assert dclab.dfn.feature_exists("circ_times_area")
     circ_per_area = ds["circ_per_area"]
     circ_times_area = ds["circ_times_area"]
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
     assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
+
+
+def test_plugin_with_no_feature_label():
+    """Show that an empty `feature_label` will still give a descriptive
+    feature label.
+    """
+    plugin_path = ''
+    other_info = {}
+    feature_label = ""
+    is_scalar = True
+    feature_info = example_plugin_feature_info()
+    feature_name = feature_info["feature_name"]
+    pf = PlugInFeature(feature_label, is_scalar, plugin_path,
+                       other_info, **feature_info)
+
+    assert pf.feature_label != ""
+    assert pf.feature_label == "User defined feature {}".format(feature_name)
+    assert dclab.dfn.feature_exists(feature_name)
 
 
 if __name__ == "__main__":

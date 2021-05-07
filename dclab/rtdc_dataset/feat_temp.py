@@ -52,7 +52,7 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
     is_scalar: bool
         Whether or not the feature is a scalar feature
     """
-    dfn.update_dfn_with_feature_info(feature, label, is_scalar)
+    _ = dfn.update_dfn_with_feature_info(feature, label, is_scalar)
     _registered_temporary_features.append(feature)
 
 

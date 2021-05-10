@@ -127,12 +127,12 @@ class PlugInFeature(AncillaryFeature):
             self._plugin_feature_name)
         _is_scalar = self._plugin_original_info["scalar feature"][idx]
         _label = self._plugin_original_info["feature labels"][idx]
-        if self.feature_label == "":
-            self.feature_label = None
+        if _label == "":
+            _label = None
         dfn._add_feature_to_definitions(
             self._plugin_feature_name, _label, _is_scalar)
-        if self.feature_label is None:
-            self.feature_label = dfn.get_feature_label(
+        if _label is None:
+            _label = dfn.get_feature_label(
                 self._plugin_feature_name)
         return _label, _is_scalar
 

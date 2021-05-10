@@ -360,7 +360,7 @@ def test_pf_try_existing_feature_fails():
 
 def test_pf_with_empty_feature_label_string():
     """Show that an empty `feature_label` will still give a descriptive
-    feature label. See `dclab.dfn.update_dfn_with_feature_info` for details.
+    feature label. See `dclab.dfn._add_feature_to_definitions` for details.
     """
     info = example_plugin_info_single_feature()
     info["feature labels"] = [""]
@@ -374,7 +374,7 @@ def test_pf_with_empty_feature_label_string():
 
 def test_pf_with_no_feature_label():
     """Show that an empty `feature_label` will still give a descriptive
-    feature label. See `dclab.dfn.update_dfn_with_feature_info` for details.
+    feature label. See `dclab.dfn._add_feature_to_definitions` for details.
     """
     info = example_plugin_info_single_feature()
     info["feature labels"] = [None]

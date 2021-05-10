@@ -27,7 +27,7 @@ def deregister_temporary_feature(feature):
     if feature in _registered_temporary_features:
         label = dfn.get_feature_label(feature)
         _registered_temporary_features.remove(feature)
-        dfn.remove_dfn_feature_info(feature)
+        dfn._remove_feature_from_definitions(feature)
 
 
 def register_temporary_feature(feature, label=None, is_scalar=True):
@@ -50,7 +50,7 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
     is_scalar: bool
         Whether or not the feature is a scalar feature
     """
-    _ = dfn.update_dfn_with_feature_info(feature, label, is_scalar)
+    _ = dfn._add_feature_to_definitions(feature, label, is_scalar)
     _registered_temporary_features.append(feature)
 
 

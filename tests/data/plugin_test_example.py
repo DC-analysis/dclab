@@ -9,7 +9,7 @@ def compute_some_new_features(rtdc_ds):
 
 info = {
     "method": compute_some_new_features,
-    "description": "This plugin will compute some possibly useless features",
+    "description": "This plugin will compute some features",
     "long description": "Even longer description that "
                         "can span multiple lines",
     "feature names": ["circ_per_area", "circ_times_area"],
@@ -17,7 +17,6 @@ info = {
     "features required": ["circ", "area_um"],
     "config required": [],
     "method check required": lambda x: True,
-    "priority": 1,
-    "scalar feature": True,
+    "scalar feature": [True, True],
     "version": "0.1.0",
 }

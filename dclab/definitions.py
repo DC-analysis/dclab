@@ -367,50 +367,51 @@ def scalar_feature_exists(name):
     return feature_exists(name, scalar_only=True)
 
 
-def update_dfn_with_feature_info(feature, label, is_scalar):
+def _update_dfn_with_feature_info(name, label, is_scalar):
     """Used by temporary features and plugin features to update the feature
     names and labels.
     """
     allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
-    _feat = "".join([f for f in feature if f in allowed_chars])
-    if _feat != feature:
+    _feat = "".join([f for f in name if f in allowed_chars])
+    if _feat != name:
         raise ValueError("`feature` must only contain lower-case characters, "
-                         "digits, and underscores; got '{}'!".format(feature))
+                         "digits, and underscores; got '{}'!".format(name))
     if label is None:
-        label = "User defined feature {}".format(feature)
-    if feature_exists(feature):
-        raise ValueError("Feature '{}' already exists!".format(feature))
+        label = "User defined feature {}".format(name)
+    if feature_exists(name):
+        raise ValueError("Feature '{}' already exists!".format(name))
 
     # Populate the new feature in all dictionaries and lists
     # in `dclab.definitions`
-    feature_names.append(feature)
+    feature_names.append(name)
     feature_labels.append(label)
-    feature_name2label[feature] = label
+    feature_name2label[name] = label
     if is_scalar:
-        scalar_feature_names.append(feature)
+        scalar_feature_names.append(name)
     return label
 
 
-def remove_dfn_feature_info(feature, label):
+def remove_dfn_feature_info(name):
     """Used by temporary features and plugin features to remove the feature
     names and labels from `dclab.definitions`.
     """
-    feature_names.remove(feature)
+    label = feature_name2label[name]
+    feature_names.remove(name)
     feature_labels.remove(label)
-    feature_name2label.pop(feature)
-    if feature in scalar_feature_names:
-        scalar_feature_names.remove(feature)
+    feature_name2label.pop(name)
+    if name in scalar_feature_names:
+        scalar_feature_names.remove(name)
 
 
-def check_feature_shape(feature, data):
+def check_feature_shape(name, data):
     data = np.array(data)
     # bug: reloaded contour is of the form: array([array([[1,2],[...]...])])
     # which means len(data.shape) == 1.
-    if feature == "contour" and len(data.shape) == 1:
+    if name == "contour" and len(data.shape) == 1:
         pass
-    elif len(data.shape) == 1 and not scalar_feature_exists(feature):
+    elif len(data.shape) == 1 and not scalar_feature_exists(name):
         raise ValueError("Feature '{}' is not a scalar feature, but a "
-                         "1D array was given for `data`!".format(feature))
-    elif len(data.shape) != 1 and scalar_feature_exists(feature):
+                         "1D array was given for `data`!".format(name))
+    elif len(data.shape) != 1 and scalar_feature_exists(name):
         raise ValueError("Feature '{}' is a scalar feature, but the `data` "
-                         "array is not 1D!".format(feature))
+                         "array is not 1D!".format(name))

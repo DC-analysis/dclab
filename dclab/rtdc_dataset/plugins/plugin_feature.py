@@ -52,7 +52,7 @@ def remove_plugin_feature(plugin_instance):
         # AncillaryFeature
         if plugin_instance.feature_name in PlugInFeature.feature_names:
             PlugInFeature.feature_names.remove(plugin_instance.feature_name)
-            dfn.remove_dfn_feature_info(plugin_instance.feature_name)
+            dfn._remove_feature_from_definitions(plugin_instance.feature_name)
         PlugInFeature.features.remove(plugin_instance)
     else:
         raise TypeError(f"Type {type(plugin_instance)} should be an instance "
@@ -116,7 +116,7 @@ class PlugInFeature(AncillaryFeature):
         }
 
     def _update_feature_name_and_label(self):
-        """Wrapper on the `dclab.dfn.update_dfn_with_feature_info` function for
+        """Wrapper on the `dclab.dfn._add_feature_to_definitions` function for
         handling cases when `feature_label=""`
 
         This should be excecuted before initializing the super class
@@ -131,11 +131,11 @@ class PlugInFeature(AncillaryFeature):
         self.feature_label = self._plugin_original_info["feature labels"][idx]
         if self.feature_label == "":
             self.feature_label = None
-        dfn.update_dfn_with_feature_info(
+        dfn._add_feature_to_definitions(
             self._plugin_feature_name, self.feature_label, self.is_scalar)
         if self.feature_label is None:
-            self.feature_label = dfn.feature_name2label[
-                self._plugin_feature_name]
+            self.feature_label = dfn.get_feature_label(
+                self._plugin_feature_name)
 
     def _error_check_plugin_original_info(self):
         if not isinstance(self._plugin_original_info, dict):

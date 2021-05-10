@@ -367,9 +367,11 @@ def scalar_feature_exists(name):
     return feature_exists(name, scalar_only=True)
 
 
-def _update_dfn_with_feature_info(name, label, is_scalar):
-    """Used by temporary features and plugin features to update the feature
-    names and labels.
+def _add_feature_to_definitions(name, label=None, is_scalar=True):
+    """Protected function to append feature details to definitions file.
+
+    Used by temporary features and plugin features to add new feature
+    names and labels to `dclab.definitions`.
     """
     allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
     _feat = "".join([f for f in name if f in allowed_chars])
@@ -388,14 +390,16 @@ def _update_dfn_with_feature_info(name, label, is_scalar):
     feature_name2label[name] = label
     if is_scalar:
         scalar_feature_names.append(name)
-    return label
 
 
-def remove_dfn_feature_info(name):
-    """Used by temporary features and plugin features to remove the feature
-    names and labels from `dclab.definitions`.
+def _remove_feature_from_definitions(name):
+    """Protected function to remove feature details from definitions file.
+
+    Warning: You should not use this function. This function may break your
+    definitions file. Used by temporary features and plugin features to
+    remove the feature names and labels from `dclab.definitions`.
     """
-    label = feature_name2label[name]
+    label = get_feature_label(name)
     feature_names.remove(name)
     feature_labels.remove(label)
     feature_name2label.pop(name)
@@ -404,9 +408,8 @@ def remove_dfn_feature_info(name):
 
 
 def check_feature_shape(name, data):
+    """Check if (non)-scalar feature matches with its data's dimensionality"""
     data = np.array(data)
-    # bug: reloaded contour is of the form: array([array([[1,2],[...]...])])
-    # which means len(data.shape) == 1.
     if name == "contour" and len(data.shape) == 1:
         pass
     elif len(data.shape) == 1 and not scalar_feature_exists(name):

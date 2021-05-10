@@ -36,7 +36,7 @@ def import_plugin_feature_script(plugin_path):
         plugin = importlib.import_module(path.stem)
     except ModuleNotFoundError:
         raise PluginImportError("The plugin could be not be found at "
-                                f"'{plugin_path}'")
+                                f"'{plugin_path}'!")
     finally:
         # undo our path insertion
         sys.path.pop(0)
@@ -56,7 +56,7 @@ def remove_plugin_feature(plugin_instance):
         PlugInFeature.features.remove(plugin_instance)
     else:
         raise TypeError(f"Type {type(plugin_instance)} should be an instance "
-                        "of PlugInFeature.")
+                        f"of PlugInFeature. '{plugin_instance}' was given.")
 
 
 def remove_all_plugin_features():
@@ -74,8 +74,6 @@ class PlugInFeature(AncillaryFeature):
         """
         self._plugin_feature_name = feature_name
         self._plugin_original_info = info
-        self.feature_label = None
-        self.is_scalar = True
         self.plugin_path = plugin_path
         self.plugin_feature_info = self._handle_plugin_info()
         self._handle_ancill_info()
@@ -86,7 +84,7 @@ class PlugInFeature(AncillaryFeature):
         default `info` values if necessary.
         """
         self._error_check_plugin_original_info()
-        self._update_feature_name_and_label()
+        _label, _is_scalar = self._update_feature_name_and_label()
         plugin_feature_info = {
             "method": self._plugin_original_info["method"],
             "description": self._plugin_original_info.get(
@@ -94,14 +92,14 @@ class PlugInFeature(AncillaryFeature):
             "long description": self._plugin_original_info.get(
                 "long description", "Long description of my feature"),
             "feature name": self._plugin_feature_name,
-            "feature label": self.feature_label,
+            "feature label": _label,
             "features required": self._plugin_original_info.get(
                 "features required", []),
             "config required": self._plugin_original_info.get(
                 "config required", []),
             "method check required": self._plugin_original_info.get(
                 "method check required", lambda x: True),
-            "scalar feature": self.is_scalar,
+            "scalar feature": _is_scalar,
             "version": self._plugin_original_info.get("version", "unknown"),
         }
         return plugin_feature_info
@@ -127,15 +125,16 @@ class PlugInFeature(AncillaryFeature):
 
         idx = self._plugin_original_info["feature names"].index(
             self._plugin_feature_name)
-        self.is_scalar = self._plugin_original_info["scalar feature"][idx]
-        self.feature_label = self._plugin_original_info["feature labels"][idx]
+        _is_scalar = self._plugin_original_info["scalar feature"][idx]
+        _label = self._plugin_original_info["feature labels"][idx]
         if self.feature_label == "":
             self.feature_label = None
         dfn._add_feature_to_definitions(
-            self._plugin_feature_name, self.feature_label, self.is_scalar)
+            self._plugin_feature_name, _label, _is_scalar)
         if self.feature_label is None:
             self.feature_label = dfn.get_feature_label(
                 self._plugin_feature_name)
+        return _label, _is_scalar
 
     def _error_check_plugin_original_info(self):
         if not isinstance(self._plugin_original_info, dict):

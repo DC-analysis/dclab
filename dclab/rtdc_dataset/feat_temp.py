@@ -25,7 +25,6 @@ def deregister_temporary_feature(feature):
     the public methods of the :class:`RTDCBase` user interface.
     """
     if feature in _registered_temporary_features:
-        label = dfn.get_feature_label(feature)
         _registered_temporary_features.remove(feature)
         dfn._remove_feature_from_definitions(feature)
 

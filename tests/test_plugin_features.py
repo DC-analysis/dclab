@@ -219,7 +219,6 @@ def test_pf_incorrect_input_info():
         PlugInFeature("feature_1", info)
 
 
-
 def test_pf_incorrect_input_feature_name():
     info = example_plugin_info_single_feature()
     # `feature_name` is "circ_per_area" in info

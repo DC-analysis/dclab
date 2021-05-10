@@ -88,10 +88,6 @@ def test_pf_attributes():
     assert pf2.plugin_path == plugin_path
     assert pf1._plugin_original_info == plugin_file_info
     assert pf2._plugin_original_info == plugin_file_info
-    assert pf1.feature_label == plugin_file_info["feature labels"][0]
-    assert pf2.feature_label == plugin_file_info["feature labels"][1]
-    assert pf1.is_scalar
-    assert pf2.is_scalar
 
 
 def test_pf_attribute_ancill_info():
@@ -173,6 +169,7 @@ def test_pf_export_and_load():
     with dclab.new_dataset(expath) as ds2:
         assert pf in PlugInFeature.features
         assert pf.feature_name in ds2
+        assert pf.feature_name in ds2.features_innate
         assert np.allclose(ds2[pf.feature_name], circ_per_area)
 
         # and a control check
@@ -252,6 +249,7 @@ def test_pf_initialize_plugin_after_loading():
         info = example_plugin_info_single_feature()
         PlugInFeature("circ_per_area", info)
         assert "circ_per_area" in ds
+        assert "circ_per_area" in ds.features_innate
 
 
 def test_pf_initialize_plugin_feature_single():
@@ -276,7 +274,9 @@ def test_pf_initialize_plugin_features_multiple():
     PlugInFeature("circ_times_area", info)
 
     assert "circ_per_area" in ds
+    assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" in ds
+    assert "circ_times_area" not in ds.features_innate
     assert dclab.dfn.feature_exists("circ_per_area")
     assert dclab.dfn.feature_exists("circ_times_area")
     circ_per_area = ds["circ_per_area"]
@@ -293,7 +293,9 @@ def test_pf_load_plugin():
 
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" in ds
+    assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" in ds
+    assert "circ_times_area" not in ds.features_innate
     circ_per_area = ds["circ_per_area"]
     circ_times_area = ds["circ_times_area"]
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
@@ -315,7 +317,9 @@ def test_pf_remove_plugin_feature():
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert len(plugin_list) == 2
     assert "circ_per_area" in ds
+    assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" in ds
+    assert "circ_times_area" not in ds.features_innate
     assert dclab.dfn.feature_exists("circ_per_area")
     assert dclab.dfn.feature_exists("circ_times_area")
 
@@ -337,7 +341,9 @@ def test_pf_remove_all_plugin_features():
     _ = dclab.load_plugin_feature(plugin_path)
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" in ds
+    assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" in ds
+    assert "circ_times_area" not in ds.features_innate
     assert dclab.dfn.feature_exists("circ_per_area")
     assert dclab.dfn.feature_exists("circ_times_area")
 
@@ -364,11 +370,11 @@ def test_pf_with_empty_feature_label_string():
     info = example_plugin_info_single_feature()
     info["feature labels"] = [""]
     feature_name = "circ_per_area"
-    pf = PlugInFeature(feature_name, info)
-
+    PlugInFeature(feature_name, info)
+    label = dclab.dfn.get_feature_label("circ_per_area")
     assert dclab.dfn.feature_exists("circ_per_area")
-    assert pf.feature_label != ""
-    assert pf.feature_label == "User defined feature {}".format(feature_name)
+    assert label != ""
+    assert label == "User defined feature {}".format(feature_name)
 
 
 def test_pf_with_no_feature_label():
@@ -378,11 +384,11 @@ def test_pf_with_no_feature_label():
     info = example_plugin_info_single_feature()
     info["feature labels"] = [None]
     feature_name = "circ_per_area"
-    pf = PlugInFeature(feature_name, info)
-
+    PlugInFeature(feature_name, info)
+    label = dclab.dfn.get_feature_label("circ_per_area")
     assert dclab.dfn.feature_exists("circ_per_area")
-    assert pf.feature_label is not None
-    assert pf.feature_label == "User defined feature {}".format(feature_name)
+    assert label is not None
+    assert label == "User defined feature {}".format(feature_name)
 
 
 def test_pf_wrong_data_shape_1():

@@ -27,7 +27,7 @@ def deregister_temporary_feature(feature):
     if feature in _registered_temporary_features:
         label = dfn.get_feature_label(feature)
         _registered_temporary_features.remove(feature)
-        dfn.remove_dfn_feature_info(feature, label)
+        dfn.remove_dfn_feature_info(feature)
 
 
 def register_temporary_feature(feature, label=None, is_scalar=True):

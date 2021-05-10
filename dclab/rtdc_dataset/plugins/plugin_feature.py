@@ -52,9 +52,7 @@ def remove_plugin_feature(plugin_instance):
         # AncillaryFeature
         if plugin_instance.feature_name in PlugInFeature.feature_names:
             PlugInFeature.feature_names.remove(plugin_instance.feature_name)
-            dfn.remove_dfn_feature_info(
-                plugin_instance.feature_name,
-                plugin_instance.feature_label)
+            dfn.remove_dfn_feature_info(plugin_instance.feature_name)
         PlugInFeature.features.remove(plugin_instance)
     else:
         raise TypeError(f"Type {type(plugin_instance)} should be an instance "

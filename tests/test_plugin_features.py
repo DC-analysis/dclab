@@ -80,14 +80,30 @@ def test_pf_attributes():
 
     plugin_file_info = import_plugin_feature_script(plugin_path)
 
-    assert pf1.feature_name == plugin_file_info["feature names"][0]
-    assert pf2.feature_name == plugin_file_info["feature names"][1]
-    assert pf1._plugin_feature_name == plugin_file_info["feature names"][0]
-    assert pf2._plugin_feature_name == plugin_file_info["feature names"][1]
-    assert pf1.plugin_path == plugin_path
-    assert pf2.plugin_path == plugin_path
+    assert pf1.feature_name == pf1._plugin_feature_name == \
+           plugin_file_info["feature names"][0]
+    assert pf2.feature_name == pf2._plugin_feature_name == \
+           plugin_file_info["feature names"][1]
+    assert pf1._plugin_path == pf1.plugin_feature_info["plugin path"] == \
+           plugin_path
+    assert pf2._plugin_path == pf2.plugin_feature_info["plugin path"] == \
+           plugin_path
     assert pf1._original_info == plugin_file_info
     assert pf2._original_info == plugin_file_info
+
+
+def test_pf_attributes_af_inherited():
+    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_list = dclab.load_plugin_feature(plugin_path)
+    pf, _ = plugin_list
+    plugin_file_info = import_plugin_feature_script(plugin_path)
+
+    assert pf.feature_name == plugin_file_info["feature names"][0]
+    assert pf.method == plugin_file_info["method"]
+    assert pf.req_config == plugin_file_info["config required"]
+    assert pf.req_features == plugin_file_info["features required"]
+    assert pf.req_func == plugin_file_info["method check required"]
+    assert pf.priority == 0
 
 
 def test_pf_attribute_ancill_info():
@@ -121,6 +137,7 @@ def test_pf_attribute_plugin_feature_info():
         "config required": [],
         "scalar feature": True,
         "version": "0.1.0",
+        "plugin path": None,
     }
     assert pf.plugin_feature_info == plugin_feature_info
 

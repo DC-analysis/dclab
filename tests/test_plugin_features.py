@@ -18,7 +18,7 @@ data_dir = pathlib.Path(__file__).parent / "data"
 
 @pytest.fixture(autouse=True)
 def cleanup_plugin_features():
-    """Fixture used to setup and cleanup some fake ancillary features"""
+    """Fixture used to cleanup plugin feature tests"""
     # code run before the test
     pass
     # then the test is run
@@ -29,17 +29,20 @@ def cleanup_plugin_features():
 
 
 def compute_single_plugin_feature(rtdc_ds):
+    """Basic plugin method"""
     circ_per_area = rtdc_ds["circ"] / rtdc_ds["area_um"]
     return circ_per_area
 
 
 def compute_multiple_plugin_features(rtdc_ds):
+    """Basic plugin method with dictionary returned"""
     circ_per_area = rtdc_ds["circ"] / rtdc_ds["area_um"]
     circ_times_area = rtdc_ds["circ"] * rtdc_ds["area_um"]
     return {"circ_per_area": circ_per_area, "circ_times_area": circ_times_area}
 
 
 def example_plugin_info_single_feature():
+    """plugin info for a single feature"""
     info = {
         "method": compute_single_plugin_feature,
         "description": "This plugin will compute a feature",
@@ -57,6 +60,7 @@ def example_plugin_info_single_feature():
 
 
 def example_plugin_info_multiple_feature():
+    """plugin info for multiple features"""
     info = {
         "method": compute_multiple_plugin_features,
         "description": "This plugin will compute some features",
@@ -73,40 +77,8 @@ def example_plugin_info_multiple_feature():
     return info
 
 
-def test_pf_attributes():
-    plugin_path = data_dir / "plugin_test_example.py"
-    plugin_list = dclab.load_plugin_feature(plugin_path)
-    pf1, pf2 = plugin_list
-
-    plugin_file_info = import_plugin_feature_script(plugin_path)
-
-    assert pf1.feature_name == pf1._plugin_feature_name == \
-           plugin_file_info["feature names"][0]
-    assert pf2.feature_name == pf2._plugin_feature_name == \
-           plugin_file_info["feature names"][1]
-    assert pf1._plugin_path == pf1.plugin_feature_info["plugin path"] == \
-           plugin_path
-    assert pf2._plugin_path == pf2.plugin_feature_info["plugin path"] == \
-           plugin_path
-    assert pf1._original_info == plugin_file_info
-    assert pf2._original_info == plugin_file_info
-
-
-def test_pf_attributes_af_inherited():
-    plugin_path = data_dir / "plugin_test_example.py"
-    plugin_list = dclab.load_plugin_feature(plugin_path)
-    pf, _ = plugin_list
-    plugin_file_info = import_plugin_feature_script(plugin_path)
-
-    assert pf.feature_name == plugin_file_info["feature names"][0]
-    assert pf.method == plugin_file_info["method"]
-    assert pf.req_config == plugin_file_info["config required"]
-    assert pf.req_features == plugin_file_info["features required"]
-    assert pf.req_func == plugin_file_info["method check required"]
-    assert pf.priority == 0
-
-
 def test_pf_attribute_ancill_info():
+    """Check the plugin feature attribute input to AncillaryFeature"""
     info = example_plugin_info_single_feature()
     pf = PlugInFeature("circ_per_area", info)
     # comparing lambda functions fails due to differing memory locations
@@ -121,6 +93,7 @@ def test_pf_attribute_ancill_info():
 
 
 def test_pf_attribute_plugin_feature_info():
+    """Check the plugin feature info attribute"""
     info = example_plugin_info_single_feature()
     # comparing lambda functions fails due to differing memory locations
     info.pop("method check required")
@@ -142,8 +115,42 @@ def test_pf_attribute_plugin_feature_info():
     assert pf.plugin_feature_info == plugin_feature_info
 
 
+def test_pf_attributes():
+    """Check the plugin feature attributes"""
+    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_list = dclab.load_plugin_feature(plugin_path)
+    pf1, pf2 = plugin_list
+    plugin_file_info = import_plugin_feature_script(plugin_path)
+
+    assert pf1.feature_name == pf1._plugin_feature_name == \
+           plugin_file_info["feature names"][0]
+    assert pf2.feature_name == pf2._plugin_feature_name == \
+           plugin_file_info["feature names"][1]
+    assert pf1._plugin_path == pf1.plugin_feature_info["plugin path"] == \
+           plugin_path
+    assert pf2._plugin_path == pf2.plugin_feature_info["plugin path"] == \
+           plugin_path
+    assert pf1._original_info == plugin_file_info
+    assert pf2._original_info == plugin_file_info
+
+
+def test_pf_attributes_af_inherited():
+    """Check the plugin feature attributes inherited from AncillaryFeature"""
+    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_list = dclab.load_plugin_feature(plugin_path)
+    pf, _ = plugin_list
+    plugin_file_info = import_plugin_feature_script(plugin_path)
+
+    assert pf.feature_name == plugin_file_info["feature names"][0]
+    assert pf.method == plugin_file_info["method"]
+    assert pf.req_config == plugin_file_info["config required"]
+    assert pf.req_features == plugin_file_info["features required"]
+    assert pf.req_func == plugin_file_info["method check required"]
+    assert pf.priority == 0
+
+
 def test_pf_bad_plugin_feature_name():
-    """Basic test of a bad name for PlugInFeature"""
+    """Basic test of a bad feature name for PlugInFeature"""
     info = example_plugin_info_single_feature()
     info["feature names"] = "Peter-Pan's Best Friend!"
     with pytest.raises(ValueError):
@@ -151,7 +158,7 @@ def test_pf_bad_plugin_feature_name():
 
 
 def test_pf_exists_in_hierarchy():
-    """Test for RTDCHierarchy"""
+    """Test that RTDCHierarchy works with PlugInFeature"""
     info = example_plugin_info_single_feature()
     pf = PlugInFeature("circ_per_area", info)
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
@@ -163,6 +170,7 @@ def test_pf_exists_in_hierarchy():
 
 
 def test_pf_export_and_load():
+    """Check that exported and loaded hdf5 file will keep a plugin feature"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     # initialize PlugInFeature instance
     info = example_plugin_info_single_feature()
@@ -195,6 +203,7 @@ def test_pf_export_and_load():
 
 
 def test_pf_feature_exists():
+    """Basic check that the plugin feature name exists in definitions"""
     plugin_path = data_dir / "plugin_test_example.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert dclab.dfn.feature_exists(plugin_list[0].feature_name)
@@ -202,7 +211,7 @@ def test_pf_feature_exists():
 
 
 def test_pf_filtering_with_plugin_feature():
-    """Filtering with features"""
+    """Filtering with plugin feature"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
@@ -216,24 +225,28 @@ def test_pf_filtering_with_plugin_feature():
 
 
 def test_pf_import_plugin_info():
+    """Check the plugin test example info is a dict"""
     plugin_path = data_dir / "plugin_test_example.py"
     info = import_plugin_feature_script(plugin_path)
     assert isinstance(info, dict)
 
 
 def test_pf_import_plugin_info_bad_path():
+    """Raise error when a bad pathname is given"""
     bad_plugin_path = "not/a/real/path/plugin.py"
     with pytest.raises(PluginImportError):
         _ = import_plugin_feature_script(bad_plugin_path)
 
 
 def test_pf_incorrect_input_info():
+    """Raise error when info is not a dictionary"""
     info = ["this", "is", "not", "a", "dict"]
     with pytest.raises(ValueError):
         PlugInFeature("feature_1", info)
 
 
 def test_pf_incorrect_input_feature_name():
+    """Raise error when the feature_name doesn't match info feature name"""
     info = example_plugin_info_single_feature()
     # `feature_name` is "circ_per_area" in info
     with pytest.raises(ValueError):
@@ -241,6 +254,7 @@ def test_pf_incorrect_input_feature_name():
 
 
 def test_pf_incorrect_input_method():
+    """Raise error when method is not callable"""
     info = example_plugin_info_single_feature()
     # set `info["method"]` to something that isn't callable
     info["method"] = "this_is_a_string"
@@ -249,6 +263,7 @@ def test_pf_incorrect_input_method():
 
 
 def test_pf_initialize_plugin_after_loading():
+    """plugin feature loads correctly after feature added to hdf5 file"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:
         circ_per_area = compute_single_plugin_feature(ds)
@@ -263,6 +278,7 @@ def test_pf_initialize_plugin_after_loading():
 
 
 def test_pf_initialize_plugin_feature_single():
+    """Check that single plugin feature exists independant of loaded dataset"""
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     info = example_plugin_info_single_feature()
     PlugInFeature("circ_per_area", info)
@@ -278,6 +294,7 @@ def test_pf_initialize_plugin_feature_single():
 
 
 def test_pf_initialize_plugin_features_multiple():
+    """Check multiple plugin features exist independant of loaded dataset"""
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
@@ -296,6 +313,7 @@ def test_pf_initialize_plugin_features_multiple():
 
 
 def test_pf_input_no_feature_labels():
+    """Check that feature labels are populated even if not given"""
     info = example_plugin_info_single_feature()
     info.pop("feature labels")
     feature_name = "circ_per_area"
@@ -307,6 +325,7 @@ def test_pf_input_no_feature_labels():
 
 
 def test_pf_input_no_scalar_feature():
+    """Check that scalar feature bools are populated even if not given"""
     info = example_plugin_info_single_feature()
     info.pop("scalar feature")
     pf = PlugInFeature("circ_per_area", info)
@@ -314,6 +333,7 @@ def test_pf_input_no_scalar_feature():
 
 
 def test_pf_load_plugin():
+    """Basic check for loading a plugin feature via a script"""
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
@@ -330,12 +350,54 @@ def test_pf_load_plugin():
 
 
 def test_pf_load_plugin_bad_path():
+    """Raise error when a bad pathname is given"""
     bad_plugin_path = "not/a/real/path/plugin.py"
     with pytest.raises(PluginImportError):
         _ = dclab.load_plugin_feature(bad_plugin_path)
 
 
+def test_pf_minimum_info_input():
+    """Only method and feature names are required to create PlugInFeature"""
+    info = {"method": compute_single_plugin_feature,
+            "feature names": ["circ_per_area"]}
+    pf = PlugInFeature("circ_per_area", info)
+
+    # check that all other plugin_feature_info is populated
+    assert "method" in pf.plugin_feature_info
+    assert "description" in pf.plugin_feature_info
+    assert "long description" in pf.plugin_feature_info
+    assert "feature name" in pf.plugin_feature_info
+    assert "feature label" in pf.plugin_feature_info
+    assert "features required" in pf.plugin_feature_info
+    assert "config required" in pf.plugin_feature_info
+    assert "method check required" in pf.plugin_feature_info
+    assert "scalar feature" in pf.plugin_feature_info
+    assert "version" in pf.plugin_feature_info
+    assert "plugin path" in pf.plugin_feature_info
+
+
+def test_pf_remove_all_plugin_features():
+    """Remove all plugin features at once"""
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "circ_per_area" not in ds.features_innate
+    assert "circ_times_area" not in ds.features_innate
+    plugin_path = data_dir / "plugin_test_example.py"
+    _ = dclab.load_plugin_feature(plugin_path)
+    assert "circ_per_area" in ds
+    assert "circ_times_area" in ds
+    assert dclab.dfn.feature_exists("circ_per_area")
+    assert dclab.dfn.feature_exists("circ_times_area")
+
+    remove_all_plugin_features()
+
+    assert "circ_per_area" not in ds
+    assert "circ_times_area" not in ds
+    assert not dclab.dfn.feature_exists("circ_per_area")
+    assert not dclab.dfn.feature_exists("circ_times_area")
+
+
 def test_pf_remove_plugin_feature():
+    """Remove individual plugin features"""
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" not in ds
     assert "circ_times_area" not in ds
@@ -363,27 +425,8 @@ def test_pf_remove_plugin_feature():
         remove_plugin_feature(not_a_plugin_instance)
 
 
-def test_pf_remove_all_plugin_features():
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    assert "circ_per_area" not in ds.features_innate
-    assert "circ_times_area" not in ds.features_innate
-    plugin_path = data_dir / "plugin_test_example.py"
-    _ = dclab.load_plugin_feature(plugin_path)
-    assert "circ_per_area" in ds
-    assert "circ_times_area" in ds
-    assert dclab.dfn.feature_exists("circ_per_area")
-    assert dclab.dfn.feature_exists("circ_times_area")
-
-    remove_all_plugin_features()
-
-    assert "circ_per_area" not in ds
-    assert "circ_times_area" not in ds
-    assert not dclab.dfn.feature_exists("circ_per_area")
-    assert not dclab.dfn.feature_exists("circ_times_area")
-
-
 def test_pf_try_existing_feature_fails():
-    """Basic test of a temporary feature"""
+    """An existing feature name is not allowed"""
     info = example_plugin_info_single_feature()
     info["feature names"] = ["deform"]
     with pytest.raises(ValueError):
@@ -391,7 +434,9 @@ def test_pf_try_existing_feature_fails():
 
 
 def test_pf_with_empty_feature_label_string():
-    """Show that an empty `feature_label` will still give a descriptive
+    """An empty string is replaced with a real feature label
+
+    Show that an empty `feature_label` will still give a descriptive
     feature label. See `dclab.dfn._add_feature_to_definitions` for details.
     """
     info = example_plugin_info_single_feature()
@@ -404,7 +449,8 @@ def test_pf_with_empty_feature_label_string():
     assert label == "User defined feature {}".format(feature_name)
 
 
-def tets_pf_with_feature_label():
+def test_pf_with_feature_label():
+    """Check that a plugin feature label is added to definitions"""
     info = example_plugin_info_single_feature()
     info["feature labels"] = ["Circ / Area [1/µm²]"]
     feature_name = "circ_per_area"
@@ -415,7 +461,9 @@ def tets_pf_with_feature_label():
 
 
 def test_pf_with_no_feature_label():
-    """Show that an empty `feature_label` will still give a descriptive
+    """A feature label of None is replaced with a real feature label
+
+    Show that `feature_label=None` will still give a descriptive
     feature label. See `dclab.dfn._add_feature_to_definitions` for details.
     """
     info = example_plugin_info_single_feature()
@@ -450,7 +498,7 @@ def test_pf_wrong_data_shape_2():
 
 
 def test_pf_wrong_length_1():
-    """temporary feature should have same length"""
+    """plugin feature should have same length"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
@@ -461,7 +509,7 @@ def test_pf_wrong_length_1():
 
 
 def test_pf_wrong_length_2():
-    """temporary feature should have same length"""
+    """plugin feature should have same length"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()

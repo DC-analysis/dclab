@@ -159,7 +159,7 @@ class PlugInFeature(AncillaryFeature):
         """
         self._plugin_feature_name = feature_name
         self._original_info = info
-        self.plugin_path = plugin_path
+        self._plugin_path = plugin_path
         self._handle_plugin_info()
         self._handle_ancill_info()
         super().__init__(**self._ancill_info)
@@ -190,6 +190,7 @@ class PlugInFeature(AncillaryFeature):
                 "method check required", lambda x: True),
             "scalar feature": _is_scalar,
             "version": self._original_info.get("version", "unknown"),
+            "plugin path": self._plugin_path,
         }
         self.plugin_feature_info = plugin_feature_info
 
@@ -228,13 +229,18 @@ class PlugInFeature(AncillaryFeature):
         """
         idx = self._original_info["feature names"].index(
             self._plugin_feature_name)
-        _is_scalar = self._original_info["scalar feature"][idx]
+        if "scalar feature" not in self._original_info:
+            _is_scalar = True
+        else:
+            _is_scalar = self._original_info["scalar feature"][idx]
+
         if "feature labels" not in self._original_info:
             _label = None
         else:
             _label = self._original_info["feature labels"][idx]
         if _label == "":
             _label = None
+
         dfn._add_feature_to_definitions(
             self._plugin_feature_name, _label, _is_scalar)
         if _label is None:

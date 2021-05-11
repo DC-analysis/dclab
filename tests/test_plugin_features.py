@@ -269,14 +269,14 @@ def test_pf_initialize_plugin_feature_single():
 
 def test_pf_initialize_plugin_features_multiple():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "circ_per_area" not in ds.features_innate
+    assert "circ_times_area" not in ds.features_innate
     info = example_plugin_info_multiple_feature()
     PlugInFeature("circ_per_area", info)
     PlugInFeature("circ_times_area", info)
 
     assert "circ_per_area" in ds
-    assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" in ds
-    assert "circ_times_area" not in ds.features_innate
     assert dclab.dfn.feature_exists("circ_per_area")
     assert dclab.dfn.feature_exists("circ_times_area")
     circ_per_area = ds["circ_per_area"]
@@ -286,16 +286,15 @@ def test_pf_initialize_plugin_features_multiple():
 
 
 def test_pf_load_plugin():
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "circ_per_area" not in ds.features_innate
+    assert "circ_times_area" not in ds.features_innate
     plugin_path = data_dir / "plugin_test_example.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert isinstance(plugin_list[0], PlugInFeature)
     assert isinstance(plugin_list[1], PlugInFeature)
-
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" in ds
-    assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" in ds
-    assert "circ_times_area" not in ds.features_innate
     circ_per_area = ds["circ_per_area"]
     circ_times_area = ds["circ_times_area"]
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
@@ -337,13 +336,13 @@ def test_pf_remove_plugin_feature():
 
 
 def test_pf_remove_all_plugin_features():
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "circ_per_area" not in ds.features_innate
+    assert "circ_times_area" not in ds.features_innate
     plugin_path = data_dir / "plugin_test_example.py"
     _ = dclab.load_plugin_feature(plugin_path)
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" in ds
-    assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" in ds
-    assert "circ_times_area" not in ds.features_innate
     assert dclab.dfn.feature_exists("circ_per_area")
     assert dclab.dfn.feature_exists("circ_times_area")
 

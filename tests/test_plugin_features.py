@@ -86,8 +86,8 @@ def test_pf_attributes():
     assert pf2._plugin_feature_name == plugin_file_info["feature names"][1]
     assert pf1.plugin_path == plugin_path
     assert pf2.plugin_path == plugin_path
-    assert pf1._plugin_original_info == plugin_file_info
-    assert pf2._plugin_original_info == plugin_file_info
+    assert pf1._original_info == plugin_file_info
+    assert pf2._original_info == plugin_file_info
 
 
 def test_pf_attribute_ancill_info():

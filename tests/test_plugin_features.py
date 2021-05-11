@@ -223,14 +223,7 @@ def test_pf_incorrect_input_feature_name():
         PlugInFeature("not_the_correct_name", info)
 
 
-def test_pf_incorrect_input_feature_labels():
-    info = example_plugin_info_single_feature()
-    info.pop("feature labels")
-    with pytest.raises(ValueError):
-        PlugInFeature("circ_per_area", info)
-
-
-def test_pf_incorrect_input():
+def test_pf_incorrect_input_method():
     info = example_plugin_info_single_feature()
     # set `info["method"]` to something that isn't callable
     info["method"] = "this_is_a_string"
@@ -283,6 +276,17 @@ def test_pf_initialize_plugin_features_multiple():
     circ_times_area = ds["circ_times_area"]
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
     assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
+
+
+def test_pf_input_no_feature_labels():
+    info = example_plugin_info_single_feature()
+    info.pop("feature labels")
+    feature_name = "circ_per_area"
+    pf = PlugInFeature(feature_name, info)
+    assert dclab.dfn.feature_exists(feature_name)
+    label = dclab.dfn.get_feature_label(feature_name)
+    assert label == "User defined feature {}".format(feature_name)
+    assert label == pf.plugin_feature_info["feature label"]
 
 
 def test_pf_load_plugin():

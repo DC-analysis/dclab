@@ -306,6 +306,13 @@ def test_pf_input_no_feature_labels():
     assert label == pf.plugin_feature_info["feature label"]
 
 
+def test_pf_input_no_scalar_feature():
+    info = example_plugin_info_single_feature()
+    info.pop("scalar feature")
+    pf = PlugInFeature("circ_per_area", info)
+    assert pf.plugin_feature_info["scalar feature"]
+
+
 def test_pf_load_plugin():
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" not in ds.features_innate

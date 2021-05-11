@@ -370,10 +370,20 @@ def test_pf_with_empty_feature_label_string():
     info["feature labels"] = [""]
     feature_name = "circ_per_area"
     PlugInFeature(feature_name, info)
-    label = dclab.dfn.get_feature_label("circ_per_area")
     assert dclab.dfn.feature_exists("circ_per_area")
+    label = dclab.dfn.get_feature_label("circ_per_area")
     assert label != ""
     assert label == "User defined feature {}".format(feature_name)
+
+
+def tets_pf_with_feature_label():
+    info = example_plugin_info_single_feature()
+    info["feature labels"] = ["Circ / Area [1/µm²]"]
+    feature_name = "circ_per_area"
+    PlugInFeature(feature_name, info)
+    assert dclab.dfn.feature_exists("circ_per_area")
+    label = dclab.dfn.get_feature_label("circ_per_area")
+    assert label == "Circ / Area [1/µm²]"
 
 
 def test_pf_with_no_feature_label():
@@ -384,8 +394,8 @@ def test_pf_with_no_feature_label():
     info["feature labels"] = [None]
     feature_name = "circ_per_area"
     PlugInFeature(feature_name, info)
-    label = dclab.dfn.get_feature_label("circ_per_area")
     assert dclab.dfn.feature_exists("circ_per_area")
+    label = dclab.dfn.get_feature_label("circ_per_area")
     assert label is not None
     assert label == "User defined feature {}".format(feature_name)
 

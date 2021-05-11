@@ -316,6 +316,22 @@ def feature_exists(name, scalar_only=False):
     the machine learning scores `ml_score_???` (where
     `?` can be a digit or a lower-case letter in the
     English alphabet).
+
+    Parameters
+    ----------
+    name : str
+        name of a feature
+    scalar_only : bool
+        Specify whether the check should only search in scalar features
+
+    Returns
+    -------
+    valid : bool
+        True if name is a valid feature, False otherwise.
+
+    See Also
+    --------
+    scalar_feature_exists : Wraps `feature_exists` with `scalar_only=True`
     """
     valid = False
     if name in scalar_feature_names:
@@ -342,8 +358,20 @@ def get_feature_label(name, rtdc_ds=None):
     This function not only checks :const:`feature_name2label`,
     but also supports registered `ml_score_???` features.
 
-    TODO: extract feature label from ancillary information
-    when an rtdc_ds is given.
+    Parameters
+    ----------
+    name : str
+        name of a feature
+
+    Returns
+    -------
+    label : str
+        feature label corresponding to the feature name
+
+    Notes
+    -----
+    TODO: extract feature label from ancillary information when an rtdc_ds is
+    given.
     """
     assert feature_exists(name)
     if name in feature_name2label:
@@ -368,10 +396,26 @@ def scalar_feature_exists(name):
 
 
 def _add_feature_to_definitions(name, label=None, is_scalar=True):
-    """Protected function to append feature details to definitions file.
+    """Protected function to populate definitions file with feature details.
 
     Used by temporary features and plugin features to add new feature
     names and labels to `dclab.definitions`.
+
+    Parameters
+    ----------
+    name : str
+        name of a feature
+    label : str, optional
+        feature label corresponding to the feature name. If set to None, then
+        a label is constructed for the feature name.
+    is_scalar : bool
+        Specify whether the feature data is 1d (True), or not 1d (False)
+
+    Raises
+    ------
+    ValueError
+        If the feature already exists.
+
     """
     allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
     _feat = "".join([f for f in name if f in allowed_chars])
@@ -395,9 +439,19 @@ def _add_feature_to_definitions(name, label=None, is_scalar=True):
 def _remove_feature_from_definitions(name):
     """Protected function to remove feature details from definitions file.
 
-    Warning: You should not use this function. This function may break your
-    definitions file. Used by temporary features and plugin features to
+    Used by temporary features and plugin features to
     remove the feature names and labels from `dclab.definitions`.
+
+    Parameters
+    ----------
+    name : str
+        name of a feature
+
+    Warnings
+    --------
+    This function should only be used internally, i.e., You should not use
+    this function. This function may break your definitions file.
+
     """
     label = get_feature_label(name)
     feature_names.remove(name)
@@ -408,7 +462,27 @@ def _remove_feature_from_definitions(name):
 
 
 def check_feature_shape(name, data):
-    """Check if (non)-scalar feature matches with its data's dimensionality"""
+    """Check if (non)-scalar feature matches with its data's dimensionality
+
+    Parameters
+    ----------
+    name : str
+        name of a feature
+    data : array-like
+        data whose dimensionality will be checked
+
+    Raises
+    ------
+    ValueError
+        If the data's shape does not match its scalar description
+
+    Notes
+    -----
+    Bug: Some contour data in test files is the incorrect dimension. Therefore
+    a simple exception has been added. This is to be fixed in future
+    versions and is not a permanent fix.
+
+    """
     data = np.array(data)
     if name == "contour" and len(data.shape) == 1:
         pass

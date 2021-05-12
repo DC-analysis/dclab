@@ -159,7 +159,8 @@ def install_lme4():
         with AutoRConsole() as rc:
             # install statmod first (Doesn't R have package dependencies?!)
             utils.install_packages(rpy2.robjects.vectors.StrVector([
-                "statmod", "lme4"]))
+                "statmod"]))
+            utils.install_packages(rpy2.robjects.vectors.StrVector(["lme4"]))
         return rc
 
 

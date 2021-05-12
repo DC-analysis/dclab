@@ -21,11 +21,14 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: symlink gfortran (macOS)
+      if: runner.os == 'macOS'
       run: |
         # make sure gfortran is available
         ln -s /usr/local/bin/gfortran-10 /usr/local/bin/gfortran
         gfortran --version
+    - name: Install dependencies
+      run: |
         # prerequisites
         python -m pip install --upgrade pip wheel
         python -m pip install codecov coverage flake8 pytest

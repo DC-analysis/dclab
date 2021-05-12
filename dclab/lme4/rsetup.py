@@ -157,7 +157,9 @@ def install_lme4():
         utils.chooseCRANmirror(ind=1)
         # install lme4 to user data directory (say yes to user dir install)
         with AutoRConsole() as rc:
-            utils.install_packages(rpy2.robjects.vectors.StrVector(["lme4"]))
+            # install statmod first (Doesn't R have package dependencies?!)
+            utils.install_packages(rpy2.robjects.vectors.StrVector([
+                "statmod", "lme4"]))
         return rc
 
 

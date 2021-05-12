@@ -122,7 +122,9 @@ def get_r_version():
 def has_lme4():
     """Return True if the lme4 package is installed"""
     check_r()
-    return rpy2.robjects.packages.isinstalled("lme4")
+    lme4_there = rpy2.robjects.packages.isinstalled("lme4")
+    statmod_there = rpy2.robjects.packages.isinstalled("statmod")
+    return lme4_there and statmod_there
 
 
 def has_r():
@@ -158,9 +160,8 @@ def install_lme4():
         # install lme4 to user data directory (say yes to user dir install)
         with AutoRConsole() as rc:
             # install statmod first (Doesn't R have package dependencies?!)
-            utils.install_packages(rpy2.robjects.vectors.StrVector([
-                "statmod"]))
-            utils.install_packages(rpy2.robjects.vectors.StrVector(["lme4"]))
+            utils.install_packages(
+                rpy2.robjects.vectors.StrVector(["statmod", "lme4"]))
         return rc
 
 

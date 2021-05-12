@@ -29,7 +29,7 @@ jobs:
         # https://github.com/cbg-ethz/dce/blob/master/.github/workflows/pkgdown.yaml
         sudo ln -s /usr/local/bin/gfortran-10 /usr/local/bin/gfortran
         sudo mkdir /usr/local/gfortran
-        sudo ln -s /usr/local/Cellar/gcc@9/9.3.0_1/lib/gcc/9 /usr/local/gfortran/lib
+        sudo ln -s /usr/local/Cellar/gcc@10/*/lib/gcc/10 /usr/local/gfortran/lib
         gfortran --version
     - name: Install dependencies
       run: |

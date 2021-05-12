@@ -24,6 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         # make sure gfortran is available
+        ln -s /usr/local/bin/gfortran-10 /usr/local/bin/gfortran
         gfortran --version
         # prerequisites
         python -m pip install --upgrade pip wheel

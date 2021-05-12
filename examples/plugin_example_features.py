@@ -1,3 +1,14 @@
+"""Plugin Feature
+
+This example is a guide on how to user dclab plugin feature.
+The first downloadable file in this section contains the plugin, while
+the second contains code on how to load and utilise the plugin within
+dclab.
+
+The below file should be downloaded and placed in a suitable folder on
+your computer, e.g., `/Documents/dclab_plugins/plugin_example_features.py`
+"""
+
 
 def compute_some_new_features(rtdc_ds):
     """The function that does the heavy-lifting"""

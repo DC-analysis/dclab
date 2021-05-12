@@ -21,7 +21,7 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: symlink gfortran (macOS)
+    - name: Symlink gfortran (macOS)
       if: runner.os == 'macOS'
       run: |
         # make sure gfortran is available

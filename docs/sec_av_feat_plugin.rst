@@ -106,7 +106,7 @@ There are two ways of adding plugin features to an .rtdc data file.
         import dclab
         import h5py
 
-        # load plugin feature "circ_per_area" from script
+        # load plugin features from script
         dclab.load_plugin_feature("/path/to/plugin.py")
 
         # extract the feature data from the dataset
@@ -124,15 +124,14 @@ There are two ways of adding plugin features to an .rtdc data file.
         import dclab
         import h5py
 
-        # load plugin feature "circ_per_area" from script
+        # load plugin features from script
         dclab.load_plugin_feature("/path/to/plugin.py")
 
         with dclab.new_dataset("/path/to/data.rtdc") as ds:
-            # extract the feature information from the dataset
-            feature_data = ds["circ_per_area"]
             # export the data to a new file
             ds.export.hdf5("/path/to/data_with_new_plugin_feature.rtdc",
-                           features=ds.features_innate + ["circ_per_area"])
+                           features=ds.features_innate + ["circ_per_area",
+                                                          "circ_times_area"])
 
 
 If you wish to load the data at a later time point, the plugin needs

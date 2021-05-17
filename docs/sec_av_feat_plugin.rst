@@ -52,33 +52,36 @@ file in a suitable folder on your computer, e.g.,
 
 Setting a plugin feature in a dataset
 ========================================
-For this example, you can register the temporary feature `fl1_mean` and
-manually set a corresponding filter for your dataset.
+For this example, you can register the plugin features `circ_per_area` and
+`circ_times_area` that are defined in the plugin script. Then, set a
+corresponding filter for your dataset.
 
 .. ipython::
 
     In [1]: import dclab
 
+    In [2]: import numpy as np
+
     # load a single plugin feature
-    In [2]: dclab.load_plugin_feature("/path/to/plugin.py")
+    In [3]: dclab.load_plugin_feature("/path/to/plugin.py")
 
     # load some data
-    In [3]: ds = dclab.new_dataset("/path/to/rtdc/file")
+    In [4]: ds = dclab.new_dataset("/path/to/rtdc/file")
 
     # access the first feature
-    In [4]: circ_per_area = ds["circ_per_area"]
+    In [5]: circ_per_area = ds["circ_per_area"]
 
     # access the other feature
-    In [5]: circ_times_area = ds["circ_times_area"]
+    In [6]: circ_times_area = ds["circ_times_area"]
 
     # do some filtering
-    In [6]: ds.config["filtering"]["circ_per_area min"] = 4
+    In [7]: ds.config["filtering"]["circ_per_area min"] = 4
 
-    In [7]: ds.config["filtering"]["circ_per_area max"] = 200
+    In [8]: ds.config["filtering"]["circ_per_area max"] = 200
 
-    In [8]: ds.apply_filter()
+    In [9]: ds.apply_filter()
 
-    In [9]: print("Removed {} out of {} events!".format(np.sum(~ds.filter.all), len(ds)))
+    In [10]: print("Removed {} out of {} events!".format(np.sum(~ds.filter.all), len(ds)))
 
 
 Accessing plugin features stored in data files
@@ -135,24 +138,11 @@ There are two ways of adding plugin features to an .rtdc data file.
 If you wish to load the data at a later time point, the plugin needs
 to be loaded again before accessing its data.
 
+    ds = dclab.new_dataset("/path/to/data_with_new_plugin_feature.rtdc")
+    circ_per_area = ds["circ_per_area"]
+
+
 [check this for each load/export from above in a mess file/
 have it in the plugin_load_script]
-
-This will not work::
-
-    ds = dclab.new_dataset("/path/to/data_with_new_plugin_feature.rtdc")
-    circ_per_area = ds["circ_per_area"]
-
-But this works::
-
-    dclab.load_plugin_feature("/path/to/plugin.py")
-    ds = dclab.new_dataset("/path/to/data_with_new_plugin_feature.rtdc")
-    circ_per_area = ds["circ_per_area"]
-
-And this works as well (registering after instantiation)::
-
-    ds = dclab.new_dataset("/path/to/data_with_fl1_mean.rtdc")
-    dclab.load_plugin_feature("/path/to/plugin.py")
-    circ_per_area = ds["circ_per_area"]
 
 [add help section about loading multiple plugin scripts with glob]

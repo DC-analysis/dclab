@@ -51,7 +51,7 @@ file in a suitable folder on your computer, e.g.,
 
 
 Setting a plugin feature in a dataset
-========================================
+=====================================
 For this example, you can register the plugin features `circ_per_area` and
 `circ_times_area` that are defined in the plugin script. Then, set a
 corresponding filter for your dataset.
@@ -151,4 +151,12 @@ And this works as well (loading plugin after instantiation)::
 Read the `code reference on plugin features <_cr_plugin_feat>` for more
 information.
 
-[add help section about loading multiple plugin scripts with glob]
+
+Loading multiple plugin features
+================================
+
+If you have several plugins and would like to load them all at once,
+one can do the following:
+
+    for plugin_path in pathlib.Path("my_plugin_directory").rglob("*.py"):
+        dclab.load_plugin_feature(plugin_path)

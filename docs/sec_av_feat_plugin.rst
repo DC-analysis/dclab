@@ -135,7 +135,7 @@ There are two ways of adding plugin features to an .rtdc data file.
 
 
 If you wish to load the data at a later time point, the plugin needs
-to be loaded again before accessing its data.
+to be loaded again before accessing its data.::
 
     dclab.load_plugin_feature("/path/to/plugin.py")
     ds = dclab.new_dataset("/path/to/data_with_new_plugin_feature.rtdc")
@@ -148,7 +148,7 @@ And this works as well (loading plugin after instantiation)::
     circ_per_area = ds["circ_per_area"]
 
 
-Read the `code reference on plugin features <_cr_plugin_feat>` for more
+Read the :ref:`code reference on plugin features <cr_plugin_feat>` for more
 information.
 
 
@@ -156,7 +156,7 @@ Loading multiple plugin features
 ================================
 
 If you have several plugins and would like to load them all at once,
-one can do the following:
+one can do the following::
 
     for plugin_path in pathlib.Path("my_plugin_directory").rglob("*.py"):
         dclab.load_plugin_feature(plugin_path)

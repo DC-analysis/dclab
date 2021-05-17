@@ -148,7 +148,4 @@ And this works as well (loading plugin after instantiation)::
     circ_per_area = ds["circ_per_area"]
 
 
-[check this for each load/export from above in a mess file/
-have it in the plugin_load_script]
-
 [add help section about loading multiple plugin scripts with glob]

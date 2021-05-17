@@ -148,4 +148,7 @@ And this works as well (loading plugin after instantiation)::
     circ_per_area = ds["circ_per_area"]
 
 
+Read the `code reference on plugin features <_cr_plugin_feat>` for more
+information.
+
 [add help section about loading multiple plugin scripts with glob]

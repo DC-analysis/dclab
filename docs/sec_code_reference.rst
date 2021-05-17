@@ -139,6 +139,15 @@ Ancillaries
     :undoc-members:
 
 
+.. _cr_plugin_feat:
+
+Plugin features
+---------------
+.. automodule:: dclab.rtdc_dataset.plugins.plugin_feature
+    :members:
+    :undoc-members:
+
+
 .. _cr_temp_feat:
 
 temporary features

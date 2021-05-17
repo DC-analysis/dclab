@@ -15,9 +15,10 @@ To create a dclab plugin feature, you define a function and a dictionary.
 The function will calculate the desired feature, while the dictionary will
 simply gather all the extra information useful when creating a feature.
 
-In this example, the function :func:`compute_some_new_features` defines a
-basic "circ_per_area" feature. Then, the :dict:`info` dictionary is filled in
-by the user. Both "method" and "feature names" must be included in the
+In this example, the function :func:`compute_some_new_features` defines two
+basic features: `"circ_per_area"` and `"circ_times_area"`.
+Then, the :dict:`info` dictionary is filled in by the user.
+Both "method" and "feature names" must be included in the
 :dict:`info` dictionary. Note that many of the items in the dictionary must be
 lists!
 
@@ -26,8 +27,10 @@ lists!
     def compute_some_new_features(rtdc_ds):
         """The function that does the heavy-lifting"""
         circ_per_area = rtdc_ds["circ"] / rtdc_ds["area_um"]
+        circ_times_area = rtdc_ds["circ"] * rtdc_ds["area_um"]
         # returns a dictionary-like object
-        return {"circ_per_area": circ_per_area}
+        return {"circ_per_area": circ_per_area, "circ_times_area": circ_times_area}
+
 
 
     info = {
@@ -35,25 +38,26 @@ lists!
         "description": "This plugin will compute some features",
         "long description": "Even longer description that "
                             "can span multiple lines",
-        "feature names": ["circ_per_area"],
-        "feature labels": ["Circularity per Area"],
+        "feature names": ["circ_per_area", "circ_times_area"],
+        "feature labels": ["Circularity per Area", "Circularity times Area"],
         "features required": ["circ", "area_um"],
         "config required": [],
         "method check required": lambda x: True,
-        "scalar feature": [True],
+        "scalar feature": [True, True],
         "version": "0.1.0",
     }
+
 
 The above code can be downloaded
 :ref:`here <sec_examples.html#Plugin Feature>`_. Once downloaded, place the
 file in a suitable folder on your computer, e.g.,
-`/Documents/dclab_plugins/plugin_example_features.py`.
+`"/Documents/dclab_plugins/plugin_example_features.py"`.
 
 
 Setting a plugin feature in a dataset
 =====================================
-For this example, you can register the plugin features `circ_per_area` and
-`circ_times_area` that are defined in the plugin script. Then, set a
+For this example, you can register the plugin features `"circ_per_area"` and
+`"circ_times_area"` that are defined in the plugin script. Then, set a
 corresponding filter for your dataset.
 
 .. ipython::
@@ -75,9 +79,9 @@ corresponding filter for your dataset.
     In [6]: circ_times_area = ds["circ_times_area"]
 
     # do some filtering
-    In [7]: ds.config["filtering"]["circ_per_area min"] = 4
+    In [7]: ds.config["filtering"]["circ_times_area min"] = 23
 
-    In [8]: ds.config["filtering"]["circ_per_area max"] = 200
+    In [8]: ds.config["filtering"]["circ_times_area max"] = 29
 
     In [9]: ds.apply_filter()
 
@@ -111,11 +115,13 @@ There are two ways of adding plugin features to an .rtdc data file.
 
         # extract the feature data from the dataset
         with dclab.new_dataset("/path/to/data.rtdc") as ds:
-            feature_data = ds["circ_per_area"]
+            circ_per_area = ds["circ_per_area"]
+            circ_times_area = ds["circ_times_area"]
 
         # write the feature to the HDF5 file
         with h5py.File("/path/to/data.rtdc", "a") as h5:
-            h5["events"]["circ_per_area"] = feature_data
+            h5["events"]["circ_per_area"] = circ_per_area
+            h5["events"]["circ_times_area"] = circ_times_area
 
 - 2. Via :func:`RTDCBase.export.hdf5 <dclab.rtdc_dataset.export.Export.hdf5>`:
 
@@ -148,7 +154,7 @@ And this works as well (loading plugin after instantiation)::
     circ_per_area = ds["circ_per_area"]
 
 
-Read the :ref:`code reference on plugin features <cr_plugin_feat>` for more
+See the :ref:`code reference on plugin features <cr_plugin_feat>` for more
 information.
 
 
@@ -156,7 +162,8 @@ Loading multiple plugin features
 ================================
 
 If you have several plugins and would like to load them all at once,
-one can do the following::
+you can do the following::
 
     for plugin_path in pathlib.Path("my_plugin_directory").rglob("*.py"):
         dclab.load_plugin_feature(plugin_path)
+

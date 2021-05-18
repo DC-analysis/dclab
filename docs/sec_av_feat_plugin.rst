@@ -4,23 +4,55 @@
 User-defined plugin features
 ============================
 For specialized applications, the features defined internally in dclab might
-not be enough to describe certain aspects of your data. You can define a plugin
-feature in your dataset without modifying any files on disk. Another option is
-to define a :ref:`temporary feature <sec_av_feat_temp>`.
+not be enough to describe certain aspects of your data. One solution to this problem
+are :ref:`temporary features <sec_av_feat_temp>`. However, temporary features
+require you to manually set the feature data for each dataset and thus are only
+applicable to very specialized scenarios. Plugin features allow you to define a
+recipe for computing a feature, which is then applied to *every* dataset
+*automatically*. Plugin features are based on
+:ref:`ancillary features <sec_features_ancillary>`.
 
 
 Writing a plugin feature script
 ===============================
-To create a dclab plugin feature, you define a function and a dictionary.
-The function will calculate the desired feature, while the dictionary will
-simply gather all the extra information useful when creating a feature.
+A plugin feature is defined in a Python script (e.g. `my_dclab_plugin.py`).
+A plugin feature script contains a function and a dictionary.
+The function will calculate the desired feature, and the dictionary defines
+the extra information useful when creating a feature.
+Both "method" and "feature names" must be included in the dictionary.
+Note that many of the items in the dictionary must be lists!
+Below are two examples of creating and using plugin features.
 
+
+Simple plugin feature example
+-----------------------------
+In this basic example, the function :func:`compute_a_new_feature` defines the
+basic feature `"circ_per_area"`.
+
+.. code-block:: python
+
+    def compute_a_new_feature(rtdc_ds):
+        """The function that does the heavy-lifting"""
+        circ_per_area = rtdc_ds["circ"] / rtdc_ds["area_um"]
+        # returns a dictionary-like object
+        return {"circ_per_area": circ_per_area}
+
+
+    info = {
+        "method": compute_some_new_features,
+        "description": "This plugin computes the area per circularity",
+        "feature names": ["circ_per_area"],
+        "features required": ["circ", "area_um"],
+        "version": "0.1.0",
+    }
+
+
+Advanced plugin feature example
+-------------------------------
 In this example, the function :func:`compute_some_new_features` defines two
-basic features: `"circ_per_area"` and `"circ_times_area"`.
-Then, the :dict:`info` dictionary is filled in by the user.
-Both "method" and "feature names" must be included in the
-:dict:`info` dictionary. Note that many of the items in the dictionary must be
-lists!
+basic features: `"circ_per_area"` and `"circ_times_area"`. Notice that both
+features are computed in one function. In this example, all of the
+:dict:`info` dictionary metadata keys are shown.
 
 .. code-block:: python
 
@@ -30,7 +62,6 @@ lists!
         circ_times_area = rtdc_ds["circ"] * rtdc_ds["area_um"]
         # returns a dictionary-like object
         return {"circ_per_area": circ_per_area, "circ_times_area": circ_times_area}
-
 
 
     info = {
@@ -48,10 +79,9 @@ lists!
     }
 
 
-The above code can be downloaded
-:ref:`here <sec_examples.html#Plugin Feature>`_. Once downloaded, place the
-file in a suitable folder on your computer, e.g.,
-`"/Documents/dclab_plugins/plugin_example_features.py"`.
+This example plugin can be downloaded
+:ref:`here <sec_examples.html#Plugin Feature>`_ in the file
+"plugin_example_features.py".
 
 
 Setting a plugin feature in a dataset

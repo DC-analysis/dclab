@@ -88,7 +88,7 @@ features are computed in one function. In this example, all of the
 
 This example plugin can be downloaded
 :ref:`here <sec_examples.html#Plugin Feature>`_ in the file
-"plugin_example_features.py".
+"plugin_feature_script.py".
 
 
 Using plugin features

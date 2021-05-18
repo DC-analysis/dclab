@@ -7,7 +7,7 @@ import dclab
 plugin_path = pathlib.Path(__file__).parent / "examples"
 
 # load a single plugin feature
-dclab.load_plugin_feature(plugin_path / "plugin_example_features.py")
+dclab.load_plugin_feature(plugin_path / "plugin_feature_script.py")
 
 # load some data
 ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
@@ -27,3 +27,4 @@ ax1.set_xlabel(xlabel)
 ax1.set_ylabel(ylabel)
 ax1.set_xlim(0.0025, 0.025)
 ax1.set_ylim(20, 40)
+plt.show()

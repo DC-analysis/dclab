@@ -1,36 +1,29 @@
 
-import numpy as np
-import dclab
+import matplotlib.pyplot as plt
 import pathlib
 
-# load a single plugin feature
-dclab.load_plugin_feature("/path/to/plugin_example_features.py")
+import dclab
 
-# loading multiple plugins
-for plugin_path in pathlib.Path("my_plugin_directory").rglob("*.py"):
-    dclab.load_plugin_feature(plugin_path)
+plugin_path = pathlib.Path(__file__).parent / "examples"
+
+# load a single plugin feature
+dclab.load_plugin_feature(plugin_path / "plugin_example_features.py")
 
 # load some data
-ds = dclab.new_dataset("path/to/rtdc/file")
+ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
 # access the features
 circ_per_area = ds["circ_per_area"]
 circ_times_area = ds["circ_times_area"]
 
-# do some filtering etc.
-ds.config["filtering"]["circ_times_area min"] = 23
-ds.config["filtering"]["circ_times_area max"] = 29
-ds.apply_filter()
-print("Removed {} out of {} events!".format(np.sum(~ds.filter.all), len(ds)))
+# plot some features against eachother
+xlabel = dclab.dfn.get_feature_label("deform")
+ylabel = dclab.dfn.get_feature_label("circ_times_area")
 
-# save the plugin features in a file
-with dclab.new_dataset("/path/to/data.rtdc") as ds:
-    # export the data to a new file
-    ds.export.hdf5("/path/to/data_with_new_plugin_feature.rtdc",
-                   features=ds.features_innate + ["circ_per_area",
-                                                  "circ_times_area"])
-
-# reload the plugin features at a later point
-dclab.load_plugin_feature("/path/to/plugin.py")
-ds = dclab.new_dataset("/path/to/data_with_new_plugin_feature.rtdc")
-circ_per_area = ds["circ_per_area"]
-circ_times_area = ds["circ_times_area"]
+fig = plt.figure(figsize=(6, 4))
+ax1 = plt.subplot(title="Plugin feature vs. Deform")
+ax1.plot(ds["deform"], ds["circ_times_area"],
+         "o", color="k", alpha=.2, ms=1)
+ax1.set_xlabel(xlabel)
+ax1.set_ylabel(ylabel)
+ax1.set_xlim(0.0025, 0.025)
+ax1.set_ylim(20, 40)

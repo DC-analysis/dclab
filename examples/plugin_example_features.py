@@ -1,8 +1,10 @@
 """Plugin Feature
 
-This example is a guide on how to user-defined plugin features in dclab.
-The first downloadable file in this section contains the plugin, while
-the second contains code on how to load and utilise the plugin within
+This example shows how to create and use user-defined plugin features
+in dclab.
+The first downloadable file ("plugin_example_features.py") in this section
+contains the plugin, while
+the second file ("plugin_load_script.py") contains code on how to load and utilise the plugin within
 dclab.
 
 The first file (containing the plugin) should be downloaded and placed

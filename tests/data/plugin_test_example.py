@@ -1,3 +1,11 @@
+"""Example plugin
+
+This plugin defines two simple features by calculating them in the
+`compute_some_new_features` function and setting the plugin metadata in the
+`info` dictionary. It is used for testing in dclab.
+
+"""
+
 
 def compute_some_new_features(rtdc_ds):
     """The function that does the heavy-lifting"""

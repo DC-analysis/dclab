@@ -3,13 +3,9 @@
 This example shows how to create and use user-defined plugin features
 in dclab.
 The first downloadable file ("plugin_feature_script.py") in this section
-contains the plugin, while
-the second file ("plugin_load_script.py") contains code on how to load and utilise the plugin within
-dclab.
+contains the plugin, while the second file ("plugin_load_script.py")
+contains code on how to load and utilise the plugin within dclab.
 
-The first file (containing the plugin) should be downloaded and placed
-in a suitable folder on your computer, e.g.,
-`"/Documents/dclab_plugins/plugin_feature_script.py"`
 """
 
 

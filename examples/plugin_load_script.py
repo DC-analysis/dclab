@@ -1,3 +1,12 @@
+"""Load and use the Plugin Feature
+
+This example shows how to use user-defined plugin features in dclab.
+The first downloadable file ("plugin_feature_script.py") in the above section
+contains the plugin, while this file ("plugin_load_script.py")
+contains code on how to load and utilise the plugin within dclab.
+
+"""
+
 
 import matplotlib.pyplot as plt
 import pathlib

@@ -12,6 +12,13 @@ recipe for computing a feature, which is then applied to *every* dataset
 *automatically*. Plugin features are based on
 :ref:`ancillary features <sec_features_ancillary>`.
 
+.. note::
+
+    This will in future be supported by Shape-Out. If you would like to
+    follow this development, you
+    should subscribe to the issue about `plugin features in Shape-Out2
+    <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut2/issues/85>`_.
+
 
 Writing a plugin feature script
 ===============================
@@ -84,8 +91,8 @@ This example plugin can be downloaded
 "plugin_example_features.py".
 
 
-Setting a plugin feature in a dataset
-=====================================
+Using plugin features
+=====================
 For this example, you can register the plugin features `"circ_per_area"` and
 `"circ_times_area"` that are defined in the plugin script. Then, set a
 corresponding filter for your dataset.
@@ -118,60 +125,15 @@ corresponding filter for your dataset.
     In [10]: print("Removed {} out of {} events!".format(np.sum(~ds.filter.all), len(ds)))
 
 
-Accessing plugin features stored in data files
+Reloading plugin features stored in data files
 ==============================================
 It is also possible to store plugin features within datasets on disk.
+This may be useful if the speed of calculation of your plugin feature is
+slow, and you don't want to recalculate each time you open your dataset.
+The process for storing plugin feature data is similar to that described
+for temporary features :ref:`here <sec_av_feat_temp>`
 At a later time point, you can then load this data file from disk with access
-to those plugin features.
-
-.. note::
-
-    This will in future be supported by Shape-Out. If you would like to
-    follow this development, you
-    should subscribe to the `issue about PluginFeature
-    <https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/105>`_.
-
-There are two ways of adding plugin features to an .rtdc data file.
-
-- 1. With `h5py <https://docs.h5py.org>`_:
-
-    .. code:: python
-
-        import dclab
-        import h5py
-
-        # load plugin features from script
-        dclab.load_plugin_feature("/path/to/plugin.py")
-
-        # extract the feature data from the dataset
-        with dclab.new_dataset("/path/to/data.rtdc") as ds:
-            circ_per_area = ds["circ_per_area"]
-            circ_times_area = ds["circ_times_area"]
-
-        # write the feature to the HDF5 file
-        with h5py.File("/path/to/data.rtdc", "a") as h5:
-            h5["events"]["circ_per_area"] = circ_per_area
-            h5["events"]["circ_times_area"] = circ_times_area
-
-- 2. Via :func:`RTDCBase.export.hdf5 <dclab.rtdc_dataset.export.Export.hdf5>`:
-
-    .. code:: python
-
-        import dclab
-        import h5py
-
-        # load plugin features from script
-        dclab.load_plugin_feature("/path/to/plugin.py")
-
-        with dclab.new_dataset("/path/to/data.rtdc") as ds:
-            # export the data to a new file
-            ds.export.hdf5("/path/to/data_with_new_plugin_feature.rtdc",
-                           features=ds.features_innate + ["circ_per_area",
-                                                          "circ_times_area"])
-
-
-If you wish to load the data at a later time point, the plugin needs
-to be loaded again before accessing its data.::
+to those plugin features.::
 
     dclab.load_plugin_feature("/path/to/plugin.py")
     ds = dclab.new_dataset("/path/to/data_with_new_plugin_feature.rtdc")
@@ -183,6 +145,10 @@ And this works as well (loading plugin after instantiation)::
     dclab.load_plugin_feature("/path/to/plugin.py")
     circ_per_area = ds["circ_per_area"]
 
+.. note::
+
+    After storing and reloading, this feature is now an `innate` feature.
+    You could also access it by registering it as a temporary feature.
 
 See the :ref:`code reference on plugin features <cr_plugin_feat>` for more
 information.
@@ -196,4 +162,3 @@ you can do the following::
 
     for plugin_path in pathlib.Path("my_plugin_directory").rglob("*.py"):
         dclab.load_plugin_feature(plugin_path)
-

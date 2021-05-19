@@ -224,10 +224,11 @@ class PlugInFeature(AncillaryFeature):
         Raises
         ------
         ValueError
-            If the parameter `info` is not a dict.
-            If the parameter `feature_name` is not in
-                parameter `info["feature names"]`.
-            If the method provided in parameter `info` is not callable.
+            If the parameter `original_info` is not a dict.
+            If the `self.feature_name` is not in
+                `original_info["feature names"]`.
+            If the `method` provided in parameter `original_info`
+                is not callable.
         """
         if not isinstance(original_info, dict):
             raise ValueError(

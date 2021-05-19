@@ -29,7 +29,7 @@ xlabel = dclab.dfn.get_feature_label("deform")
 ylabel = dclab.dfn.get_feature_label("circ_times_area")
 
 fig = plt.figure(figsize=(6, 4))
-ax1 = plt.subplot(title="Plugin feature vs. Deform")
+ax1 = plt.subplot()
 ax1.plot(ds["deform"], ds["circ_times_area"],
          "o", color="k", alpha=.2, ms=1)
 ax1.set_xlabel(xlabel)

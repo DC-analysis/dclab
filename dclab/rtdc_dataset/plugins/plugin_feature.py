@@ -14,6 +14,40 @@ class PluginImportError(BaseException):
     pass
 
 
+def import_plugin_feature_script(plugin_path):
+    """Find the user-defined recipe and return the info dictionary
+
+    Parameters
+    ----------
+    plugin_path: str or Path
+        pathname to a valid dclab plugin script
+
+    Returns
+    -------
+    info: dict
+        dictionary containing the info required to instantiate
+        a `PlugInFeature`
+
+    Raises
+    ------
+    PluginImportError
+        If the plugin can not be found
+    """
+    path = pathlib.Path(plugin_path)
+    try:
+        # insert the plugin directory to sys.path so we can import it
+        sys.path.insert(-1, str(path.parent))
+        plugin = importlib.import_module(path.stem)
+    except ModuleNotFoundError:
+        raise PluginImportError("The plugin could be not be found at "
+                                f"'{plugin_path}'!")
+    finally:
+        # undo our path insertion
+        sys.path.pop(0)
+
+    return plugin.info
+
+
 def load_plugin_feature(plugin_path):
     """Find and load PlugInFeature(s) from a user-defined script
 
@@ -50,38 +84,16 @@ def load_plugin_feature(plugin_path):
     return plugin_list
 
 
-def import_plugin_feature_script(plugin_path):
-    """Find the user-defined recipe and return the info dictionary
+def remove_all_plugin_features():
+    """Convenience function for removing all `PlugInFeature` instances
 
-    Parameters
-    ----------
-    plugin_path: str or Path
-        pathname to a valid dclab plugin script
-
-    Returns
-    -------
-    plugin.info: dict
-        dictionary containing the info required to instantiate
-        a `PlugInFeature`
-
-    Raises
-    ------
-    PluginImportError
-        If the plugin can not be found
+    See Also
+    --------
+    remove_plugin_feature: remove a single `PlugInFeature` instance
     """
-    path = pathlib.Path(plugin_path)
-    try:
-        # insert the plugin directory to sys.path so we can import it
-        sys.path.insert(-1, str(path.parent))
-        plugin = importlib.import_module(path.stem)
-    except ModuleNotFoundError:
-        raise PluginImportError("The plugin could be not be found at "
-                                f"'{plugin_path}'!")
-    finally:
-        # undo our path insertion
-        sys.path.pop(0)
-
-    return plugin.info
+    for plugin_instance in reversed(PlugInFeature.features):
+        if isinstance(plugin_instance, PlugInFeature):
+            remove_plugin_feature(plugin_instance)
 
 
 def remove_plugin_feature(plugin_instance):
@@ -108,18 +120,6 @@ def remove_plugin_feature(plugin_instance):
     else:
         raise TypeError(f"Type {type(plugin_instance)} should be an instance "
                         f"of PlugInFeature. '{plugin_instance}' was given.")
-
-
-def remove_all_plugin_features():
-    """Convenience function for removing all `PlugInFeature` instances
-
-    See Also
-    --------
-    remove_plugin_feature: remove a single `PlugInFeature` instance
-    """
-    for plugin_instance in reversed(PlugInFeature.features):
-        if isinstance(plugin_instance, PlugInFeature):
-            remove_plugin_feature(plugin_instance)
 
 
 class PlugInFeature(AncillaryFeature):
@@ -162,6 +162,53 @@ class PlugInFeature(AncillaryFeature):
         self._handle_ancill_info()
         super().__init__(**self._ancill_info)
 
+    def _error_check_original_info(self):
+        """Various checks on the `_original_info` attibute dict
+
+        Raises
+        ------
+        ValueError
+            If the parameter `info` is not a dict.
+            If the parameter `feature_name` is not in
+                parameter `info["feature names"]`.
+            If the method provided in parameter `info` is not callable.
+
+        """
+        if not isinstance(self._original_info, dict):
+            raise ValueError(
+                "PlugInFeature parameter for `info` must be a dict, instead "
+                f"a '{type(self._original_info)}' was given.")
+
+        if self._plugin_feature_name not in \
+                self._original_info["feature names"]:
+            raise ValueError(
+                "PlugInFeature parameter for `feature_name` was not found in "
+                "the parameter `info` dict. `feature_name` = '{}', "
+                "`info['feature names']` = '{}'. ".format(
+                    self._plugin_feature_name,
+                    self._original_info['feature names']))
+
+        if not callable(self._original_info["method"]):
+            raise ValueError(
+                "The `method` you have provided in the parameter `info` is "
+                f"not callable ('{self._original_info['method']}' is not "
+                "a function).")
+
+    def _handle_ancill_info(self):
+        """Create the private `_ancill_info` attribute dict.
+
+        Use the `plugin_feature_info` attribute to populate the
+        `_ancill_info` attribute with all relevant information required
+        to initialise an `AncillaryFeature`.
+        """
+        self._ancill_info = {
+            "feature_name": self.plugin_feature_info["feature name"],
+            "method": self.plugin_feature_info["method"],
+            "req_config": self.plugin_feature_info["config required"],
+            "req_features": self.plugin_feature_info["features required"],
+            "req_func": self.plugin_feature_info["method check required"],
+        }
+
     def _handle_plugin_info(self):
         """Create the `plugin_feature_info` attribute dict.
 
@@ -190,21 +237,6 @@ class PlugInFeature(AncillaryFeature):
             "plugin path": self._plugin_path,
         }
         self.plugin_feature_info = plugin_feature_info
-
-    def _handle_ancill_info(self):
-        """Create the private `_ancill_info` attribute dict.
-
-        Use the `plugin_feature_info` attribute to populate the
-        `_ancill_info` attribute with all relevant information required
-        to initialise an `AncillaryFeature`.
-        """
-        self._ancill_info = {
-            "feature_name": self.plugin_feature_info["feature name"],
-            "method": self.plugin_feature_info["method"],
-            "req_config": self.plugin_feature_info["config required"],
-            "req_features": self.plugin_feature_info["features required"],
-            "req_func": self.plugin_feature_info["method check required"],
-        }
 
     def _update_feature_name_and_label(self):
         """Add feature information to `dclab.definitions`.
@@ -242,35 +274,3 @@ class PlugInFeature(AncillaryFeature):
             _label = dfn.get_feature_label(
                 self._plugin_feature_name)
         return _label, _is_scalar
-
-    def _error_check_original_info(self):
-        """Various checks on the `_original_info` attibute dict
-
-        Raises
-        ------
-        ValueError
-            If the parameter `info` is not a dict.
-            If the parameter `feature_name` is not in
-                parameter `info["feature names"]`.
-            If the method provided in parameter `info` is not callable.
-
-        """
-        if not isinstance(self._original_info, dict):
-            raise ValueError(
-                "PlugInFeature parameter for `info` must be a dict, instead "
-                f"a '{type(self._original_info)}' was given.")
-
-        if self._plugin_feature_name not in \
-                self._original_info["feature names"]:
-            raise ValueError(
-                "PlugInFeature parameter for `feature_name` was not found in "
-                "the parameter `info` dict. `feature_name` = '{}', "
-                "`info['feature names']` = '{}'. ".format(
-                    self._plugin_feature_name,
-                    self._original_info['feature names']))
-
-        if not callable(self._original_info["method"]):
-            raise ValueError(
-                "The `method` you have provided in the parameter `info` is "
-                f"not callable ('{self._original_info['method']}' is not "
-                "a function).")

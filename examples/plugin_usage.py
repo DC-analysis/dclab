@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 import dclab
 
+
 plugin_path = pathlib.Path(__file__).parent
 
 # load a single plugin feature

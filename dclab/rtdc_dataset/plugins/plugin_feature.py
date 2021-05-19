@@ -211,14 +211,15 @@ class PlugInFeature(AncillaryFeature):
             "method check required": original_info.get(
                 "method check required", lambda x: True),
             "scalar feature": is_scalar,
-            "version": original_info.get("version", "unknown"),
+            # allow comparisons with distutil.version.LooseVersion
+            "version": original_info.get("version", "0.0.0-unknown"),
             "plugin path": self.plugin_path,
         }
 
         return feature_info
 
     def _sanity_check_original_info(self, original_info):
-        """Various checks on the `original_info` attibute dict
+        """Various checks on the `original_info` attribute dict
 
         Raises
         ------

@@ -12,8 +12,8 @@ functionalities.
 
    sec_av_notation
    sec_av_rtdc_dataset
-   sec_av_feat_temp
    sec_av_feat_plugin
+   sec_av_feat_temp
    sec_av_scatter
    sec_av_fluorescence
    sec_av_emodulus

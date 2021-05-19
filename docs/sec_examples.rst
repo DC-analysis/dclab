@@ -22,6 +22,4 @@ Examples
 
 .. fancy_include:: isoelastics.py
 
-.. fancy_include:: plugin_feature_script.py
-
-.. fancy_include:: plugin_load_script.py
+.. fancy_include:: plugin_usage.py

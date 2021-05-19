@@ -132,6 +132,8 @@ TDMS format
 .. _sec_ref_rtdc_config:
 
 
+.. _cr_ancillaries:
+
 Ancillaries
 -----------
 .. automodule:: dclab.rtdc_dataset.ancillaries.ancillary_feature

@@ -19,13 +19,13 @@ def load_plugin_feature(plugin_path):
 
     Parameters
     ----------
-    plugin_path : str or Path
+    plugin_path: str or Path
         pathname to a valid dclab plugin script
 
     Returns
     -------
-    plugin_list : list
-        list of `PlugInFeature`
+    plugin_list: list of PlugInFeature
+        list of PlugInFeature instances loaded from `plugin_path`
 
     Raises
     ------
@@ -34,11 +34,10 @@ def load_plugin_feature(plugin_path):
 
     See Also
     --------
-    import_plugin_feature_script : function that imports the plugin script
-    PlugInFeature : class handling the plugin feature information
-    dclab.register_temporary_feature : alternative method for creating
-        user-defined features
-
+    import_plugin_feature_script: function that imports the plugin script
+    PlugInFeature: class handling the plugin feature information
+    dclab.rtdc_dataset.feat_temp.register_temporary_feature: alternative
+        method for creating user-defined features
     """
     info = import_plugin_feature_script(plugin_path)
     if not isinstance(info["feature names"], list):
@@ -52,23 +51,23 @@ def load_plugin_feature(plugin_path):
 
 
 def import_plugin_feature_script(plugin_path):
-    """Find the user-defined script and return the info dictionary
+    """Find the user-defined recipe and return the info dictionary
 
     Parameters
     ----------
-    plugin_path : str or Path
+    plugin_path: str or Path
         pathname to a valid dclab plugin script
 
     Returns
     -------
-    plugin.info : dict
-        dict containing the info required to instantiate a `PlugInFeature`
+    plugin.info: dict
+        dictionary containing the info required to instantiate
+        a `PlugInFeature`
 
     Raises
     ------
     PluginImportError
         If the plugin can not be found
-
     """
     path = pathlib.Path(plugin_path)
     try:
@@ -90,14 +89,13 @@ def remove_plugin_feature(plugin_instance):
 
     Parameters
     ----------
-    plugin_instance : PlugInFeature
-        The `PlugInFeature` class to be removed from dclab
+    plugin_instance: PlugInFeature
+        The `PlugInFeature` instance to be removed from dclab
 
     Raises
     ------
     TypeError
         If the `plugin_instance` is not a `PlugInFeature` instance
-
     """
     if isinstance(plugin_instance, PlugInFeature):
         # This check is necessary for situations where the PlugInFeature fails
@@ -117,8 +115,7 @@ def remove_all_plugin_features():
 
     See Also
     --------
-    remove_plugin_feature : remove a single `PlugInFeature` instance
-
+    remove_plugin_feature: remove a single `PlugInFeature` instance
     """
     for plugin_instance in reversed(PlugInFeature.features):
         if isinstance(plugin_instance, PlugInFeature):
@@ -131,23 +128,24 @@ class PlugInFeature(AncillaryFeature):
 
         Parameters
         ----------
-        feature_name : str
+        feature_name: str
             name of a feature that matches that defined in `info`
-        info : dict
+        info: dict
             Necessary information to create the `PlugInFeature`.
-            Minimum requirements are
-                "method": callable function
-                "feature names": list of names
+            Minimum requirements are:
+
+            - "method": callable function
+            - "feature names": list of feature names
         plugin_path : str or Path, optional
             pathname which was used to load the `PlugInFeature` with
             `load_plugin_feature`.
 
         Attributes
         ----------
-        feature_name : str
+        feature_name: str
             Attribute inherited from `AncillaryFeature`.
             See `dclab.AncillaryFeature` for other inherited attributes.
-        plugin_feature_info : dict
+        plugin_feature_info: dict
             All relevant information pertaining to the instance of
             `PlugInFeature`.
 
@@ -170,7 +168,6 @@ class PlugInFeature(AncillaryFeature):
         Use the `_original_info` attribute to populate the
         `plugin_feature_info` attribute with all relevant information
         pertaining to the instance of `PlugInFeature`.
-
         """
         self._error_check_original_info()
         _label, _is_scalar = self._update_feature_name_and_label()
@@ -200,7 +197,6 @@ class PlugInFeature(AncillaryFeature):
         Use the `plugin_feature_info` attribute to populate the
         `_ancill_info` attribute with all relevant information required
         to initialise an `AncillaryFeature`.
-
         """
         self._ancill_info = {
             "feature_name": self.plugin_feature_info["feature name"],
@@ -215,9 +211,9 @@ class PlugInFeature(AncillaryFeature):
 
         Returns
         -------
-        _label : str
+        label: str
             Feature label used to populate the `plugin_feature_info` attribute
-        _is_scalar : bool
+        is_scalar: bool
             Whether the feature is a scalar
 
         Notes
@@ -225,7 +221,6 @@ class PlugInFeature(AncillaryFeature):
         This must be excecuted before initializing the super class
         (AncillaryFeature). If we don't do this, then `remove_plugin_feature`
         may end up removing innate features e.g., "deform".
-
         """
         idx = self._original_info["feature names"].index(
             self._plugin_feature_name)

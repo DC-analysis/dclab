@@ -3,12 +3,20 @@
 ===============================
 User-defined temporary features
 ===============================
-For specialized applications, the features defined internally in dclab might
-not be enough to describe certain aspects of your data. For instance, let's say
-you are interested in the mean overall fluorescence signal of each event
-in channel 1 and you would like to filter the dataset according to that
-information. You can define a temporary feature in your dataset without
-modifying any files on disk.
+If :ref:`plugin features <sec_av_feat_plugin>` are not suitable for your
+task, either because your feature data cannot be obtained automatically
+or because you are just testing things, you are in the right place.
+
+Let's say you are interested in the mean overall fluorescence signal of each
+event in channel 1 and you would like to filter the dataset according to that
+information [1]_. You can define a temporary feature
+in your dataset without modifying any files on disk.
+
+.. note::
+
+    Temporary features are not supported by Shape-Out, DCKit, or DCOR/DCOR-Aid.
+    They are only really helpful if you quickly need to test things. If possible,
+    it is recommended to work with :ref:`plugin features <sec_av_feat_plugin>`.
 
 
 Setting a temporary feature in a dataset
@@ -43,18 +51,13 @@ manually set a corresponding filter for your dataset.
     In [10]: print("Removed {} out of {} events!".format(np.sum(~ds.filter.all), len(ds)))
 
 
+.. _sec_av_feat_temp_store:
+
 Accessing temporary features stored in data files
 =================================================
 It is also possible to store temporary features within datasets on disk.
 At a later time point, you can then load this data file from disk with access
-to those temporary features [1]_.
-
-.. note::
-
-    This is definitely not supported by Shape-Out, DCKit, or DCOR/DCOR-Aid.
-    If you would like to compute additional features with Shape-Out, you
-    should subscribe to the `issue about PluginFeature
-    <https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/105>`_.
+to those temporary features [2]_.
 
 There are two ways of adding temporary features to an .rtdc data file.
 
@@ -118,7 +121,9 @@ Please read the :ref:`code reference on temporary features
 <cr_temp_feat>` for more
 information.
 
-.. [1] I know, storing *temporary* features on disk sounds like a
+.. [1] You could, in principle, of course create a plugin feature for that.
+
+.. [2] I know, storing *temporary* features on disk sounds like a
        counter-intuitive concept, but this is a very convenient extension
        of temporary features which came with almost no overhead.
        In a sense, it's still temporary, because you always have to register

@@ -81,15 +81,10 @@ def test_pf_attribute_ancill_info():
     """Check the plugin feature attribute input to AncillaryFeature"""
     info = example_plugin_info_single_feature()
     pf = PlugInFeature("circ_per_area", info)
-    # comparing lambda functions fails due to differing memory locations
-    pf._ancill_info.pop("req_func")
-    ancill_info = {
-        "feature_name": "circ_per_area",
-        "method": compute_single_plugin_feature,
-        "req_config": [],
-        "req_features": ["circ", "area_um"],
-    }
-    assert pf._ancill_info == ancill_info
+    assert pf.plugin_feature_info["feature name"] == "circ_per_area"
+    assert pf.plugin_feature_info["method"] is compute_single_plugin_feature
+    assert pf.plugin_feature_info["config required"] == []
+    assert pf.plugin_feature_info["features required"] == ["circ", "area_um"]
 
 
 def test_pf_attribute_plugin_feature_info():
@@ -122,14 +117,17 @@ def test_pf_attributes():
     pf1, pf2 = plugin_list
     plugin_file_info = import_plugin_feature_script(plugin_path)
 
-    assert pf1.feature_name == pf1._plugin_feature_name == \
+    assert pf1.feature_name == pf1.feature_name == \
            plugin_file_info["feature names"][0]
-    assert pf2.feature_name == pf2._plugin_feature_name == \
+    assert pf2.feature_name == pf2.feature_name == \
            plugin_file_info["feature names"][1]
-    assert pf1._plugin_path == pf1.plugin_feature_info["plugin path"] == \
-           plugin_path
-    assert pf2._plugin_path == pf2.plugin_feature_info["plugin path"] == \
-           plugin_path
+
+    assert plugin_path.samefile(pf1.plugin_path)
+    assert plugin_path.samefile(pf1.plugin_feature_info["plugin path"])
+
+    assert plugin_path.samefile(pf2.plugin_path)
+    assert plugin_path.samefile(pf2.plugin_feature_info["plugin path"])
+
     assert pf1._original_info == plugin_file_info
     assert pf2._original_info == plugin_file_info
 
@@ -320,7 +318,7 @@ def test_pf_input_no_feature_labels():
     pf = PlugInFeature(feature_name, info)
     assert dclab.dfn.feature_exists(feature_name)
     label = dclab.dfn.get_feature_label(feature_name)
-    assert label == "User defined feature {}".format(feature_name)
+    assert label == "Plugin feature {}".format(feature_name)
     assert label == pf.plugin_feature_info["feature label"]
 
 
@@ -446,7 +444,7 @@ def test_pf_with_empty_feature_label_string():
     assert dclab.dfn.feature_exists("circ_per_area")
     label = dclab.dfn.get_feature_label("circ_per_area")
     assert label != ""
-    assert label == "User defined feature {}".format(feature_name)
+    assert label == "Plugin feature {}".format(feature_name)
 
 
 def test_pf_with_feature_label():
@@ -473,7 +471,7 @@ def test_pf_with_no_feature_label():
     assert dclab.dfn.feature_exists("circ_per_area")
     label = dclab.dfn.get_feature_label("circ_per_area")
     assert label is not None
-    assert label == "User defined feature {}".format(feature_name)
+    assert label == "Plugin feature {}".format(feature_name)
 
 
 def test_pf_wrong_data_shape_1():

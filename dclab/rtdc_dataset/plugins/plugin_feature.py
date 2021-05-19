@@ -1,7 +1,6 @@
 """
 .. versionadded:: 0.34.0
 """
-
 import pathlib
 import importlib
 import sys
@@ -25,8 +24,8 @@ def import_plugin_feature_script(plugin_path):
     Returns
     -------
     info: dict
-        dictionary containing the info required to instantiate
-        a `PlugInFeature`
+        dictionary with the information required to instantiate
+        one (or multiple) `PlugInFeature`
 
     Raises
     ------
@@ -49,12 +48,12 @@ def import_plugin_feature_script(plugin_path):
 
 
 def load_plugin_feature(plugin_path):
-    """Find and load PlugInFeature(s) from a user-defined script
+    """Find and load PlugInFeature(s) from a user-defined recipe
 
     Parameters
     ----------
     plugin_path: str or Path
-        pathname to a valid dclab plugin script
+        pathname to a valid dclab plugin Python script
 
     Returns
     -------
@@ -124,46 +123,102 @@ def remove_plugin_feature(plugin_instance):
 
 class PlugInFeature(AncillaryFeature):
     def __init__(self, feature_name, info, plugin_path=None):
-        """Class that allows a user to define a feature
+        """A user-defined plugin feature
 
         Parameters
         ----------
         feature_name: str
             name of a feature that matches that defined in `info`
         info: dict
-            Necessary information to create the `PlugInFeature`.
-            Minimum requirements are:
+            Full plugin recipe (for all features) as given in the
+            `info` dictionary in the plugin file.
+            At least the following keys must be specified:
 
             - "method": callable function
             - "feature names": list of feature names
-        plugin_path : str or Path, optional
-            pathname which was used to load the `PlugInFeature` with
-            `load_plugin_feature`.
-
-        Attributes
-        ----------
-        feature_name: str
-            Attribute inherited from `AncillaryFeature`.
-            See `dclab.AncillaryFeature` for other inherited attributes.
-        plugin_feature_info: dict
-            All relevant information pertaining to the instance of
-            `PlugInFeature`.
+        plugin_path: str or Path, optional
+            path which was used to load the `PlugInFeature` with
+            :func:`load_plugin_feature`.
 
         Notes
         -----
-        Child class of `AncillaryFeature` which allows a user to create
-        their own features. See the dclab repository examples/plugins folder
-        for example plugins.
+        `PluginFeature` inherits from :class:`AncillaryFeature
+        <dclab.rtdc_dataset.ancillaries.ancillary_feature.AncillaryFeature>`.
+        Please read the advanced section on `PluginFeatures` in the dclab docs.
         """
-        self._plugin_feature_name = feature_name
-        self._original_info = info
-        self._plugin_path = plugin_path
-        self._handle_plugin_info()
-        self._handle_ancill_info()
-        super().__init__(**self._ancill_info)
+        #: Plugin feature name
+        self.feature_name = feature_name
+        #: Path to the original plugin file
+        self.plugin_path = plugin_path
 
-    def _error_check_original_info(self):
-        """Various checks on the `_original_info` attibute dict
+        # perform sanity checks
+        self._sanity_check_original_info(info)
+        # keep this for tests
+        self._original_info = info
+
+        # populate `info` dictionary with missing values
+        #: Dictionary containing all information relevant for
+        #: this particular plugin feature instance
+        self.plugin_feature_info = self._process_plugin_info(info)
+
+        # register this plugin feature in definitions
+        # This must be executed before initializing the super class
+        # (AncillaryFeature). If we don't do this, then `remove_plugin_feature`
+        # may end up removing innate features e.g., "deform".
+        dfn._add_feature_to_definitions(
+            name=self.feature_name,
+            label=self.plugin_feature_info["feature label"],
+            is_scalar=self.plugin_feature_info["scalar feature"]
+        )
+
+        # Instantiate the super class
+        super(PlugInFeature, self).__init__(
+            feature_name=self.plugin_feature_info["feature name"],
+            method=self.plugin_feature_info["method"],
+            req_config=self.plugin_feature_info["config required"],
+            req_features=self.plugin_feature_info["features required"],
+            req_func=self.plugin_feature_info["method check required"],
+            )
+
+    def _process_plugin_info(self, original_info):
+        """Return dictionary with all relevant info for this instance
+        """
+        fidx = original_info["feature names"].index(self.feature_name)
+
+        # determine feature label
+        if ("feature labels" in original_info
+                and original_info["feature labels"][fidx]):
+            label = original_info["feature labels"][fidx]
+        else:
+            label = f"Plugin feature {self.feature_name}"
+
+        # determine whether we have a scalar feature
+        if "scalar feature" in original_info:
+            is_scalar = original_info["scalar feature"][fidx]
+        else:
+            is_scalar = True  # default
+
+        feature_info = {
+            "method": original_info["method"],
+            "description": original_info.get(
+                "description", "No description provided"),
+            "long description": original_info.get(
+                "long description", "No long description provided."),
+            "feature name": self.feature_name,
+            "feature label": label,
+            "features required": original_info.get("features required", []),
+            "config required": original_info.get("config required", []),
+            "method check required": original_info.get(
+                "method check required", lambda x: True),
+            "scalar feature": is_scalar,
+            "version": original_info.get("version", "unknown"),
+            "plugin path": self.plugin_path,
+        }
+
+        return feature_info
+
+    def _sanity_check_original_info(self, original_info):
+        """Various checks on the `original_info` attibute dict
 
         Raises
         ------
@@ -172,105 +227,21 @@ class PlugInFeature(AncillaryFeature):
             If the parameter `feature_name` is not in
                 parameter `info["feature names"]`.
             If the method provided in parameter `info` is not callable.
-
         """
-        if not isinstance(self._original_info, dict):
+        if not isinstance(original_info, dict):
             raise ValueError(
                 "PlugInFeature parameter for `info` must be a dict, instead "
-                f"a '{type(self._original_info)}' was given.")
+                f"a '{type(original_info)}' was given.")
 
-        if self._plugin_feature_name not in \
-                self._original_info["feature names"]:
+        if self.feature_name not in original_info["feature names"]:
             raise ValueError(
-                "PlugInFeature parameter for `feature_name` was not found in "
-                "the parameter `info` dict. `feature_name` = '{}', "
-                "`info['feature names']` = '{}'. ".format(
-                    self._plugin_feature_name,
-                    self._original_info['feature names']))
+                f"The feature name '{self.feature_name}' is not defined in "
+                "the `info` dict of the plugin feature"
+                f" at {self.plugin_path}" if self.plugin_path else ""
+                f". Defined features are '{original_info['feature names']}'.")
 
-        if not callable(self._original_info["method"]):
+        if not callable(original_info["method"]):
             raise ValueError(
                 "The `method` you have provided in the parameter `info` is "
-                f"not callable ('{self._original_info['method']}' is not "
+                f"not callable ('{original_info['method']}' is not "
                 "a function).")
-
-    def _handle_ancill_info(self):
-        """Create the private `_ancill_info` attribute dict.
-
-        Use the `plugin_feature_info` attribute to populate the
-        `_ancill_info` attribute with all relevant information required
-        to initialise an `AncillaryFeature`.
-        """
-        self._ancill_info = {
-            "feature_name": self.plugin_feature_info["feature name"],
-            "method": self.plugin_feature_info["method"],
-            "req_config": self.plugin_feature_info["config required"],
-            "req_features": self.plugin_feature_info["features required"],
-            "req_func": self.plugin_feature_info["method check required"],
-        }
-
-    def _handle_plugin_info(self):
-        """Create the `plugin_feature_info` attribute dict.
-
-        Use the `_original_info` attribute to populate the
-        `plugin_feature_info` attribute with all relevant information
-        pertaining to the instance of `PlugInFeature`.
-        """
-        self._error_check_original_info()
-        _label, _is_scalar = self._update_feature_name_and_label()
-        plugin_feature_info = {
-            "method": self._original_info["method"],
-            "description": self._original_info.get(
-                "description", "Description of my feature"),
-            "long description": self._original_info.get(
-                "long description", "Long description of my feature"),
-            "feature name": self._plugin_feature_name,
-            "feature label": _label,
-            "features required": self._original_info.get(
-                "features required", []),
-            "config required": self._original_info.get(
-                "config required", []),
-            "method check required": self._original_info.get(
-                "method check required", lambda x: True),
-            "scalar feature": _is_scalar,
-            "version": self._original_info.get("version", "unknown"),
-            "plugin path": self._plugin_path,
-        }
-        self.plugin_feature_info = plugin_feature_info
-
-    def _update_feature_name_and_label(self):
-        """Add feature information to `dclab.definitions`.
-
-        Returns
-        -------
-        label: str
-            Feature label used to populate the `plugin_feature_info` attribute
-        is_scalar: bool
-            Whether the feature is a scalar
-
-        Notes
-        -----
-        This must be excecuted before initializing the super class
-        (AncillaryFeature). If we don't do this, then `remove_plugin_feature`
-        may end up removing innate features e.g., "deform".
-        """
-        idx = self._original_info["feature names"].index(
-            self._plugin_feature_name)
-        if "scalar feature" not in self._original_info:
-            _is_scalar = True
-        else:
-            _is_scalar = self._original_info["scalar feature"][idx]
-
-        if "feature labels" not in self._original_info:
-            _label = None
-        else:
-            _label = self._original_info["feature labels"][idx]
-        if _label == "":
-            _label = None
-
-        dfn._add_feature_to_definitions(
-            self._plugin_feature_name, _label, _is_scalar)
-        if _label is None:
-            _label = dfn.get_feature_label(
-                self._plugin_feature_name)
-        return _label, _is_scalar

@@ -420,19 +420,19 @@ def feature_exists(name, scalar_only=False):
 
     Parameters
     ----------
-    name : str
+    name: str
         name of a feature
     scalar_only : bool
         Specify whether the check should only search in scalar features
 
     Returns
     -------
-    valid : bool
+    valid: bool
         True if name is a valid feature, False otherwise.
 
     See Also
     --------
-    scalar_feature_exists : Wraps `feature_exists` with `scalar_only=True`
+    scalar_feature_exists: Wraps `feature_exists` with `scalar_only=True`
     """
     valid = False
     if name in scalar_feature_names:
@@ -461,12 +461,12 @@ def get_feature_label(name, rtdc_ds=None):
 
     Parameters
     ----------
-    name : str
+    name: str
         name of a feature
 
     Returns
     -------
-    label : str
+    label: str
         feature label corresponding to the feature name
 
     Notes

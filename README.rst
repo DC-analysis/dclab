@@ -50,7 +50,7 @@ instead of::
 
     git pull
 
-to prevent confusions in the commit history.
+to prevent non-linearities in the commit history.
 
 Tests
 ~~~~~
@@ -61,9 +61,29 @@ the tests, install `pytest` and run::
     pytest tests
 
 
+Docs
+~~~~
+The docs are built with `sphinx <https://www.sphinx-doc.org>`_. Please make
+sure they compile when you change them (this also includes function doc strings)::
+
+    cd docs
+    pip install -r requirements.txt
+    sphinx-build . _build  # open "index.html" in the "_build" directory
+
+
+PEP8
+~~~~
+We use flake8 to enforce coding style::
+
+    flake8 dclab
+    flake8 docs
+    flake8 examples
+    flake8 tests
+
+
 Incrementing version
 ~~~~~~~~~~~~~~~~~~~~
-Dclab currently gets its version from the latest git tag.
+Dclab gets its version from the latest git tag.
 If you think that a new version should be published,
 create a tag on the master branch (if you have the necessary
 permissions to do so)::

@@ -75,6 +75,7 @@ PEP8
 ~~~~
 We use flake8 to enforce coding style::
 
+    pip install flake8
     flake8 dclab
     flake8 docs
     flake8 examples

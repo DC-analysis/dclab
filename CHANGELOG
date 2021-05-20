@@ -3,10 +3,16 @@
  - fix: dclab-verify-dataset now also prints other errors it encounters
  - fix: installing the "lmer" R package failed, because "statmod" was not
    installed
+ - fix: correct data types for "fluorescence:sample rate",
+   "imaging: roi position x", and "imaging: roi position y" (#124)
+ - enh: support new .rtdc attribute "online_contour:bg empty" which is
+   True when the online background image is computed only from frames
+   that do not contain any events (#124)
  - enh: `AncillaryFeature` now populates other ancillary features when they
    share the same method (#104)
  - enh: dclab-verify-dataset now returns a non-zero exit code if there
    were errors, alerts, or violations (#120)
+ - ref: streamlined dataset check function for missing meta data keys
 0.33.3
  - fix: add "chip identifier" to "setup" configuration section and
    make it optional during dataset checks (#109)

@@ -55,6 +55,8 @@ CFG_METADATA = {
         # set this parameter without modifying the original trace data
         # to correct/remove negative trace data
         # (see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/101).
+        # Note that traces accessed from RTDCBase instances are never
+        # background-corrected!
         ["baseline 1 offset", fint, "Baseline offset channel 1"],
         ["baseline 2 offset", fint, "Baseline offset channel 2"],
         ["baseline 3 offset", fint, "Baseline offset channel 3"],
@@ -79,7 +81,7 @@ CFG_METADATA = {
         ["laser 3 power", float, "Laser 3 output power [%]"],
         ["laser count", fint, "Number of active lasers"],
         ["lasers installed", fint, "Number of available lasers"],
-        ["sample rate", float, "Trace sample rate [Hz]"],
+        ["sample rate", fint, "Trace sample rate [Hz]"],
         ["samples per event", fint, "Samples per event"],
         ["signal max", float, "Upper voltage detection limit [V]"],
         ["signal min", float, "Lower voltage detection limit [V]"],
@@ -95,13 +97,19 @@ CFG_METADATA = {
         ["flash duration", float, "Light source flash duration [µs]"],
         ["frame rate", float, "Imaging frame rate [Hz]"],
         ["pixel size", float, "Pixel size [µm]"],
-        ["roi position x", float, "Image x coordinate on sensor [px]"],
-        ["roi position y", float, "Image y coordinate on sensor [px]"],
+        ["roi position x", fint, "Image x coordinate on sensor [px]"],
+        ["roi position y", fint, "Image y coordinate on sensor [px]"],
         ["roi size x", fint, "Image width [px]"],
         ["roi size y", fint, "Image height [px]"],
     ],
     # All parameters for online contour extraction from the event images
     "online_contour": [
+        # The option "bg empty" was introduced in dclab 0.34.0 and
+        # Shape-In 2.2.2.5.
+        # Shape-In  writes to the "shapein-warning" log if there are
+        # frames with event images (non-empty frames) that had to be
+        # used for background correction.
+        ["bg empty", fbool, "Background correction from empty frames only"],
         ["bin area min", fint, "Minium pixel area of binary image event"],
         ["bin kernel", fint, "Odd ellipse kernel size, binary image morphing"],
         ["bin threshold", fint, "Binary threshold for avg-bg-corrected image"],

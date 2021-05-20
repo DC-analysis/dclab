@@ -12,6 +12,15 @@ from .load import load_file
 
 from .. import definitions as dfn
 
+#: These sections should be fully present, except for the
+#: keys in :data:`OPTIONAL_KEYS`.
+DESIRABLE_SECTIONS = {
+    "experiment",
+    "imaging",
+    "online_contour",
+    "setup",
+}
+
 #: log names that end with these strings are not checked
 IGNORED_LOG_NAMES = {
     "_para.ini",
@@ -66,10 +75,29 @@ LOG_MAX_LINE_LENGTH = 100
 
 #: keys that are optional
 OPTIONAL_KEYS = {
+    "fluorescence": [
+        "baseline 1 offset",
+        "baseline 2 offset",
+        "baseline 3 offset",
+        # name, lambda, power have their own special tests
+        "channel 1 name",
+        "channel 2 name",
+        "channel 3 name",
+        "laser 1 lambda",
+        "laser 2 lambda",
+        "laser 3 lambda",
+        "laser 1 power",
+        "laser 2 power",
+        "laser 3 power",
+        ],
     "setup": [
         "temperature",
         "chip identifier",
     ],
+    "online_contour": [
+        # introduced in 0.34.0
+        "bg empty",
+    ]
 }
 
 #: valid metadata choices
@@ -596,63 +624,33 @@ class IntegrityChecker(object):
     def check_metadata_missing(self, expand_section=True, **kwargs):
         cues = []
         # These "must" be present:
-        tocheck = copy.deepcopy(IMPORTANT_KEYS)
+        important = copy.deepcopy(IMPORTANT_KEYS)
         if self.has_fluorescence:
-            tocheck.update(IMPORTANT_KEYS_FL)
-        # These sections "should" be fully present (except if in OPTIONAL_KEYS)
-        tocheck_sec_aler = ["experiment", "imaging", "online_contour", "setup"]
+            important.update(IMPORTANT_KEYS_FL)
+        # A list of sections we would like to investigate
+        secs_investiage = list(set(important.keys()) | set(DESIRABLE_SECTIONS))
 
-        for sec in tocheck:
+        for sec in secs_investiage:
             if sec not in self.ds.config and not expand_section:
                 cues.append(ICue(
                     msg="Metadata: Missing section '{}'".format(sec),
-                    level="violation",
+                    level="violation" if sec in important else "alert",
                     category="metadata missing",
                     cfg_section=sec))
             else:
                 for key in dfn.config_keys[sec]:
-                    if (key in tocheck[sec]
-                            and key not in self.ds.config[sec]):
-                        cues.append(ICue(
-                            msg="Metadata: Missing key [{}] '{}'".format(sec,
-                                                                         key),
-                            level="violation",
-                            category="metadata missing",
-                            cfg_section=sec,
-                            cfg_key=key))
-                    elif ((sec in tocheck_sec_aler
-                           and key not in self.ds.config[sec])
-                          and not (sec in OPTIONAL_KEYS
-                                   and key in OPTIONAL_KEYS[sec])):
-                        # The section should be present, but the key is not.
-                        # The key is not in the optional key list.
-                        # Note that fluorescence data is not checked here
-                        cues.append(ICue(
-                            msg="Metadata: Missing key [{}] '{}'".format(sec,
-                                                                         key),
-                            level="alert",
-                            category="metadata missing",
-                            cfg_section=sec,
-                            cfg_key=key))
-        # search again (soft)
-        for sec in tocheck_sec_aler:
-            if sec in tocheck:
-                # already treated above (hard)
-                continue
-            if sec not in self.ds.config and not expand_section:
-                cues.append(ICue(
-                    msg="Metadata: Missing section '{}'".format(sec),
-                    level="alert",
-                    category="metadata missing",
-                    cfg_section=sec,
-                    cfg_key=key))
-            else:
-                for key in dfn.config_keys[sec]:
                     if key not in self.ds.config[sec]:
+                        if sec in OPTIONAL_KEYS and key in OPTIONAL_KEYS[sec]:
+                            # ignore this key
+                            continue
+                        elif sec in important and key in important[sec]:
+                            level = "violation"
+                        else:
+                            level = "alert"
                         cues.append(ICue(
                             msg="Metadata: Missing key [{}] '{}'".format(sec,
                                                                          key),
-                            level="alert",
+                            level=level,
                             category="metadata missing",
                             cfg_section=sec,
                             cfg_key=key))

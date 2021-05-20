@@ -10,16 +10,16 @@ Code reference
 .. _sec_ref_definitions:
 
 
-module-level methods
+Module-level methods
 ====================
 .. autofunction:: dclab.new_dataset
 
 
-global definitions
+Global definitions
 ==================
 These definitionas are used throughout the dclab/Shape-In/Shape-Out ecosystem.
 
-configuration
+Configuration
 -------------
 Valid configuration sections and keys are described in:
 :ref:`sec_analysis_meta` and :ref:`sec_experiment_meta`.
@@ -41,7 +41,7 @@ Valid configuration sections and keys are described in:
    :no-value:
 
 
-features
+Features
 --------
 Features are discussed in more detail in: :ref:`sec_features`.
 
@@ -68,7 +68,7 @@ Features are discussed in more detail in: :ref:`sec_features`.
 .. autodata:: dclab.definitions.scalar_feature_names
    :no-value:
 
-parse functions
+Parse functions
 ---------------
 .. automodule:: dclab.parse_funcs
    :members:
@@ -152,14 +152,14 @@ Plugin features
 
 .. _cr_temp_feat:
 
-temporary features
+Temporary features
 ------------------
 .. automodule:: dclab.rtdc_dataset.feat_temp
     :members:
     :undoc-members:
 
 
-config
+Config
 ------
 .. autoclass:: dclab.rtdc_dataset.config.Configuration
     :members:
@@ -168,7 +168,7 @@ config
 
 .. _sec_ref_rtdc_export:
 
-export
+Export
 ------
 .. autoexception:: dclab.rtdc_dataset.export.LimitingExportSizeWarning
 
@@ -178,13 +178,13 @@ export
 
 .. _sec_ref_rtdc_filter:
 
-filter
+Filter
 ------
 .. autoclass:: dclab.rtdc_dataset.filter.Filter
     :members:
 
 
-low-level functionalities
+Low-level functionalities
 =========================
 
 .. _sec_ref_downsampling:
@@ -315,7 +315,7 @@ R and lme4
 
 
 
-machine learning
+Machine learning
 ================
 
 .. _sec_ref_ml_mllibs:

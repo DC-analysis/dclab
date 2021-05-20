@@ -235,12 +235,16 @@ class PlugInFeature(AncillaryFeature):
                 "PlugInFeature parameter for `info` must be a dict, instead "
                 f"a '{type(original_info)}' was given.")
 
+        if not isinstance(original_info["feature names"], list):
+            raise ValueError("'feature names' must be a list, "
+                             f"got '{type(original_info['feature names'])}'")
+
         if self.feature_name not in original_info["feature names"]:
             raise ValueError(
                 f"The feature name '{self.feature_name}' is not defined in "
-                "the `info` dict of the plugin feature"
-                f" at {self.plugin_path}" if self.plugin_path else ""
-                f". Defined features are '{original_info['feature names']}'.")
+                + "the `info` dict of the plugin feature"
+                + (f" at {self.plugin_path}" if self.plugin_path else "")
+                + f". Defined names are '{original_info['feature names']}'.")
 
         if not callable(original_info["method"]):
             raise ValueError(

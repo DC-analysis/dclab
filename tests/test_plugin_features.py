@@ -147,11 +147,19 @@ def test_pf_attributes_af_inherited():
     assert pf.priority == 0
 
 
-def test_pf_bad_plugin_feature_name():
+def test_pf_bad_plugin_feature_name_list():
     """Basic test of a bad feature name for PlugInFeature"""
     info = example_plugin_info_single_feature()
     info["feature names"] = "Peter-Pan's Best Friend!"
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="must be a list, got"):
+        PlugInFeature("Peter-Pan's Best Friend!", info)
+
+
+def test_pf_bad_plugin_feature_name():
+    """Basic test of a bad feature name for PlugInFeature"""
+    info = example_plugin_info_single_feature()
+    info["feature names"] = ["Peter-Pan's Best Friend!"]
+    with pytest.raises(ValueError, match="only contain lower-case characters"):
         PlugInFeature("Peter-Pan's Best Friend!", info)
 
 
@@ -232,14 +240,14 @@ def test_pf_import_plugin_info():
 def test_pf_import_plugin_info_bad_path():
     """Raise error when a bad pathname is given"""
     bad_plugin_path = "not/a/real/path/plugin.py"
-    with pytest.raises(PluginImportError):
-        _ = import_plugin_feature_script(bad_plugin_path)
+    with pytest.raises(PluginImportError, match="could be not be found"):
+        import_plugin_feature_script(bad_plugin_path)
 
 
 def test_pf_incorrect_input_info():
     """Raise error when info is not a dictionary"""
     info = ["this", "is", "not", "a", "dict"]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="must be a dict"):
         PlugInFeature("feature_1", info)
 
 
@@ -247,7 +255,7 @@ def test_pf_incorrect_input_feature_name():
     """Raise error when the feature_name doesn't match info feature name"""
     info = example_plugin_info_single_feature()
     # `feature_name` is "circ_per_area" in info
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not defined"):
         PlugInFeature("not_the_correct_name", info)
 
 
@@ -256,7 +264,7 @@ def test_pf_incorrect_input_method():
     info = example_plugin_info_single_feature()
     # set `info["method"]` to something that isn't callable
     info["method"] = "this_is_a_string"
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not callable"):
         PlugInFeature("circ_per_area", info)
 
 
@@ -286,9 +294,8 @@ def test_pf_initialize_plugin_feature_single():
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
 
     # check that PlugInFeature exists independent of loaded ds
-    with pytest.raises(AssertionError):
-        ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-        assert "circ_per_area" not in ds2
+    ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "circ_per_area" in ds2
 
 
 def test_pf_initialize_plugin_features_multiple():
@@ -347,13 +354,6 @@ def test_pf_load_plugin():
     assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
 
 
-def test_pf_load_plugin_bad_path():
-    """Raise error when a bad pathname is given"""
-    bad_plugin_path = "not/a/real/path/plugin.py"
-    with pytest.raises(PluginImportError):
-        _ = dclab.load_plugin_feature(bad_plugin_path)
-
-
 def test_pf_minimum_info_input():
     """Only method and feature names are required to create PlugInFeature"""
     info = {"method": compute_single_plugin_feature,
@@ -362,6 +362,7 @@ def test_pf_minimum_info_input():
 
     # check that all other plugin_feature_info is populated
     assert "method" in pf.plugin_feature_info
+    assert callable(pf.plugin_feature_info["method"])
     assert "description" in pf.plugin_feature_info
     assert "long description" in pf.plugin_feature_info
     assert "feature name" in pf.plugin_feature_info
@@ -380,7 +381,7 @@ def test_pf_remove_all_plugin_features():
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
     plugin_path = data_dir / "plugin_test_example.py"
-    _ = dclab.load_plugin_feature(plugin_path)
+    dclab.load_plugin_feature(plugin_path)
     assert "circ_per_area" in ds
     assert "circ_times_area" in ds
     assert dclab.dfn.feature_exists("circ_per_area")
@@ -418,7 +419,8 @@ def test_pf_remove_plugin_feature():
     assert not dclab.dfn.feature_exists("circ_per_area")
     assert not dclab.dfn.feature_exists("circ_times_area")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError,
+                       match="hould be an instance of PlugInFeature"):
         not_a_plugin_instance = [4, 6, 5]
         remove_plugin_feature(not_a_plugin_instance)
 
@@ -427,7 +429,7 @@ def test_pf_try_existing_feature_fails():
     """An existing feature name is not allowed"""
     info = example_plugin_info_single_feature()
     info["feature names"] = ["deform"]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Feature 'deform' already exists"):
         PlugInFeature("deform", info)
 
 
@@ -480,7 +482,7 @@ def test_pf_wrong_data_shape_1():
         info = example_plugin_info_single_feature()
         info["scalar feature"] = [False]
         pf = PlugInFeature("circ_per_area", info)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="is not a scalar feature"):
             _ = ds[pf.feature_name]
 
 
@@ -491,7 +493,7 @@ def test_pf_wrong_data_shape_2():
         info["scalar feature"] = [True]
         info["method"] = lambda x: np.arange(len(ds)*2).reshape(-1, 2)
         pf = PlugInFeature("circ_per_area", info)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="is a scalar feature"):
             _ = ds[pf.feature_name]
 
 
@@ -502,7 +504,8 @@ def test_pf_wrong_length_1():
         info = example_plugin_info_single_feature()
         info["method"] = lambda x: np.arange(len(ds)//2)
         pf = PlugInFeature("circ_per_area", info)
-        with pytest.warns(BadFeatureSizeWarning):
+        with pytest.warns(BadFeatureSizeWarning,
+                          match="to match event number"):
             _ = ds[pf.feature_name]
 
 
@@ -513,7 +516,8 @@ def test_pf_wrong_length_2():
         info = example_plugin_info_single_feature()
         info["method"] = lambda x: np.arange(len(ds)*2)
         pf = PlugInFeature("circ_per_area", info)
-        with pytest.warns(BadFeatureSizeWarning):
+        with pytest.warns(BadFeatureSizeWarning,
+                          match="to match event number"):
             _ = ds[pf.feature_name]
 
 

@@ -138,7 +138,7 @@ And this works as well (loading plugin after instantiation)::
 
     After storing and reloading, this feature is now an `innate` feature.
     You could in principle also access it by registering it as a temporary
-    feature (e.g. if you don't have the recipy lying around).
+    feature (e.g. if you don't have the recipe lying around).
 
 See the :ref:`code reference on plugin features <cr_plugin_feat>` for more
 information.

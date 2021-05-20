@@ -132,9 +132,20 @@ TDMS format
 .. _sec_ref_rtdc_config:
 
 
+.. _cr_ancillaries:
+
 Ancillaries
 -----------
 .. automodule:: dclab.rtdc_dataset.ancillaries.ancillary_feature
+    :members:
+    :undoc-members:
+
+
+.. _cr_plugin_feat:
+
+Plugin features
+---------------
+.. automodule:: dclab.rtdc_dataset.plugins.plugin_feature
     :members:
     :undoc-members:
 

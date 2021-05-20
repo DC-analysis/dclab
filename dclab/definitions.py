@@ -1,5 +1,6 @@
 """Naming conventions"""
 import copy
+import numpy as np
 
 from .rtdc_dataset.ancillaries import AncillaryFeature
 from .parse_funcs import fbool, fint, fintlist, func_types, lcstr
@@ -307,6 +308,107 @@ for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR:
 scalar_feature_names = [_cc[0] for _cc in FEATURES_SCALAR]
 
 
+def _add_feature_to_definitions(name, label=None, is_scalar=True):
+    """Protected function to populate definitions with feature details.
+
+    Used by temporary features and plugin features to add new feature
+    names and labels to `dclab.definitions`.
+
+    Parameters
+    ----------
+    name: str
+        name of a feature
+    label: str, optional
+        feature label corresponding to the feature name. If set to None, then
+        a label is constructed for the feature name.
+    is_scalar: bool
+        Specify whether the feature of an event is a scalar (True)
+        or not (False)
+
+    Raises
+    ------
+    ValueError
+        If the feature already exists.
+    """
+    allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
+    feat = "".join([f for f in name if f in allowed_chars])
+    if feat != name:
+        raise ValueError("`feature` must only contain lower-case characters, "
+                         f"digits, and underscores; got '{name}'!")
+    if label is None:
+        label = f"User-defined feature {name}"
+    if feature_exists(name):
+        raise ValueError(f"Feature '{name}' already exists!")
+
+    # Populate the new feature in all dictionaries and lists
+    # (we don't need global here)
+    feature_names.append(name)
+    feature_labels.append(label)
+    feature_name2label[name] = label
+    if is_scalar:
+        scalar_feature_names.append(name)
+
+
+def _remove_feature_from_definitions(name):
+    """Protected function to remove feature details from definitions.
+
+    Used by temporary features and plugin features to
+    remove the feature names and labels from `dclab.definitions`.
+
+    Parameters
+    ----------
+    name: str
+        name of a feature
+
+    Warnings
+    --------
+    This function should only be used internally, i.e., You should not use
+    this function. This function can break things.
+    """
+    label = get_feature_label(name)
+    feature_names.remove(name)
+    feature_labels.remove(label)
+    feature_name2label.pop(name)
+    if name in scalar_feature_names:
+        scalar_feature_names.remove(name)
+
+
+def check_feature_shape(name, data):
+    """Check if (non)-scalar feature matches with its data's dimensionality
+
+    Parameters
+    ----------
+    name: str
+        name of the feature
+    data: array-like
+        data whose dimensionality will be checked
+
+    Raises
+    ------
+    ValueError
+        If the data's shape does not match its scalar description
+
+    Notes
+    -----
+    Bug: Some contour data in test files is the incorrect dimension. Therefore
+    a simple exception has been added. This is to be fixed in future
+    versions and is not a permanent fix.
+    See https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/117
+    for more information.
+    """
+    data = np.array(data)
+    if name == "contour" and len(data.shape) == 1:
+        # TODO
+        # https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/117
+        pass
+    elif len(data.shape) == 1 and not scalar_feature_exists(name):
+        raise ValueError(f"Feature '{name}' is not a scalar feature, but a "
+                         "1D array was given for `data`!")
+    elif len(data.shape) != 1 and scalar_feature_exists(name):
+        raise ValueError(f"Feature '{name}' is a scalar feature, but the "
+                         "`data` array is not 1D!")
+
+
 def feature_exists(name, scalar_only=False):
     """Return True if `name` is a valid feature name
 
@@ -315,6 +417,22 @@ def feature_exists(name, scalar_only=False):
     the machine learning scores `ml_score_???` (where
     `?` can be a digit or a lower-case letter in the
     English alphabet).
+
+    Parameters
+    ----------
+    name: str
+        name of a feature
+    scalar_only : bool
+        Specify whether the check should only search in scalar features
+
+    Returns
+    -------
+    valid: bool
+        True if name is a valid feature, False otherwise.
+
+    See Also
+    --------
+    scalar_feature_exists: Wraps `feature_exists` with `scalar_only=True`
     """
     valid = False
     if name in scalar_feature_names:
@@ -341,8 +459,20 @@ def get_feature_label(name, rtdc_ds=None):
     This function not only checks :const:`feature_name2label`,
     but also supports registered `ml_score_???` features.
 
-    TODO: extract feature label from ancillary information
-    when an rtdc_ds is given.
+    Parameters
+    ----------
+    name: str
+        name of a feature
+
+    Returns
+    -------
+    label: str
+        feature label corresponding to the feature name
+
+    Notes
+    -----
+    TODO: extract feature label from ancillary information when an rtdc_ds is
+    given.
     """
     assert feature_exists(name)
     if name in feature_name2label:

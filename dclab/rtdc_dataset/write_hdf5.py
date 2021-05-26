@@ -246,7 +246,9 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
             msg = "Meta data section not defined in dclab: {}".format(sec)
             raise ValueError(msg)
         for ck in meta[sec]:
-            if ck not in dfn.config_keys[sec]:
+            if sec == "user":
+                pass
+            elif ck not in dfn.config_keys[sec]:
                 msg = "Meta key not defined in dclab: {}:{}".format(sec, ck)
                 raise ValueError(msg)
 
@@ -291,7 +293,6 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
     for sec in meta:
         for ck in meta[sec]:
             idk = "{}:{}".format(sec, ck)
-            conffunc = dfn.config_funcs[sec][ck]
             value = meta[sec][ck]
             if isinstance(value, bytes):
                 # We never store byte attribute values.
@@ -299,7 +300,11 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
                 # somesuch. But we don't test that, because no other datatype
                 # competes with str for bytes.
                 value = value.decode("utf-8")
-            h5obj.attrs[idk] = conffunc(value)
+            if sec == "user":
+                h5obj.attrs[idk] = value
+            else:
+                conffunc = dfn.config_funcs[sec][ck]
+                h5obj.attrs[idk] = conffunc(value)
 
     # Write data
     # create events group

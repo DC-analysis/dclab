@@ -295,6 +295,8 @@ def verify_section_key(section, key):
                 "Unknown key '{}' in the 'filtering' section!".format(key),
                 UnknownConfigurationKeyWarning)
             wcount += 1
+    elif section == "user":
+        pass
     elif section not in dfn.config_keys:
         warnings.warn("Unknown section '{}'!".format(section),
                       UnknownConfigurationKeyWarning)

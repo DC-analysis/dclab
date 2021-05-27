@@ -14,7 +14,6 @@ parameters.
 Supported simulation modalities:
 - 2D axis-symmetric (used for the first emodulus LUT in dclab)
 """
-
 import argparse
 import copy
 import pathlib
@@ -29,7 +28,7 @@ from dclab.features.volume import get_volume
 from dclab.rtdc_dataset import write_hdf5
 
 
-def features_from_2Daxis_simulation(fem_cont_2Daxis, pixel_size=0.34,
+def features_from_2daxis_simulation(fem_cont_2daxis, pixel_size=0.34,
                                     shape=(80, 250), seed=42):
     """Compute dclab features from the FEM contour
 
@@ -39,12 +38,12 @@ def features_from_2Daxis_simulation(fem_cont_2Daxis, pixel_size=0.34,
 
     Parameters
     ----------
-    fem_cont_2Daxis: ndarray of shape (2, N)
+    fem_cont_2daxis: ndarray of shape (2, N)
         The 2D axis-symmetric FEM contour. It should only cover
         180 degrees of the entire contour.
     pixel_size: float
         Detector pixel size [um]
-    shape: tuple of (int, in)
+    shape: tuple of int
         Detector shape / ROI in pixels
     seed: int
         Seed for numpy.random which is used for the random
@@ -54,7 +53,7 @@ def features_from_2Daxis_simulation(fem_cont_2Daxis, pixel_size=0.34,
     offx = np.random.uniform(0, 1)
     offy = np.random.uniform(0, 1)
     # make contour circular
-    simsym = fem_cont_2Daxis
+    simsym = fem_cont_2daxis
     sh = simsym.shape[1]
     cont_sim = np.zeros((simsym.shape[1]*2-2, 2), dtype=np.float32)
     cont_sim[:sh, 1] = simsym[0]
@@ -84,7 +83,7 @@ def features_from_mask(mask, pixel_size=0.34):
     ----------
     mask: 2d boolean ndarray
         binary mask image
-    pixe_size: float
+    pixel_size: float
         Detector pixel size [um]
     """
     cont_raw = get_contour(mask)
@@ -194,7 +193,7 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
                 sim = h5[dk][sk]
                 simsym = sim["coords"][:]
                 for jj, wrt in enumerate(h5mapped):
-                    feats = features_from_2Daxis_simulation(
+                    feats = features_from_2daxis_simulation(
                         simsym, pixel_size=pixel_size, seed=jj)
                     write_hdf5.write(wrt, data=feats, mode="append",
                                      compression="gzip")

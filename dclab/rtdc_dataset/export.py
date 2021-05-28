@@ -202,6 +202,8 @@ class Export(object):
                 continue
             if sec in self.rtdc_ds.config:
                 meta[sec] = self.rtdc_ds.config[sec].copy()
+        if "user" in self.rtdc_ds.config:
+            meta["user"] = self.rtdc_ds.config["user"].copy()
 
         if filtered:
             filtarr = self.rtdc_ds.filter.all

@@ -165,10 +165,6 @@ CFG_METADATA = {
         ["software version", str, "Acquisition software with version"],
         ["temperature", float, "Mean chip temperature [°C]"],
     ],
-    # All user-defined metadata keywords
-    "user": [
-        ["example", str, "some example metadata"],
-    ],
 }
 
 #: List of scalar (one scalar value per event) features. This

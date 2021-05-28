@@ -97,17 +97,18 @@ def test_user_section_basic():
 def test_user_section_different_key_types():
     """Check that the user config section keys take different data types"""
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    assert ds.config["user"] == {}
     ds.config["user"][True] = True
     ds.config["user"][23.5] = 23.5
     ds.config["user"][12] = 12
     ds.config["user"]["a string"] = "a string"
+    ds.config["user"][(5, 12.3, False, "a word")] = "a word"
 
-    assert len(ds.config["user"]) == 4
+    assert len(ds.config["user"]) == 5
     assert isinstance(ds.config["user"][True], bool)
     assert isinstance(ds.config["user"][23.5], float)
     assert isinstance(ds.config["user"][12], int)
     assert isinstance(ds.config["user"]["a string"], str)
+    assert isinstance(ds.config["user"][(5, 12.3, False, "a word")], str)
 
 
 def test_user_section_different_value_types():
@@ -146,8 +147,8 @@ def test_user_section_key_types_unhashable():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     with pytest.raises(TypeError):
         ds.config["user"][{"a key": 23}] = {"a key": 23}
+    with pytest.raises(TypeError):
         ds.config["user"][[8, 55.4, True, "a word"]] = "a word"
-        ds.config["user"][(5, 12.3, False, "a word")] = "a word"
 
 
 def test_user_section_set_save_reload():

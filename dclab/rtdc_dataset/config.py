@@ -140,7 +140,8 @@ class Configuration(object):
         return self._cfg.__contains__(key)
 
     def __getitem__(self, sec):
-        if sec not in self and sec in dfn.config_keys:
+        if (sec not in self and sec in dfn.config_keys or
+                sec not in self and sec == "user"):
             # create an empty section for user-convenience
             section = None if self.disable_checks else sec
             self._cfg[sec] = ConfigurationDict(section=section)

@@ -241,6 +241,9 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
     # Check meta data
     for sec in meta:
         if sec == "user":
+            # user-defined metadata are always written.
+            # Any errors (incompatibilities with HDF5 attributes)
+            # are the user's responsibility
             continue
         elif sec not in dfn.CFG_METADATA:
             # only allow writing of meta data that are not editable

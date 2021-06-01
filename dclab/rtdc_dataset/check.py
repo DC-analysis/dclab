@@ -97,7 +97,8 @@ OPTIONAL_KEYS = {
     "online_contour": [
         # introduced in 0.34.0
         "bg empty",
-    ]
+    ],
+    "user": [],
 }
 
 #: valid metadata choices

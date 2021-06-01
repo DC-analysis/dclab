@@ -198,9 +198,6 @@ class RTDC_HDF5(RTDCBase):
 
         # Parse configuration
         self.config = RTDC_HDF5.parse_config(h5path)
-        # Add "user" section if it doesn't exist
-        if "user" not in self.config:
-            self.config["user"] = {}
 
         # Override logs property with HDF5 data
         self.logs = H5Logs(self._h5)
@@ -266,6 +263,8 @@ class RTDC_HDF5(RTDCBase):
         for key in h5attrs:
             section, pname = key.split(":")
             if section == "user":
+                # the type of user configuration parameters are defined
+                # by the HDF5 attribute type
                 config[section][pname] = h5attrs[key]
             elif pname not in dfn.config_funcs[section]:
                 # Add the value as a string (this will issue

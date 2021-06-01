@@ -140,8 +140,7 @@ class Configuration(object):
         return self._cfg.__contains__(key)
 
     def __getitem__(self, sec):
-        if (sec not in self and sec in dfn.config_keys or
-                sec not in self and sec == "user"):
+        if sec not in self and (sec in dfn.config_keys or sec == "user"):
             # create an empty section for user-convenience
             section = None if self.disable_checks else sec
             self._cfg[sec] = ConfigurationDict(section=section)
@@ -297,7 +296,12 @@ def verify_section_key(section, key):
                 UnknownConfigurationKeyWarning)
             wcount += 1
     elif section == "user":
-        pass
+        # the keys must be strings for clarity
+        if not isinstance(key, str):
+            warnings.warn("The '{}' section keys must be str, "
+                          "not '{}'!".format(section, type(key)),
+                          UnknownConfigurationKeyWarning)
+            wcount += 1
     elif section not in dfn.config_keys:
         warnings.warn("Unknown section '{}'!".format(section),
                       UnknownConfigurationKeyWarning)

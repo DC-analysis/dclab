@@ -480,7 +480,8 @@ def test_pf_with_user_config_section():
     """Use a plugin feature with the user defined config section"""
     # setup a plugin method that uses user config section
     def compute_with_user_section(rtdc_ds):
-        if rtdc_ds.config["user"]["channel"]:
+        if rtdc_ds.config["user"]["channel"] or isinstance(
+                rtdc_ds.config["user"]["channel"], bool):
             area_of_region = rtdc_ds["area_um"] * \
                              rtdc_ds.config["user"]["n_constrictions"]
         else:
@@ -489,7 +490,7 @@ def test_pf_with_user_config_section():
 
     info = {"method": compute_with_user_section,
             "feature names": ["area_of_region"]}
-    _ = PlugInFeature("area_of_region", info)
+    PlugInFeature("area_of_region", info)
 
     # add some metadata to the user config section
     metadata = {"channel": True,
@@ -511,7 +512,7 @@ def test_pf_wrong_data_shape_1():
         info["scalar feature"] = [False]
         pf = PlugInFeature("circ_per_area", info)
         with pytest.raises(ValueError, match="is not a scalar feature"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 def test_pf_wrong_data_shape_2():
@@ -522,7 +523,7 @@ def test_pf_wrong_data_shape_2():
         info["method"] = lambda x: np.arange(len(ds) * 2).reshape(-1, 2)
         pf = PlugInFeature("circ_per_area", info)
         with pytest.raises(ValueError, match="is a scalar feature"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 def test_pf_wrong_length_1():
@@ -534,7 +535,7 @@ def test_pf_wrong_length_1():
         pf = PlugInFeature("circ_per_area", info)
         with pytest.warns(BadFeatureSizeWarning,
                           match="to match event number"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 def test_pf_wrong_length_2():
@@ -546,7 +547,7 @@ def test_pf_wrong_length_2():
         pf = PlugInFeature("circ_per_area", info)
         with pytest.warns(BadFeatureSizeWarning,
                           match="to match event number"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 if __name__ == "__main__":

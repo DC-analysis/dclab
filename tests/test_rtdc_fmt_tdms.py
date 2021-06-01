@@ -27,7 +27,7 @@ def test_compatibility_minimal():
 @pytest.mark.skipif(sys.version_info < (3, 6),
                     reason="requires python3.6 or higher")
 def test_compatibility_channel_width():
-    # At some point, "Channel width" was repleaced by "Channel width [um]"
+    # At some point, "Channel width" was replaced by "Channel width [um]"
     path = retrieve_data("rtdc_data_minimal.zip")
     para = path.parent / "M1_para.ini"
     pardata = para.read_text()

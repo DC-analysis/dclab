@@ -6,7 +6,7 @@ User-defined plugin features
 For specialized applications, the features defined internally in dclab might
 not be enough to describe certain aspects of your data. Plugin features
 allow you to define a recipe for computing a new feature. This new feature
-is then availablble *automatically* for *every* dataset loaded in dclab.
+is then available *automatically* for *every* dataset loaded in dclab.
 
 .. note::
 
@@ -74,7 +74,7 @@ any extra (meta-)information of the feature. Both "method" (the function)
 and "feature names" must be included in the ``info`` dictionary.
 Note that many of the items in the dictionary must be lists!
 Also note that a feature recipe may contain *multiple* features.
-Below are two examples of creating and using plugin features.
+Below are three examples of creating and using plugin features.
 
 .. note::
 
@@ -111,7 +111,21 @@ class:
 - ``method check required`` corresponds to ``req_func``
 
 The ``scalar feature`` is a list of boolean values that defines whether
-a feature is scalar or not (defautls to True).
+a feature is scalar or not (defaults to True).
+
+
+Plugin feature recipe with user-defined metadata
+------------------------------------------------
+In this :download:`example <data/example_plugin_metadata.py>`, the function
+:func:`compute_area_exponent` defines the basic feature `"area_exp"`.
+
+.. note::
+    Read the section on
+    :ref:`user-defined metadata<sec_av_notation#User-defined-metadata>`
+    to learn how this plugin should be used.
+
+.. literalinclude:: data/example_plugin_metadata.py
+   :language: python
 
 
 Reloading plugin features stored in data files

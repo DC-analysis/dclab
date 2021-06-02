@@ -178,8 +178,70 @@ The following are supported:
 
 Analysis metadata
 -----------------
-In addition to metadata, dclab also supports a user-defined analysis
+In addition to metadata, dclab also supports certain analysis
 configuration which is usually part of a specific analysis pipeline
 and thus not considered to be experimental metadata.
 
 .. dclab_config:: calculation
+
+User-defined metadata
+---------------------
+In addition to metadata, dclab also supports the user-defined
+configuration section "user". This section will be stored when
+a file is saved and available when the file is reopened.
+
+**Example**: Setting some "user" metadata
+
+    .. ipython::
+
+        In [1]: import dclab
+
+        In [2]: ds = dclab.new_dataset("data/example.rtdc")
+
+        In [3]: my_metadata = {"inlet": True, n_channels: 4}
+
+        In [4]: ds.config["user"] = my_metadata
+
+        In [5]: other_metadata = {"outlet": False, "tags": ["track", "RBC"]}
+
+        # we can also add metadata with the `update` method
+        In [6]: ds.config["user"].update(other_metadata)
+
+        # or
+        In [6]: ds.config.update({"user": other_metadata})
+
+        # we can clear the "user" section like so:
+        In [7]: ds.config["user"] = {}
+
+
+The user-defined metadata can be used with the user-defined
+:ref:`plugin features <sec_av_feat_plugin>`. This allows you
+to design plugin features with variables that can be added to
+the "user" configuration section
+
+In this :download:`basic example <data/example_plugin_metadata.py>`,
+the function :func:`compute_area_exponent` defines the basic feature
+`"area_exp"`.
+
+.. literalinclude:: data/example_plugin.py
+   :language: python
+
+The above plugin uses the "user" configuration section
+`rtdc_ds.config["user"]["exp"]` to set the exponent value.
+Therefore, this plugin can only be used when this value is set in the
+rtdc dataset.
+
+    .. ipython::
+
+        In [1]: import dclab
+
+        In [2]: dclab.load_plugin_feature("data/example_plugin_metadata.py")
+
+        In [3]: ds = dclab.new_dataset("data/example.rtdc")
+
+        In [4]: my_metadata = {"inlet": True, n_channels: 4, exp: 3}
+
+        In [5]: ds.config["user"] = my_metadata
+
+        # now the plugin feature will successfully calculate
+        In [6]: area_exp = ds["area_exp"]

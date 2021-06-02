@@ -119,11 +119,11 @@ Plugin feature recipe with user-defined metadata
 In this :download:`example <data/example_plugin_metadata.py>`, the function
 :func:`compute_area_exponent` defines the basic feature `"area_exp"`,
 which is calculated using
-:ref:`user-defined metadata<sec_av_notation#User-defined-metadata>`.
+:ref:`user-defined metadata<sec_user_meta>`.
 
 .. note::
     Read the section on
-    :ref:`user-defined metadata<sec_av_notation#User-defined-metadata>`
+    :ref:`user-defined metadata<sec_user_meta>`
     to learn how this plugin should be used.
 
 .. literalinclude:: data/example_plugin_metadata.py

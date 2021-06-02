@@ -184,6 +184,8 @@ and thus not considered to be experimental metadata.
 
 .. dclab_config:: calculation
 
+.. _sec_user_meta:
+
 User-defined metadata
 ---------------------
 In addition to metadata, dclab also supports the user-defined
@@ -198,7 +200,7 @@ a file is saved and available when the file is reopened.
 
         In [2]: ds = dclab.new_dataset("data/example.rtdc")
 
-        In [3]: my_metadata = {"inlet": True, n_channels: 4}
+        In [3]: my_metadata = {"inlet": True, "n_channels": 4}
 
         In [4]: ds.config["user"] = my_metadata
 
@@ -242,7 +244,7 @@ in the rtdc dataset's "user" configuration section.
 
         In [3]: ds = dclab.new_dataset("data/example.rtdc")
 
-        In [4]: my_metadata = {"inlet": True, n_channels: 4, exp: 3}
+        In [4]: my_metadata = {"inlet": True, "n_channels": 4, "exp": 3}
 
         In [5]: ds.config["user"] = my_metadata
 

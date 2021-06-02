@@ -150,6 +150,20 @@ def test_user_section_exists():
         ds.config["Oh I seem to have lost my key"]
 
 
+def test_user_section_set_and_overwrite():
+    """Add information to the user section of config via dict.__setitem__"""
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds.config["user"]["some metadata"] = 42
+    assert ds.config["user"] == {"some metadata": 42}
+    metadata = {"more metadata": True}
+    ds.config.update({"user": metadata})
+    assert ds.config["user"] == {"some metadata": 42,
+                                 "more metadata": True}
+    # overwrite the previous keys and valus
+    ds.config["user"] = {}
+    assert ds.config["user"] == {}
+
+
 def test_user_section_set_save_reload_empty_dict():
     """The 'user' config section as an empty dict will not save"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")

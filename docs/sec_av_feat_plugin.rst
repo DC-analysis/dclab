@@ -117,7 +117,9 @@ a feature is scalar or not (defaults to True).
 Plugin feature recipe with user-defined metadata
 ------------------------------------------------
 In this :download:`example <data/example_plugin_metadata.py>`, the function
-:func:`compute_area_exponent` defines the basic feature `"area_exp"`.
+:func:`compute_area_exponent` defines the basic feature `"area_exp"`,
+which is calculated using
+:ref:`user-defined metadata<sec_av_notation#User-defined-metadata>`.
 
 .. note::
     Read the section on

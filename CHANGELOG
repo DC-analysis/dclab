@@ -1,5 +1,9 @@
 0.34.1
  - enh: introduce user-defined "user" configuration section (#125)
+ - scripts: refactor fem2lutiso_std.py and fem2iso_volume.py so that
+   model-specific post-processing is done in hooks named after the FEM
+   identifier, e.g. fem_hooks/LE-2D-FEM-19.py (#90)
+ - docs: new LUT data version 10.6084/m9.figshare.12155064.v3
 0.34.0
  - feat: introduce user-defined plugin features (#105)
  - fix: dclab-verify-dataset now also prints other errors it encounters

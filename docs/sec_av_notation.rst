@@ -208,16 +208,18 @@ a file is saved and available when the file is reopened.
         In [6]: ds.config["user"].update(other_metadata)
 
         # or
-        In [6]: ds.config.update({"user": other_metadata})
+        In [7]: ds.config.update({"user": other_metadata})
+
+        In [8]: print(ds.config["user"])
 
         # we can clear the "user" section like so:
-        In [7]: ds.config["user"] = {}
+        In [9]: ds.config["user"] = {}
 
 
-The user-defined metadata can be used with the user-defined
+The user-defined metadata can be used with user-defined
 :ref:`plugin features <sec_av_feat_plugin>`. This allows you
-to design plugin features with variables that can be added to
-the "user" configuration section
+to design plugin features which utilises the "user"
+configuration section metadata.
 
 In this :download:`basic example <data/example_plugin_metadata.py>`,
 the function :func:`compute_area_exponent` defines the basic feature
@@ -227,9 +229,10 @@ the function :func:`compute_area_exponent` defines the basic feature
    :language: python
 
 The above plugin uses the "user" configuration section
-`rtdc_ds.config["user"]["exp"]` to set the exponent value.
-Therefore, this plugin can only be used when this value is set in the
-rtdc dataset.
+``rtdc_ds.config["user"]["exp"]`` to set the exponent value.
+Therefore, the above plugin can only be successfully used
+when the value of ``rtdc_ds.config["user"]["exp"]`` is set
+in the rtdc dataset's "user" configuration section.
 
     .. ipython::
 

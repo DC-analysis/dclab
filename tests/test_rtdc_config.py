@@ -3,6 +3,7 @@
 
 import os
 import tempfile
+import pathlib
 import warnings
 import pytest
 
@@ -149,6 +150,22 @@ def test_user_section_exists():
         ds.config["Oh I seem to have lost my key"]
 
 
+def test_user_section_set_save_reload_empty_dict():
+    """The 'user' config section as an empty dict will not save"""
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    with new_dataset(h5path) as ds:
+        ds.config.update({"user": {}})
+        expath = h5path.with_name("exported.rtdc")
+        ds.export.hdf5(expath, features=ds.features_innate)
+    # fails for hdf5
+    with pytest.raises(KeyError):
+        with h5py.File(expath, "r") as h5:
+            assert h5.attrs["user:"] == {}
+    # works for dclab because "user" added when checked
+    with new_dataset(expath) as ds2:
+        assert ds2.config["user"] == {}
+
+
 def test_user_section_set_save_reload_empty_key():
     """Empty 'user' section key value allowed"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
@@ -162,22 +179,6 @@ def test_user_section_set_save_reload_empty_key():
     # now check again with dclab
     with new_dataset(expath) as ds2:
         assert ds2.config["user"] == {"": " "}
-
-
-def test_user_section_set_save_reload_empty_dict():
-    """The 'user' config section cannot be an empty dict"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
-    with new_dataset(h5path) as ds:
-        ds.config.update({"user": {}})
-        expath = h5path.with_name("exported.rtdc")
-        ds.export.hdf5(expath, features=ds.features_innate)
-    # fails for hdf5
-    with pytest.raises(KeyError):
-        with h5py.File(expath, "r") as h5:
-            assert h5.attrs["user:"] == {}
-    # works for dclab because "user" added when checked
-    with new_dataset(expath) as ds2:
-        assert ds2.config["user"] == {}
 
 
 @pytest.mark.parametrize("user_config", [{"": ""}, {" ": ""}])
@@ -197,8 +198,48 @@ def test_user_section_set_save_reload_fails(user_config):
             assert ds2.config["user"] == user_config
 
 
+def test_user_section_set_save_reload_fmt_dict():
+    """Check that 'user' section metadata works for RTDC_Dict"""
+    # create temp directory for storing outputted file
+    tpath = pathlib.Path(tempfile.mkdtemp())
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    metadata = {"some metadata": 42}
+    ds.config.update({"user": metadata})
+    assert ds.config["user"] == metadata
+
+    expath = tpath / "exported.rtdc"
+    with expath as exp:
+        ds.export.hdf5(exp, features=["deform", "area_um"])
+    # make sure that worked
+    with h5py.File(expath, "r") as h5:
+        assert h5.attrs["user:some metadata"] == 42
+    # fails due to RTDC_HDF5 trying to add self.title
+    with pytest.raises(KeyError):
+        with new_dataset(expath) as ds2:
+            assert ds2.config["user"] == metadata
+
+
+def test_user_section_set_save_reload_fmt_dcor():
+    """Check that 'user' section metadata works for RTDC_Dcor"""
+    # create temp directory for storing outputted file
+    tpath = pathlib.Path(tempfile.mkdtemp())
+    with new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        metadata = {"some metadata": 12}
+        ds.config.update({"user": metadata})
+        assert ds.config["user"] == metadata
+        expath = tpath / "exported.rtdc"
+        ds.export.hdf5(expath, features=["deform", "area_um"])
+    # make sure that worked
+    with h5py.File(expath, "r") as h5:
+        assert h5.attrs["user:some metadata"] == 12
+    # check it again with dclab
+    with new_dataset(expath) as ds2:
+        assert ds2.config["user"] == metadata
+
+
 def test_user_section_set_save_reload_fmt_hdf5_basic():
-    """Save the user section config information and reload it"""
+    """Check that 'user' section metadata works for RTDC_HDF5"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     metadata = {"channel area": 100.5,
                 "inlet": True,
@@ -219,8 +260,8 @@ def test_user_section_set_save_reload_fmt_hdf5_basic():
         assert ds2.config["user"] == metadata
 
 
-def test_user_section_set_save_reload_fmt_hdf5_iterables():
-    """Save the user section config information and reload it"""
+def test_user_section_set_save_reload_fmt_hdf5_containers():
+    """Check that 'user' section metadata works for container data types"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     channel_area = [0, 100]
     inlet = (1, 20, 40)
@@ -243,24 +284,27 @@ def test_user_section_set_save_reload_fmt_hdf5_iterables():
             assert all(ds2.config["user"][k1] == metadata[k2])
 
 
-def test_user_section_set_with_setitem():
-    """Add information to the user section of config via dict.__setitem__"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    ds.config["user"]["some metadata"] = 42
-    assert ds.config["user"] == {"some metadata": 42}
-
-
-def test_user_section_set_with_update():
-    """Add information to the user section of config with .update"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    metadata = {"some metadata": 42}
-    ds.config.update({"user": metadata})
-    assert ds.config["user"] == {"some metadata": 42}
-
-    metadata2 = {"channel information": "information"}
-    ds.config["user"].update(metadata2)
-    assert ds.config["user"] == {"some metadata": 42,
-                                 "channel information": "information"}
+def test_user_section_set_save_reload_fmt_hierarchy():
+    """Check that 'user' section metadata works for RTDC_Hierarchy"""
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    metadata = {"channel area": 100.5,
+                "inlet": True,
+                "n_constrictions": 3,
+                "channel information": "other information"}
+    with new_dataset(h5path) as ds:
+        ds.config.update({"user": metadata})
+        ch = new_dataset(ds)
+        expath = h5path.with_name("exported.rtdc")
+        ch.export.hdf5(expath, features=ch.features_innate)
+    # make sure that worked
+    with h5py.File(expath, "r") as h5:
+        assert h5.attrs["user:channel area"] == 100.5
+        assert h5.attrs["user:inlet"]
+        assert h5.attrs["user:n_constrictions"] == 3
+        assert h5.attrs["user:channel information"] == "other information"
+    # now check again with dclab
+    with new_dataset(expath) as ds2:
+        assert ds2.config["user"] == metadata
 
 
 def test_user_section_set_save_reload_fmt_tdms():
@@ -285,64 +329,24 @@ def test_user_section_set_save_reload_fmt_tdms():
         assert ds2.config["user"] == metadata
 
 
-def test_user_section_set_save_reload_fmt_hierarchy():
-    """Save the user section config information and reload it"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
-    metadata = {"channel area": 100.5,
-                "inlet": True,
-                "n_constrictions": 3,
-                "channel information": "other information"}
-    with new_dataset(h5path) as ds:
-        ds.config.update({"user": metadata})
-        ch = new_dataset(ds)
-        expath = h5path.with_name("exported.rtdc")
-        ch.export.hdf5(expath, features=ch.features_innate)
-    # make sure that worked
-    with h5py.File(expath, "r") as h5:
-        assert h5.attrs["user:channel area"] == 100.5
-        assert h5.attrs["user:inlet"]
-        assert h5.attrs["user:n_constrictions"] == 3
-        assert h5.attrs["user:channel information"] == "other information"
-    # now check again with dclab
-    with new_dataset(expath) as ds2:
-        assert ds2.config["user"] == metadata
+def test_user_section_set_with_setitem():
+    """Add information to the user section of config via dict.__setitem__"""
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds.config["user"]["some metadata"] = 42
+    assert ds.config["user"] == {"some metadata": 42}
 
 
-# def test_user_section_set_save_reload_fmt_dict():
-#     """Check that 'user' section metadata works for RTDC_Dict"""
-#     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
-#     ds = new_dataset(ddict)
-#     metadata = {"some metadata": 42}
-#     ds.config.update({"user": metadata})
-#     assert ds.config["user"] == metadata
-#     expath = "exported.rtdc"
-#     ds.export.hdf5(expath, features=ds.features_innate,
-#                    override=True)
-#     # make sure that worked
-#     with h5py.File(expath, "r") as h5:
-#         assert h5.attrs["user:some metadata"] == 42
-#     # fails due to RTDC_HDF5 trying to add self.title
-#     with pytest.raises(KeyError):
-#         with new_dataset(expath) as ds2:
-#             assert ds2.config["user"] == metadata
-#
-#
-# def test_user_section_set_save_reload_fmt_dcor():
-#     """Check that 'user' section metadata works for RTDC_Dcor"""
-#     with new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
-#         metadata = {"some metadata": 12}
-#         ds.config.update({"user": metadata})
-#         assert ds.config["user"] == metadata
-#         expath = "exported.rtdc"
-#         ds.export.hdf5(expath, features=ds.features_innate,
-#                        override=True)
-#     # make sure that worked
-#     with h5py.File(expath, "r") as h5:
-#         assert h5.attrs["user:some metadata"] == 12
-#     # fails due to RTDC_HDF5 trying to add self.title
-#     with pytest.raises(KeyError):
-#         with new_dataset(expath) as ds2:
-#             assert ds2.config["user"] == metadata
+def test_user_section_set_with_update():
+    """Add information to the user section of config with .update"""
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    metadata = {"some metadata": 42}
+    ds.config.update({"user": metadata})
+    assert ds.config["user"] == {"some metadata": 42}
+
+    metadata2 = {"channel information": "information"}
+    ds.config["user"].update(metadata2)
+    assert ds.config["user"] == {"some metadata": 42,
+                                 "channel information": "information"}
 
 
 if __name__ == "__main__":

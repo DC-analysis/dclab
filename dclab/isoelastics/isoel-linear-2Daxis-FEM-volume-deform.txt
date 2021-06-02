@@ -1,6 +1,6 @@
 # These isoelasticity lines were interpolated from a volume-deformation
 # look-up table which was extracted from FEM data and complemented with
-# analytical data (https://doi.org/10.6084/m9.figshare.12155064.v2 with
+# analytical data (https://doi.org/10.6084/m9.figshare.12155064.v3 with
 # scripts/fem2iso_volume.py). An equivalent channel radius for a square
 # channel (factor of 1.094) is used in the 2D axis-symmetric model (see
 # also supplement S3 in https://doi.org/10.1016/j.bpj.2015.09.006).

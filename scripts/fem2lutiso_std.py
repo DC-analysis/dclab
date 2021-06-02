@@ -5,43 +5,30 @@ that contains the results of FEM simulations. The original HDF5 files
 were provided by Lucas Wittwer. Any LUT added to dclab after version
 0.23.0 was extracted and created using this script.
 
-The following data post-processing is performed for the LUT (depending
-on the HDF5 root attributes):
-- If the LUT "model" is "linear elastic" and the LUT "dimensionality"
-  is "2Daxis", then the LUT is complemented with analytical values
-  from "LUT_analytical_linear-elastic_2Daxis.txt" for small deformation
-  and area below 200um. The original FEM simulations did not cover that
-  area, because of discretization problems (deformations smaller than
-  0.005 could not be resolved).
-- If the LUT "dimensionality" is "2Daxis" (rotationally symmetric
-  simulation), then the LUT is cropped at a maximum area of 290um^2.
-  The reason is that the axis-symmetric model becomes inaccurate when
-  the object boundary comes close to the channel walls (the actual
-  flow profile in a rectangular cross-section channel is not anymore
-  rotationally symmetric around the object). In addition, there have
-  been numerical errors due to meshing if the area is above 290um^2.
+The following data post-processing is performed for the LUT:
+
 - Redundant values in the LUT are removed by checking whether they
   can be reproduced through linear interpolation of the remaining
   values.
 
-The following data post-processing is performed for the isoelastics:
-- If the LUT "model" is "linear elastic" and the LUT "dimensionality"
-  is "2Daxis", isoelastics with a maximum deformation above 0.159
-  are cropped by a few points (depends on resolution of grid
-  interpolation).
+Additional post-processing hooks for LUT or isoelastics generation
+are defined in the Python files named according to the LUT identifier
+in the "fem_hooks" subdirectory.
 
 Note that a matplotlib window will open when the isoelastics are
 created so you can verify that everything is in order. Just close
 that window to proceed.
 
 An example HDF5 file can be found on figshare
-(https://doi.org/10.6084/m9.figshare.12155064.v2).
+(LE-2D-FEM-19, https://doi.org/10.6084/m9.figshare.12155064.v3).
 """
 import argparse
 import copy
+import importlib
 import json
 import numbers
 import pathlib
+import sys
 
 
 from dclab.features import emodulus
@@ -55,15 +42,23 @@ import scipy.interpolate as spint
 def get_isoelastics(lut, meta, processing=True):
     """Compute equidistant isoelastics from a LUT
 
-    The LUT is interpolated on a 200x200 pixel grid and then
-    isoealstics are determined by finding contour lines.
+    Parameters
+    ----------
+    lut: 2d ndarray
+        look-up table
+    meta: dict
+        meta data
+    processing: bool
+        whether or not to perform post-processing;
+        Post-processing is identifier based - you may create a
+        Python file named after the LUT identifier and define the
+        function `process_isoelastics` therein (see the "fem_hooks"
+        subdirectory for examples)
 
     Notes
     -----
-    If the LUT "model" is "linear elastic" and the LUT "dimensionality"
-    is "2Daxis", isoelastics with a maximum deformation above 0.159
-    are cropped by a few points (depends on resolution of grid
-    interpolation).
+    The LUT is interpolated on a 200x200 pixel grid and then
+    isoealstics are determined by finding contour lines.
     """
     wlut = np.array(lut, copy=True)
     # normalize
@@ -109,9 +104,7 @@ def get_isoelastics(lut, meta, processing=True):
     contours_px = []
     contours = []
     for level in levels:
-        conts = skimage.measure.find_contours(emod,
-                                              level=level,
-                                              )
+        conts = skimage.measure.find_contours(emod, level=level)
         # get the longest one
         idx = np.argmax([len(cc) for cc in conts])
         cc = conts[idx]
@@ -129,15 +122,14 @@ def get_isoelastics(lut, meta, processing=True):
         ccu[:, 0] = (cc[:, 0] / size * (1 - area_min) + area_min) * area_norm
         ccu[:, 1] = (cc[:, 1] / size * (1 - deform_min) +
                      deform_min) * defo_norm
-        # avoid points at the boundary of the LUT for large deformations
-        if (processing
-            and meta["model"] == "linear elastic"
-                and meta["dimensionality"] == "2Daxis"):
-            if ccu[-1, 1] > 0.159:
-                print("...Post-Processing: Cropping isoelastics above "
-                      + "deformation 0.159 by {} points.".format(ids))
-                ccu = ccu[:-ids, :]
+
         contours.append(ccu)
+
+    if processing:
+        phook = get_processing_hook(meta["identifier"],
+                                    "process_isoelastics")
+        if phook is not None:
+            contours = phook(contours)
 
     plt.figure(figsize=(10, 5))
     ax1 = plt.subplot(121)
@@ -159,21 +151,16 @@ def get_isoelastics(lut, meta, processing=True):
 def get_lut(path, processing=True):
     """Extract the LUT from a FEM simulation HDF5 file (Lucas Wittwer)
 
-    Notes
-    -----
-    - If the LUT "model" is "linear elastic" and the LUT "dimensionality"
-      is "2Daxis", then the LUT is complemented with analytical values
-      from "LUT_analytical_linear-elastic_2Daxis.txt" for small deformation
-      and area below 200um. The original FEM simulations did not cover that
-      area, because of discretization problems (deformations smaller than
-      0.005 could not be resolved).
-    - If the LUT "dimensionality" is "2Daxis" (rotationally symmetric
-      simulation), then the LUT is cropped at a maximum area of 290um^2.
-      The reason is that the axis-symmetric model becomes inaccurate when
-      the object boundary comes close to the channel walls (the actual
-      flow profile in a rectangular cross-section channel is not anymore
-      rotationally symmetric around the object). In addition, there have
-      been numerical errors due to meshing if the area is above 290um^2.
+    Parameters
+    ----------
+    path: str or pathlib.Path
+        Path to an hdf5 file
+    processing: bool
+        whether or not to perform post-processing;
+        Post-processing is identifier based - you may create a
+        Python file named after the LUT identifier and define the
+        function `process_lut_areaum_deform` therein (see the
+        "fem_hooks" subdirectory for examples)
     """
     lut_base, meta = get_lut_base(path)
     lutsize = len(lut_base["emodulus"])
@@ -183,18 +170,10 @@ def get_lut(path, processing=True):
     lut[:, 2] = lut_base["emodulus"]
 
     if processing:
-        if (meta["model"] == "linear elastic"
-                and meta["dimensionality"] == "2Daxis"):
-            ap = "LUT_analytical_linear-elastic_2Daxis.txt"
-            print("...Post-Processing: Adding analytical LUT from {}.".format(
-                ap))
-            # load analytical data
-            lut_ana = np.loadtxt(pathlib.Path(__file__).parent / ap)
-            lut = np.concatenate((lut, lut_ana))
-
-        if meta["dimensionality"] == "2Daxis":
-            print("...Post-Processing: Cropping LUT at 290um^2.")
-            lut = lut[lut[:, 0] < 290]
+        phook = get_processing_hook(meta["identifier"],
+                                    "process_lut_areaum_deform")
+        if phook is not None:
+            lut = phook(lut)
 
     meta["column features"] = ["area_um", "deform", "emodulus"]
 
@@ -226,6 +205,8 @@ def get_lut_base(path):
         for key in meta:
             if isinstance(meta[key], bytes):
                 meta[key] = meta[key].decode("utf-8")
+            elif isinstance(meta[key], str):
+                pass
             elif isinstance(meta[key], numbers.Integral):
                 meta[key] = int(meta[key])
             else:
@@ -249,10 +230,60 @@ def get_lut_base(path):
     return data, meta
 
 
-def save_iso(path, contours, levels, meta,
-             header=["area_um [um^2]", "deform", "emodulus [kPa]"]):
+def get_processing_hook(identifier, name):
+    """Get a hook (callable) from the "fem_hooks" directory"""
+    hook_path = pathlib.Path(__file__).parent / "fem_hooks" / identifier
+    try:
+        sys.path.insert(0, str(hook_path.parent))
+        recipe = importlib.import_module(identifier)
+        hook = getattr(recipe, name)
+    except ImportError:
+        hook = None
+    finally:
+        sys.path.pop(0)
+    return hook
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('input', metavar="INPUT", type=str,
+                        help='Input path (.hdf5 file)')
+    parser.add_argument("--raw",
+                        dest='raw',
+                        action='store_true',
+                        help="do not perform data post-processing",
+                        )
+    parser.set_defaults(raw=False)
+
+    args = parser.parse_args()
+    path = pathlib.Path(args.input)
+    raw = args.raw
+
+    if raw:
+        print("Skipping all post-processing steps!")
+
+    print("Extracting LUT")
+    lut, meta = get_lut(path, processing=not raw)
+
+    print("Extracting isoelastics")
+    contours, contour_levels = get_isoelastics(lut, meta, processing=not raw)
+    save_iso(path.with_name(path.name.rsplit(".", 1)[0] + "_iso.txt"),
+             contours, contour_levels, meta)
+
+    print("Saving LUT")
+    if not raw:
+        print("...Post-Processing: Removing redundant LUT values.")
+        lut = shrink_lut(lut)
+    save_lut(path.with_name(path.name.rsplit(
+        ".", 1)[0] + "_lut.txt"), lut, meta)
+
+
+def save_iso(path, contours, levels, meta, header=None):
     """Save isoelastics to a text file for usage in dclab"""
     # change identifier to lut identifier
+    if header is None:
+        header = ["area_um [um^2]", "deform", "emodulus [kPa]"]
     meta = copy.deepcopy(meta)
     if "identifier" in meta:
         idx = meta.pop("identifier")
@@ -276,9 +307,10 @@ def save_iso(path, contours, levels, meta,
     save_lut(path, cdat, meta, header=header)
 
 
-def save_lut(path, lut, meta,
-             header=["area_um [um^2]", "deform", "emodulus [kPa]"]):
+def save_lut(path, lut, meta, header=None):
     """Save LUT to a text file for usage in dclab"""
+    if header is None:
+        header = ["area_um [um^2]", "deform", "emodulus [kPa]"]
     meta = copy.deepcopy(meta)
     if "column features" in meta:
         # sanity check
@@ -350,35 +382,4 @@ def shrink_lut(lut):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('input', metavar="INPUT", type=str,
-                        help='Input path (.hdf5 file)')
-    parser.add_argument("--raw",
-                        dest='raw',
-                        action='store_true',
-                        help="do not perform data post-processing",
-                        )
-    parser.set_defaults(raw=False)
-
-    args = parser.parse_args()
-    path = pathlib.Path(args.input)
-    raw = args.raw
-
-    if raw:
-        print("Skipping all post-processing steps!")
-
-    print("Extracting LUT")
-    lut, meta = get_lut(path, processing=not raw)
-
-    print("Extracting isoelastics")
-    contours, levels = get_isoelastics(lut, meta, processing=not raw)
-    save_iso(path.with_name(path.name.rsplit(".", 1)[0] + "_iso.txt"),
-             contours, levels, meta)
-
-    print("Saving LUT")
-    if not raw:
-        print("...Post-Processing: Removing redundant LUT values.")
-        lut = shrink_lut(lut)
-    save_lut(path.with_name(path.name.rsplit(
-        ".", 1)[0] + "_lut.txt"), lut, meta)
+    main()

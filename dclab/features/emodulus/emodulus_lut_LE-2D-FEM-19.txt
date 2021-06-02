@@ -3,7 +3,7 @@
 # Due to the fact that the FEM simulations were missing a few points
 # for low deformation (< 0.005) and area (< 200um^2), the simulation
 # data were complemented with analytical results. They are available
-# on figshare (https://doi.org/10.6084/m9.figshare.12155064.v2). The
+# on figshare (https://doi.org/10.6084/m9.figshare.12155064.v3). The
 # model computations take into account the equivalent channel radius
 # for a square channel cross-section with the factor 1.094 (see also
 # supplement S3 in https://doi.org/10.1016/j.bpj.2015.09.006).

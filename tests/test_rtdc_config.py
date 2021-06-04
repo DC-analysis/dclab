@@ -222,6 +222,8 @@ def test_user_section_set_save_reload_empty_key():
         assert ds2.config["user"] == {"": " "}
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.config.'
+                            + 'EmptyConfigurationKeyWarning')
 @pytest.mark.parametrize("user_config", [{"": ""}, {" ": ""}])
 def test_user_section_set_save_reload_fails(user_config):
     """Show the empty string configurations that are not allowed"""
@@ -350,6 +352,11 @@ def test_user_section_set_save_reload_fmt_hierarchy():
         assert ds2.config["user"] == metadata
 
 
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.export.'
+                            + 'LimitingExportSizeWarning')
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.event_image.'
+                            + 'InitialFrameMissingWarning')
 def test_user_section_set_save_reload_fmt_tdms():
     """Check that 'user' section metadata works for RTDC_TDMS"""
     h5path = retrieve_data("rtdc_data_traces_video.zip")

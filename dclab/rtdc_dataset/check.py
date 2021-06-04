@@ -567,6 +567,8 @@ class IntegrityChecker(object):
         cues = []
         # check for meta data types
         for sec in self.ds.config:
+            if sec == "user":
+                continue
             for key in self.ds.config[sec]:
                 val = self.ds.config[sec][key]
                 typ = dfn.config_types[sec][key]

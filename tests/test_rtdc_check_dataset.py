@@ -53,6 +53,23 @@ def test_complete():
     assert "Fluorescence: True" in info
 
 
+def test_complete_user_metadata():
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    metadata = {"channel area": 100.5,
+                "inlet": True,
+                "n_constrictions": 3,
+                "channel information": "other information"}
+    with new_dataset(h5path) as ds:
+        ds.config.update({"user": metadata})
+        expath = h5path.with_name("exported.rtdc")
+        ds.export.hdf5(expath, features=ds.features_innate)
+        viol, aler, info = check_dataset(ds)
+        assert len(viol) == 0
+        assert len(aler) == 0
+        assert "Data file format: hdf5" in info
+        assert "Fluorescence: True" in info
+
+
 def test_exact():
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     viol, aler, info = check_dataset(h5path)

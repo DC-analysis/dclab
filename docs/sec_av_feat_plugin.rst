@@ -114,6 +114,8 @@ The ``scalar feature`` is a list of boolean values that defines whether
 a feature is scalar or not (defaults to True).
 
 
+.. _sec_av_feat_plugin_user_meta:
+
 Plugin feature recipe with user-defined metadata
 ------------------------------------------------
 In this :download:`example <data/example_plugin_metadata.py>`, the function
@@ -121,14 +123,32 @@ In this :download:`example <data/example_plugin_metadata.py>`, the function
 which is calculated using
 :ref:`user-defined metadata<sec_user_meta>`.
 
-.. note::
-    Read the section on
-    :ref:`user-defined metadata<sec_user_meta>`
-    to learn how this plugin should be used.
-
 .. literalinclude:: data/example_plugin_metadata.py
    :language: python
 
+The above plugin uses the "user" configuration section
+``rtdc_ds.config["user"]["exp"]`` to set the exponent value.
+Therefore, the above plugin can only be successfully used
+when the value of ``rtdc_ds.config["user"]["exp"]`` is set
+in the rtdc dataset's "user" configuration section.
+
+    .. ipython::
+
+        In [1]: import dclab
+
+        In [2]: dclab.load_plugin_feature("data/example_plugin_metadata.py")
+
+        In [3]: ds = dclab.new_dataset("data/example.rtdc")
+
+        In [4]: my_metadata = {"inlet": True, "n_channels": 4, "exp": 3}
+
+        In [5]: ds.config["user"] = my_metadata
+
+        # now the plugin feature will successfully calculate
+        In [6]: area_exp = ds["area_exp"]
+
+
+.. _sec_av_feat_plugin_reload:
 
 Reloading plugin features stored in data files
 ==============================================

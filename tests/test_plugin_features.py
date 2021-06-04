@@ -77,6 +77,18 @@ def example_plugin_info_multiple_feature():
     return info
 
 
+def compute_with_user_section(rtdc_ds):
+    """setup a plugin method that uses user config section"""
+    if "n_constrictions" not in rtdc_ds.config["user"]:
+        raise KeyError('`rtdc_ds.config["user"]["n_constrictions"]` '
+                       'must be set before calling this plugin.')
+    nc = rtdc_ds.config["user"]["n_constrictions"]
+    assert isinstance(nc, int), (
+        '"n_constrictions" should be an integer value.')
+    area_of_region = rtdc_ds["area_um"] * nc
+    return {"area_of_region": area_of_region}
+
+
 def test_pf_attribute_ancill_info():
     """Check the plugin feature attribute input to AncillaryFeature"""
     info = example_plugin_info_single_feature()
@@ -478,24 +490,14 @@ def test_pf_with_no_feature_label():
 
 def test_pf_with_user_config_section():
     """Use a plugin feature with the user defined config section"""
-    # setup a plugin method that uses user config section
-    def compute_with_user_section(rtdc_ds):
-        if rtdc_ds.config["user"]["channel"] or isinstance(
-                rtdc_ds.config["user"]["channel"], bool):
-            area_of_region = rtdc_ds["area_um"] * \
-                             rtdc_ds.config["user"]["n_constrictions"]
-        else:
-            raise ValueError("ds.config['user']['channel'] must be True")
-        return {"area_of_region": area_of_region}
-
     info = {"method": compute_with_user_section,
             "feature names": ["area_of_region"]}
     PlugInFeature("area_of_region", info)
 
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     # add some metadata to the user config section
     metadata = {"channel": True,
                 "n_constrictions": 3}
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     ds.config["user"].update(metadata)
     assert ds.config["user"] == metadata
 
@@ -503,6 +505,23 @@ def test_pf_with_user_config_section():
     area_of_region1_calc = (ds["area_um"] *
                             ds.config["user"]["n_constrictions"])
     assert np.allclose(area_of_region1, area_of_region1_calc)
+
+
+def test_pf_with_user_config_section_fails():
+    """Use a plugin feature with the user defined config section"""
+    info = {"method": compute_with_user_section,
+            "feature names": ["area_of_region"]}
+    PlugInFeature("area_of_region", info)
+
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    # show that the plugin fails before setting the user metadata
+    ds.config["user"].clear()
+    with pytest.raises(KeyError):
+        ds["area_of_region"]
+    # show that the plugin fails when the user metadata type is wrong
+    ds.config["user"]["n_constrictions"] = 4.99
+    with pytest.raises(AssertionError):
+        ds["area_of_region"]
 
 
 def test_pf_wrong_data_shape_1():

@@ -398,23 +398,29 @@ def check_feature_shape(name, data):
 
     Notes
     -----
-    Bug: Some contour data in test files is the incorrect dimension. Therefore
-    a simple exception has been added. This is to be fixed in future
-    versions and is not a permanent fix.
+    Bug: Some contour data in test files have incorrect dimensions.
+    Therefore, an exclusive case has been added. This is to be fixed in
+    future versions and is not a permanent fix.
     See https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/117
     for more information.
     """
-    data = np.array(data)
-    if name == "contour" and len(data.shape) == 1:
-        # TODO
-        # https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/117
+    if name == "contour":
+        # TODO: contour data are difficult to handle, because
+        # - they don't have a well-defined shape
+        #   (see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/117)
+        # - they may be lists of lists or a lazy-list implementation
+        # - just converting them to an array is not possible: Numpy
+        #   issued a deprecation warning for lists of lists that have
+        #   different lengths
         pass
-    elif len(data.shape) == 1 and not scalar_feature_exists(name):
-        raise ValueError(f"Feature '{name}' is not a scalar feature, but a "
-                         "1D array was given for `data`!")
-    elif len(data.shape) != 1 and scalar_feature_exists(name):
-        raise ValueError(f"Feature '{name}' is a scalar feature, but the "
-                         "`data` array is not 1D!")
+    else:
+        data = np.array(data)
+        if len(data.shape) == 1 and not scalar_feature_exists(name):
+            raise ValueError(f"Feature '{name}' is not a scalar feature, but "
+                             "a 1D array was given for `data`!")
+        elif len(data.shape) != 1 and scalar_feature_exists(name):
+            raise ValueError(f"Feature '{name}' is a scalar feature, but the "
+                             "`data` array is not 1D!")
 
 
 def feature_exists(name, scalar_only=False):

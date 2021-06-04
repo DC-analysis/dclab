@@ -30,8 +30,8 @@ def test_af_contour_basic():
         for ci in cin:
             assert ci in cout
         # order
-        for ii in range(1, len(cin)):
-            c2 = np.roll(cin, ii, axis=0)
+        for jj in range(1, len(cin)):
+            c2 = np.roll(cin, jj, axis=0)
             if np.all(c2 == cout):
                 break
         else:

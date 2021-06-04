@@ -172,7 +172,7 @@ def test_user_section_exists():
     """Check that the user config section exists"""
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert ds.config["user"] == {}
-    # show that nonsense sections don't exist
+    # control: nonsense sections don't exist
     with pytest.raises(KeyError):
         ds.config["Oh I seem to have lost my key"]
 
@@ -198,19 +198,27 @@ def test_user_section_set_save_reload_empty_dict():
         ds.config.update({"user": {}})
         expath = h5path.with_name("exported.rtdc")
         ds.export.hdf5(expath, features=ds.features_innate)
-    # fails for hdf5
-    with pytest.raises(KeyError):
-        with h5py.File(expath, "r") as h5:
-            assert h5.attrs["user:"] == {}
+    # nothing "user"-like is written to the HDF5 attributes
+    with h5py.File(expath, "r") as h5:
+        for ak in h5.attrs:
+            assert not ak.startswith("user")
     # works for dclab because "user" added when checked
     with new_dataset(expath) as ds2:
         assert ds2.config["user"] == {}
 
 
-@pytest.mark.parametrize("user_config", [{"": ""}, {"": " "},  {" ": ""},
-                                         {"   ": "   "}])
+@pytest.mark.parametrize("user_config",
+                         [
+                             {"": "a"},
+                             {"": "b"},
+                             {" ": "c"},
+                             {"   ": "peter"},
+                             {"\t": "pan"},
+                             {"\n": "hook"},
+                             {"\r": "croc"},
+                         ])
 def test_user_section_set_save_reload_empty_key(user_config):
-    """Empty 'user' section key value allowed"""
+    """Empty or only-whitespace 'user' section keys not allowed"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with new_dataset(h5path) as ds:
         with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
@@ -242,7 +250,7 @@ def test_user_section_set_save_reload_fmt_dict():
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_user_section_set_save_reload_fmt_dcor():
-    """Check that 'user' section metadata works for RTDC_Dcor"""
+    """Check that 'user' section metadata works for RTDC_DCOR"""
     # create temp directory for storing outputted file
     tpath = pathlib.Path(tempfile.mkdtemp())
     with new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:

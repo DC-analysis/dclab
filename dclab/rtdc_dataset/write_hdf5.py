@@ -304,8 +304,10 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
                 # competes with str for bytes.
                 value = value.decode("utf-8")
             if sec == "user":
+                # store user-defined metadata as-is
                 h5obj.attrs[idk] = value
             else:
+                # pipe the metadata through the hard-coded converter functions
                 conffunc = dfn.config_funcs[sec][ck]
                 h5obj.attrs[idk] = conffunc(value)
 

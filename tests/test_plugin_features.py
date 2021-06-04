@@ -78,10 +78,10 @@ def example_plugin_info_multiple_feature():
 
 
 def compute_with_user_section(rtdc_ds):
-    """setup a plugin method that uses user config section"""
-    if "n_constrictions" not in rtdc_ds.config["user"]:
-        raise KeyError('`rtdc_ds.config["user"]["n_constrictions"]` '
-                       'must be set before calling this plugin.')
+    """setup a plugin method that uses user config section
+
+    The "user:n_constrictions" metadata must be set
+    """
     nc = rtdc_ds.config["user"]["n_constrictions"]
     assert isinstance(nc, int), (
         '"n_constrictions" should be an integer value.')
@@ -491,15 +491,18 @@ def test_pf_with_no_feature_label():
 def test_pf_with_user_config_section():
     """Use a plugin feature with the user defined config section"""
     info = {"method": compute_with_user_section,
-            "feature names": ["area_of_region"]}
+            "feature names": ["area_of_region"],
+            "config required": [["user", ["n_constrictions"]]]}
     PlugInFeature("area_of_region", info)
 
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "area_of_region" not in ds, "not available b/c missing metadata"
     # add some metadata to the user config section
     metadata = {"channel": True,
                 "n_constrictions": 3}
     ds.config["user"].update(metadata)
     assert ds.config["user"] == metadata
+    assert "area_of_region" in ds, "available b/c metadata is set"
 
     area_of_region1 = ds["area_of_region"]
     area_of_region1_calc = (ds["area_um"] *
@@ -510,17 +513,20 @@ def test_pf_with_user_config_section():
 def test_pf_with_user_config_section_fails():
     """Use a plugin feature with the user defined config section"""
     info = {"method": compute_with_user_section,
-            "feature names": ["area_of_region"]}
+            "feature names": ["area_of_region"],
+            "config required": [["user", ["n_constrictions"]]]}
     PlugInFeature("area_of_region", info)
 
     ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
-    # show that the plugin fails before setting the user metadata
+    # show that the plugin feature is not available before setting the
+    # user metadata
     ds.config["user"].clear()
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError,
+                       match=r"Feature \'area_of_region\' does not exist"):
         ds["area_of_region"]
     # show that the plugin fails when the user metadata type is wrong
     ds.config["user"]["n_constrictions"] = 4.99
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match="should be an integer value"):
         ds["area_of_region"]
 
 

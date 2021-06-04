@@ -302,13 +302,13 @@ def verify_section_key(section, key):
     elif section == "user":
         # the keys must be strings for clarity
         if not isinstance(key, str):
-            warnings.warn("The '{}' section keys must be str, "
-                          "not '{}'!".format(section, type(key)),
+            warnings.warn("The 'user' section keys must be strings, "
+                          f"got '{key}' of type '{type(key)}'!",
                           BadUserConfigurationKeyWarning)
             wcount += 1
-        if isinstance(key, str) and len(key.strip()) == 0:
-            warnings.warn("The '{}' section keys cannot be empty strings "
-                          "and cannot be blank spaces!".format(section),
+        elif len(key.strip()) == 0:
+            warnings.warn("The 'user' section keys must not be empty strings "
+                          "or consist of whitespace characters only!",
                           BadUserConfigurationKeyWarning)
             wcount += 1
     elif section not in dfn.config_keys:

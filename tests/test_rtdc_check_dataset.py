@@ -54,6 +54,7 @@ def test_complete():
 
 
 def test_complete_user_metadata():
+    """Setting any user metadata is allowed"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     metadata = {"channel area": 100.5,
                 "inlet": True,

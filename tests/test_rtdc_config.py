@@ -119,6 +119,32 @@ def test_user_section_basic():
     assert ds.config["user"] == metadata
 
 
+def test_user_section_clear1():
+    """Clear information from the user section with `clear()` method"""
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    metadata = {"channel area": 100.5,
+                "inlet": True,
+                "n_constrictions": 3,
+                "channel information": "other information"}
+    ds.config.update({"user": metadata})
+    assert ds.config["user"] == metadata
+    ds.config["user"].clear()
+    assert ds.config["user"] == {}
+
+
+def test_user_section_clear2():
+    """Clear information from the user section with empty dict"""
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    metadata = {"channel area": 100.5,
+                "inlet": True,
+                "n_constrictions": 3,
+                "channel information": "other information"}
+    ds.config.update({"user": metadata})
+    assert ds.config["user"] == metadata
+    ds.config["user"] = {}
+    assert ds.config["user"] == {}
+
+
 def test_user_section_different_value_types():
     """Check that the user config section values take different data types"""
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))

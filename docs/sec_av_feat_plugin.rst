@@ -119,18 +119,17 @@ a feature is scalar or not (defaults to True).
 Plugin feature recipe with user-defined metadata
 ------------------------------------------------
 In this :download:`example <data/example_plugin_metadata.py>`, the function
-:func:`compute_area_exponent` defines the basic feature `"area_exp"`,
+:func:`compute_area_exponent` defines the basic feature `area_exp`,
 which is calculated using
 :ref:`user-defined metadata<sec_user_meta>`.
 
 .. literalinclude:: data/example_plugin_metadata.py
    :language: python
 
-The above plugin uses the "user" configuration section
-``rtdc_ds.config["user"]["exp"]`` to set the exponent value.
-Therefore, the above plugin can only be successfully used
-when the value of ``rtdc_ds.config["user"]["exp"]`` is set
-in the rtdc dataset's "user" configuration section.
+The above plugin uses the "exp" key in the "user" configuration section
+to set the exponent value (notice the ``"config required"`` key in the ``info`` dict).
+Therefore, the feature `area_exp` is only available, when
+``rtdc_ds.config["user"]["exp"]`` is set.
 
     .. ipython::
 
@@ -140,12 +139,21 @@ in the rtdc dataset's "user" configuration section.
 
         In [3]: ds = dclab.new_dataset("data/example.rtdc")
 
-        In [4]: my_metadata = {"inlet": True, "n_channels": 4, "exp": 3}
+        # The plugin feature is not yet available, because "user:exp" is missing
+        In [4]: "area_exp" in ds
+        Out[4]: False
 
-        In [5]: ds.config["user"] = my_metadata
+        # Set user-defined metadata
+        In [5]: my_metadata = {"inlet": True, "n_channels": 4, "exp": 3}
 
-        # now the plugin feature will successfully calculate
-        In [6]: area_exp = ds["area_exp"]
+        In [6]: ds.config["user"] = my_metadata
+
+        # The plugin feature is now available
+        In [7]: "area_exp" in ds
+        Out[7]: True
+
+        # Now the plugin feature can be accessed like any regular feature
+        In [7]: area_exp = ds["area_exp"]
 
 
 .. _sec_av_feat_plugin_reload:

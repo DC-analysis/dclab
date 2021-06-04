@@ -191,10 +191,19 @@ User-defined metadata
 ---------------------
 In addition to the registered metadata keys listed above,
 you may also define custom metadata in the "user" section.
-This section will be stored when a file is saved and available
-when the file is reopened.
+This section will be saved alongside the other metadata when
+a dataset is exported as an .rtdc (HDF5) file.
 
-**Example**: Setting some "user" metadata
+.. note::
+    It is recommended to use the following data types for the value of
+    each key: ``str``, ``bool``, ``float`` and ``int``. Other data types may
+    not render nicely in ShapeOut2 or DCOR.
+
+To edit the "user" section in dclab, simply modify the `config`
+property of a loaded dataset. The changes made are *not* written
+to the underlying file.
+
+**Example**: Setting custom "user" metadata in dclab
 
     .. ipython::
 
@@ -219,12 +228,22 @@ when the file is reopened.
         # we can clear the "user" section like so:
         In [9]: ds.config["user"].clear()
 
-.. note::
-    It is recommended to use the following data types for the value of
-    each key: ``str``, ``bool``, ``float`` and ``int``. Other data types may
-    not render nicely in ShapeOut2 or DCOR.
+If you are implementing a custom data acquisition pipeline, you may
+alternatively add user-defined meta data (permanently) to an .rtdc file
+in a post-measurement step like so.
 
-The user-defined metadata can be used with user-defined
+**Example**: Setting custom "user" metadata permanently
+
+   .. code::
+
+       import h5py
+       with h5py.File("/path/to/your/dataset.rtdc") as h5:
+           h5.attrs["user:inlet"] = True
+           h5.attrs["user:n_channels"] = 4
+           h5.attrs["user:outlet"] = False
+           h5.attrs["user:RBC"] = True
+           h5.attrs["user:project"] = "strangelove"
+
+User-defined metadata can also be used with user-defined
 :ref:`plugin features <sec_av_feat_plugin_user_meta>`. This allows you
-to design plugin features which utilise the "user"
-configuration section metadata.
+to design plugin features which utilize your pipeline-specific metadata.

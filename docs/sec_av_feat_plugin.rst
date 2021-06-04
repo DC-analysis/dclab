@@ -153,7 +153,7 @@ Therefore, the feature `area_exp` is only available, when
         Out[7]: True
 
         # Now the plugin feature can be accessed like any regular feature
-        In [7]: area_exp = ds["area_exp"]
+        In [8]: area_exp = ds["area_exp"]
 
 
 .. _sec_av_feat_plugin_reload:

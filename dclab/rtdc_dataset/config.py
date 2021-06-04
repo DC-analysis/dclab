@@ -16,6 +16,10 @@ class UnknownConfigurationKeyWarning(UserWarning):
     pass
 
 
+class BadUserConfigurationKeyWarning(UserWarning):
+    pass
+
+
 class ConfigurationDict(dict):
     def __init__(self, section=None, *args, **kwargs):
         """A case-insensitive dict that is section-aware
@@ -300,7 +304,12 @@ def verify_section_key(section, key):
         if not isinstance(key, str):
             warnings.warn("The '{}' section keys must be str, "
                           "not '{}'!".format(section, type(key)),
-                          UnknownConfigurationKeyWarning)
+                          BadUserConfigurationKeyWarning)
+            wcount += 1
+        if isinstance(key, str) and len(key.strip()) == 0:
+            warnings.warn("The '{}' section keys cannot be empty strings "
+                          "and cannot be blank spaces!".format(section),
+                          BadUserConfigurationKeyWarning)
             wcount += 1
     elif section not in dfn.config_keys:
         warnings.warn("Unknown section '{}'!".format(section),

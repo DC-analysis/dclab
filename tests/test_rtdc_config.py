@@ -91,18 +91,18 @@ def test_user_section_allowed_key_types():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     # strings are allowed
     ds.config["user"]["a string"] = "a string"
-    # all other types will raise a UnknownConfigurationKeyWarning
-    with pytest.warns(dccfg.UnknownConfigurationKeyWarning):
+    # all other types will raise a BadUserConfigurationKeyWarning
+    with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
         ds.config["user"][True] = True
-    with pytest.warns(dccfg.UnknownConfigurationKeyWarning):
+    with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
         ds.config["user"][23.5] = 23.5
-    with pytest.warns(dccfg.UnknownConfigurationKeyWarning):
+    with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
         ds.config["user"][12] = 12
-    with pytest.warns(dccfg.UnknownConfigurationKeyWarning):
+    with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
         ds.config["user"][(5, 12.3, False, "a word")] = "a word"
-    with pytest.warns(dccfg.UnknownConfigurationKeyWarning):
+    with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
         ds.config["user"][[5, 12.3, False, "a word"]] = "a word"
-    with pytest.warns(dccfg.UnknownConfigurationKeyWarning):
+    with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
         ds.config["user"][{"name": 12.3, False: "a word"}] = "a word"
 
     assert len(ds.config["user"]) == 1
@@ -207,38 +207,14 @@ def test_user_section_set_save_reload_empty_dict():
         assert ds2.config["user"] == {}
 
 
-def test_user_section_set_save_reload_empty_key():
+@pytest.mark.parametrize("user_config", [{"": ""}, {"": " "},  {" ": ""},
+                                         {"   ": "   "}])
+def test_user_section_set_save_reload_empty_key(user_config):
     """Empty 'user' section key value allowed"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with new_dataset(h5path) as ds:
-        ds.config.update({"user": {"": " "}})
-        expath = h5path.with_name("exported.rtdc")
-        ds.export.hdf5(expath, features=ds.features_innate)
-    # make sure that worked
-    with h5py.File(expath, "r") as h5:
-        assert h5.attrs["user:"] == " "
-    # now check again with dclab
-    with new_dataset(expath) as ds2:
-        assert ds2.config["user"] == {"": " "}
-
-
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.config.'
-                            + 'EmptyConfigurationKeyWarning')
-@pytest.mark.parametrize("user_config", [{"": ""}, {" ": ""}])
-def test_user_section_set_save_reload_fails(user_config):
-    """Show the empty string configurations that are not allowed"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
-    with new_dataset(h5path) as ds:
-        ds.config.update({"user": user_config})
-        expath = h5path.with_name("exported.rtdc")
-        ds.export.hdf5(expath, features=ds.features_innate)
-    # make sure that "user" does not exist for an empty dict
-    with pytest.raises(KeyError):
-        with h5py.File(expath, "r") as h5:
-            assert h5.attrs["user:"] == user_config
-    with pytest.raises(AssertionError):
-        with new_dataset(expath) as ds2:
-            assert ds2.config["user"] == user_config
+        with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
+            ds.config.update({"user": user_config})
 
 
 def test_user_section_set_save_reload_fmt_dict():

@@ -98,7 +98,6 @@ OPTIONAL_KEYS = {
         # introduced in 0.34.0
         "bg empty",
     ],
-    "user": [],
 }
 
 #: valid metadata choices

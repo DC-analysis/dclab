@@ -12,6 +12,7 @@ import h5py
 
 from dclab.rtdc_dataset import new_dataset
 import dclab.rtdc_dataset.config as dccfg
+from test_rtdc_fmt_dcor import DCOR_AVAILABLE
 
 from helper_methods import (
     retrieve_data, example_data_sets, example_data_dict)
@@ -185,7 +186,7 @@ def test_user_section_set_and_overwrite():
     ds.config.update({"user": metadata})
     assert ds.config["user"] == {"some metadata": 42,
                                  "more metadata": True}
-    # overwrite the previous keys and valus
+    # overwrite the previous keys and values
     ds.config["user"] = {}
     assert ds.config["user"] == {}
 
@@ -247,19 +248,21 @@ def test_user_section_set_save_reload_fmt_dict():
     metadata = {"some metadata": 42}
     ds.config.update({"user": metadata})
     assert ds.config["user"] == metadata
-
+    # must add some metadata to the "experiment" key for loading with dclab
+    ds.config["experiment"]["sample"] = "test"
+    ds.config["experiment"]["run index"] = 1
     expath = tpath / "exported.rtdc"
     with expath as exp:
         ds.export.hdf5(exp, features=["deform", "area_um"])
     # make sure that worked
     with h5py.File(expath, "r") as h5:
         assert h5.attrs["user:some metadata"] == 42
-    # fails due to RTDC_HDF5 trying to add self.title
-    with pytest.raises(KeyError):
-        with new_dataset(expath) as ds2:
-            assert ds2.config["user"] == metadata
+    # check again with dclab
+    with new_dataset(expath) as ds2:
+        assert ds2.config["user"] == metadata
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_user_section_set_save_reload_fmt_dcor():
     """Check that 'user' section metadata works for RTDC_Dcor"""
     # create temp directory for storing outputted file
@@ -320,8 +323,8 @@ def test_user_section_set_save_reload_fmt_hdf5_containers():
         assert all(h5.attrs["user:outlet"] == outlet)
     # now check again with dclab
     with new_dataset(expath) as ds2:
-        for k1, k2 in zip(ds2.config["user"], metadata):
-            assert all(ds2.config["user"][k1] == metadata[k2])
+        for k1 in metadata:
+            assert all(metadata[k1] == ds2.config["user"][k1])
 
 
 def test_user_section_set_save_reload_fmt_hierarchy():

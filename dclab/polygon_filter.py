@@ -375,13 +375,13 @@ class PolygonFilter(object):
     @staticmethod
     def save_all(polyfile):
         """Save all polygon filters"""
-        nump = len(PolygonFilter.instances)
-        if nump == 0:
-            raise PolygonFilterError("There are not polygon filters to save.")
+        if len(PolygonFilter.instances) == 0:
+            raise PolygonFilterError("There are no polygon filters to save.")
         for p in PolygonFilter.instances:
             # we return the ret_obj, so we don't need to open and
             # close the file multiple times.
             polyobj = p.save(polyfile, ret_fobj=True)
+        # close the object after we are done saving all filters
         polyobj.close()
 
 

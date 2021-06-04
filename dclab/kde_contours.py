@@ -13,7 +13,7 @@ def find_contours_level(density, x, y, level, closed=False):
     Parameters
     ----------
     density: 2d ndarray of shape (M, N)
-        Kernel density estimate for which to compute the contours
+        Kernel density estimate (KDE) for which to compute the contours
     x: 2d ndarray of shape (M, N) or 1d ndarray of size M
         X-values corresponding to `density`
     y: 2d ndarray of shape (M, N) or 1d ndarray of size M
@@ -21,6 +21,8 @@ def find_contours_level(density, x, y, level, closed=False):
     level: float between 0 and 1
         Value along which to find contours in `density` relative
         to its maximum
+    closed: bool
+        Whether to close contours at the KDE support boundaries
 
     Returns
     -------

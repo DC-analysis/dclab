@@ -23,7 +23,7 @@ def get_volume(cont, pos_x, pos_y, pix):
     pos_y: float or ndarray of length N
         The y coordinate(s) of the centroid of the event(s) [µm]
         e.g. obtained using `mm.pos_y`
-    px_um: float
+    pix: float
         The detector pixel size in µm.
         e.g. obtained using: `mm.config["imaging"]["pixel size"]`
 
@@ -95,19 +95,15 @@ def get_volume(cont, pos_x, pos_y, pix):
             # (wont contribute to upper volume).
             contour_y_upp = np.copy(contour_y)
             contour_y_upp[ind_upp] = 0
-            # Move the contour to the left
-            Z = contour_x
             # Last point of the contour has to overlap with the first point
-            Z = np.hstack([Z, Z[0]])
-            Zp = Z[0:-1]
-            dZ = Z[1:]-Zp
+            z_vec = np.hstack([contour_x, contour_x[0]])
 
             # Last point of the contour has to overlap with the first point
             contour_y_low = np.hstack([contour_y_low, contour_y_low[0]])
             contour_y_upp = np.hstack([contour_y_upp, contour_y_upp[0]])
 
-            vol_low = _vol_helper(contour_y_low, Z, Zp, dZ, pix)
-            vol_upp = _vol_helper(contour_y_upp, Z, Zp, dZ, pix)
+            vol_low = _vol_helper(contour_y_low, z_vec, pix)
+            vol_upp = _vol_helper(contour_y_upp, z_vec, pix)
 
             v_avg[ii] = (vol_low + vol_upp) / 2
 
@@ -141,19 +137,21 @@ def counter_clockwise(cx, cy):
         return cx, cy
 
 
-def _vol_helper(contour_y, Z, Zp, dZ, pix):
-    # Instead of x and y, describe the contour by a Radius vector R and y
+def _vol_helper(contour_y, z_vec, pix):
+    # Instead of x and y, describe the contour by a Radius vector r_vec and y
     # The Contour will be rotated around the x-axis. Therefore it is
     # Important that the Contour has been shifted onto the x-Axis
-    R = np.sqrt(Z**2 + contour_y**2)
-    Rp = R[0:-1]
-    dR = R[1:] - Rp
+    z_vec_m1 = z_vec[:-1]
+    d_z = z_vec[1:] - z_vec_m1
+    r_vec = np.sqrt(z_vec**2 + contour_y**2)
+    rvec_m1 = r_vec[:-1]
+    d_r = r_vec[1:] - rvec_m1
     # 4 volume parts
-    v1 = dR * dZ * Rp
-    v2 = 2 * dZ * Rp**2
-    v3 = -1 * dR**2 * dZ
-    v4 = -2 * dR * Rp * Zp
+    v1 = d_r * d_z * rvec_m1
+    v2 = 2 * d_z * rvec_m1**2
+    v3 = -1 * d_r**2 * d_z
+    v4 = -2 * d_r * rvec_m1 * z_vec_m1
 
-    V = (np.pi/3) * (v1 + v2 + v3 + v4)
-    vol = np.sum(V) * pix**3
+    v_vec = (np.pi/3) * (v1 + v2 + v3 + v4)
+    vol = np.sum(v_vec) * pix**3
     return abs(vol)

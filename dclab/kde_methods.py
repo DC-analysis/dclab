@@ -215,7 +215,7 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
 
 
 def kde_none(events_x, events_y, xout=None, yout=None):
-    """ No Kernel Density Estimation
+    """No Kernel Density Estimation
 
     Parameters
     ----------
@@ -244,7 +244,7 @@ def kde_none(events_x, events_y, xout=None, yout=None):
 
     if yout is None and yout is None:
         xout = events_x
-        yout = events_y
+        _ = events_y
 
     return np.ones(xout.shape)
 

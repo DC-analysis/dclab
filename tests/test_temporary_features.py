@@ -152,6 +152,26 @@ def test_try_existing_feature_fails():
         dclab.register_temporary_feature("deform")
 
 
+def test_with_user_config_section():
+    """Use a temporary feature with the user defined config section"""
+    # add some metadata to the user config section
+    metadata = {"channel": True,
+                "n_constrictions": 3}
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds.config["user"].update(metadata)
+    assert ds.config["user"] == metadata
+    area_of_region = ds["area_um"] * ds.config["user"]["n_constrictions"]
+
+    dclab.register_temporary_feature("area_of_region")
+    dclab.set_temporary_feature(rtdc_ds=ds,
+                                feature="area_of_region",
+                                data=area_of_region)
+    area_of_region1 = ds["area_of_region"]
+    area_of_region1_calc = (ds["area_um"] *
+                            ds.config["user"]["n_constrictions"])
+    assert np.allclose(area_of_region1, area_of_region1_calc)
+
+
 def test_wrong_data_shape_1():
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:

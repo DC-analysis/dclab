@@ -77,6 +77,18 @@ def example_plugin_info_multiple_feature():
     return info
 
 
+def compute_with_user_section(rtdc_ds):
+    """setup a plugin method that uses user config section
+
+    The "user:n_constrictions" metadata must be set
+    """
+    nc = rtdc_ds.config["user"]["n_constrictions"]
+    assert isinstance(nc, int), (
+        '"n_constrictions" should be an integer value.')
+    area_of_region = rtdc_ds["area_um"] * nc
+    return {"area_of_region": area_of_region}
+
+
 def test_pf_attribute_ancill_info():
     """Check the plugin feature attribute input to AncillaryFeature"""
     info = example_plugin_info_single_feature()
@@ -476,6 +488,48 @@ def test_pf_with_no_feature_label():
     assert label == "Plugin feature {}".format(feature_name)
 
 
+def test_pf_with_user_config_section():
+    """Use a plugin feature with the user defined config section"""
+    info = {"method": compute_with_user_section,
+            "feature names": ["area_of_region"],
+            "config required": [["user", ["n_constrictions"]]]}
+    PlugInFeature("area_of_region", info)
+
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    assert "area_of_region" not in ds, "not available b/c missing metadata"
+    # add some metadata to the user config section
+    metadata = {"channel": True,
+                "n_constrictions": 3}
+    ds.config["user"].update(metadata)
+    assert ds.config["user"] == metadata
+    assert "area_of_region" in ds, "available b/c metadata is set"
+
+    area_of_region1 = ds["area_of_region"]
+    area_of_region1_calc = (ds["area_um"] *
+                            ds.config["user"]["n_constrictions"])
+    assert np.allclose(area_of_region1, area_of_region1_calc)
+
+
+def test_pf_with_user_config_section_fails():
+    """Use a plugin feature with the user defined config section"""
+    info = {"method": compute_with_user_section,
+            "feature names": ["area_of_region"],
+            "config required": [["user", ["n_constrictions"]]]}
+    PlugInFeature("area_of_region", info)
+
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    # show that the plugin feature is not available before setting the
+    # user metadata
+    ds.config["user"].clear()
+    with pytest.raises(KeyError,
+                       match=r"Feature \'area_of_region\' does not exist"):
+        ds["area_of_region"]
+    # show that the plugin fails when the user metadata type is wrong
+    ds.config["user"]["n_constrictions"] = 4.99
+    with pytest.raises(AssertionError, match="should be an integer value"):
+        ds["area_of_region"]
+
+
 def test_pf_wrong_data_shape_1():
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:
@@ -483,7 +537,7 @@ def test_pf_wrong_data_shape_1():
         info["scalar feature"] = [False]
         pf = PlugInFeature("circ_per_area", info)
         with pytest.raises(ValueError, match="is not a scalar feature"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 def test_pf_wrong_data_shape_2():
@@ -491,10 +545,10 @@ def test_pf_wrong_data_shape_2():
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
         info["scalar feature"] = [True]
-        info["method"] = lambda x: np.arange(len(ds)*2).reshape(-1, 2)
+        info["method"] = lambda x: np.arange(len(ds) * 2).reshape(-1, 2)
         pf = PlugInFeature("circ_per_area", info)
         with pytest.raises(ValueError, match="is a scalar feature"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 def test_pf_wrong_length_1():
@@ -502,11 +556,11 @@ def test_pf_wrong_length_1():
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
-        info["method"] = lambda x: np.arange(len(ds)//2)
+        info["method"] = lambda x: np.arange(len(ds) // 2)
         pf = PlugInFeature("circ_per_area", info)
         with pytest.warns(BadFeatureSizeWarning,
                           match="to match event number"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 def test_pf_wrong_length_2():
@@ -514,11 +568,11 @@ def test_pf_wrong_length_2():
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
-        info["method"] = lambda x: np.arange(len(ds)*2)
+        info["method"] = lambda x: np.arange(len(ds) * 2)
         pf = PlugInFeature("circ_per_area", info)
         with pytest.warns(BadFeatureSizeWarning,
                           match="to match event number"):
-            _ = ds[pf.feature_name]
+            ds[pf.feature_name]
 
 
 if __name__ == "__main__":

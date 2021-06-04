@@ -1,4 +1,5 @@
 0.34.1
+ - enh: introduce user-defined "user" configuration section (#125)
  - scripts: refactor fem2lutiso_std.py and fem2iso_volume.py so that
    model-specific post-processing is done in hooks named after the FEM
    identifier, e.g. fem_hooks/LE-2D-FEM-19.py (#90)

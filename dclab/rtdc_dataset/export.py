@@ -195,13 +195,16 @@ class Export(object):
 
         meta = {}
 
-        # only export configuration meta data (no user-defined config)
+        # export configuration meta data
         for sec in dfn.CFG_METADATA:
             if sec in ["fmt_tdms"]:
                 # ignored sections
                 continue
             if sec in self.rtdc_ds.config:
                 meta[sec] = self.rtdc_ds.config[sec].copy()
+        # add user-defined metadata
+        if "user" in self.rtdc_ds.config:
+            meta["user"] = self.rtdc_ds.config["user"].copy()
 
         if filtered:
             filtarr = self.rtdc_ds.filter.all

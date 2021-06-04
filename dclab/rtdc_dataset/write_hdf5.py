@@ -240,7 +240,12 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
 
     # Check meta data
     for sec in meta:
-        if sec not in dfn.CFG_METADATA:
+        if sec == "user":
+            # user-defined metadata are always written.
+            # Any errors (incompatibilities with HDF5 attributes)
+            # are the user's responsibility
+            continue
+        elif sec not in dfn.CFG_METADATA:
             # only allow writing of meta data that are not editable
             # by the user (not dclab.dfn.CFG_ANALYSIS)
             msg = "Meta data section not defined in dclab: {}".format(sec)
@@ -291,7 +296,6 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
     for sec in meta:
         for ck in meta[sec]:
             idk = "{}:{}".format(sec, ck)
-            conffunc = dfn.config_funcs[sec][ck]
             value = meta[sec][ck]
             if isinstance(value, bytes):
                 # We never store byte attribute values.
@@ -299,7 +303,13 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
                 # somesuch. But we don't test that, because no other datatype
                 # competes with str for bytes.
                 value = value.decode("utf-8")
-            h5obj.attrs[idk] = conffunc(value)
+            if sec == "user":
+                # store user-defined metadata as-is
+                h5obj.attrs[idk] = value
+            else:
+                # pipe the metadata through the hard-coded converter functions
+                conffunc = dfn.config_funcs[sec][ck]
+                h5obj.attrs[idk] = conffunc(value)
 
     # Write data
     # create events group

@@ -178,8 +178,72 @@ The following are supported:
 
 Analysis metadata
 -----------------
-In addition to metadata, dclab also supports a user-defined analysis
-configuration which is usually part of a specific analysis pipeline
-and thus not considered to be experimental metadata.
+In addition to inherent (defined during data acquisition) metadata,
+dclab also supports additional metadata that are relevant for certain
+data analysis pipelines, such as Young's modulus computation or
+fluorescence crosstalk correction.
 
 .. dclab_config:: calculation
+
+.. _sec_user_meta:
+
+User-defined metadata
+---------------------
+In addition to the registered metadata keys listed above,
+you may also define custom metadata in the "user" section.
+This section will be saved alongside the other metadata when
+a dataset is exported as an .rtdc (HDF5) file.
+
+.. note::
+    It is recommended to use the following data types for the value of
+    each key: ``str``, ``bool``, ``float`` and ``int``. Other data types may
+    not render nicely in ShapeOut2 or DCOR.
+
+To edit the "user" section in dclab, simply modify the `config`
+property of a loaded dataset. The changes made are *not* written
+to the underlying file.
+
+**Example**: Setting custom "user" metadata in dclab
+
+    .. ipython::
+
+        In [1]: import dclab
+
+        In [2]: ds = dclab.new_dataset("data/example.rtdc")
+
+        In [3]: my_metadata = {"inlet": True, "n_channels": 4}
+
+        In [4]: ds.config["user"] = my_metadata
+
+        In [5]: other_metadata = {"outlet": False, "RBC": True}
+
+        # we can also add metadata with the `update` method
+        In [6]: ds.config["user"].update(other_metadata)
+
+        # or
+        In [7]: ds.config.update({"user": other_metadata})
+
+        In [8]: print(ds.config["user"])
+
+        # we can clear the "user" section like so:
+        In [9]: ds.config["user"].clear()
+
+If you are implementing a custom data acquisition pipeline, you may
+alternatively add user-defined meta data (permanently) to an .rtdc file
+in a post-measurement step like so.
+
+**Example**: Setting custom "user" metadata permanently
+
+   .. code::
+
+       import h5py
+       with h5py.File("/path/to/your/dataset.rtdc") as h5:
+           h5.attrs["user:inlet"] = True
+           h5.attrs["user:n_channels"] = 4
+           h5.attrs["user:outlet"] = False
+           h5.attrs["user:RBC"] = True
+           h5.attrs["user:project"] = "strangelove"
+
+User-defined metadata can also be used with user-defined
+:ref:`plugin features <sec_av_feat_plugin_user_meta>`. This allows you
+to design plugin features which utilize your pipeline-specific metadata.

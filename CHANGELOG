@@ -1,3 +1,5 @@
+0.34.2
+ - ref: cleanup CLI code
 0.34.1
  - enh: introduce user-defined "user" configuration section (#125)
  - scripts: refactor fem2lutiso_std.py and fem2iso_volume.py so that

@@ -1,7 +1,7 @@
 0.34.2
  - fix: passing a directory to the CLI tdms2rtdc did not work
  - ref: cleanup CLI code
- - tests: increase coverage of CLI
+ - tests: increase coverage of CLI (#116)
 0.34.1
  - enh: introduce user-defined "user" configuration section (#125)
  - scripts: refactor fem2lutiso_std.py and fem2iso_volume.py so that

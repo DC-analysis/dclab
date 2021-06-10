@@ -1,4 +1,5 @@
 0.34.2
+ - fix: passing a directory to the CLI tdms2rtdc did not work
  - ref: cleanup CLI code
  - tests: increase coverage of CLI
 0.34.1

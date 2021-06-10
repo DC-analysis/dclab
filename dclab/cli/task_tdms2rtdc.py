@@ -44,17 +44,13 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         skip_final_empty_image = not args.include_empty_boundary_images
         verbose = True
 
-    if not path_tdms.suffix == ".tdms":
-        raise ValueError("Please specify a .tdms file!")
-
-    if not path_rtdc.suffix == ".rtdc":
-        path_rtdc = path_rtdc.with_name(path_rtdc.name + ".rtdc")
-
     # Determine whether input path is a tdms file or a directory
     if path_tdms.is_dir():
+        # we have a directory to search
         files_tdms = fmt_tdms.get_tdms_files(path_tdms)
         if path_rtdc.is_file():
-            raise ValueError("rtdc_path is a file: {}".format(path_rtdc))
+            raise ValueError(
+                f"Output path is a file, expected folder: '{path_rtdc}'!")
         files_rtdc = []
         for ff in files_tdms:
             ff = pathlib.Path(ff)
@@ -63,6 +59,12 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
             rpr = path_rtdc / rp.with_suffix(".rtdc")
             files_rtdc.append(rpr)
     else:
+        # we have a single file or a non-existent path
+        if not path_tdms.suffix == ".tdms":
+            raise ValueError("Please specify a .tdms file or a directory!")
+        if not path_rtdc.suffix == ".rtdc":
+            # append .rtdc to the name
+            path_rtdc = path_rtdc.with_name(path_rtdc.name + ".rtdc")
         files_tdms = [path_tdms]
         files_rtdc = [path_rtdc]
 
@@ -73,8 +75,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         if verbose:
             common.print_info(f"Converting {ii+1:d}/{len(files_tdms):d}: {ff}")
         # create directory
-        if not fr.parent.exists():
-            fr.parent.mkdir(parents=True)
+        fr.parent.mkdir(parents=True, exist_ok=True)
         # load and export dataset
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")

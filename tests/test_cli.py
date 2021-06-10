@@ -1,7 +1,10 @@
 """Test command-line interface"""
 import hashlib
 import sys
+import tempfile
 import time
+import pathlib
+import shutil
 
 from dclab import cli, new_dataset, rtdc_dataset
 import h5py
@@ -10,20 +13,6 @@ import numpy as np
 import pytest
 
 from helper_methods import retrieve_data
-
-
-def test_condense():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
-    # same directory (will be cleaned up with path_in)
-    path_out = path_in.with_name("condensed.rtdc")
-
-    cli.condense(path_out=path_out, path_in=path_in)
-    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
-        assert "dclab-condense" in dsj.logs
-        assert len(dsj)
-        assert len(dsj) == len(ds0)
-        for feat in dsj.features:
-            assert np.all(dsj[feat] == ds0[feat])
 
 
 def test_compress():
@@ -82,6 +71,20 @@ def test_compress_already_compressed_force():
     h1 = hashlib.md5(path_out1.read_bytes()).hexdigest()
     h2 = hashlib.md5(path_out2.read_bytes()).hexdigest()
     assert h1 != h2
+
+
+def test_condense():
+    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("condensed.rtdc")
+
+    cli.condense(path_out=path_out, path_in=path_in)
+    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
+        assert "dclab-condense" in dsj.logs
+        assert len(dsj)
+        assert len(dsj) == len(ds0)
+        for feat in dsj.features:
+            assert np.all(dsj[feat] == ds0[feat])
 
 
 def test_join_tdms():
@@ -178,8 +181,6 @@ def test_repack_basic():
             assert np.all(dsj["mask"][ii] == ds0["mask"][ii])
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6),
-                    reason="requires python3.6 or higher")
 def test_repack_remove_secrets():
     path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
     # same directory (will be cleaned up with path_in)
@@ -269,6 +270,37 @@ def test_tdms2rtdc():
         assert set(ds2._events.keys()) < set(ds1.features)
         for feat in ds1:
             assert np.all(ds1[feat] == ds2[feat])
+
+
+def test_tdms2rtdc_bulk():
+    path_data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_in = pathlib.Path(tempfile.mkdtemp(prefix="tdms2rtdc_bulk_"))
+    shutil.copytree(path_data.parent, path_in / "data_1")
+    shutil.copytree(path_data.parent, path_in / "data_2")
+    shutil.copytree(path_data.parent, path_in / "data_3")
+    (path_in / "data_nested").mkdir()
+    shutil.copytree(path_data.parent, path_in / "data_nested" / "data_4")
+    # same directory (will be cleaned up with path_in)
+    path_out = pathlib.Path(tempfile.mkdtemp(prefix="tdms2rtdc_bulk_result_"))
+
+    cli.tdms2rtdc(path_tdms=path_in,
+                  path_rtdc=path_out,
+                  compute_features=False)
+
+    for pp in [
+        path_out / "data_1" / "M1_data.rtdc",
+        path_out / "data_2" / "M1_data.rtdc",
+        path_out / "data_3" / "M1_data.rtdc",
+            path_out / "data_nested" / "data_4" / "M1_data.rtdc"]:
+        assert pp.exists()
+
+        with new_dataset(pp) as ds2, new_dataset(path_data) as ds1:
+            assert len(ds2)
+            assert set(ds1.features) == set(ds2.features)
+            # not all features are computed
+            assert set(ds2._events.keys()) < set(ds1.features)
+            for feat in ds1:
+                assert np.all(ds1[feat] == ds2[feat])
 
 
 def test_tdms2rtdc_features():

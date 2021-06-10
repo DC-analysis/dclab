@@ -45,7 +45,7 @@ def split(path_in=None, path_out=None, split_events=10000,
         skip_initial_empty_image = not args.include_empty_boundary_images
         skip_final_empty_image = not args.include_empty_boundary_images
         verbose = True
-    if path_out in ["PATH_IN", None]:  # default to input directory
+    if path_out in ["SAME", None]:  # default to input directory
         path_out = path_in.parent
     path_in = pathlib.Path(path_in)
     path_out = pathlib.Path(path_out)
@@ -107,7 +107,7 @@ def split_parser():
     parser.add_argument('path_in', metavar="PATH_IN", type=str,
                         help='Input path (.tdms or .rtdc file)')
     parser.add_argument('--path_out', metavar="PATH_OUT", type=str,
-                        default="PATH_IN",
+                        default="SAME",
                         help='Output directory (defaults to same directory)')
     parser.add_argument('--split-events', type=int, default=10000,
                         help='Maximum number of events in each output file')

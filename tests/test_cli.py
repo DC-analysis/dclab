@@ -274,14 +274,17 @@ def test_tdms2rtdc():
 
 def test_tdms2rtdc_bulk():
     path_data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
-    path_in = pathlib.Path(tempfile.mkdtemp(prefix="tdms2rtdc_bulk_"))
+    path_wd = pathlib.Path(tempfile.mkdtemp(prefix="tdms2rtdc_bulk_"))
+    path_in = path_wd / "input"
+    path_in.mkdir()
     shutil.copytree(path_data.parent, path_in / "data_1")
     shutil.copytree(path_data.parent, path_in / "data_2")
     shutil.copytree(path_data.parent, path_in / "data_3")
     (path_in / "data_nested").mkdir()
     shutil.copytree(path_data.parent, path_in / "data_nested" / "data_4")
     # same directory (will be cleaned up with path_in)
-    path_out = pathlib.Path(tempfile.mkdtemp(prefix="tdms2rtdc_bulk_result_"))
+    path_out = path_wd / "output"
+    path_out.mkdir()
 
     cli.tdms2rtdc(path_tdms=path_in,
                   path_rtdc=path_out,

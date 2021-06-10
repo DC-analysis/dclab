@@ -8,11 +8,12 @@ from ..rtdc_dataset import check_dataset, fmt_tdms
 from . import common
 
 
-def verify_dataset():
+def verify_dataset(path_in=None):
     """Perform checks on experimental datasets"""
-    parser = verify_dataset_parser()
-    args = parser.parse_args()
-    path_in = pathlib.Path(args.path).resolve()
+    if path_in is None:
+        parser = verify_dataset_parser()
+        args = parser.parse_args()
+        path_in = pathlib.Path(args.path).resolve()
     common.print_info(f"Checking {path_in}")
     # The exit status of this script. Non-zero exit status means:
     # 1: alerts
@@ -31,7 +32,7 @@ def verify_dataset():
     except fmt_tdms.InvalidVideoFileError:
         common.print_violation("Invalid image data!")
     except BaseException as e:
-        common.print_violation(", ".join(e.args))
+        common.print_violation(f"{e.__class__.__name__}: {', '.join(e.args)}")
     else:
         for inf in info:
             common.print_info(inf)
@@ -51,7 +52,8 @@ def verify_dataset():
             # everything is ok
             exit_status = 0
     finally:
-        sys.exit(exit_status)
+        # return sys.exit for testing (monkeypatched)
+        return sys.exit(exit_status)
 
 
 def verify_dataset_parser():

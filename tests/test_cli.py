@@ -375,9 +375,88 @@ def test_tdms2rtdc_update_sample_per_events():
         assert ds2.config["fluorescence"]["samples per event"] == 566
 
 
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()
+@pytest.mark.parametrize("dataset,exit_status_expected", [
+    ["rtdc_data_hdf5_contour_image_trace.zip", 3],
+    ["rtdc_data_hdf5_rtfdc.zip", 0],
+    ])
+def test_verify_dataset_exit_codes(dataset, exit_status_expected, monkeypatch):
+    # get the exit status from the script
+    def sys_exit(status):
+        return status
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    h5path = retrieve_data(dataset)
+    exit_status = cli.verify_dataset(h5path)
+    assert exit_status == exit_status_expected
+
+
+def test_verify_dataset_exit_code_alert(monkeypatch):
+    # get the exit status from the script
+    def sys_exit(status):
+        return status
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # provoke a warning
+    with h5py.File(h5path, "r+") as h5:
+        h5.attrs["experiment:unknown"] = ""
+    exit_status = cli.verify_dataset(h5path)
+    assert exit_status == 1  # unknown key leads to alert
+
+
+def test_verify_dataset_exit_code_error(monkeypatch):
+    # get the exit status from the script
+    def sys_exit(status):
+        return status
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # provoke a warning
+    with h5py.File(h5path, "r+") as h5:
+        h5.attrs["setup:channel width"] = "peter"
+    exit_status = cli.verify_dataset(h5path)
+    assert exit_status == 4  # Cannot convert string to float error
+
+
+def test_verify_dataset_exit_code_user_ok(monkeypatch):
+    # get the exit status from the script
+    def sys_exit(status):
+        return status
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # provoke a warning
+    with h5py.File(h5path, "r+") as h5:
+        h5.attrs["user:pan"] = 2
+    exit_status = cli.verify_dataset(h5path)
+    assert exit_status == 0
+
+
+def test_verify_dataset_exit_code_violation_1(monkeypatch):
+    # get the exit status from the script
+    def sys_exit(status):
+        return status
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # provoke a warning
+    with h5py.File(h5path, "r+") as h5:
+        h5.attrs["setup:flow rate"] = 0
+    exit_status = cli.verify_dataset(h5path)
+    assert exit_status == 3  # zero flow rate and warnings about mismatch
+
+
+def test_verify_dataset_exit_code_violation_2(monkeypatch):
+    # get the exit status from the script
+    def sys_exit(status):
+        return status
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # provoke a warning
+    with h5py.File(h5path, "r+") as h5:
+        h5.attrs["setup:flow rate"] = 0
+        h5.attrs["setup:flow rate sample"] = 0
+        h5.attrs["setup:flow rate sheath"] = 0
+    exit_status = cli.verify_dataset(h5path)
+    assert exit_status == 2  # zero flow rate

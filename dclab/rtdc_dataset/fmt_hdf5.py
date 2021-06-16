@@ -43,7 +43,12 @@ class H5ContourEvent(object):
         self.identifier = h5group["0"][:]
 
     def __getitem__(self, key):
-        return self.h5group[str(key)][:]
+        if isinstance(key, (int, np.integer)) and key >= 0:
+            return self.h5group[str(key)][:]
+        else:
+            raise NotImplementedError(
+                    "The feature `contour` only supports positive"
+                    "integer indexing!")
 
     def __iter__(self):
         for idx in range(len(self)):

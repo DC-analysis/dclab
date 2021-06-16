@@ -27,7 +27,7 @@ class ChildBase(object):
 class ChildContour(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
-                                        child_indices=[idx])[0]
+                                        child_indices=idx)
         hp = self.child.hparent
         return hp["contour"][pidx]
 
@@ -35,7 +35,7 @@ class ChildContour(ChildBase):
 class ChildImage(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
-                                        child_indices=[idx])[0]
+                                        child_indices=idx)
         hp = self.child.hparent
         return hp["image"][pidx]
 
@@ -43,7 +43,7 @@ class ChildImage(ChildBase):
 class ChildImageBG(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
-                                        child_indices=[idx])[0]
+                                        child_indices=idx)
         hp = self.child.hparent
         return hp["image_bg"][pidx]
 
@@ -51,7 +51,7 @@ class ChildImageBG(ChildBase):
 class ChildMask(ChildBase):
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
-                                        child_indices=[idx])[0]
+                                        child_indices=idx)
         hp = self.child.hparent
         return hp["mask"][pidx]
 
@@ -63,7 +63,7 @@ class ChildTrace(ChildBase):
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
-                                        child_indices=[idx])[0]
+                                        child_indices=idx)
         hp = self.child.hparent
         return hp["trace"][self.flname][pidx]
 

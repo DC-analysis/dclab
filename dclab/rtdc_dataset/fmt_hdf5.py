@@ -47,7 +47,7 @@ class H5ContourEvent(object):
             return self.h5group[str(key)][:]
         else:
             raise NotImplementedError(
-                    "The feature `contour` only supports positive"
+                    "The feature `contour` only supports positive "
                     "integer indexing!")
 
     def __iter__(self):

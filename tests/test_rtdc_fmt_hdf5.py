@@ -120,6 +120,19 @@ def test_image_bg_2():
         assert bgc[10, 11] == 6
 
 
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+@pytest.mark.parametrize("idxs",
+                         [slice(1, 4), -1, [1, 2, 3], np.arange(3), 5*[True]])
+def test_index_slicing_contour(idxs):
+    data = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    ds = new_dataset(data)
+
+    with pytest.raises(NotImplementedError,
+                       match="only supports positive integer indexing"):
+        ds["contour"][idxs]
+
+
 def test_logs():
     path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
 

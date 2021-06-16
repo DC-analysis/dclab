@@ -158,6 +158,37 @@ def test_index_deep_contour():
     assert np.all(c2["contour"][3] == ds["contour"][5])
 
 
+@pytest.mark.parametrize("feat", ["image", "image_bg", "mask"])
+@pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
+                                  [0, 1, 2], [True, True, True, False]])
+def test_index_slicing(feat, idxs):
+    data = retrieve_data("rtdc_data_hdf5_image_bg.zip")
+    ds = new_dataset(data)
+    ds.filter.manual[2] = False
+    ch = new_dataset(ds)
+
+    ds_feat = ds[feat][np.array([0, 1, 3])]
+    ch_feat = ch[feat]
+
+    assert np.all(ch_feat[idxs] == ds_feat)
+
+
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+@pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
+                                  [0, 1, 2], [True, True, True, False]])
+def test_index_slicing_trace(idxs):
+    data = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    ds = new_dataset(data)
+    ds.filter.manual[2] = False
+    ch = new_dataset(ds)
+
+    ds_feat = ds["trace"]["fl1_median"][np.array([0, 1, 3])]
+    ch_feat = ch["trace"]["fl1_median"]
+
+    assert np.all(ch_feat[idxs] == ds_feat)
+
+
 def test_manual_exclude():
     data = example_data_dict(42, keys=["area_um", "deform"])
     p = new_dataset(data)

@@ -1,7 +1,7 @@
 """
 Class for efficiently handling image/video data
 """
-
+import numbers
 import pathlib
 import sys
 import warnings
@@ -47,6 +47,12 @@ class ImageColumn(object):
         self._shape = None
 
     def __getitem__(self, idx):
+        if not isinstance(idx, numbers.Integral):
+            raise NotImplementedError(
+                "The RTDC_TDMS data handler does not support indexing with "
+                "anything else than scalar integers. Please convert your data "
+                "to the .rtdc file format!")
+
         idnew = int(idx-self.event_offset)
         if idnew < 0:
             # No data - show a dummy image instead

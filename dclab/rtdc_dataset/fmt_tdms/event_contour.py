@@ -1,5 +1,5 @@
 """Class for efficiently handling contour data"""
-
+import numbers
 import sys
 import warnings
 
@@ -58,6 +58,12 @@ class ContourColumn(object):
         self.event_offset = 0
 
     def __getitem__(self, idx):
+        if not isinstance(idx, numbers.Integral):
+            raise NotImplementedError(
+                "The RTDC_TDMS data handler does not support indexing with "
+                "anything else than scalar integers. Please convert your data "
+                "to the .rtdc file format!")
+
         if not self._initialized:
             self.determine_offset()
         idnew = idx-self.event_offset

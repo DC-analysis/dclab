@@ -1,6 +1,8 @@
 0.34.2
  - fix: slicing of non-scalar features for hierarchy childs (#128)
  - fix: passing a directory to the CLI tdms2rtdc did not work
+ - ref: raise NotImplementedError for futile attempts to slice the image,
+   contour, or mask features for .tdms data (#5)
  - ref: cleanup CLI code
  - tests: increase coverage of CLI (#116)
 0.34.1

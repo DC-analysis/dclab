@@ -192,6 +192,18 @@ def test_image_out_of_bounds():
     assert np.allclose(ds["image"][3], 0)  # causes warning
 
 
+@pytest.mark.parametrize("feat", ["image", "mask"])
+@pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
+                                  [0, 1, 2], [True, True, True, False]])
+def test_index_slicing_tdms_fails(feat, idxs):
+    """The tdms-file format does not support slice/array indexing"""
+    data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    ds = new_dataset(data)
+
+    with pytest.raises(NotImplementedError, match="scalar integers"):
+        ds[feat][idxs]
+
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.event_image.'
                             + 'InitialFrameMissingWarning')

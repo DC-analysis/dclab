@@ -1,5 +1,5 @@
 """Class for on-the-fly conversion of contours to masks"""
-
+import numbers
 import numpy as np
 import scipy.ndimage as ndi
 
@@ -14,6 +14,12 @@ class MaskColumn(object):
         self._shape = None
 
     def __getitem__(self, idx):
+        if not isinstance(idx, numbers.Integral):
+            raise NotImplementedError(
+                "The RTDC_TDMS data handler does not support indexing with "
+                "anything else than scalar integers. Please convert your data "
+                "to the .rtdc file format!")
+
         mask = np.zeros(self._img_shape, dtype=bool)
         conti = self.contour[idx]
         mask[conti[:, 1], conti[:, 0]] = True

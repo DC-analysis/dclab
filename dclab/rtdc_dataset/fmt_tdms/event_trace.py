@@ -1,5 +1,4 @@
 """Handling fluorescence trace data"""
-
 import pathlib
 import warnings
 

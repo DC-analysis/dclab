@@ -1,6 +1,7 @@
 """DCOR client interface"""
 from functools import lru_cache
 import json
+import numbers
 import time
 import uuid
 
@@ -24,7 +25,7 @@ class DCORAccessError(BaseException):
     pass
 
 
-class APIHandler(object):
+class APIHandler:
     """Handles the DCOR api with caching for simple queries"""
     #: these are cached to minimize network usage
     cache_queries = ["metadata", "size", "feature_list", "valid"]
@@ -90,54 +91,73 @@ class APIHandler(object):
         return result
 
 
-class EventFeature(object):
-    """Helper class for accessing non-scalar features event-wise"""
-
-    def __init__(self, feature, api):
-        self.identifier = api.url + ":" + feature  # for caching ancillaries
-        self.feature = feature
+class DCORNonScalarFeature:
+    """Helper class for accessing non-scalar features"""
+    def __init__(self, feat, api, size):
+        self.identifier = api.url + ":" + feat  # for caching ancillaries
+        self.feat = feat
         self.api = api
+        self._size = size
 
     def __iter__(self):
         for idx in range(len(self)):
             yield self[idx]
 
-    @lru_cache(maxsize=100)
     def __getitem__(self, event):
-        data = self.api.get(query="feature", feat=self.feature, event=event)
-        return np.asarray(data)
+        if not isinstance(event, numbers.Integral):
+            # slicing!
+            indices = np.arange(len(self))[event]
+            trace0 = self._get_item(indices[0])
+            # determine the correct shape from the first feature
+            oshape = [len(indices)] + list(trace0.shape)
+            output = np.zeros(oshape, dtype=trace0.dtype)
+            # populate the output array
+            for ii, evid in enumerate(indices):
+                output[ii] = self._get_item(evid)
+            return output
+        else:
+            return self._get_item(event)
 
     def __len__(self):
-        return int(self.api.get(query="size"))
-
-
-class EventTrace(object):
-    """Helper class for accessing traces event-wise"""
-
-    def __init__(self, trace, api):
-        self.identifier = api.url + ":" + trace  # for caching ancillaries
-        self.trace = trace
-        self.api = api
-
-    def __iter__(self):
-        for idx in range(len(self)):
-            yield self[idx]
+        return self._size
 
     @lru_cache(maxsize=100)
-    def __getitem__(self, event):
-        data = self.api.get(query="trace", trace=self.trace, event=event)
+    def _get_item(self, event):
+        data = self.api.get(query="feature", feat=self.feat, event=event)
         return np.asarray(data)
 
-    def __len__(self):
-        return int(self.api.get(query="size"))
+
+class DCORContourFeature(DCORNonScalarFeature):
+    """Helper class for accessing contour data"""
+    def __getitem__(self, event):
+        if not isinstance(event, numbers.Integral):
+            # We cannot use the original method, because contours
+            # may have different sizes! So we return a list.
+            indices = np.arange(len(self))[event]
+            output = []
+            # populate the output list
+            for evid in indices:
+                output.append(self._get_item(evid))
+            return output
+        else:
+            return self._get_item(event)
 
 
-class EventTraceFeature(object):
+class DCORTraceItem(DCORNonScalarFeature):
+    """Helper class for accessing traces"""
+    @lru_cache(maxsize=100)
+    def _get_item(self, event):
+        data = self.api.get(query="trace", trace=self.feat, event=event)
+        return np.asarray(data)
+
+
+class DCORTraceFeature:
     """Helper class for accessing traces"""
 
-    def __init__(self, api):
+    def __init__(self, api, size):
         self.identifier = api.url + ":traces"
         self.api = api
+        self._size = size
         self.traces = api.get(query="trace_list")
         self._trace_objects = {}
 
@@ -147,7 +167,8 @@ class EventTraceFeature(object):
     def __getitem__(self, trace):
         if trace in self.traces:
             if trace not in self._trace_objects:
-                self._trace_objects[trace] = EventTrace(trace, self.api)
+                self._trace_objects[trace] = DCORTraceItem(trace, self.api,
+                                                           self._size)
             return self._trace_objects[trace]
         else:
             raise KeyError("trace '{}' not found!".format(trace))
@@ -156,12 +177,13 @@ class EventTraceFeature(object):
         return self.traces
 
 
-class FeatureCache(object):
+class FeatureCache:
     """Download and cache (scalar only) features from DCOR"""
 
-    def __init__(self, api):
+    def __init__(self, api, size):
         self.api = api
         self._features = self.api.get(query="feature_list")
+        self._size = size
         self._scalar_cache = {}
         self._nonsc_features = {}
 
@@ -181,13 +203,20 @@ class FeatureCache(object):
             feat = np.asarray(self.api.get(query="feature", feat=key))
             self._scalar_cache[key] = feat
             return feat
+        elif key == "contour":
+            if key not in self._nonsc_features:
+                self._nonsc_features[key] = DCORContourFeature(key, self.api,
+                                                               self._size)
+            return self._nonsc_features[key]
         elif key == "trace":
             if "trace" not in self._nonsc_features:
-                self._nonsc_features["trace"] = EventTraceFeature(self.api)
+                self._nonsc_features["trace"] = DCORTraceFeature(self.api,
+                                                                 self._size)
             return self._nonsc_features["trace"]
         else:
             if key not in self._nonsc_features:
-                self._nonsc_features[key] = EventFeature(key, self.api)
+                self._nonsc_features[key] = DCORNonScalarFeature(key, self.api,
+                                                                 self._size)
             return self._nonsc_features[key]
 
     def __iter__(self):
@@ -249,7 +278,7 @@ class RTDC_DCOR(RTDCBase):
         self._size = int(self.api.get(query="size"))
 
         # Setup events
-        self._events = FeatureCache(self.api)
+        self._events = FeatureCache(self.api, size=self._size)
 
         # Override logs property with HDF5 data
         self.logs = {}

@@ -1,5 +1,4 @@
 """RT-DC dataset core classes and methods"""
-
 import abc
 import random
 import warnings
@@ -20,9 +19,7 @@ class LogTransformWarning(UserWarning):
     pass
 
 
-class RTDCBase(object):
-    __metaclass__ = abc.ABCMeta
-
+class RTDCBase(abc.ABC):
     def __init__(self, identifier=None):
         """RT-DC measurement base class
 

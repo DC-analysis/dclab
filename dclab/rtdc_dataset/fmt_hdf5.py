@@ -1,6 +1,6 @@
 """RT-DC hdf5 format"""
-
 from distutils.version import LooseVersion
+import numbers
 import pathlib
 
 import h5py
@@ -43,12 +43,18 @@ class H5ContourEvent(object):
         self.identifier = h5group["0"][:]
 
     def __getitem__(self, key):
-        if isinstance(key, (int, np.integer)) and key >= 0:
-            return self.h5group[str(key)][:]
+        if not isinstance(key, numbers.Integral):
+            # slicing!
+            indices = np.arange(len(self))[key]
+            output = []
+            # populate the output list
+            for evid in indices:
+                output.append(self.h5group[str(evid)][:])
+            return output
+        elif key < 0:
+            return self.__getitem__(key + len(self))
         else:
-            raise NotImplementedError(
-                    "The feature `contour` only supports positive "
-                    "integer indexing!")
+            return self.h5group[str(key)][:]
 
     def __iter__(self):
         for idx in range(len(self)):

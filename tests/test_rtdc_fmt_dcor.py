@@ -104,6 +104,9 @@ def test_dcor_data():
     assert np.all(ds["contour"][24][22] == np.array([87, 61]))
     assert np.median(ds["image"][1]) == 58
     assert np.sum(ds["mask"][11]) == 332
+    assert np.sum(ds["mask"][11]) == 332
+    assert np.median(ds["trace"]["fl1_raw"][200]) == 183.0
+    assert np.sum(ds["trace"]["fl1_median"][2167]) == 183045
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")

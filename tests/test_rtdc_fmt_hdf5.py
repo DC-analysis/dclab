@@ -28,6 +28,11 @@ def test_contour_basic():
     assert len(ds) == 5
     assert len(ds["contour"]) == 5
     assert np.allclose(np.average(ds["contour"][0]), 30.75)
+    assert np.median(ds["contour"][0]) == 30.5
+    assert np.median(ds["contour"][2]) == 31.5
+    assert np.median(ds["contour"][-3]) == 31.5
+    assert np.median(ds["contour"][4]) == 33.0
+    assert np.median(ds["contour"][-1]) == 33.0
 
 
 def test_defective_feature_aspect():
@@ -123,14 +128,25 @@ def test_image_bg_2():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 @pytest.mark.parametrize("idxs",
-                         [slice(1, 4), -1, [1, 2, 3], np.arange(3), 5*[True]])
+                         [slice(0, 5, 2),
+                          [0, 2, 4],
+                          np.array([0, 2, 4]),
+                          np.array([True, False, True, False, True])])
 def test_index_slicing_contour(idxs):
     data = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
     ds = new_dataset(data)
 
-    with pytest.raises(NotImplementedError,
-                       match="only supports positive integer indexing"):
-        ds["contour"][idxs]
+    contour_ref = [
+        ds["contour"][0],
+        ds["contour"][2],
+        ds["contour"][4],
+    ]
+
+    contour_slice = ds["contour"][idxs]
+
+    assert np.all(contour_slice[0] == contour_ref[0])
+    assert np.all(contour_slice[1] == contour_ref[1])
+    assert np.all(contour_slice[2] == contour_ref[2])
 
 
 def test_logs():

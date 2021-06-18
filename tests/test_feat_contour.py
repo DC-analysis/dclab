@@ -1,7 +1,7 @@
 import pathlib
-import sys
 import time
 
+import h5py
 import numpy as np
 import pytest
 
@@ -9,6 +9,8 @@ import dclab
 from dclab import new_dataset
 from dclab.features.contour import get_contour, get_contour_lazily
 from dclab.features.volume import get_volume
+
+from scipy.ndimage import binary_fill_holes
 
 from helper_methods import retrieve_data
 
@@ -55,8 +57,60 @@ def test_lazy_contour_basic():
         assert np.all(cont1[ii] == cont2[ii])
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
+@pytest.mark.parametrize("idxs",
+                         [slice(0, 5, 2),
+                          [0, 2, 4],
+                          np.array([0, 2, 4]),
+                          np.array([True, False, True, False, True,
+                                    False, False, False])
+                          ])
+def test_lazy_contour_slicing(idxs):
+    h5path = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+
+    contours_ref = []
+    with h5py.File(h5path, "a") as h5:
+        indices = np.arange(len(h5["events"]["deform"]))[idxs]
+        assert np.all(indices == [0, 2, 4])
+        for idn in indices:
+            contours_ref.append(h5["events"]["contour"][str(idn)][:])
+        del h5["events"]["contour"]
+        masks_ref = np.array(h5["events"]["mask"][:][idxs], dtype=bool)
+
+    with new_dataset(h5path) as ds:
+        # sanity check
+        assert "contour" not in ds.features_innate
+        contours_test = ds["contour"][idxs]
+
+    for csoll, cist, mask in zip(contours_ref, contours_test, masks_ref):
+        # we cannot compare the contours directly, because they may
+        # have different starting points. So we compare the masks.
+        mask_ist = np.zeros_like(mask)
+        mask_ist[cist[:, 1], cist[:, 0]] = True
+        mask_ist = binary_fill_holes(mask_ist)
+
+        assert np.all(mask_ist == mask)
+        # remove them so we don't make any mistakes in defining
+        # the next mask.
+        del cist
+        del mask_ist
+
+        mask_soll = np.zeros_like(mask)
+        mask_soll[csoll[:, 1], csoll[:, 0]] = True
+        mask_soll = binary_fill_holes(mask_soll)
+        assert np.all(mask_soll == mask)
+
+
+def test_lazy_contour_single():
+    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    masks = ds["mask"][:]
+    c_all = get_contour_lazily(masks)
+    c_0 = get_contour_lazily(masks[0])
+    c_1 = get_contour_lazily(masks[1])
+    assert np.all(c_0 == c_all[0])
+    assert np.all(c_1 == c_all[1])
+    assert len(c_0) != len(c_all[1])
+
+
 def test_lazy_contour_timing():
     ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
     masks = ds["mask"][:]
@@ -113,11 +167,3 @@ def test_volume():
     v2 = get_volume(cont=cont2, **kw)
 
     assert np.allclose(v1, v2)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

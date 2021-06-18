@@ -1,4 +1,5 @@
 """Computation of event contour from event mask"""
+import numbers
 
 import numpy as np
 
@@ -20,14 +21,23 @@ class LazyContourList(object):
         self.identifier = str(masks[0][:].tobytes())
 
     def __getitem__(self, idx):
-        """Compute contour if it does not already exists"""
-        if self.contours[idx] is None:
-            try:
-                self.contours[idx] = get_contour(self.masks[idx])
-            except BaseException as e:
-                e.args = ("Event {}, {}".format(idx, e.args[0]),)
-                raise
-        return self.contours[idx]
+        """Compute contour(s) if not already in self.contours"""
+        if not isinstance(idx, numbers.Integral):
+            # slicing!
+            indices = np.arange(len(self))[idx]
+            output = []
+            # populate the output list
+            for evid in indices:
+                output.append(self.__getitem__(evid))
+            return output
+        else:
+            if self.contours[idx] is None:
+                try:
+                    self.contours[idx] = get_contour(self.masks[idx])
+                except BaseException as e:
+                    e.args = ("Event {}, {}".format(idx, e.args[0]),)
+                    raise
+            return self.contours[idx]
 
     def __len__(self):
         return len(self.masks)

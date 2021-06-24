@@ -100,7 +100,7 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
                           + "[{:.1f}, {:.1f}] degC.".format(
                               np.min(temperature), np.max(temperature)),
                           TemperatureOutOfRangeWarning)
-        eta0 = 1.002  # [mPa]
+        eta0 = 1.002  # [mPa s]
         right = (20-temperature) / (temperature + 96) \
             * (+ 1.2364
                - 1.37e-3 * (20 - temperature)

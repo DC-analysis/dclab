@@ -1,3 +1,5 @@
+0.34.3
+ - fix: workaround for when rpy2 finds R_HOME, but R doesn't
 0.34.2
  - fix: slicing of non-scalar features for hierarchy children (#128)
  - fix: passing a directory to the CLI tdms2rtdc did not work

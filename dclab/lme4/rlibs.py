@@ -1,5 +1,6 @@
 from distutils.version import LooseVersion
 import importlib
+import os
 
 R_MIN_VERSION = "2.9.4"
 
@@ -18,16 +19,18 @@ class VersionError(BaseException):
     pass
 
 
-class MockRPackage(object):
+class MockRPackage:
     def __getattr__(self, item):
         raise ImportError("Please install 'rpy2>={}'!".format(R_MIN_VERSION))
 
 
 def import_r_submodules():
     importlib.import_module("rpy2.situation")
-    if rpy2.situation.get_r_home() is None:
-        return False
-    else:
+    r_home = rpy2.situation.get_r_home()
+    if r_home is not None:
+        if os.environ.get("R_HOME", None) is None:
+            # set R_HOME globally (https://github.com/rpy2/rpy2/issues/796)
+            os.environ["R_HOME"] = r_home
         if rpy2_is_version_3:
             mods = R_SUBMODULES + R_SUBMODULES_3
         else:

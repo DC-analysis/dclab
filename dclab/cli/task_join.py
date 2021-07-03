@@ -1,7 +1,6 @@
 """command line interface"""
 import argparse
 import time
-import pathlib
 import warnings
 
 import numpy as np
@@ -25,12 +24,8 @@ def join(path_out=None, paths_in=None, metadata=None):
     if len(paths_in) < 2:
         raise ValueError("At least two input files must be specified!")
 
-    path_out = pathlib.Path(path_out)
-    if not path_out.suffix == ".rtdc":
-        path_out = path_out.parent / (path_out.name + ".rtdc")
-
-    if path_out.exists():
-        raise ValueError(f"Output file '{path_out}' already exists!")
+    paths_in, path_out, path_temp = common.setup_task_paths(
+        paths_in, path_out, allowed_input_suffixes=[".rtdc", ".tdms"])
 
     # Determine input file order
     key_paths = []
@@ -63,7 +58,7 @@ def join(path_out=None, paths_in=None, metadata=None):
         warnings.simplefilter("always")
         with new_dataset(sorted_paths[0]) as ds0:
             features = sorted(ds0.features_innate)
-            ds0.export.hdf5(path=path_out,
+            ds0.export.hdf5(path=path_temp,
                             features=features,
                             filtered=False,
                             override=True,
@@ -71,7 +66,7 @@ def join(path_out=None, paths_in=None, metadata=None):
         if w:
             logs["dclab-join-warnings-#1"] = common.assemble_warnings(w)
 
-    with write_hdf5.write(path_out, mode="append",
+    with write_hdf5.write(path_temp, mode="append",
                           compression="gzip") as h5obj:
         ii = 1
         # Append data from other files
@@ -103,9 +98,12 @@ def join(path_out=None, paths_in=None, metadata=None):
             logs[f"cfg-#{ii+1}"] = cfg
 
     # Write logs and missing meta data
-    with write_hdf5.write(path_out, logs=logs, meta=metadata, mode="append",
+    with write_hdf5.write(path_temp, logs=logs, meta=metadata, mode="append",
                           compression="gzip"):
         pass
+
+    # Finally, rename temp to out
+    path_temp.rename(path_out)
 
 
 def join_parser():

@@ -45,12 +45,15 @@ def split(path_in=None, path_out=None, split_events=10000,
         skip_initial_empty_image = not args.include_empty_boundary_images
         skip_final_empty_image = not args.include_empty_boundary_images
         verbose = True
+
     if path_out in ["SAME", None]:  # default to input directory
         path_out = path_in.parent
+
     path_in = pathlib.Path(path_in)
     path_out = pathlib.Path(path_out)
     logs = {"dclab-split": common.get_command_log(paths=[path_in])}
     paths_gen = []
+    paths_temp = []
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
@@ -73,9 +76,11 @@ def split(path_in=None, path_out=None, split_events=10000,
                 num_files += 1
             for ii in range(num_files):
                 pp = path_out / f"{path_in.stem}_{ii+1:04d}.rtdc"
+                pt = pp.with_suffix(".rtdc~")
                 paths_gen.append(pp)
+                paths_temp.append(pt)
                 if verbose:
-                    print(f"Generating {ii+1:d}/{num_files:d}: {pp}")
+                    print(f"Generating {ii+1:d}/{num_files:d}: {pt}")
                 ds.filter.manual[:] = False  # reset filter
                 ds.filter.manual[ii*split_events:(ii+1)*split_events] = True
                 common.skip_empty_image_events(
@@ -84,17 +89,21 @@ def split(path_in=None, path_out=None, split_events=10000,
                     final=skip_final_empty_image)
                 ds.apply_filter()
                 ds.export.hdf5(
-                    path=pp, features=ds.features_innate, filtered=True)
+                    path=pt, features=ds.features_innate, filtered=True)
+
         if w:
             logs["dclab-split-warnings"] = common.assemble_warnings(w)
         sample_name = ds.config["experiment"]["sample"]
 
     # Add the logs and update sample name
-    for ii, pp in enumerate(paths_gen):
+    for ii, pt in enumerate(paths_temp):
         meta = {"experiment": {"sample": f"{sample_name} {ii+1}/{num_files}"}}
-        with write_hdf5.write(pp, logs=logs, meta=meta, mode="append",
+        with write_hdf5.write(pt, logs=logs, meta=meta, mode="append",
                               compression="gzip"):
             pass
+
+    for pt, pp in zip(paths_temp, paths_gen):
+        pt.rename(pp)
 
     if ret_out_paths:
         return paths_gen

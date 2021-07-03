@@ -1,6 +1,5 @@
 """command line interface"""
 import argparse
-import pathlib
 import shutil
 import warnings
 
@@ -19,14 +18,8 @@ def compress(path_out=None, path_in=None, force=False):
         path_out = args.output
         force = args.force
 
-    path_in = pathlib.Path(path_in)
-    path_out = pathlib.Path(path_out)
-
-    if not path_in.suffix == ".rtdc":
-        raise ValueError("Please specify an .rtdc file!")
-
-    if path_out.suffix != ".rtdc":
-        path_out = path_out.with_name(path_out.name + ".rtdc")
+    path_in, path_out, path_temp = common.setup_task_paths(
+        path_in, path_out, allowed_input_suffixes=[".rtdc"])
 
     if not force:
         # Check whether the input file is already compressed
@@ -35,7 +28,8 @@ def compress(path_out=None, path_in=None, force=False):
         cue = ic.check_compression()[0]
         if cue.data["uncompressed"] == 0:
             # we are done here
-            shutil.copy2(path_in, path_out)  # copy with metadata
+            shutil.copy2(path_in, path_temp)  # copy with metadata
+            path_temp.rename(path_out)
             return
 
     logs = {}
@@ -43,7 +37,7 @@ def compress(path_out=None, path_in=None, force=False):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         with new_dataset(path_in) as ds:
-            ds.export.hdf5(path=path_out,
+            ds.export.hdf5(path=path_temp,
                            features=ds.features_innate,
                            filtered=False,
                            compression="gzip",
@@ -58,9 +52,12 @@ def compress(path_out=None, path_in=None, force=False):
             logs["dclab-compress-warnings"] = common.assemble_warnings(w)
 
     # Write log file
-    with write_hdf5.write(path_out, logs=logs, mode="append",
+    with write_hdf5.write(path_temp, logs=logs, mode="append",
                           compression="gzip"):
         pass
+
+    # Finally, rename temp to out
+    path_temp.rename(path_out)
 
 
 def compress_parser():

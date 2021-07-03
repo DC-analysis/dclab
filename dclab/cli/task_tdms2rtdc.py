@@ -52,30 +52,33 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
             raise ValueError(
                 f"Output path is a file, expected folder: '{path_rtdc}'!")
         files_rtdc = []
-        for ff in files_tdms:
-            ff = pathlib.Path(ff)
-            rp = ff.relative_to(path_tdms)
+        for path_in in files_tdms:
+            path_in = pathlib.Path(path_in)
+            rp = path_in.relative_to(path_tdms)
             # determine output file name (same relative path)
             rpr = path_rtdc / rp.with_suffix(".rtdc")
             files_rtdc.append(rpr)
     else:
         # we have a single file or a non-existent path
-        if not path_tdms.suffix == ".tdms":
-            raise ValueError("Please specify a .tdms file or a directory!")
-        if not path_rtdc.suffix == ".rtdc":
-            # append .rtdc to the name
-            path_rtdc = path_rtdc.with_name(path_rtdc.name + ".rtdc")
         files_tdms = [path_tdms]
         files_rtdc = [path_rtdc]
 
+    files_tdms, files_rtdc, files_temp = common.setup_task_paths(
+        paths_in=files_tdms,
+        paths_out=files_rtdc,
+        allowed_input_suffixes=[".tdms"]
+    )
+
     for ii in range(len(files_tdms)):
-        ff = pathlib.Path(files_tdms[ii])
-        fr = pathlib.Path(files_rtdc[ii])
+        path_in = files_tdms[ii]
+        path_out = files_rtdc[ii]
+        path_temp = files_temp[ii]
 
         if verbose:
-            common.print_info(f"Converting {ii+1:d}/{len(files_tdms):d}: {ff}")
+            common.print_info(
+                f"Converting {ii+1:d}/{len(files_tdms):d}: {path_in}")
         # create directory
-        fr.parent.mkdir(parents=True, exist_ok=True)
+        path_out.parent.mkdir(parents=True, exist_ok=True)
         # load and export dataset
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -91,7 +94,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                     "ignore",
                     fmt_tdms.event_image.InitialFrameMissingWarning)
 
-            with new_dataset(ff) as ds:
+            with new_dataset(path_in) as ds:
                 # determine features to export
                 if compute_features:
                     features = ds.features
@@ -108,7 +111,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                     initial=skip_initial_empty_image,
                     final=skip_final_empty_image)
                 # export as hdf5
-                ds.export.hdf5(path=fr,
+                ds.export.hdf5(path=path_temp,
                                features=features,
                                filtered=True,
                                override=True,
@@ -125,15 +128,18 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
 
                 # command log
                 logs = {"dclab-tdms2rtdc": common.get_command_log(
-                    paths=[ff], custom_dict=custom_dict)}
+                    paths=[path_in], custom_dict=custom_dict)}
                 # warnings log
                 if w:
                     logs["dclab-tdms2rtdc-warnings"] = \
                         common.assemble_warnings(w)
                 logs.update(ds.logs)
-                with write_hdf5.write(fr, logs=logs, mode="append",
+                with write_hdf5.write(path_temp, logs=logs, mode="append",
                                       compression="gzip"):
                     pass
+
+                # Finally, rename temp to out
+                path_temp.rename(path_out)
 
 
 def tdms2rtdc_parser():

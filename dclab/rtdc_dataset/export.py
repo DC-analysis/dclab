@@ -184,7 +184,7 @@ class Export(object):
         """
         path = pathlib.Path(path)
         # Make sure that path ends with .rtdc
-        if not path.suffix == ".rtdc":
+        if path.suffix not in [".rtdc", ".rtdc~"]:
             path = path.parent / (path.name + ".rtdc")
         # Check if file already exists
         if not override and path.exists():

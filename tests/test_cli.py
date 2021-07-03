@@ -45,7 +45,7 @@ def test_compress_already_compressed():
     # just for the sake of comparison
     time.sleep(1)  # we need different time stamps in path_out2
     cli.compress(path_out=path_out2, path_in=path_in)
-    # this is is not trivial
+    # this is not trivial
     cli.compress(path_out=path_out3, path_in=path_out1)
 
     # the first two files should not be the same (dates are written, etc)

@@ -6,6 +6,8 @@ import h5py
 from ..rtdc_dataset import export, new_dataset, write_hdf5
 from .. import definitions as dfn
 
+from . import common
+
 
 def repack(path_in=None, path_out=None, strip_logs=False):
     """Repack/recreate an .rtdc file, optionally stripping the logs"""
@@ -16,7 +18,10 @@ def repack(path_in=None, path_out=None, strip_logs=False):
         path_out = args.output
         strip_logs = args.strip_logs
 
-    with new_dataset(path_in) as ds, h5py.File(path_out, "w") as h5:
+    path_in, path_out, path_temp = common.setup_task_paths(
+        path_in, path_out, allowed_input_suffixes=[".rtdc"])
+
+    with new_dataset(path_in) as ds, h5py.File(path_temp, "w") as h5:
         # write metadata first (to avoid resetting software version)
         # only export configuration meta data (no user-defined config)
         meta = {}
@@ -37,6 +42,9 @@ def repack(path_in=None, path_out=None, strip_logs=False):
                                compression="gzip",
                                filtarr=None,
                                time_offset=0)
+
+    # Finally, rename temp to out
+    path_temp.rename(path_out)
 
 
 def repack_parser():

@@ -125,6 +125,64 @@ def print_violation(string):
     print_info(f"\033[31m{string}")
 
 
+def setup_task_paths(paths_in, paths_out, allowed_input_suffixes):
+    """Setup directories for a CLI task
+
+    Parameters
+    ----------
+    paths_in: list of str or lsit of pathlib.Path or str or pathlib.Path
+        Input paths
+    paths_out: list of str or list of pathlib.Path or str or pathlib.Path
+        Output paths
+    allowed_input_suffixes: list
+        List of allowed input suffixes (e.g. [".rtdc"])
+
+    Returns
+    -------
+    paths_in: list of pathlib.Path or pathlib.Path
+        Input paths
+    paths_out: list of pathlib.Path or pathlib.Path
+        Output paths
+    paths_temp: list of pathlib.Path or pathlib.Path
+        Temporary paths (working path)
+    """
+    if isinstance(paths_in, list):
+        list_in = True
+    else:
+        paths_in = [paths_in]
+        list_in = False
+
+    if isinstance(paths_out, list):
+        list_out = True
+    else:
+        paths_out = [paths_out]
+        list_out = False
+
+    paths_in = [pathlib.Path(pi) for pi in paths_in]
+    for pi in paths_in:
+        if pi.suffix not in allowed_input_suffixes:
+            raise ValueError(f"Unsupported file type: '{pi.suffix}'")
+
+    paths_out = [pathlib.Path(po) for po in paths_out]
+    for ii, po in enumerate(paths_out):
+        if po.suffix != ".rtdc":
+            paths_out[ii] = po.with_name(po.name + ".rtdc")
+    [po.unlink() for po in paths_out if po.exists()]
+
+    paths_temp = [po.with_suffix(".rtdc~") for po in paths_out]
+    [pt.unlink() for pt in paths_temp if pt.exists()]
+
+    # convert lists back to paths
+    if not list_in:
+        paths_in = paths_in[0]
+
+    if not list_out:
+        paths_out = paths_out[0]
+        paths_temp = paths_temp[0]
+
+    return paths_in, paths_out, paths_temp
+
+
 def skip_empty_image_events(ds, initial=True, final=True):
     """Set a manual filter to skip inital or final empty image events"""
     if initial:

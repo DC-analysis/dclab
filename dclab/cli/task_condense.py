@@ -1,6 +1,5 @@
 """command line interface"""
 import argparse
-import pathlib
 import warnings
 
 from ..rtdc_dataset import new_dataset, write_hdf5
@@ -16,18 +15,15 @@ def condense(path_out=None, path_in=None):
         path_in = args.input
         path_out = args.output
 
-    path_in = pathlib.Path(path_in)
-    path_out = pathlib.Path(path_out)
-
-    if path_out.suffix != ".rtdc":
-        path_out = path_out.with_name(path_out.name + ".rtdc")
+    path_in, path_out, path_temp = common.setup_task_paths(
+        path_in, path_out, allowed_input_suffixes=[".rtdc", ".tdms"])
 
     logs = {}
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         with new_dataset(path_in) as ds:
-            ds.export.hdf5(path=path_out,
+            ds.export.hdf5(path=path_temp,
                            features=ds.features_scalar,
                            filtered=False,
                            compression="gzip",
@@ -42,9 +38,12 @@ def condense(path_out=None, path_in=None):
             logs["dclab-condense-warnings"] = common.assemble_warnings(w)
 
     # Write log file
-    with write_hdf5.write(path_out, logs=logs, mode="append",
+    with write_hdf5.write(path_temp, logs=logs, mode="append",
                           compression="gzip"):
         pass
+
+    # Finally, rename temp to out
+    path_temp.rename(path_out)
 
 
 def condense_parser():

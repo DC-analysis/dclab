@@ -42,14 +42,14 @@ jobs:
       if: matrix.extras == 'all'
       run: |
         pip install -e .[all]
-    - name: Install dclab with bare dependencies
-      if: matrix.extras == 'none'
-      run: |
-        pip install -e .
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor'
       run: |
         pip install -e .[dcor]
+    - name: Install dclab with minimal dependencies
+      if: matrix.extras == 'none'
+      run: |
+        pip install -e .
     - name: List installed packages
       run: |
         pip freeze

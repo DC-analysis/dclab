@@ -2,9 +2,10 @@
 Testing script for volume.py
 An ellipse is created and the analytical and numerical solution are compared
 """
-import itertools as IT
+import itertools
 
 import numpy as np
+import pytest
 
 import dclab
 from dclab.features.volume import get_volume
@@ -26,7 +27,7 @@ def centroid_of_polygon(points):
     result_x = 0
     result_y = 0
     N = len(points)
-    points = IT.cycle(points)
+    points = itertools.cycle(points)
     x1, y1 = next(points)
     for _i in range(N):
         x0, y0 = x1, y1
@@ -68,6 +69,7 @@ def get_ellipse_coords(a, b, x=0.0, y=0.0, angle=0.0, k=2):
 
 
 def test_af_volume():
+    pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     vol = ds["volume"]
     # There are a lot of nans, because the contour is not given everywhere

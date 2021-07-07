@@ -7,6 +7,9 @@ import dclab
 from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup, rlibs
 
 
+pytest.importorskip("rpy2")
+
+
 def standard_datasets(set_region=True):
     features = [
         [100, 99, 80, 120, 140, 150, 100, 100, 110, 111,

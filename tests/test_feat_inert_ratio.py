@@ -12,6 +12,7 @@ from helper_methods import retrieve_data
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_af_inert_ratio_cvx():
+    pytest.importorskip("nptdms")
     # Brightness of the image
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.
@@ -30,6 +31,7 @@ def test_af_inert_ratio_cvx():
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_af_inert_ratio_prnc():
+    pytest.importorskip("nptdms")
     # Brightness of the image
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This will cause a zero-padding warning:
@@ -47,6 +49,7 @@ def test_af_inert_ratio_prnc():
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_af_inert_ratio_raw():
+    pytest.importorskip("nptdms")
     # Brightness of the image
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # This is something low-level and should not be done in a script.

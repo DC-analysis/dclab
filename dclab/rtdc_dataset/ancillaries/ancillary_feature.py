@@ -170,6 +170,7 @@ class AncillaryFeature:
                 msg = "Growing feature {} in {} by {} to match event number!"
                 warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
                               BadFeatureSizeWarning)
+                data_dict[key] = np.array(data_dict[key], dtype=float)
                 data_dict[key].resize(len(rtdc_ds), refcheck=False)
                 data_dict[key][-dsize:] = np.nan
             elif dsize < 0:

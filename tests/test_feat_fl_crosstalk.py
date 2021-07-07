@@ -1,5 +1,7 @@
 import numpy as np
 
+import pytest
+
 import dclab
 from dclab.features.fl_crosstalk import correct_crosstalk
 from dclab.rtdc_dataset import ancillaries
@@ -8,6 +10,7 @@ from helper_methods import retrieve_data
 
 
 def test_af_fl_crosstalk_2chan():
+    pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
     # simple example
     analysis = {"calculation": {"crosstalk fl12": 0,

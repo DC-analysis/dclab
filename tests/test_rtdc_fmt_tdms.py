@@ -1,5 +1,4 @@
 """Test tdms file format"""
-
 import os
 import pathlib
 import shutil
@@ -7,7 +6,6 @@ import sys
 import tempfile
 
 import numpy as np
-import nptdms
 import pytest
 
 from dclab import new_dataset
@@ -16,7 +14,11 @@ import dclab.rtdc_dataset.fmt_tdms.naming
 from helper_methods import retrieve_data, example_data_sets
 
 
+nptdms = pytest.importorskip("nptdms")
+
+
 def test_compatibility_minimal():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     assert ds.config["setup"]["channel width"] == 20
     assert ds.config["setup"]["chip region"].lower() == "channel"
@@ -27,6 +29,7 @@ def test_compatibility_minimal():
 @pytest.mark.skipif(sys.version_info < (3, 6),
                     reason="requires python3.6 or higher")
 def test_compatibility_channel_width():
+    pytest.importorskip("nptdms")
     # At some point, "Channel width" was replaced by "Channel width [um]"
     path = retrieve_data("rtdc_data_minimal.zip")
     para = path.parent / "M1_para.ini"
@@ -49,6 +52,7 @@ def test_compatibility_shapein201():
 
 
 def test_contains_non_scalar():
+    pytest.importorskip("nptdms")
     ds1 = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert "contour" in ds1
     assert "image" in ds1
@@ -145,6 +149,7 @@ def test_contour_not_initialized():
 
 
 def test_fluorescence_config():
+    pytest.importorskip("nptdms")
     ds1 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     assert "fluorescence" not in ds1.config
     ds2 = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
@@ -152,7 +157,7 @@ def test_fluorescence_config():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_image.'
+                            + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
 def test_image_basic():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
@@ -175,14 +180,14 @@ def test_image_corrupt():
     vpath.touch()
     try:
         new_dataset(path)
-    except dclab.rtdc_dataset.fmt_tdms.event_image.InvalidVideoFileError:
+    except dclab.rtdc_dataset.fmt_tdms.exc.InvalidVideoFileError:
         pass
     else:
         assert False
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_image.CorruptFrameWarning')
+                            + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_image_out_of_bounds():
     ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert len(ds["image"]) == 3
@@ -205,7 +210,7 @@ def test_index_slicing_tdms_fails(feat, idxs):
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_image.'
+                            + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
@@ -269,7 +274,7 @@ def test_load_tdms_simple():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_image.'
+                            + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
@@ -350,6 +355,7 @@ def test_parameters_txt():
 
 
 def test_pixel_size():
+    pytest.importorskip("nptdms")
     path = retrieve_data("rtdc_data_minimal.zip")
     para = path.parent / "M1_para.ini"
     data = para.open("r").read()
@@ -412,7 +418,7 @@ def test_trace_methods():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_trace.'
+                            + 'fmt_tdms.exc.'
                             + 'MultipleSamplesPerEventFound')  # desired
 def test_trace_wrong_samples_per_event():
     """The "samples per event" should be a constant for trace data

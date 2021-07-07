@@ -58,15 +58,16 @@ def split(path_in=None, path_out=None, split_events=10000,
         warnings.simplefilter("always")
         # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
         warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
-        # ignore SlowVideoWarning
-        warnings.simplefilter("ignore",
-                              fmt_tdms.event_image.SlowVideoWarning)
-        if skip_initial_empty_image:
-            # If the initial frame is skipped when empty,
-            # suppress any related warning messages.
-            warnings.simplefilter(
-                "ignore",
-                fmt_tdms.event_image.InitialFrameMissingWarning)
+        if fmt_tdms.NPTDMS_AVAILABLE:  # tdms-related warning filters
+            # ignore SlowVideoWarning
+            warnings.simplefilter("ignore",
+                                  fmt_tdms.event_image.SlowVideoWarning)
+            if skip_initial_empty_image:
+                # If the initial frame is skipped when empty,
+                # suppress any related warning messages.
+                warnings.simplefilter(
+                    "ignore",
+                    fmt_tdms.event_image.InitialFrameMissingWarning)
 
         with new_dataset(path_in) as ds:
             for ll in ds.logs:

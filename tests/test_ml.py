@@ -4,12 +4,13 @@ import tempfile
 
 import numpy as np
 import pytest
-import tensorflow as tf
 
 import dclab
 from dclab import ml, new_dataset
 
 from helper_methods import example_data_dict
+
+tf = pytest.importorskip("tensorflow")
 
 
 def test_af_ml_class_basic():

@@ -133,6 +133,7 @@ def test_lazy_contour_type():
 
 
 def test_simple_contour():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     # Note: contour "3" in ds is bad!
     cin = ds["contour"][2]

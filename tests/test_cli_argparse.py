@@ -91,6 +91,7 @@ def test_condense_missing_argument():
 
 
 def test_join_tdms():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
@@ -190,6 +191,7 @@ def test_split():
 
 
 def test_tdms2rtdc_features():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")

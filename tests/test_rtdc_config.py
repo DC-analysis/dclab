@@ -267,6 +267,21 @@ def test_user_section_set_save_reload_fmt_dcor():
         assert ds2.config["user"] == metadata
 
 
+def test_user_section_set_save_reload_fmt_hdf5_bad_values():
+    """Check that NoneType is not allowed for HDF5"""
+    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    # None is not allowed by hdf5
+    metadata = {"channel area": None,
+                "inlet": True,
+                "n_constrictions": 3,
+                "channel information": "other information"}
+    with new_dataset(h5path) as ds:
+        ds.config.update({"user": metadata})
+        expath = h5path.with_name("exported.rtdc")
+        with pytest.raises(TypeError):
+            ds.export.hdf5(expath, features=ds.features_innate)
+
+
 def test_user_section_set_save_reload_fmt_hdf5_basic():
     """Check that 'user' section metadata works for RTDC_HDF5"""
     h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")

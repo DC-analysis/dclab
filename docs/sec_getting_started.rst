@@ -151,8 +151,8 @@ you might want to check out the :ref:`examples section <sec_examples>` and the
 :ref:`advanced scripting section <sec_advanced_scripting>`.
 
 
-Citing dclab
-============
+How to cite
+===========
 If you use dclab in a scientific publication, please cite it with:
 
 .. pull-quote::
@@ -160,3 +160,6 @@ If you use dclab in a scientific publication, please cite it with:
    Paul Müller and others (2015), dclab version X.X.X: Python library for the
    post-measurement analysis of real-time deformability cytometry data sets
    [Software]. Available at https://github.com/ZELLMECHANIK-DRESDEN/dclab.
+
+If the journal does not accept ``and others``, you can fill in the missing
+names from the `credits file <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/CREDITS>`_.

@@ -21,7 +21,7 @@ class AutoRConsole(object):
         """
         By default, this console always returns "yes" when asked a
         question. If you need something different, you can subclass
-        and override `consoleread` fcuntion. The console stream is
+        and override `consoleread` fucntion. The console stream is
         recorded in `self.stream`.
         """
         self.stream = [["init", "Starting RConsole class\n"]]

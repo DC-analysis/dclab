@@ -39,15 +39,15 @@ jobs:
         python -m pip install codecov coverage flake8 pytest
         # install dependencies
     - name: Install dclab with all possible dependencies
-      if: matrix.extras == "all"
+      if: ${{ matrix.extras }} == 'all'
       run: |
         pip install -e .[all]
     - name: Install dclab with bare dependencies
-      if: matrix.extras == "none"
+      if: ${{ matrix.extras }} == 'none'
       run: |
         pip install -e .
     - name: Install dclab with DCOR dependencies
-      if: matrix.extras == "dcor"
+      if: ${{ matrix.extras }} == 'dcor'
       run: |
         pip install -e .[dcor]
     - name: List installed packages

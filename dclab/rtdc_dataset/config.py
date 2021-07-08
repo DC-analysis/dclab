@@ -23,6 +23,7 @@ class BadUserConfigurationKeyWarning(UserWarning):
 class BadUserConfigurationValueWarning(UserWarning):
     pass
 
+
 class ConfigurationDict(dict):
     def __init__(self, section=None, *args, **kwargs):
         """A case-insensitive dict that is section-aware

@@ -113,11 +113,9 @@ class Filter(object):
 
         # Determine which data was updated
         for skey in list(cfg_cur.keys()):
-            if skey not in cfg_old:
-                cfg_old[skey] = 'none'
-            if cfg_cur[skey] != cfg_old[skey]:
+            if cfg_cur[skey] != cfg_old.get(skey, None):
                 newkeys.append(skey)
-                oldvals.append(cfg_old[skey])
+                oldvals.append(cfg_old.get(skey, None))
                 newvals.append(cfg_cur[skey])
 
         # 1. Invalid filters

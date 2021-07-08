@@ -2,6 +2,7 @@ import pathlib
 import h5py
 import numpy as np
 import pytest
+from scipy.ndimage.filters import gaussian_filter
 
 import dclab
 from dclab.rtdc_dataset.plugins.plugin_feature import (
@@ -41,6 +42,12 @@ def compute_multiple_plugin_features(rtdc_ds):
     return {"circ_per_area": circ_per_area, "circ_times_area": circ_times_area}
 
 
+def compute_non_scalar_plugin_feature(rtdc_ds):
+    """Basic non-scalar plugin method"""
+    image_gauss_filter = gaussian_filter(rtdc_ds["image"], sigma=(0, 1, 1))
+    return {"image_gauss_filter": image_gauss_filter}
+
+
 def example_plugin_info_single_feature():
     """plugin info for a single feature"""
     info = {
@@ -72,6 +79,24 @@ def example_plugin_info_multiple_feature():
         "config required": [],
         "method check required": lambda x: True,
         "scalar feature": [True, True],
+        "version": "0.1.0",
+    }
+    return info
+
+
+def example_plugin_info_non_scalar_feature():
+    """plugin info for non-scalar feature"""
+    info = {
+        "method": compute_non_scalar_plugin_feature,
+        "description": "This plugin will compute a non-scalar feature",
+        "long description": "This non-scalar feature is a Gaussian filter of "
+                            "the image",
+        "feature names": ["image_gauss_filter"],
+        "feature labels": ["Gaussian Filtered Image"],
+        "features required": ["image"],
+        "config required": [],
+        "method check required": lambda x: True,
+        "scalar feature": [False],
         "version": "0.1.0",
     }
     return info
@@ -308,6 +333,18 @@ def test_pf_initialize_plugin_feature_single():
     # check that PlugInFeature exists independent of loaded ds
     ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
     assert "circ_per_area" in ds2
+
+
+def test_pf_initialize_plugin_feature_non_scalar():
+    """Check that the non-scalar plugin feature works"""
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    info = example_plugin_info_non_scalar_feature()
+    PlugInFeature("image_gauss_filter", info)
+    assert "image_gauss_filter" in ds
+
+    image_gauss_filter = ds["image_gauss_filter"]
+    assert np.allclose(image_gauss_filter,
+                       gaussian_filter(ds["image"], sigma=(0, 1, 1)))
 
 
 def test_pf_initialize_plugin_features_multiple():

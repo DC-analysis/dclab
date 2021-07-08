@@ -3,7 +3,9 @@
    size of ancillary features
  - fix: dclab-split did not work when nptdms is not installed
  - tests: skip tests that require nptdms, requests, or rpy2 if those
+ - enh: add check to warn users from setting None-type config values
    pacakages are not installed
+ - tests: add test for non-scalar plugin feature
  - ci: run tests with different setup.py-extras installed
 0.34.4
  - fix: use temporary file names during CLI operations

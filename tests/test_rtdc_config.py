@@ -108,6 +108,8 @@ def test_user_section_allowed_key_types():
         ds.config["user"][[5, 12.3, False, "a word"]] = "a word"
     with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
         ds.config["user"][{"name": 12.3, False: "a word"}] = "a word"
+    with pytest.warns(dccfg.BadUserConfigurationValueWarning):
+        ds.config["user"]["name"] = None
 
     assert len(ds.config["user"]) == 1
     assert isinstance(ds.config["user"]["a string"], str)

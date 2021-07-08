@@ -10,6 +10,9 @@ import pytest
 from helper_methods import retrieve_data
 
 
+pytest.importorskip("requests")
+
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     try:
         s.connect(("dcor.mpl.mpg.de", 443))

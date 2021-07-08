@@ -15,3 +15,23 @@ class InvalidTDMSFileFormatError(BaseException):
 class InvalidVideoFileError(BaseException):
     """Used for bad video files"""
     pass
+
+
+class CorruptFrameWarning(UserWarning):
+    """Video frame corrupt or missing"""
+    pass
+
+
+class InitialFrameMissingWarning(CorruptFrameWarning):
+    """Initial frame of video is missing"""
+    pass
+
+
+class SlowVideoWarning(UserWarning):
+    """Getting video data will be slow"""
+    pass
+
+
+class MultipleSamplesPerEventFound(UserWarning):
+    """Ambiguities in trace data"""
+    pass

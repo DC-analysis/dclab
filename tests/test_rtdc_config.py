@@ -35,11 +35,13 @@ def equals(a, b):
 
 
 def test_config_basic():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert ds.config["imaging"]["roi size y"] == 96.
 
 
 def test_config_invalid_key():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
@@ -53,6 +55,7 @@ def test_config_invalid_key():
 
 
 def test_config_save_load():
+    pytest.importorskip("nptdms")
     # Download and extract data
     tdms_path = retrieve_data(example_data_sets[0])
     ds = new_dataset(tdms_path)
@@ -67,6 +70,7 @@ def test_config_save_load():
 
 
 def test_config_update():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     assert ds.config["imaging"]["roi size y"] == 96.
     ds.config["calculation"].update({
@@ -341,10 +345,11 @@ def test_user_section_set_save_reload_fmt_hierarchy():
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.export.'
                             + 'LimitingExportSizeWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_image.'
+                            + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
 def test_user_section_set_save_reload_fmt_tdms():
     """Check that 'user' section metadata works for RTDC_TDMS"""
+    pytest.importorskip("nptdms")
     h5path = retrieve_data("rtdc_data_traces_video.zip")
     metadata = {"channel area": 100.5,
                 "inlet": True,

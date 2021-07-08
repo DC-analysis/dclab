@@ -72,6 +72,7 @@ def test_complete_user_metadata():
 
 
 def test_exact():
+    pytest.importorskip("nptdms")
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     viol, aler, info = check_dataset(h5path)
     known_viol = [
@@ -398,6 +399,7 @@ def test_ic_invalid_dataset():
 @pytest.mark.skipif(sys.version_info < (3, 6),
                     reason="requires python3.6 or higher")
 def test_invalid_medium():
+    pytest.importorskip("nptdms")
     h5path = retrieve_data("rtdc_data_minimal.zip")
     para = h5path.with_name("M1_para.ini")
     cfg = para.read_text().split("\n")
@@ -413,6 +415,7 @@ def test_invalid_medium():
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_load_with():
+    pytest.importorskip("nptdms")
     h5path = retrieve_data("rtdc_data_minimal.zip")
     known_aler = [
         "Metadata: Missing key [setup] 'flow rate sample'",
@@ -433,6 +436,7 @@ def test_load_with():
 
 
 def test_missing_file():
+    pytest.importorskip("nptdms")
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     h5path.with_name("M1_para.ini").unlink()
     try:
@@ -459,6 +463,7 @@ def test_ml_class():
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_no_fluorescence():
+    pytest.importorskip("nptdms")
     h5path = retrieve_data("rtdc_data_minimal.zip")
     _, _, info = check_dataset(h5path)
     known_info = [
@@ -509,6 +514,7 @@ def test_temperature():
 
 
 def test_wrong_samples_per_event():
+    pytest.importorskip("nptdms")
     h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
     with h5path.with_name("M1_para.ini").open("a") as fd:
         fd.write("Samples Per Event = 10\n")

@@ -15,8 +15,9 @@ from helper_methods import example_data_dict, retrieve_data, \
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_image.CorruptFrameWarning')
+                            + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_export():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data(example_data_sets[1]))
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
@@ -26,8 +27,9 @@ def test_avi_export():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'fmt_tdms.event_image.CorruptFrameWarning')
+                            + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_override():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data(example_data_sets[1]))
 
     edest = tempfile.mkdtemp()
@@ -42,6 +44,7 @@ def test_avi_override():
 
 
 def test_avi_no_images():
+    pytest.importorskip("imageio")
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=127, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -57,6 +60,7 @@ def test_avi_no_images():
 
 
 def test_fcs_export():
+    pytest.importorskip("fcswrite")
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=222, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -80,6 +84,7 @@ def test_fcs_export():
 
 
 def test_fcs_override():
+    pytest.importorskip("fcswrite")
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=212, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -96,6 +101,7 @@ def test_fcs_override():
 
 
 def test_fcs_not_filtered():
+    pytest.importorskip("fcswrite")
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=127, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -367,6 +373,7 @@ def test_hdf5_override():
 
 
 def test_hdf5_trace_from_tdms():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
 
     edest = tempfile.mkdtemp()

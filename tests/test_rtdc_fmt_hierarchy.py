@@ -35,6 +35,7 @@ def test_config_calculation():
 
 
 def test_event_count():
+    pytest.importorskip("nptdms")
     tdms_path = retrieve_data(example_data_sets[1])
     ds = new_dataset(tdms_path)
     ds.filter.manual[0] = False
@@ -138,6 +139,7 @@ def test_features_loaded():
 
 
 def test_hierarchy_from_tdms():
+    pytest.importorskip("nptdms")
     tdms_path = retrieve_data(example_data_sets[1])
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
@@ -178,6 +180,7 @@ def test_index_slicing(feat, idxs):
                                   [0, 1, 2], [True, True, True, False]])
 def test_index_slicing_tdms_fails(feat, idxs):
     """The tdms-file format does not support slice/array indexing"""
+    pytest.importorskip("nptdms")
     data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     ds = new_dataset(data)
     ds.filter.manual[2] = False
@@ -265,6 +268,7 @@ def test_manual_exclude_parent_changed():
 
 
 def test_same_hash_different_identifier():
+    pytest.importorskip("nptdms")
     tdms_path = retrieve_data(example_data_sets[1])
     ds1 = new_dataset(tdms_path)
     ds1.filter.manual[0] = False

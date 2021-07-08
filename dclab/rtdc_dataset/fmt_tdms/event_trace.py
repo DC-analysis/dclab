@@ -8,11 +8,7 @@ import numpy as np
 from ... import definitions as dfn
 
 from . import naming
-from .exc import InvalidTDMSFileFormatError
-
-
-class MultipleSamplesPerEventFound(UserWarning):
-    pass
+from .exc import InvalidTDMSFileFormatError, MultipleSamplesPerEventFound
 
 
 class TraceColumn(object):

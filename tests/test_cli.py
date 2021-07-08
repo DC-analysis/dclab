@@ -7,8 +7,8 @@ import pathlib
 import shutil
 
 from dclab import cli, new_dataset, rtdc_dataset
+
 import h5py
-import imageio
 import numpy as np
 import pytest
 
@@ -88,6 +88,7 @@ def test_condense():
 
 
 def test_join_tdms():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
@@ -105,6 +106,7 @@ def test_join_tdms():
 
 
 def test_join_tdms_logs():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
@@ -255,6 +257,7 @@ def test_split_traces():
 
 
 def test_tdms2rtdc():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
@@ -273,6 +276,7 @@ def test_tdms2rtdc():
 
 
 def test_tdms2rtdc_bulk():
+    pytest.importorskip("nptdms")
     path_data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     path_wd = pathlib.Path(
         tempfile.mkdtemp(prefix="tdms2rtdc_bulk_")).resolve()
@@ -308,6 +312,7 @@ def test_tdms2rtdc_bulk():
 
 
 def test_tdms2rtdc_features():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
@@ -324,6 +329,8 @@ def test_tdms2rtdc_features():
 
 
 def test_tdms2rtdc_remove_nan_image():
+    pytest.importorskip("nptdms")
+    imageio = pytest.importorskip("imageio")
     path_in = retrieve_data("rtdc_data_traces_video_bright.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
@@ -363,6 +370,7 @@ def test_tdms2rtdc_remove_nan_image():
 
 
 def test_tdms2rtdc_update_roi_size():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_traces_video.zip")
     # set wrong roi sizes
     camin = path_in.with_name("M1_camera.ini")
@@ -392,6 +400,7 @@ def test_tdms2rtdc_update_roi_size():
 
 
 def test_tdms2rtdc_update_sample_per_events():
+    pytest.importorskip("nptdms")
     path_in = retrieve_data("rtdc_data_traces_2flchan.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")

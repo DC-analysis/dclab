@@ -1,5 +1,7 @@
+import pytest
 
 from dclab import new_dataset
+
 
 from helper_methods import example_data_dict, retrieve_data, example_data_sets
 
@@ -11,6 +13,7 @@ def test_hash_dict():
 
 
 def test_hash_hierarchy():
+    pytest.importorskip("nptdms")
     tdms_path = retrieve_data(example_data_sets[1])
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
@@ -18,6 +21,7 @@ def test_hash_hierarchy():
 
 
 def test_hash_tdms():
+    pytest.importorskip("nptdms")
     tdms_path = retrieve_data(example_data_sets[1])
     ds = new_dataset(tdms_path)
     assert ds.hash == "92601489292dc9bf9fc040f87d9169c0"

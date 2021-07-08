@@ -9,22 +9,11 @@ import warnings
 import imageio
 import numpy as np
 
-from .exc import InvalidVideoFileError
+from .exc import (InvalidVideoFileError, CorruptFrameWarning,
+                  InitialFrameMissingWarning, SlowVideoWarning)
 
 
 ISWIN = sys.platform.startswith("win")
-
-
-class CorruptFrameWarning(UserWarning):
-    pass
-
-
-class InitialFrameMissingWarning(CorruptFrameWarning):
-    pass
-
-
-class SlowVideoWarning(UserWarning):
-    pass
 
 
 class ImageColumn(object):

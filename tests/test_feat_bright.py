@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+import pytest
 
 import dclab
 from dclab import new_dataset
@@ -58,6 +59,7 @@ def test_af_brightness_called_once(monkeypatch):
 
 
 def test_simple_bright():
+    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     for ii in range(2, 7):
         # This stripped dataset has only 7 video frames / contours

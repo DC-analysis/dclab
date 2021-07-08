@@ -1,5 +1,4 @@
 """RT-DC .tdms file format"""
-
 from distutils.version import LooseVersion
 import pathlib
 import time

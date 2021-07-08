@@ -54,6 +54,7 @@ def setup_fake_af():
 
 
 def test_af_0basic():
+    pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data(example_data_sets[1]))
     for cc in ['fl1_pos',
                'frame',
@@ -97,6 +98,7 @@ def test_af_0error():
 
 
 def test_af_aspect():
+    pytest.importorskip("nptdms")
     # Aspect ratio of the data
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
     aspect = ds["aspect"]
@@ -105,6 +107,7 @@ def test_af_aspect():
 
 
 def test_af_area_ratio():
+    pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     comp_ratio = ds["area_ratio"]
     # The convex area is always >= the raw area
@@ -126,6 +129,7 @@ def test_af_method_called_once_with_shared_pipeline(
     ancillary features, the `method` itself is only called once. All ancillary
     features that share the `method` will be populated in this single call.
     """
+    pytest.importorskip("nptdms")
     af1, af2 = fake_af_cleanup_fixture
     ds = dclab.new_dataset(retrieve_data(path))
     assert af1.feature_name not in ds.features_innate
@@ -156,6 +160,7 @@ def test_af_method_called_once_with_shared_pipeline(
 @pytest.mark.parametrize("path", example_data_sets)
 def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
     """Check whether features are recomputed when the hash changes"""
+    pytest.importorskip("nptdms")
     af1, af2 = fake_af_cleanup_fixture
     ds = dclab.new_dataset(retrieve_data(path))
     assert af1.feature_name not in ds.features_innate
@@ -178,6 +183,7 @@ def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
 
 
 def test_af_time():
+    pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     tt = ds["time"]
     assert tt[0] == 0

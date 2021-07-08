@@ -20,6 +20,9 @@ class BadUserConfigurationKeyWarning(UserWarning):
     pass
 
 
+class BadUserConfigurationValueWarning(UserWarning):
+    pass
+
 class ConfigurationDict(dict):
     def __init__(self, section=None, *args, **kwargs):
         """A case-insensitive dict that is section-aware
@@ -51,6 +54,12 @@ class ConfigurationDict(dict):
                 valid = False
         else:
             valid = True
+        if value is None:
+            warnings.warn(
+                f"Bad value '{value}' for [{self.section}]: '{key}'!",
+                BadUserConfigurationValueWarning,
+            )
+            valid = False
         if valid:
             # only set valid keys
             super(ConfigurationDict, self).__setitem__(key, value)

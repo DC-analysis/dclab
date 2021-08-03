@@ -1,3 +1,5 @@
+0.34.6
+ - tests: add documentation for test data (#119)
 0.34.5
  - fix: cast data to float when filling with nan values when checking the
    size of ancillary features

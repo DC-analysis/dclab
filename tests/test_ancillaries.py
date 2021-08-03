@@ -5,8 +5,7 @@ import dclab
 from dclab.rtdc_dataset.ancillaries.ancillary_feature import (
     AncillaryFeature, BadFeatureSizeWarning)
 
-from helper_methods import (
-    example_data_dict, retrieve_data, example_data_sets, calltracker)
+from helper_methods import example_data_dict, retrieve_data, calltracker
 
 
 @pytest.fixture
@@ -55,7 +54,7 @@ def setup_fake_af():
 
 def test_af_0basic():
     pytest.importorskip("nptdms")
-    ds = dclab.new_dataset(retrieve_data(example_data_sets[1]))
+    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     for cc in ['fl1_pos',
                'frame',
                'size_x',
@@ -122,7 +121,13 @@ def test_af_deform():
     assert np.allclose(ds["deform"], 1 - ds["circ"])
 
 
-@pytest.mark.parametrize("path", example_data_sets)
+@pytest.mark.parametrize("path", [
+    "rtdc_data_minimal.zip",
+    "rtdc_data_traces_video.zip",
+    "rtdc_data_traces_video_bright.zip",
+    "rtdc_data_traces_video_large_fov.zip",
+    "rtdc_data_shapein_v2.0.1.zip",
+    ])
 def test_af_method_called_once_with_shared_pipeline(
         fake_af_cleanup_fixture, path):
     """Verifies that when an `AncillaryFeature.method` is shared between
@@ -157,7 +162,13 @@ def test_af_method_called_once_with_shared_pipeline(
     assert len(ds._ancillaries) == 2 + tdms_time_feature
 
 
-@pytest.mark.parametrize("path", example_data_sets)
+@pytest.mark.parametrize("path", [
+    "rtdc_data_minimal.zip",
+    "rtdc_data_traces_video.zip",
+    "rtdc_data_traces_video_bright.zip",
+    "rtdc_data_traces_video_large_fov.zip",
+    "rtdc_data_shapein_v2.0.1.zip",
+    ])
 def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
     """Check whether features are recomputed when the hash changes"""
     pytest.importorskip("nptdms")

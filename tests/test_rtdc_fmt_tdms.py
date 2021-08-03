@@ -11,7 +11,7 @@ import pytest
 from dclab import new_dataset
 import dclab.rtdc_dataset.fmt_tdms.naming
 
-from helper_methods import retrieve_data, example_data_sets
+from helper_methods import retrieve_data
 
 
 nptdms = pytest.importorskip("nptdms")
@@ -94,7 +94,7 @@ def test_contour_corrupt():
 
 def test_contour_naming():
     # Test that we always find the correct contour name
-    ds = new_dataset(retrieve_data(example_data_sets[0]))
+    ds = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
     dp = pathlib.Path(ds.path).resolve()
     dn = dp.parent
     contfile = dn / "M1_0.120000ul_s_contours.txt"
@@ -216,7 +216,7 @@ def test_index_slicing_tdms_fails(feat, idxs):
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_large_fov():
-    ds = new_dataset(retrieve_data(example_data_sets[3]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video_large_fov.zip"))
     # initial image is missing
     assert np.allclose(ds["image"][0], 0)
     # initial contour is empty
@@ -233,10 +233,15 @@ def test_large_fov():
     assert np.allclose(bavg[1], bcom[1])
 
 
-def test_load_tdms_all():
-    for ds in example_data_sets:
-        tdms_path = retrieve_data(ds)
-        ds = new_dataset(tdms_path)
+@pytest.mark.parametrize("exname", [
+    "rtdc_data_minimal.zip",
+    "rtdc_data_traces_video.zip",
+    "rtdc_data_traces_video_bright.zip",
+    "rtdc_data_traces_video_large_fov.zip",
+    "rtdc_data_shapein_v2.0.1.zip"])
+def test_load_tdms_all(exname):
+    tdms_path = retrieve_data(exname)
+    new_dataset(tdms_path)
 
 
 def test_load_tdms_avi_files_1():
@@ -268,7 +273,7 @@ def test_load_tdms_avi_files_2():
 
 
 def test_load_tdms_simple():
-    tdms_path = retrieve_data(example_data_sets[0])
+    tdms_path = retrieve_data("rtdc_data_minimal.zip")
     ds = new_dataset(tdms_path)
     assert ds.filter.all.shape[0] == 156
 
@@ -367,7 +372,7 @@ def test_pixel_size():
 
 
 def test_project_path():
-    tfile = retrieve_data(example_data_sets[0])
+    tfile = retrieve_data("rtdc_data_minimal.zip")
     ds = dclab.new_dataset(tfile)
     assert ds.hash == "69733e31b005c145997fac8a22107ded"
     assert ds.format == "tdms"

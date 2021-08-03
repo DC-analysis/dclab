@@ -7,7 +7,7 @@ import pytest
 from dclab import new_dataset
 from dclab.rtdc_dataset import fmt_hierarchy, write
 
-from helper_methods import example_data_dict, example_data_sets, retrieve_data
+from helper_methods import example_data_dict, retrieve_data
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -36,7 +36,7 @@ def test_config_calculation():
 
 def test_event_count():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data(example_data_sets[1])
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
     ds = new_dataset(tdms_path)
     ds.filter.manual[0] = False
     ch = new_dataset(ds)
@@ -140,7 +140,7 @@ def test_features_loaded():
 
 def test_hierarchy_from_tdms():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data(example_data_sets[1])
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
 
@@ -269,7 +269,7 @@ def test_manual_exclude_parent_changed():
 
 def test_same_hash_different_identifier():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data(example_data_sets[1])
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
     ds1 = new_dataset(tdms_path)
     ds1.filter.manual[0] = False
     ch1 = new_dataset(ds1)

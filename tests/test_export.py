@@ -10,15 +10,14 @@ import pytest
 import dclab
 from dclab import dfn, new_dataset
 
-from helper_methods import example_data_dict, retrieve_data, \
-    example_data_sets
+from helper_methods import example_data_dict, retrieve_data
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_export():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
     ds.export.avi(path=f1)
@@ -30,7 +29,7 @@ def test_avi_export():
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_override():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")

@@ -14,8 +14,7 @@ from dclab.rtdc_dataset import new_dataset
 import dclab.rtdc_dataset.config as dccfg
 from test_rtdc_fmt_dcor import DCOR_AVAILABLE
 
-from helper_methods import (
-    retrieve_data, example_data_sets, example_data_dict)
+from helper_methods import retrieve_data, example_data_dict
 
 
 def equals(a, b):
@@ -36,13 +35,13 @@ def equals(a, b):
 
 def test_config_basic():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert ds.config["imaging"]["roi size y"] == 96.
 
 
 def test_config_invalid_key():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
@@ -57,7 +56,7 @@ def test_config_invalid_key():
 def test_config_save_load():
     pytest.importorskip("nptdms")
     # Download and extract data
-    tdms_path = retrieve_data(example_data_sets[0])
+    tdms_path = retrieve_data("rtdc_data_minimal.zip")
     ds = new_dataset(tdms_path)
     cfg_file = tempfile.mktemp(prefix="test_dclab_rtdc_config_")
     ds.config.save(cfg_file)
@@ -71,7 +70,7 @@ def test_config_save_load():
 
 def test_config_update():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data(example_data_sets[1]))
+    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
     assert ds.config["imaging"]["roi size y"] == 96.
     ds.config["calculation"].update({
         "crosstalk fl12": 0.1,

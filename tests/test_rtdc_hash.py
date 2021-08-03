@@ -3,7 +3,7 @@ import pytest
 from dclab import new_dataset
 
 
-from helper_methods import example_data_dict, retrieve_data, example_data_sets
+from helper_methods import example_data_dict, retrieve_data
 
 
 def test_hash_dict():
@@ -14,7 +14,7 @@ def test_hash_dict():
 
 def test_hash_hierarchy():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data(example_data_sets[1])
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
     assert ds2.hash == "3e942ba6e1cb333d3607edaba5f2c618"
@@ -22,7 +22,7 @@ def test_hash_hierarchy():
 
 def test_hash_tdms():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data(example_data_sets[1])
+    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
     ds = new_dataset(tdms_path)
     assert ds.hash == "92601489292dc9bf9fc040f87d9169c0"
 

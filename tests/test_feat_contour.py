@@ -16,7 +16,7 @@ from helper_methods import retrieve_data
 
 
 def test_af_contour_basic():
-    ds1 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    ds1 = dclab.new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     # export all data except for contour data
     features = ds1.features
     features.remove("contour")
@@ -41,7 +41,7 @@ def test_af_contour_basic():
 
 
 def test_artefact():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_artefact.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl-no-contour_2019.zip"))
     # This would raise a "dclab.features.contour.NoValidContourFoundError:
     # Event 1, No contour found!" in dclab version <= 0.22.1
     cont = ds["contour"][1]
@@ -49,7 +49,7 @@ def test_artefact():
 
 
 def test_lazy_contour_basic():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     masks = ds["mask"][:]
     cont1 = get_contour_lazily(masks)
     cont2 = get_contour(masks)
@@ -65,7 +65,7 @@ def test_lazy_contour_basic():
                                     False, False, False])
                           ])
 def test_lazy_contour_slicing(idxs):
-    h5path = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    h5path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
 
     contours_ref = []
     with h5py.File(h5path, "a") as h5:
@@ -101,7 +101,7 @@ def test_lazy_contour_slicing(idxs):
 
 
 def test_lazy_contour_single():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     masks = ds["mask"][:]
     c_all = get_contour_lazily(masks)
     c_0 = get_contour_lazily(masks[0])
@@ -112,7 +112,7 @@ def test_lazy_contour_single():
 
 
 def test_lazy_contour_timing():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     masks = ds["mask"][:]
     t0 = time.perf_counter()
     get_contour_lazily(masks)
@@ -123,7 +123,7 @@ def test_lazy_contour_timing():
 
 
 def test_lazy_contour_type():
-    ds1 = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    ds1 = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     c1 = ds1["contour"]
     # force computation of contour data
     ds1._events._features.remove("contour")
@@ -134,7 +134,7 @@ def test_lazy_contour_type():
 
 def test_simple_contour():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
     # Note: contour "3" in ds is bad!
     cin = ds["contour"][2]
     mask = np.zeros_like(ds["image"][2], dtype="bool")
@@ -155,7 +155,7 @@ def test_simple_contour():
 
 
 def test_volume():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     mask = [mi for mi in ds["mask"]]
     cont1 = [ci for ci in ds["contour"]]
     cont2 = get_contour(mask)

@@ -16,7 +16,7 @@ from helper_methods import retrieve_data
 
 
 def test_compress():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("compressed.rtdc")
 
@@ -35,7 +35,7 @@ def test_compress():
 
 def test_compress_already_compressed():
     """By default, an already compressed dataset should not be compressed"""
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out1 = path_in.with_name("compressed_1.rtdc")
     path_out2 = path_in.with_name("compressed_2.rtdc")
@@ -58,7 +58,7 @@ def test_compress_already_compressed():
 
 def test_compress_already_compressed_force():
     """An extension of the above test to make sure "force" works"""
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out1 = path_in.with_name("compressed_1.rtdc")
     path_out2 = path_in.with_name("compressed_not_a_copy_of_1.rtdc")
@@ -74,7 +74,7 @@ def test_compress_already_compressed_force():
 
 
 def test_condense():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("condensed.rtdc")
 
@@ -89,7 +89,7 @@ def test_condense():
 
 def test_join_tdms():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_in = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -107,7 +107,7 @@ def test_join_tdms():
 
 def test_join_tdms_logs():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_in = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -124,7 +124,7 @@ def test_join_tdms_logs():
 
 
 def test_join_rtdc():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -140,8 +140,8 @@ def test_join_rtdc():
 
 
 def test_join_times():
-    path_in1 = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
-    path_in2 = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in1 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    path_in2 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in1.with_name("out.rtdc")
 
@@ -165,7 +165,7 @@ def test_join_times():
 
 
 def test_repack_basic():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("repacked.rtdc")
 
@@ -184,7 +184,7 @@ def test_repack_basic():
 
 
 def test_repack_remove_secrets():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("repacked.rtdc")
 
@@ -209,7 +209,7 @@ def test_repack_remove_secrets():
 
 
 def test_repack_strip_logs():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("repacked.rtdc")
 
@@ -227,7 +227,7 @@ def test_repack_strip_logs():
 
 
 def test_split():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     paths = cli.split(path_in=path_in, split_events=3, ret_out_paths=True)
     with new_dataset(path_in) as ds:
         ecount = 0
@@ -242,7 +242,7 @@ def test_split():
 
 
 def test_split_traces():
-    path_in = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    path_in = retrieve_data("fmt-hdf5_fl_2018.zip")
     paths = cli.split(path_in=path_in, split_events=3, ret_out_paths=True)
     with new_dataset(path_in) as ds:
         ecount = 0
@@ -258,7 +258,7 @@ def test_split_traces():
 
 def test_tdms2rtdc():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_in = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -277,7 +277,7 @@ def test_tdms2rtdc():
 
 def test_tdms2rtdc_bulk():
     pytest.importorskip("nptdms")
-    path_data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_data = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     path_wd = pathlib.Path(
         tempfile.mkdtemp(prefix="tdms2rtdc_bulk_")).resolve()
     path_in = path_wd / "input"
@@ -313,7 +313,7 @@ def test_tdms2rtdc_bulk():
 
 def test_tdms2rtdc_features():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_in = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -331,7 +331,7 @@ def test_tdms2rtdc_features():
 def test_tdms2rtdc_remove_nan_image():
     pytest.importorskip("nptdms")
     imageio = pytest.importorskip("imageio")
-    path_in = retrieve_data("rtdc_data_traces_video_bright.zip")
+    path_in = retrieve_data("fmt-tdms_fl-image-bright_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -371,7 +371,7 @@ def test_tdms2rtdc_remove_nan_image():
 
 def test_tdms2rtdc_update_roi_size():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_traces_video.zip")
+    path_in = retrieve_data("fmt-tdms_fl-image_2016.zip")
     # set wrong roi sizes
     camin = path_in.with_name("M1_camera.ini")
     with camin.open("r") as fd:
@@ -401,7 +401,7 @@ def test_tdms2rtdc_update_roi_size():
 
 def test_tdms2rtdc_update_sample_per_events():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_traces_2flchan.zip")
+    path_in = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -421,8 +421,8 @@ def test_tdms2rtdc_update_sample_per_events():
 
 
 @pytest.mark.parametrize("dataset,exit_status_expected", [
-    ["rtdc_data_hdf5_contour_image_trace.zip", 3],
-    ["rtdc_data_hdf5_rtfdc.zip", 0],
+    ["fmt-hdf5_fl_2017.zip", 3],
+    ["fmt-hdf5_fl_2018.zip", 0],
     ])
 def test_verify_dataset_exit_codes(dataset, exit_status_expected, monkeypatch):
     # get the exit status from the script
@@ -441,7 +441,7 @@ def test_verify_dataset_exit_code_alert(monkeypatch):
         return status
     monkeypatch.setattr(sys, "exit", sys_exit)
 
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["experiment:unknown"] = ""
@@ -455,7 +455,7 @@ def test_verify_dataset_exit_code_error(monkeypatch):
         return status
     monkeypatch.setattr(sys, "exit", sys_exit)
 
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["setup:channel width"] = "peter"
@@ -469,7 +469,7 @@ def test_verify_dataset_exit_code_user_ok(monkeypatch):
         return status
     monkeypatch.setattr(sys, "exit", sys_exit)
 
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["user:pan"] = 2
@@ -483,7 +483,7 @@ def test_verify_dataset_exit_code_violation_1(monkeypatch):
         return status
     monkeypatch.setattr(sys, "exit", sys_exit)
 
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["setup:flow rate"] = 0
@@ -497,7 +497,7 @@ def test_verify_dataset_exit_code_violation_2(monkeypatch):
         return status
     monkeypatch.setattr(sys, "exit", sys_exit)
 
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["setup:flow rate"] = 0

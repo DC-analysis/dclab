@@ -10,7 +10,7 @@ from helper_methods import calltracker, retrieve_data
 
 
 def test_af_brightness():
-    path = retrieve_data("rtdc_data_hdf5_image_bg.zip")
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     with h5py.File(path, "r+") as h5:
         real_avg = h5["events"]["bright_avg"][:]
         real_sd = h5["events"]["bright_sd"][:]
@@ -31,7 +31,7 @@ def test_af_brightness():
 
 def test_af_brightness_called_once(monkeypatch):
     """Make sure dclab.features.bright.get_bright is only called once"""
-    path = retrieve_data("rtdc_data_hdf5_image_bg.zip")
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     # remove brightness features
     with h5py.File(path, "r+") as h5:
         del h5["events"]["bright_avg"]
@@ -60,7 +60,7 @@ def test_af_brightness_called_once(monkeypatch):
 
 def test_simple_bright():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
     for ii in range(2, 7):
         # This stripped dataset has only 7 video frames / contours
         image = ds["image"][ii]

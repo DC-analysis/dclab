@@ -70,7 +70,7 @@ def get_ellipse_coords(a, b, x=0.0, y=0.0, angle=0.0, k=2):
 
 def test_af_volume():
     pytest.importorskip("nptdms")
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     vol = ds["volume"]
     # There are a lot of nans, because the contour is not given everywhere
     vol = vol[~np.isnan(vol)]

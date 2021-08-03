@@ -17,7 +17,7 @@ from helper_methods import example_data_dict, retrieve_data
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_export():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
     ds.export.avi(path=f1)
@@ -29,7 +29,7 @@ def test_avi_export():
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_override():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.avi")
@@ -373,7 +373,7 @@ def test_hdf5_override():
 
 def test_hdf5_trace_from_tdms():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_2fl-no-image_2017.zip"))
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.rtdc")
@@ -388,7 +388,7 @@ def test_hdf5_trace_from_tdms():
 
 def test_hdf5_traces():
     """Length of traces is preserved (no filtering)"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
 
     # sanity check
     assert len(ds) == 7
@@ -408,7 +408,7 @@ def test_hdf5_traces_filter():
 
     Test dataset length with additional feature.
     """
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
 
     # applying some filters
     ds.config["filtering"]["deform min"] = 0.01
@@ -436,7 +436,7 @@ def test_hdf5_traces_filter2():
 
     Test dataset lenght only with trace.
     """
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
 
     # applying some filters
     ds.config["filtering"]["deform min"] = 0.01

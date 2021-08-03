@@ -14,7 +14,7 @@ from helper_methods import retrieve_data
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_config():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert ds.config["setup"]["channel width"] == 30
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.16
@@ -24,7 +24,7 @@ def test_config():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_contour_basic():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert len(ds) == 5
     assert len(ds["contour"]) == 5
     assert np.allclose(np.average(ds["contour"][0]), 30.75)
@@ -37,7 +37,7 @@ def test_contour_basic():
 
 def test_defective_feature_aspect():
     # see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/241
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # modify aspect feature
     with h5py.File(h5path, "a") as h5:
         aspect0 = h5["events/aspect"][0]
@@ -60,7 +60,7 @@ def test_defective_feature_aspect():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_hash():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert ds.hash == "2c436daba22d2c7397b74d53d80f8931"
     assert ds.format == "hdf5"
 
@@ -68,7 +68,7 @@ def test_hash():
 def test_ignore_empty_hdf5_meta_data_attribute():
     """Ignore empty hdf5 attributes / dclab metadata"""
     # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
-    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # add empty attribute
     with h5py.File(path, "r+") as h5:
         h5.attrs["setup:module composition"] = ""
@@ -83,7 +83,7 @@ def test_ignore_empty_hdf5_meta_data_attribute():
 def test_ignore_unknown_hdf5_meta_data_attribute():
     """Ignore unknown hdf5 attributes / dclab metadata"""
     # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
-    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # add empty attribute
     with h5py.File(path, "r+") as h5:
         h5.attrs["setup:shizzle"] = ""
@@ -98,7 +98,7 @@ def test_ignore_unknown_hdf5_meta_data_attribute():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_image_basic():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert np.allclose(np.average(ds["image"][1]), 125.37133333333334)
     assert len(ds["image"]) == 5
 
@@ -106,7 +106,7 @@ def test_image_basic():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_image_bg():
-    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    path = retrieve_data("fmt-hdf5_fl_2017.zip")
     # add a fake image_bg column
     with h5py.File(path, mode="a") as h5:
         image_bg = h5["events"]["image"][:] // 2
@@ -118,7 +118,7 @@ def test_image_bg():
 
 
 def test_image_bg_2():
-    path = retrieve_data("rtdc_data_hdf5_image_bg.zip")
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     with new_dataset(path) as ds:
         assert "image_bg" in ds
         bgc = ds["image"][0] - ds["image_bg"][0]
@@ -133,7 +133,7 @@ def test_image_bg_2():
                           np.array([0, 2, 4]),
                           np.array([True, False, True, False, True])])
 def test_index_slicing_contour(idxs):
-    data = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    data = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(data)
 
     contour_ref = [
@@ -150,7 +150,7 @@ def test_index_slicing_contour(idxs):
 
 
 def test_logs():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
 
     with new_dataset(path_in) as ds:
         assert not ds.logs
@@ -179,7 +179,7 @@ def test_logs():
 
 def test_no_suffix():
     """Loading an .rtdc file that has a wrong suffix"""
-    path = str(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    path = str(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     path2 = path + ".wrong_suffix"
     os.rename(path, path2)
     ds = new_dataset(path2)
@@ -188,7 +188,7 @@ def test_no_suffix():
 
 def test_open_with_invalid_feature_names():
     """Loading an .rtdc file that has wrong feature name"""
-    path = str(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    path = str(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     # add wrong feature name right at the top of the list
     with h5py.File(path, "r+") as h5:
         h5["events"]["a0"] = h5["events"]["deform"]
@@ -200,7 +200,7 @@ def test_open_with_invalid_feature_names():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_trace():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_contour_image_trace.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert len(ds["trace"]) == 2
     assert ds["trace"]["fl1_raw"].shape == (5, 100)
     assert np.allclose(np.average(

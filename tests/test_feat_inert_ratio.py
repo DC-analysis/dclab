@@ -14,7 +14,7 @@ from helper_methods import retrieve_data
 def test_af_inert_ratio_cvx():
     pytest.importorskip("nptdms")
     # Brightness of the image
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
     # the image and contour columns.
@@ -33,7 +33,7 @@ def test_af_inert_ratio_cvx():
 def test_af_inert_ratio_prnc():
     pytest.importorskip("nptdms")
     # Brightness of the image
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
     # This will cause a zero-padding warning:
     prnc = ds["inert_ratio_prnc"]
     raw = ds["inert_ratio_raw"]
@@ -51,7 +51,7 @@ def test_af_inert_ratio_prnc():
 def test_af_inert_ratio_raw():
     pytest.importorskip("nptdms")
     # Brightness of the image
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
     # This is something low-level and should not be done in a script.
     # Remove the brightness columns from RTDCBase to force computation with
     # the image and contour columns.
@@ -65,7 +65,7 @@ def test_af_inert_ratio_raw():
 
 
 def test_inert_ratio_raw():
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_mask_contour.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
 
     raw = ir.get_inert_ratio_raw(cont=ds["contour"])
     ref = np.array([4.25854232,  1.22342663,  4.64971179,  1.70914857,

@@ -35,13 +35,13 @@ def equals(a, b):
 
 def test_config_basic():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert ds.config["imaging"]["roi size y"] == 96.
 
 
 def test_config_invalid_key():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
@@ -56,7 +56,7 @@ def test_config_invalid_key():
 def test_config_save_load():
     pytest.importorskip("nptdms")
     # Download and extract data
-    tdms_path = retrieve_data("rtdc_data_minimal.zip")
+    tdms_path = retrieve_data("fmt-tdms_minimal_2016.zip")
     ds = new_dataset(tdms_path)
     cfg_file = tempfile.mktemp(prefix="test_dclab_rtdc_config_")
     ds.config.save(cfg_file)
@@ -70,7 +70,7 @@ def test_config_save_load():
 
 def test_config_update():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert ds.config["imaging"]["roi size y"] == 96.
     ds.config["calculation"].update({
         "crosstalk fl12": 0.1,
@@ -91,7 +91,7 @@ def test_config_update():
 
 def test_user_section_allowed_key_types():
     """Check that the user config section keys only accept strings"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     # strings are allowed
     ds.config["user"]["a string"] = "a string"
     # all other types will raise a BadUserConfigurationKeyWarning
@@ -116,7 +116,7 @@ def test_user_section_allowed_key_types():
 
 def test_user_section_basic():
     """Add information to the user section of config"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     metadata = {"channel area": 100.5,
                 "inlet": True,
                 "n_constrictions": 3,
@@ -127,7 +127,7 @@ def test_user_section_basic():
 
 def test_user_section_clear1():
     """Clear information from the user section with `clear()` method"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     metadata = {"channel area": 100.5,
                 "inlet": True,
                 "n_constrictions": 3,
@@ -140,7 +140,7 @@ def test_user_section_clear1():
 
 def test_user_section_clear2():
     """Clear information from the user section with empty dict"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     metadata = {"channel area": 100.5,
                 "inlet": True,
                 "n_constrictions": 3,
@@ -153,7 +153,7 @@ def test_user_section_clear2():
 
 def test_user_section_different_value_types():
     """Check that the user config section values take different data types"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert ds.config["user"] == {}
     ds.config["user"]["channel A"] = True
     ds.config["user"]["channel B"] = 23.5
@@ -175,7 +175,7 @@ def test_user_section_different_value_types():
 
 def test_user_section_exists():
     """Check that the user config section exists"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert ds.config["user"] == {}
     # control: nonsense sections don't exist
     with pytest.raises(KeyError):
@@ -184,7 +184,7 @@ def test_user_section_exists():
 
 def test_user_section_set_and_overwrite():
     """Add information to the user section of config via dict.__setitem__"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     ds.config["user"]["some metadata"] = 42
     assert ds.config["user"] == {"some metadata": 42}
     metadata = {"more metadata": True}
@@ -198,7 +198,7 @@ def test_user_section_set_and_overwrite():
 
 def test_user_section_set_save_reload_empty_dict():
     """The 'user' config section as an empty dict will not save"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with new_dataset(h5path) as ds:
         ds.config.update({"user": {}})
         expath = h5path.with_name("exported.rtdc")
@@ -224,7 +224,7 @@ def test_user_section_set_save_reload_empty_dict():
                          ])
 def test_user_section_set_save_reload_empty_key(user_config):
     """Empty or only-whitespace 'user' section keys not allowed"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with new_dataset(h5path) as ds:
         with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
             ds.config.update({"user": user_config})
@@ -274,7 +274,7 @@ def test_user_section_set_save_reload_fmt_dcor():
 
 def test_user_section_set_save_reload_fmt_hdf5_basic():
     """Check that 'user' section metadata works for RTDC_HDF5"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     metadata = {"channel area": 100.5,
                 "inlet": True,
                 "n_constrictions": 3,
@@ -296,7 +296,7 @@ def test_user_section_set_save_reload_fmt_hdf5_basic():
 
 def test_user_section_set_save_reload_fmt_hdf5_containers():
     """Check that 'user' section metadata works for container data types"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     channel_area = [0, 100]
     inlet = (1, 20, 40)
     outlet = np.array(inlet)
@@ -320,7 +320,7 @@ def test_user_section_set_save_reload_fmt_hdf5_containers():
 
 def test_user_section_set_save_reload_fmt_hierarchy():
     """Check that 'user' section metadata works for RTDC_Hierarchy"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     metadata = {"channel area": 100.5,
                 "inlet": True,
                 "n_constrictions": 3,
@@ -349,7 +349,7 @@ def test_user_section_set_save_reload_fmt_hierarchy():
 def test_user_section_set_save_reload_fmt_tdms():
     """Check that 'user' section metadata works for RTDC_TDMS"""
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("rtdc_data_traces_video.zip")
+    h5path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     metadata = {"channel area": 100.5,
                 "inlet": True,
                 "n_constrictions": 3,
@@ -371,14 +371,14 @@ def test_user_section_set_save_reload_fmt_tdms():
 
 def test_user_section_set_with_setitem():
     """Add information to the user section of config via dict.__setitem__"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     ds.config["user"]["some metadata"] = 42
     assert ds.config["user"] == {"some metadata": 42}
 
 
 def test_user_section_set_with_update():
     """Add information to the user section of config with .update"""
-    ds = new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     metadata = {"some metadata": 42}
     ds.config.update({"user": metadata})
     assert ds.config["user"] == {"some metadata": 42}

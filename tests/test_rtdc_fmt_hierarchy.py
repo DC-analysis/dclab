@@ -36,7 +36,7 @@ def test_config_calculation():
 
 def test_event_count():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
+    tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     ds = new_dataset(tdms_path)
     ds.filter.manual[0] = False
     ch = new_dataset(ds)
@@ -48,7 +48,7 @@ def test_event_count():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_contour():
-    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
     ds.filter.manual[0] = False
     ds.filter.manual[2] = False
@@ -60,7 +60,7 @@ def test_feat_contour():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_image():
-    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
     ds.filter.manual[0] = False
     ds.filter.manual[2] = False
@@ -72,7 +72,7 @@ def test_feat_image():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_image_bg():
-    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    path = retrieve_data("fmt-hdf5_fl_2017.zip")
     # add a fake image_bg column
     with h5py.File(path, mode="a") as h5:
         image_bg = h5["events"]["image"][:] // 2
@@ -88,7 +88,7 @@ def test_feat_image_bg():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_mask():
-    path = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     ds = new_dataset(path)
     ds.filter.manual[0] = False
     ds.filter.manual[2] = False
@@ -100,7 +100,7 @@ def test_feat_mask():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_trace():
-    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
     ds.filter.manual[0] = False
     ds.filter.manual[2] = False
@@ -114,7 +114,7 @@ def test_feat_trace():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_features():
-    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
     ch = new_dataset(ds)
     assert ds.features == ch.features
@@ -126,7 +126,7 @@ def test_features():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_features_loaded():
-    path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
     ch = new_dataset(ds)
     assert "volume" in ch.features
@@ -140,7 +140,7 @@ def test_features_loaded():
 
 def test_hierarchy_from_tdms():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
+    tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     ds1 = new_dataset(tdms_path)
     ds2 = new_dataset(ds1)
 
@@ -164,7 +164,7 @@ def test_index_deep_contour():
 @pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
                                   [0, 1, 2], [True, True, True, False]])
 def test_index_slicing(feat, idxs):
-    data = retrieve_data("rtdc_data_hdf5_image_bg.zip")
+    data = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     ds = new_dataset(data)
     ds.filter.manual[2] = False
     ch = new_dataset(ds)
@@ -181,7 +181,7 @@ def test_index_slicing(feat, idxs):
 def test_index_slicing_tdms_fails(feat, idxs):
     """The tdms-file format does not support slice/array indexing"""
     pytest.importorskip("nptdms")
-    data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    data = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     ds = new_dataset(data)
     ds.filter.manual[2] = False
     ch = new_dataset(ds)
@@ -195,7 +195,7 @@ def test_index_slicing_tdms_fails(feat, idxs):
 @pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
                                   [0, 1, 2], [True, True, True, False]])
 def test_index_slicing_trace(idxs):
-    data = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    data = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(data)
     ds.filter.manual[2] = False
     ch = new_dataset(ds)
@@ -269,7 +269,7 @@ def test_manual_exclude_parent_changed():
 
 def test_same_hash_different_identifier():
     pytest.importorskip("nptdms")
-    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
+    tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     ds1 = new_dataset(tdms_path)
     ds1.filter.manual[0] = False
     ch1 = new_dataset(ds1)

@@ -204,7 +204,7 @@ def test_pf_exists_in_hierarchy():
     """Test that RTDCHierarchy works with PlugInFeature"""
     info = example_plugin_info_single_feature()
     pf = PlugInFeature("circ_per_area", info)
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         assert pf.feature_name in ds
         assert dclab.dfn.feature_exists(pf.feature_name)
@@ -214,7 +214,7 @@ def test_pf_exists_in_hierarchy():
 
 def test_pf_export_and_load():
     """Check that exported and loaded hdf5 file will keep a plugin feature"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # initialize PlugInFeature instance
     info = example_plugin_info_single_feature()
     pf = PlugInFeature("circ_per_area", info)
@@ -255,7 +255,7 @@ def test_pf_feature_exists():
 
 def test_pf_filtering_with_plugin_feature():
     """Filtering with plugin feature"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
         pf = PlugInFeature("circ_per_area", info)
@@ -307,7 +307,7 @@ def test_pf_incorrect_input_method():
 
 def test_pf_initialize_plugin_after_loading():
     """plugin feature loads correctly after feature added to hdf5 file"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         circ_per_area = compute_single_plugin_feature(ds)
     with h5py.File(h5path, "a") as h5:
@@ -322,7 +322,7 @@ def test_pf_initialize_plugin_after_loading():
 
 def test_pf_initialize_plugin_feature_single():
     """Check that single plugin feature exists independant of loaded dataset"""
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     info = example_plugin_info_single_feature()
     PlugInFeature("circ_per_area", info)
     assert "circ_per_area" in ds
@@ -331,13 +331,13 @@ def test_pf_initialize_plugin_feature_single():
     assert np.allclose(circ_per_area, ds["circ"] / ds["area_um"])
 
     # check that PlugInFeature exists independent of loaded ds
-    ds2 = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds2 = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "circ_per_area" in ds2
 
 
 def test_pf_initialize_plugin_feature_non_scalar():
     """Check that the non-scalar plugin feature works"""
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     info = example_plugin_info_non_scalar_feature()
     PlugInFeature("image_gauss_filter", info)
     assert "image_gauss_filter" in ds
@@ -349,7 +349,7 @@ def test_pf_initialize_plugin_feature_non_scalar():
 
 def test_pf_initialize_plugin_features_multiple():
     """Check multiple plugin features exist independant of loaded dataset"""
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
     info = example_plugin_info_multiple_feature()
@@ -388,7 +388,7 @@ def test_pf_input_no_scalar_feature():
 
 def test_pf_load_plugin():
     """Basic check for loading a plugin feature via a script"""
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
     plugin_path = data_dir / "plugin_test_example.py"
@@ -426,7 +426,7 @@ def test_pf_minimum_info_input():
 
 def test_pf_remove_all_plugin_features():
     """Remove all plugin features at once"""
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
     plugin_path = data_dir / "plugin_test_example.py"
@@ -446,7 +446,7 @@ def test_pf_remove_all_plugin_features():
 
 def test_pf_remove_plugin_feature():
     """Remove individual plugin features"""
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "circ_per_area" not in ds
     assert "circ_times_area" not in ds
 
@@ -532,7 +532,7 @@ def test_pf_with_user_config_section():
             "config required": [["user", ["n_constrictions"]]]}
     PlugInFeature("area_of_region", info)
 
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "area_of_region" not in ds, "not available b/c missing metadata"
     # add some metadata to the user config section
     metadata = {"channel": True,
@@ -554,7 +554,7 @@ def test_pf_with_user_config_section_fails():
             "config required": [["user", ["n_constrictions"]]]}
     PlugInFeature("area_of_region", info)
 
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     # show that the plugin feature is not available before setting the
     # user metadata
     ds.config["user"].clear()
@@ -568,7 +568,7 @@ def test_pf_with_user_config_section_fails():
 
 
 def test_pf_wrong_data_shape_1():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
         info["scalar feature"] = [False]
@@ -578,7 +578,7 @@ def test_pf_wrong_data_shape_1():
 
 
 def test_pf_wrong_data_shape_2():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
         info["scalar feature"] = [True]
@@ -590,7 +590,7 @@ def test_pf_wrong_data_shape_2():
 
 def test_pf_wrong_length_1():
     """plugin feature should have same length"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
         info["method"] = lambda x: np.arange(len(ds) // 2)
@@ -602,7 +602,7 @@ def test_pf_wrong_length_1():
 
 def test_pf_wrong_length_2():
     """plugin feature should have same length"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         info = example_plugin_info_single_feature()
         info["method"] = lambda x: np.arange(len(ds) * 2)

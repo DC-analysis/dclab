@@ -12,7 +12,7 @@ from helper_methods import retrieve_data
 
 
 def test_compress():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("compressed.rtdc")
 
@@ -32,7 +32,7 @@ def test_compress():
 
 
 def test_compress_already_compressed_no_force():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("compressed.rtdc")
     path_out2 = path_in.with_name("compressed2.rtdc")
@@ -49,7 +49,7 @@ def test_compress_already_compressed_no_force():
 
 
 def test_compress_already_compressed_with_force():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("compressed.rtdc")
     path_out2 = path_in.with_name("compressed2.rtdc")
@@ -67,7 +67,7 @@ def test_compress_already_compressed_with_force():
 
 
 def test_condense():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("condensed.rtdc")
 
@@ -83,7 +83,7 @@ def test_condense():
 
 
 def test_condense_missing_argument():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
 
     with mock.patch("sys.argv", ["", str(path_in)]):
         with pytest.raises(SystemExit):
@@ -92,7 +92,7 @@ def test_condense_missing_argument():
 
 def test_join_tdms():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_in = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -111,7 +111,7 @@ def test_join_tdms():
 
 
 def test_repack_basic():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("repacked.rtdc")
 
@@ -131,7 +131,7 @@ def test_repack_basic():
 
 
 def test_repack_strip_logs():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("repacked.rtdc")
 
@@ -151,7 +151,7 @@ def test_repack_strip_logs():
 
 
 def test_repack_strip_logs_control():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("repacked.rtdc")
 
@@ -170,7 +170,7 @@ def test_repack_strip_logs_control():
 
 
 def test_split():
-    path_in = retrieve_data("rtdc_data_hdf5_mask_contour.zip")
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     path_out = path_in.parent / "out"
     path_out.mkdir()
 
@@ -192,7 +192,7 @@ def test_split():
 
 def test_tdms2rtdc_features():
     pytest.importorskip("nptdms")
-    path_in = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    path_in = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
@@ -214,7 +214,7 @@ def test_verify_dataset_exit_code_alert(monkeypatch):
         return status
     monkeypatch.setattr(sys, "exit", sys_exit)
 
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["experiment:unknown"] = ""

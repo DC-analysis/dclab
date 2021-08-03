@@ -11,7 +11,7 @@ from helper_methods import retrieve_data
 
 def test_af_fl_crosstalk_2chan():
     pytest.importorskip("nptdms")
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_2fl-no-image_2017.zip"))
     # simple example
     analysis = {"calculation": {"crosstalk fl12": 0,
                                 "crosstalk fl21": .1}}

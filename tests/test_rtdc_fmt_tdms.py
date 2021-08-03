@@ -19,7 +19,7 @@ nptdms = pytest.importorskip("nptdms")
 
 def test_compatibility_minimal():
     pytest.importorskip("nptdms")
-    ds = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     assert ds.config["setup"]["channel width"] == 20
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.12
@@ -31,7 +31,7 @@ def test_compatibility_minimal():
 def test_compatibility_channel_width():
     pytest.importorskip("nptdms")
     # At some point, "Channel width" was replaced by "Channel width [um]"
-    path = retrieve_data("rtdc_data_minimal.zip")
+    path = retrieve_data("fmt-tdms_minimal_2016.zip")
     para = path.parent / "M1_para.ini"
     pardata = para.read_text()
     pardata = pardata.replace("Channel width = 20\n", "Channel width = 34\n")
@@ -41,7 +41,7 @@ def test_compatibility_channel_width():
 
 
 def test_compatibility_shapein201():
-    ds = new_dataset(retrieve_data("rtdc_data_shapein_v2.0.1.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip"))
     assert ds.config["setup"]["channel width"] == 20
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["software version"] == "ShapeIn 2.0.1"
@@ -53,15 +53,16 @@ def test_compatibility_shapein201():
 
 def test_contains_non_scalar():
     pytest.importorskip("nptdms")
-    ds1 = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds1 = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert "contour" in ds1
     assert "image" in ds1
     assert "mask" in ds1
     assert "trace" in ds1
-    ds2 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    ds2 = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     assert "image" not in ds2
     assert "trace" not in ds2
-    ds3 = new_dataset(retrieve_data("rtdc_data_shapein_v2.0.1.zip"))
+    ds3 = new_dataset(retrieve_data(
+        "fmt-tdms_shapein-2.0.1-no-image_2017.zip"))
     assert "contour" not in ds3
     assert "image" not in ds3
     assert "mask" not in ds3
@@ -69,14 +70,14 @@ def test_contains_non_scalar():
 
 
 def test_contour_basic():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["contour"]) == 12
     assert np.allclose(np.average(ds["contour"][0]), 38.488764044943821)
     assert ds["contour"]._initialized
 
 
 def test_contour_corrupt():
-    path = pathlib.Path(retrieve_data("rtdc_data_traces_video.zip"))
+    path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     cpath = path.with_name("M1_contours.txt")
     # remove initial contours
     with cpath.open("r") as fd:
@@ -94,7 +95,7 @@ def test_contour_corrupt():
 
 def test_contour_naming():
     # Test that we always find the correct contour name
-    ds = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     dp = pathlib.Path(ds.path).resolve()
     dn = dp.parent
     contfile = dn / "M1_0.120000ul_s_contours.txt"
@@ -137,22 +138,22 @@ def test_contour_naming():
 
 
 def test_contour_negative_offset():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     ds["contour"][0]
     ds["contour"].event_offset = 1
     assert np.all(ds["contour"][0] == np.zeros((2, 2), dtype=int))
 
 
 def test_contour_not_initialized():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert not ds["contour"]._initialized
 
 
 def test_fluorescence_config():
     pytest.importorskip("nptdms")
-    ds1 = new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    ds1 = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     assert "fluorescence" not in ds1.config
-    ds2 = new_dataset(retrieve_data("rtdc_data_traces_2flchan.zip"))
+    ds2 = new_dataset(retrieve_data("fmt-tdms_2fl-no-image_2017.zip"))
     assert "fluorescence" in ds2.config
 
 
@@ -160,7 +161,7 @@ def test_fluorescence_config():
                             + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
 def test_image_basic():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     # Transition image
     assert np.allclose(ds["image"][0], 0)
     # Real image
@@ -168,12 +169,12 @@ def test_image_basic():
 
 
 def test_image_column_length():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["image"]) == 3
 
 
 def test_image_corrupt():
-    path = pathlib.Path(retrieve_data("rtdc_data_traces_video.zip"))
+    path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     vpath = path.with_name("M1_imaq.avi")
     # create empty video file
     vpath.unlink()
@@ -189,7 +190,7 @@ def test_image_corrupt():
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_image_out_of_bounds():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["image"]) == 3
     assert np.allclose(ds["image"][0], 0)  # dummy
     assert not np.allclose(ds["image"][1], 0)
@@ -202,7 +203,7 @@ def test_image_out_of_bounds():
                                   [0, 1, 2], [True, True, True, False]])
 def test_index_slicing_tdms_fails(feat, idxs):
     """The tdms-file format does not support slice/array indexing"""
-    data = retrieve_data("rtdc_data_shapein_v2.0.1.zip")
+    data = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
     ds = new_dataset(data)
 
     with pytest.raises(NotImplementedError, match="scalar integers"):
@@ -216,7 +217,7 @@ def test_index_slicing_tdms_fails(feat, idxs):
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_large_fov():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video_large_fov.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image-large-fov_2017.zip"))
     # initial image is missing
     assert np.allclose(ds["image"][0], 0)
     # initial contour is empty
@@ -234,18 +235,18 @@ def test_large_fov():
 
 
 @pytest.mark.parametrize("exname", [
-    "rtdc_data_minimal.zip",
-    "rtdc_data_traces_video.zip",
-    "rtdc_data_traces_video_bright.zip",
-    "rtdc_data_traces_video_large_fov.zip",
-    "rtdc_data_shapein_v2.0.1.zip"])
+    "fmt-tdms_minimal_2016.zip",
+    "fmt-tdms_fl-image_2016.zip",
+    "fmt-tdms_fl-image-bright_2017.zip",
+    "fmt-tdms_fl-image-large-fov_2017.zip",
+    "fmt-tdms_shapein-2.0.1-no-image_2017.zip"])
 def test_load_tdms_all(exname):
     tdms_path = retrieve_data(exname)
     new_dataset(tdms_path)
 
 
 def test_load_tdms_avi_files_1():
-    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
+    tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     edest = pathlib.Path(tdms_path).parent
     with new_dataset(tdms_path) as ds1:
         assert pathlib.Path(ds1["image"].video_file).name == "M1_imaq.avi"
@@ -262,7 +263,7 @@ def test_load_tdms_avi_files_1():
 
 
 def test_load_tdms_avi_files_2():
-    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
+    tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     edest = pathlib.Path(tdms_path).parent
     shutil.copyfile(str(edest / "M1_imaq.avi"),
                     str(edest / "M1_test.avi"))
@@ -273,7 +274,7 @@ def test_load_tdms_avi_files_2():
 
 
 def test_load_tdms_simple():
-    tdms_path = retrieve_data("rtdc_data_minimal.zip")
+    tdms_path = retrieve_data("fmt-tdms_minimal_2016.zip")
     ds = new_dataset(tdms_path)
     assert ds.filter.all.shape[0] == 156
 
@@ -285,7 +286,7 @@ def test_load_tdms_simple():
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_mask_basic():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["mask"]) == 12
     # Test mask computation by averaging brightness and comparing to
     # the ancillary feature "bright_avg".
@@ -295,14 +296,14 @@ def test_mask_basic():
 
 
 def test_mask_img_shape_1():
-    path = retrieve_data("rtdc_data_traces_video.zip")
+    path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     # shape from image data
     with new_dataset(path) as ds:
         assert ds["mask"]._img_shape == (96, 256)
 
 
 def test_mask_img_shape_2():
-    path = retrieve_data("rtdc_data_traces_video.zip")
+    path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     path.with_name("M1_imaq.avi").unlink()
     with new_dataset(path) as ds:
         # shape from config ("roi size x", "roi size y")
@@ -316,7 +317,7 @@ def test_mask_img_shape_2():
 
 
 def test_mask_img_wrong_config_shape_1():
-    path = retrieve_data("rtdc_data_traces_video.zip")
+    path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     with new_dataset(path) as ds:
         # deliberately set wrong size in ROI (fmt_tdms tries image shape first)
         ds.config["imaging"]["roi size x"] = 200
@@ -325,7 +326,7 @@ def test_mask_img_wrong_config_shape_1():
 
 
 def test_mask_img_wrong_config_shape_2():
-    path = retrieve_data("rtdc_data_traces_video.zip")
+    path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     path.with_name("M1_imaq.avi").unlink()
     with new_dataset(path) as ds:
         # deliberately set wrong size in ROI (fmt_tdms tries image shape first)
@@ -340,7 +341,7 @@ def test_naming_valid():
 
 
 def test_parameters_txt():
-    ds = new_dataset(retrieve_data("rtdc_data_frtdc_parameters.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl_2015.zip"))
     assert ds.config["setup"]["module composition"] == "Cell_Flow_2, Fluor"
     assert ds.config["setup"]["software version"] == "fRT-DC V0.80 150601"
     assert ds.config["setup"]["identifier"] == "47 red angels"
@@ -361,7 +362,7 @@ def test_parameters_txt():
 
 def test_pixel_size():
     pytest.importorskip("nptdms")
-    path = retrieve_data("rtdc_data_minimal.zip")
+    path = retrieve_data("fmt-tdms_minimal_2016.zip")
     para = path.parent / "M1_para.ini"
     data = para.open("r").read()
     newdata = data.replace("Pix Size = 0.340000", "Pix Size = 0.120000")
@@ -372,7 +373,7 @@ def test_pixel_size():
 
 
 def test_project_path():
-    tfile = retrieve_data("rtdc_data_minimal.zip")
+    tfile = retrieve_data("fmt-tdms_minimal_2016.zip")
     ds = dclab.new_dataset(tfile)
     assert ds.hash == "69733e31b005c145997fac8a22107ded"
     assert ds.format == "tdms"
@@ -394,7 +395,7 @@ def test_project_path():
 
 
 def test_trace_basic():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     msg = "traces should not be loaded into memory before first access"
     assert ds["trace"].__repr__().count("<not loaded into memory>"), msg
     assert len(ds["trace"]) == 2
@@ -404,7 +405,7 @@ def test_trace_basic():
 
 def test_trace_import_fail():
     # make sure undefined trace data does not raise an error
-    tdms_path = retrieve_data("rtdc_data_traces_video.zip")
+    tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     dclab.definitions.FLUOR_TRACES.append("peter")
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = [u'ukwn', u'ha']
     new_dataset(tdms_path)
@@ -414,7 +415,7 @@ def test_trace_import_fail():
 
 
 def test_trace_methods():
-    ds = new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     for k in list(ds["trace"].keys()):
         assert k in dclab.definitions.FLUOR_TRACES
     for k in ds["trace"]:
@@ -433,7 +434,7 @@ def test_trace_wrong_samples_per_event():
     (Philipp said that something must have gone wrong during writing
     of the trace data).
     """
-    tdms = retrieve_data("rtdc_data_traces_video.zip")
+    tdms = retrieve_data("fmt-tdms_fl-image_2016.zip")
     mdata = nptdms.TdmsFile(str(tdms))
 
     channels = []
@@ -470,7 +471,7 @@ def test_trace_wrong_samples_per_event():
 
 
 def test_unicode_paths():
-    path = retrieve_data("rtdc_data_traces_video.zip")
+    path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     path = pathlib.Path(path)
     pp = path.parent
     # create a unicode name

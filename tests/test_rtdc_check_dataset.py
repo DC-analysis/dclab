@@ -14,7 +14,7 @@ from helper_methods import example_data_dict, retrieve_data
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_basic():
-    h5path = retrieve_data("rtdc_data_hdf5_contour_image_trace.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2017.zip")
     viol, aler, info = check_dataset(h5path)
     # Features: Unknown key 'ncells'
     # Metadata: Mismatch [imaging] 'roi size x' and feature image (50 vs 90)
@@ -45,7 +45,7 @@ def test_basic():
 
 
 def test_complete():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     viol, aler, info = check_dataset(h5path)
     assert len(viol) == 0
     assert len(aler) == 0
@@ -55,7 +55,7 @@ def test_complete():
 
 def test_complete_user_metadata():
     """Setting any user metadata is allowed"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     metadata = {"channel area": 100.5,
                 "inlet": True,
                 "n_constrictions": 3,
@@ -73,7 +73,7 @@ def test_complete_user_metadata():
 
 def test_exact():
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
+    h5path = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
     viol, aler, info = check_dataset(h5path)
     known_viol = [
         "Metadata: Missing key [fluorescence] 'channel count'",
@@ -101,7 +101,7 @@ def test_exact():
 
 
 def test_icue():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check()
     assert cues[0] != cues[1]
@@ -212,7 +212,7 @@ def test_ic_flow_rate_not_zero():
 
 
 def test_ic_fmt_hdf5_image1():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
         h5["events/image"].attrs["CLASS"] = "bad"
     with check.IntegrityChecker(h5path) as ic:
@@ -226,7 +226,7 @@ def test_ic_fmt_hdf5_image1():
 @pytest.mark.skipif(sys.version_info < (3, 0),
                     reason="requires python3 or higher")
 def test_ic_fmt_hdf5_image2():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
         h5["events/image"].attrs["CLASS"] = np.string_("bad")
     with check.IntegrityChecker(h5path) as ic:
@@ -238,7 +238,7 @@ def test_ic_fmt_hdf5_image2():
 
 
 def test_ic_fmt_hdf5_image3():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
         del h5["events/image"].attrs["CLASS"]
     with check.IntegrityChecker(h5path) as ic:
@@ -249,7 +249,7 @@ def test_ic_fmt_hdf5_image3():
 
 
 def test_ic_fmt_hdf5_image_bg():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # add a fake image_bg column
     with h5py.File(h5path, "a") as h5:
         image_bg = h5["events"]["image"][:] // 2
@@ -263,7 +263,7 @@ def test_ic_fmt_hdf5_image_bg():
 
 
 def test_ic_fmt_hdf5_logs():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     write(h5path, logs={
         "test": ["asdasd"*100],
         "M1_para.ini":  ["asdasd"*100],  # should be ignored
@@ -303,7 +303,7 @@ def test_ic_metadata_choices_medium():
     'ignore::dclab.rtdc_dataset.config.EmptyConfigurationKeyWarning')
 def test_ic_metadata_empty_string():
     """Empty metadata values are ignored with a warning in dclab>0.33.2"""
-    path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # add empty attribute
     with h5py.File(path, "r+") as h5:
         h5.attrs["setup:medium"] = ""
@@ -400,7 +400,7 @@ def test_ic_invalid_dataset():
                     reason="requires python3.6 or higher")
 def test_invalid_medium():
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("rtdc_data_minimal.zip")
+    h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
     para = h5path.with_name("M1_para.ini")
     cfg = para.read_text().split("\n")
     cfg.insert(3, "Buffer Medium = unknown_bad!")
@@ -416,7 +416,7 @@ def test_invalid_medium():
                             + 'BadFeatureSizeWarning')
 def test_load_with():
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("rtdc_data_minimal.zip")
+    h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
     known_aler = [
         "Metadata: Missing key [setup] 'flow rate sample'",
         "Metadata: Missing key [setup] 'flow rate sheath'",
@@ -437,7 +437,7 @@ def test_load_with():
 
 def test_missing_file():
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
+    h5path = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
     h5path.with_name("M1_para.ini").unlink()
     try:
         check_dataset(h5path)
@@ -464,7 +464,7 @@ def test_ml_class():
                             + 'BadFeatureSizeWarning')
 def test_no_fluorescence():
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("rtdc_data_minimal.zip")
+    h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
     _, _, info = check_dataset(h5path)
     known_info = [
         'Compression: None',
@@ -477,7 +477,7 @@ def test_no_fluorescence():
 @pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",
                                         "2.2.2.0", "2.2.2.1", "2.2.2.2"])
 def test_shapein_issue3_bad_medium(si_version):
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
         h5.attrs["setup:software version"] = si_version
         h5.attrs["setup:medium"] = "CellCarrierB"
@@ -492,7 +492,7 @@ def test_shapein_issue3_bad_medium(si_version):
 
 @pytest.mark.parametrize("si_version", ["2.2.0.3", "2.2.2.3"])
 def test_shapein_issue3_bad_medium_control(si_version):
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
         h5.attrs["setup:software version"] = si_version
         h5.attrs["setup:medium"] = "CellCarrierB"
@@ -515,7 +515,7 @@ def test_temperature():
 
 def test_wrong_samples_per_event():
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("rtdc_data_traces_2flchan.zip")
+    h5path = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
     with h5path.with_name("M1_para.ini").open("a") as fd:
         fd.write("Samples Per Event = 10\n")
     msg = "Metadata: wrong number of samples per event: fl1_median " \

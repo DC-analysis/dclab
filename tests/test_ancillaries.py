@@ -54,7 +54,7 @@ def setup_fake_af():
 
 def test_af_0basic():
     pytest.importorskip("nptdms")
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     for cc in ['fl1_pos',
                'frame',
                'size_x',
@@ -99,7 +99,7 @@ def test_af_0error():
 def test_af_aspect():
     pytest.importorskip("nptdms")
     # Aspect ratio of the data
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video_bright.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
     aspect = ds["aspect"]
     assert np.sum(aspect > 1) == 904
     assert np.sum(aspect < 1) == 48
@@ -107,7 +107,7 @@ def test_af_aspect():
 
 def test_af_area_ratio():
     pytest.importorskip("nptdms")
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_traces_video.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     comp_ratio = ds["area_ratio"]
     # The convex area is always >= the raw area
     assert np.all(comp_ratio >= 1)
@@ -122,11 +122,11 @@ def test_af_deform():
 
 
 @pytest.mark.parametrize("path", [
-    "rtdc_data_minimal.zip",
-    "rtdc_data_traces_video.zip",
-    "rtdc_data_traces_video_bright.zip",
-    "rtdc_data_traces_video_large_fov.zip",
-    "rtdc_data_shapein_v2.0.1.zip",
+    "fmt-tdms_minimal_2016.zip",
+    "fmt-tdms_fl-image_2016.zip",
+    "fmt-tdms_fl-image-bright_2017.zip",
+    "fmt-tdms_fl-image-large-fov_2017.zip",
+    "fmt-tdms_shapein-2.0.1-no-image_2017.zip",
     ])
 def test_af_method_called_once_with_shared_pipeline(
         fake_af_cleanup_fixture, path):
@@ -163,11 +163,11 @@ def test_af_method_called_once_with_shared_pipeline(
 
 
 @pytest.mark.parametrize("path", [
-    "rtdc_data_minimal.zip",
-    "rtdc_data_traces_video.zip",
-    "rtdc_data_traces_video_bright.zip",
-    "rtdc_data_traces_video_large_fov.zip",
-    "rtdc_data_shapein_v2.0.1.zip",
+    "fmt-tdms_minimal_2016.zip",
+    "fmt-tdms_fl-image_2016.zip",
+    "fmt-tdms_fl-image-bright_2017.zip",
+    "fmt-tdms_fl-image-large-fov_2017.zip",
+    "fmt-tdms_shapein-2.0.1-no-image_2017.zip",
     ])
 def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
     """Check whether features are recomputed when the hash changes"""
@@ -195,7 +195,7 @@ def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
 
 def test_af_time():
     pytest.importorskip("nptdms")
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_minimal.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     tt = ds["time"]
     assert tt[0] == 0
     assert np.allclose(tt[1], 0.0385)
@@ -203,7 +203,7 @@ def test_af_time():
 
 
 def test_af_warning_from_check_data_size():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         data = np.arange(len(ds)//2)
         data_dict = {"name1": data}

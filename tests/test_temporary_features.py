@@ -27,7 +27,7 @@ def test_bad_feature_name():
 
 def test_basic():
     """Basic test of a temporary feature"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         dclab.register_temporary_feature("my_special_feature")
         dclab.set_temporary_feature(rtdc_ds=ds,
@@ -43,7 +43,7 @@ def test_basic_feature_exists():
 
 
 def test_export_and_load():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # register temporary feature
     dclab.register_temporary_feature(feature="fl1_mean")
 
@@ -75,7 +75,7 @@ def test_export_and_load():
 
 def test_filtering():
     """Filtering with features, same example as in docs"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         dclab.register_temporary_feature(feature="fl1_mean")
         fl1_mean = np.array(
@@ -99,7 +99,7 @@ def test_hierarchy_not_supported():
     # root parent gets nan values.
     # Cheers,
     # Paul
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         child = dclab.new_dataset(ds)
         dclab.register_temporary_feature("my_special_feature")
@@ -111,7 +111,7 @@ def test_hierarchy_not_supported():
 
 def test_load_temporary_feature_from_disk():
     """Load a temporary feature from a file on disk"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         fl1_mean = np.array(
             [np.mean(ds["trace"]["fl1_raw"][ii]) for ii in range(len(ds))])
@@ -134,7 +134,7 @@ def test_load_temporary_feature_from_disk():
 
 
 def test_register_after_loading():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         fl1_mean = np.array(
             [np.mean(ds["trace"]["fl1_raw"][ii]) for ii in range(len(ds))])
@@ -157,7 +157,7 @@ def test_with_user_config_section():
     # add some metadata to the user config section
     metadata = {"channel": True,
                 "n_constrictions": 3}
-    ds = dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip"))
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     ds.config["user"].update(metadata)
     assert ds.config["user"] == metadata
     area_of_region = ds["area_um"] * ds.config["user"]["n_constrictions"]
@@ -173,7 +173,7 @@ def test_with_user_config_section():
 
 
 def test_wrong_data_shape_1():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         dclab.register_temporary_feature("my_special_feature", is_scalar=False)
         with pytest.raises(ValueError):
@@ -183,7 +183,7 @@ def test_wrong_data_shape_1():
 
 
 def test_wrong_data_shape_2():
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         dclab.register_temporary_feature("my_special_feature", is_scalar=True)
         data = np.arange(len(ds)*2).reshape(-1, 2)
@@ -195,7 +195,7 @@ def test_wrong_data_shape_2():
 
 def test_wrong_length():
     """temporary feature should have same length"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         dclab.register_temporary_feature("my_special_feature")
         with pytest.raises(ValueError):
@@ -206,7 +206,7 @@ def test_wrong_length():
 
 def test_wrong_name():
     """temporary feature should have same length"""
-    h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         dclab.register_temporary_feature("my_special_feature")
         with pytest.raises(ValueError):

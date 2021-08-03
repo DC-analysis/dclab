@@ -24,7 +24,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):
     def get(self, query, feat=None, trace=None, event=None):
         """Mocks communication with the DCOR API"""
-        h5path = retrieve_data("rtdc_data_hdf5_rtfdc.zip")
+        h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
         with dclab.new_dataset(h5path) as ds:
             if query == "size":
                 return len(ds)
@@ -46,7 +46,7 @@ def test_dcor_base(monkeypatch):
     monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor,
                         "APIHandler",
                         MockAPIHandler)
-    with dclab.new_dataset(retrieve_data("rtdc_data_hdf5_rtfdc.zip")) as ds:
+    with dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip")) as ds:
         dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id=1")
         assert len(dso) == len(ds)
         assert dso.config["setup"]["channel width"] == \

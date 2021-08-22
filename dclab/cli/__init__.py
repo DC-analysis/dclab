@@ -1,5 +1,6 @@
 # flake8: noqa: F401
 """command line interface"""
+from .common import get_command_log, get_job_info
 from .task_compress import compress, compress_parser
 from .task_condense import condense, condense_parser
 from .task_join import join, join_parser

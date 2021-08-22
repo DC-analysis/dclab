@@ -164,6 +164,12 @@ def test_join_times():
                            atol=.0001)
 
 
+def test_method_available():
+    # DCOR depotize needs this
+    assert hasattr(cli, "get_job_info")
+    assert hasattr(cli, "get_command_log")
+
+
 def test_repack_basic():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)

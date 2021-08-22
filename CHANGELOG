@@ -1,4 +1,5 @@
 0.34.6
+ - fix: make get_job_info and get_command_log available in cli submodule
  - tests: add documentation for test data (#119)
 0.34.5
  - fix: cast data to float when filling with nan values when checking the

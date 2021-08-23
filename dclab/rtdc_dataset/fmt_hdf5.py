@@ -273,18 +273,7 @@ class RTDC_HDF5(RTDCBase):
         config = Configuration()
         for key in h5attrs:
             section, pname = key.split(":")
-            if section == "user":
-                # the type of user configuration parameters are defined
-                # by the HDF5 attribute type
-                config[section][pname] = h5attrs[key]
-            elif pname not in dfn.config_funcs[section]:
-                # Add the value as a string (this will issue
-                # a UnknownConfigurationKeyWarning in config.py)
-                config[section][pname] = h5attrs[key]
-            else:
-                typ = dfn.config_funcs[section][pname]
-                config[section][pname] = typ(h5attrs[key])
-
+            config[section][pname] = h5attrs[key]
         return config
 
     @property

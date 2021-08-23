@@ -1,3 +1,10 @@
+import numbers
+
+import numpy as np
+
+
+def f2dfloatarray(value):
+    return np.array(value, dtype=float)
 
 
 def fbool(value):
@@ -53,7 +60,10 @@ def lcstr(astr):
 
 
 #: maps functions to their expected output types
-func_types = {fbool: bool,
-              fint: int,
-              fintlist: list,
-              lcstr: str}
+func_types = {
+    f2dfloatarray: np.ndarray,
+    fbool: (bool, np.bool_),
+    fint: numbers.Integral,
+    fintlist: list,
+    float: numbers.Number,
+    lcstr: str}

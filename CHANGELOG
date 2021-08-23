@@ -1,3 +1,10 @@
+0.35.0
+ - enh: support new configuration keys for online polygon filtering
+   in the form of "[online_filter]: area_um,deform polygon points"
+ - enh: new helper functions in dclab.definitions: get_config_value_type,
+   get_config_value_func, and config_key_exists
+ - ref: issue a warning when the data type of a configuration key is
+   not correct
 0.34.6
  - fix: make get_job_info and get_command_log available in cli submodule
  - tests: add documentation for test data (#119)

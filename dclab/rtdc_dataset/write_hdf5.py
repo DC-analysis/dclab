@@ -251,9 +251,8 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
             msg = "Meta data section not defined in dclab: {}".format(sec)
             raise ValueError(msg)
         for ck in meta[sec]:
-            if ck not in dfn.config_keys[sec]:
-                msg = "Meta key not defined in dclab: {}:{}".format(sec, ck)
-                raise ValueError(msg)
+            if not dfn.config_key_exists(sec, ck):
+                raise ValueError(f"Meta key not defined in dclab: {sec}:{ck}")
 
     # Check feature keys
     feat_keys = []
@@ -308,8 +307,8 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
                 h5obj.attrs[idk] = value
             else:
                 # pipe the metadata through the hard-coded converter functions
-                conffunc = dfn.config_funcs[sec][ck]
-                h5obj.attrs[idk] = conffunc(value)
+                convfunc = dfn.get_config_value_func(sec, ck)
+                h5obj.attrs[idk] = convfunc(value)
 
     # Write data
     # create events group

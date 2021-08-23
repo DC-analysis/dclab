@@ -564,27 +564,6 @@ class IntegrityChecker(object):
 
     def check_metadata_bad(self, **kwargs):
         cues = []
-        # check for meta data types
-        for sec in self.ds.config:
-            if sec == "user":
-                continue
-            for key in self.ds.config[sec]:
-                val = self.ds.config[sec][key]
-                typ = dfn.config_types[sec][key]
-                if sec in dfn.CFG_ANALYSIS:
-                    # TODO:
-                    # - properly test against analysis keywords
-                    #   (filtering, calculation)
-                    pass
-                elif not isinstance(val, typ):
-                    cues.append(ICue(
-                        msg="Metadata: Datatype of [{}] '{}'".format(sec, key)
-                            + "must be '{}'".format(
-                            dfn.config_types[sec][key]),
-                        level="violation",
-                        category="metadata dtype",
-                        cfg_section=sec,
-                        cfg_key=key))
         # check for ROI size
         if ("imaging" in self.ds.config
                 and "roi size x" in self.ds.config["imaging"]

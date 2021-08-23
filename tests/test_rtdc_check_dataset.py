@@ -1,10 +1,10 @@
-
 import sys
 
 import h5py
 import numpy as np
 import pytest
 
+import dclab.rtdc_dataset.config
 from dclab.rtdc_dataset import check, check_dataset, fmt_tdms, new_dataset, \
     write
 
@@ -38,7 +38,10 @@ def test_basic():
     # "Metadata: Missing section 'online_contour'"
     # "UnknownConfigurationKeyWarning: Unknown key 'exposure time' ...",
     # "UnknownConfigurationKeyWarning: Unknown key 'flash current' ...",
-    assert len(aler) == 13
+    # "UserWarning: Type of confguration key [fluorescence]: sample rate ...",
+    # "UserWarning: Type of confguration key [imaging]: roi position x ...",
+    # "UserWarning: Type of confguration key [imaging]: roi position y ..."]
+    assert len(aler) == 16
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     assert "Compression: Partial (1 of 25)" in info
@@ -48,7 +51,10 @@ def test_complete():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     viol, aler, info = check_dataset(h5path)
     assert len(viol) == 0
-    assert len(aler) == 0
+    # [fluorescence]: sample rate should be <class 'numbers.Integral'>
+    # [imaging]: roi position x should be <class 'numbers.Integral'>
+    # [imaging]: roi position y should be <class 'numbers.Integral'>
+    assert len(aler) == 3
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
 
@@ -107,7 +113,10 @@ def test_icue():
     assert cues[0] != cues[1]
     levels = check.ICue.get_level_summary(cues)
     assert levels["info"] >= 2
-    assert levels["alert"] == 0
+    # [fluorescence]: sample rate should be <class 'numbers.Integral'>
+    # [imaging]: roi position x should be <class 'numbers.Integral'>
+    # [imaging]: roi position y should be <class 'numbers.Integral'>
+    assert levels["alert"] == 3
     assert levels["violation"] == 0
     assert cues[0].msg in cues[0].__repr__()
 
@@ -279,13 +288,13 @@ def test_ic_fmt_hdf5_logs():
 def test_ic_metadata_bad():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
-    ds.config["experiment"]["run index"] = "1"
+    # Since version 0.35, metadata are checked in `Configuration` class
+    with pytest.warns(dclab.rtdc_dataset.config.WrongConfigurationTypeWarning,
+                      match="run index"):
+        ds.config["experiment"]["run index"] = "1"
     with check.IntegrityChecker(ds) as ic:
         cues = ic.check_metadata_bad()
-    assert cues[0].category == "metadata dtype"
-    assert cues[0].level == "violation"
-    assert cues[0].cfg_section == "experiment"
-    assert cues[0].cfg_key == "run index"
+    assert len(cues) == 0
 
 
 def test_ic_metadata_choices_medium():
@@ -472,6 +481,35 @@ def test_no_fluorescence():
         'Fluorescence: False',
     ]
     assert set(info) == set(known_info)
+
+
+def test_online_polygon_filters():
+    """Shape-In 2.3 supports online polygon filters"""
+    path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # add an artificial online polygon filter
+    with h5py.File(path, "a") as h5:
+        # set soft filter to True
+        h5.attrs["online_filter:area_um,deform soft limit"] = True
+        # set filter values
+        pf_name = "online_filter:area_um,deform polygon points"
+        area_um = h5["events"]["area_um"]
+        deform = h5["events"]["deform"]
+        pf_points = np.array([
+            [np.mean(area_um) + np.std(area_um),
+             np.mean(deform)],
+            [np.mean(area_um) + np.std(area_um),
+             np.mean(deform) + np.std(deform)],
+            [np.mean(area_um),
+             np.mean(deform) + np.std(deform)],
+            ])
+        h5.attrs[pf_name] = pf_points
+
+    # see if we can open the file without any error
+    with check.IntegrityChecker(path) as ic:
+        cues = [cc for cc in ic.check() if cc.level != "info"]
+        # [imaging]: roi position x should be <class 'numbers.Integral'>
+        # [imaging]: roi position y should be <class 'numbers.Integral'>
+        assert len(cues) == 2
 
 
 @pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",

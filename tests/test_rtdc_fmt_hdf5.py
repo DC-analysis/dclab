@@ -186,6 +186,37 @@ def test_no_suffix():
     assert(len(ds) == 8)
 
 
+def test_online_polygon_filters():
+    """Shape-In 2.3 supports online polygon filters"""
+    path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # add an artificial online polygon filter
+    with h5py.File(path, "a") as h5:
+        # set soft filter to True
+        h5.attrs["online_filter:area_um,deform soft limit"] = True
+        # set filter values
+        pf_name = "online_filter:area_um,deform polygon points"
+        area_um = h5["events"]["area_um"]
+        deform = h5["events"]["deform"]
+        pf_points = np.array([
+            [np.mean(area_um) + np.std(area_um),
+             np.mean(deform)],
+            [np.mean(area_um) + np.std(area_um),
+             np.mean(deform) + np.std(deform)],
+            [np.mean(area_um),
+             np.mean(deform) + np.std(deform)],
+            ])
+        h5.attrs[pf_name] = pf_points
+
+    # see if we can open the file without any error
+    with new_dataset(path) as ds:
+        assert len(ds) == 8
+        assert ds.config["online_filter"]["area_um,deform soft limit"]
+        assert "area_um,deform polygon points" in ds.config["online_filter"]
+        assert np.allclose(
+            ds.config["online_filter"]["area_um,deform polygon points"],
+            pf_points)
+
+
 def test_open_with_invalid_feature_names():
     """Loading an .rtdc file that has wrong feature name"""
     path = str(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))

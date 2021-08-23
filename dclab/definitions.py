@@ -3,7 +3,8 @@ import copy
 import numpy as np
 
 from .rtdc_dataset.ancillaries import AncillaryFeature
-from .parse_funcs import fbool, fint, fintlist, func_types, lcstr
+from .parse_funcs import (
+    f2dfloatarray, fbool, fint, fintlist, func_types, lcstr)
 
 
 #: All configuration keywords editable by the user
@@ -423,6 +424,22 @@ def check_feature_shape(name, data):
                              "`data` array is not 1D!")
 
 
+def config_key_exists(section, key):
+    """Return `True` if the configuration key exists"""
+    valid = False
+    if section == "user":
+        valid = True
+    elif section in config_funcs and key in config_funcs[section]:
+        valid = True
+    elif section == "online_filter":
+        if key.endswith("soft limit"):
+            # "online_filter:area_um,deform soft limit"
+            valid = True
+        elif key.endswith("polygon points"):
+            valid = True
+    return valid
+
+
 def feature_exists(name, scalar_only=False):
     """Return True if `name` is a valid feature name
 
@@ -465,6 +482,45 @@ def feature_exists(name, scalar_only=False):
                 and name[-1] in valid_chars):
             valid = True
     return valid
+
+
+def get_config_value_func(section, key):
+    """Return configuration type converter function"""
+    func = None
+    if section == "user":
+        pass
+    elif section in config_funcs and key in config_funcs[section]:
+        func = config_funcs[section][key]
+    elif section == "online_filter":
+        if key.endswith("soft limit"):
+            # "online_filter:area_um,deform soft limit"
+            func = fbool
+        elif key.endswith("polygon points"):
+            func = f2dfloatarray
+
+    if func is None:
+        return lambda x: x
+    else:
+        return func
+
+
+def get_config_value_type(section, key):
+    """Return the expected type of a config value
+
+    Returns `None` if no type is defined
+    """
+    typ = None
+    if section == "user":
+        pass
+    elif section in config_types and key in config_types[section]:
+        typ = config_types[section][key]
+    elif section == "online_filter":
+        if key.endswith("soft limit"):
+            # "online_filter:area_um,deform soft limit"
+            typ = func_types[fbool]
+        elif key.endswith("polygon points"):
+            typ = func_types[f2dfloatarray]
+    return typ
 
 
 def get_feature_label(name, rtdc_ds=None):

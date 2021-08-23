@@ -6,6 +6,7 @@ import time
 import pathlib
 import shutil
 
+import dclab
 from dclab import cli, new_dataset, rtdc_dataset
 
 import h5py
@@ -73,6 +74,39 @@ def test_compress_already_compressed_force():
     assert h1 != h2
 
 
+def test_compress_with_online_polygon_filters():
+    """Shape-In 2.3 supports online polygon filters"""
+    path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # add an artificial online polygon filter
+    with h5py.File(path, "a") as h5:
+        # set soft filter to True
+        h5.attrs["online_filter:area_um,deform soft limit"] = True
+        # set filter values
+        pf_name = "online_filter:area_um,deform polygon points"
+        area_um = h5["events"]["area_um"]
+        deform = h5["events"]["deform"]
+        pf_points = np.array([
+            [np.mean(area_um) + np.std(area_um),
+             np.mean(deform)],
+            [np.mean(area_um) + np.std(area_um),
+             np.mean(deform) + np.std(deform)],
+            [np.mean(area_um),
+             np.mean(deform) + np.std(deform)],
+        ])
+        h5.attrs[pf_name] = pf_points
+
+    path_out = path.with_name("compressed.rtdc")
+    cli.compress(path_out=path_out, path_in=path)
+
+    with dclab.new_dataset(path_out) as ds:
+        assert len(ds) == 8
+        assert ds.config["online_filter"]["area_um,deform soft limit"]
+        assert "area_um,deform polygon points" in ds.config["online_filter"]
+        assert np.allclose(
+            ds.config["online_filter"]["area_um,deform polygon points"],
+            pf_points)
+
+
 def test_condense():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -97,7 +131,7 @@ def test_join_tdms():
 
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert len(dsj)
-        assert len(dsj) == 2*len(ds0)
+        assert len(dsj) == 2 * len(ds0)
         assert len(ds0) == ds0.config["experiment"]["event count"]
         assert len(dsj) == dsj.config["experiment"]["event count"]
         assert np.all(dsj["circ"][:100] == ds0["circ"][:100])
@@ -132,7 +166,7 @@ def test_join_rtdc():
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert "dclab-join" in dsj.logs
         assert len(dsj)
-        assert len(dsj) == 2*len(ds0)
+        assert len(dsj) == 2 * len(ds0)
         assert np.all(dsj["circ"][:len(ds0)] == ds0["circ"])
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
@@ -154,12 +188,12 @@ def test_join_times():
         h2.attrs["experiment:date"] = "2019-11-05"
         h2.attrs["experiment:time"] = "16:01:15.050"
 
-    offset = 24*60*60 + 60*60 + 1*60 + 15 + .05
+    offset = 24 * 60 * 60 + 60 * 60 + 1 * 60 + 15 + .05
 
     cli.join(path_out=path_out, paths_in=[path_in1, path_in2])
     with new_dataset(path_out) as dsj, new_dataset(path_in1) as ds0:
         assert np.allclose(dsj["time"],
-                           np.concatenate((ds0["time"], ds0["time"]+offset)),
+                           np.concatenate((ds0["time"], ds0["time"] + offset)),
                            rtol=0,
                            atol=.0001)
 
@@ -243,7 +277,7 @@ def test_split():
                     if feat == "index":
                         continue
                     assert np.all(
-                        ds[feat][ecount:ecount+len(di)] == di[feat]), feat
+                        ds[feat][ecount:ecount + len(di)] == di[feat]), feat
                 ecount += len(di)
 
 
@@ -255,7 +289,7 @@ def test_split_traces():
         for pp in paths:
             with new_dataset(pp) as di:
                 for flkey in ds["trace"].keys():
-                    trace1 = ds["trace"][flkey][ecount:ecount+len(di)]
+                    trace1 = ds["trace"][flkey][ecount:ecount + len(di)]
                     trace2 = di["trace"][flkey][:]
                     assert len(trace1) == len(trace2)
                     assert np.all(trace1 == trace2), flkey
@@ -301,11 +335,10 @@ def test_tdms2rtdc_bulk():
                   path_rtdc=path_out,
                   compute_features=False)
 
-    for pp in [
-        path_out / "data_1" / "M1_data.rtdc",
-        path_out / "data_2" / "M1_data.rtdc",
-        path_out / "data_3" / "M1_data.rtdc",
-            path_out / "data_nested" / "data_4" / "M1_data.rtdc"]:
+    for pp in [path_out / "data_1" / "M1_data.rtdc",
+               path_out / "data_2" / "M1_data.rtdc",
+               path_out / "data_3" / "M1_data.rtdc",
+               path_out / "data_nested" / "data_4" / "M1_data.rtdc"]:
         assert pp.exists()
 
         with new_dataset(pp) as ds2, new_dataset(path_data) as ds1:
@@ -428,12 +461,13 @@ def test_tdms2rtdc_update_sample_per_events():
 
 @pytest.mark.parametrize("dataset,exit_status_expected", [
     ["fmt-hdf5_fl_2017.zip", 3],
-    ["fmt-hdf5_fl_2018.zip", 0],
-    ])
+    ["fmt-hdf5_fl_2018.zip", 1],
+])
 def test_verify_dataset_exit_codes(dataset, exit_status_expected, monkeypatch):
     # get the exit status from the script
     def sys_exit(status):
         return status
+
     monkeypatch.setattr(sys, "exit", sys_exit)
 
     h5path = retrieve_data(dataset)
@@ -445,9 +479,19 @@ def test_verify_dataset_exit_code_alert(monkeypatch):
     # get the exit status from the script
     def sys_exit(status):
         return status
+
     monkeypatch.setattr(sys, "exit", sys_exit)
 
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+
+    # Since 0.35.0 we really check the configuration key types.
+    # Just make sure that they are properly set:
+    with h5py.File(h5path, "a") as h5:
+        for key in ["fluorescence:sample rate",
+                    "imaging:roi position x",
+                    "imaging:roi position y"]:
+            h5.attrs[key] = int(h5.attrs[key])
+
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["experiment:unknown"] = ""
@@ -459,9 +503,19 @@ def test_verify_dataset_exit_code_error(monkeypatch):
     # get the exit status from the script
     def sys_exit(status):
         return status
+
     monkeypatch.setattr(sys, "exit", sys_exit)
 
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+
+    # Since 0.35.0 we really check the configuration key types.
+    # Just make sure that they are properly set:
+    with h5py.File(h5path, "a") as h5:
+        for key in ["fluorescence:sample rate",
+                    "imaging:roi position x",
+                    "imaging:roi position y"]:
+            h5.attrs[key] = int(h5.attrs[key])
+
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["setup:channel width"] = "peter"
@@ -473,9 +527,19 @@ def test_verify_dataset_exit_code_user_ok(monkeypatch):
     # get the exit status from the script
     def sys_exit(status):
         return status
+
     monkeypatch.setattr(sys, "exit", sys_exit)
 
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+
+    # Since 0.35.0 we really check the configuration key types.
+    # Just make sure that they are properly set:
+    with h5py.File(h5path, "a") as h5:
+        for key in ["fluorescence:sample rate",
+                    "imaging:roi position x",
+                    "imaging:roi position y"]:
+            h5.attrs[key] = int(h5.attrs[key])
+
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["user:pan"] = 2
@@ -487,9 +551,19 @@ def test_verify_dataset_exit_code_violation_1(monkeypatch):
     # get the exit status from the script
     def sys_exit(status):
         return status
+
     monkeypatch.setattr(sys, "exit", sys_exit)
 
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+
+    # Since 0.35.0 we really check the configuration key types.
+    # Just make sure that they are properly set:
+    with h5py.File(h5path, "a") as h5:
+        for key in ["fluorescence:sample rate",
+                    "imaging:roi position x",
+                    "imaging:roi position y"]:
+            h5.attrs[key] = int(h5.attrs[key])
+
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["setup:flow rate"] = 0
@@ -501,9 +575,19 @@ def test_verify_dataset_exit_code_violation_2(monkeypatch):
     # get the exit status from the script
     def sys_exit(status):
         return status
+
     monkeypatch.setattr(sys, "exit", sys_exit)
 
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+
+    # Since 0.35.0 we really check the configuration key types.
+    # Just make sure that they are properly set:
+    with h5py.File(h5path, "a") as h5:
+        for key in ["fluorescence:sample rate",
+                    "imaging:roi position x",
+                    "imaging:roi position y"]:
+            h5.attrs[key] = int(h5.attrs[key])
+
     # provoke a warning
     with h5py.File(h5path, "r+") as h5:
         h5.attrs["setup:flow rate"] = 0

@@ -138,14 +138,14 @@ class RTDC_TDMS(RTDCBase):
             for section in cfgii:
                 for pname in cfgii[section]:
                     meta = cfgii[section][pname]
-                    typ = dfn.config_funcs[section][pname]
+                    convfunc = dfn.get_config_value_func(section, pname)
                     if isinstance(meta, tuple):
                         osec, opar = meta
                         if osec in tdms_config and opar in tdms_config[osec]:
                             val = tdms_config[osec].pop(opar)
-                            dclab_config[section][pname] = typ(val)
+                            dclab_config[section][pname] = convfunc(val)
                     else:
-                        dclab_config[section][pname] = typ(meta)
+                        dclab_config[section][pname] = convfunc(meta)
 
         # Additional information from log file
         rtfdc_log = self.path.with_name(self._mid + "_log.ini")

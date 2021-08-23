@@ -12,6 +12,8 @@ from helper_methods import retrieve_data
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_config():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
@@ -21,6 +23,8 @@ def test_config():
     assert ds.config["imaging"]["pixel size"] == 0.34
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_contour_basic():
@@ -35,6 +39,8 @@ def test_contour_basic():
     assert np.median(ds["contour"][-1]) == 33.0
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_defective_feature_aspect():
     # see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/241
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -58,6 +64,8 @@ def test_defective_feature_aspect():
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_hash():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
@@ -65,6 +73,8 @@ def test_hash():
     assert ds.format == "hdf5"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ignore_empty_hdf5_meta_data_attribute():
     """Ignore empty hdf5 attributes / dclab metadata"""
     # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
@@ -80,6 +90,8 @@ def test_ignore_empty_hdf5_meta_data_attribute():
         new_dataset(path)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ignore_unknown_hdf5_meta_data_attribute():
     """Ignore unknown hdf5 attributes / dclab metadata"""
     # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
@@ -96,6 +108,8 @@ def test_ignore_unknown_hdf5_meta_data_attribute():
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_image_basic():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
@@ -103,6 +117,8 @@ def test_image_basic():
     assert len(ds["image"]) == 5
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_image_bg():
@@ -117,6 +133,8 @@ def test_image_bg():
             assert np.all(ds["image"][ii] // 2 == ds["image_bg"][ii])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_image_bg_2():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     with new_dataset(path) as ds:
@@ -125,6 +143,8 @@ def test_image_bg_2():
         assert bgc[10, 11] == 6
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 @pytest.mark.parametrize("idxs",
@@ -149,6 +169,8 @@ def test_index_slicing_contour(idxs):
     assert np.all(contour_slice[2] == contour_ref[2])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_logs():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
 
@@ -177,6 +199,8 @@ def test_logs():
             pass
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_no_suffix():
     """Loading an .rtdc file that has a wrong suffix"""
     path = str(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
@@ -186,6 +210,8 @@ def test_no_suffix():
     assert(len(ds) == 8)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_online_polygon_filters():
     """Shape-In 2.3 supports online polygon filters"""
     path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -217,6 +243,8 @@ def test_online_polygon_filters():
             pf_points)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_open_with_invalid_feature_names():
     """Loading an .rtdc file that has wrong feature name"""
     path = str(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
@@ -228,6 +256,8 @@ def test_open_with_invalid_feature_names():
     assert len(ds) == 8
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_trace():

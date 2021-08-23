@@ -9,6 +9,8 @@ from dclab.features.bright import get_bright
 from helper_methods import calltracker, retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_af_brightness():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     with h5py.File(path, "r+") as h5:
@@ -29,6 +31,8 @@ def test_af_brightness():
     assert np.allclose(real_sd[idcompare], comp_sd[idcompare])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_af_brightness_called_once(monkeypatch):
     """Make sure dclab.features.bright.get_bright is only called once"""
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")

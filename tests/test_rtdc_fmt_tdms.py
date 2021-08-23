@@ -51,6 +51,8 @@ def test_compatibility_shapein201():
     assert ds.config["experiment"]["time"] == "12:54:31"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_contains_non_scalar():
     pytest.importorskip("nptdms")
     ds1 = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
@@ -69,6 +71,8 @@ def test_contains_non_scalar():
     assert "trace" not in ds3
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_contour_basic():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["contour"]) == 12
@@ -76,6 +80,8 @@ def test_contour_basic():
     assert ds["contour"]._initialized
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_contour_corrupt():
     path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     cpath = path.with_name("M1_contours.txt")
@@ -137,6 +143,8 @@ def test_contour_naming():
     assert ds5["contour"].identifier is None
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_contour_negative_offset():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     ds["contour"][0]
@@ -144,6 +152,8 @@ def test_contour_negative_offset():
     assert np.all(ds["contour"][0] == np.zeros((2, 2), dtype=int))
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_contour_not_initialized():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert not ds["contour"]._initialized
@@ -157,6 +167,8 @@ def test_fluorescence_config():
     assert "fluorescence" in ds2.config
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
@@ -168,11 +180,15 @@ def test_image_basic():
     assert np.allclose(np.average(ds["image"][1]), 45.1490478515625)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_image_column_length():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["image"]) == 3
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_image_corrupt():
     path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     vpath = path.with_name("M1_imaq.avi")
@@ -187,6 +203,8 @@ def test_image_corrupt():
         assert False
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_image_out_of_bounds():
@@ -234,6 +252,8 @@ def test_large_fov():
     assert np.allclose(bavg[1], bcom[1])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("exname", [
     "fmt-tdms_minimal_2016.zip",
     "fmt-tdms_fl-image_2016.zip",
@@ -245,6 +265,8 @@ def test_load_tdms_all(exname):
     new_dataset(tdms_path)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_load_tdms_avi_files_1():
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     edest = pathlib.Path(tdms_path).parent
@@ -262,6 +284,8 @@ def test_load_tdms_avi_files_1():
         assert pathlib.Path(ds3["image"].video_file).name == "M1_imag.avi"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_load_tdms_avi_files_2():
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     edest = pathlib.Path(tdms_path).parent
@@ -279,6 +303,8 @@ def test_load_tdms_simple():
     assert ds.filter.all.shape[0] == 156
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
@@ -295,6 +321,8 @@ def test_mask_basic():
     assert np.allclose(bavg1, bavg2), "mask is correctly computed from contour"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_mask_img_shape_1():
     path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     # shape from image data
@@ -302,6 +330,8 @@ def test_mask_img_shape_1():
         assert ds["mask"]._img_shape == (96, 256)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_mask_img_shape_2():
     path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     path.with_name("M1_imaq.avi").unlink()
@@ -316,6 +346,8 @@ def test_mask_img_shape_2():
         assert len(ds["mask"]) == 0
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_mask_img_wrong_config_shape_1():
     path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     with new_dataset(path) as ds:
@@ -325,6 +357,8 @@ def test_mask_img_wrong_config_shape_1():
         assert ds["mask"]._img_shape == (96, 256)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_mask_img_wrong_config_shape_2():
     path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     path.with_name("M1_imaq.avi").unlink()
@@ -340,6 +374,8 @@ def test_naming_valid():
         assert dclab.definitions.feature_exists(key)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_parameters_txt():
     ds = new_dataset(retrieve_data("fmt-tdms_fl_2015.zip"))
     assert ds.config["setup"]["module composition"] == "Cell_Flow_2, Fluor"
@@ -394,6 +430,8 @@ def test_project_path():
     assert a == d
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_trace_basic():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     msg = "traces should not be loaded into memory before first access"
@@ -403,6 +441,8 @@ def test_trace_basic():
         ds["trace"]["fl1_median"][0]), 287.08999999999997)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_trace_import_fail():
     # make sure undefined trace data does not raise an error
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
@@ -414,6 +454,8 @@ def test_trace_import_fail():
     dclab.definitions.FLUOR_TRACES.pop(-1)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_trace_methods():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     for k in list(ds["trace"].keys()):
@@ -423,6 +465,8 @@ def test_trace_methods():
     assert ds["trace"].__repr__().count("<loaded into memory>")
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.'
                             + 'MultipleSamplesPerEventFound')  # desired
@@ -470,6 +514,8 @@ def test_trace_wrong_samples_per_event():
         assert "trace" not in ds
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_unicode_paths():
     path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     path = pathlib.Path(path)

@@ -52,6 +52,8 @@ def setup_fake_af():
     return af1, af2
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_af_0basic():
     pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
@@ -105,6 +107,8 @@ def test_af_aspect():
     assert np.sum(aspect < 1) == 48
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_af_area_ratio():
     pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
@@ -121,6 +125,8 @@ def test_af_deform():
     assert np.allclose(ds["deform"], 1 - ds["circ"])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("path", [
     "fmt-tdms_minimal_2016.zip",
     "fmt-tdms_fl-image_2016.zip",
@@ -162,6 +168,8 @@ def test_af_method_called_once_with_shared_pipeline(
     assert len(ds._ancillaries) == 2 + tdms_time_feature
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("path", [
     "fmt-tdms_minimal_2016.zip",
     "fmt-tdms_fl-image_2016.zip",
@@ -202,6 +210,8 @@ def test_af_time():
     assert np.all(np.diff(tt) > 0)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_af_warning_from_check_data_size():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:

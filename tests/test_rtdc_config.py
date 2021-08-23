@@ -33,12 +33,16 @@ def equals(a, b):
     return True
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_config_basic():
     pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert ds.config["imaging"]["roi size y"] == 96.
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_config_invalid_key():
     pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
@@ -68,6 +72,8 @@ def test_config_save_load():
         pass
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_config_update():
     pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
@@ -89,6 +95,8 @@ def test_config_update():
     assert ds.config["calculation"]["crosstalk fl32"] == 0.6
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_allowed_key_types():
     """Check that the user config section keys only accept strings"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -114,6 +122,8 @@ def test_user_section_allowed_key_types():
     assert isinstance(ds.config["user"]["a string"], str)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_basic():
     """Add information to the user section of config"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -125,6 +135,8 @@ def test_user_section_basic():
     assert ds.config["user"] == metadata
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_clear1():
     """Clear information from the user section with `clear()` method"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -138,6 +150,8 @@ def test_user_section_clear1():
     assert ds.config["user"] == {}
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_clear2():
     """Clear information from the user section with empty dict"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -151,6 +165,8 @@ def test_user_section_clear2():
     assert ds.config["user"] == {}
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_different_value_types():
     """Check that the user config section values take different data types"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -173,6 +189,8 @@ def test_user_section_different_value_types():
     assert isinstance(ds.config["user"]["channel G"], tuple)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_exists():
     """Check that the user config section exists"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -182,6 +200,8 @@ def test_user_section_exists():
         ds.config["Oh I seem to have lost my key"]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_and_overwrite():
     """Add information to the user section of config via dict.__setitem__"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -196,6 +216,8 @@ def test_user_section_set_and_overwrite():
     assert ds.config["user"] == {}
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_save_reload_empty_dict():
     """The 'user' config section as an empty dict will not save"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -212,6 +234,8 @@ def test_user_section_set_save_reload_empty_dict():
         assert ds2.config["user"] == {}
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("user_config",
                          [
                              {"": "a"},
@@ -272,6 +296,8 @@ def test_user_section_set_save_reload_fmt_dcor():
         assert ds2.config["user"] == metadata
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_save_reload_fmt_hdf5_basic():
     """Check that 'user' section metadata works for RTDC_HDF5"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -294,6 +320,8 @@ def test_user_section_set_save_reload_fmt_hdf5_basic():
         assert ds2.config["user"] == metadata
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_save_reload_fmt_hdf5_containers():
     """Check that 'user' section metadata works for container data types"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -318,6 +346,8 @@ def test_user_section_set_save_reload_fmt_hdf5_containers():
             assert all(metadata[k1] == ds2.config["user"][k1])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_save_reload_fmt_hierarchy():
     """Check that 'user' section metadata works for RTDC_Hierarchy"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -341,6 +371,8 @@ def test_user_section_set_save_reload_fmt_hierarchy():
         assert ds2.config["user"] == metadata
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.export.'
                             + 'LimitingExportSizeWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
@@ -369,6 +401,8 @@ def test_user_section_set_save_reload_fmt_tdms():
         assert ds2.config["user"] == metadata
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_with_setitem():
     """Add information to the user section of config via dict.__setitem__"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -376,6 +410,8 @@ def test_user_section_set_with_setitem():
     assert ds.config["user"] == {"some metadata": 42}
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_with_update():
     """Add information to the user section of config with .update"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))

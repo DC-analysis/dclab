@@ -200,6 +200,8 @@ def test_pf_bad_plugin_feature_name():
         PlugInFeature("Peter-Pan's Best Friend!", info)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_exists_in_hierarchy():
     """Test that RTDCHierarchy works with PlugInFeature"""
     info = example_plugin_info_single_feature()
@@ -212,6 +214,8 @@ def test_pf_exists_in_hierarchy():
         assert pf.feature_name in child
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_export_and_load():
     """Check that exported and loaded hdf5 file will keep a plugin feature"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -253,6 +257,8 @@ def test_pf_feature_exists():
     assert dclab.dfn.feature_exists(plugin_list[1].feature_name)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_filtering_with_plugin_feature():
     """Filtering with plugin feature"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -305,6 +311,8 @@ def test_pf_incorrect_input_method():
         PlugInFeature("circ_per_area", info)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_initialize_plugin_after_loading():
     """plugin feature loads correctly after feature added to hdf5 file"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -320,6 +328,8 @@ def test_pf_initialize_plugin_after_loading():
         assert "circ_per_area" in ds.features_innate
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_initialize_plugin_feature_single():
     """Check that single plugin feature exists independant of loaded dataset"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -335,6 +345,8 @@ def test_pf_initialize_plugin_feature_single():
     assert "circ_per_area" in ds2
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_initialize_plugin_feature_non_scalar():
     """Check that the non-scalar plugin feature works"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -347,6 +359,8 @@ def test_pf_initialize_plugin_feature_non_scalar():
                        gaussian_filter(ds["image"], sigma=(0, 1, 1)))
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_initialize_plugin_features_multiple():
     """Check multiple plugin features exist independant of loaded dataset"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -386,6 +400,8 @@ def test_pf_input_no_scalar_feature():
     assert pf.plugin_feature_info["scalar feature"]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_load_plugin():
     """Basic check for loading a plugin feature via a script"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -424,6 +440,8 @@ def test_pf_minimum_info_input():
     assert "plugin path" in pf.plugin_feature_info
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_remove_all_plugin_features():
     """Remove all plugin features at once"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -444,6 +462,8 @@ def test_pf_remove_all_plugin_features():
     assert not dclab.dfn.feature_exists("circ_times_area")
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_remove_plugin_feature():
     """Remove individual plugin features"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -525,6 +545,8 @@ def test_pf_with_no_feature_label():
     assert label == "Plugin feature {}".format(feature_name)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_with_user_config_section():
     """Use a plugin feature with the user defined config section"""
     info = {"method": compute_with_user_section,
@@ -547,6 +569,8 @@ def test_pf_with_user_config_section():
     assert np.allclose(area_of_region1, area_of_region1_calc)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_with_user_config_section_fails():
     """Use a plugin feature with the user defined config section"""
     info = {"method": compute_with_user_section,
@@ -567,6 +591,8 @@ def test_pf_with_user_config_section_fails():
         ds["area_of_region"]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_wrong_data_shape_1():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
@@ -577,6 +603,8 @@ def test_pf_wrong_data_shape_1():
             ds[pf.feature_name]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_wrong_data_shape_2():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
@@ -588,6 +616,8 @@ def test_pf_wrong_data_shape_2():
             ds[pf.feature_name]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_wrong_length_1():
     """plugin feature should have same length"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -600,6 +630,8 @@ def test_pf_wrong_length_1():
             ds[pf.feature_name]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_wrong_length_2():
     """plugin feature should have same length"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")

@@ -16,6 +16,8 @@ import pytest
 from helper_methods import retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -34,6 +36,8 @@ def test_compress():
                 assert np.all(dsj[feat] == ds0[feat]), feat
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_already_compressed():
     """By default, an already compressed dataset should not be compressed"""
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -57,6 +61,8 @@ def test_compress_already_compressed():
     assert h1 == h3
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_already_compressed_force():
     """An extension of the above test to make sure "force" works"""
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -74,6 +80,8 @@ def test_compress_already_compressed_force():
     assert h1 != h2
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_with_online_polygon_filters():
     """Shape-In 2.3 supports online polygon filters"""
     path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -107,6 +115,8 @@ def test_compress_with_online_polygon_filters():
             pf_points)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_condense():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -157,6 +167,8 @@ def test_join_tdms_logs():
             assert np.all(np.array(ds0.logs[key]) == np.array(dsj.logs[jkey]))
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_join_rtdc():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -173,6 +185,8 @@ def test_join_rtdc():
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_join_times():
     path_in1 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     path_in2 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -204,6 +218,8 @@ def test_method_available():
     assert hasattr(cli, "get_command_log")
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_repack_basic():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -223,6 +239,8 @@ def test_repack_basic():
             assert np.all(dsj["mask"][ii] == ds0["mask"][ii])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_repack_remove_secrets():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -248,6 +266,8 @@ def test_repack_remove_secrets():
         assert not str(data).count("my dirty secret")
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_repack_strip_logs():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -266,6 +286,8 @@ def test_repack_strip_logs():
         assert not dsj.logs
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_split():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     paths = cli.split(path_in=path_in, split_events=3, ret_out_paths=True)
@@ -281,6 +303,8 @@ def test_split():
                 ecount += len(di)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_split_traces():
     path_in = retrieve_data("fmt-hdf5_fl_2018.zip")
     paths = cli.split(path_in=path_in, split_events=3, ret_out_paths=True)
@@ -408,6 +432,8 @@ def test_tdms2rtdc_remove_nan_image():
         assert ds2.config["experiment"]["event count"] == video_length
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_tdms2rtdc_update_roi_size():
     pytest.importorskip("nptdms")
     path_in = retrieve_data("fmt-tdms_fl-image_2016.zip")

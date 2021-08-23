@@ -12,6 +12,8 @@ from helper_methods import example_data_dict, retrieve_data
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_basic():
     h5path = retrieve_data("fmt-hdf5_fl_2017.zip")
@@ -47,6 +49,8 @@ def test_basic():
     assert "Compression: Partial (1 of 25)" in info
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_complete():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     viol, aler, info = check_dataset(h5path)
@@ -59,6 +63,8 @@ def test_complete():
     assert "Fluorescence: True" in info
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_complete_user_metadata():
     """Setting any user metadata is allowed"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -106,6 +112,8 @@ def test_exact():
     assert set(info) == set(known_info)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_icue():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with check.IntegrityChecker(h5path) as ic:
@@ -220,6 +228,8 @@ def test_ic_flow_rate_not_zero():
     assert cues[0].cfg_key == "flow rate"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_fmt_hdf5_image1():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
@@ -232,6 +242,8 @@ def test_ic_fmt_hdf5_image1():
     assert cues[0].level == "alert"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(sys.version_info < (3, 0),
                     reason="requires python3 or higher")
 def test_ic_fmt_hdf5_image2():
@@ -246,6 +258,8 @@ def test_ic_fmt_hdf5_image2():
     assert cues[0].level == "alert"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_fmt_hdf5_image3():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
@@ -257,6 +271,8 @@ def test_ic_fmt_hdf5_image3():
     assert cues[0].level == "alert"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_fmt_hdf5_image_bg():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # add a fake image_bg column
@@ -271,6 +287,8 @@ def test_ic_fmt_hdf5_image_bg():
     assert cues[0].level == "alert"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_fmt_hdf5_logs():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     write(h5path, logs={
@@ -285,6 +303,8 @@ def test_ic_fmt_hdf5_logs():
     assert cues[0].level == "alert"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_metadata_bad():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
@@ -308,6 +328,8 @@ def test_ic_metadata_choices_medium():
     assert len(cues) == 0
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.EmptyConfigurationKeyWarning')
 def test_ic_metadata_empty_string():
@@ -483,6 +505,8 @@ def test_no_fluorescence():
     assert set(info) == set(known_info)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_online_polygon_filters():
     """Shape-In 2.3 supports online polygon filters"""
     path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -512,6 +536,8 @@ def test_online_polygon_filters():
         assert len(cues) == 2
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",
                                         "2.2.2.0", "2.2.2.1", "2.2.2.2"])
 def test_shapein_issue3_bad_medium(si_version):
@@ -528,6 +554,8 @@ def test_shapein_issue3_bad_medium(si_version):
         assert cues[0].category == "metadata wrong"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("si_version", ["2.2.0.3", "2.2.2.3"])
 def test_shapein_issue3_bad_medium_control(si_version):
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")

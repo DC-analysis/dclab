@@ -13,6 +13,8 @@ from dclab import dfn, new_dataset
 from helper_methods import example_data_dict, retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_export():
@@ -25,6 +27,8 @@ def test_avi_export():
         f1)[6] > 1e4, "Resulting file to small, Something went wrong!"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'fmt_tdms.exc.CorruptFrameWarning')
 def test_avi_override():
@@ -386,6 +390,8 @@ def test_hdf5_trace_from_tdms():
             assert np.all(ds["trace"][key][ii] == ds2["trace"][key][ii])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_traces():
     """Length of traces is preserved (no filtering)"""
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
@@ -403,6 +409,8 @@ def test_hdf5_traces():
     assert len(ds2["trace"]["fl1_median"]) == 7
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_traces_filter():
     """Length of traces was wrong when filters were applied #112
 
@@ -431,6 +439,8 @@ def test_hdf5_traces_filter():
     assert np.all(ds["trace"]["fl1_raw"][6] == ds2["trace"]["fl1_raw"][2])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_traces_filter2():
     """Length of traces was wrong when filters were applied #112
 

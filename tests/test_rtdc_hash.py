@@ -12,6 +12,8 @@ def test_hash_dict():
     assert ds.hash == "5bd08693349fd40369860474e3dab144"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hash_hierarchy():
     pytest.importorskip("nptdms")
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
@@ -20,6 +22,8 @@ def test_hash_hierarchy():
     assert ds2.hash == "3e942ba6e1cb333d3607edaba5f2c618"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hash_tdms():
     pytest.importorskip("nptdms")
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")

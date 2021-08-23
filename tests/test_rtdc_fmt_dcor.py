@@ -42,6 +42,8 @@ class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):
                 return ds[feat][event]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_base(monkeypatch):
     monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor,
                         "APIHandler",
@@ -119,6 +121,8 @@ def test_dcor_hash():
     assert ds.hash == "7250277b41b757cbe09647a58e8ca4ce"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_hierarchy(monkeypatch):
     monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor,
                         "APIHandler",

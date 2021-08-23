@@ -64,6 +64,8 @@ def test_af_inert_ratio_raw():
     assert np.allclose(real_ir[idcompare], comp_ir[idcompare])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_inert_ratio_raw():
     ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
 

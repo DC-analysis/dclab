@@ -25,6 +25,8 @@ def test_bad_feature_name():
         dclab.register_temporary_feature("Peter-Pan")
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_basic():
     """Basic test of a temporary feature"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -42,6 +44,8 @@ def test_basic_feature_exists():
     assert dclab.dfn.feature_exists("my_special_feature")
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_export_and_load():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # register temporary feature
@@ -73,6 +77,8 @@ def test_export_and_load():
         assert "fl1_mean" not in ds2
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_filtering():
     """Filtering with features, same example as in docs"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -90,6 +96,8 @@ def test_filtering():
         assert ds.filter.all[1]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hierarchy_not_supported():
     """Test for RTDCHierarchy (does not work)"""
     # Hi there,
@@ -109,6 +117,8 @@ def test_hierarchy_not_supported():
                                         data=np.arange(len(child)))
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_load_temporary_feature_from_disk():
     """Load a temporary feature from a file on disk"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -133,6 +143,8 @@ def test_load_temporary_feature_from_disk():
         assert "fl1_mean" in ds._events._features, "..but are still there"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_register_after_loading():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
@@ -152,6 +164,8 @@ def test_try_existing_feature_fails():
         dclab.register_temporary_feature("deform")
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_with_user_config_section():
     """Use a temporary feature with the user defined config section"""
     # add some metadata to the user config section
@@ -172,6 +186,8 @@ def test_with_user_config_section():
     assert np.allclose(area_of_region1, area_of_region1_calc)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_wrong_data_shape_1():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
@@ -182,6 +198,8 @@ def test_wrong_data_shape_1():
                                         data=np.arange(len(ds)))
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_wrong_data_shape_2():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
@@ -193,6 +211,8 @@ def test_wrong_data_shape_2():
                                         data=data)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_wrong_length():
     """temporary feature should have same length"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -204,6 +224,8 @@ def test_wrong_length():
                                         data=np.arange(len(ds)//2))
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_wrong_name():
     """temporary feature should have same length"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")

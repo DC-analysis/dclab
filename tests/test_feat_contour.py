@@ -15,6 +15,8 @@ from scipy.ndimage import binary_fill_holes
 from helper_methods import retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_af_contour_basic():
     ds1 = dclab.new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     # export all data except for contour data
@@ -40,6 +42,8 @@ def test_af_contour_basic():
             assert False, "contours not matching, check orientation?"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_artefact():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl-no-contour_2019.zip"))
     # This would raise a "dclab.features.contour.NoValidContourFoundError:
@@ -48,6 +52,8 @@ def test_artefact():
     assert len(cont) == 37, "just to be sure there really is something"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_lazy_contour_basic():
     ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     masks = ds["mask"][:]
@@ -57,6 +63,8 @@ def test_lazy_contour_basic():
         assert np.all(cont1[ii] == cont2[ii])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("idxs",
                          [slice(0, 5, 2),
                           [0, 2, 4],
@@ -100,6 +108,8 @@ def test_lazy_contour_slicing(idxs):
         assert np.all(mask_soll == mask)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_lazy_contour_single():
     ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     masks = ds["mask"][:]
@@ -111,6 +121,8 @@ def test_lazy_contour_single():
     assert len(c_0) != len(c_all[1])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_lazy_contour_timing():
     ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     masks = ds["mask"][:]
@@ -122,6 +134,8 @@ def test_lazy_contour_timing():
     assert t2-t1 > 10*(t1-t0)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_lazy_contour_type():
     ds1 = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     c1 = ds1["contour"]
@@ -154,6 +168,8 @@ def test_simple_contour():
         assert False, "contours not matching, check orientation?"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_volume():
     ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     mask = [mi for mi in ds["mask"]]

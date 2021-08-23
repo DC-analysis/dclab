@@ -11,6 +11,8 @@ from dclab import cli, new_dataset, rtdc_dataset
 from helper_methods import retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -31,6 +33,8 @@ def test_compress():
                 assert np.all(dsj[feat] == ds0[feat]), feat
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_already_compressed_no_force():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -48,6 +52,8 @@ def test_compress_already_compressed_no_force():
     assert h1 == h2
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_already_compressed_with_force():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -66,6 +72,8 @@ def test_compress_already_compressed_with_force():
     assert h1 != h2
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_condense():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -110,6 +118,8 @@ def test_join_tdms():
         assert set(dsj.features) == set(ds0.features)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_repack_basic():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -130,6 +140,8 @@ def test_repack_basic():
             assert np.all(dsj["mask"][ii] == ds0["mask"][ii])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_repack_strip_logs():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -150,6 +162,8 @@ def test_repack_strip_logs():
         assert not dsj.logs
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_repack_strip_logs_control():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     # same directory (will be cleaned up with path_in)
@@ -169,6 +183,8 @@ def test_repack_strip_logs_control():
         assert dsj.logs
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_split():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     path_out = path_in.parent / "out"

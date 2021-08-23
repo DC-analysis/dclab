@@ -34,6 +34,8 @@ def test_config_calculation():
     assert ch.config["calculation"]["emodulus temperature"] == 24.0
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_event_count():
     pytest.importorskip("nptdms")
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
@@ -45,6 +47,8 @@ def test_event_count():
     assert len(ds) == len(ch) + 1
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_contour():
@@ -58,6 +62,8 @@ def test_feat_contour():
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_image():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
@@ -69,6 +75,8 @@ def test_feat_image():
     assert np.all(ch["image"][1] == ds["image"][3])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_image_bg():
@@ -86,6 +94,8 @@ def test_feat_image_bg():
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_mask():
     path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -97,6 +107,8 @@ def test_feat_mask():
     assert np.all(ch["mask"][1] == ds["mask"][3])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feat_trace():
@@ -112,6 +124,8 @@ def test_feat_trace():
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_features():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
@@ -123,6 +137,8 @@ def test_features():
     assert ds.features_scalar == ch.features_scalar
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_features_loaded():
@@ -138,6 +154,8 @@ def test_features_loaded():
     assert "volume" in ds.features_loaded
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hierarchy_from_tdms():
     pytest.importorskip("nptdms")
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
@@ -160,6 +178,8 @@ def test_index_deep_contour():
     assert np.all(c2["contour"][3] == ds["contour"][5])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("feat", ["image", "image_bg", "mask"])
 @pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
                                   [0, 1, 2], [True, True, True, False]])
@@ -190,6 +210,8 @@ def test_index_slicing_tdms_fails(feat, idxs):
         ch[feat][idxs]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 @pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
@@ -267,6 +289,8 @@ def test_manual_exclude_parent_changed():
     assert c.filter.retrieve_manual_indices(c) == [1, 2]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_same_hash_different_identifier():
     pytest.importorskip("nptdms")
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")

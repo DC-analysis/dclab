@@ -1,6 +1,7 @@
 """Test machine learning tools"""
 import pathlib
 import tempfile
+from unittest import mock
 
 import numpy as np
 import pytest
@@ -627,15 +628,12 @@ def test_modc_export_model_enforce_format_bad_format():
                             + 'ModelFormatExportFailedWarning')
 def test_modc_export_model_enforce_format_bad_model():
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
-    try:
+    with pytest.raises(ValueError,
+                       match="Expected a Trackable object for export"):
         ml.modc.export_model(path=tmpdir,
-                             model=object(),
+                             model=mock.MagicMock(),
                              enforce_formats=["tensorflow-SavedModel"]
                              )
-    except ValueError:
-        pass
-    else:
-        assert False, "bad model cannot be exported"
 
 
 def test_modc_load_basic():

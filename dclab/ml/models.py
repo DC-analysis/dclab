@@ -151,7 +151,9 @@ class TensorflowModel(BaseModel):
     def save_bare_model(path, bare_model, save_format="tensorflow-SavedModel"):
         """Save a tensorflow model"""
         assert save_format == "tensorflow-SavedModel"
-        tf.saved_model.save(obj=bare_model, export_dir=str(path))
+        tf.keras.models.save_model(model=bare_model,
+                                   save_format=save_format,
+                                   filepath=path)
 
     def predict(self, ds, batch_size=32):
         """Return the probabilities of `self.outputs` for `ds`

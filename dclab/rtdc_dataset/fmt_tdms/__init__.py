@@ -185,7 +185,7 @@ class RTDC_TDMS(RTDCBase):
                     dclab_config["fluorescence"]["laser 3 lambda"] = 640
                     dclab_config["fluorescence"]["laser 3 power"] = p3
                 elif line.startswith("samplerate"):
-                    sr = float(line.split()[1])
+                    sr = int(float(line.split()[1]))
                     dclab_config["fluorescence"]["sample rate"] = sr
                 elif line.startswith("samplesperframe"):
                     spe = int(line.split()[1])
@@ -221,7 +221,7 @@ class RTDC_TDMS(RTDCBase):
                 for ll in lns[2:]:
                     if ("sample rate" not in dclab_config["fluorescence"]
                             and ll.startswith("Samplerate")):
-                        val = float(ll.split("=")[1])
+                        val = int(float(ll.split("=")[1]))
                         dclab_config["fluorescence"]["sample rate"] = val
                     elif ("signal min" not in dclab_config["fluorescence"]
                             and ll.startswith("ADCmin")):

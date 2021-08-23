@@ -602,6 +602,22 @@ class IntegrityChecker(object):
                             cfg_choices=VALID_CHOICES[sec][key]))
         return cues
 
+    def check_metadata_online_filter_polygon_points_shape(self, **kwargs):
+        cues = []
+        if "online_filter" in self.ds.config:
+            for key in self.ds.config["online_filter"].keys():
+                if key.endswith("polygon points"):
+                    points = self.ds.config["online_filter"][key]
+                    if points.shape[1] != 2 or points.shape[0] < 3:
+                        cues.append(ICue(
+                            msg="Metadata: Wrong shape [online_filter] "
+                                + f"{key}: '{points.shape}'",
+                            level="violation",
+                            category="metadata wrong",
+                            cfg_section="online_filter",
+                            cfg_key=key))
+        return cues
+
     def check_metadata_missing(self, expand_section=True, **kwargs):
         cues = []
         # These "must" be present:

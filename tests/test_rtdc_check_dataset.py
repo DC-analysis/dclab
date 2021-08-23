@@ -536,6 +536,37 @@ def test_online_polygon_filters():
         assert len(cues) == 2
 
 
+@pytest.mark.parametrize("shape", [[3, 3], [2, 2], [1, 2], [10, 3]])
+def test_online_polygon_filters_wrong_shape(shape):
+    """Shape-In 2.3 supports online polygon filters (test for shape)"""
+    path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+
+    # Since 0.35.0 we really check the configuration key types.
+    # Just make sure that they are properly set:
+    with h5py.File(path, "a") as h5:
+        for key in ["imaging:roi position x",
+                    "imaging:roi position y"]:
+            h5.attrs[key] = int(h5.attrs[key])
+
+    # add an artificial online polygon filter
+    with h5py.File(path, "a") as h5:
+        # set soft filter to True
+        h5.attrs["online_filter:area_um,deform soft limit"] = True
+        # set filter values
+        pf_name = "online_filter:area_um,deform polygon points"
+        pf_points = np.arange(shape[0]*shape[1]).reshape(*shape)
+        h5.attrs[pf_name] = pf_points
+
+    # see if we can open the file without any error
+    with check.IntegrityChecker(path) as ic:
+        cues = [cc for cc in ic.check() if cc.level != "info"]
+        assert len(cues) == 1
+        assert cues[0].category == "metadata wrong"
+        assert cues[0].level == "violation"
+        assert cues[0].cfg_section == "online_filter"
+        assert cues[0].cfg_key == "area_um,deform polygon points"
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",
@@ -592,7 +623,7 @@ def test_wrong_samples_per_event():
 
 if __name__ == "__main__":
     # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()
+    _loc = locals()
+    for _key in list(_loc.keys()):
+        if _key.startswith("test_") and hasattr(_loc[_key], "__call__"):
+            _loc[_key]()

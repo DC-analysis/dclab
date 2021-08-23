@@ -44,10 +44,12 @@ setup(
     license="GPL v2",
     description=description,
     long_description=open('README.rst').read() if exists('README.rst') else '',
-    install_requires=["h5py>=2.10.0",
-                      "numpy>=1.17.0",  # numpy.random.default_rng
-                      "scipy>=0.14.0",
-                      ],
+    install_requires=[
+        # https://github.com/h5py/h5py/issues/1948
+        "h5py>=2.10.0,!=3.4.0",
+        "numpy>=1.17.0",  # numpy.random.default_rng
+        "scipy>=0.14.0",
+        ],
     ext_modules=[
         Extension("dclab.external.skimage._shared.geometry",
                   sources=["dclab/external/skimage/_shared/geometry.pyx"],

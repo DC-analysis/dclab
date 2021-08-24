@@ -1,4 +1,6 @@
 0.35.1
+ - docs: fixed example data (sphinx encountered unexpected warnings)
+0.35.1
  - fix: ignore empty logs (raised IndexError before)
  - tests: increase coverage (#136)
 0.35.0

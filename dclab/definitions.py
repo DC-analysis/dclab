@@ -484,6 +484,30 @@ def feature_exists(name, scalar_only=False):
     return valid
 
 
+def get_config_value_descr(section, key):
+    """Return the description of a config value
+
+    Returns `key` if not defined anywhere
+    """
+    descr = key
+    if section == "user":
+        pass
+    elif section in config_descr and key in config_descr[section]:
+        descr = config_descr[section][key]
+    elif section == "online_filter":
+        if key.endswith("soft limit") or key.endswith("polygon points"):
+            # "online_filter:area_um,deform soft limit"
+            f1, f2 = key.split(" ", 1)[0].split(",")
+            # remove the units with rsplit
+            l1 = get_feature_label(f1).rsplit(" [", 1)[0]
+            l2 = get_feature_label(f2).rsplit(" [", 1)[0]
+            if key.endswith("soft limit"):
+                descr = f"Soft limit, polygon ({l1}, {l2})"
+            elif key.endswith("polygon points"):
+                descr = f"Polygon ({l1}, {l2})"
+    return descr
+
+
 def get_config_value_func(section, key):
     """Return configuration type converter function"""
     func = None

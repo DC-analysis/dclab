@@ -1,6 +1,5 @@
 """ Test functions for loading contours
 """
-
 import os
 import tempfile
 import pathlib
@@ -10,6 +9,7 @@ import pytest
 import numpy as np
 import h5py
 
+import dclab
 from dclab.rtdc_dataset import new_dataset
 import dclab.rtdc_dataset.config as dccfg
 from test_rtdc_fmt_dcor import DCOR_AVAILABLE
@@ -106,6 +106,23 @@ def test_config_update():
     assert ds.config["calculation"]["crosstalk fl23"] == 0.4
     assert ds.config["calculation"]["crosstalk fl31"] == 0.5
     assert ds.config["calculation"]["crosstalk fl32"] == 0.6
+
+
+@pytest.mark.parametrize("section,key,descr",
+                         [["online_filter",
+                           "area_um,deform polygon points",
+                           "Polygon (Area, Deformation)"],
+                          ["online_filter",
+                           "area_um,deform soft limit",
+                           "Soft limit, polygon (Area, Deformation)"],
+                          # sanity check
+                          ["experiment",
+                           "run index",
+                           "Index of measurement run"],
+                          ])
+def test_get_config_value_descr(section, key, descr):
+    """Descriptions of keys"""
+    assert descr == dclab.dfn.get_config_value_descr(section, key)
 
 
 @pytest.mark.filterwarnings(
@@ -436,11 +453,3 @@ def test_user_section_set_with_update():
     ds.config["user"].update(metadata2)
     assert ds.config["user"] == {"some metadata": 42,
                                  "channel information": "information"}
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

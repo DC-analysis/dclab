@@ -1,3 +1,6 @@
+0.35.4
+ - enh: implement function for obtaining the description of a
+   configuration key get_config_value_descr
 0.35.3
  - enh: implement dumping of Configuration to json
 0.35.2

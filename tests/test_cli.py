@@ -115,6 +115,26 @@ def test_compress_with_online_polygon_filters():
             pf_points)
 
 
+def test_compress_with_online_polygon_filters_real_data():
+    """Shape-In 2.3 supports online polygon filters"""
+    path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+
+    path_out = path.with_name("compressed.rtdc")
+    cli.compress(path_out=path_out, path_in=path)
+
+    with dclab.new_dataset(path_out) as ds:
+        assert len(ds) == 1
+        assert ds.config["online_filter"]["size_x,size_y soft limit"]
+        assert "size_x,size_y polygon points" in ds.config["online_filter"]
+        assert np.allclose(
+            ds.config["online_filter"]["size_x,size_y polygon points"],
+            [[0.1, 0.2],
+             [0.1, 2.5],
+             [3.3, 3.2],
+             [5.2, 0.9]]
+        )
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_condense():
@@ -488,6 +508,7 @@ def test_tdms2rtdc_update_sample_per_events():
 @pytest.mark.parametrize("dataset,exit_status_expected", [
     ["fmt-hdf5_fl_2017.zip", 3],
     ["fmt-hdf5_fl_2018.zip", 1],
+    ["fmt-hdf5_polygon_gate_2021.zip", 0],
 ])
 def test_verify_dataset_exit_codes(dataset, exit_status_expected, monkeypatch):
     # get the exit status from the script

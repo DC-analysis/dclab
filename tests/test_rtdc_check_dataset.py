@@ -536,6 +536,16 @@ def test_online_polygon_filters():
         assert len(cues) == 2
 
 
+def test_online_polygon_filters_real_data():
+    """Shape-In 2.3 supports online polygon filters"""
+    path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+
+    # see if we can open the file without any error
+    with check.IntegrityChecker(path) as ic:
+        cues = [cc for cc in ic.check() if cc.level != "info"]
+        assert len(cues) == 0
+
+
 @pytest.mark.parametrize("shape", [[3, 3], [2, 2], [1, 2], [10, 3]])
 def test_online_polygon_filters_wrong_shape(shape):
     """Shape-In 2.3 supports online polygon filters (test for shape)"""

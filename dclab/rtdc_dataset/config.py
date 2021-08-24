@@ -1,9 +1,12 @@
 """RT-DC dataset configuration"""
-
 import copy
+import json
+import numbers
 import pathlib
 import sys
 import warnings
+
+import numpy as np
 
 from .. import definitions as dfn
 
@@ -240,6 +243,14 @@ class Configuration(object):
         else:
             return other
 
+    def tojson(self):
+        """Convert the configuration to a JSON string
+
+        Note that the data type of some configuration options
+        will likely be lost.
+        """
+        return json.dumps(dict(self), cls=ConfigurationJSONEncode)
+
     def keys(self):
         """Return the configuration keys (sections)"""
         return self._cfg.keys()
@@ -296,6 +307,19 @@ class CaseInsensitiveDict(ConfigurationDict):
                       + "ConfigurationDict instead.",
                       DeprecationWarning)
         super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
+
+
+class ConfigurationJSONEncode(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, numbers.Integral):
+            return int(obj)
+        elif isinstance(obj, numbers.Number):
+            return float(obj)
+        elif isinstance(obj, (bool, np.bool_)):
+            return bool(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def verify_section_key(section, key):

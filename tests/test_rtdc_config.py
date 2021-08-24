@@ -17,6 +17,9 @@ from test_rtdc_fmt_dcor import DCOR_AVAILABLE
 from helper_methods import retrieve_data, example_data_dict
 
 
+data_path = pathlib.Path(__file__).parent / "data"
+
+
 def equals(a, b):
     """Compare objects with allclose"""
     if isinstance(a, (dict, dccfg.Configuration, dccfg.ConfigurationDict)):
@@ -70,6 +73,16 @@ def test_config_save_load():
         os.remove(cfg_file)
     except OSError:
         pass
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
+@pytest.mark.parametrize("path", list(data_path.glob("fmt-hdf5_*")))
+def test_config_to_json(path):
+    ds = new_dataset(retrieve_data(path.name))
+    ds.config.tojson()
 
 
 @pytest.mark.filterwarnings(

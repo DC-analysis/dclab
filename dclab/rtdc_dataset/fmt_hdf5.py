@@ -1,5 +1,6 @@
 """RT-DC hdf5 format"""
 from distutils.version import LooseVersion
+import functools
 import numbers
 import pathlib
 
@@ -127,12 +128,13 @@ class H5Logs(object):
         self._h5 = h5
 
     def __getitem__(self, key):
-        if "logs" in self._h5:
+        if key in self.keys():
             log = list(self._h5["logs"][key])
             if isinstance(log[0], bytes):
                 log = [li.decode("utf") for li in log]
         else:
-            raise KeyError("No logs in {}!".format(self._h5.file.filename))
+            raise KeyError(
+                f"Log '{key}' not found or empty in {self._h5.file.filename}!")
         return log
 
     def __iter__(self):
@@ -143,11 +145,13 @@ class H5Logs(object):
     def __len__(self):
         return len(self.keys())
 
+    @functools.lru_cache()
     def keys(self):
+        names = []
         if "logs" in self._h5:
-            names = sorted(self._h5["logs"].keys())
-        else:
-            names = []
+            for key in self._h5["logs"]:
+                if self._h5["logs"][key].size:
+                    names.append(key)
         return names
 
 

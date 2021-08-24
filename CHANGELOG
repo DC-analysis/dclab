@@ -1,3 +1,5 @@
+0.35.1
+ - fix: ignore empty logs (raised IndexError before)
 0.35.0
  - enh: support new configuration keys for online polygon filtering
    in the form of "[online_filter]: area_um,deform polygon points" (#134)

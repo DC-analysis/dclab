@@ -16,6 +16,48 @@ import pytest
 from helper_methods import retrieve_data
 
 
+def test_check_suffix_disabled_compress():
+    path_in_o = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_in = path_in_o.with_suffix("")
+    path_in_o.rename(path_in)
+    assert path_in.suffix == ""
+    with pytest.raises(ValueError, match="Unsupported file type"):
+        cli.compress(path_in=path_in,
+                     path_out=path_in.with_name("compressed.rtdc"))
+    # but this should work:
+    cli.compress(path_in=path_in,
+                 path_out=path_in.with_name("compressed2.rtdc"),
+                 check_suffix=False)
+
+
+def test_check_suffix_disabled_condense():
+    path_in_o = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_in = path_in_o.with_suffix("")
+    path_in_o.rename(path_in)
+    assert path_in.suffix == ""
+    with pytest.raises(ValueError, match="Unsupported file type"):
+        cli.condense(path_in=path_in,
+                     path_out=path_in.with_name("condensed.rtdc"))
+    # but this should work:
+    cli.condense(path_in=path_in,
+                 path_out=path_in.with_name("condensed2.rtdc"),
+                 check_suffix=False)
+
+
+def test_check_suffix_disabled_repack():
+    path_in_o = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_in = path_in_o.with_suffix("")
+    path_in_o.rename(path_in)
+    assert path_in.suffix == ""
+    with pytest.raises(ValueError, match="Unsupported file type"):
+        cli.repack(path_in=path_in,
+                   path_out=path_in.with_name("repacked.rtdc"))
+    # but this should work:
+    cli.repack(path_in=path_in,
+               path_out=path_in.with_name("repacked2.rtdc"),
+               check_suffix=False)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress():

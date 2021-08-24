@@ -1,5 +1,6 @@
 """command line interface"""
 import argparse
+import pathlib
 import shutil
 import warnings
 
@@ -9,7 +10,7 @@ from ..rtdc_dataset.check import IntegrityChecker
 from . import common
 
 
-def compress(path_out=None, path_in=None, force=False):
+def compress(path_out=None, path_in=None, force=False, check_suffix=True):
     """Create a new dataset with all features compressed losslessly"""
     if path_out is None or path_in is None:
         parser = compress_parser()
@@ -18,8 +19,12 @@ def compress(path_out=None, path_in=None, force=False):
         path_out = args.output
         force = args.force
 
+    allowed_input_suffixes = [".rtdc"]
+    if not check_suffix:
+        allowed_input_suffixes.append(pathlib.Path(path_in).suffix)
+
     path_in, path_out, path_temp = common.setup_task_paths(
-        path_in, path_out, allowed_input_suffixes=[".rtdc"])
+        path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
     if not force:
         # Check whether the input file is already compressed

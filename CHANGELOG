@@ -1,4 +1,6 @@
-0.35.1
+0.35.2
+ - enh: allow to compress, condense, and repack without checking for
+   the input file suffix
  - docs: fixed example data (sphinx encountered unexpected warnings)
 0.35.1
  - fix: ignore empty logs (raised IndexError before)

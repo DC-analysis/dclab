@@ -1,5 +1,6 @@
 """command line interface"""
 import argparse
+import pathlib
 import warnings
 
 from ..rtdc_dataset import new_dataset, write_hdf5
@@ -7,7 +8,7 @@ from ..rtdc_dataset import new_dataset, write_hdf5
 from . import common
 
 
-def condense(path_out=None, path_in=None):
+def condense(path_out=None, path_in=None, check_suffix=True):
     """Create a new dataset with all (ancillary) scalar-only features"""
     if path_out is None or path_in is None:
         parser = condense_parser()
@@ -15,8 +16,12 @@ def condense(path_out=None, path_in=None):
         path_in = args.input
         path_out = args.output
 
+    allowed_input_suffixes = [".rtdc", ".tdms"]
+    if not check_suffix:
+        allowed_input_suffixes.append(pathlib.Path(path_in).suffix)
+
     path_in, path_out, path_temp = common.setup_task_paths(
-        path_in, path_out, allowed_input_suffixes=[".rtdc", ".tdms"])
+        path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
     logs = {}
 

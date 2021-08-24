@@ -1,5 +1,6 @@
 """command line interface"""
 import argparse
+import pathlib
 
 import h5py
 
@@ -9,7 +10,7 @@ from .. import definitions as dfn
 from . import common
 
 
-def repack(path_in=None, path_out=None, strip_logs=False):
+def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
     """Repack/recreate an .rtdc file, optionally stripping the logs"""
     if path_in is None and path_out is None:
         parser = repack_parser()
@@ -18,8 +19,12 @@ def repack(path_in=None, path_out=None, strip_logs=False):
         path_out = args.output
         strip_logs = args.strip_logs
 
+    allowed_input_suffixes = [".rtdc"]
+    if not check_suffix:
+        allowed_input_suffixes.append(pathlib.Path(path_in).suffix)
+
     path_in, path_out, path_temp = common.setup_task_paths(
-        path_in, path_out, allowed_input_suffixes=[".rtdc"])
+        path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
     with new_dataset(path_in) as ds, h5py.File(path_temp, "w") as h5:
         # write metadata first (to avoid resetting software version)

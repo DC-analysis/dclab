@@ -705,6 +705,15 @@ class IntegrityChecker(object):
                 cfg_key="medium"))
         return cues
 
+    def sanity_check(self):
+        """Sanity check that tests whether the data can be accessed"""
+        cues = []
+        cues += self.check_feature_size()
+        cues += self.check_metadata_bad()
+        for cue in cues:
+            cue.msg = "Sanity check failed: " + cue.msg
+        return [ci for ci in cues if ci.level == "violation"]
+
 
 def check_dataset(path_or_ds):
     """Check whether a dataset is complete

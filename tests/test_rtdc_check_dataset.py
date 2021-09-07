@@ -424,6 +424,20 @@ def test_ic_invalid_dataset():
             ic.check()
 
 
+def test_ic_sanity():
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    with h5py.File(h5path, "a") as h5:
+        del h5["events"]["deform"]
+        h5["events"]["deform"] = np.ones(100) * .1
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.sanity_check()
+    assert len(cues) == 1
+    assert cues[0].category == "feature size"
+    assert cues[0].msg.count("Sanity check failed:")
+    assert cues[0].msg.count("deform")
+    assert cues[0].level == "violation"
+
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'ancillaries.ancillary_feature.'
                             + 'BadFeatureSizeWarning')

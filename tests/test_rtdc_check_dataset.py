@@ -328,6 +328,18 @@ def test_ic_metadata_choices_medium():
     assert len(cues) == 0
 
 
+def test_check_metadata_hdf5_type_issue_139():
+    """Check that chip region is lower-case"""
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:chip region"] = "Channel"
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check_metadata_hdf5_type()
+    assert len(cues) == 1
+    assert cues[0].msg.count("channel")
+    assert cues[0].msg.count("Channel")
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(

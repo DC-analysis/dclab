@@ -125,6 +125,15 @@ def test_get_config_value_descr(section, key, descr):
     assert descr == dclab.dfn.get_config_value_descr(section, key)
 
 
+def test_lower_case_conversion_issue_139():
+    """Check that chip region is lower-case"""
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:chip region"] = "Channel"
+    with new_dataset(h5path) as ds:
+        assert ds.config["setup"]["chip region"] == "channel"
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_allowed_key_types():

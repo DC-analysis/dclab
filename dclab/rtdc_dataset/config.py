@@ -77,9 +77,9 @@ class ConfigurationDict(dict):
                         f"Type of confguration key [{self.section}]: {key} "
                         f"should be {typ}, got {type(value)}!",
                         WrongConfigurationTypeWarning)
-                    # convert value to its correct type
-                    convfunc = dfn.get_config_value_func(self.section, key)
-                    value = convfunc(value)
+                # convert value to its correct type (independent of case above)
+                convfunc = dfn.get_config_value_func(self.section, key)
+                value = convfunc(value)
 
             super(ConfigurationDict, self).__setitem__(key, value)
 

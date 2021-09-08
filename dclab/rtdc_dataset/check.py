@@ -602,6 +602,31 @@ class IntegrityChecker(object):
                             cfg_choices=VALID_CHOICES[sec][key]))
         return cues
 
+    def check_metadata_hdf5_type(self, **kwargs):
+        """This is a low-level HDF5 check"""
+        cues = []
+        if self.ds.format == "hdf5":
+            for entry in self.ds._h5.attrs:
+                if entry.count(":"):
+                    sec, key = entry.split(":")
+                    val_act = self.ds._h5.attrs[entry]  # actual value
+                    if isinstance(val_act, bytes):
+                        val_act = val_act.decode("utf-8")
+                    # `func` may be None for e.g. online polygon filters
+                    # (because those are not hard-coded config keys)
+                    func = dfn.config_funcs.get(sec, {}).get(key)
+                    if func is not None:
+                        val_exp = func(val_act)  # expected value
+                        if val_act != val_exp:
+                            cues.append(ICue(
+                                msg=f"Metadata: [{sec}]: '{key}' should be "
+                                    + f"'{val_exp}', but is '{val_act}'!",
+                                level="alert",
+                                category="metadata wrong",
+                                cfg_section=sec,
+                                cfg_key=key))
+        return cues
+
     def check_metadata_online_filter_polygon_points_shape(self, **kwargs):
         cues = []
         if "online_filter" in self.ds.config:

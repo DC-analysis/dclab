@@ -1,3 +1,5 @@
+0.35.6
+ - fix: config converters were not applied to raw metadata (#139)
 0.35.5
  - enh: add sanity_check method to IntegrityChecker
 0.35.4

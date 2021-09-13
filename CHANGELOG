@@ -1,5 +1,7 @@
 0.35.7
  - enh: improve error handling when loading rpy2
+ - enh: add checks for negative or zero-valued metadata
+ - tests: fix broken example dataset with zero-valued metadata (#137)
 0.35.6
  - fix: config converters were not applied to raw metadata (#139)
 0.35.5

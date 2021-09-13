@@ -222,7 +222,7 @@ def test_ic_flow_rate_not_zero():
     ds = new_dataset(ddict)
     ds.config["setup"]["flow rate"] = 0
     with check.IntegrityChecker(ds) as ic:
-        cues = ic.check_flow_rate_not_zero()
+        cues = ic.check_metadata_bad_greater_zero()
     assert cues[0].category == "metadata wrong"
     assert cues[0].cfg_section == "setup"
     assert cues[0].cfg_key == "flow rate"

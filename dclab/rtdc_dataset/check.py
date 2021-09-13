@@ -485,20 +485,6 @@ class IntegrityChecker(object):
                         cfg_key=k))
         return cues
 
-    def check_flow_rate_not_zero(self, **kwargs):
-        """Make sure the flow rate is not zero"""
-        cues = []
-        if ("setup" in self.ds.config
-                and "flow rate" in self.ds.config["setup"]
-                and self.ds.config["setup"]["flow rate"] == 0):
-            cues.append(ICue(
-                msg="Metadata: Flow rate is zero!",
-                level="violation",
-                category="metadata wrong",
-                cfg_section="setup",
-                cfg_key="flow rate"))
-        return cues
-
     def check_fmt_hdf5(self, **kwargs):
         cues = []
         # hdf5-based checks
@@ -583,6 +569,26 @@ class IntegrityChecker(object):
                                 category="metadata wrong",
                                 cfg_section="imaging",
                                 cfg_key=roi))
+        return cues
+
+    def check_metadata_bad_greater_zero(self, **kwargs):
+        cues = []
+        # check for ROI size
+        for sec, key in [
+            ["imaging", "frame rate"],
+            ["imaging", "pixel size"],
+            ["setup", "channel width"],
+            ["setup", "flow rate"],
+        ]:
+            value = self.ds.config.get(sec, {}).get(key)
+            if value is not None and value <= 0:
+                cues.append(ICue(
+                    msg=f"Metadata: Invalid value for [{sec}] '{key}': "
+                        + f"'{value}'!",
+                    level="violation",
+                    category="metadata wrong",
+                    cfg_section=sec,
+                    cfg_key=key))
         return cues
 
     def check_metadata_choices(self, **kwargs):

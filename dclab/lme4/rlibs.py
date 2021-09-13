@@ -20,8 +20,11 @@ class VersionError(BaseException):
 
 
 class MockRPackage:
+    def __init__(self, exception):
+        self.exception = exception
+
     def __getattr__(self, item):
-        raise ImportError("Please install 'rpy2>={}'!".format(R_MIN_VERSION))
+        raise self.exception
 
 
 def import_r_submodules():
@@ -44,7 +47,11 @@ try:
     if LooseVersion(rpy2.__version__) < LooseVersion(R_MIN_VERSION):
         raise VersionError("Please install 'rpy2>={}'!".format(R_MIN_VERSION))
 except ImportError:
-    rpy2 = MockRPackage()
+    rpy2 = MockRPackage(
+        ImportError("Please install 'rpy2>={}'!".format(R_MIN_VERSION)))
+    rpy2_is_version_3 = False
+except BaseException as e:
+    rpy2 = MockRPackage(e)
     rpy2_is_version_3 = False
 else:
     rpy2_is_version_3 = LooseVersion(rpy2.__version__) >= LooseVersion("3.0")

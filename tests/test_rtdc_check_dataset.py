@@ -606,7 +606,8 @@ def test_online_polygon_filters_wrong_shape(shape):
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",
-                                        "2.2.2.0", "2.2.2.1", "2.2.2.2"])
+                                        "2.2.2.0", "2.2.2.1", "2.2.2.2",
+                                        "2.2.2.4", "2.2.2.4", "2.3.0.0"])
 def test_shapein_issue3_bad_medium(si_version):
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
@@ -623,7 +624,7 @@ def test_shapein_issue3_bad_medium(si_version):
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.parametrize("si_version", ["2.2.0.3", "2.2.2.3"])
+@pytest.mark.parametrize("si_version", ["2.2.0.3", "2.3.1.0"])
 def test_shapein_issue3_bad_medium_control(si_version):
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:

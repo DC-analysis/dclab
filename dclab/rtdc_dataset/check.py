@@ -717,6 +717,7 @@ class IntegrityChecker(object):
         then manually edit the medium.
 
         Affected Shape-In versions: >=2.2.1.0,<2.2.2.3
+        Also affected if bad config file was used: 2.2.2.4, 2.3.0.0
 
         https://github.com/ZELLMECHANIK-DRESDEN/ShapeIn_Issues/issues/3
         """
@@ -725,7 +726,12 @@ class IntegrityChecker(object):
         si_ver = self.ds.config["setup"].get("software version", "")
         si_ver = si_ver.strip("dev")  # for e.g. "2.2.1.0dev"
         if (medium == "CellCarrierB"
-                and si_ver in ["2.2.1.0", "2.2.2.0", "2.2.2.1", "2.2.2.2"]):
+                and si_ver in ["2.2.1.0", "2.2.2.0", "2.2.2.1", "2.2.2.2",
+                               "2.2.2.3",
+                               # The issue can still occur for these versions
+                               # of Shape-In if a bad configuration file
+                               # is used.
+                               "2.2.2.4", "2.3.0.0"]):
             cues.append(ICue(
                 msg="Metadata: Please verify that 'medium' is really "
                     + "'CellCarrierB' (Shape-In issue #3)",

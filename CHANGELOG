@@ -1,4 +1,6 @@
 0.35.7
+ - fix: more Shape-In versions are affected by the medium-write bug
+   addressed in 0.33.1
  - enh: improve error handling when loading rpy2
  - enh: add checks for negative or zero-valued metadata
  - tests: fix broken example dataset with zero-valued metadata (#137)

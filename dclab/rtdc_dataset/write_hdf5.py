@@ -1,5 +1,4 @@
 """RT-DC file format writer"""
-
 import copy
 
 import h5py
@@ -356,29 +355,47 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
             for rl in logs:
                 if rl in log_group:
                     del log_group[rl]
-        dt = h5py.special_dtype(vlen=str)
         for lkey in logs:
             ldata = logs[lkey]
             if isinstance(ldata, str):
                 # single event
                 ldata = [ldata]
+            # Determine number of lines
             lnum = len(ldata)
+            # Determine the maximum line length and use fixed-length strings,
+            # because compression and fletcher32 filters won't work with
+            # variable length strings.
+            # https://github.com/h5py/h5py/issues/1948
+            # 100 is the recommended maximum and the default, because if
+            # `mode` is e.g. "append", then this line may not be the longest.
+            max_length = 100
+            lines_as_bytes = []
+            for line in ldata:
+                # convert lines to bytes
+                if not isinstance(line, bytes):
+                    lbytes = line.encode("UTF-8")
+                else:
+                    lbytes = line
+                max_length = max(max_length, len(lbytes))
+                lines_as_bytes.append(lbytes)
             if lkey not in log_group:
+                # Create the dataset
                 log_dset = log_group.create_dataset(lkey,
                                                     (lnum,),
-                                                    dtype=dt,
+                                                    dtype=f"S{max_length}",
                                                     maxshape=(None,),
                                                     chunks=True,
                                                     fletcher32=True,
                                                     compression=compression)
-                for ii, line in enumerate(ldata):
-                    log_dset[ii] = line
+                for ii, lbytes in enumerate(lines_as_bytes):
+                    log_dset[ii] = lbytes
             else:
+                # Append to the dataset
                 log_dset = log_group[lkey]
                 oldsize = log_dset.shape[0]
                 log_dset.resize(oldsize + lnum, axis=0)
-                for ii, line in enumerate(ldata):
-                    log_dset[oldsize + ii] = line
+                for ii, lbytes in enumerate(lines_as_bytes):
+                    log_dset[oldsize + ii] = lbytes
 
     if mode == "append":
         return h5obj

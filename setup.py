@@ -45,8 +45,7 @@ setup(
     description=description,
     long_description=open('README.rst').read() if exists('README.rst') else '',
     install_requires=[
-        # https://github.com/h5py/h5py/issues/1948
-        "h5py>=2.10.0,!=3.4.0",
+        "h5py>=2.10.0",
         "numpy>=1.17.0",  # numpy.random.default_rng
         "scipy>=0.14.0",
         ],

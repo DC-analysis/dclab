@@ -346,6 +346,8 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
             store_trace(h5group=events,
                         data=data["trace"],
                         compression=compression)
+        else:
+            raise ValueError(f"No rule to write feature '{fk}'!")
 
     # Write logs
     if logs:

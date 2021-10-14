@@ -2,6 +2,8 @@
  - fix: write logs to fixed-length strings in HDF5 files (HDF5 never
    supported variable length string datasets with fletcher32 or compression
    filters)
+ - fix: non-scalar features that are not defined in dclab were silently
+   ignored upon export; temporarily raise a ValueError instead (#143)
  - setup: release pinning of h5py
 0.35.7
  - fix: more Shape-In versions are affected by the medium-write bug

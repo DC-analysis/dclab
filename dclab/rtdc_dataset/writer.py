@@ -45,7 +45,55 @@ class RTDCWriter:
 
     def __exit__(self, type, value, tb):
         # close the HDF5 file
+        self.rectify_metadata()
         self.h5file.close()
+
+    def rectify_metadata(self):
+        """Autocomplete the metadta of the RTDC-measurement
+
+        The following configuration keys are updated:
+
+        - experiment:event count
+        - fluorescence:samples per event
+        - imaging: roi size x (if image or mask is given)
+        - imaging: roi size y (if image or mask is given)
+
+        The following configuration keys are added if not present:
+
+        - fluorescence:channel count
+        """
+        # set event count
+        feats = sorted(self.h5file.get("events", {}).keys())
+        if feats:
+            self.h5file.attrs["experiment:event count"] = len(
+                self.h5file["events"][feats[0]])
+        else:
+            raise ValueError(f"No features in '{self.path}'!")
+
+        # set samples per event
+        if "trace" in feats:
+            traces = list(self.h5file["events"]["trace"].keys())
+            trsize = self.h5file["events"]["trace"][traces[0]].shape[1]
+            self.h5file.attrs["fluorescence:samples per event"] = trsize
+
+        # set channel count
+        chcount = sum(
+            ["fl1_max" in feats, "fl2_max" in feats, "fl3_max" in feats])
+        if chcount:
+            if "fluorescence:channel count" not in self.h5file.attrs:
+                self.h5file.attrs["fluorescence:channel count"] = chcount
+
+        # set roi size x/y
+        if "image" in self.h5file["events"]:
+            shape = self.h5file["events"]["image"][0].shape
+        elif "mask" in self.h5file["events"]:
+            shape = self.h5file["events"]["mask"][0].shape
+        else:
+            shape = None
+        if shape is not None:
+            # update shape
+            self.h5file.attrs["imaging:roi size x"] = shape[1]
+            self.h5file.attrs["imaging:roi size y"] = shape[0]
 
     def store_feature(self, feat, data):
         """Write feature data"""

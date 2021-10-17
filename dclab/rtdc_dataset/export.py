@@ -424,7 +424,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
 
 
 def hdf5_autocomplete_config(path_or_h5obj):
-    """"Autocompletes the configuration of the RTDC-measurement
+    """"Autocomplete the configuration of the RTDC-measurement
 
     The following configuration keys are updated:
 
@@ -441,45 +441,14 @@ def hdf5_autocomplete_config(path_or_h5obj):
     ----------
     path_or_h5obj: pathlib.Path or str or h5py.File
         Path to or opened RT-DC measurement
-
     """
     if not isinstance(path_or_h5obj, h5py.File):
         close = True
-        h5obj = h5py.File(path_or_h5obj, "a")
     else:
         close = False
-        h5obj = path_or_h5obj
 
-    # set event count
-    feats = sorted(h5obj["events"].keys())
-    if feats:
-        h5obj.attrs["experiment:event count"] = len(h5obj["events"][feats[0]])
-    else:
-        raise ValueError("No features in '{}'!".format(path_or_h5obj))
-
-    # set samples per event
-    if "trace" in feats:
-        traces = list(h5obj["events"]["trace"].keys())
-        trsize = h5obj["events"]["trace"][traces[0]].shape[1]
-        h5obj.attrs["fluorescence:samples per event"] = trsize
-
-    # set channel count
-    chcount = sum(["fl1_max" in feats, "fl2_max" in feats, "fl3_max" in feats])
-    if chcount:
-        if "fluorescence:channel count" not in h5obj.attrs:
-            h5obj.attrs["fluorescence:channel count"] = chcount
-
-    # set roi size x/y
-    if "image" in h5obj["events"]:
-        shape = h5obj["events"]["image"][0].shape
-    elif "mask" in h5obj["events"]:
-        shape = h5obj["events"]["mask"][0].shape
-    else:
-        shape = None
-    if shape is not None:
-        # update shape
-        h5obj.attrs["imaging:roi size x"] = shape[1]
-        h5obj.attrs["imaging:roi size y"] = shape[0]
+    hw = RTDCWriter(path_or_h5obj, mode="append")
+    hw.rectify_metadata()
 
     if close:
-        h5obj.close()
+        path_or_h5obj.close()

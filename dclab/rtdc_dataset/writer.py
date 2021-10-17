@@ -1,10 +1,11 @@
+import copy
 import pathlib
 
 import h5py
 import numpy as np
 
 from .. import definitions as dfn
-
+from .._version import version
 
 #: Chunk size for storing HDF5 data
 CHUNK_SIZE = 100
@@ -48,6 +49,9 @@ class RTDCWriter:
 
     def store_feature(self, feat, data):
         """Write feature data"""
+        if not dfn.feature_exists(feat):
+            raise ValueError(f"Undefined feature '{feat}'!")
+
         events = self._h5.require_group("events")
 
         # replace data?
@@ -71,6 +75,10 @@ class RTDCWriter:
                                        data=data)
         elif feat == "trace":
             for tr_name in data.keys():
+                # verify trace names
+                if tr_name not in dfn.FLUOR_TRACES:
+                    raise ValueError(f"Unknown trace key: '{tr_name}'!")
+                # write trace
                 self.write_ndarray(group=events.require_group("trace"),
                                    name=tr_name,
                                    data=np.atleast_2d(data[tr_name])
@@ -90,6 +98,88 @@ class RTDCWriter:
         """
         log_group = self._h5.require_group("logs")
         self.write_text(group=log_group, name=name, lines=lines)
+
+    def store_metadata(self, meta, version_brand=True):
+        """Store RT-DC meradata
+
+        Parameters
+        ----------
+        meta: dict-like
+            The meta data to store. Each key depicts a meta data section
+            name whose data is given as a dictionary, e.g.::
+
+                meta = {"imaging": {"exposure time": 20,
+                                    "flash duration": 2,
+                                    ...
+                                    },
+                        "setup": {"channel width": 20,
+                                  "chip region": "channel",
+                                  ...
+                                  },
+                        ...
+                        }
+
+            Only section key names and key values therein registered
+            in dclab are allowed and are converted to the pre-defined
+            dtype. If you have custom metadata, you can use the "user"
+            section.
+        version_brand: bool
+            Whether or not to append a "| dclab X.Y.Z" to the software
+            version string.
+        """
+        meta = copy.deepcopy(meta)
+        # Check meta data
+        for sec in meta:
+            if sec == "user":
+                # user-defined metadata are always written.
+                # Any errors (incompatibilities with HDF5 attributes)
+                # are the user's responsibility
+                continue
+            elif sec not in dfn.CFG_METADATA:
+                # only allow writing of meta data that are not editable
+                # by the user (not dclab.dfn.CFG_ANALYSIS)
+                raise ValueError(
+                    f"Meta data section not defined in dclab: {sec}")
+            for ck in meta[sec]:
+                if not dfn.config_key_exists(sec, ck):
+                    raise ValueError(
+                        f"Meta key not defined in dclab: {sec}:{ck}")
+
+        if version_brand:
+            # update version
+            # - if it is not already in the hdf5 file (prevent override)
+            # - if it is explicitly given in meta (append to old version
+            #   string)
+            if ("setup:software version" not in self._h5.attrs
+                    or ("setup" in meta and "software version" in meta[
+                        "setup"])):
+                thisver = "dclab {}".format(version)
+                if "setup" in meta and "software version" in meta["setup"]:
+                    oldver = meta["setup"]["software version"]
+                    thisver = f"{oldver} | {thisver}"
+                if "setup" not in meta:
+                    meta["setup"] = {}
+                meta["setup"]["software version"] = thisver
+
+        # Write metadata
+        for sec in meta:
+            for ck in meta[sec]:
+                idk = f"{sec}:{ck}"
+                value = meta[sec][ck]
+                if isinstance(value, bytes):
+                    # We never store byte attribute values.
+                    # In this case, `conffunc` should be `str` or `lcstr` or
+                    # somesuch. But we don't test that, because no other
+                    # datatype competes with str for bytes.
+                    value = value.decode("utf-8")
+                if sec == "user":
+                    # store user-defined metadata as-is
+                    self._h5.attrs[idk] = value
+                else:
+                    # pipe the metadata through the hard-coded converter
+                    # functions
+                    convfunc = dfn.get_config_value_func(sec, ck)
+                    self._h5.attrs[idk] = convfunc(value)
 
     def write_image_grayscale(self, group, name, data):
         """Write grayscale image data to and HDF5 dataset

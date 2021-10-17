@@ -1,11 +1,5 @@
-"""RT-DC file format writer"""
-import copy
-
-import h5py
+"""Legacy RT-DC file format writer"""
 import numpy as np
-
-from .. import definitions as dfn
-from .._version import version
 
 from .writer import RTDCWriter
 
@@ -92,9 +86,6 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
     if compression not in [None, "gzip", "lzf", "szip"]:
         raise ValueError("`compression` must be one of [gzip, lzf, szip]")
 
-    # make sure we are not overriding anything
-    meta = copy.deepcopy(meta)
-
     if (not hasattr(data, "__iter__") or
         not hasattr(data, "__contains__") or
             not hasattr(data, "__getitem__") or
@@ -102,92 +93,21 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
         msg = "`data` must be dict-like"
         raise ValueError(msg)
 
-    # Check meta data
-    for sec in meta:
-        if sec == "user":
-            # user-defined metadata are always written.
-            # Any errors (incompatibilities with HDF5 attributes)
-            # are the user's responsibility
-            continue
-        elif sec not in dfn.CFG_METADATA:
-            # only allow writing of meta data that are not editable
-            # by the user (not dclab.dfn.CFG_ANALYSIS)
-            msg = "Meta data section not defined in dclab: {}".format(sec)
-            raise ValueError(msg)
-        for ck in meta[sec]:
-            if not dfn.config_key_exists(sec, ck):
-                raise ValueError(f"Meta key not defined in dclab: {sec}:{ck}")
-
-    # Check feature keys
-    feat_keys = []
-    for kk in data:
-        if dfn.feature_exists(kk):
-            feat_keys.append(kk)
-        else:
-            raise ValueError("Unknown key '{}'!".format(kk))
-        # verify trace names
-        if kk == "trace":
-            for sk in data["trace"]:
-                if sk not in dfn.FLUOR_TRACES:
-                    msg = "Unknown trace key: {}".format(sk)
-                    raise ValueError(msg)
-
-    # Create file
-    # (this should happen after all checks)
-    if isinstance(path_or_h5file, h5py.File):
-        h5obj = path_or_h5file
-    else:
-        if mode == "reset":
-            h5mode = "w"
-        else:
-            h5mode = "a"
-        h5obj = h5py.File(path_or_h5file, mode=h5mode)
-
-    # update version
-    # - if it is not already in the hdf5 file (prevent override)
-    # - if it is explicitly given in meta (append to old version string)
-    if ("setup:software version" not in h5obj.attrs
-            or ("setup" in meta and "software version" in meta["setup"])):
-        thisver = "dclab {}".format(version)
-        if "setup" in meta and "software version" in meta["setup"]:
-            oldver = meta["setup"]["software version"]
-            thisver = "{} | {}".format(oldver, thisver)
-        if "setup" not in meta:
-            meta["setup"] = {}
-        meta["setup"]["software version"] = thisver
-    # Write meta
-    for sec in meta:
-        for ck in meta[sec]:
-            idk = "{}:{}".format(sec, ck)
-            value = meta[sec][ck]
-            if isinstance(value, bytes):
-                # We never store byte attribute values.
-                # In this case, `conffunc` should be `str` or `lcstr` or
-                # somesuch. But we don't test that, because no other datatype
-                # competes with str for bytes.
-                value = value.decode("utf-8")
-            if sec == "user":
-                # store user-defined metadata as-is
-                h5obj.attrs[idk] = value
-            else:
-                # pipe the metadata through the hard-coded converter functions
-                convfunc = dfn.get_config_value_func(sec, ck)
-                h5obj.attrs[idk] = convfunc(value)
-
-    # Write data
-    hw = RTDCWriter(h5obj, mode=mode, compression=compression)
-
-    # store experimental data
-    for fk in feat_keys:
+    # Initialize writer
+    hw = RTDCWriter(path_or_h5file, mode=mode, compression=compression)
+    # Metadata
+    hw.store_metadata(meta)
+    # Features
+    for fk in data:
         hw.store_feature(fk, data[fk])
-
-    # Write logs
+    # Logs
     if logs:
         for lkey in logs:
             hw.store_log(lkey, logs[lkey])
 
+    # Return HDF5 object or close it
     if mode == "append":
-        return h5obj
+        return hw._h5
     else:
-        h5obj.close()
+        hw._h5.close()
         return None

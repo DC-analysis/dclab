@@ -34,25 +34,25 @@ class RTDCWriter:
         self.compression = compression
         if isinstance(path_or_h5file, h5py.Group):
             self.path = pathlib.Path(path_or_h5file.file.filename)
-            self._h5 = path_or_h5file
+            self.h5file = path_or_h5file
         else:
             self.path = pathlib.Path(path_or_h5file)
-            self._h5 = h5py.File(path_or_h5file,
-                                 mode=("w" if mode == "reset" else "a"))
+            self.h5file = h5py.File(path_or_h5file,
+                                    mode=("w" if mode == "reset" else "a"))
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, tb):
         # close the HDF5 file
-        self._h5.close()
+        self.h5file.close()
 
     def store_feature(self, feat, data):
         """Write feature data"""
         if not dfn.feature_exists(feat):
             raise ValueError(f"Undefined feature '{feat}'!")
 
-        events = self._h5.require_group("events")
+        events = self.h5file.require_group("events")
 
         # replace data?
         if feat in events and self.mode == "replace":
@@ -96,7 +96,7 @@ class RTDCWriter:
         lines: list of str
             the text lines of the log
         """
-        log_group = self._h5.require_group("logs")
+        log_group = self.h5file.require_group("logs")
         self.write_text(group=log_group, name=name, lines=lines)
 
     def store_metadata(self, meta, version_brand=True):
@@ -150,7 +150,7 @@ class RTDCWriter:
             # - if it is not already in the hdf5 file (prevent override)
             # - if it is explicitly given in meta (append to old version
             #   string)
-            if ("setup:software version" not in self._h5.attrs
+            if ("setup:software version" not in self.h5file.attrs
                     or ("setup" in meta and "software version" in meta[
                         "setup"])):
                 thisver = "dclab {}".format(version)
@@ -174,12 +174,12 @@ class RTDCWriter:
                     value = value.decode("utf-8")
                 if sec == "user":
                     # store user-defined metadata as-is
-                    self._h5.attrs[idk] = value
+                    self.h5file.attrs[idk] = value
                 else:
                     # pipe the metadata through the hard-coded converter
                     # functions
                     convfunc = dfn.get_config_value_func(sec, ck)
-                    self._h5.attrs[idk] = convfunc(value)
+                    self.h5file.attrs[idk] = convfunc(value)
 
     def write_image_grayscale(self, group, name, data):
         """Write grayscale image data to and HDF5 dataset
@@ -203,8 +203,8 @@ class RTDCWriter:
         dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
         dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
 
-    def write_ndarray(self, group, name, data, shape=None, dtype=None):
-        """Write a n-dimensional array data to an HDF5 dataset
+    def write_ndarray(self, group, name, data, dtype=None):
+        """Write n-dimensional array data to an HDF5 dataset
 
         It is assumed that the shape of the array data is correct,
         i.e. that the shape of `data` is
@@ -215,18 +215,34 @@ class RTDCWriter:
             chunks = tuple([CHUNK_SIZE] + list(data.shape)[1:])
             dset = group.create_dataset(
                 name,
-                shape=shape,
-                dtype=dtype,
-                data=data,
+                shape=data.shape,
+                dtype=dtype or data.dtype,
                 maxshape=maxshape,
                 chunks=chunks,
                 fletcher32=True,
                 compression=self.compression)
+            offset = 0
         else:
             dset = group[name]
-            oldsize = dset.shape[0]
-            dset.resize(oldsize + data.shape[0], axis=0)
-            dset[oldsize:] = data
+            offset = dset.shape[0]
+            dset.resize(offset + data.shape[0], axis=0)
+        if len(data.shape) == 1:
+            # store scalar data in one go
+            dset[offset:] = data
+        else:
+            # populate higher-dimensional data in chunks
+            # (reduces file size, memory usage, and saves time)
+            num_chunks = len(data) // CHUNK_SIZE
+            for ii in range(num_chunks):
+                start = ii * CHUNK_SIZE
+                stop = start + CHUNK_SIZE
+                dset[offset+start:offset+stop] = data[start:stop]
+            # write remainder (if applicable)
+            num_remain = len(data) % CHUNK_SIZE
+            if num_remain:
+                start_e = num_chunks*CHUNK_SIZE
+                stop_e = start_e + num_remain
+                dset[offset+start_e:offset+stop_e] = data[start_e:stop_e]
         return dset
 
     def write_ragged(self, group, name, data):

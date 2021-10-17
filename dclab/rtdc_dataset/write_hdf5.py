@@ -107,7 +107,7 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
 
     # Return HDF5 object or close it
     if mode == "append":
-        return hw._h5
+        return hw.h5file
     else:
-        hw._h5.close()
+        hw.h5file.close()
         return None

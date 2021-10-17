@@ -417,7 +417,7 @@ def map_indices_parent2child(child, parent_indices):
 
     Parameters
     ----------
-    parent: RTDC_Hierarchy
+    child: RTDC_Hierarchy
         hierarchy child
     parent_indices: 1d ndarray
         hierarchy parent (`child.hparent`) indices to map

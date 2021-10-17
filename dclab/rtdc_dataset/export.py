@@ -1,5 +1,4 @@
 """Export RT-DC measurement data"""
-
 import codecs
 import pathlib
 import warnings
@@ -24,7 +23,7 @@ import numpy as np
 
 from .. import definitions as dfn
 from .._version import version
-from .write_hdf5 import write, CHUNK_SIZE
+from .writer import RTDCWriter, CHUNK_SIZE
 
 
 class LimitingExportSizeWarning(UserWarning):
@@ -233,17 +232,19 @@ class Export(object):
                     + "(max {}) in '{}'.".format(lmax, path),
                     LimitingExportSizeWarning)
 
-        # write meta data
-        with write(path_or_h5file=path, meta=meta, mode="append") as h5obj:
+        # Perform actual export
+        with RTDCWriter(path, mode="append") as hw:
+            # write meta data
+            hw.store_metadata(meta)
             # write each feature individually
             for feat in features:
-                hdf5_append(h5obj=h5obj,
+                hdf5_append(h5obj=hw.h5file,
                             rtdc_ds=self.rtdc_ds,
                             feat=feat,
                             compression=compression,
                             filtarr=filtarr)
             # update configuration
-            hdf5_autocomplete_config(h5obj)
+            hdf5_autocomplete_config(hw.h5file)
 
     def tsv(self, path, features, meta_data=None, filtered=True,
             override=False):
@@ -346,6 +347,8 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     # optional array for filtering events
     if filtarr is None:
         filtarr = np.ones(len(rtdc_ds), dtype=bool)
+    # writer instance
+    hw = RTDCWriter(h5obj, mode="append", compression=compression)
     # total number of new events
     nev = np.sum(filtarr)
     # event-wise, because
@@ -356,10 +359,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
         for ii in range(len(rtdc_ds)):
             if filtarr[ii]:
                 cont_list.append(rtdc_ds["contour"][ii])
-        write(h5obj,
-              data={"contour": cont_list},
-              mode="append",
-              compression=compression)
+        hw.store_feature("contour", cont_list)
     elif feat in ["mask", "image", "image_bg"]:
         # store image stacks (reduces file size, memory usage, and saves time)
         im0 = rtdc_ds[feat][0]
@@ -371,18 +371,12 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
                 imstack[jj] = rtdc_ds[feat][ii]
                 if (jj + 1) % CHUNK_SIZE == 0:
                     jj = 0
-                    write(h5obj,
-                          data={feat: imstack},
-                          mode="append",
-                          compression=compression)
+                    hw.store_feature(feat, imstack)
                 else:
                     jj += 1
         # write rest
         if jj:
-            write(h5obj,
-                  data={feat: imstack[:jj, :, :]},
-                  mode="append",
-                  compression=compression)
+            hw.store_feature(feat, imstack[:jj, :, :])
     elif feat == "trace":
         # store trace stacks (reduces file size, memory usage, and saves time)
         for tr in rtdc_ds["trace"].keys():
@@ -394,43 +388,29 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
                     trstack[jj] = rtdc_ds["trace"][tr][ii]
                     if (jj + 1) % CHUNK_SIZE == 0:
                         jj = 0
-                        write(h5obj,
-                              data={"trace": {tr: trstack}},
-                              mode="append",
-                              compression=compression)
+                        hw.store_feature("trace", {tr: trstack})
                     else:
                         jj += 1
             # write rest
             if jj:
-                write(h5obj,
-                      data={"trace": {tr: trstack[:jj, :]}},
-                      mode="append",
-                      compression=compression)
+                hw.store_feature("trace", {tr: trstack[:jj, :]})
     elif feat == "index":
         # re-enumerate data index feature (filtered data)
         if "events/index" in h5obj:
             nev0 = len(h5obj["events/index"])
         else:
             nev0 = 0
-        write(h5obj,
-              data={"index": np.arange(nev0+1, nev0+nev+1)},
-              mode="append",
-              compression=compression)
+        hw.store_feature("index", np.arange(nev0+1, nev0+nev+1))
     elif feat == "index_online":
         if "events/index_online" in h5obj:
             # index_online is usually larger than index
             ido0 = h5obj["events/index_online"][-1] + 1
         else:
             ido0 = 0
-        write(h5obj,
-              data={"index_online": rtdc_ds["index_online"][filtarr] + ido0},
-              mode="append",
-              compression=compression)
+        hw.store_feature("index_online",
+                         rtdc_ds["index_online"][filtarr] + ido0)
     elif feat == "time":
-        write(h5obj,
-              data={"time": rtdc_ds["time"][filtarr] + time_offset},
-              mode="append",
-              compression=compression)
+        hw.store_feature("time", rtdc_ds["time"][filtarr] + time_offset)
     elif feat == "frame":
         if time_offset != 0:
             # Only get the frame rate when we actually need it.
@@ -438,15 +418,9 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
         else:
             fr = 0
         frame_offset = time_offset * fr
-        write(h5obj,
-              data={"frame": rtdc_ds["frame"][filtarr] + frame_offset},
-              mode="append",
-              compression=compression)
+        hw.store_feature("frame", rtdc_ds["frame"][filtarr] + frame_offset)
     else:
-        write(h5obj,
-              data={feat: rtdc_ds[feat][filtarr]},
-              mode="append",
-              compression=compression)
+        hw.store_feature(feat, rtdc_ds[feat][filtarr])
 
 
 def hdf5_autocomplete_config(path_or_h5obj):

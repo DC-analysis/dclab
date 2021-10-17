@@ -1,11 +1,9 @@
 """Test filter hierarchies"""
-
-import h5py
 import numpy as np
 import pytest
 
 from dclab import new_dataset
-from dclab.rtdc_dataset import fmt_hierarchy, write
+from dclab.rtdc_dataset import fmt_hierarchy, RTDCWriter
 
 from helper_methods import example_data_dict, retrieve_data
 
@@ -82,9 +80,9 @@ def test_feat_image():
 def test_feat_image_bg():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     # add a fake image_bg column
-    with h5py.File(path, mode="a") as h5:
-        image_bg = h5["events"]["image"][:] // 2
-        write(h5, data={"image_bg": image_bg}, mode="append")
+    with RTDCWriter(path) as hw:
+        image_bg = hw.h5file["events"]["image"][:] // 2
+        hw.store_feature("image_bg", image_bg)
     ds = new_dataset(path)
     ds.filter.manual[0] = False
     ds.filter.manual[2] = False

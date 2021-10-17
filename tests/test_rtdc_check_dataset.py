@@ -6,7 +6,7 @@ import pytest
 
 import dclab.rtdc_dataset.config
 from dclab.rtdc_dataset import check, check_dataset, fmt_tdms, new_dataset, \
-    write
+    RTDCWriter
 
 from helper_methods import example_data_dict, retrieve_data
 
@@ -278,7 +278,8 @@ def test_ic_fmt_hdf5_image_bg():
     # add a fake image_bg column
     with h5py.File(h5path, "a") as h5:
         image_bg = h5["events"]["image"][:] // 2
-        write(h5, data={"image_bg": image_bg}, mode="append")
+        hw = RTDCWriter(h5)
+        hw.store_feature("image_bg", image_bg)
         del h5["events/image_bg"].attrs["CLASS"]
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check_fmt_hdf5()
@@ -291,10 +292,9 @@ def test_ic_fmt_hdf5_image_bg():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_fmt_hdf5_logs():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
-    write(h5path, logs={
-        "test": ["asdasd"*100],
-        "M1_para.ini":  ["asdasd"*100],  # should be ignored
-    }, mode="append")
+    hw = RTDCWriter(h5path)
+    hw.store_log("test", ["asdasd"*100])
+    hw.store_log("M1_para.ini", ["asdasd"*100])
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check_fmt_hdf5()
     assert len(cues) == 1

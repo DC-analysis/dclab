@@ -1,4 +1,6 @@
 """Legacy RT-DC file format writer"""
+import warnings
+
 import numpy as np
 
 from .writer import RTDCWriter
@@ -75,6 +77,9 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
     If `data` is an instance of RTDCBase, then `meta` must be set to
     `data.config`, otherwise no meta data will be saved.
     """
+    warnings.warn("`write` is deptecated; please use the dclab.RTDCWriter "
+                  "class for writing .rtdc data to disk.",
+                  DeprecationWarning)
     if logs is None:
         logs = {}
     if meta is None:

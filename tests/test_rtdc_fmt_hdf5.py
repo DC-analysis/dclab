@@ -124,9 +124,9 @@ def test_image_basic():
 def test_image_bg():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     # add a fake image_bg column
-    with h5py.File(path, mode="a") as h5:
-        image_bg = h5["events"]["image"][:] // 2
-        rtdc_dataset.write(h5, data={"image_bg": image_bg}, mode="append")
+    with rtdc_dataset.RTDCWriter(path) as hw:
+        image_bg = hw.h5file["events"]["image"][:] // 2
+        hw.store_feature("image_bg", image_bg)
 
     with new_dataset(path) as ds:
         for ii in range(len(ds)):
@@ -179,9 +179,8 @@ def test_logs():
 
     # write some logs
     with h5py.File(path_in, "a") as h5:
-        rtdc_dataset.write(h5,
-                           logs={"test_log": ["peter", "hans"]},
-                           mode="append")
+        hw = rtdc_dataset.RTDCWriter(h5)
+        hw.store_log("test_log",  ["peter", "hans"])
 
     with new_dataset(path_in) as ds:
         assert ds.logs

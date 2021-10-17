@@ -29,12 +29,15 @@ class RTDCWriter:
             Compression method used for data storage;
             one of [None, "lzf", "gzip", "szip"].
         """
-        assert mode in ["append", "replace", "reset"]
+        if mode not in ["append", "replace", "reset"]:
+            raise ValueError(f"Invalid mode '{mode}'!")
         self.mode = mode
         self.compression = compression
         if isinstance(path_or_h5file, h5py.Group):
             self.path = pathlib.Path(path_or_h5file.file.filename)
             self.h5file = path_or_h5file
+            if mode == "reset":
+                raise ValueError("'reset' mode incompatible h5py.Group!")
         else:
             self.path = pathlib.Path(path_or_h5file)
             self.h5file = h5py.File(path_or_h5file,
@@ -141,7 +144,7 @@ class RTDCWriter:
         ----------
         name: str
             name of the log entry
-        lines: list of str
+        lines: list of str or str
             the text lines of the log
         """
         log_group = self.h5file.require_group("logs")
@@ -322,7 +325,7 @@ class RTDCWriter:
             parent group
         name: str
             name of the dataset containing the text
-        lines: list of str
+        lines: list of str or str
             the text, line by line
         """
         # replace text?
@@ -355,7 +358,7 @@ class RTDCWriter:
             # Create the dataset
             txt_dset = group.create_dataset(
                 name,
-                (lnum,),
+                shape=(lnum,),
                 dtype=f"S{max_length}",
                 maxshape=(None,),
                 chunks=True,

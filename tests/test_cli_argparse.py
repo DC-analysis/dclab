@@ -149,9 +149,8 @@ def test_repack_strip_logs():
 
     # write some logs
     with h5py.File(path_in, "a") as h5:
-        rtdc_dataset.write(h5,
-                           logs={"test_log": ["peter", "hans"]},
-                           mode="append")
+        hw = rtdc_dataset.RTDCWriter(h5)
+        hw.store_log("test_log", ["peter", "hans"])
 
     with mock.patch("sys.argv",
                     ["", str(path_in), str(path_out), "--strip-logs"]):
@@ -171,9 +170,8 @@ def test_repack_strip_logs_control():
 
     # write some logs
     with h5py.File(path_in, "a") as h5:
-        rtdc_dataset.write(h5,
-                           logs={"test_log": ["peter", "hans"]},
-                           mode="append")
+        hw = rtdc_dataset.RTDCWriter(h5)
+        hw.store_log("test_log", ["peter", "hans"])
 
     with mock.patch("sys.argv", ["", str(path_in), str(path_out)]):
         cli.repack()

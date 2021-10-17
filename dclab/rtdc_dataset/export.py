@@ -243,8 +243,6 @@ class Export(object):
                             feat=feat,
                             compression=compression,
                             filtarr=filtarr)
-            # update configuration
-            hdf5_autocomplete_config(hw.h5file)
 
     def tsv(self, path, features, meta_data=None, filtered=True,
             override=False):
@@ -342,7 +340,10 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     Notes
     -----
     Please update the "experiment::event count" attribute manually.
-    You may use :func:`hdf5_autocomplete_config` for that.
+    You may use
+    :func:`dclab.rtdc_dataset.writer.RTDCWriter.rectify_metadata`
+    for that or use the `RTDCWriter` context manager where it is
+    automatically run during `__exit__`.
     """
     # optional array for filtering events
     if filtarr is None:
@@ -442,6 +443,10 @@ def hdf5_autocomplete_config(path_or_h5obj):
     path_or_h5obj: pathlib.Path or str or h5py.File
         Path to or opened RT-DC measurement
     """
+    warnings.warn("`hdf5_autocomplete_config` is deptecated; please use "
+                  " the dclab.RTDCWriter context manager or the "
+                  " dclab.RTDCWriter.rectify_metadata function.",
+                  DeprecationWarning)
     if not isinstance(path_or_h5obj, h5py.File):
         close = True
     else:

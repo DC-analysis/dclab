@@ -1,9 +1,9 @@
-"""command line interface"""
+"""Split an .rtdc file into smaller .rtdc files"""
 import argparse
 import pathlib
 import warnings
 
-from ..rtdc_dataset import fmt_tdms, new_dataset, write_hdf5
+from ..rtdc_dataset import fmt_tdms, new_dataset, RTDCWriter
 
 from . import common
 
@@ -73,7 +73,7 @@ def split(path_in=None, path_out=None, split_events=10000,
             for ll in ds.logs:
                 logs[f"src-{ll}"] = ds.logs[ll]
             num_files = len(ds) // split_events
-            if 10 % 4:
+            if len(ds) % split_events:
                 num_files += 1
             for ii in range(num_files):
                 pp = path_out / f"{path_in.stem}_{ii+1:04d}.rtdc"
@@ -99,9 +99,10 @@ def split(path_in=None, path_out=None, split_events=10000,
     # Add the logs and update sample name
     for ii, pt in enumerate(paths_temp):
         meta = {"experiment": {"sample": f"{sample_name} {ii+1}/{num_files}"}}
-        with write_hdf5.write(pt, logs=logs, meta=meta, mode="append",
-                              compression="gzip"):
-            pass
+        with RTDCWriter(pt) as hw:
+            for name in logs:
+                hw.store_log(name, logs[name])
+            hw.store_metadata(meta)
 
     for pt, pp in zip(paths_temp, paths_gen):
         pt.rename(pp)

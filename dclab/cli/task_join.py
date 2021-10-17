@@ -1,11 +1,11 @@
-"""command line interface"""
+"""Concatenate .rtdc files"""
 import argparse
 import time
 import warnings
 
 import numpy as np
 
-from ..rtdc_dataset import export, new_dataset, write_hdf5
+from ..rtdc_dataset import export, new_dataset, RTDCWriter
 from .. import definitions as dfn
 
 from . import common
@@ -66,8 +66,7 @@ def join(path_out=None, paths_in=None, metadata=None):
         if w:
             logs["dclab-join-warnings-#1"] = common.assemble_warnings(w)
 
-    with write_hdf5.write(path_temp, mode="append",
-                          compression="gzip") as h5obj:
+    with RTDCWriter(path_temp) as hw:
         ii = 1
         # Append data from other files
         for pi, ti in zip(sorted_paths[1:], toffsets[1:]):
@@ -76,7 +75,7 @@ def join(path_out=None, paths_in=None, metadata=None):
                 warnings.simplefilter("always")
                 with new_dataset(pi) as dsi:
                     for feat in features:
-                        export.hdf5_append(h5obj=h5obj,
+                        export.hdf5_append(h5obj=hw.h5file,
                                            rtdc_ds=dsi,
                                            feat=feat,
                                            compression="gzip",
@@ -84,23 +83,22 @@ def join(path_out=None, paths_in=None, metadata=None):
                 if w:
                     lkey = f"dclab-join-warnings-#{ii}"
                     logs[lkey] = common.assemble_warnings(w)
-        export.hdf5_autocomplete_config(h5obj)
 
-    # Logs and configs from source files
-    logs["dclab-join"] = common.get_command_log(paths=sorted_paths)
-    for ii, pp in enumerate(sorted_paths):
-        with new_dataset(pp) as ds:
-            # data file logs
-            for ll in ds.logs:
-                logs[f"src-#{ii+1}_{ll}"] = ds.logs[ll]
-            # configuration
-            cfg = ds.config.tostring(sections=dfn.CFG_METADATA).split("\n")
-            logs[f"cfg-#{ii+1}"] = cfg
+        # Logs and configs from source files
+        logs["dclab-join"] = common.get_command_log(paths=sorted_paths)
+        for ii, pp in enumerate(sorted_paths):
+            with new_dataset(pp) as ds:
+                # data file logs
+                for ll in ds.logs:
+                    logs[f"src-#{ii+1}_{ll}"] = ds.logs[ll]
+                # configuration
+                cfg = ds.config.tostring(sections=dfn.CFG_METADATA).split("\n")
+                logs[f"cfg-#{ii+1}"] = cfg
 
-    # Write logs and missing meta data
-    with write_hdf5.write(path_temp, logs=logs, meta=metadata, mode="append",
-                          compression="gzip"):
-        pass
+        # Write logs and missing meta data
+        for name in logs:
+            hw.store_log(name, logs[name])
+        hw.store_metadata(metadata)
 
     # Finally, rename temp to out
     path_temp.rename(path_out)

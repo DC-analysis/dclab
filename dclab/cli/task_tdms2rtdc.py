@@ -1,8 +1,9 @@
+"""Convert .tdms to .rtdc files"""
 import argparse
 import pathlib
 import warnings
 
-from ..rtdc_dataset import fmt_tdms, new_dataset, write_hdf5
+from ..rtdc_dataset import fmt_tdms, new_dataset, RTDCWriter
 
 from . import common
 
@@ -134,9 +135,9 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                     logs["dclab-tdms2rtdc-warnings"] = \
                         common.assemble_warnings(w)
                 logs.update(ds.logs)
-                with write_hdf5.write(path_temp, logs=logs, mode="append",
-                                      compression="gzip"):
-                    pass
+                with RTDCWriter(path_temp) as hw:
+                    for name in logs:
+                        hw.store_log(name, logs[name])
 
                 # Finally, rename temp to out
                 path_temp.rename(path_out)

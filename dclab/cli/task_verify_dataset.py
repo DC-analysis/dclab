@@ -1,4 +1,4 @@
-"""command line interface"""
+"""Verify dataset integrity"""
 import argparse
 import pathlib
 import sys

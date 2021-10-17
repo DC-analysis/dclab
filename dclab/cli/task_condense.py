@@ -1,9 +1,9 @@
-"""command line interface"""
+"""Create .rtdc files with scalar-only features"""
 import argparse
 import pathlib
 import warnings
 
-from ..rtdc_dataset import new_dataset, write_hdf5
+from ..rtdc_dataset import new_dataset, RTDCWriter
 
 from . import common
 
@@ -43,9 +43,9 @@ def condense(path_out=None, path_in=None, check_suffix=True):
             logs["dclab-condense-warnings"] = common.assemble_warnings(w)
 
     # Write log file
-    with write_hdf5.write(path_temp, logs=logs, mode="append",
-                          compression="gzip"):
-        pass
+    with RTDCWriter(path_temp) as hw:
+        for name in logs:
+            hw.store_log(name, logs[name])
 
     # Finally, rename temp to out
     path_temp.rename(path_out)

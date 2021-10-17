@@ -1,10 +1,8 @@
-"""command line interface"""
+"""Repack (similar to h5repack) .rtdc files"""
 import argparse
 import pathlib
 
-import h5py
-
-from ..rtdc_dataset import export, new_dataset, write_hdf5
+from ..rtdc_dataset import export, new_dataset, RTDCWriter
 from .. import definitions as dfn
 
 from . import common
@@ -26,7 +24,7 @@ def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
     path_in, path_out, path_temp = common.setup_task_paths(
         path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
-    with new_dataset(path_in) as ds, h5py.File(path_temp, "w") as h5:
+    with new_dataset(path_in) as ds, RTDCWriter(path_temp, mode="reset") as hw:
         # write metadata first (to avoid resetting software version)
         # only export configuration meta data (no user-defined config)
         meta = {}
@@ -34,18 +32,18 @@ def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
             if sec in ds.config:
                 meta[sec] = ds.config[sec].copy()
 
-        write_hdf5.write(h5, meta=meta, mode="append")
+        hw.store_metadata(meta)
 
         if not strip_logs:
-            write_hdf5.write(h5, logs=ds.logs, mode="append")
+            for name in ds.logs:
+                hw.store_log(name, ds.logs[name])
 
         # write features
         for feat in ds.features_innate:
-            export.hdf5_append(h5obj=h5,
+            export.hdf5_append(h5obj=hw.h5file,
                                rtdc_ds=ds,
                                feat=feat,
                                compression="gzip",
-                               filtarr=None,
                                time_offset=0)
 
     # Finally, rename temp to out

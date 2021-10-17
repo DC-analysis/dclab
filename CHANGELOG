@@ -1,3 +1,6 @@
+0.35.9
+ - fix: in some rare cases, an empty .rtdc file could be generated
+   when splitting an .rtdc file via the CLI dclab-split
 0.35.8
  - fix: write logs to fixed-length strings in HDF5 files (HDF5 never
    supported variable length string datasets with fletcher32 or compression

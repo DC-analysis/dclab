@@ -14,143 +14,6 @@ from .writer import RTDCWriter
 CHUNK_SIZE = 100
 
 
-def store_contour(h5group, data, compression):
-    if not isinstance(data, (list, tuple)):
-        # single event
-        data = [data]
-    grp = h5group.require_group("contour")
-    curid = len(grp.keys())
-    for ii, cc in enumerate(data):
-        grp.create_dataset("{}".format(curid + ii),
-                           data=cc,
-                           fletcher32=True,
-                           compression=compression)
-
-
-def store_image(h5group, data, compression, background=False):
-    """Store image data in an HDF5 group
-
-    Parameters
-    ----------
-    h5group: h5py.Group
-        The group (usually "events") where to store the image data
-    data: 2d or 3d ndarray
-        The image data. If 3d, then the first axis enumerates
-        the images.
-    compression: str
-        Dataset compression method
-    background: bool
-        If set to False (default), then the regular "image" is stored;
-        If set to True, then the background image ("image_bg") is
-        stored.
-    """
-    if background:
-        image_key = "image_bg"
-    else:
-        image_key = "image"
-    if len(data.shape) == 2:
-        # single event
-        data = data.reshape(1, data.shape[0], data.shape[1])
-    if image_key not in h5group:
-        maxshape = (None, data.shape[1], data.shape[2])
-        chunks = (CHUNK_SIZE, data.shape[1], data.shape[2])
-        dset = h5group.create_dataset(image_key,
-                                      data=data,
-                                      dtype=np.uint8,
-                                      maxshape=maxshape,
-                                      chunks=chunks,
-                                      fletcher32=True,
-                                      compression=compression)
-        # Create and Set image attributes:
-        # HDFView recognizes this as a series of images.
-        # Use np.string_ as per
-        # http://docs.h5py.org/en/stable/strings.html#compatibility
-        dset.attrs.create('CLASS', np.string_('IMAGE'))
-        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
-        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
-    else:
-        dset = h5group[image_key]
-        oldsize = dset.shape[0]
-        dset.resize(oldsize + data.shape[0], axis=0)
-        dset[oldsize:] = data
-
-
-def store_mask(h5group, data, compression):
-    # store binary mask data as uint8 to allow visualization in HDFView
-    data = np.asarray(data, dtype=np.uint8)
-    if data.max() != 255 and data.max() != 0 and data.min() == 0:
-        data = data / data.max() * 255
-    if len(data.shape) == 2:
-        # single event
-        data = data.reshape(1, data.shape[0], data.shape[1])
-    if "mask" not in h5group:
-        maxshape = (None, data.shape[1], data.shape[2])
-        chunks = (CHUNK_SIZE, data.shape[1], data.shape[2])
-        dset = h5group.create_dataset("mask",
-                                      data=data,
-                                      dtype=np.uint8,
-                                      maxshape=maxshape,
-                                      chunks=chunks,
-                                      fletcher32=True,
-                                      compression=compression)
-        # Create and Set image attributes
-        # HDFView recognizes this as a series of images
-        dset.attrs.create('CLASS', np.string_('IMAGE'))
-        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
-        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
-    else:
-        dset = h5group["mask"]
-        oldsize = dset.shape[0]
-        dset.resize(oldsize + data.shape[0], axis=0)
-        dset[oldsize:] = data
-
-
-def store_scalar(h5group, name, data, compression):
-    if np.isscalar(data):
-        # single event
-        data = np.atleast_1d(data)
-    if name not in h5group:
-        h5group.create_dataset(name,
-                               data=data,
-                               maxshape=(None,),
-                               chunks=(CHUNK_SIZE,),
-                               fletcher32=True,
-                               compression=compression
-                               )
-    else:
-        dset = h5group[name]
-        oldsize = dset.shape[0]
-        dset.resize(oldsize + data.shape[0], axis=0)
-        dset[oldsize:] = data
-
-
-def store_trace(h5group, data, compression):
-    firstkey = sorted(list(data.keys()))[0]
-    if len(data[firstkey].shape) == 1:
-        # single event
-        for dd in data:
-            data[dd] = data[dd].reshape(1, -1)
-    # create trace group
-    grp = h5group.require_group("trace")
-
-    for flt in data:
-        # create traces datasets
-        if flt not in grp:
-            maxshape = (None, data[flt].shape[1])
-            chunks = (CHUNK_SIZE, data[flt].shape[1])
-            grp.create_dataset(flt,
-                               data=data[flt],
-                               maxshape=maxshape,
-                               chunks=chunks,
-                               fletcher32=True,
-                               compression=compression)
-        else:
-            dset = grp[flt]
-            oldsize = dset.shape[0]
-            dset.resize(oldsize + data[flt].shape[0], axis=0)
-            dset[oldsize:] = data[flt]
-
-
 def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
           compression=None):
     """Write data to an RT-DC file
@@ -312,48 +175,14 @@ def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",
                 h5obj.attrs[idk] = convfunc(value)
 
     # Write data
-    # create events group
-    events = h5obj.require_group("events")
-    # remove previous data
-    if mode == "replace":
-        for rk in feat_keys:
-            if rk in events:
-                del events[rk]
+    hw = RTDCWriter(h5obj, mode=mode, compression=compression)
+
     # store experimental data
     for fk in feat_keys:
-        if dfn.scalar_feature_exists(fk):
-            store_scalar(h5group=events,
-                         name=fk,
-                         data=data[fk],
-                         compression=compression)
-        elif fk == "contour":
-            store_contour(h5group=events,
-                          data=data["contour"],
-                          compression=compression)
-        elif fk == "image":
-            store_image(h5group=events,
-                        data=data["image"],
-                        compression=compression,
-                        background=False)
-        elif fk == "image_bg":
-            store_image(h5group=events,
-                        data=data["image_bg"],
-                        compression=compression,
-                        background=True)
-        elif fk == "mask":
-            store_mask(h5group=events,
-                       data=data["mask"],
-                       compression=compression)
-        elif fk == "trace":
-            store_trace(h5group=events,
-                        data=data["trace"],
-                        compression=compression)
-        else:
-            raise ValueError(f"No rule to write feature '{fk}'!")
+        hw.store_feature(fk, data[fk])
 
     # Write logs
     if logs:
-        hw = RTDCWriter(h5obj, mode=mode, compression=compression)
         for lkey in logs:
             hw.store_log(lkey, logs[lkey])
 

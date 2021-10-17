@@ -1,6 +1,13 @@
 import pathlib
 
 import h5py
+import numpy as np
+
+from .. import definitions as dfn
+
+
+#: Chunk size for storing HDF5 data
+CHUNK_SIZE = 100
 
 
 class RTDCWriter:
@@ -39,6 +46,38 @@ class RTDCWriter:
         # close the HDF5 file
         self._h5.close()
 
+    def store_feature(self, feat, data):
+        """Write feature data"""
+        events = self._h5.require_group("events")
+
+        # replace data?
+        if feat in events and self.mode == "replace":
+            if feat == "trace":
+                for tr_name in data.keys():
+                    if tr_name in events[feat]:
+                        del events[feat][tr_name]
+            else:
+                del events[feat]
+
+        if dfn.scalar_feature_exists(feat):
+            self.write_ndarray(group=events,
+                               name=feat,
+                               data=np.atleast_1d(data))
+        elif feat == "contour":
+            self.write_ragged(group=events, name=feat, data=data)
+        elif feat in ["image", "image_bg", "mask"]:
+            self.write_image_grayscale(group=events,
+                                       name=feat,
+                                       data=data)
+        elif feat == "trace":
+            for tr_name in data.keys():
+                self.write_ndarray(group=events.require_group("trace"),
+                                   name=tr_name,
+                                   data=np.atleast_2d(data[tr_name])
+                                   )
+        else:
+            raise NotImplementedError(f"No rule to store feature {feat}!")
+
     def store_log(self, name, lines):
         """Write log data
 
@@ -51,6 +90,72 @@ class RTDCWriter:
         """
         log_group = self._h5.require_group("logs")
         self.write_text(group=log_group, name=name, lines=lines)
+
+    def write_image_grayscale(self, group, name, data):
+        """Write grayscale image data to and HDF5 dataset
+        """
+        data = np.atleast_2d(data)
+        if len(data.shape) == 2:
+            # put single event in 3D array
+            data = data.reshape(1, data.shape[0], data.shape[1])
+
+        # convert binary data (mask) to uint8
+        if data.dtype == np.bool:
+            data = np.asarray(data, dtype=np.uint8) * 255
+
+        dset = self.write_ndarray(group=group, name=name, data=data)
+
+        # Create and Set image attributes:
+        # HDFView recognizes this as a series of images.
+        # Use np.string_ as per
+        # http://docs.h5py.org/en/stable/strings.html#compatibility
+        dset.attrs.create('CLASS', np.string_('IMAGE'))
+        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
+        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
+
+    def write_ndarray(self, group, name, data, shape=None, dtype=None):
+        """Write a n-dimensional array data to an HDF5 dataset
+
+        It is assumed that the shape of the array data is correct,
+        i.e. that the shape of `data` is
+        (number_events, feat_shape_1, ..., feat_shape_n).
+        """
+        if name not in group:
+            maxshape = tuple([None] + list(data.shape)[1:])
+            chunks = tuple([CHUNK_SIZE] + list(data.shape)[1:])
+            dset = group.create_dataset(
+                name,
+                shape=shape,
+                dtype=dtype,
+                data=data,
+                maxshape=maxshape,
+                chunks=chunks,
+                fletcher32=True,
+                compression=self.compression)
+        else:
+            dset = group[name]
+            oldsize = dset.shape[0]
+            dset.resize(oldsize + data.shape[0], axis=0)
+            dset[oldsize:] = data
+        return dset
+
+    def write_ragged(self, group, name, data):
+        """Write ragged data (i.e. list of arrays of different lenghts)
+
+        Ragged array data (e.g. contour data) are stored in
+        a separate group and each entry becomes an HDF5 dataset.
+        """
+        if not isinstance(data, (list, tuple)):
+            # place single event in list
+            data = [data]
+        grp = group.require_group(name)
+        curid = len(grp.keys())
+        for ii, cc in enumerate(data):
+            grp.create_dataset("{}".format(curid + ii),
+                               data=cc,
+                               fletcher32=True,
+                               chunks=cc.shape,
+                               compression=self.compression)
 
     def write_text(self, group, name, lines):
         """Write text to an HDF5 dataset

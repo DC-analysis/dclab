@@ -319,8 +319,6 @@ class Export(object):
 def store_filtered_feature(rtdc_writer, feat, data, filtarr):
     """Append filtered feature data to an HDF5 file
 
-    This is possibly slow and should be avoided!
-
     Parameters
     ----------
     rtdc_writer: dclab.rtdc_dataset.writer.RTDCWriter

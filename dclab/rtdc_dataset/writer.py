@@ -43,6 +43,8 @@ class RTDCWriter:
             self.path = pathlib.Path(path_or_h5file)
             self.h5file = h5py.File(path_or_h5file,
                                     mode=("w" if mode == "reset" else "a"))
+        #: unfortunate necessity, as len(h5py.Group) can be really slow
+        self._group_sizes = {}
 
     def __enter__(self):
         return self
@@ -324,13 +326,22 @@ class RTDCWriter:
             # place single event in list
             data = [data]
         grp = group.require_group(name)
-        curid = len(grp.keys())
+        # The following case is just a workaround for the very slow
+        # `len(grp)` which makes things horrible if you are storing
+        # contour data one-by-one. The only downside of this is that
+        # we have to keep track of the length of the group. But I
+        # think that is OK, since everything is very private here.
+        # - Paul (2021-10-18)
+        if grp not in self._group_sizes:
+            self._group_sizes[grp] = len(grp)
+        curid = self._group_sizes[grp]
         for ii, cc in enumerate(data):
             grp.create_dataset("{}".format(curid + ii),
                                data=cc,
                                fletcher32=True,
                                chunks=cc.shape,
                                compression=self.compression)
+            self._group_sizes[grp] += 1
 
     def write_text(self, group, name, lines):
         """Write text to an HDF5 dataset

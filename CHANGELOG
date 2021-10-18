@@ -1,5 +1,5 @@
 0.36.0
- - feat: introduce new RTDCWriter class
+ - feat: introduce new RTDCWriter class (#144)
  - fix: in some rare cases, an empty .rtdc file could be generated
    when splitting an .rtdc file via the CLI dclab-split
  - fix: user-defined metadata were not copied with CLI repack

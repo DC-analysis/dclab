@@ -47,6 +47,23 @@ It is also possible to load other data into dclab from a dictionary.
 
     In [6]: ds_dict.__class__.__name__
 
+If you would like to create your own .rtdc files, you can
+make use of the :class:`RTDCWriter <dclab.rtdc_dataset.writer.RTDCWriter>` class.
+
+.. ipython::
+
+    In [4]: with dclab.RTDCWriter("/tmp/my-data.rtdc", mode="reset") as hw:
+       ...:     hw.store_metadata({"experiment": {"sample": "my sample",
+       ...:                                       "run index": 1}})
+       ...:     hw.store_feature("deform", np.random.rand(100))
+       ...:     hw.store_feature("area_um", np.random.rand(100))
+
+    In [5]: ds_custom = dclab.new_dataset("/tmp/my-data.rtdc")
+
+    In [6]: print(ds_custom.features)
+
+    In [7]: print(ds_custom.config["experiment"])
+
 
 Using filters
 -------------

@@ -3,11 +3,7 @@ import warnings
 
 import numpy as np
 
-from .writer import RTDCWriter
-
-
-#: Chunk size for storing HDF5 data
-CHUNK_SIZE = 100
+from .writer import RTDCWriter, CHUNK_SIZE  # noqa: F401
 
 
 def write(path_or_h5file, data=None, meta=None, logs=None, mode="reset",

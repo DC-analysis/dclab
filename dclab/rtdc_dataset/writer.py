@@ -21,10 +21,11 @@ class RTDCWriter:
             Path to an HDF5 file or an HDF5 file opened in write mode
         mode: str
             Defines how the data are stored:
-            - "append": append new feature data to existing h5py Datasets
-            - "replace": replace existing h5py Datasets with new features
-                         (used for ancillary feature storage)
-            - "reset": do not keep any previous data
+
+              - "append": append new feature data to existing h5py Datasets
+              - "replace": replace existing h5py Datasets with new features
+                (used for ancillary feature storage)
+              - "reset": do not keep any previous data
         compression: str
             Compression method used for data storage;
             one of [None, "lzf", "gzip", "szip"].
@@ -185,8 +186,9 @@ class RTDCWriter:
 
             Only section key names and key values therein registered
             in dclab are allowed and are converted to the pre-defined
-            dtype. Only sections from the `dfn.CFG_METADATA` dictionary
-            are stored. If you have custom metadata, you can use the "user"
+            dtype. Only sections from the
+            :const:`dclab.definitions.CFG_METADATA` dictionary are
+            stored. If you have custom metadata, you can use the "user"
             section.
         version_brand: bool
             Whether or not to append a "| dclab X.Y.Z" to the software

@@ -295,6 +295,16 @@ statistics
    :undoc-members:
 
 
+.. _sec_ref_writer:
+
+Writing RT-DC files
+===================
+
+.. automodule:: dclab.rtdc_dataset.writer
+   :members:
+   :undoc-members:
+
+
 R and lme4
 ==========
 

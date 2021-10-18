@@ -102,7 +102,15 @@ class RTDCWriter:
             self.h5file.attrs["imaging:roi size y"] = shape[0]
 
     def store_feature(self, feat, data):
-        """Write feature data"""
+        """Write feature data
+
+        Parameters
+        ----------
+        feat: str
+            feature name
+        data: object
+            feature data
+        """
         if not dfn.feature_exists(feat):
             raise ValueError(f"Undefined feature '{feat}'!")
 
@@ -254,6 +262,19 @@ class RTDCWriter:
 
     def write_image_grayscale(self, group, name, data):
         """Write grayscale image data to and HDF5 dataset
+
+        This function wraps :func:`RTDCWriter.write_ndarray`
+        and adds image attributes to the HDF5 file so HDFView
+        can display the images properly.
+
+        Parameters
+        ----------
+        group: h5py.Group
+            parent group
+        name: str
+            name of the dataset containing the text
+        data: np.ndarray or list of np.ndarray
+            image data
         """
         data = np.atleast_2d(data)
         if len(data.shape) == 2:
@@ -280,6 +301,18 @@ class RTDCWriter:
         It is assumed that the shape of the array data is correct,
         i.e. that the shape of `data` is
         (number_events, feat_shape_1, ..., feat_shape_n).
+
+        Parameters
+        ----------
+        group: h5py.Group
+            parent group
+        name: str
+            name of the dataset containing the text
+        data: np.ndarray
+            data
+        dtype: dtype
+            the dtype to use for storing the data
+            (defaults to `data.dtype`)
         """
         if name not in group:
             maxshape = tuple([None] + list(data.shape)[1:])
@@ -325,6 +358,15 @@ class RTDCWriter:
 
         Ragged array data (e.g. contour data) are stored in
         a separate group and each entry becomes an HDF5 dataset.
+
+        Parameters
+        ----------
+        group: h5py.Group
+            parent group
+        name: str
+            name of the dataset containing the text
+        data: list of np.ndarray
+            the data in a list
         """
         if isinstance(data, np.ndarray) and len(data.shape) == 2:
             # place single event in list

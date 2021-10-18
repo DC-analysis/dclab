@@ -318,7 +318,7 @@ class RTDCWriter:
         Ragged array data (e.g. contour data) are stored in
         a separate group and each entry becomes an HDF5 dataset.
         """
-        if not isinstance(data, (list, tuple)):
+        if isinstance(data, np.ndarray) and len(data.shape) == 2:
             # place single event in list
             data = [data]
         grp = group.require_group(name)

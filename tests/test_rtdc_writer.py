@@ -1,4 +1,5 @@
 import numbers
+from os.path import join
 import tempfile
 
 import h5py
@@ -6,7 +7,9 @@ import numpy as np
 
 import pytest
 
-from dclab.rtdc_dataset import RTDCWriter
+from dclab.rtdc_dataset import RTDCWriter, new_dataset
+
+from helper_methods import retrieve_data
 
 
 def test_bulk_scalar():
@@ -122,6 +125,24 @@ def test_bulk_trace():
         events = rtdc_data["events"]
         assert "trace" in events.keys()
         assert np.allclose(events["trace"]["fl1_raw"], trace["fl1_raw"])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_contour_from_hdf5():
+    ds1 = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert ds1["contour"].shape == (5, np.nan, 2)
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
+    with RTDCWriter(f1) as hw:
+        hw.store_metadata({"setup": ds1.config["setup"],
+                           "experiment": ds1.config["experiment"]})
+        hw.store_feature("deform", ds1["deform"])
+        hw.store_feature("contour", ds1["contour"])
+
+    ds2 = new_dataset(f1)
+    assert ds2["contour"].shape == (5, np.nan, 2)
 
 
 def test_data_error():

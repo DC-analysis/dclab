@@ -2,7 +2,7 @@
 import argparse
 import pathlib
 
-from ..rtdc_dataset import export, new_dataset, RTDCWriter
+from ..rtdc_dataset import new_dataset, RTDCWriter
 from .. import definitions as dfn
 
 from . import common
@@ -40,11 +40,7 @@ def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
 
         # write features
         for feat in ds.features_innate:
-            export.hdf5_append(h5obj=hw.h5file,
-                               rtdc_ds=ds,
-                               feat=feat,
-                               compression="gzip",
-                               time_offset=0)
+            hw.store_feature(feat, ds[feat])
 
     # Finally, rename temp to out
     path_temp.rename(path_out)

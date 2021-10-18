@@ -183,6 +183,19 @@ def test_hdf5_contour_image_trace_large():
         assert np.all(ds1["trace"][key] == ds2["trace"][key])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_contour_from_hdf5():
+    ds1 = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert ds1["contour"].shape == (5, np.nan, 2)
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
+    ds1.export.hdf5(f1, ["contour"], filtered=False)
+    ds2 = dclab.new_dataset(f1)
+    assert ds2["contour"].shape == (5, np.nan, 2)
+
+
 def test_hdf5_filtered():
     n = 10
     keys = ["area_um", "image"]

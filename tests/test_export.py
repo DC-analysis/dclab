@@ -245,29 +245,6 @@ def test_hdf5_filtered_index():
     assert ds2.config["experiment"]["event count"] == n - 1
 
 
-def test_hdf5_frame():
-    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
-    ddict = example_data_dict(size=10, keys=keys)
-    ds1 = dclab.new_dataset(ddict)
-    ds1.config["experiment"]["sample"] = "test"
-    ds1.config["experiment"]["run index"] = 1
-    ds1.config["imaging"]["frame rate"] = 2000
-
-    edest = tempfile.mkdtemp()
-    f1 = join(edest, "dclab_test_export_hdf5.rtdc")
-    ds1.export.hdf5(f1, keys)
-    with h5py.File(f1, "a") as h5:
-        for feat in keys:
-            dclab.rtdc_dataset.export.hdf5_append(h5obj=h5,
-                                                  rtdc_ds=ds1,
-                                                  feat=feat,
-                                                  time_offset=10,
-                                                  compression="gzip")
-    # make sure that "frame" in f1 is continuous
-    ds2 = dclab.new_dataset(f1)
-    assert ds2["frame"][10] == 20000
-
-
 def test_hdf5_image_bg():
     n = 65
     keys = ["image", "image_bg"]
@@ -303,7 +280,6 @@ def test_hdf5_index_continuous():
             dclab.rtdc_dataset.export.hdf5_append(h5obj=h5,
                                                   rtdc_ds=ds1,
                                                   feat=feat,
-                                                  time_offset=10,
                                                   compression="gzip")
     with h5py.File(f1, "r") as h5:
         assert "index" in h5["events"]
@@ -326,7 +302,6 @@ def test_hdf5_index_online_continuous():
             dclab.rtdc_dataset.export.hdf5_append(h5obj=h5,
                                                   rtdc_ds=ds1,
                                                   feat=feat,
-                                                  time_offset=10,
                                                   compression="gzip")
     with h5py.File(f1, "r") as h5:
         assert "index_online" in h5["events"]

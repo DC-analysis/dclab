@@ -249,6 +249,35 @@ def test_join_rtdc():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_join_frame():
+    path_in1 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    path_in2 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in1.with_name("out.rtdc")
+
+    # modify acquisition times
+    with h5py.File(path_in1, mode="a") as h1:
+        h1.attrs["experiment:date"] = "2019-11-04"
+        h1.attrs["experiment:time"] = "15:00:00"
+
+    with h5py.File(path_in2, mode="a") as h2:
+        h2.attrs["experiment:date"] = "2019-11-05"
+        h2.attrs["experiment:time"] = "16:01:15.050"
+
+    offset = 24 * 60 * 60 + 60 * 60 + 1 * 60 + 15 + .05
+
+    cli.join(path_out=path_out, paths_in=[path_in1, path_in2])
+    with new_dataset(path_out) as dsj, new_dataset(path_in1) as ds0:
+        fr = ds0.config["imaging"]["frame rate"]
+        assert np.allclose(dsj["frame"],
+                           np.concatenate((ds0["frame"],
+                                           ds0["frame"] + offset * fr)),
+                           rtol=0,
+                           atol=.0001)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_join_times():
     path_in1 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     path_in2 = retrieve_data("fmt-hdf5_mask-contour_2018.zip")

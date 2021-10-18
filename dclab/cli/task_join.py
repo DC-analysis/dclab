@@ -5,7 +5,7 @@ import warnings
 
 import numpy as np
 
-from ..rtdc_dataset import export, new_dataset, RTDCWriter
+from ..rtdc_dataset import new_dataset, RTDCWriter
 from .. import definitions as dfn
 
 from . import common
@@ -75,11 +75,17 @@ def join(path_out=None, paths_in=None, metadata=None):
                 warnings.simplefilter("always")
                 with new_dataset(pi) as dsi:
                     for feat in features:
-                        export.hdf5_append(h5obj=hw.h5file,
-                                           rtdc_ds=dsi,
-                                           feat=feat,
-                                           compression="gzip",
-                                           time_offset=ti)
+                        if feat == "time":
+                            # handle time offset
+                            fdata = dsi["time"] + ti
+                        elif feat == "frame":
+                            # handle frame offset
+                            fr = dsi.config["imaging"]["frame rate"]
+                            frame_offset = ti * fr
+                            fdata = dsi["frame"] + frame_offset
+                        else:
+                            fdata = dsi[feat]
+                        hw.store_feature(feat=feat, data=fdata)
                 if w:
                     lkey = f"dclab-join-warnings-#{ii}"
                     logs[lkey] = common.assemble_warnings(w)

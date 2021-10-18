@@ -7,6 +7,7 @@
    (partially #117)
  - enh: improve export speed of contour data
  - enh: improve export speed if data filtering is disabled
+ - ref: disable `time_offset` of internal `export.hdf5_append` function
  - ref: deprecate write_hdf5.write function
  - ref: deprecate export.hdf5_autocomplete_config function
 0.35.8

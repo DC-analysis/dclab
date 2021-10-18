@@ -331,8 +331,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
         Optional boolean array used for filtering. If set to
         `None`, all events are saved.
     time_offset: float
-        This value will be added to the "time" and "frame" features
-        (used for joining multiple measurements)
+        Do not use! Please use `dclab.cli.task_join.join` instead.
 
     Notes
     -----
@@ -350,6 +349,10 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     else:
         indices = np.where(filtarr)[0]
         no_filter = False
+
+    if time_offset != 0:
+        raise ValueError("Setting `time_offset` not supported anymore! "
+                         "Please use `dclab.cli.task_join.join` instead.")
 
     # writer instance
     hw = RTDCWriter(h5obj, mode="append", compression=compression)
@@ -408,16 +411,6 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
             ido0 = 0
         hw.store_feature("index_online",
                          rtdc_ds["index_online"][filtarr] + ido0)
-    elif feat == "time":
-        hw.store_feature("time", rtdc_ds["time"][filtarr] + time_offset)
-    elif feat == "frame":
-        if time_offset != 0:
-            # Only get the frame rate when we actually need it.
-            fr = rtdc_ds.config["imaging"]["frame rate"]
-        else:
-            fr = 0
-        frame_offset = time_offset * fr
-        hw.store_feature("frame", rtdc_ds["frame"][filtarr] + frame_offset)
     else:
         hw.store_feature(feat, rtdc_ds[feat][filtarr])
 

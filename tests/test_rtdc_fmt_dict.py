@@ -1,4 +1,5 @@
 """Test dictionary format"""
+import numpy as np
 
 from dclab import new_dataset
 
@@ -9,6 +10,12 @@ def test_contour_not_available():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
     assert "contour" not in ds
+
+
+def test_contour_shape_dict():
+    ddict = example_data_dict(size=67, keys=["area_um", "deform", "contour"])
+    ds = new_dataset(ddict)
+    assert ds["contour"].shape == (67, np.nan, 2)
 
 
 def test_image_not_available():

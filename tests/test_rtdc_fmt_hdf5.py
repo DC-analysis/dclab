@@ -41,6 +41,13 @@ def test_contour_basic():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_contour_shape_hdf5():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert ds["contour"].shape == (5, np.nan, 2)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_defective_feature_aspect():
     # see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/241
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")

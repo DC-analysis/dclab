@@ -25,6 +25,10 @@ class ChildBase(object):
 
 
 class ChildContour(ChildBase):
+    def __init__(self, child):
+        super(ChildContour, self).__init__(child)
+        self.shape = (len(child), np.nan, 2)
+
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
                                         child_indices=idx)

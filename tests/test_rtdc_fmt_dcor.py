@@ -101,6 +101,13 @@ def test_dcor_cache_trace():
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_contour_shape():
+    # calibration beads
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert ds["contour"].shape == (5000, np.nan, 2)
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_data():
     # reticulocytes.rtdc contains contour data
     ds = dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a")

@@ -1,4 +1,5 @@
 """Class for efficiently handling contour data"""
+import functools
 import numbers
 import sys
 import warnings
@@ -51,10 +52,7 @@ class ContourColumn(object):
                     self.pxfeat.clear()
                     break
                 self.pxfeat[key] = rtdc_dataset[key] / px_size
-        if "image" in rtdc_dataset:
-            self.shape = rtdc_dataset["image"].shape
-        else:
-            self.shape = None
+
         self.event_offset = 0
 
     def __getitem__(self, idx):
@@ -125,6 +123,7 @@ class ContourColumn(object):
             )
         return cdata
 
+    @functools.lru_cache(maxsize=1)
     def __len__(self):
         length = len(self._contour_data)
         if length:
@@ -132,6 +131,10 @@ class ContourColumn(object):
                 self.determine_offset()
             length += self.event_offset
         return length
+
+    @property
+    def shape(self):
+        return len(self), np.nan, 2
 
     def determine_offset(self):
         """Determines the offset of the contours w.r.t. other data columns
@@ -218,6 +221,7 @@ class ContourData(object):
             data = np.fromstring(cont, sep=",", dtype=np.uint16).reshape(-1, 2)
             return data
 
+    @functools.lru_cache(maxsize=1)
     def __len__(self):
         return len(self.data)
 

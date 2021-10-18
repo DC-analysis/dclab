@@ -34,6 +34,16 @@ def test_config_calculation():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_contour_shape_hierarchy():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert ds["contour"].shape == (5, np.nan, 2)
+    ds.filter.manual[0] = False
+    ch = new_dataset(ds)
+    assert ch["contour"].shape == (4, np.nan, 2)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_event_count():
     pytest.importorskip("nptdms")
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")

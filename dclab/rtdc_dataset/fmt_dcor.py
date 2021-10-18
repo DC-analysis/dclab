@@ -129,6 +129,10 @@ class DCORNonScalarFeature:
 
 class DCORContourFeature(DCORNonScalarFeature):
     """Helper class for accessing contour data"""
+    def __init__(self, feat, api, size):
+        super(DCORContourFeature, self).__init__(feat, api, size)
+        self.shape = (size, np.nan, 2)
+
     def __getitem__(self, event):
         if not isinstance(event, numbers.Integral):
             # We cannot use the original method, because contours

@@ -1,5 +1,4 @@
 """RT-DC dictionary format"""
-
 import time
 
 import numpy as np
@@ -9,6 +8,22 @@ from ..util import hashobj
 
 from .config import Configuration
 from .core import RTDCBase
+
+
+class DictContourEvent:
+    def __init__(self, contours):
+        assert contours[0].shape[1] == 2
+        self.shape = (len(contours), np.nan, 2)
+        self.contours = contours
+
+    def __iter__(self):
+        return iter(self.contours)
+
+    def __getitem__(self, item):
+        return self.contours[item]
+
+    def __len__(self):
+        return len(self.contours)
 
 
 class RTDC_Dict(RTDCBase):
@@ -46,15 +61,17 @@ class RTDC_Dict(RTDCBase):
         self.title = "{}_{:02d}_{:02d}/{}.dict".format(t[0], t[1], t[2], ids)
 
         # Populate events
-        for key in ddict:
-            if dfn.feature_exists(key):
-                if dfn.scalar_feature_exists(key):
-                    data = np.array(ddict[key])
+        for feat in ddict:
+            if dfn.feature_exists(feat):
+                if dfn.scalar_feature_exists(feat):
+                    data = np.array(ddict[feat])
+                elif feat == "contour":
+                    data = DictContourEvent(ddict[feat])
                 else:
-                    data = ddict[key]
+                    data = ddict[feat]
             else:
-                raise ValueError("Invalid feature name '{}'".format(key))
-            self._events[key] = data
+                raise ValueError("Invalid feature name '{}'".format(feat))
+            self._events[feat] = data
 
         event_count = len(ddict[list(ddict.keys())[0]])
 

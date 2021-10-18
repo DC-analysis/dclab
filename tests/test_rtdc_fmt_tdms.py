@@ -159,6 +159,12 @@ def test_contour_not_initialized():
     assert not ds["contour"]._initialized
 
 
+def test_contour_shape():
+    pytest.importorskip("nptdms")
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
+    assert ds["contour"].shape == (8, np.nan, 2)
+
+
 def test_fluorescence_config():
     pytest.importorskip("nptdms")
     ds1 = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))

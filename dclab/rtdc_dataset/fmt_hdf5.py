@@ -42,6 +42,7 @@ class H5ContourEvent(object):
     def __init__(self, h5group):
         self.h5group = h5group
         self.identifier = h5group["0"][:]
+        self.shape = (len(h5group), np.nan, 2)
 
     def __getitem__(self, key):
         if not isinstance(key, numbers.Integral):

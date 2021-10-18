@@ -349,12 +349,10 @@ def test_hdf5_index_continuous():
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5.rtdc")
     ds1.export.hdf5(f1, keys)
-    with h5py.File(f1, "a") as h5:
+    with RTDCWriter(f1) as hw:
         for feat in keys:
-            dclab.rtdc_dataset.export.hdf5_append(h5obj=h5,
-                                                  rtdc_ds=ds1,
-                                                  feat=feat,
-                                                  compression="gzip")
+            hw.store_feature(feat, ds1[feat])
+
     with h5py.File(f1, "r") as h5:
         assert "index" in h5["events"]
         assert np.allclose(h5["events/index"][:], np.arange(1, 21))
@@ -371,12 +369,10 @@ def test_hdf5_index_online_continuous():
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5.rtdc")
     ds1.export.hdf5(f1, keys)
-    with h5py.File(f1, "a") as h5:
+    with RTDCWriter(f1) as hw:
         for feat in keys:
-            dclab.rtdc_dataset.export.hdf5_append(h5obj=h5,
-                                                  rtdc_ds=ds1,
-                                                  feat=feat,
-                                                  compression="gzip")
+            hw.store_feature(feat, ds1[feat])
+
     with h5py.File(f1, "r") as h5:
         assert "index_online" in h5["events"]
 

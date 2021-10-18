@@ -230,7 +230,7 @@ class Export(object):
                 LimitingExportSizeWarning)
 
         # Perform actual export
-        with RTDCWriter(path, mode="append") as hw:
+        with RTDCWriter(path, mode="append", compression=compression) as hw:
             # write meta data
             hw.store_metadata(meta)
             # write each feature individually

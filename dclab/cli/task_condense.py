@@ -30,6 +30,8 @@ def condense(path_out=None, path_in=None, check_suffix=True):
         with new_dataset(path_in) as ds:
             ds.export.hdf5(path=path_temp,
                            features=ds.features_scalar,
+                           # We do not need filtering, because we are
+                           # only interested in the scalar features.
                            filtered=False,
                            compression="gzip",
                            override=True)

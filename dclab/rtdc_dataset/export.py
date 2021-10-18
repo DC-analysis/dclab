@@ -351,11 +351,9 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     # - tdms-based datasets don't allow indexing with numpy
     # - there might be memory issues
     if feat == "contour":
-        cont_list = []
         for ii in range(len(rtdc_ds)):
             if filtarr[ii]:
-                cont_list.append(rtdc_ds["contour"][ii])
-        hw.store_feature("contour", cont_list)
+                hw.store_feature("contour", rtdc_ds["contour"][ii])
     elif feat in ["mask", "image", "image_bg"]:
         # store image stacks (reduces file size, memory usage, and saves time)
         im0 = rtdc_ds[feat][0]

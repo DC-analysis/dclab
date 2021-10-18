@@ -205,7 +205,7 @@ class Export(object):
         if filtered:
             filtarr = self.rtdc_ds.filter.all
         else:
-            filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
+            filtarr = None
 
         # check that all features have same length and use smallest
         # common length
@@ -216,18 +216,18 @@ class Export(object):
                     lengths.append(len(self.rtdc_ds["trace"][tr]))
             else:
                 lengths.append(len(self.rtdc_ds[feat]))
-        if not np.all(lengths == lengths[0]):
-            lmin = np.min(lengths)
-            lmax = np.max(lengths)
-            nev_bef = np.sum(filtarr)
+        lmin = np.min(lengths)
+        lmax = np.max(lengths)
+        if lmin != lmax:
+            if filtarr is None:
+                # we are forced to do filtering
+                filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
             filtarr[lmin:] = False
-            nev_aft = np.sum(filtarr)
-            if nev_bef != nev_aft:
-                warnings.warn(
-                    "Not all features have the same length! "
-                    + "Limiting output event count to {} ".format(lmin)
-                    + "(max {}) in '{}'.".format(lmax, path),
-                    LimitingExportSizeWarning)
+            warnings.warn(
+                "Not all features have the same length! "
+                + "Limiting output event count to {} ".format(lmin)
+                + "(max {}) in '{}'.".format(lmax, path),
+                LimitingExportSizeWarning)
 
         # Perform actual export
         with RTDCWriter(path, mode="append") as hw:
@@ -345,49 +345,61 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     # optional array for filtering events
     if filtarr is None:
         filtarr = np.ones(len(rtdc_ds), dtype=bool)
+        indices = np.arange(len(rtdc_ds))
+        no_filter = True
+    else:
+        indices = np.where(filtarr)[0]
+        no_filter = False
+
     # writer instance
     hw = RTDCWriter(h5obj, mode="append", compression=compression)
     # event-wise, because
     # - tdms-based datasets don't allow indexing with numpy
     # - there might be memory issues
     if feat == "contour":
-        for ii in range(len(rtdc_ds)):
-            if filtarr[ii]:
+        if no_filter:
+            hw.store_feature("contour", rtdc_ds["contour"])
+        else:
+            for ii in indices:
                 hw.store_feature("contour", rtdc_ds["contour"][ii])
     elif feat in ["mask", "image", "image_bg"]:
-        # store image stacks (reduces file size, memory usage, and saves time)
-        im0 = rtdc_ds[feat][0]
-        imstack = np.zeros((CHUNK_SIZE, im0.shape[0], im0.shape[1]),
-                           dtype=im0.dtype)
-        jj = 0
-        for ii in range(len(rtdc_ds)):
-            if filtarr[ii]:
+        if no_filter:
+            hw.store_feature(feat, rtdc_ds[feat])
+        else:
+            # assemble filtered image stacks
+            im0 = rtdc_ds[feat][0]
+            imstack = np.zeros((CHUNK_SIZE, im0.shape[0], im0.shape[1]),
+                               dtype=im0.dtype)
+            jj = 0
+            for ii in indices:
                 imstack[jj] = rtdc_ds[feat][ii]
                 if (jj + 1) % CHUNK_SIZE == 0:
                     jj = 0
                     hw.store_feature(feat, imstack)
                 else:
                     jj += 1
-        # write rest
-        if jj:
-            hw.store_feature(feat, imstack[:jj, :, :])
+            # write rest
+            if jj:
+                hw.store_feature(feat, imstack[:jj, :, :])
     elif feat == "trace":
-        # store trace stacks (reduces file size, memory usage, and saves time)
-        for tr in rtdc_ds["trace"].keys():
-            tr0 = rtdc_ds["trace"][tr][0]
-            trstack = np.zeros((CHUNK_SIZE, len(tr0)), dtype=tr0.dtype)
-            jj = 0
-            for ii in range(len(rtdc_ds)):
-                if filtarr[ii]:
+        if no_filter:
+            hw.store_feature("trace", rtdc_ds["trace"])
+        else:
+            # assemble filtered trace stacks
+            for tr in rtdc_ds["trace"].keys():
+                tr0 = rtdc_ds["trace"][tr][0]
+                trstack = np.zeros((CHUNK_SIZE, len(tr0)), dtype=tr0.dtype)
+                jj = 0
+                for ii in indices:
                     trstack[jj] = rtdc_ds["trace"][tr][ii]
                     if (jj + 1) % CHUNK_SIZE == 0:
                         jj = 0
                         hw.store_feature("trace", {tr: trstack})
                     else:
                         jj += 1
-            # write rest
-            if jj:
-                hw.store_feature("trace", {tr: trstack[:jj, :]})
+                # write rest
+                if jj:
+                    hw.store_feature("trace", {tr: trstack[:jj, :]})
     elif feat == "index_online":
         if "events/index_online" in h5obj:
             # index_online is usually larger than index

@@ -1,10 +1,12 @@
-0.35.9
+0.36.0
+ - feat: introduce new RTDCWriter class
  - fix: in some rare cases, an empty .rtdc file could be generated
    when splitting an .rtdc file via the CLI dclab-split
  - fix: user-defined metadata were not copied with CLI repack
  - enh: implement consistent `.shape` property for contour data
    (partially #117)
  - enh: improve export speed of contour data
+ - enh: improve export speed if data filtering is disabled
  - ref: deprecate write_hdf5.write function
  - ref: deprecate export.hdf5_autocomplete_config function
 0.35.8

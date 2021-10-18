@@ -185,13 +185,16 @@ class RTDCWriter:
 
             Only section key names and key values therein registered
             in dclab are allowed and are converted to the pre-defined
-            dtype. If you have custom metadata, you can use the "user"
+            dtype. Only sections from the `dfn.CFG_METADATA` dictionary
+            are stored. If you have custom metadata, you can use the "user"
             section.
         version_brand: bool
             Whether or not to append a "| dclab X.Y.Z" to the software
             version string.
         """
         meta = copy.deepcopy(meta)
+        # Ignore/remove tdms section
+        meta.pop("fmt_tdms", None)
         # Check meta data
         for sec in meta:
             if sec == "user":

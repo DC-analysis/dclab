@@ -192,13 +192,10 @@ class Export(object):
         elif path.exists():
             path.unlink()
 
+        # decide which metadata to export
         meta = {}
-
-        # export configuration meta data
+        # only cfg metadata (no analysis metadata)
         for sec in dfn.CFG_METADATA:
-            if sec in ["fmt_tdms"]:
-                # ignored sections
-                continue
             if sec in self.rtdc_ds.config:
                 meta[sec] = self.rtdc_ds.config[sec].copy()
         # add user-defined metadata

@@ -1,6 +1,8 @@
+import copy
 import io
 import os
 from os.path import join
+import pathlib
 import tempfile
 
 import h5py
@@ -8,7 +10,8 @@ import numpy as np
 import pytest
 
 import dclab
-from dclab import dfn, new_dataset
+from dclab import dfn, new_dataset, RTDCWriter
+from dclab.rtdc_dataset.export import store_filtered_feature
 
 from helper_methods import example_data_dict, retrieve_data
 
@@ -219,6 +222,77 @@ def test_hdf5_filtered():
     assert np.allclose(ds2["area_um"], ds1["area_um"][fta])
     assert np.allclose(ds2["image"][2], ds1["image"][3])
     assert np.all(ds2["image"][2] != ds1["image"][2])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.parametrize("dataset", ["fmt-hdf5_mask-contour_2018.zip",
+                                     "fmt-hdf5_fl-no-contour_2019.zip"])
+def test_hdf5_filtered_full(dataset):
+    """Compare full export to filter with all-True"""
+    tdir = pathlib.Path(tempfile.mkdtemp())
+    path_in = tdir / "in.rtdc"
+
+    # first, create a large dataset
+    with new_dataset(retrieve_data(dataset)) as ds0:
+        num = 100 % len(ds0) + len(ds0)
+        ds0.export.hdf5(path_in, features=ds0.features_innate)
+        with RTDCWriter(path_in, compression=None) as hw:
+            for _ in range(num):
+                for feat in ds0.features_innate:
+                    hw.store_feature(feat, ds0[feat])
+
+    # 1. via export unfiltered
+    path_out1 = tdir / "out1.rtdc"
+    with dclab.new_dataset(path_in) as ds:
+        assert len(ds) >= 100
+        ds.export.hdf5(path_out1, features=ds.features_innate, filtered=False,
+                       compression=None)
+
+    # 2. via export filtered
+    path_out2 = tdir / "out2.rtdc"
+    with dclab.new_dataset(path_in) as ds:
+        ds.export.hdf5(path_out2, features=ds.features_innate, filtered=True,
+                       compression=None)
+
+    # 3. via RTDC writer
+    path_out3 = tdir / "out3.rtdc"
+    with dclab.new_dataset(path_in) as ds:
+        with RTDCWriter(path_out3, compression=None) as hw:
+            config = copy.deepcopy(dict(ds.config))
+            config.pop("filtering", None)
+            config.pop("analysis", None)
+            hw.store_metadata(config)
+            for feat in ds.features_innate:
+                hw.store_feature(feat, ds[feat])
+
+    # 4. via export filtered function
+    path_out4 = tdir / "out4.rtdc"
+    with dclab.new_dataset(path_in) as ds:
+        with RTDCWriter(path_out4, compression=None) as hw:
+            config = copy.deepcopy(dict(ds.config))
+            config.pop("filtering", None)
+            config.pop("analysis", None)
+            hw.store_metadata(config)
+            for feat in ds.features_innate:
+                store_filtered_feature(rtdc_writer=hw,
+                                       feat=feat,
+                                       data=ds[feat],
+                                       filtarr=np.ones(len(ds), dtype=bool))
+
+    with dclab.new_dataset(path_in) as ds0:
+        for path in [path_out1, path_out2, path_out3, path_out4]:
+            with dclab.new_dataset(path) as dsi:
+                for feat in dsi.features_innate:
+                    if dfn.scalar_feature_exists(feat):
+                        assert np.all(ds0[feat] == dsi[feat])
+                    elif feat == "trace":
+                        for key in ds0[feat]:
+                            assert np.all(np.array(ds0[feat][key])
+                                          == np.array(dsi[feat][key]))
+                    else:
+                        for ii in range(len(ds0)):
+                            assert np.all(ds0[feat][ii] == dsi[feat][ii])
 
 
 def test_hdf5_filtered_index():

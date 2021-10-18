@@ -26,7 +26,7 @@ class RTDCWriter:
               - "replace": replace existing h5py Datasets with new features
                 (used for ancillary feature storage)
               - "reset": do not keep any previous data
-        compression: str
+        compression: str or None
             Compression method used for data storage;
             one of [None, "lzf", "gzip", "szip"].
         """
@@ -283,7 +283,11 @@ class RTDCWriter:
         """
         if name not in group:
             maxshape = tuple([None] + list(data.shape)[1:])
-            chunks = tuple([CHUNK_SIZE] + list(data.shape)[1:])
+            if len(data.shape) == 1:
+                # no (or minimal) chunking for scalar data
+                chunks = max(len(data), CHUNK_SIZE)
+            else:
+                chunks = tuple([CHUNK_SIZE] + list(data.shape)[1:])
             dset = group.create_dataset(
                 name,
                 shape=data.shape,

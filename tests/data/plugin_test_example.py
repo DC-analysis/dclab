@@ -1,4 +1,4 @@
-"""Example plugin
+"""Basic plugin
 
 This plugin defines two simple features by calculating them in the
 `compute_some_new_features` function and setting the plugin metadata in the

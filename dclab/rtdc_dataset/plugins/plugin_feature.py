@@ -198,6 +198,14 @@ class PlugInFeature(AncillaryFeature):
         else:
             is_scalar = True  # default
 
+        if is_scalar:
+            event_shape = (1,)
+        else:
+            if "feature shapes" in original_info:
+                event_shape = original_info["feature shapes"][fidx]
+            else:
+                event_shape = None
+
         feature_info = {
             "method": original_info["method"],
             "description": original_info.get(
@@ -206,6 +214,7 @@ class PlugInFeature(AncillaryFeature):
                 "long description", "No long description provided."),
             "feature name": self.feature_name,
             "feature label": label,
+            "feature shape": event_shape,
             "features required": original_info.get("features required", []),
             "config required": original_info.get("config required", []),
             "method check required": original_info.get(

@@ -3,6 +3,7 @@
  - fix: in some rare cases, an empty .rtdc file could be generated
    when splitting an .rtdc file via the CLI dclab-split
  - fix: user-defined metadata were not copied with CLI repack
+ - fix: support exporting non-scalar plugin features to HDF5 (#143)
  - enh: implement consistent `.shape` property for contour data
    (partially #117)
  - enh: improve export speed of contour data

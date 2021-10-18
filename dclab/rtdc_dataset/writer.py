@@ -1,11 +1,15 @@
 import copy
 import pathlib
+import warnings
 
 import h5py
 import numpy as np
 
 from .. import definitions as dfn
 from .._version import version
+
+from .plugins import PlugInFeature
+
 
 #: Chunk size for storing HDF5 data
 CHUNK_SIZE = 100
@@ -38,7 +42,7 @@ class RTDCWriter:
             self.path = pathlib.Path(path_or_h5file.file.filename)
             self.h5file = path_or_h5file
             if mode == "reset":
-                raise ValueError("'reset' mode incompatible h5py.Group!")
+                raise ValueError("'reset' mode incompatible with h5py.Group!")
         else:
             self.path = pathlib.Path(path_or_h5file)
             self.h5file = h5py.File(path_or_h5file,
@@ -51,7 +55,8 @@ class RTDCWriter:
 
     def __exit__(self, type, value, tb):
         # close the HDF5 file
-        self.rectify_metadata()
+        if len(self.h5file["events"]):
+            self.rectify_metadata()
         self.h5file.close()
 
     def rectify_metadata(self):
@@ -108,7 +113,7 @@ class RTDCWriter:
         ----------
         feat: str
             feature name
-        data: object
+        data: np.ndarray or list or dict
             feature data
         """
         if not dfn.feature_exists(feat):
@@ -159,7 +164,33 @@ class RTDCWriter:
                                    data=np.atleast_2d(data[tr_name])
                                    )
         else:
-            raise NotImplementedError(f"No rule to store feature {feat}!")
+            # OK, so we are dealing with a plugin feature or a temporary
+            # feature here. Now, we don't know the exact shape of that
+            # feature, but we give the user the option to advertise
+            # the shape of the feature in the plugin.
+            for pf in PlugInFeature.get_instances(feat):
+                if isinstance(pf, PlugInFeature):
+                    shape = pf.plugin_feature_info.get("feature shape")
+                    if shape is not None:
+                        break
+            else:
+                # Temporary features will have to live with this warning.
+                warnings.warn("There is no information about the shape of the "
+                              + f"feature '{feat}'. I am going out on a limb "
+                              + "for you and assume that you are storing "
+                              + "multiple events at a time. If this works, "
+                              + f"you could put the shape `{data[0].shape}` "
+                              + 'in the `info["feature labels"]` key of '
+                              + "your plugin feature.")
+                shape = data.shape[1:]
+            if shape == data.shape:
+                data = data.reshape(1, *shape)
+            elif shape == data.shape[1:]:
+                pass
+            else:
+                raise ValueError(f"Bad shape for {feat}! Expeted {shape}, "
+                                 + f"but got {data.shape[1:]}!")
+            self.write_ndarray(group=events, name=feat, data=data)
 
     def store_log(self, name, lines):
         """Write log data

@@ -50,8 +50,9 @@ class AncillaryFeature:
     #: All feature names registered
     feature_names = []
 
-    def __init__(self, feature_name, method, req_config=[], req_features=[],
-                 req_func=lambda x: True, priority=0, data=None):
+    def __init__(self, feature_name, method, req_config=None,
+                 req_features=None, req_func=lambda x: True, priority=0,
+                 data=None):
         """A data feature that is computed from existing data
 
         Parameters
@@ -96,6 +97,10 @@ class AncillaryFeature:
         `req_config` and `req_features` are used to test whether the
         feature can be computed in `self.is_available`.
         """
+        if req_features is None:
+            req_features = []
+        if req_config is None:
+            req_config = []
         self.feature_name = feature_name
         self.method = method
         self.req_config = req_config

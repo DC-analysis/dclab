@@ -26,9 +26,9 @@ def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
 
     with new_dataset(path_in) as ds, RTDCWriter(path_temp, mode="reset") as hw:
         # write metadata first (to avoid resetting software version)
-        # only export configuration meta data (no user-defined config)
+        # only export configuration meta data (no analysis-related config)
         meta = {}
-        for sec in dfn.CFG_METADATA:
+        for sec in list(dfn.CFG_METADATA.keys()) + ["user"]:
             if sec in ds.config:
                 meta[sec] = ds.config[sec].copy()
 

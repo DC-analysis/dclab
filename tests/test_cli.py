@@ -349,6 +349,22 @@ def test_repack_strip_logs():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_repack_user_metadata():
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    with h5py.File(path_in, "a") as h5:
+        h5.attrs["user:peter"] = "hans"
+
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("repacked.rtdc")
+
+    cli.repack(path_out=path_out, path_in=path_in)
+
+    with new_dataset(path_out) as ds:
+        assert ds.config["user"]["peter"] == "hans"
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_split():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     paths = cli.split(path_in=path_in, split_events=3, ret_out_paths=True)

@@ -1,6 +1,7 @@
 0.35.9
  - fix: in some rare cases, an empty .rtdc file could be generated
    when splitting an .rtdc file via the CLI dclab-split
+ - fix: user-defined metadata were not copied with CLI repack
  - enh: implement consistent `.shape` property for contour data
    (partially #117)
  - enh: improve export speed of contour data

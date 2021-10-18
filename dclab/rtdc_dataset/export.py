@@ -350,8 +350,6 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
         filtarr = np.ones(len(rtdc_ds), dtype=bool)
     # writer instance
     hw = RTDCWriter(h5obj, mode="append", compression=compression)
-    # total number of new events
-    nev = np.sum(filtarr)
     # event-wise, because
     # - tdms-based datasets don't allow indexing with numpy
     # - there might be memory issues
@@ -395,13 +393,6 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
             # write rest
             if jj:
                 hw.store_feature("trace", {tr: trstack[:jj, :]})
-    elif feat == "index":
-        # re-enumerate data index feature (filtered data)
-        if "events/index" in h5obj:
-            nev0 = len(h5obj["events/index"])
-        else:
-            nev0 = 0
-        hw.store_feature("index", np.arange(nev0+1, nev0+nev+1))
     elif feat == "index_online":
         if "events/index_online" in h5obj:
             # index_online is usually larger than index

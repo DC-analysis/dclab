@@ -114,7 +114,20 @@ class RTDCWriter:
             else:
                 del events[feat]
 
-        if dfn.scalar_feature_exists(feat):
+        if feat == "index":
+            # By design, the index must be a simple enumeration.
+            # We enforce that by not trusting the user. If you need
+            # a different index, please take a look at the index_online
+            # feature.
+            nev = len(data)
+            if "index" in events:
+                nev0 = len(events["index"])
+            else:
+                nev0 = 0
+            self.write_ndarray(group=events,
+                               name="index",
+                               data=np.arange(nev0 + 1, nev0 + nev + 1))
+        elif dfn.scalar_feature_exists(feat):
             self.write_ndarray(group=events,
                                name=feat,
                                data=np.atleast_1d(data))

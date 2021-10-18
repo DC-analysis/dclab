@@ -329,6 +329,10 @@ def store_filtered_feature(rtdc_writer, feat, data, filtarr):
         feature data
     filtarr: boolean np.ndarray
         filtering array (same as RTDCBase.filter.all)
+
+    Notes
+    -----
+    This code is somewhat redundant the the code of RTDCWriter.
     """
     indices = np.where(filtarr)[0]
     hw = rtdc_writer

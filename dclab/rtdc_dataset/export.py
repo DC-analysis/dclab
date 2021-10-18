@@ -403,14 +403,6 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
                 # write rest
                 if jj:
                     hw.store_feature("trace", {tr: trstack[:jj, :]})
-    elif feat == "index_online":
-        if "events/index_online" in h5obj:
-            # index_online is usually larger than index
-            ido0 = h5obj["events/index_online"][-1] + 1
-        else:
-            ido0 = 0
-        hw.store_feature("index_online",
-                         rtdc_ds["index_online"][filtarr] + ido0)
     else:
         hw.store_feature(feat, rtdc_ds[feat][filtarr])
 

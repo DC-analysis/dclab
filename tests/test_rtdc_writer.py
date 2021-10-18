@@ -145,6 +145,47 @@ def test_contour_from_hdf5():
     assert ds2["contour"].shape == (5, np.nan, 2)
 
 
+def test_index_increment():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_")
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_metadata({"experiment": {"sample": "test",
+                                          "run index": 1}})
+        hw.store_feature("index", np.arange(1, 11))
+        hw.store_feature("index", np.arange(1, 11))
+
+    with new_dataset(rtdc_file) as ds:
+        assert np.all(ds["index"] == np.arange(1, 21))
+
+
+def test_index_increment2():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_")
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_metadata({"experiment": {"sample": "test",
+                                          "run index": 1}})
+        # actually, RTDCWriter only uses the shape!
+        hw.store_feature("index", np.arange(10, 20))
+        hw.store_feature("index", np.arange(50, 60))
+
+    with new_dataset(rtdc_file) as ds:
+        assert np.all(ds["index"] == np.arange(1, 21))
+
+
+def test_index_online_no_increment():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_")
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_metadata({"experiment": {"sample": "test",
+                                          "run index": 1}})
+        hw.store_feature("index_online", np.arange(10))
+        hw.store_feature("index_online", np.arange(10))
+
+    with new_dataset(rtdc_file) as ds:
+        assert np.all(ds["index_online"] == np.concatenate([np.arange(10),
+                                                            np.arange(10)]))
+
+
 def test_data_error():
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_error_")

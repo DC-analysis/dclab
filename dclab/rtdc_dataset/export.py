@@ -235,11 +235,15 @@ class Export(object):
             hw.store_metadata(meta)
             # write each feature individually
             for feat in features:
-                hdf5_append(h5obj=hw.h5file,
-                            rtdc_ds=self.rtdc_ds,
-                            feat=feat,
-                            compression=compression,
-                            filtarr=filtarr)
+                if filtarr is None:
+                    # We do not have to filter and can be fast
+                    hw.store_feature(feat=feat, data=self.rtdc_ds[feat])
+                else:
+                    # We have to filter and will be slower
+                    store_filtered_feature(rtdc_writer=hw,
+                                           feat=feat,
+                                           data=self.rtdc_ds[feat],
+                                           filtarr=filtarr)
 
     def tsv(self, path, features, meta_data=None, filtered=True,
             override=False):
@@ -312,6 +316,66 @@ class Export(object):
                        delimiter="\t")
 
 
+def store_filtered_feature(rtdc_writer, feat, data, filtarr):
+    """Append filtered feature data to an HDF5 file
+
+    This is possibly slow and should be avoided!
+
+    Parameters
+    ----------
+    rtdc_writer: dclab.rtdc_dataset.writer.RTDCWriter
+        an open writer object
+    feat: str
+        feature name
+    data: object or list or np.ndarray or dict
+        feature data
+    filtarr: boolean np.ndarray
+        filtering array (same as RTDCBase.filter.all)
+    """
+    indices = np.where(filtarr)[0]
+    hw = rtdc_writer
+    # event-wise, because
+    # - tdms-based datasets don't allow indexing with numpy
+    # - there might be memory issues
+    if feat == "contour":
+        for ii in indices:
+            hw.store_feature("contour", data[ii])
+    elif feat in ["mask", "image", "image_bg"]:
+        # assemble filtered image stacks
+        im0 = data[0]
+        imstack = np.zeros((CHUNK_SIZE, im0.shape[0], im0.shape[1]),
+                           dtype=im0.dtype)
+        jj = 0
+        for ii in indices:
+            imstack[jj] = data[ii]
+            if (jj + 1) % CHUNK_SIZE == 0:
+                jj = 0
+                hw.store_feature(feat, imstack)
+            else:
+                jj += 1
+        # write rest
+        if jj:
+            hw.store_feature(feat, imstack[:jj, :, :])
+    elif feat == "trace":
+        # assemble filtered trace stacks
+        for tr in data.keys():
+            tr0 = data[tr][0]
+            trstack = np.zeros((CHUNK_SIZE, len(tr0)), dtype=tr0.dtype)
+            jj = 0
+            for ii in indices:
+                trstack[jj] = data[tr][ii]
+                if (jj + 1) % CHUNK_SIZE == 0:
+                    jj = 0
+                    hw.store_feature("trace", {tr: trstack})
+                else:
+                    jj += 1
+            # write rest
+            if jj:
+                hw.store_feature("trace", {tr: trstack[:jj, :]})
+    else:
+        hw.store_feature(feat, data[filtarr])
+
+
 def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
                 time_offset=0):
     """Append feature data to an HDF5 file
@@ -344,11 +408,14 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
     # optional array for filtering events
     if filtarr is None:
         filtarr = np.ones(len(rtdc_ds), dtype=bool)
-        indices = np.arange(len(rtdc_ds))
         no_filter = True
     else:
-        indices = np.where(filtarr)[0]
         no_filter = False
+
+    warnings.warn("`hdf5_append` is deptecated; please use "
+                  " the dclab.RTDCWriter context manager or the "
+                  " export.store_filtered_feature function.",
+                  DeprecationWarning)
 
     if time_offset != 0:
         raise ValueError("Setting `time_offset` not supported anymore! "
@@ -356,55 +423,13 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
 
     # writer instance
     hw = RTDCWriter(h5obj, mode="append", compression=compression)
-    # event-wise, because
-    # - tdms-based datasets don't allow indexing with numpy
-    # - there might be memory issues
-    if feat == "contour":
-        if no_filter:
-            hw.store_feature("contour", rtdc_ds["contour"])
-        else:
-            for ii in indices:
-                hw.store_feature("contour", rtdc_ds["contour"][ii])
-    elif feat in ["mask", "image", "image_bg"]:
-        if no_filter:
-            hw.store_feature(feat, rtdc_ds[feat])
-        else:
-            # assemble filtered image stacks
-            im0 = rtdc_ds[feat][0]
-            imstack = np.zeros((CHUNK_SIZE, im0.shape[0], im0.shape[1]),
-                               dtype=im0.dtype)
-            jj = 0
-            for ii in indices:
-                imstack[jj] = rtdc_ds[feat][ii]
-                if (jj + 1) % CHUNK_SIZE == 0:
-                    jj = 0
-                    hw.store_feature(feat, imstack)
-                else:
-                    jj += 1
-            # write rest
-            if jj:
-                hw.store_feature(feat, imstack[:jj, :, :])
-    elif feat == "trace":
-        if no_filter:
-            hw.store_feature("trace", rtdc_ds["trace"])
-        else:
-            # assemble filtered trace stacks
-            for tr in rtdc_ds["trace"].keys():
-                tr0 = rtdc_ds["trace"][tr][0]
-                trstack = np.zeros((CHUNK_SIZE, len(tr0)), dtype=tr0.dtype)
-                jj = 0
-                for ii in indices:
-                    trstack[jj] = rtdc_ds["trace"][tr][ii]
-                    if (jj + 1) % CHUNK_SIZE == 0:
-                        jj = 0
-                        hw.store_feature("trace", {tr: trstack})
-                    else:
-                        jj += 1
-                # write rest
-                if jj:
-                    hw.store_feature("trace", {tr: trstack[:jj, :]})
+    if no_filter:
+        hw.store_feature(feat, rtdc_ds[feat])
     else:
-        hw.store_feature(feat, rtdc_ds[feat][filtarr])
+        store_filtered_feature(rtdc_writer=hw,
+                               feat=feat,
+                               data=rtdc_ds[feat],
+                               filtarr=filtarr)
 
 
 def hdf5_autocomplete_config(path_or_h5obj):

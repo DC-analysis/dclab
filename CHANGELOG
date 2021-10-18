@@ -10,6 +10,7 @@
  - ref: disable `time_offset` of internal `export.hdf5_append` function
  - ref: deprecate write_hdf5.write function
  - ref: deprecate export.hdf5_autocomplete_config function
+ - ref: deprecate export.hdf5_append function
 0.35.8
  - fix: write logs to fixed-length strings in HDF5 files (HDF5 never
    supported variable length string datasets with fletcher32 or compression

@@ -1,7 +1,8 @@
 0.35.9
  - fix: in some rare cases, an empty .rtdc file could be generated
    when splitting an .rtdc file via the CLI dclab-split
- - enh: implement consistent `.shape` property for contour data (#117)
+ - enh: implement consistent `.shape` property for contour data
+   (partially #117)
  - enh: improve export speed of contour data
  - ref: deprecate write_hdf5.write function
  - ref: deprecate export.hdf5_autocomplete_config function

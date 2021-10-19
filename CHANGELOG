@@ -1,3 +1,5 @@
+0.36.1
+ - setup: bump h5py version to 3.0 (issue with integer chunk argument)
 0.36.0
  - feat: introduce new RTDCWriter class (#144)
  - fix: in some rare cases, an empty .rtdc file could be generated

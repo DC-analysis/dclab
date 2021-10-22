@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 import dclab
-from dclab.features.volume import get_volume
+from dclab.features.volume import get_volume, vol_revolve
 
 from helper_methods import retrieve_data
 
@@ -177,6 +177,74 @@ def test_xpos():
                         pos_y=cy,
                         pix=1)
         assert np.allclose(v0, vi)
+
+
+@pytest.mark.parametrize("npoints,rtol", [[100, 6.72e-4],
+                                          [1000, 6.6e-6]])
+def test_vol_revolve_circular_toroid(npoints, rtol):
+    """Upstream test function 1
+
+    https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve
+
+    % Verification for circular toroid of major radius R0, minor radius a
+    % Volume is 2 * pi^2 * R0 * a^2. Run this code:
+    % clear all
+    % R0 = 5 ;
+    % a = 1 ;
+    % npoints = 100 ;
+    % theta = 2*pi*[0:1:npoints-1]'/double(npoints-1) ;
+    % R = R0 + a*cos(theta) ;
+    % Z =      a*sin(theta) ;
+    % vol_analytic = 2 * pi^2 * R0 * a^2 ;
+    %  >> 98.6960
+    % vol = volRevolve(R,Z) ;
+    %  >> 98.6298 (6.7e-04 relative error)
+    % Do it again with npoints = 1000, get:
+    %  >> 98.6954 (6.6e-06 relative error)
+    % As expected, it's always slightly small because the polygon inscribes the
+    % circle.
+    """
+    r0 = 5
+    a = 1
+    theta = 2 * np.pi * np.arange(npoints-1) / (npoints-1)
+    r = r0 + a*np.cos(theta)
+    z = a*np.sin(theta)
+    vol_analytic = 2 * np.pi**2 * r0 * a**2
+    vol = vol_revolve(r, z)
+    assert np.allclose(vol_analytic, 98.6960, rtol=0, atol=0.001)
+    assert np.allclose(vol_analytic, vol, rtol=rtol, atol=0)
+    assert vol < vol_analytic
+
+
+def test_vol_revolve_rectangular_toroid():
+    """Upstream test function 2
+
+    https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve
+
+    % Verification for washer (rectangular toroid), with the radius of the
+    % 'hole' in the washer being a, and the outer radius of the washer being b.
+    % (Thus the width of the metal cross section is b-a.) The height of the
+    % washer is h. Then the volume is pi * (b^2 - a^2) * h. Run this code:
+    clear all
+    a = 1 ;
+    b = 2 ;
+    h = 10 ;
+    R = [a; b; b; a; a] ;
+    Z = [0; 0; h; h; 0] ;
+    vol_analytic = pi * (b^2 - a^2) * h ;
+    % >> 94.2478
+    vol = volRevolve(R,Z) ;
+    % >> 94.2478
+    """
+    a = 1
+    b = 2
+    h = 10
+    r = [a, b, b, a, a]
+    z = [0, 0, h, h, 0]
+    vol_analytic = np.pi * (b**2 - a**2) * h
+    vol = vol_revolve(r, z)
+    assert vol_analytic == vol
+    assert np.allclose(vol, 94.2478, rtol=0, atol=0.0001)
 
 
 if __name__ == "__main__":

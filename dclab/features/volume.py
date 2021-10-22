@@ -196,8 +196,8 @@ def vol_revolve(r, z, point_scale=1.):
     The coordinates must be given in counter-clockwise order,
     otherwise the volume will be negative.
     """
-    r = np.asarray(r, dtype=float).flatten()
-    z = np.asarray(z, dtype=float).flatten()
+    r = np.array(r).flatten()
+    z = np.array(z).flatten()
 
     # sanity checks
     assert len(r) == len(z)
@@ -208,10 +208,8 @@ def vol_revolve(r, z, point_scale=1.):
     # make sure we have a closed contour
     if (r[-1] != r[0]) or (z[-1] != z[0]):
         # We have an open contour - close it.
-        r.resize((len(r) + 1,))
-        r[-1] = r[0]
-        z.resize((len(z) + 1,))
-        z[-1] = z[0]
+        r = np.resize(r, len(r) + 1)
+        z = np.resize(z, len(z) + 1)
 
     rp = r[:-1]
 

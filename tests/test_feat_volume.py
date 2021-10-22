@@ -41,8 +41,11 @@ def centroid_of_polygon(points):
 
 
 def get_ellipse_coords(a, b, x=0.0, y=0.0, angle=0.0, k=2):
-    """ Draws an ellipse using (360*k + 1) discrete points; based on pseudo code
+    """
+
+    Draws an ellipse using (360*k + 1) discrete points; based on pseudo code
     given at http://en.wikipedia.org/wiki/Ellipse
+
     k = 1 means 361 points (degree by degree)
     a = major axis distance,
     b = minor axis distance,
@@ -57,7 +60,7 @@ def get_ellipse_coords(a, b, x=0.0, y=0.0, angle=0.0, k=2):
     beta = -angle * np.pi / 180
     sin_beta = np.sin(beta)
     cos_beta = np.cos(beta)
-    alpha = np.radians(np.r_[0.:360.:1j * (360 * k + 1)])
+    alpha = np.linspace(0, 2*np.pi, 360 * k + 1, endpoint=True)
 
     sin_alpha = np.sin(alpha)
     cos_alpha = np.cos(alpha)
@@ -243,11 +246,3 @@ def test_vol_revolve_rectangular_toroid():
     vol = vol_revolve(r, z)
     assert vol_analytic == vol
     assert np.allclose(vol, 94.2478, rtol=0, atol=0.0001)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

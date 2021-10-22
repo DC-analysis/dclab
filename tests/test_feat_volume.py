@@ -78,6 +78,29 @@ def test_af_volume():
     assert np.allclose(vol[12], 1010.5669523203878)
 
 
+def test_get_volume():
+    # Helper definitions to get an ellipse
+    major = 10
+    minor = 5
+    ellip = get_ellipse_coords(a=major,
+                               b=minor,
+                               x=minor,
+                               y=5,
+                               angle=0,
+                               k=100)
+    # obtain the centroid (corresponds to pos_x and pos_lat)
+    cx, cy = centroid_of_polygon(ellip)
+    volume = get_volume(cont=[ellip],
+                        pos_x=[cx],
+                        pos_y=[cy],
+                        pix=1)
+
+    # Analytic solution for volume of ellipsoid:
+    v = 4 / 3 * np.pi * major * minor**2
+    msg = "Calculation of volume is faulty!"
+    assert np.allclose(np.array(volume), np.array(v)), msg
+
+
 def test_orientation():
     """counter-clockwise vs clockwise"""
     # Helper definitions to get an ellipse
@@ -104,31 +127,6 @@ def test_orientation():
                     pix=1)
 
     assert np.all(v1 == v2)
-
-
-def test_get_volume():
-    # Helper definitions to get an ellipse
-    major = 10
-    minor = 5
-    ellip = get_ellipse_coords(a=major,
-                               b=minor,
-                               x=minor,
-                               y=5,
-                               angle=0,
-                               k=100)
-    # obtain the centroid (corresponds to pos_x and pos_lat)
-    cx, cy = centroid_of_polygon(ellip)
-    elliplist = []
-    elliplist.append(ellip)
-    volume = get_volume(cont=elliplist,
-                        pos_x=[cx],
-                        pos_y=[cy],
-                        pix=1)
-
-    # Analytic solution for volume of ellipsoid:
-    V = 4 / 3 * np.pi * major * minor**2
-    msg = "Calculation of volume is faulty!"
-    assert np.allclose(np.array(volume), np.array(V)), msg
 
 
 def test_shape():

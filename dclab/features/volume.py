@@ -102,8 +102,8 @@ def get_volume(cont, pos_x, pos_y, pix):
             contour_y_low = np.hstack([contour_y_low, contour_y_low[0]])
             contour_y_upp = np.hstack([contour_y_upp, contour_y_upp[0]])
 
-            vol_low = _vol_helper(contour_y_low, z_vec, pix)
-            vol_upp = _vol_helper(contour_y_upp, z_vec, pix)
+            vol_low = vol_revolve(contour_y_low, z_vec, pix)
+            vol_upp = vol_revolve(contour_y_upp, z_vec, pix)
 
             v_avg[ii] = (vol_low + vol_upp) / 2
 
@@ -137,13 +137,75 @@ def counter_clockwise(cx, cy):
         return cx, cy
 
 
-def _vol_helper(contour_y, z_vec, pix):
+def vol_revolve(r, z, point_scale=1):
+    """Calculate the volume of a polygon revolved around the Z-axis
+
+    Implementation of the volRevolve function (2012-05-03) by Geoff Olynyk
+    https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve
+
+    Parameters
+    ----------
+    r: 1d np.ndarray
+        coordinate perpendicular to the axis of rotation
+    z: 1d np.ndarray
+        coordinate along the axis of rotation
+    point_scale: float
+        point size in your preferred units (not part of the original
+        function); The volume is multiplied by a factor of
+        `point_scale**3`.
+
+    Notes
+    -----
+    - R and Z vectors must be in order, counter-clockwise around the area
+      being defined. If not, this will give the volume of the
+      counter-clockwise parts, minus the volume of the clockwise parts.
+
+    - It does not matter if the curve is open or closed - if it is open
+      (last point doesn't overlap first point), this function will
+      automatically close it.
+
+    - Based on Advanced Mathematics and Mechanics Applications with MATLAB,
+      3rd ed., by H.B. Wilson, L.H. Turcotte, and D. Halpern,
+      Chapman & Hall / CRC Press, 2002, e-ISBN 978-1-4200-3544-5.
+      See Chapter 5, Section 5.4, doi: 10.1201/9781420035445.ch5
+    """
+    # Copyright (c) 2012, Geoff Olynyk
+    # All rights reserved.
+    #
+    # Redistribution and use in source and binary forms, with or without
+    # modification, are permitted provided that the following conditions are
+    # met:
+    #
+    # * Redistributions of source code must retain the above copyright notice,
+    #   this list of conditions and the following disclaimer.
+    #
+    # * Redistributions in binary form must reproduce the above copyright
+    #   notice, this list of conditions and the following disclaimer in the
+    #   documentation and/or other materials provided with the distribution
+    #
+    # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+    # TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+    # PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    # OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    # SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+    # TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+    # OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+    # OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    # sanity checks
+    assert len(r) == len(z)
+    assert len(r) >= 3
+    assert len(r.shape) == len(z.shape) == 1
+
     # Instead of x and y, describe the contour by a Radius vector r_vec and y
     # The Contour will be rotated around the x-axis. Therefore it is
     # Important that the Contour has been shifted onto the x-Axis
-    z_vec_m1 = z_vec[:-1]
-    d_z = z_vec[1:] - z_vec_m1
-    r_vec = np.sqrt(z_vec**2 + contour_y**2)
+    z_vec_m1 = z[:-1]
+    d_z = z[1:] - z_vec_m1
+    r_vec = np.sqrt(z ** 2 + r ** 2)
     rvec_m1 = r_vec[:-1]
     d_r = r_vec[1:] - rvec_m1
     # 4 volume parts
@@ -153,5 +215,5 @@ def _vol_helper(contour_y, z_vec, pix):
     v4 = -2 * d_r * rvec_m1 * z_vec_m1
 
     v_vec = (np.pi/3) * (v1 + v2 + v3 + v4)
-    vol = np.sum(v_vec) * pix**3
+    vol = np.sum(v_vec) * point_scale ** 3
     return abs(vol)

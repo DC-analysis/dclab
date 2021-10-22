@@ -215,6 +215,10 @@ image-based
 
 .. autofunction:: dclab.features.volume.get_volume
 
+.. autofunction:: dclab.features.volume.counter_clockwise
+
+.. autofunction:: dclab.features.volume.vol_revolve
+
 
 emodulus
 ........

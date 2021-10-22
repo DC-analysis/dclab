@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def get_volume(cont, pos_x, pos_y, pix):
+def get_volume(cont, pos_x, pos_y, pix, fix_orientation=False):
     """Calculate the volume of a polygon revolved around an axis
 
     The volume estimation assumes rotational symmetry.
@@ -23,6 +23,14 @@ def get_volume(cont, pos_x, pos_y, pix):
     pix: float
         The detector pixel size in µm.
         e.g. obtained using: `mm.config["imaging"]["pixel size"]`
+    fix_orientation: bool
+        If set to True, make sure that the orientation of the
+        contour is counter-clockwise in the r-z plane
+        (see :func:`vol_revolve`). This is False by default, because
+        (1) Shape-In always stores the contours in the correct
+        orientation and (2) there may be events with high porosity
+        where "fixing" the orientation makes things worse and a
+        negative volume is returned.
 
     Returns
     -------
@@ -82,8 +90,9 @@ def get_volume(cont, pos_x, pos_y, pix):
             # we need the axis vertically)
             contour_r = contour_y
             contour_z = contour_x
-            # Make sure the contour is counter-clockwise
-            contour_r, contour_z = counter_clockwise(contour_r, contour_z)
+            if fix_orientation:
+                # Make sure the contour is counter-clockwise
+                contour_r, contour_z = counter_clockwise(contour_r, contour_z)
 
             # Compute right volume
             # Which points are at negative r-values (r<0)?

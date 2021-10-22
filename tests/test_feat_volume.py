@@ -96,7 +96,8 @@ def test_get_volume():
     volume = get_volume(cont=[ellip],
                         pos_x=[cx],
                         pos_y=[cy],
-                        pix=1)
+                        pix=1,
+                        fix_orientation=True)
 
     # Analytic solution for volume of ellipsoid:
     v = 4 / 3 * np.pi * major * minor**2
@@ -121,13 +122,15 @@ def test_orientation():
     v1 = get_volume(cont=ellip,
                     pos_x=cx,
                     pos_y=cy,
-                    pix=1)
+                    pix=1,
+                    fix_orientation=True)
 
     # Turn contour around
     v2 = get_volume(cont=ellip[::-1, :],
                     pos_x=cx,
                     pos_y=cy,
-                    pix=1)
+                    pix=1,
+                    fix_orientation=True)
 
     assert np.all(v1 == v2)
 

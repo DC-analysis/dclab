@@ -1,5 +1,4 @@
-"""Computation of volume for RT-DC measurements based on a rotation
-of the contours"""
+"""Volume computation based on contour revolution"""
 import numpy as np
 
 
@@ -7,8 +6,6 @@ def get_volume(cont, pos_x, pos_y, pix):
     """Calculate the volume of a polygon revolved around an axis
 
     The volume estimation assumes rotational symmetry.
-    Green`s theorem and the Gaussian divergence theorem allow to
-    formulate the volume as a line integral.
 
     Parameters
     ----------
@@ -47,10 +44,9 @@ def get_volume(cont, pos_x, pos_y, pix):
 
     References
     ----------
-    - Halpern et al. :cite:`Halpern2002`, chapter 5, Section 5.4
-    - This is a translation from a `Matlab script
+    - https://de.wikipedia.org/wiki/Kegelstumpf#Formeln
+    - Yields identical results to the Matlab script by Geoff Olynyk
       <http://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve>`_
-      by Geoff Olynyk.
     """
     if np.isscalar(pos_x):
         cont = [cont]
@@ -81,31 +77,37 @@ def get_volume(cont, pos_x, pos_y, pix):
             # Center contour coordinates with given centroid
             contour_x = cc[:, 0] - pos_x[ii] / pix
             contour_y = cc[:, 1] - pos_y[ii] / pix
-            # Make sure contour is counter-clockwise
-            contour_x, contour_y = counter_clockwise(contour_x, contour_y)
-            # Which points are below the x-axis? (y<0)?
-            ind_low = np.where(contour_y < 0)
-            # These points will be shifted up to y=0 to build an x-axis
-            # (wont contribute to lower volume).
-            contour_y_low = np.copy(contour_y)
-            contour_y_low[ind_low] = 0
-            # Which points are above the x-axis? (y>0)?
-            ind_upp = np.where(contour_y > 0)
+            # Switch to r and z to follow notation of vol_revolve
+            # (In RT-DC the axis of rotation is x, but for vol_revolve
+            # we need the axis vertically)
+            contour_r = contour_y
+            contour_z = contour_x
+            # Make sure the contour is counter-clockwise
+            contour_r, contour_z = counter_clockwise(contour_r, contour_z)
+
+            # Compute right volume
+            # Which points are at negative r-values (r<0)?
+            inx_neg = np.where(contour_r < 0)
+            # These points will be shifted up to r=0 directly on the z-axis
+            contour_right = np.copy(contour_r)
+            contour_right[inx_neg] = 0
+            vol_right = vol_revolve(contour_right, contour_x, pix)
+
+            # Compute left volume
+            # Which points are at positive r-values? (r>0)?
+            idx_pos = np.where(contour_r > 0)
             # These points will be shifted down to y=0 to build an x-axis
-            # (wont contribute to upper volume).
-            contour_y_upp = np.copy(contour_y)
-            contour_y_upp[ind_upp] = 0
-            # Last point of the contour has to overlap with the first point
-            z_vec = np.hstack([contour_x, contour_x[0]])
+            contour_left = np.copy(contour_r)
+            contour_left[idx_pos] = 0
+            # Now we still have negative r values, but vol_revolve needs
+            # positive values, so we flip the sign...
+            contour_left[:] *= -1
+            # ... but in doing so, we have switched to clockwise rotation
+            # and we need to pass the array in reverse order
+            vol_left = vol_revolve(contour_left[::-1], contour_x[::-1], pix)
 
-            # Last point of the contour has to overlap with the first point
-            contour_y_low = np.hstack([contour_y_low, contour_y_low[0]])
-            contour_y_upp = np.hstack([contour_y_upp, contour_y_upp[0]])
-
-            vol_low = vol_revolve_xz(contour_y_low, z_vec, pix)
-            vol_upp = vol_revolve_xz(contour_y_upp, z_vec, pix)
-
-            v_avg[ii] = (vol_low + vol_upp) / 2
+            # Compute the average
+            v_avg[ii] = (vol_right + vol_left) / 2
 
     if not ret_list:
         # Do not return a list if the input contour was not in a list
@@ -127,85 +129,58 @@ def counter_clockwise(cx, cy):
     cx_cc, cy_cc:
         The x- and y-coordinates of the contour in
         counter-clockwise orientation.
+
+    Notes
+    -----
+    The contour must be centered around (0, 0).
     """
     # test orientation
     angles = np.unwrap(np.arctan2(cy, cx))
-    grad = np.gradient(angles)
-    if np.average(grad) > 0:
+    grad = np.diff(angles)
+    if np.average(grad) < 0:
         return cx[::-1], cy[::-1]
     else:
         return cx, cy
 
 
-def vol_revolve_xz(x, z, point_scale=1.):
-    """Wrapper for `vol_revolve` that accepts coordinates in x-z format"""
-    r = np.sqrt(x**2 + z**2)
-    return vol_revolve(r=r, z=z, point_scale=point_scale)
-
-
 def vol_revolve(r, z, point_scale=1.):
-    """Calculate the volume of a polygon revolved around the Z-axis
+    r"""Calculate the volume of a polygon revolved around the Z-axis
 
-    This function calculates the volume of a polygon revolved around the
-    Z-axis. Call using ``vol = vol_revolve(r,z)``, where ``r`` and ``z``
-    are one-dimensional vectors tracing out a polygon (in the X-Z plane)
-    and the output ``vol`` is the volume of the solid of revolution, in
-    the same units as the inputs (cubed).
-
-    Implementation of the volRevolve function (2012-05-03) by Geoff Olynyk
+    This implementation yields the same results as the volRevolve
+    Matlab function by Geoff Olynyk (from 2012-05-03)
     https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve
 
-    Copyright (c) 2012, Geoff Olynyk
-    All rights reserved.
+    The difference here is that the volume is computed using (a much
+    more approachable) implementation using the volume of a truncated
+    cone (https://de.wikipedia.org/wiki/Kegelstumpf).
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are
-    met:
+    .. math::
 
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
+      V = \frac{h \cdot \pi}{3} \cdot (R^2 + R \cdot r + r^2)
 
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution
+    where :math:`h` is the height of the cone and :math:`r` and
+    `R` are the smaller and larger radii of the truncated cone.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-    TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-    OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-    OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    Each line segment of the contour resembles one truncated cone. If
+    the z-step is positive (counter-clockwise contour), then the
+    truncated cone volume is added to the total volume. If the z-step
+    is negative (e.g. inclusion), then the truncated cone volume is
+    removed from the total volume.
 
     Parameters
     ----------
     r: 1d np.ndarray
-        radial coordinate in the x-z plane
+        radial coordinates (perpendicular to the z axis)
     z: 1d np.ndarray
         coordinate along the axis of rotation
     point_scale: float
-        point size in your preferred units (not part of the original
-        function); The volume is multiplied by a factor of
-        `point_scale**3`.
+        point size in your preferred units; The volume is multiplied
+        by a factor of `point_scale**3`.
 
     Notes
     -----
-    - R and Z vectors must be in order, counter-clockwise around the area
-      being defined. If not, this will give the volume of the
-      counter-clockwise parts, minus the volume of the clockwise parts.
-
-    - It does not matter if the curve is open or closed - if it is open
-      (last point doesn't overlap first point), this function will
-      automatically close it.
-
-    - Based on Advanced Mathematics and Mechanics Applications with MATLAB,
-      3rd ed., by H.B. Wilson, L.H. Turcotte, and D. Halpern,
-      Chapman & Hall / CRC Press, 2002, e-ISBN 978-1-4200-3544-5.
-      See Chapter 5, Section 5.4, doi: 10.1201/9781420035445.ch5
+    The coordinates must be given in counter-clockwise order,
+    otherwise the volume will be negative.
     """
     r = np.asarray(r, dtype=float).flatten()
     z = np.asarray(z, dtype=float).flatten()
@@ -214,42 +189,42 @@ def vol_revolve(r, z, point_scale=1.):
     assert len(r) == len(z)
     assert len(r) >= 3
     assert len(r.shape) == len(z.shape) == 1
+    assert np.all(r >= 0)
 
-    # Check if last point overlaps first point; if it doesn't, add another
-    # point that does overlap the first point. (Note that we have to compare
-    # using a tolerance because these are floating-point values):
-    tol = 1.e-5
-    # We compare relative differences (as opposed to the original script)
-    if (np.abs(r[-1] - r[0]) > (tol * np.max(r))
-            or np.abs(z[-1] - z[0]) > (tol * np.max(z))):
-        # close the open contour
+    # make sure we have a closed contour
+    if (r[-1] != r[0]) or (z[-1] != z[0]):
+        # We have an open contour - close it.
         r.resize((len(r) + 1,))
         r[-1] = r[0]
         z.resize((len(z) + 1,))
         z[-1] = z[0]
 
-    # Now, from the Wilson, Turcotte, and Halpern book, we note that if we have
-    # a closed curve defined by R(s), Z(s), 0 <= s <= 1, then the volume of the
-    # solid formed by revolving that curve around the Z axis is:
-    #
-    #   V = (2pi/3) * int( R(s) * [R(s)Z'(s) - Z(s)R'(s)] ds, s = 0..1)
-    #
-    # where R'(s) = dR/ds;  Z'(s) = dZ/ds. Since the boundary of our polygon is
-    # piecewise linear, these R'(s) and Z'(s) are constant on each line
-    # segment, and can be pre-calculated quickly. Note that the s values are
-    # equally spaced on each point. So, for example, if there are four line
-    # segments, the s values at points 1, 2, 3, 4, 5 are 0.00, 0.25, 0.50,
-    # 0.75, 1.00 respectively. (Note point 5 is on top of point 1.)
     rp = r[:-1]
-    zp = z[:-1]
 
-    dr = r[1:] - rp
-    dz = z[1:] - zp
+    # array of radii differences: R - r
+    dr = np.diff(r)
+    # array of height differences: h
+    dz = np.diff(z)
 
-    v1 = dr * dz * rp
-    v2 = 2 * dz * rp**2
-    v3 = -1 * dr**2 * zp
-    v4 = -2 * dr * rp * zp
+    # If we expand the function in the doc string with
+    # dr = R - r and dz = h, then we get three terms for the volume
+    # (as opposed to four terms in Olynyk's script). Those three terms
+    # all resemble area slices multiplied by the z-distance dz.
+    a1 = 3 * rp**2
+    a2 = 3 * rp*dr
+    a3 = dr**2
 
-    v = np.pi / 3 * (v1 + v2 + v3 + v4)
-    return np.sum(v) * point_scale ** 3
+    # Note that the formula for computing the volume is symmetric
+    # with respect to r and R. This means that it does not matter
+    # which sign dr has (R and r are always positive). Since this
+    # algorithm assumes that the contour is ordered counter-clockwise,
+    # positive dz means adding to the contour while negative dz means
+    # subtracting from the contour (see test functions for more details).
+    # Conveniently so, dz only appears one time in this formula, so
+    # we can take the sign of dz as it is (Otherwise, we would have
+    # to take the absolute value of every truncated cone volume and
+    # multiply it by np.sign(dz)).
+    v = np.pi / 3 * dz * np.abs(a1 + a2 + a3)
+    vol = np.sum(v) * point_scale ** 3
+
+    return vol

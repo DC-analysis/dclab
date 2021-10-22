@@ -77,8 +77,8 @@ def test_af_volume():
     vol = ds["volume"]
     # There are a lot of nans, because the contour is not given everywhere
     vol = vol[~np.isnan(vol)]
-    assert np.allclose(vol[0], 574.60368907528346)
-    assert np.allclose(vol[12], 1010.5669523203878)
+    assert np.allclose(vol[0], 571.0512910465295)
+    assert np.allclose(vol[12], 1008.5405681260276)
 
 
 def test_get_volume():

@@ -102,8 +102,8 @@ def get_volume(cont, pos_x, pos_y, pix):
             contour_y_low = np.hstack([contour_y_low, contour_y_low[0]])
             contour_y_upp = np.hstack([contour_y_upp, contour_y_upp[0]])
 
-            vol_low = vol_revolve(contour_y_low, z_vec, pix)
-            vol_upp = vol_revolve(contour_y_upp, z_vec, pix)
+            vol_low = vol_revolve_xz(contour_y_low, z_vec, pix)
+            vol_upp = vol_revolve_xz(contour_y_upp, z_vec, pix)
 
             v_avg[ii] = (vol_low + vol_upp) / 2
 
@@ -137,8 +137,20 @@ def counter_clockwise(cx, cy):
         return cx, cy
 
 
-def vol_revolve(r, z, point_scale=1):
+def vol_revolve_xz(x, z, point_scale=1.):
+    """Wrapper for `vol_revolve` that accepts coordinates in x-z format"""
+    r = np.sqrt(x**2 + z**2)
+    return vol_revolve(r=r, z=z, point_scale=point_scale)
+
+
+def vol_revolve(r, z, point_scale=1.):
     """Calculate the volume of a polygon revolved around the Z-axis
+
+    This function calculates the volume of a polygon revolved around the
+    Z-axis. Call using ``vol = vol_revolve(r,z)``, where ``r`` and ``z``
+    are one-dimensional vectors tracing out a polygon (in the X-Z plane)
+    and the output ``vol`` is the volume of the solid of revolution, in
+    the same units as the inputs (cubed).
 
     Implementation of the volRevolve function (2012-05-03) by Geoff Olynyk
     https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve
@@ -172,7 +184,7 @@ def vol_revolve(r, z, point_scale=1):
     Parameters
     ----------
     r: 1d np.ndarray
-        coordinate perpendicular to the axis of rotation
+        radial coordinate in the x-z plane
     z: 1d np.ndarray
         coordinate along the axis of rotation
     point_scale: float
@@ -195,25 +207,49 @@ def vol_revolve(r, z, point_scale=1):
       Chapman & Hall / CRC Press, 2002, e-ISBN 978-1-4200-3544-5.
       See Chapter 5, Section 5.4, doi: 10.1201/9781420035445.ch5
     """
+    r = np.asarray(r, dtype=float).flatten()
+    z = np.asarray(z, dtype=float).flatten()
+
     # sanity checks
     assert len(r) == len(z)
     assert len(r) >= 3
     assert len(r.shape) == len(z.shape) == 1
 
-    # Instead of x and y, describe the contour by a Radius vector r_vec and y
-    # The Contour will be rotated around the x-axis. Therefore it is
-    # Important that the Contour has been shifted onto the x-Axis
-    z_vec_m1 = z[:-1]
-    d_z = z[1:] - z_vec_m1
-    r_vec = np.sqrt(z ** 2 + r ** 2)
-    rvec_m1 = r_vec[:-1]
-    d_r = r_vec[1:] - rvec_m1
-    # 4 volume parts
-    v1 = d_r * d_z * rvec_m1
-    v2 = 2 * d_z * rvec_m1**2
-    v3 = -1 * d_r**2 * d_z
-    v4 = -2 * d_r * rvec_m1 * z_vec_m1
+    # Check if last point overlaps first point; if it doesn't, add another
+    # point that does overlap the first point. (Note that we have to compare
+    # using a tolerance because these are floating-point values):
+    tol = 1.e-5
+    # We compare relative differences (as opposed to the original script)
+    if (np.abs(r[-1] - r[0]) > (tol * np.max(r))
+            or np.abs(z[-1] - z[0]) > (tol * np.max(z))):
+        # close the open contour
+        r.resize((len(r) + 1,))
+        r[-1] = r[0]
+        z.resize((len(z) + 1,))
+        z[-1] = z[0]
 
-    v_vec = (np.pi/3) * (v1 + v2 + v3 + v4)
-    vol = np.sum(v_vec) * point_scale ** 3
-    return abs(vol)
+    # Now, from the Wilson, Turcotte, and Halpern book, we note that if we have
+    # a closed curve defined by R(s), Z(s), 0 <= s <= 1, then the volume of the
+    # solid formed by revolving that curve around the Z axis is:
+    #
+    #   V = (2pi/3) * int( R(s) * [R(s)Z'(s) - Z(s)R'(s)] ds, s = 0..1)
+    #
+    # where R'(s) = dR/ds;  Z'(s) = dZ/ds. Since the boundary of our polygon is
+    # piecewise linear, these R'(s) and Z'(s) are constant on each line
+    # segment, and can be pre-calculated quickly. Note that the s values are
+    # equally spaced on each point. So, for example, if there are four line
+    # segments, the s values at points 1, 2, 3, 4, 5 are 0.00, 0.25, 0.50,
+    # 0.75, 1.00 respectively. (Note point 5 is on top of point 1.)
+    rp = r[:-1]
+    zp = z[:-1]
+
+    dr = r[1:] - rp
+    dz = z[1:] - zp
+
+    v1 = dr * dz * rp
+    v2 = 2 * dz * rp**2
+    v3 = -1 * dr**2 * zp
+    v4 = -2 * dr * rp * zp
+
+    v = np.pi / 3 * (v1 + v2 + v3 + v4)
+    return np.sum(v) * point_scale ** 3

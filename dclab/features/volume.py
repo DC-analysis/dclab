@@ -157,7 +157,7 @@ def vol_revolve(r, z, point_scale=1.):
 
     This implementation yields the same results as the volRevolve
     Matlab function by Geoff Olynyk (from 2012-05-03)
-    https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve
+    https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve.
 
     The difference here is that the volume is computed using (a much
     more approachable) implementation using the volume of a truncated
@@ -167,7 +167,7 @@ def vol_revolve(r, z, point_scale=1.):
 
       V = \frac{h \cdot \pi}{3} \cdot (R^2 + R \cdot r + r^2)
 
-    where :math:`h` is the height of the cone and :math:`r` and
+    Where :math:`h` is the height of the cone and :math:`r` and
     `R` are the smaller and larger radii of the truncated cone.
 
     Each line segment of the contour resembles one truncated cone. If
@@ -175,6 +175,11 @@ def vol_revolve(r, z, point_scale=1.):
     truncated cone volume is added to the total volume. If the z-step
     is negative (e.g. inclusion), then the truncated cone volume is
     removed from the total volume.
+
+    .. versionchanged:: 0.37.0
+
+      The volume in previous versions was overestimated by on average
+      2µm³.
 
     Parameters
     ----------

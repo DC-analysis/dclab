@@ -1,3 +1,7 @@
+0.37.0
+ - BREAKING CHANGE: The volume feature in all previous versions was
+   overestimated by about 2µm³. Please re-run your analysis pipeline.
+ - fix: volume was computed incorrectly (#141)
 0.36.1
  - setup: bump h5py version to 3.0 (issue with integer chunk argument)
 0.36.0

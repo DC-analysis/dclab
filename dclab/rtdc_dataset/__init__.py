@@ -1,7 +1,7 @@
 # flake8: noqa: F401
 from ..util import hashfile
 
-from .check import check_dataset
+from .check import IntegrityChecker, check_dataset
 from .config import Configuration
 from .core import RTDCBase
 from .fmt_dcor import RTDC_DCOR

@@ -12,7 +12,7 @@ from . import lme4
 from . import ml
 from .polygon_filter import PolygonFilter
 from . import rtdc_dataset
-from .rtdc_dataset import new_dataset, RTDCWriter
+from .rtdc_dataset import new_dataset, IntegrityChecker, RTDCWriter
 from .rtdc_dataset.feat_temp import (
     register_temporary_feature, set_temporary_feature)
 from .rtdc_dataset.plugins.plugin_feature import (

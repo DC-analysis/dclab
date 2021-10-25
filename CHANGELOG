@@ -1,3 +1,5 @@
+0.37.1
+ - enh: make IntegrityChecker class availabl on top module level
 0.37.0
  - BREAKING CHANGE: The volume feature in all previous versions was
    overestimated by about 2µm³. Please re-run your analysis pipeline.

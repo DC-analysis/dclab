@@ -1,3 +1,6 @@
+0.37.2
+ - enh: speed-up contour computation by a factor of three
+   (volume is computed by factor of two faster)
 0.37.1
  - enh: make IntegrityChecker class available on top level module
 0.37.0

@@ -119,10 +119,8 @@ def get_contour_lazily(mask):
 
 
 def remove_duplicates(cont):
-    out = []
-    for ii in range(len(cont)):
-        if np.all(cont[ii] == cont[ii - 1]):
-            pass
-        else:
-            out.append(cont[ii])
-    return np.array(out)
+    """Remove duplicates in a circular contour"""
+    x = np.resize(cont, (len(cont) + 1, 2))
+    selection = np.ones(len(x), dtype=bool)
+    selection[1:] = ~np.prod((x[1:] == x[:-1]), axis=1, dtype=bool)
+    return x[selection][:-1]

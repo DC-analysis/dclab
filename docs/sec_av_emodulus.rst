@@ -125,9 +125,9 @@ A) The viscosity/Young's modulus is computed individually from the chip
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus medium'
 
-B) Set a global viscosity. Use this if you have measured the viscosity
-   of your medium (and know all there is to know about shear thinning
-   :cite:`Herold2017`). Required information:
+B) Set a global viscosity in [mPa·s]. Use this if you have measured the
+   viscosity of your medium (and know all there is to know about shear
+   thinning :cite:`Herold2017`). Required information:
 
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus viscosity'

@@ -37,7 +37,7 @@ class PolygonFilter(object):
         name: str
             A name for the polygon (optional).
         filename : str
-            A path to a .poly file as create by this classes' `save`
+            A path to a .poly file as created by this classes' `save`
             method. If `filename` is given, all other parameters are
             ignored.
         fileid: int

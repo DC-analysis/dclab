@@ -73,6 +73,11 @@ def get_contour(mask):
     contours = []
 
     for mi in mask:
+        # This is only 10% slower than doing:
+        # conts, _ = cv2.findContours(np.array(mi, dtype=np.uint8),
+        #                             cv2.RETR_EXTERNAL,
+        #                             cv2.CHAIN_APPROX_NONE)
+        # c2 = conts[0].reshape(-1, 2)
         conts = find_contours(mi.transpose(),
                               level=.9999,
                               positive_orientation="low",

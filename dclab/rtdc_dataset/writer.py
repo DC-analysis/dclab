@@ -313,7 +313,7 @@ class RTDCWriter:
             data = data.reshape(1, data.shape[0], data.shape[1])
 
         # convert binary data (mask) to uint8
-        if data.dtype == np.bool:
+        if data.dtype == bool:
             data = np.asarray(data, dtype=np.uint8) * 255
 
         dset = self.write_ndarray(group=group, name=name, data=data)

@@ -5,6 +5,7 @@ import h5py
 import numpy as np
 import pytest
 
+import dclab
 from dclab import new_dataset, rtdc_dataset
 from dclab.rtdc_dataset import config
 
@@ -68,6 +69,44 @@ def test_defective_feature_aspect():
     # verify original value of aspect
     with new_dataset(h5path) as ds2:
         assert np.allclose(ds2["aspect"][0], aspect0)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_defective_feature_volume():
+    # see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/241
+    h5path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+
+    with h5py.File(h5path, "r") as h5:
+        # This volume was computed with an old version of dclab
+        wrong_volume = h5["events/volume"][:]
+
+    with new_dataset(h5path) as ds:
+        assert "volume" not in ds.features_innate
+        correct_volume = ds["volume"]
+        assert not np.allclose(wrong_volume, correct_volume)
+
+    # prevent recomputation via logs
+    with dclab.RTDCWriter(h5path) as hw:
+        hw.store_log("dclab_issue_141", ["fixed"])
+    with new_dataset(h5path) as ds2:
+        assert np.allclose(ds2["volume"], wrong_volume)
+
+    # remove the log
+    with h5py.File(h5path, "a") as h5:
+        del h5["logs/dclab_issue_141"]
+
+    # make sure that worked
+    with new_dataset(h5path) as ds:
+        assert "volume" not in ds.features_innate
+        correct_volume = ds["volume"]
+        assert not np.allclose(wrong_volume, correct_volume)
+
+    # prevent recomputation via dclab version string
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:software version"] = "ShapeIn 2.0.6 | dclab 0.37.0"
+    with new_dataset(h5path) as ds2:
+        assert np.allclose(ds2["volume"], wrong_volume)
 
 
 @pytest.mark.filterwarnings(

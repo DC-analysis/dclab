@@ -14,22 +14,6 @@ from .config import Configuration
 from .core import RTDCBase
 
 
-#: rtdc files exported with dclab prior to this version are not supported
-MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
-
-#: dictionary of defective features, defined by HDF5 attributes;
-#: if a value matches the given HDF5 attribute, the feature is
-#: considered defective
-DEFECTIVE_FEATURES = {
-    # feature: [HDF5_attribute, matching_value]
-    # In Shape-In 2.0.6, there was a wrong variable cast for the
-    # feature "aspect".
-    "aspect": [["setup:software version", "ShapeIn 2.0.6"],
-               ["setup:software version", "ShapeIn 2.0.7"],
-               ]
-}
-
-
 class OldFormatNotSupportedError(BaseException):
     pass
 
@@ -95,18 +79,13 @@ class H5Events(object):
         for key in self.keys():
             yield key
 
-    def _is_defective_feature(self, key):
+    def _is_defective_feature(self, feat):
         """Whether or not the stored feature is defective"""
         defective = False
-        if key in self._features:
+        if feat in DEFECTIVE_FEATURES and feat in self._features:
             # feature exists in the HDF5 file
-            if key in DEFECTIVE_FEATURES:
-                # workaround machinery for sorting out defective features
-                for attr, value in DEFECTIVE_FEATURES[key]:
-                    if attr in self._h5.attrs:
-                        defective = self._h5.attrs[attr] == value
-                    if defective:
-                        break
+            # workaround machinery for sorting out defective features
+            defective = DEFECTIVE_FEATURES[feat](self._h5)
         return defective
 
     def keys(self):
@@ -290,3 +269,42 @@ class RTDC_HDF5(RTDCBase):
                       hashfile(self.path, blocksize=65536, count=20)]
             self._hash = hashobj(tohash)
         return self._hash
+
+
+def is_defective_feature_aspect(h5):
+    """In Shape-In 2.0.6, there was a wrong variable cast"""
+    software_version = h5.attrs["setup:software version"]
+    if isinstance(software_version, bytes):
+        software_version = software_version.decode("utf-8")
+    return software_version in ["ShapeIn 2.0.6", "ShapeIn 2.0.7"]
+
+
+def is_defective_feature_volume(h5):
+    """dclab computed volume wrong up until version 0.36.1"""
+    # first check if the scripted fix was applied
+    if "dclab_issue_141" in list(h5.get("logs", {}).keys()):
+        return False
+    # if that does not apply, check the software version
+    software_version = h5.attrs["setup:software version"]
+    if isinstance(software_version, bytes):
+        software_version = software_version.decode("utf-8")
+    if software_version:
+        last_version = software_version.split("|")[-1].strip()
+        if last_version.startswith("dclab"):
+            dclab_version = last_version.split()[1]
+            if LooseVersion(dclab_version) < LooseVersion("0.37.0"):
+                return True
+    return False
+
+
+#: rtdc files exported with dclab prior to this version are not supported
+MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
+
+#: dictionary of defective features, defined by HDF5 attributes;
+#: if a value matches the given HDF5 attribute, the feature is
+#: considered defective
+DEFECTIVE_FEATURES = {
+    # feature: [HDF5_attribute, matching_value]
+    "aspect": is_defective_feature_aspect,
+    "volume": is_defective_feature_volume,
+}

@@ -87,8 +87,10 @@ def test_defective_feature_volume():
         assert not np.allclose(wrong_volume, correct_volume)
 
     # prevent recomputation via logs
-    with dclab.RTDCWriter(h5path) as hw:
-        hw.store_log("dclab_issue_141", ["fixed"])
+    # (do not use context manager here [sic])
+    hw = dclab.RTDCWriter(h5path)
+    hw.store_log("dclab_issue_141", ["fixed"])
+    hw.h5file.close()
     with new_dataset(h5path) as ds2:
         assert np.allclose(ds2["volume"], wrong_volume)
 
@@ -106,6 +108,21 @@ def test_defective_feature_volume():
     with h5py.File(h5path, "a") as h5:
         h5.attrs["setup:software version"] = "ShapeIn 2.0.6 | dclab 0.37.0"
     with new_dataset(h5path) as ds2:
+        assert "volume" in ds2.features_innate
+        assert np.allclose(ds2["volume"], wrong_volume)
+
+    # reset version string
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:software version"] = "ShapeIn 2.0.6 | dclab 0.35.1"
+    with new_dataset(h5path) as ds2:
+        assert "volume" not in ds2.features_innate
+        assert np.allclose(ds2["volume"], correct_volume)
+
+    # use context manager to write version number
+    with dclab.RTDCWriter(h5path) as hw:
+        pass
+    with new_dataset(h5path) as ds2:
+        assert "volume" in ds2.features_innate
         assert np.allclose(ds2["volume"], wrong_volume)
 
 

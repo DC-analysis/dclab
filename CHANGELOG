@@ -1,5 +1,7 @@
 0.37.3
  - fix: ignore defective feature "volume" in pre 0.37.0 .rtdc files
+ - fix: always perform version branding when using RTDCWriter context
+   manager
  - ref: silence numpy deprecation warning in RTDCWriter
 0.37.2
  - enh: speed-up contour computation by a factor of three

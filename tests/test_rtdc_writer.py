@@ -7,6 +7,7 @@ import numpy as np
 
 import pytest
 
+import dclab
 from dclab.rtdc_dataset import RTDCWriter, new_dataset
 
 from helper_methods import retrieve_data
@@ -467,6 +468,75 @@ def test_replace_logs():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == 1
+
+
+def test_version_branding_1_write_single_version():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_branding_")
+
+    this_version = f"dclab {dclab.__version__}"
+
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_feature("deform", np.linspace(0.01, 0.02, 10))
+
+    with h5py.File(rtdc_file) as h5:
+        assert h5.attrs["setup:software version"] == this_version
+
+
+def test_version_branding_2_dont_override_initial_version():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_branding_")
+
+    this_version = f"dclab {dclab.__version__}"
+
+    with h5py.File(rtdc_file, "a") as h5:
+        h5.attrs["setup:software version"] = "Shape-In 1.2.3"
+
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_feature("deform", np.linspace(0.01, 0.02, 10))
+
+    expected_version = f"Shape-In 1.2.3 | {this_version}"
+
+    with h5py.File(rtdc_file) as h5:
+        assert h5.attrs["setup:software version"] == expected_version
+
+
+def test_version_branding_3_use_old_version_manual():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_branding_")
+
+    this_version = f"dclab {dclab.__version__}"
+
+    with h5py.File(rtdc_file, "a") as h5:
+        h5.attrs["setup:software version"] = "Shape-In 1.2.3"
+
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_feature("deform", np.linspace(0.01, 0.02, 10))
+        hw.version_brand(old_version="Peter 1.0")
+
+    expected_version = f"Peter 1.0 | {this_version}"
+
+    with h5py.File(rtdc_file) as h5:
+        assert h5.attrs["setup:software version"] == expected_version
+
+
+def test_version_branding_4_dont_write_attribute():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_branding_")
+
+    this_version = f"dclab {dclab.__version__}"
+
+    with h5py.File(rtdc_file, "a") as h5:
+        h5.attrs["setup:software version"] = "Shape-In 1.2.3"
+
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_feature("deform", np.linspace(0.01, 0.02, 10))
+        hw.version_brand(old_version="Peter 1.0", write_attribute=False)
+
+    expected_version = f"Shape-In 1.2.3 | {this_version}"
+
+    with h5py.File(rtdc_file) as h5:
+        assert h5.attrs["setup:software version"] == expected_version
 
 
 if __name__ == "__main__":

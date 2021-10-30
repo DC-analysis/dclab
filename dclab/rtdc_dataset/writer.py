@@ -57,6 +57,7 @@ class RTDCWriter:
         # close the HDF5 file
         if len(self.h5file["events"]):
             self.rectify_metadata()
+        self.version_brand()
         self.h5file.close()
 
     def rectify_metadata(self):
@@ -205,7 +206,7 @@ class RTDCWriter:
         log_group = self.h5file.require_group("logs")
         self.write_text(group=log_group, name=name, lines=lines)
 
-    def store_metadata(self, meta, version_brand=True):
+    def store_metadata(self, meta):
         """Store RT-DC meradata
 
         Parameters
@@ -231,9 +232,6 @@ class RTDCWriter:
             :const:`dclab.definitions.CFG_METADATA` dictionary are
             stored. If you have custom metadata, you can use the "user"
             section.
-        version_brand: bool
-            Whether or not to append a "| dclab X.Y.Z" to the software
-            version string.
         """
         meta = copy.deepcopy(meta)
         # Ignore/remove tdms section
@@ -255,21 +253,13 @@ class RTDCWriter:
                     raise ValueError(
                         f"Meta key not defined in dclab: {sec}:{ck}")
 
-        if version_brand:
-            # update version
-            # - if it is not already in the hdf5 file (prevent override)
-            # - if it is explicitly given in meta (append to old version
-            #   string)
-            if ("setup:software version" not in self.h5file.attrs
-                    or ("setup" in meta and "software version" in meta[
-                        "setup"])):
-                thisver = "dclab {}".format(version)
-                if "setup" in meta and "software version" in meta["setup"]:
-                    oldver = meta["setup"]["software version"]
-                    thisver = f"{oldver} | {thisver}"
-                if "setup" not in meta:
-                    meta["setup"] = {}
-                meta["setup"]["software version"] = thisver
+        # update version
+        old_version = meta.get("setup", {}).get("software version", "")
+        new_version = self.version_brand(
+            old_version=old_version or None,
+            write_attribute=False
+        )
+        meta.setdefault("setup", {})["software version"] = new_version
 
         # Write metadata
         for sec in meta:
@@ -290,6 +280,38 @@ class RTDCWriter:
                     # functions
                     convfunc = dfn.get_config_value_func(sec, ck)
                     self.h5file.attrs[idk] = convfunc(value)
+
+    def version_brand(self, old_version=None, write_attribute=True):
+        """Perform version branding
+
+        Append a " | dclab X.Y.Z" to the "setup:software version"
+        attribute.
+
+        Parameters
+        ----------
+        old_version: str or None
+            By default, the version string is taken from the HDF5 file.
+            If set to a string, then this version is used instead.
+        write_attribute: bool
+            If True (default), write the version string to the
+            "setup:software version" attribute
+        """
+        if old_version is None:
+            old_version = self.h5file.attrs.get("setup:software version", "")
+        version_chain = [vv.strip() for vv in old_version.split("|")]
+        version_chain = [vv for vv in version_chain if vv]
+        cur_version = "dclab {}".format(version)
+
+        if version_chain:
+            if version_chain[-1] != cur_version:
+                version_chain.append(cur_version)
+        else:
+            version_chain = [cur_version]
+        new_version = " | ".join(version_chain)
+        if write_attribute:
+            self.h5file.attrs["setup:software version"] = new_version
+        else:
+            return new_version
 
     def write_image_grayscale(self, group, name, data):
         """Write grayscale image data to and HDF5 dataset

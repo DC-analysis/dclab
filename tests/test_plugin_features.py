@@ -5,11 +5,11 @@ import pytest
 from scipy.ndimage.filters import gaussian_filter
 
 import dclab
-from dclab.rtdc_dataset.plugins.plugin_feature import (
+from dclab.rtdc_dataset.feat_anc_plugin.plugin_feature import (
     PlugInFeature, import_plugin_feature_script,
     remove_plugin_feature, remove_all_plugin_features,
     PluginImportError)
-from dclab.rtdc_dataset.ancillaries.ancillary_feature import (
+from dclab.rtdc_dataset.feat_anc_core.ancillary_feature import (
     BadFeatureSizeWarning)
 
 from helper_methods import retrieve_data

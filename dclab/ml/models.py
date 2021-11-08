@@ -5,7 +5,7 @@ import uuid
 import numpy as np
 
 from .mllibs import tensorflow as tf
-from ..rtdc_dataset.ancillaries import af_ml_score
+from ..rtdc_dataset.feat_anc_core import af_ml_score
 
 
 class BaseModel(abc.ABC):

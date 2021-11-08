@@ -47,9 +47,9 @@ def test_af_brightness_called_once(monkeypatch):
     @calltracker
     def wrap_get_bright(*args, **kwargs):
         return old_get_bright(*args, **kwargs)
-    # Monkeypatch the imported function used in the ancillaries submodule,
+    # Monkeypatch the imported function used in the feat_anc_core submodule,
     # otherwise (dclab.features.bright.get_bright) it is not called.
-    monkeypatch.setattr("dclab.rtdc_dataset.ancillaries.af_image_contour"
+    monkeypatch.setattr("dclab.rtdc_dataset.feat_anc_core.af_image_contour"
                         ".features.bright.get_bright",
                         wrap_get_bright)
 

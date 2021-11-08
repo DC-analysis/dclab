@@ -15,7 +15,7 @@ from . import rtdc_dataset
 from .rtdc_dataset import new_dataset, IntegrityChecker, RTDCWriter
 from .rtdc_dataset.feat_temp import (
     register_temporary_feature, set_temporary_feature)
-from .rtdc_dataset.plugins.plugin_feature import (
+from .rtdc_dataset.feat_anc_plugin.plugin_feature import (
     PlugInFeature, load_plugin_feature)
 from . import statistics
 

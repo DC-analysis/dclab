@@ -9,7 +9,7 @@ import pytest
 
 import dclab
 from dclab.features import emodulus
-from dclab.rtdc_dataset import ancillaries
+from dclab.rtdc_dataset import feat_anc_core
 
 from helper_methods import example_data_dict
 
@@ -42,7 +42,7 @@ def test_af_emodulus_known_media():
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
                        rtol=0, atol=1e-15)
     # ancillary feature priority check
-    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+    for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
         if af.data == "DEPRECATED":
             continue
         if af.method.__name__ == "compute_emodulus_legacy":
@@ -210,7 +210,7 @@ def test_af_emodulus_temp_feat():
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
                        rtol=0, atol=6.5e-14)
     # ancillary feature priority check
-    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+    for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
         if af.data == "DEPRECATED":
             continue
         if af.method.__name__ == "compute_emodulus_legacy":
@@ -298,7 +298,7 @@ def test_af_emodulus_visc_only():
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
                        rtol=0, atol=1e-15)
     # ancillary feature priority check
-    for af in ancillaries.AncillaryFeature.get_instances("emodulus"):
+    for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
         if af.data == "DEPRECATED":
             continue
         if af.method.__name__ == "compute_emodulus_legacy":

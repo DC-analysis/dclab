@@ -1,7 +1,7 @@
 """Naming conventions"""
 import copy
 
-from .rtdc_dataset.ancillaries import AncillaryFeature
+from .rtdc_dataset.feat_anc_core import AncillaryFeature
 from .parse_funcs import (
     f2dfloatarray, fbool, fint, fintlist, func_types, lcstr)
 

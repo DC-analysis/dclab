@@ -4,7 +4,7 @@ import pytest
 
 import dclab
 from dclab.features.fl_crosstalk import correct_crosstalk
-from dclab.rtdc_dataset import ancillaries
+from dclab.rtdc_dataset import feat_anc_core
 
 from helper_methods import retrieve_data
 
@@ -47,7 +47,7 @@ def test_af_fl_crosstalk_3chanvs2chan():
     assert "fl2_max_ctc" in ds
     try:
         ds["fl2_max_ctc"]
-    except ancillaries.af_fl_max_ctc.MissingCrosstalkMatrixElementsError:
+    except feat_anc_core.af_fl_max_ctc.MissingCrosstalkMatrixElementsError:
         pass
     else:
         assert False, "Crosstalk correction from missing data should not work"
@@ -85,7 +85,7 @@ def test_af_fl_crosstalk_priority():
                                 "crosstalk fl21": .05,
                                 }}
     ds.config.update(analysis)
-    av = ancillaries.AncillaryFeature.available_features(ds)
+    av = feat_anc_core.AncillaryFeature.available_features(ds)
     avkeys = list(av.keys())
     assert "fl1_max_ctc" in avkeys
     assert "fl2_max_ctc" in avkeys
@@ -100,7 +100,7 @@ def test_af_fl_crosstalk_priority():
     ds.config.update(analysis)
     # If there are three fl features and the corresponding crosstalk
     # values, then we must always have triple crosstalk correction.
-    av2 = ancillaries.AncillaryFeature.available_features(ds)
+    av2 = feat_anc_core.AncillaryFeature.available_features(ds)
     av2keys = list(av2.keys())
     assert "fl1_max_ctc" in av2keys
     assert "fl2_max_ctc" in av2keys

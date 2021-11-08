@@ -8,7 +8,7 @@ import numpy as np
 from .. import definitions as dfn
 from .._version import version
 
-from .plugins import PlugInFeature
+from .feat_anc_plugin import PlugInFeature
 
 
 #: Chunk size for storing HDF5 data

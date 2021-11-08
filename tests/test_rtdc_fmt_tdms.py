@@ -238,7 +238,7 @@ def test_index_slicing_tdms_fails(feat, idxs):
                             + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_large_fov():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image-large-fov_2017.zip"))
@@ -315,7 +315,7 @@ def test_load_tdms_simple():
                             + 'fmt_tdms.exc.'
                             + 'InitialFrameMissingWarning')
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_mask_basic():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))

@@ -103,7 +103,7 @@ computed in one function:
 
 Here, all possible keys in the `info` dictionaryare shown (but not all are used).
 The keys are additional keyword arguments to the
-:class:`AncillaryFeature <dclab.rtdc_dataset.ancillaries.ancillary_feature.AncillaryFeature>`
+:class:`AncillaryFeature <dclab.rtdc_dataset.feat_anc_core.ancillary_feature.AncillaryFeature>`
 class:
 
 - ``features required`` corresponds to ``req_features``

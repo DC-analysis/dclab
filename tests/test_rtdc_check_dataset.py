@@ -451,7 +451,7 @@ def test_ic_sanity():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 @pytest.mark.skipif(sys.version_info < (3, 6),
                     reason="requires python3.6 or higher")
@@ -469,7 +469,7 @@ def test_invalid_medium():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_load_with():
     pytest.importorskip("nptdms")
@@ -517,7 +517,7 @@ def test_ml_class():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_no_fluorescence():
     pytest.importorskip("nptdms")

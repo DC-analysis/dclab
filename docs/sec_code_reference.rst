@@ -136,7 +136,7 @@ TDMS format
 
 Ancillaries
 -----------
-.. automodule:: dclab.rtdc_dataset.ancillaries.ancillary_feature
+.. automodule:: dclab.rtdc_dataset.feat_anc_core.ancillary_feature
     :members:
     :undoc-members:
 

@@ -7,7 +7,7 @@ import pathlib
 import sys
 
 from ... import definitions as dfn
-from ..ancillaries import AncillaryFeature
+from ..feat_anc_core import AncillaryFeature
 
 
 class PluginImportError(BaseException):
@@ -144,7 +144,7 @@ class PlugInFeature(AncillaryFeature):
         Notes
         -----
         `PluginFeature` inherits from :class:`AncillaryFeature
-        <dclab.rtdc_dataset.ancillaries.ancillary_feature.AncillaryFeature>`.
+        <dclab.rtdc_dataset.feat_anc_core.ancillary_feature.AncillaryFeature>`.
         Please read the advanced section on `PluginFeatures` in the dclab docs.
         """
         if plugin_path is not None:

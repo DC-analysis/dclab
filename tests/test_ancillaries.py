@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import dclab
-from dclab.rtdc_dataset.ancillaries.ancillary_feature import (
+from dclab.rtdc_dataset.feat_anc_core.ancillary_feature import (
     AncillaryFeature, BadFeatureSizeWarning)
 
 from helper_methods import example_data_dict, retrieve_data, calltracker

@@ -57,7 +57,7 @@ class APIHandler:
         if event is not None:
             qstr += "&event={}".format(event)
         apicall = self.url + qstr
-        for ii in range(retries):
+        for _ in range(retries):
             req = requests.get(apicall, headers={"Authorization": api_key})
             try:
                 jreq = req.json()

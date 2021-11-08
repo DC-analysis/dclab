@@ -9,7 +9,7 @@ from helper_methods import retrieve_data
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_af_inert_ratio_cvx():
     pytest.importorskip("nptdms")
@@ -28,7 +28,7 @@ def test_af_inert_ratio_cvx():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_af_inert_ratio_prnc():
     pytest.importorskip("nptdms")
@@ -46,7 +46,7 @@ def test_af_inert_ratio_prnc():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'ancillaries.ancillary_feature.'
+                            + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
 def test_af_inert_ratio_raw():
     pytest.importorskip("nptdms")

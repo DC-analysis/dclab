@@ -10,7 +10,7 @@ from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
-from .ancillaries import AncillaryFeature, FEATURES_RAPID
+from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
 from .export import Export
 from .filter import Filter
 
@@ -92,7 +92,7 @@ class RTDCBase(abc.ABC):
         elif key in self._usertemp:
             return self._usertemp[key]
         # Try to find the feature in the ancillary features
-        # (see ancillaries submodule for more information).
+        # (see feat_anc_core submodule for more information).
         # These features are cached in `self._ancillaries`.
         ancol = AncillaryFeature.available_features(self)
         if key in ancol:
@@ -281,7 +281,7 @@ class RTDCBase(abc.ABC):
         -----
         Features that are computationally cheap to compute are
         always included. They are defined in
-        :const:`dclab.rtdc_dataset.ancillaries.FEATURES_RAPID`.
+        :const:`dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID`.
         """
         features_innate = self.features_innate
         features_loaded = []

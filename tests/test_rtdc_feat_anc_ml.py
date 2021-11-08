@@ -15,6 +15,68 @@ from helper_methods import example_data_dict
 tf = pytest.importorskip("tensorflow")
 
 
+@pytest.fixture(autouse=True)
+def cleanup_plugin_features():
+    """Fixture used to cleanup plugin feature tests"""
+    # code run before the test
+    pass
+    # then the test is run
+    yield
+    # code run after the test
+    # remove our test plugin examples
+    feat_anc_ml.remove_all_ml_features()
+
+
+def make_data(add_feats=None, sizes=None):
+    if sizes is None:
+        sizes = [100, 130]
+    if add_feats is None:
+        add_feats = ["area_um", "deform"]
+    keys = add_feats + ["time", "frame", "fl3_width"]
+    data = []
+    for size in sizes:
+        data.append(new_dataset(example_data_dict(size=size, keys=keys)))
+    return data
+
+
+def make_bare_model(ml_feats=None):
+    if ml_feats is None:
+        ml_feats = ["area_um", "deform"]
+    dc_data = make_data(ml_feats)
+    # obtain train and test datasets
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
+        dc_data=dc_data,
+        labels=[0, 1],
+        feature_inputs=ml_feats)
+    return standard_model(tfdata)
+
+
+def standard_model(tfdata, epochs=1, final_size=2):
+    # build the model
+    num_feats = tfdata.as_numpy_iterator().next()[0].shape[1]
+    model = tf.keras.Sequential(
+        layers=[
+            tf.keras.layers.Input(shape=(num_feats,)),
+            tf.keras.layers.Dense(128, activation='relu'),
+            tf.keras.layers.Dense(32),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(final_size)
+        ],
+        name="scalar_features"
+    )
+
+    # fit the model to the training data
+    if final_size == 1:
+        loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+    else:
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(
+            from_logits=True)
+    model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
+    model.fit(tfdata, epochs=epochs)
+
+    return model
+
+
 def test_af_ml_class_basic():
     data = {"ml_score_001": [.1, .3, .1, 0.01, .59],
             "ml_score_002": [.2, .1, .4, 0, .8],
@@ -105,14 +167,18 @@ def test_af_ml_score_basic():
     dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
     dst = dclab.new_dataset(dictt)
     # DC model
-    model = feat_anc_ml.models.TensorflowModel(
+    dc_model = feat_anc_ml.models.TensorflowModel(
         bare_model=bare_model,
         inputs=["deform"],
         outputs=["ml_score_low", "ml_score_hig"])
-    with model:
-        # get the class from the predicted values
-        low = dst["ml_score_low"]
-        hig = dst["ml_score_hig"]
+    # register
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_low",
+                                       dc_model=dc_model)
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_hig",
+                                       dc_model=dc_model)
+    # get the class from the predicted values
+    low = dst["ml_score_low"]
+    hig = dst["ml_score_hig"]
     hl = np.concatenate((low.reshape(-1, 1), hig.reshape(-1, 1)), axis=1)
     actual = np.argmax(hl, axis=1)
     # these are the expected classes
@@ -140,17 +206,23 @@ def test_af_ml_score_label_registered():
         inputs=ml_feats,
         outputs=["ml_score_low", "ml_score_hig"],
         output_labels=["Low label", "High label"])
-    with model:
-        # get labels
-        label1 = dclab.dfn.get_feature_label("ml_score_low")
-        label2 = dclab.dfn.get_feature_label("ml_score_hig")
+
+    # register the features
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_low",
+                                       dc_model=model)
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_hig",
+                                       dc_model=model)
+
+    # get labels
+    label1 = dclab.dfn.get_feature_label("ml_score_low")
+    label2 = dclab.dfn.get_feature_label("ml_score_hig")
     assert label1 == "Low label"
     assert label2 == "High label"
 
 
 def test_af_ml_score_registration_sanity_checks():
     ml_feats = ["area_um", "deform"]
-    model = feat_anc_ml.models.TensorflowModel(
+    dc_model = feat_anc_ml.models.TensorflowModel(
         bare_model=make_bare_model(),
         inputs=ml_feats,
         outputs=["ml_score_abc", "ml_score_cde"]
@@ -159,74 +231,33 @@ def test_af_ml_score_registration_sanity_checks():
     dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
     dst = dclab.new_dataset(dictt)
     assert "ml_score_abc" not in dst, "before model registration"
-    with model:
-        assert "ml_score_abc" in dst, "after model registration"
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_abc",
+                                       dc_model=dc_model)
+    assert "ml_score_abc" in dst, "after model registration"
+    feat_anc_ml.remove_all_ml_features()
     assert "ml_score_abc" not in dst, "after model unregistration"
 
 
 def test_af_ml_score_register_same_output_feature_should_fail():
     ml_feats = ["area_um", "deform"]
-    model = feat_anc_ml.models.TensorflowModel(
+    dc_model = feat_anc_ml.models.TensorflowModel(
         bare_model=make_bare_model(),
         inputs=ml_feats,
         outputs=["ml_score_abc", "ml_score_cde"]
     )
-    with model:
-        model2 = feat_anc_ml.models.TensorflowModel(
-            bare_model=make_bare_model(),
-            inputs=ml_feats,
-            outputs=["ml_score_abc", "ml_score_rge"]
-        )
-        try:
-            model2.register()
-        except ValueError:
-            pass
-        else:
-            assert False, "register same output feature should not be possible"
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_abc",
+                                       dc_model=dc_model)
 
-
-def make_data(add_feats=["area_um", "deform"], sizes=[100, 130]):
-    keys = add_feats + ["time", "frame", "fl3_width"]
-    data = []
-    for size in sizes:
-        data.append(new_dataset(example_data_dict(size=size, keys=keys)))
-    return data
-
-
-def make_bare_model(ml_feats=["area_um", "deform"]):
-    dc_data = make_data(ml_feats)
-    # obtain train and test datasets
-    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
-        dc_data=dc_data,
-        labels=[0, 1],
-        feature_inputs=ml_feats)
-    return standard_model(tfdata)
-
-
-def standard_model(tfdata, epochs=1, final_size=2):
-    # build the model
-    num_feats = tfdata.as_numpy_iterator().next()[0].shape[1]
-    model = tf.keras.Sequential(
-        layers=[
-            tf.keras.layers.Input(shape=(num_feats,)),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dense(32),
-            tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(final_size)
-        ],
-        name="scalar_features"
+    dc_model2 = feat_anc_ml.models.TensorflowModel(
+        bare_model=make_bare_model(),
+        inputs=ml_feats,
+        outputs=["ml_score_abc", "ml_score_rge"]
     )
 
-    # fit the model to the training data
-    if final_size == 1:
-        loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-    else:
-        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(
-            from_logits=True)
-    model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
-    model.fit(tfdata, epochs=epochs)
-
-    return model
+    with pytest.raises(ValueError,
+                       match="Cannot register two MachineLearningFeatures"):
+        feat_anc_ml.MachineLearningFeature(feature_name="ml_score_abc",
+                                           dc_model=dc_model2)
 
 
 def test_assemble_tf_dataset_scalars_shuffle():
@@ -705,7 +736,7 @@ def test_modc_save_load_infer():
     pout = tmpdir / "test.modc"
     feat_anc_ml.save_modc(path=pout, dc_models=model)
     # load model
-    model_loaded = feat_anc_ml.load_modc(path=pout)
+    model_loaded = feat_anc_ml.load_modc(path=pout)[0]
     # test dataset
     dictt = example_data_dict(size=6, keys=["area_um", "aspect", "fl1_max"])
     dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)

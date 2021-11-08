@@ -1,5 +1,8 @@
-0.37.4
+0.38.0
  - enh: add identifier to AncillaryFeature class
+ - enh: introduce MachineLearningFeature to simplify the use of
+   machine learning models in ancillary features
+ - fix: load_modc should return a list of models
  - ref: rename `rtdc_dataset.ancillary` submodule to `anc_feat_core`
  - ref: rename `rtdc_dataset.plugins` submodule to `anc_feat_plugin`
  - ref: move the `ml` submodule to `rtdc_dataset.anc_feat_ml`

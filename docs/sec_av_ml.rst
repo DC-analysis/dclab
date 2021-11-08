@@ -59,19 +59,9 @@ an :ref:`ancillary feature <sec_features_ancillary>`.
 
 .. code:: python
 
-    dc_model.register()
+    dclab.MachineLearningFeature(feature_name="ml_score_rbc",
+                                 dc_model=dc_model)
     prediction = ds["ml_score_rbc"]  # same result as above
-    dc_model.unregister()  # optional
-
-If it is inconvenient for you to call the ``register()`` and ``unregister``
-methods (e.g. when you would like to perform predictions for multiple
-models), then you can use ``dc_model`` in combination with the ``with``
-statement:
-
-.. code:: python
-
-    with dc_model:
-        prediction = ds["ml_score_rbc"]  # same result as above
 
 Please have a look at :ref:`this example <example_ml_builtin>` to see
 dclab models in action.
@@ -178,13 +168,14 @@ To save a machine learning model to a .modc file, you can use the
     dclab.save_modc("path/to/file.modc", dc_model)
 
 Conversely, you can load such a model at any time and use it for inference
-using the :func:`dclab.load_modc <dclab.rtdc_dataset.feat_anc_ml.modc.load_modc>`:
+using the :func:`dclab.load_modc <dclab.rtdc_dataset.feat_anc_ml.modc.load_modc>`.
+To directly load the model as an ancillary feature, use
+:func:`dclab.load_ml_feature <dclab.rtdc_dataset.feat_anc_ml.modc.load_ml_feature>`:
 
 .. code:: python
 
-    dc_model_loaded = dclab.load_modc("path/to/file.modc")
-    with dc_model_loaded:
-        prediction = ds["ml_score_rbc"]  # same result as above
+    dclab.load_ml_feature("path/to/file.modc")
+    prediction = ds["ml_score_rbc"]  # same result as above
 
 
 The methods for saving and loading .modc files are described in the

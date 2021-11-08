@@ -87,7 +87,8 @@ dc_model = models.TensorflowModel(
     output_labels=["Probability of having a cell"],
     model_name="Distinguish between cells and beads",
 )
-dc_model.register()
+dclab.MachineLearningFeature(feature_name="ml_score_cel",
+                             dc_model=dc_model)
 
 # Now we are actually done already. The only thing left to do is to
 # visualize the prediction for the test-fraction of our dataset.

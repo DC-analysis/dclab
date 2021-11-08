@@ -161,6 +161,8 @@ def get_dataset_event_feature(dc_data, feature, tf_dataset_indices=None,
                 continue
             else:
                 break
+        else:
+            raise ValueError("Unexpected Error!")
         if ds_index in dc_data_indices:
             # only add feature if user also required dc dataset index
             feature_data.append(ds[feature][idx])

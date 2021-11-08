@@ -15,7 +15,7 @@ from .rtdc_dataset import new_dataset, IntegrityChecker, RTDCWriter
 from .rtdc_dataset.feat_temp import (
     register_temporary_feature, set_temporary_feature)
 from .rtdc_dataset.feat_anc_ml import (
-    load_modc, save_modc)
+    MachineLearningFeature, load_modc, load_ml_feature, save_modc)
 from .rtdc_dataset.feat_anc_plugin.plugin_feature import (
     PlugInFeature, load_plugin_feature)
 from . import statistics

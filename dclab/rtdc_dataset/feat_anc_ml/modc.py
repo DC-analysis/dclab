@@ -135,8 +135,8 @@ def load_modc(path, from_format=None):
 
     Returns
     -------
-    model: dclab.rtdc_dataset.feat_anc_ml.models.BaseModel
-        Model that can be used for inference via `model.predict`
+    model: list of dclab.rtdc_dataset.feat_anc_ml.models.BaseModel
+        Models that can be used for inference via `model.predict`
     """
     # unpack everything
     t_dir = pathlib.Path(tempfile.mkdtemp(prefix="modc_load_"))
@@ -148,6 +148,7 @@ def load_modc(path, from_format=None):
         meta = json.load(fd)
 
     assert meta["model count"] == len(meta["models"])
+    dc_models = []
     for model_dict in meta["models"]:
         mpath = t_dir / model_dict["path"]
 
@@ -179,12 +180,13 @@ def load_modc(path, from_format=None):
                                  + " '{}' is not supported!".format(fmt))
         else:
             raise ValueError("No compatible model file format found!")
+        dc_models.append(model)
 
     # We are nice and do the cleanup before exit
     cleanup()
     atexit.unregister(cleanup)
 
-    return model
+    return dc_models
 
 
 def save_modc(path, dc_models):
@@ -194,7 +196,7 @@ def save_modc(path, dc_models):
     ----------
     path: str, pathlib.Path
         Output .modc path
-    dc_models: dclab.rtdc_dataset.feat_anc_ml.models.BaseModel or list
+    dc_models: list of/or dclab.rtdc_dataset.feat_anc_ml.models.BaseModel
         Models to save
 
     Returns

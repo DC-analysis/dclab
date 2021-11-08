@@ -1,3 +1,5 @@
+0.37.4
+ - enh: add identifier to AncillaryFeature class
 0.37.3
  - fix: ignore defective feature "volume" in pre 0.37.0 .rtdc files
  - fix: always perform version branding when using RTDCWriter context

@@ -144,6 +144,7 @@ def test_pf_attribute_plugin_feature_info():
         "scalar feature": True,
         "version": "0.1.0",
         "plugin path": None,
+        "identifier": "3a3e72c4cb015424ebbe6d4af63f2170",
     }
     assert pf.plugin_feature_info == plugin_feature_info
 

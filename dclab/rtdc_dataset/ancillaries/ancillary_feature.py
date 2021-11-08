@@ -52,7 +52,7 @@ class AncillaryFeature:
 
     def __init__(self, feature_name, method, req_config=None,
                  req_features=None, req_func=lambda x: True, priority=0,
-                 data=None):
+                 data=None, identifier=None):
         """A data feature that is computed from existing data
 
         Parameters
@@ -91,6 +91,11 @@ class AncillaryFeature:
         data: object
             Any other data relevant for the feature (e.g. the ML
             model for computing 'ml_score_xxx' features)
+        identifier: None or str
+            A unique identifier (e.g. MD5 hash) of the ancillary
+            feature. For PluginFeatures or ML features, this should
+            be computed at least from the input file and the feature
+            name.
 
         Notes
         -----
@@ -108,17 +113,20 @@ class AncillaryFeature:
         self.req_func = req_func
         self.priority = priority
         self.data = data
+        self.identifier = identifier
 
         # register this feature
         AncillaryFeature.features.append(self)
         AncillaryFeature.feature_names.append(feature_name)
 
     def __repr__(self):
-        repre = "<{} '{}' (priority {}) at {}>".format(
-            self.__class__.__name__,
-            self.feature_name,
-            self.priority,
-            hex(id(self)))
+        repre = " ".join([
+            f"<{self.__class__.__name__}",
+            f"'{self.feature_name}'",
+            f"(id {self.identifier[:5]}...)",
+            f"with priority {self.priority}",
+            f"at {hex(id(self))}>",
+            ])
         return repre
 
     @staticmethod

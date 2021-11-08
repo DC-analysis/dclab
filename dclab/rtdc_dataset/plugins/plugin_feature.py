@@ -1,8 +1,9 @@
 """
 .. versionadded:: 0.34.0
 """
-import pathlib
+import hashlib
 import importlib
+import pathlib
 import sys
 
 from ... import definitions as dfn
@@ -146,6 +147,9 @@ class PlugInFeature(AncillaryFeature):
         <dclab.rtdc_dataset.ancillaries.ancillary_feature.AncillaryFeature>`.
         Please read the advanced section on `PluginFeatures` in the dclab docs.
         """
+        if plugin_path is not None:
+            plugin_path = pathlib.Path(plugin_path)
+
         #: Plugin feature name
         self.feature_name = feature_name
         #: Path to the original plugin file
@@ -178,6 +182,7 @@ class PlugInFeature(AncillaryFeature):
             req_config=self.plugin_feature_info["config required"],
             req_features=self.plugin_feature_info["features required"],
             req_func=self.plugin_feature_info["method check required"],
+            identifier=self.plugin_feature_info["identifier"],
             )
 
     def _process_plugin_info(self, original_info):
@@ -206,6 +211,19 @@ class PlugInFeature(AncillaryFeature):
             else:
                 event_shape = None
 
+        # We assume that the script does not import any other custom
+        # Python scripts.
+        md5hasher = hashlib.md5()
+        if self.plugin_path is not None:
+            md5hasher.update(self.plugin_path.read_bytes())
+        else:
+            md5hasher.update(original_info["method"].__code__.co_code)
+        md5hasher.update(self.feature_name.encode("utf-8"))
+        md5hasher.update(original_info.get("version", "").encode("utf-8"))
+        for feat in original_info.get("features required", []):
+            md5hasher.update(feat.encode("utf-8"))
+        identifier = md5hasher.hexdigest()
+
         feature_info = {
             "method": original_info["method"],
             "description": original_info.get(
@@ -223,6 +241,7 @@ class PlugInFeature(AncillaryFeature):
             # allow comparisons with distutil.version.LooseVersion
             "version": original_info.get("version", "0.0.0-unknown"),
             "plugin path": self.plugin_path,
+            "identifier": identifier,
         }
 
         return feature_info

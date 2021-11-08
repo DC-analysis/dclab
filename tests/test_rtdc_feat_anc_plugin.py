@@ -157,9 +157,9 @@ def test_pf_attributes():
     plugin_file_info = import_plugin_feature_script(plugin_path)
 
     assert pf1.feature_name == pf1.feature_name == \
-           plugin_file_info["feature names"][0]
+        plugin_file_info["feature names"][0]
     assert pf2.feature_name == pf2.feature_name == \
-           plugin_file_info["feature names"][1]
+        plugin_file_info["feature names"][1]
 
     assert plugin_path.samefile(pf1.plugin_path)
     assert plugin_path.samefile(pf1.plugin_feature_info["plugin path"])

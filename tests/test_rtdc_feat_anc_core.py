@@ -133,7 +133,7 @@ def test_af_deform():
     "fmt-tdms_fl-image-bright_2017.zip",
     "fmt-tdms_fl-image-large-fov_2017.zip",
     "fmt-tdms_shapein-2.0.1-no-image_2017.zip",
-    ])
+])
 def test_af_method_called_once_with_shared_pipeline(
         fake_af_cleanup_fixture, path):
     """Verifies that when an `AncillaryFeature.method` is shared between
@@ -176,7 +176,7 @@ def test_af_method_called_once_with_shared_pipeline(
     "fmt-tdms_fl-image-bright_2017.zip",
     "fmt-tdms_fl-image-large-fov_2017.zip",
     "fmt-tdms_shapein-2.0.1-no-image_2017.zip",
-    ])
+])
 def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
     """Check whether features are recomputed when the hash changes"""
     pytest.importorskip("nptdms")

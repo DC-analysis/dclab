@@ -89,7 +89,7 @@ OPTIONAL_KEYS = {
         "laser 1 power",
         "laser 2 power",
         "laser 3 power",
-        ],
+    ],
     "setup": [
         "temperature",
         "chip identifier",

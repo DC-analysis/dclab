@@ -126,7 +126,7 @@ class AncillaryFeature:
             f"(id {self.identifier[:5]}...)",
             f"with priority {self.priority}",
             f"at {hex(id(self))}>",
-            ])
+        ])
         return repre
 
     @staticmethod

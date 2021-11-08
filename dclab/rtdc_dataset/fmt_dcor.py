@@ -70,7 +70,7 @@ class APIHandler:
             raise DCORAccessError("Could not complete query '{}', because "
                                   "the response did not contain any JSON-"
                                   "parseable data. Retried {} times.".format(
-                                    apicall, retries))
+                                      apicall, retries))
         return jreq
 
     def get(self, query, feat=None, trace=None, event=None):
@@ -93,6 +93,7 @@ class APIHandler:
 
 class DCORNonScalarFeature:
     """Helper class for accessing non-scalar features"""
+
     def __init__(self, feat, api, size):
         self.identifier = api.url + ":" + feat  # for caching ancillaries
         self.feat = feat
@@ -129,6 +130,7 @@ class DCORNonScalarFeature:
 
 class DCORContourFeature(DCORNonScalarFeature):
     """Helper class for accessing contour data"""
+
     def __init__(self, feat, api, size):
         super(DCORContourFeature, self).__init__(feat, api, size)
         self.shape = (size, np.nan, 2)

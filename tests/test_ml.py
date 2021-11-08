@@ -7,7 +7,8 @@ import numpy as np
 import pytest
 
 import dclab
-from dclab import ml, new_dataset
+from dclab import new_dataset
+from dclab.rtdc_dataset import feat_anc_ml
 
 from helper_methods import example_data_dict
 
@@ -94,7 +95,7 @@ def test_af_ml_score_basic():
     dict2["deform"] = np.linspace(.02, .03, 1000)
     ds1 = dclab.new_dataset(dict1)
     ds2 = dclab.new_dataset(dict2)
-    tfdata = dclab.ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=[ds1, ds2],
         labels=[0, 1],
         feature_inputs=["deform"])
@@ -104,7 +105,7 @@ def test_af_ml_score_basic():
     dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
     dst = dclab.new_dataset(dictt)
     # DC model
-    model = dclab.ml.models.TensorflowModel(
+    model = feat_anc_ml.models.TensorflowModel(
         bare_model=bare_model,
         inputs=["deform"],
         outputs=["ml_score_low", "ml_score_hig"])
@@ -134,7 +135,7 @@ def test_af_ml_score_label_registered():
     """Test whether the correct label is returned"""
     ml_feats = ["area_um", "deform"]
     bare_model = make_bare_model(ml_feats=ml_feats)
-    model = dclab.ml.models.TensorflowModel(
+    model = feat_anc_ml.models.TensorflowModel(
         bare_model=bare_model,
         inputs=ml_feats,
         outputs=["ml_score_low", "ml_score_hig"],
@@ -149,7 +150,7 @@ def test_af_ml_score_label_registered():
 
 def test_af_ml_score_registration_sanity_checks():
     ml_feats = ["area_um", "deform"]
-    model = dclab.ml.models.TensorflowModel(
+    model = feat_anc_ml.models.TensorflowModel(
         bare_model=make_bare_model(),
         inputs=ml_feats,
         outputs=["ml_score_abc", "ml_score_cde"]
@@ -165,13 +166,13 @@ def test_af_ml_score_registration_sanity_checks():
 
 def test_af_ml_score_register_same_output_feature_should_fail():
     ml_feats = ["area_um", "deform"]
-    model = dclab.ml.models.TensorflowModel(
+    model = feat_anc_ml.models.TensorflowModel(
         bare_model=make_bare_model(),
         inputs=ml_feats,
         outputs=["ml_score_abc", "ml_score_cde"]
     )
     with model:
-        model2 = dclab.ml.models.TensorflowModel(
+        model2 = feat_anc_ml.models.TensorflowModel(
             bare_model=make_bare_model(),
             inputs=ml_feats,
             outputs=["ml_score_abc", "ml_score_rge"]
@@ -195,7 +196,7 @@ def make_data(add_feats=["area_um", "deform"], sizes=[100, 130]):
 def make_bare_model(ml_feats=["area_um", "deform"]):
     dc_data = make_data(ml_feats)
     # obtain train and test datasets
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=dc_data,
         labels=[0, 1],
         feature_inputs=ml_feats)
@@ -232,16 +233,16 @@ def test_assemble_tf_dataset_scalars_shuffle():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
     # create a shuffled dataset
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=dc_data,
         labels=[0, 1],
         feature_inputs=ml_feats,
         shuffle=True
     )
     # reproduce the shuffling
-    area_um = ml.tf_dataset.shuffle_array(
+    area_um = feat_anc_ml.tf_dataset.shuffle_array(
         np.concatenate([ds["area_um"] for ds in dc_data]))
-    deform = ml.tf_dataset.shuffle_array(
+    deform = feat_anc_ml.tf_dataset.shuffle_array(
         np.concatenate([ds["deform"] for ds in dc_data]))
     # get the actual data
     tffeats = np.concatenate([dd for dd, ll in tfdata], axis=0)
@@ -255,13 +256,13 @@ def test_assemble_tf_dataset_scalars_split():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
     # create a shuffled dataset
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=dc_data,
         labels=[0, 1],
         feature_inputs=ml_feats,
         shuffle=True
     )
-    tfsplit1, tfsplit2 = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfsplit1, tfsplit2 = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=dc_data,
         labels=[0, 1],
         feature_inputs=ml_feats,
@@ -280,7 +281,7 @@ def test_assemble_tf_dataset_scalars_split_bad():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
     try:
-        ml.tf_dataset.assemble_tf_dataset_scalars(
+        feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
             dc_data=dc_data,
             labels=[0, 1],
             feature_inputs=ml_feats,
@@ -297,7 +298,7 @@ def test_assemble_tf_dataset_scalars_non_scalar():
     dc_data = make_data(ml_feats)
     # create a shuffled dataset
     try:
-        ml.tf_dataset.assemble_tf_dataset_scalars(
+        feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
             dc_data=dc_data,
             labels=[0, 1],
             feature_inputs=ml_feats)
@@ -315,7 +316,7 @@ def test_basic_inference():
     dict2["deform"] = np.linspace(.02, .03, 1000)
     ds1 = new_dataset(dict1)
     ds2 = new_dataset(dict2)
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=[ds1, ds2],
         labels=[0, 1],
         feature_inputs=["deform"])
@@ -325,7 +326,7 @@ def test_basic_inference():
     dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
     dst = new_dataset(dictt)
     # DC model
-    model = ml.models.TensorflowModel(
+    model = feat_anc_ml.models.TensorflowModel(
         bare_model=bare_model,
         inputs=["deform"],
         outputs=["ml_score_low", "ml_score_hig"])
@@ -351,7 +352,7 @@ def test_basic_inference_one_output():
     dict2["deform"] = np.linspace(.02, .03, 1000)
     ds1 = new_dataset(dict1)
     ds2 = new_dataset(dict2)
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=[ds1, ds2],
         labels=[0, 1],
         feature_inputs=["deform"])
@@ -361,7 +362,7 @@ def test_basic_inference_one_output():
     dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
     dst = new_dataset(dictt)
     # DC model
-    model = ml.models.TensorflowModel(
+    model = feat_anc_ml.models.TensorflowModel(
         bare_model=bare_model,
         inputs=["deform"],
         outputs=["ml_score_loh"])
@@ -380,7 +381,7 @@ def test_get_dataset_event_feature():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
     # create a shuffled dataset
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=dc_data,
         labels=[0, 1],
         feature_inputs=ml_feats,
@@ -391,14 +392,14 @@ def test_get_dataset_event_feature():
     actual_deform = tffeats[:, 0]
     actual_area_um = tffeats[:, 1]
     event_index = 42
-    event_deform = ml.tf_dataset.get_dataset_event_feature(
+    event_deform = feat_anc_ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="deform",
         tf_dataset_indices=[event_index],
         shuffle=True
     )[0]
     assert actual_deform[event_index] == np.float32(event_deform)
-    event_area_um = ml.tf_dataset.get_dataset_event_feature(
+    event_area_um = feat_anc_ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="area_um",
         tf_dataset_indices=[event_index],
@@ -411,7 +412,7 @@ def test_get_dataset_event_feature_bad_index():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
     try:
-        ml.tf_dataset.get_dataset_event_feature(
+        feat_anc_ml.tf_dataset.get_dataset_event_feature(
             dc_data=dc_data,
             feature="area_um",
             tf_dataset_indices=[10 * np.sum([len(ds) for ds in dc_data])],
@@ -426,7 +427,7 @@ def test_get_dataset_event_feature_bad_index():
 def test_get_dataset_event_feature_no_tf_indices():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
-    indices0 = ml.tf_dataset.get_dataset_event_feature(
+    indices0 = feat_anc_ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="index",
         dc_data_indices=[0],
@@ -434,7 +435,7 @@ def test_get_dataset_event_feature_no_tf_indices():
     )
     assert list(range(1, len(dc_data[0]) + 1)) == indices0
 
-    indices1 = ml.tf_dataset.get_dataset_event_feature(
+    indices1 = feat_anc_ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="index",
         dc_data_indices=[1],
@@ -446,7 +447,7 @@ def test_get_dataset_event_feature_no_tf_indices():
 def test_get_dataset_event_feature_split():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
-    tfsplit1, tfsplit2 = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfsplit1, tfsplit2 = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=dc_data,
         labels=[0, 1],
         feature_inputs=ml_feats,
@@ -454,7 +455,7 @@ def test_get_dataset_event_feature_split():
         shuffle=True,
     )
     event_index = 5
-    event_area_um = ml.tf_dataset.get_dataset_event_feature(
+    event_area_um = feat_anc_ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="area_um",
         tf_dataset_indices=[event_index],
@@ -464,7 +465,7 @@ def test_get_dataset_event_feature_split():
     )
     s1feats = np.concatenate([dd for dd, ll in tfsplit1], axis=0)
     assert s1feats[event_index, 1] == np.float32(event_area_um)
-    event_area_um2 = ml.tf_dataset.get_dataset_event_feature(
+    event_area_um2 = feat_anc_ml.tf_dataset.get_dataset_event_feature(
         dc_data=dc_data,
         feature="area_um",
         tf_dataset_indices=[event_index],
@@ -480,7 +481,7 @@ def test_get_dataset_event_feature_split_bad():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
     try:
-        ml.tf_dataset.get_dataset_event_feature(
+        feat_anc_ml.tf_dataset.get_dataset_event_feature(
             dc_data=dc_data,
             feature="area_um",
             tf_dataset_indices=[1],
@@ -498,7 +499,7 @@ def test_get_dataset_event_feature_split_bad2():
     ml_feats = ["deform", "area_um"]
     dc_data = make_data(ml_feats)
     try:
-        ml.tf_dataset.get_dataset_event_feature(
+        feat_anc_ml.tf_dataset.get_dataset_event_feature(
             dc_data=dc_data,
             feature="area_um",
             tf_dataset_indices=[1],
@@ -516,9 +517,9 @@ def test_model_tensorflow_has_sigmoid_activation_1():
     ml_feats = ["deform", "area_um"]
     stock_model = make_bare_model(ml_feats)
     bare_model = tf.keras.Sequential([stock_model, tf.keras.layers.Dense(1)])
-    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
-                                         inputs=ml_feats,
-                                         outputs=["ml_score_tst"])
+    dc_model = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                                  inputs=ml_feats,
+                                                  outputs=["ml_score_tst"])
     assert not dc_model.has_sigmoid_activation()
 
 
@@ -527,9 +528,9 @@ def test_model_tensorflow_has_sigmoid_activation_2():
     stock_model = make_bare_model(ml_feats)
     bare_model = tf.keras.Sequential(
         [stock_model, tf.keras.layers.Dense(1, activation="sigmoid")])
-    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
-                                         inputs=ml_feats,
-                                         outputs=["ml_score_tst"])
+    dc_model = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                                  inputs=ml_feats,
+                                                  outputs=["ml_score_tst"])
     assert dc_model.has_sigmoid_activation()
 
 
@@ -538,10 +539,10 @@ def test_model_tensorflow_has_softmax_layer_1():
     stock_model = make_bare_model(ml_feats)
     bare_model = tf.keras.Sequential(
         [stock_model, tf.keras.layers.Dense(2)])
-    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
-                                         inputs=ml_feats,
-                                         outputs=["ml_score_tst",
-                                                  "ml_score_ts2"])
+    dc_model = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                                  inputs=ml_feats,
+                                                  outputs=["ml_score_tst",
+                                                           "ml_score_ts2"])
     assert not dc_model.has_softmax_layer()
 
 
@@ -550,21 +551,21 @@ def test_model_tensorflow_has_softmax_layer_2():
     stock_model = make_bare_model(ml_feats)
     bare_model = tf.keras.Sequential(
         [stock_model, tf.keras.layers.Dense(2), tf.keras.layers.Softmax()])
-    dc_model = ml.models.TensorflowModel(bare_model=bare_model,
-                                         inputs=ml_feats,
-                                         outputs=["ml_score_tst",
-                                                  "ml_score_ts2"])
+    dc_model = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                                  inputs=ml_feats,
+                                                  outputs=["ml_score_tst",
+                                                           "ml_score_ts2"])
     assert dc_model.has_softmax_layer()
 
 
-@pytest.mark.filterwarnings('ignore::dclab.ml.modc.'
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.feat_anc_ml.modc.'
                             + 'ModelFormatExportFailedWarning')
 def test_modc_export_model_bad_model():
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     try:
-        ml.modc.export_model(path=tmpdir,
-                             model=object()
-                             )
+        feat_anc_ml.modc.export_model(path=tmpdir,
+                                      model=object()
+                                      )
     except ValueError:
         pass
     else:
@@ -577,9 +578,9 @@ def test_modc_export_model_bad_path_1():
     afile = tmpdir / "afile"
     afile.write_text("test")
     try:
-        ml.modc.export_model(path=afile,
-                             model=bare_model,
-                             )
+        feat_anc_ml.modc.export_model(path=afile,
+                                      model=bare_model,
+                                      )
     except ValueError:
         pass
     else:
@@ -592,9 +593,9 @@ def test_modc_export_model_bad_path_2():
     afile = tmpdir / "afile"
     afile.write_text("test")
     try:
-        ml.modc.export_model(path=tmpdir,
-                             model=bare_model,
-                             )
+        feat_anc_ml.modc.export_model(path=tmpdir,
+                                      model=bare_model,
+                                      )
     except ValueError:
         pass
     else:
@@ -604,64 +605,65 @@ def test_modc_export_model_bad_path_2():
 def test_modc_export_model_enforce_format():
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     bare_model = make_bare_model()
-    ml.modc.export_model(path=tmpdir,
-                         model=bare_model,
-                         enforce_formats=["tensorflow-SavedModel"]
-                         )
+    feat_anc_ml.modc.export_model(path=tmpdir,
+                                  model=bare_model,
+                                  enforce_formats=["tensorflow-SavedModel"]
+                                  )
 
 
 def test_modc_export_model_enforce_format_bad_format():
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     bare_model = make_bare_model()
     try:
-        ml.modc.export_model(path=tmpdir,
-                             model=bare_model,
-                             enforce_formats=["library-format-does-not-exist"]
-                             )
+        feat_anc_ml.modc.export_model(path=tmpdir,
+                                      model=bare_model,
+                                      enforce_formats=[
+                                          "library-format-does-not-exist"]
+                                      )
     except ValueError:
         pass
     else:
         assert False, "non-existent format cannot be enforced"
 
 
-@pytest.mark.filterwarnings('ignore::dclab.ml.modc.'
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.feat_anc_ml.modc.'
                             + 'ModelFormatExportFailedWarning')
 def test_modc_export_model_enforce_format_bad_model():
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     with pytest.raises(ValueError,
                        match="Expected an object of type `Trackable`"
                              "|Expected a Trackable object for export"):
-        ml.modc.export_model(path=tmpdir,
-                             model=mock.MagicMock(),
-                             enforce_formats=["tensorflow-SavedModel"]
-                             )
+        feat_anc_ml.modc.export_model(path=tmpdir,
+                                      model=mock.MagicMock(),
+                                      enforce_formats=["tensorflow-SavedModel"]
+                                      )
 
 
 def test_modc_load_basic():
     # setup
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     bare_model = make_bare_model()
-    model = ml.models.TensorflowModel(bare_model=bare_model,
-                                      inputs=["image"],
-                                      outputs=["ml_score_tst"])
+    model = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                               inputs=["image"],
+                                               outputs=["ml_score_tst"])
     pout = tmpdir / "test.modc"
-    ml.save_modc(path=pout, dc_models=model)
+    feat_anc_ml.save_modc(path=pout, dc_models=model)
     # assert
-    ml.load_modc(path=pout)
+    feat_anc_ml.load_modc(path=pout)
 
 
 def test_modc_load_bad_format():
     # setup
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     bare_model = make_bare_model()
-    model = ml.models.TensorflowModel(bare_model=bare_model,
-                                      inputs=["image"],
-                                      outputs=["ml_score_tst"])
+    model = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                               inputs=["image"],
+                                               outputs=["ml_score_tst"])
     pout = tmpdir / "test.modc"
-    ml.save_modc(path=pout, dc_models=model)
+    feat_anc_ml.save_modc(path=pout, dc_models=model)
     # assert
     try:
-        ml.load_modc(path=pout, from_format="format-does-not-exist")
+        feat_anc_ml.load_modc(path=pout, from_format="format-does-not-exist")
     except ValueError:
         pass
     else:
@@ -672,12 +674,12 @@ def test_modc_save_basic():
     # setup
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     bare_model = make_bare_model()
-    model = ml.models.TensorflowModel(bare_model=bare_model,
-                                      inputs=["deform"],
-                                      outputs=["ml_score_tst"])
+    model = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                               inputs=["deform"],
+                                               outputs=["ml_score_tst"])
     pout = tmpdir / "test.modc"
     # assert
-    ml.save_modc(path=pout, dc_models=model)
+    feat_anc_ml.save_modc(path=pout, dc_models=model)
 
 
 def test_modc_save_load_infer():
@@ -688,22 +690,22 @@ def test_modc_save_load_infer():
     dict2["deform"] = np.linspace(.02, .03, 1000)
     ds1 = new_dataset(dict1)
     ds2 = new_dataset(dict2)
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=[ds1, ds2],
         labels=[0, 1],
         feature_inputs=["deform"])
     bare_model = standard_model(tfdata, epochs=10)
     # DC model
-    model = ml.models.TensorflowModel(
+    model = feat_anc_ml.models.TensorflowModel(
         bare_model=bare_model,
         inputs=["deform"],
         outputs=["ml_score_low", "ml_score_hig"])
     # save model
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml_modc"))
     pout = tmpdir / "test.modc"
-    ml.save_modc(path=pout, dc_models=model)
+    feat_anc_ml.save_modc(path=pout, dc_models=model)
     # load model
-    model_loaded = ml.load_modc(path=pout)
+    model_loaded = feat_anc_ml.load_modc(path=pout)
     # test dataset
     dictt = example_data_dict(size=6, keys=["area_um", "aspect", "fl1_max"])
     dictt["deform"] = np.linspace(.015, .025, 6, endpoint=True)
@@ -718,9 +720,9 @@ def test_modc_save_load_infer():
 def test_models_get_dataset_features():
     ml_feats = ["area_um", "deform"]
     bare_model = make_bare_model(ml_feats=ml_feats)
-    mod = ml.models.TensorflowModel(bare_model=bare_model,
-                                    inputs=ml_feats,
-                                    outputs=["ml_score_t01", "ml_score_t01"])
+    mod = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                             inputs=ml_feats,
+                                             outputs=["ml_score_t01", "ml_score_t01"])
     ds = make_data(add_feats=ml_feats, sizes=[42])[0]
     fdata = mod.get_dataset_features(ds, dtype=np.float32)
     assert np.all(fdata[:, 0] == np.array(ds["area_um"], dtype=np.float32))
@@ -729,13 +731,13 @@ def test_models_get_dataset_features():
 def test_models_get_dataset_features_with_tensorlow():
     ml_feats = ["area_um", "deform"]
     bare_model = make_bare_model(ml_feats=ml_feats)
-    mod = ml.models.TensorflowModel(bare_model=bare_model,
-                                    inputs=ml_feats,
-                                    outputs=["ml_score_t01",
-                                             "ml_score_t01"])
+    mod = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                             inputs=ml_feats,
+                                             outputs=["ml_score_t01",
+                                                      "ml_score_t01"])
     ds = make_data(add_feats=ml_feats, sizes=[42])[0]
     fdata = mod.get_dataset_features(ds, dtype=np.float32)
-    tfdata = ml.tf_dataset.assemble_tf_dataset_scalars(
+    tfdata = feat_anc_ml.tf_dataset.assemble_tf_dataset_scalars(
         dc_data=[ds],
         feature_inputs=ml_feats,
         shuffle=False
@@ -747,9 +749,9 @@ def test_models_get_dataset_features_with_tensorlow():
 def test_models_prediction_runs_through():
     ml_feats = ["area_um", "deform"]
     bare_model = make_bare_model(ml_feats=ml_feats)
-    mod = ml.models.TensorflowModel(bare_model=bare_model,
-                                    inputs=ml_feats,
-                                    outputs=["ml_score_t01", "ml_score_t02"])
+    mod = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
+                                             inputs=ml_feats,
+                                             outputs=["ml_score_t01", "ml_score_t02"])
     ds = make_data(add_feats=ml_feats, sizes=[42])[0]
     out = mod.predict(ds)
     assert "ml_score_t01" in out

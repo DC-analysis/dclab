@@ -1,8 +1,8 @@
 """tensorflow helper functions for RT-DC data"""
 import numpy as np
 
-from .. import definitions as dfn
-from ..rtdc_dataset import new_dataset
+from ... import definitions as dfn
+from ..load import new_dataset
 from .mllibs import tensorflow as tf
 
 

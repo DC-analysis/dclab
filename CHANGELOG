@@ -2,6 +2,7 @@
  - enh: add identifier to AncillaryFeature class
  - ref: rename `rtdc_dataset.ancillary` submodule to `anc_feat_core`
  - ref: rename `rtdc_dataset.plugins` submodule to `anc_feat_plugin`
+ - ref: move the `ml` submodule to `rtdc_dataset.anc_feat_ml`
 0.37.3
  - fix: ignore defective feature "volume" in pre 0.37.0 .rtdc files
  - fix: always perform version branding when using RTDCWriter context

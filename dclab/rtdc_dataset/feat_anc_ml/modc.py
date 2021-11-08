@@ -37,7 +37,7 @@ def export_model(path, model, enforce_formats=None):
     path: str or pathlib.Path
         Directory where the model is stored to. For each supported
         model, a new subdirectory or file is created.
-    model: An instance of an ML model, NOT dclab.ml.models.BaseModel
+    model: An instance of an ML model, NOT dclab.cfeat_anc_ml.models.BaseModel
         Trained model instance
     enforce_formats: list of str
         Enforced file formats for export. If the export for one
@@ -135,7 +135,7 @@ def load_modc(path, from_format=None):
 
     Returns
     -------
-    model: dclab.ml.models.BaseModel
+    model: dclab.rtdc_dataset.feat_anc_ml.models.BaseModel
         Model that can be used for inference via `model.predict`
     """
     # unpack everything
@@ -194,7 +194,7 @@ def save_modc(path, dc_models):
     ----------
     path: str, pathlib.Path
         Output .modc path
-    dc_models: list of dclab.ml.models.BaseModel or dclab.ml.models.BaseModel
+    dc_models: dclab.rtdc_dataset.feat_anc_ml.models.BaseModel or list
         Models to save
 
     Returns

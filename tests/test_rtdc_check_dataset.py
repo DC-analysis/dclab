@@ -551,7 +551,7 @@ def test_online_polygon_filters():
              np.mean(deform) + np.std(deform)],
             [np.mean(area_um),
              np.mean(deform) + np.std(deform)],
-            ])
+        ])
         h5.attrs[pf_name] = pf_points
 
     # see if we can open the file without any error

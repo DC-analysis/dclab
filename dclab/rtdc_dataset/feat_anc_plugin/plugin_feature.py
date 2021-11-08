@@ -183,7 +183,7 @@ class PlugInFeature(AncillaryFeature):
             req_features=self.plugin_feature_info["features required"],
             req_func=self.plugin_feature_info["method check required"],
             identifier=self.plugin_feature_info["identifier"],
-            )
+        )
 
     def _process_plugin_info(self, original_info):
         """Return dictionary with all relevant info for this instance

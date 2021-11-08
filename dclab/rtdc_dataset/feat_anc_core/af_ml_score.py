@@ -10,7 +10,7 @@ def register(dc_model):
 
     Parameters
     ----------
-    dc_model: dclab.ml.models.BaseModel
+    dc_model: dclab.rtdc_dataset.feat_anc_ml.models.BaseModel
         ML model to register
     """
     # Check whether the model is already registered

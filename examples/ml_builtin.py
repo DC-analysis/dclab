@@ -25,7 +25,7 @@ A few things are different from the other example:
 The plot shows the test fraction of the dataset. The x-axis is
 (arbitrarily) set to area. The y-axis shows the sigmoid (dclab
 automatically applies a sigmoid activation if it is not present
-in the final layer; see :func:`dclab.ml.models.TensorflowModel.predict`)
+in the final layer; see :func:`dclab.rtdc_dataset.feat_anc_ml.models.TensorflowModel.predict`)
 of the model's output `logits
 <https://developers.google.com/machine-learning/glossary/#logits>`_.
 

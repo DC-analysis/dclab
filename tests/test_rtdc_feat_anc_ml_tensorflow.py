@@ -584,6 +584,22 @@ def test_modc_load_basic():
     feat_anc_ml.load_modc(path=pout)
 
 
+def test_modc_load_as_ancillary_feature():
+    # setup
+    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
+    bare_model = make_bare_model()
+    model = hook_tensorflow.TensorflowModel(bare_model=bare_model,
+                                            inputs=["image"],
+                                            outputs=["ml_score_tst"])
+    pout = tmpdir / "test.modc"
+    feat_anc_ml.save_modc(path=pout, dc_models=model)
+    # assert
+    aml_list = dclab.load_ml_feature(pout)
+    assert len(aml_list) == 1
+    assert aml_list[0].feature_name == "ml_score_tst"
+    assert "ml_score_tst" in dclab.MachineLearningFeature.feature_names
+
+
 def test_modc_load_bad_format():
     # setup
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))

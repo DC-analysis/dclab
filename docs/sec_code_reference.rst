@@ -332,9 +332,16 @@ R and lme4
 Machine learning
 ================
 
+.. _sec_ref_ml_mlfeat:
+
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.ml_feature
+   :members:
+   :undoc-members:
+   :exclude-members: MockPackage
+
 .. _sec_ref_ml_mllibs:
 
-.. automodule:: dclab.rtdc_dataset.feat_anc_ml.mllibs
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.ml_libs
    :members:
    :undoc-members:
    :exclude-members: MockPackage
@@ -345,14 +352,18 @@ Machine learning
    :members:
    :undoc-members:
 
-.. _sec_ref_ml_models:
+.. _sec_ref_ml_model:
 
-.. automodule:: dclab.rtdc_dataset.feat_anc_ml.models
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.ml_model
    :members:
    :undoc-members:
 
-.. _sec_ref_ml_tf_dataset:
+.. _sec_ref_ml_tensorflow:
 
-.. automodule:: dclab.rtdc_dataset.feat_anc_ml.tf_dataset
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.hook_tensorflow.tf_dataset
+   :members:
+   :undoc-members:
+
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.hook_tensorflow.tf_model
    :members:
    :undoc-members:

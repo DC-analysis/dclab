@@ -23,7 +23,7 @@ worthwile to standardize this regression/classification process.
 
 In dclab, you are not directly using the *bare* models that you would e.g.
 get from tensorflow/keras. Instead, models are wrapped via a specific
-:class:`dclab.rtdc_dataset.feat_anc_ml.models.BaseModel` class that holds
+:class:`dclab.rtdc_dataset.feat_anc_ml.ml_model.BaseModel` class that holds
 additional information about the features from which and to which a model maps.
 For instance, a model might have the inputs ``deform`` and ``area_um`` and make
 predictions regarding a defined output feature, e.g. ``ml_score_rbc``.
@@ -32,7 +32,7 @@ where ``x`` can be any alphanumeric character (you are free to choose).
 
 .. code:: python
 
-    from dclab.rtdc_dataset.feat_anc_ml import models
+    from dclab.rtdc_dataset.feat_anc_ml import hook_tensorflow
     import tensorflow as tf
 
     # do your magic
@@ -41,7 +41,7 @@ where ``x`` can be any alphanumeric character (you are free to choose).
     bare_model.fit(...)
 
     # create a dclab model
-    dc_model = models.TensorflowModel(
+    dc_model = hook_tensorflow.TensorflowModel(
         bare_model=bare_model,
         inputs=["deform", "area_um"],
         outputs=["ml_score_rbc"],
@@ -186,6 +186,6 @@ Helper functions
 ================
 
 If you are working with `tensorflow <https://www.tensorflow.org/>`_,
-you might find the functions in the :ref:`dclab.rtdc_dataset.feat_anc_ml.tf_dataset
-<sec_ref_ml_tf_dataset>` submodule helpful. Please also have a look
+you might find the functions in the :ref:`dclab.rtdc_dataset.feat_anc_ml.hook_tensorflow
+<sec_ref_ml_tensorflow>` submodule helpful. Please also have a look
 at the :ref:`machine-learning examples <example_ml_tensorflow>`.

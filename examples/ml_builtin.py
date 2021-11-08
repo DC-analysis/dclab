@@ -1,4 +1,4 @@
-"""ML: Creating built-in models for dclab
+"""ML: Creating built-in models for dclab with tensorflow
 
 The :ref:`tensorflow example <example_ml_tensorflow>` already
 showcased a few convenience functions for machine learning
@@ -26,7 +26,7 @@ The plot shows the test fraction of the dataset. The x-axis is
 (arbitrarily) set to area. The y-axis shows the sigmoid (dclab
 automatically applies a sigmoid activation if it is not present
 in the final layer; see
-:func:`dclab.rtdc_dataset.feat_anc_ml.models.TensorflowModel.predict`)
+:func:`dclab.rtdc_dataset.feat_anc_ml.hook_tensorflow.TensorflowModel.predict`)
 of the model's output `logits
 <https://developers.google.com/machine-learning/glossary/#logits>`_.
 
@@ -35,7 +35,7 @@ import matplotlib.pylab as plt
 import numpy as np
 import tensorflow as tf
 import dclab
-from dclab.rtdc_dataset.feat_anc_ml import tf_dataset, models
+from dclab.rtdc_dataset.feat_anc_ml import hook_tensorflow
 
 
 tf.random.set_seed(42)  # for reproducibility
@@ -52,7 +52,7 @@ tf_kw = {"dc_data": dcor_ids,
          }
 
 # obtain train and test datasets
-train, test = tf_dataset.assemble_tf_dataset_scalars(
+train, test = hook_tensorflow.assemble_tf_dataset_scalars(
     labels=labels, feature_inputs=features, **tf_kw)
 
 # build the model
@@ -80,7 +80,7 @@ bare_model.fit(train, epochs=20)
 bare_model.evaluate(test, verbose=2)
 
 # register the ancillary feature "ml_score_cel" in dclab
-dc_model = models.TensorflowModel(
+dc_model = hook_tensorflow.TensorflowModel(
     bare_model=bare_model,
     inputs=features,
     outputs=["ml_score_cel"],
@@ -98,14 +98,14 @@ dclab.MachineLearningFeature(feature_name="ml_score_cel",
 # which is less complicated than it looks.
 
 # create dataset hierarchy children for bead and cell test data
-bead_train_indices = tf_dataset.get_dataset_event_feature(
+bead_train_indices = hook_tensorflow.get_dataset_event_feature(
     feature="index", dc_data_indices=[0], split_index=0, **tf_kw)
 ds_bead = dclab.new_dataset(dcor_ids[0])
 ds_bead.filter.manual[np.array(bead_train_indices) - 1] = False
 ds_bead.apply_filter()
 ds_bead_test = dclab.new_dataset(ds_bead)  # hierarchy child with test fraction
 
-cell_train_indices = tf_dataset.get_dataset_event_feature(
+cell_train_indices = hook_tensorflow.get_dataset_event_feature(
     feature="index", dc_data_indices=[1], split_index=0, **tf_kw)
 ds_cell = dclab.new_dataset(dcor_ids[1])
 ds_cell.filter.manual[np.array(cell_train_indices) - 1] = False

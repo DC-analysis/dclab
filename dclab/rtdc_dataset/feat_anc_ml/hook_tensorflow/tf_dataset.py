@@ -1,9 +1,14 @@
 """tensorflow helper functions for RT-DC data"""
 import numpy as np
 
-from ... import definitions as dfn
-from ..load import new_dataset
-from .mllibs import tensorflow as tf
+from .... import definitions as dfn
+
+from ...load import new_dataset
+
+from ..ml_libs import import_or_mock_package
+
+
+tf = import_or_mock_package("tensorflow", "2.0")
 
 
 def assemble_tf_dataset_scalars(dc_data, feature_inputs, labels=None,

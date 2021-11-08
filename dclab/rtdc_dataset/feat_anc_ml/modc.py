@@ -9,17 +9,7 @@ import time
 import traceback as tb
 import warnings
 
-from . import models
-
-#: Supported file formats (including respective model classes).
-SUPPORTED_FORMATS = {}
-for _md in [models.TensorflowModel]:
-
-    for _fmt in _md.supported_formats():
-        SUPPORTED_FORMATS[_fmt["name"]] = {
-            "requirements": _fmt["requirements"],
-            "suffix": _fmt["suffix"],
-            "class": _md}
+from .ml_model import BaseModel
 
 
 class ModelFormatExportFailedWarning(UserWarning):
@@ -30,7 +20,7 @@ def export_model(path, model, enforce_formats=None):
     """Export an ML model to all possible formats
 
     The model must be exportable with at least one method
-    listed in :const:`SUPPORTED_FORMATS`.
+    listed by :func:`BaseModel.all_formats`.
 
     Parameters
     ----------
@@ -52,19 +42,21 @@ def export_model(path, model, enforce_formats=None):
     if len(sorted(path.rglob("*"))) != 0:
         raise ValueError(
             "Model output directory should be empty: '{}'".format(path))
+
+    supported_formats = BaseModel.all_formats()
     if enforce_formats:
         for e_fmt in enforce_formats:
-            if e_fmt not in SUPPORTED_FORMATS:
+            if e_fmt not in supported_formats:
                 raise ValueError(
                     "Unsupported format '{}', expected ".format(e_fmt)
-                    + "one of {}!".format(", ".join(SUPPORTED_FORMATS.keys())))
+                    + "one of {}!".format(", ".join(supported_formats.keys())))
     exported_formats = {}
-    for fmt in SUPPORTED_FORMATS:
+    for fmt in supported_formats:
         tmp = tempfile.mkdtemp(prefix="dclab_ml_{}".format(fmt))
         try:
-            suffix = SUPPORTED_FORMATS[fmt]["suffix"]
+            suffix = supported_formats[fmt]["suffix"]
             tmp_out = pathlib.Path(tmp) / (fmt + suffix)
-            cls = SUPPORTED_FORMATS[fmt]["class"]
+            cls = supported_formats[fmt]["class"]
             cls.save_bare_model(tmp_out, model, save_format=fmt)
             # attempt to load the model to see if it worked
             cls.load_bare_model(tmp_out)
@@ -128,14 +120,14 @@ def load_modc(path, from_format=None):
         Path to a .modc file
     from_format: str
         If set to None, the first available format in
-        :const:`SUPPORTED_FORMATS` is used. If set to
-        a key in :const:`SUPPORTED_FORMATS`, then this
+        :func:`BaseModel.all_formats` is used. If set to
+        a key in :func:`BaseModel.all_formats`, then this
         format will take precedence and an error will
         be raised if loading with this format fails.
 
     Returns
     -------
-    model: list of dclab.rtdc_dataset.feat_anc_ml.models.BaseModel
+    model: list of dclab.rtdc_dataset.feat_anc_ml.ml_model.BaseModel
         Models that can be used for inference via `model.predict`
     """
     # unpack everything
@@ -148,6 +140,7 @@ def load_modc(path, from_format=None):
         meta = json.load(fd)
 
     assert meta["model count"] == len(meta["models"])
+    supported_formats = BaseModel.all_formats()
     dc_models = []
     for model_dict in meta["models"]:
         mpath = t_dir / model_dict["path"]
@@ -157,8 +150,8 @@ def load_modc(path, from_format=None):
             formats = [from_format] + formats
 
         for fmt in formats:
-            if fmt in SUPPORTED_FORMATS:
-                cls = SUPPORTED_FORMATS[fmt]["class"]
+            if fmt in supported_formats:
+                cls = supported_formats[fmt]["class"]
                 load = cls.load_bare_model
                 try:
                     bare_model = load(mpath / model_dict["formats"][fmt])

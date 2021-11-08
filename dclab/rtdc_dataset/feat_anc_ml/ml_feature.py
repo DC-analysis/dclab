@@ -14,7 +14,7 @@ class MachineLearningFeature(AncillaryFeature):
         ----------
         feature_name: str
             name of the ML feature score (starts with `ml_score_`)
-        dc_model: dclab.rtdc_dataset.feat_anc_ml.models.BaseModel
+        dc_model: dclab.rtdc_dataset.feat_anc_ml.ml_model.BaseModel
             ML model to register
         modc_path: str or Path
             path to the original .modc file (if applicable)

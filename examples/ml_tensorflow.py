@@ -29,7 +29,7 @@ order to improve the model prediction.
 import matplotlib.pylab as plt
 import numpy as np
 import tensorflow as tf
-from dclab.rtdc_dataset.feat_anc_ml import tf_dataset
+from dclab.rtdc_dataset.feat_anc_ml import hook_tensorflow
 
 tf.random.set_seed(42)  # for reproducibility
 
@@ -40,7 +40,7 @@ labels = [0, 1]  # 0: beads, 1: cells
 features = ["area_ratio", "area_um", "bright_sd", "deform"]
 
 # obtain train and test datasets
-train, test = tf_dataset.assemble_tf_dataset_scalars(
+train, test = hook_tensorflow.assemble_tf_dataset_scalars(
     dc_data=dcor_ids,  # can also be list of paths or datasets
     labels=labels,
     feature_inputs=features,
@@ -76,14 +76,14 @@ false_cl = np.where(predict != y_test)[0]
 true_cl = np.where(predict == y_test)[0]
 num_events = min(4, min(len(true_cl), len(false_cl)))
 
-false_images = tf_dataset.get_dataset_event_feature(
+false_images = hook_tensorflow.get_dataset_event_feature(
     dc_data=dcor_ids,
     feature="image",
     tf_dataset_indices=false_cl[:num_events],
     split_index=1,
     split=.8)
 
-true_images = tf_dataset.get_dataset_event_feature(
+true_images = hook_tensorflow.get_dataset_event_feature(
     dc_data=dcor_ids,
     feature="image",
     tf_dataset_indices=true_cl[:num_events],

@@ -629,7 +629,8 @@ def test_modc_export_model_enforce_format_bad_format():
 def test_modc_export_model_enforce_format_bad_model():
     tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
     with pytest.raises(ValueError,
-                       match="Expected an object of type `Trackable`"):
+                       match="Expected an object of type `Trackable`"
+                             "|Expected a Trackable object for export"):
         ml.modc.export_model(path=tmpdir,
                              model=mock.MagicMock(),
                              enforce_formats=["tensorflow-SavedModel"]

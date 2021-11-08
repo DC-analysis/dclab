@@ -722,7 +722,8 @@ def test_models_get_dataset_features():
     bare_model = make_bare_model(ml_feats=ml_feats)
     mod = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
                                              inputs=ml_feats,
-                                             outputs=["ml_score_t01", "ml_score_t01"])
+                                             outputs=["ml_score_t01",
+                                                      "ml_score_t01"])
     ds = make_data(add_feats=ml_feats, sizes=[42])[0]
     fdata = mod.get_dataset_features(ds, dtype=np.float32)
     assert np.all(fdata[:, 0] == np.array(ds["area_um"], dtype=np.float32))
@@ -751,7 +752,8 @@ def test_models_prediction_runs_through():
     bare_model = make_bare_model(ml_feats=ml_feats)
     mod = feat_anc_ml.models.TensorflowModel(bare_model=bare_model,
                                              inputs=ml_feats,
-                                             outputs=["ml_score_t01", "ml_score_t02"])
+                                             outputs=["ml_score_t01",
+                                                      "ml_score_t02"])
     ds = make_data(add_feats=ml_feats, sizes=[42])[0]
     out = mod.predict(ds)
     assert "ml_score_t01" in out

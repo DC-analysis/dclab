@@ -29,7 +29,7 @@ order to improve the model prediction.
 import matplotlib.pylab as plt
 import numpy as np
 import tensorflow as tf
-from dclab.ml import tf_dataset
+from dclab.rtdc_dataset.feat_anc_ml import tf_dataset
 
 tf.random.set_seed(42)  # for reproducibility
 

@@ -23,16 +23,16 @@ worthwile to standardize this regression/classification process.
 
 In dclab, you are not directly using the *bare* models that you would e.g.
 get from tensorflow/keras. Instead, models are wrapped via a specific
-:class:`dclab.ml.models.BaseModel` class that holds additional information
-about the features from which and to which a model maps. For instance,
-a model might have the inputs ``deform`` and ``area_um`` and make
+:class:`dclab.rtdc_dataset.feat_anc_ml.models.BaseModel` class that holds
+additional information about the features from which and to which a model maps.
+For instance, a model might have the inputs ``deform`` and ``area_um`` and make
 predictions regarding a defined output feature, e.g. ``ml_score_rbc``.
 Output features for machine learning are always of the form ``ml_score_xxx``
 where ``x`` can be any alphanumeric character (you are free to choose).
 
 .. code:: python
 
-    import dclab.ml
+    from dclab.rtdc_dataset.feat_anc_ml import models
     import tensorflow as tf
 
     # do your magic
@@ -41,7 +41,7 @@ where ``x`` can be any alphanumeric character (you are free to choose).
     bare_model.fit(...)
 
     # create a dclab model
-    dc_model = dclab.ml.models.TensorflowModel(
+    dc_model = models.TensorflowModel(
         bare_model=bare_model,
         inputs=["deform", "area_um"],
         outputs=["ml_score_rbc"],
@@ -171,17 +171,18 @@ exchange machine learning methods and apply them in a reproducible manner to
 any RT-DC dataset using dclab or Shape-Out.
 
 To save a machine learning model to a .modc file, you can use the
-`dclab.ml.save_modc` function:
+:func:`dclab.save_modc <dclab.rtdc_dataset.feat_anc_ml.modc.save_modc>` function:
 
 .. code:: python
 
-    dclab.ml.save_modc("path/to/file.modc", dc_model)
+    dclab.save_modc("path/to/file.modc", dc_model)
 
-Conversely, you can load such a model at any time and use it for inference:
+Conversely, you can load such a model at any time and use it for inference
+using the :func:`dclab.load_modc <dclab.rtdc_dataset.feat_anc_ml.modc.load_modc>`:
 
 .. code:: python
 
-    dc_model_loaded = dclab.ml.load_modc("path/to/file.modc")
+    dc_model_loaded = dclab.load_modc("path/to/file.modc")
     with dc_model_loaded:
         prediction = ds["ml_score_rbc"]  # same result as above
 
@@ -194,6 +195,6 @@ Helper functions
 ================
 
 If you are working with `tensorflow <https://www.tensorflow.org/>`_,
-you might find the functions in the :ref:`dclab.ml.tf_dataset
+you might find the functions in the :ref:`dclab.rtdc_dataset.feat_anc_ml.tf_dataset
 <sec_ref_ml_tf_dataset>` submodule helpful. Please also have a look
 at the :ref:`machine-learning examples <example_ml_tensorflow>`.

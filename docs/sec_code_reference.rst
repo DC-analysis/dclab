@@ -145,7 +145,7 @@ Ancillaries
 
 Plugin features
 ---------------
-.. automodule:: dclab.rtdc_dataset.plugins.plugin_feature
+.. automodule:: dclab.rtdc_dataset.feat_anc_plugin.plugin_feature
     :members:
     :undoc-members:
 
@@ -334,25 +334,25 @@ Machine learning
 
 .. _sec_ref_ml_mllibs:
 
-.. automodule:: dclab.ml.mllibs
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.mllibs
    :members:
    :undoc-members:
    :exclude-members: MockPackage
 
 .. _sec_ref_ml_modc:
 
-.. automodule:: dclab.ml.modc
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.modc
    :members:
    :undoc-members:
 
 .. _sec_ref_ml_models:
 
-.. automodule:: dclab.ml.models
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.models
    :members:
    :undoc-members:
 
 .. _sec_ref_ml_tf_dataset:
 
-.. automodule:: dclab.ml.tf_dataset
+.. automodule:: dclab.rtdc_dataset.feat_anc_ml.tf_dataset
    :members:
    :undoc-members:

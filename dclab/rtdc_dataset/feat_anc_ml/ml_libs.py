@@ -15,12 +15,12 @@ def import_or_mock_package(name, min_version):
     if name not in _locals:
         try:
             _mod = importlib.import_module(name)
+            if LooseVersion(_mod.__version__) < LooseVersion(min_version):
+                raise ValueError(f"Please install '{name}>={min_version}'!")
         except ImportError:
             _mod = MockPackage(name, min_version)
     else:
         _mod = _locals[name]
-    if LooseVersion(_mod.__version__) < LooseVersion(min_version):
-        raise ValueError(f"Please install '{name}>={min_version}'!")
     _locals[name] = _mod
     return _mod
 

@@ -7,6 +7,7 @@
  - ref: rename `rtdc_dataset.plugins` submodule to `anc_feat_plugin`
  - ref: move the `ml` submodule to `rtdc_dataset.anc_feat_ml`
  - ref: move tensorflow-related code into its own submodule
+ - setup: bump minimum Python version to 3.7
 0.37.3
  - fix: ignore defective feature "volume" in pre 0.37.0 .rtdc files
  - fix: always perform version branding when using RTDCWriter context

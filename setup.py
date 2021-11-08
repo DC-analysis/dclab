@@ -64,7 +64,7 @@ setup(
                   ),
         ],
     # not to be confused with definitions in pyproject.toml [build-system]
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     extras_require=extras_require,
     entry_points={
        "console_scripts": [

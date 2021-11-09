@@ -1,3 +1,5 @@
+0.38.2
+ - fix: reduce memory usage when writing "mask" feature data
 0.38.1
  - maintenance release
 0.38.0

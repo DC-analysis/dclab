@@ -22,7 +22,7 @@ class UnknownKeyWarning(UserWarning):
     pass
 
 
-class H5ContourEvent(object):
+class H5ContourEvent:
     def __init__(self, h5group):
         self.h5group = h5group
         self.identifier = h5group["0"][:]
@@ -50,7 +50,7 @@ class H5ContourEvent(object):
         return len(self.h5group)
 
 
-class H5Events(object):
+class H5Events:
     def __init__(self, h5):
         self._h5 = h5
         self._features = sorted(self._h5["events"].keys())
@@ -103,7 +103,7 @@ class H5Events(object):
         return features
 
 
-class H5Logs(object):
+class H5Logs:
     def __init__(self, h5):
         self._h5 = h5
 
@@ -135,32 +135,32 @@ class H5Logs(object):
         return names
 
 
-class H5MaskEvent(object):
+class H5MaskEvent:
     """Cast uint8 masks to boolean"""
 
-    def __init__(self, h5group):
-        self.h5group = h5group
+    def __init__(self, h5dataset):
+        self.h5dataset = h5dataset
         # identifier required because "mask" is used for computation
         # of ancillary feature "contour".
-        self.identifier = str(self.h5group.parent.parent.file)
+        self.identifier = str(self.h5dataset.parent.parent.file)
 
     def __getitem__(self, idx):
-        return np.asarray(self.h5group[idx], dtype=bool)
+        return np.asarray(self.h5dataset[idx], dtype=bool)
 
     def __iter__(self):
         for idx in range(len(self)):
             yield self[idx]
 
     def __len__(self):
-        return len(self.h5group)
+        return len(self.h5dataset)
 
     @property
     def attrs(self):
-        return self.h5group.attrs
+        return self.h5dataset.attrs
 
     @property
     def shape(self):
-        return self.h5group.shape
+        return self.h5dataset.shape
 
 
 class RTDC_HDF5(RTDCBase):

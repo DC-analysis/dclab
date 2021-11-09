@@ -153,7 +153,8 @@ class RTDCWriter:
         elif feat in ["image", "image_bg", "mask"]:
             self.write_image_grayscale(group=events,
                                        name=feat,
-                                       data=data)
+                                       data=data,
+                                       is_boolean=(feat == "mask"))
         elif feat == "trace":
             for tr_name in data.keys():
                 # verify trace names
@@ -313,7 +314,7 @@ class RTDCWriter:
         else:
             return new_version
 
-    def write_image_grayscale(self, group, name, data):
+    def write_image_grayscale(self, group, name, data, is_boolean):
         """Write grayscale image data to and HDF5 dataset
 
         This function wraps :func:`RTDCWriter.write_ndarray`
@@ -328,17 +329,31 @@ class RTDCWriter:
             name of the dataset containing the text
         data: np.ndarray or list of np.ndarray
             image data
+        is_boolean: bool
+            whether or not the input data is of boolean nature
+            (e.g. mask data) - if so, data are converted to uint8
         """
-        data = np.atleast_2d(data)
+        if isinstance(data, (list, tuple)):
+            # images may be in lists
+            data = np.atleast_2d(data)
+
         if len(data.shape) == 2:
             # put single event in 3D array
             data = data.reshape(1, data.shape[0], data.shape[1])
 
-        # convert binary data (mask) to uint8
-        if data.dtype == bool:
-            data = np.asarray(data, dtype=np.uint8) * 255
+        if is_boolean:
+            # convert binary (mask) data to uint8
+            if data.__class__.__name__ == "H5MaskEvent":
+                # (if we use `isinstance`, we get circular imports)
+                # Be smart and directly write back the original data
+                # (otherwise we would convert to bool and back to uint8).
+                data = data.h5dataset
+            elif data.dtype == bool:
+                # Convert binary input mask data to uint8 with max range
+                data = np.asarray(data, dtype=np.uint8) * 255
 
-        dset = self.write_ndarray(group=group, name=name, data=data)
+        dset = self.write_ndarray(group=group, name=name, data=data,
+                                  dtype=np.uint8)
 
         # Create and Set image attributes:
         # HDFView recognizes this as a series of images.

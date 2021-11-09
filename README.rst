@@ -92,7 +92,7 @@ permissions to do so)::
     git tag -a "0.1.3"
     git push --tags origin
 
-Appveyor and TravisCI will then automatically build source package and wheels 
+Appveyor and GitHub Actions will then automatically build source package and wheels
 and publish them on PyPI.
 
 

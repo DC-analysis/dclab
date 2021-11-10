@@ -12,12 +12,6 @@ def test_contour_not_available():
     assert "contour" not in ds
 
 
-def test_contour_shape_dict():
-    ddict = example_data_dict(size=67, keys=["area_um", "deform", "contour"])
-    ds = new_dataset(ddict)
-    assert ds["contour"].shape == (67, np.nan, 2)
-
-
 def test_image_not_available():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
@@ -35,6 +29,22 @@ def test_min_max_update():
     ds.apply_filter()
 
     assert ds.filter.all.sum() == 22
+
+
+def test_shape_dict_contour():
+    ddict = example_data_dict(size=67, keys=["area_um", "deform", "contour"])
+    ds = new_dataset(ddict)
+    assert ds["contour"].shape == (67, np.nan, 2)
+    assert len(ds["contour"]) == 67
+
+
+def test_shape_dict_trace():
+    ddict = example_data_dict(size=67, keys=["area_um", "deform", "trace"])
+    ds = new_dataset(ddict)
+    assert ds["trace"].shape == (6, 67, 100)
+    assert len(ds["trace"]) == 6
+    assert len(ds["trace"]["fl1_raw"]) == 67
+    assert len(ds["trace"]["fl1_raw"][0]) == 100
 
 
 def test_trace_not_available():

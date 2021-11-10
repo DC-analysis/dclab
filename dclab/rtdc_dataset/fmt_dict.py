@@ -26,6 +26,26 @@ class DictContourEvent:
         return len(self.contours)
 
 
+class DictTraceEvent:
+    def __init__(self, traces):
+        key0 = sorted(traces.keys())[0]
+        self.shape = (len(traces), len(traces[key0]), len(traces[key0][0]))
+        self.traces = traces
+
+    def __getitem__(self, idx):
+        return self.traces[idx]
+
+    def __contains__(self, item):
+        return item in self.traces
+
+    def __len__(self):
+        return self.shape[0]
+
+    def __iter__(self):
+        for key in sorted(self.traces.keys()):
+            yield key
+
+
 class RTDC_Dict(RTDCBase):
     def __init__(self, ddict, *args, **kwargs):
         """Dictionary-based RT-DC dataset
@@ -67,6 +87,8 @@ class RTDC_Dict(RTDCBase):
                     data = np.array(ddict[feat])
                 elif feat == "contour":
                     data = DictContourEvent(ddict[feat])
+                elif feat == "trace":
+                    data = DictTraceEvent(ddict[feat])
                 else:
                     data = ddict[feat]
             else:

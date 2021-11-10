@@ -34,12 +34,53 @@ def test_config_calculation():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_contour_shape_hierarchy():
+def test_hierarchy_shape_contour():
     ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
     assert ds["contour"].shape == (5, np.nan, 2)
     ds.filter.manual[0] = False
     ch = new_dataset(ds)
     assert ch["contour"].shape == (4, np.nan, 2)
+    assert len(ch["contour"]) == 4
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hierarchy_shape_image():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    ds.filter.manual[0] = False
+    ch = new_dataset(ds)
+    assert "image" in ch.features_innate
+    assert len(ch["image"]) == 4
+    assert ch["image"].shape == (4, 80, 250)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hierarchy_shape_mask():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    ds.filter.manual[0] = False
+    ch = new_dataset(ds)
+    assert "mask" in ch.features_innate
+    assert len(ch["mask"]) == 4
+    assert ch["mask"].shape == (4, 80, 250)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hierarchy_shape_trace():
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
+    assert len(ds) == 7
+    ds.filter.manual[0] = False
+    ds.filter.manual[1] = False
+    ch = new_dataset(ds)
+    assert len(ch) == 5
+    assert "trace" in ch.features_innate
+    assert ch["trace"].shape == (6, 5, 177)
+    assert ch["trace"]["fl1_raw"].shape == (5, 177)
+    assert ch["trace"]["fl1_raw"][0].shape == (177,)
+    assert len(ch["trace"]) == 6
+    assert len(ch["trace"]["fl1_raw"]) == 5
+    assert len(ch["trace"]["fl1_raw"][0]) == 177
 
 
 @pytest.mark.filterwarnings(

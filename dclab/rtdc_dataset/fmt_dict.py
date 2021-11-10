@@ -26,24 +26,12 @@ class DictContourEvent:
         return len(self.contours)
 
 
-class DictTraceEvent:
-    def __init__(self, traces):
-        key0 = sorted(traces.keys())[0]
-        self.shape = (len(traces), len(traces[key0]), len(traces[key0][0]))
-        self.traces = traces
+class DictTraceEvent(dict):
 
-    def __getitem__(self, idx):
-        return self.traces[idx]
-
-    def __contains__(self, item):
-        return item in self.traces
-
-    def __len__(self):
-        return self.shape[0]
-
-    def __iter__(self):
-        for key in sorted(self.traces.keys()):
-            yield key
+    @property
+    def shape(self):
+        key0 = sorted(self.keys())[0]
+        return len(self), len(self[key0]), len(self[key0][0])
 
 
 class RTDC_Dict(RTDCBase):

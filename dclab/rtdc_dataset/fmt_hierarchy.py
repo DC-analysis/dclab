@@ -43,6 +43,11 @@ class ChildImage(ChildBase):
         hp = self.child.hparent
         return hp["image"][pidx]
 
+    @property
+    def shape(self):
+        hp = self.child.hparent
+        return tuple([len(self)] + list(hp["image"][0].shape))
+
 
 class ChildImageBG(ChildBase):
     def __getitem__(self, idx):
@@ -50,6 +55,11 @@ class ChildImageBG(ChildBase):
                                         child_indices=idx)
         hp = self.child.hparent
         return hp["image_bg"][pidx]
+
+    @property
+    def shape(self):
+        hp = self.child.hparent
+        return tuple([len(self)] + list(hp["image_bg"][0].shape))
 
 
 class ChildMask(ChildBase):
@@ -59,10 +69,23 @@ class ChildMask(ChildBase):
         hp = self.child.hparent
         return hp["mask"][pidx]
 
+    @property
+    def shape(self):
+        hp = self.child.hparent
+        return tuple([len(self)] + list(hp["mask"][0].shape))
 
-class ChildTrace(ChildBase):
+
+class ChildTrace(dict):
+    @property
+    def shape(self):
+        # set proper shape (#117)
+        key0 = sorted(self.keys())[0]
+        return tuple([len(self)] + list(self[key0].shape))
+
+
+class ChildTraceItem(ChildBase):
     def __init__(self, child, flname):
-        super(ChildTrace, self).__init__(child)
+        super(ChildTraceItem, self).__init__(child)
         self.flname = flname
 
     def __getitem__(self, idx):
@@ -70,6 +93,11 @@ class ChildTrace(ChildBase):
                                         child_indices=idx)
         hp = self.child.hparent
         return hp["trace"][self.flname][pidx]
+
+    @property
+    def shape(self):
+        hp = self.child.hparent
+        return len(self), hp["trace"][self.flname].shape[1]
 
 
 class HierarchyFilter(Filter):
@@ -351,10 +379,10 @@ class RTDC_Hierarchy(RTDCBase):
         if "mask" in self.hparent:
             self._events["mask"] = ChildMask(self)
         if "trace" in self.hparent:
-            trdict = {}
+            trdict = ChildTrace()
             for flname in dfn.FLUOR_TRACES:
                 if flname in self.hparent["trace"]:
-                    trdict[flname] = ChildTrace(self, flname)
+                    trdict[flname] = ChildTraceItem(self, flname)
             self._events["trace"] = trdict
         # Update configuration
         self._update_config()

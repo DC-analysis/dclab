@@ -395,14 +395,6 @@ def check_feature_shape(name, data):
     ------
     ValueError
         If the data's shape does not match its scalar description
-
-    Notes
-    -----
-    Bug: Some contour data in test files have incorrect dimensions.
-    Therefore, an exclusive case has been added. This is to be fixed in
-    future versions and is not a permanent fix.
-    See https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/117
-    for more information.
     """
     if len(data.shape) == 1 and not scalar_feature_exists(name):
         raise ValueError(f"Feature '{name}' is not a scalar feature, but "

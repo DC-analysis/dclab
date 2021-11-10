@@ -53,6 +53,11 @@ class TraceColumn(object):
         return self.trace.keys()
 
     @property
+    def shape(self):
+        key0 = sorted(self.keys())[0]
+        return len(self), len(self[key0]), len(self[key0][0])
+
+    @property
     def trace(self):
         """Initializes the trace data"""
         if self._trace is None:
@@ -112,7 +117,15 @@ class TraceColumn(object):
                             # sections (we already tested that sampleids is
                             # equally-spaced).
                             spe = sampleids[1] - sampleids[0]
-                            trace[trace_key] = np.split(trdat, trdat.size//spe)
+                            if (trdat.size % spe) == 0:
+                                # this is the ideal case
+                                trace_array = trdat.reshape(
+                                    trdat.size // spe, -1)
+                            else:
+                                # this is bad, but we allow it
+                                trace_array = np.split(trdat, trdat.size//spe)
+                            trace[trace_key] = trace_array
+
         return trace
 
     @staticmethod

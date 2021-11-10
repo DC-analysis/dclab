@@ -19,7 +19,7 @@ class LazyContourList(object):
         self.contours = [None] * len(masks)
         #: used for hashing in ancillary features
         self.identifier = str(masks[0][:].tobytes())
-        self.shape = (len(masks), np.nan, 2)
+        self.shape = len(masks), np.nan, 2
 
     def __getitem__(self, idx):
         """Compute contour(s) if not already in self.contours"""

@@ -18,7 +18,6 @@ nptdms = pytest.importorskip("nptdms")
 
 
 def test_compatibility_minimal():
-    pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     assert ds.config["setup"]["channel width"] == 20
     assert ds.config["setup"]["chip region"].lower() == "channel"
@@ -29,7 +28,6 @@ def test_compatibility_minimal():
 @pytest.mark.skipif(sys.version_info < (3, 6),
                     reason="requires python3.6 or higher")
 def test_compatibility_channel_width():
-    pytest.importorskip("nptdms")
     # At some point, "Channel width" was replaced by "Channel width [um]"
     path = retrieve_data("fmt-tdms_minimal_2016.zip")
     para = path.parent / "M1_para.ini"
@@ -54,7 +52,6 @@ def test_compatibility_shapein201():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_contains_non_scalar():
-    pytest.importorskip("nptdms")
     ds1 = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert "contour" in ds1
     assert "image" in ds1
@@ -159,14 +156,48 @@ def test_contour_not_initialized():
     assert not ds["contour"]._initialized
 
 
-def test_contour_shape():
-    pytest.importorskip("nptdms")
+def test_tdms_shape_contour():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
     assert ds["contour"].shape == (8, np.nan, 2)
+    assert len(ds["contour"]) == 8
+
+
+def test_hdf5_shape_image():
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
+    assert "image" in ds.features_innate
+    # Yeah, so the scalar features have different lengths than the
+    # non-scalar features. This file is obviously broken (manually
+    # cropped that data part), but it is sufficient for this test.
+    assert len(ds) == 1008
+    assert len(ds["image"]) == 9
+    assert ds["image"].shape == (9, 80, 250)
+
+
+def test_hdf5_shape_mask():
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image-bright_2017.zip"))
+    assert "mask" in ds.features_innate
+    # Yeah, so the scalar features have different lengths than the
+    # non-scalar features. This file is obviously broken (manually
+    # cropped that data part), but it is sufficient for this test.
+    assert len(ds) == 1008
+    # mask length is determined by contour length
+    assert len(ds["mask"]) == 8
+    assert ds["mask"].shape == (8, 80, 250)
+
+
+def test_hdf5_shape_trace():
+    ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
+    assert len(ds) == 44
+    assert "trace" in ds.features_innate
+    assert ds["trace"].shape == (2, 44, 1000)
+    assert ds["trace"]["fl1_raw"].shape == (44, 1000)
+    assert ds["trace"]["fl1_raw"][0].shape == (1000,)
+    assert len(ds["trace"]) == 2
+    assert len(ds["trace"]["fl1_raw"]) == 44
+    assert len(ds["trace"]["fl1_raw"][0]) == 1000
 
 
 def test_fluorescence_config():
-    pytest.importorskip("nptdms")
     ds1 = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     assert "fluorescence" not in ds1.config
     ds2 = new_dataset(retrieve_data("fmt-tdms_2fl-no-image_2017.zip"))
@@ -403,7 +434,6 @@ def test_parameters_txt():
 
 
 def test_pixel_size():
-    pytest.importorskip("nptdms")
     path = retrieve_data("fmt-tdms_minimal_2016.zip")
     para = path.parent / "M1_para.ini"
     data = para.open("r").read()

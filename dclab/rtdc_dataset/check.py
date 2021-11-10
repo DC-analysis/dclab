@@ -557,7 +557,7 @@ class IntegrityChecker(object):
             for ii, roi in enumerate(["roi size y", "roi size x"]):
                 for feat in ["image", "image_bg", "mask"]:
                     if feat in self.ds:
-                        soll = self.ds[feat][0].shape[ii]
+                        soll = self.ds[feat].shape[ii+1]
                         ist = self.ds.config["imaging"][roi]
                         if soll != ist:
                             cues.append(ICue(

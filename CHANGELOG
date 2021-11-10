@@ -1,6 +1,8 @@
 0.38.3
  - enh: implement .shape and .__len__ for non-scalar features
    and all file formats (#117)
+ - ref: minor refactoring of tdms file format code might lead to
+   faster loading of trace data
 0.38.2
  - fix: reduce memory usage when writing "mask" feature data
 0.38.1

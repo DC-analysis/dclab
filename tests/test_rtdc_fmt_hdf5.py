@@ -42,13 +42,6 @@ def test_contour_basic():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_contour_shape_hdf5():
-    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
-    assert ds["contour"].shape == (5, np.nan, 2)
-
-
-@pytest.mark.filterwarnings(
-    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_defective_feature_aspect():
     # see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/241
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -134,6 +127,47 @@ def test_hash():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert ds.hash == "2c436daba22d2c7397b74d53d80f8931"
     assert ds.format == "hdf5"
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_shape_contour():
+    ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
+    assert "contour" in ds.features_innate
+    assert len(ds["contour"]) == 8
+    assert ds["contour"].shape == (8, np.nan, 2)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_shape_image():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert "image" in ds.features_innate
+    assert len(ds["image"]) == 5
+    assert ds["image"].shape == (5, 80, 250)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_shape_mask():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert "mask" in ds.features_innate
+    assert len(ds["mask"]) == 5
+    assert ds["mask"].shape == (5, 80, 250)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_shape_trace():
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
+    assert len(ds) == 7
+    assert "trace" in ds.features_innate
+    assert ds["trace"].shape == (6, 7, 177)
+    assert ds["trace"]["fl1_raw"].shape == (7, 177)
+    assert ds["trace"]["fl1_raw"][0].shape == (177,)
+    assert len(ds["trace"]) == 6
+    assert len(ds["trace"]["fl1_raw"]) == 7
+    assert len(ds["trace"]["fl1_raw"][0]) == 177
 
 
 @pytest.mark.filterwarnings(

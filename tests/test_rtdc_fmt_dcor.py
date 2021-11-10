@@ -136,6 +136,7 @@ def test_dcor_hierarchy(monkeypatch):
 def test_dcor_shape_contour():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert len(ds["contour"]) == 5000
         assert ds["contour"].shape == (5000, np.nan, 2)
 
 
@@ -143,6 +144,7 @@ def test_dcor_shape_contour():
 def test_dcor_shape_image():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert len(ds["image"]) == 5000
         assert ds["image"].shape == (5000, 80, 250)
         assert ds["image"][0].shape == (80, 250)
         assert ds["image"][0][0].shape == (250,)
@@ -152,6 +154,7 @@ def test_dcor_shape_image():
 def test_dcor_shape_mask():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert len(ds["mask"]) == 5000
         assert ds["mask"].shape == (5000, 80, 250)
         assert ds["mask"][0].shape == (80, 250)
         assert ds["mask"][0][0].shape == (250,)
@@ -161,6 +164,7 @@ def test_dcor_shape_mask():
 def test_dcor_shape_trace():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert len(ds["trace"]) == 6
         assert ds["trace"].shape == (6, 5000, 177)
         assert len(ds["trace"]["fl1_raw"]) == 5000
         assert ds["trace"]["fl1_raw"].shape == (5000, 177)

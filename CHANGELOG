@@ -1,3 +1,6 @@
+0.38.3
+ - enh: implement .shape and .__len__ for non-scalar features
+   and all file formats (#117)
 0.38.2
  - fix: reduce memory usage when writing "mask" feature data
 0.38.1

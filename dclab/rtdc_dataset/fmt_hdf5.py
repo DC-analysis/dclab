@@ -26,7 +26,6 @@ class H5ContourEvent:
     def __init__(self, h5group):
         self.h5group = h5group
         self.identifier = h5group["0"][:]
-        self.shape = (len(h5group), np.nan, 2)
 
     def __getitem__(self, key):
         if not isinstance(key, numbers.Integral):
@@ -46,8 +45,14 @@ class H5ContourEvent:
         for idx in range(len(self)):
             yield self[idx]
 
+    @functools.lru_cache()
     def __len__(self):
+        # computing the length of an H5Group is slow
         return len(self.h5group)
+
+    @property
+    def shape(self):
+        return len(self), np.nan, 2
 
 
 class H5Events:
@@ -65,12 +70,14 @@ class H5Events:
         # user-level checking is done in core.py
         assert dfn.feature_exists(key), "Feature '{}' not valid!".format(key)
         data = self._h5["events"][key]
-        if key in ["image", "image_bg", "trace"]:
+        if key in ["image", "image_bg"]:
             return data
         elif key == "contour":
             return H5ContourEvent(data)
         elif key == "mask":
             return H5MaskEvent(data)
+        elif key == "trace":
+            return H5TraceEvent(data)
         else:
             return data[:]
 
@@ -161,6 +168,32 @@ class H5MaskEvent:
     @property
     def shape(self):
         return self.h5dataset.shape
+
+
+class H5TraceEvent:
+    def __init__(self, h5group):
+        self.h5group = h5group
+
+    def __getitem__(self, idx):
+        return self.h5group[idx]
+
+    def __contains__(self, item):
+        return item in self.h5group
+
+    def __len__(self):
+        return len(self.h5group)
+
+    def __iter__(self):
+        for key in sorted(self.h5group.keys()):
+            yield key
+
+    def keys(self):
+        return self.h5group.keys()
+
+    @property
+    def shape(self):
+        atrace = list(self.h5group.keys())[0]
+        return tuple([len(self.h5group)] + list(self.h5group[atrace].shape))
 
 
 class RTDC_HDF5(RTDCBase):

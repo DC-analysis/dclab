@@ -201,6 +201,9 @@ class DCORTraceFeature:
         else:
             raise KeyError("trace '{}' not found!".format(trace))
 
+    def __len__(self):
+        return len(self.traces)
+
     def keys(self):
         return self.traces
 

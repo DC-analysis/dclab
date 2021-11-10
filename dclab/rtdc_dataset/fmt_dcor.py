@@ -149,8 +149,23 @@ class DCORContourFeature(DCORNonScalarFeature):
             return self._get_item(event)
 
 
+class DCORImageFeature(DCORNonScalarFeature):
+    """Helper class for accessing image data"""
+
+    def __init__(self, feat, api, size):
+        super(DCORImageFeature, self).__init__(feat, api, size)
+        metadata = self.api.get(query="metadata")
+        self.shape = (size,
+                      metadata["imaging"]["roi size y"],
+                      metadata["imaging"]["roi size x"])
+
+
 class DCORTraceItem(DCORNonScalarFeature):
     """Helper class for accessing traces"""
+    def __init__(self, feat, api, size, samples_per_event):
+        super(DCORTraceItem, self).__init__(feat, api, size)
+        self.shape = (size, samples_per_event)
+
     @lru_cache(maxsize=100)
     def _get_item(self, event):
         data = self.api.get(query="trace", trace=self.feat, event=event)
@@ -164,8 +179,15 @@ class DCORTraceFeature:
         self.identifier = api.url + ":traces"
         self.api = api
         self._size = size
+        metadata = self.api.get(query="metadata")
+        self._samples_per_event = metadata["fluorescence"]["samples per event"]
         self.traces = api.get(query="trace_list")
         self._trace_objects = {}
+
+        self.shape = (len(self.traces),
+                      size,
+                      self._samples_per_event
+                      )
 
     def __contains__(self, key):
         return key in self.traces
@@ -173,8 +195,8 @@ class DCORTraceFeature:
     def __getitem__(self, trace):
         if trace in self.traces:
             if trace not in self._trace_objects:
-                self._trace_objects[trace] = DCORTraceItem(trace, self.api,
-                                                           self._size)
+                self._trace_objects[trace] = DCORTraceItem(
+                    trace, self.api, self._size, self._samples_per_event)
             return self._trace_objects[trace]
         else:
             raise KeyError("trace '{}' not found!".format(trace))
@@ -219,11 +241,12 @@ class FeatureCache:
                 self._nonsc_features["trace"] = DCORTraceFeature(self.api,
                                                                  self._size)
             return self._nonsc_features["trace"]
-        else:
-            if key not in self._nonsc_features:
-                self._nonsc_features[key] = DCORNonScalarFeature(key, self.api,
-                                                                 self._size)
+        elif key in ["image", "mask"]:
+            self._nonsc_features[key] = DCORImageFeature(key, self.api,
+                                                         self._size)
             return self._nonsc_features[key]
+        else:
+            raise ValueError(f"No DCOR handler for feature '{key}'!")
 
     def __iter__(self):
         # dict-like behavior

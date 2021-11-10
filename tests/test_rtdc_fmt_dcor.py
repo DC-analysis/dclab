@@ -101,13 +101,6 @@ def test_dcor_cache_trace():
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
-def test_dcor_contour_shape():
-    # calibration beads
-    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
-        assert ds["contour"].shape == (5000, np.nan, 2)
-
-
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_data():
     # reticulocytes.rtdc contains contour data
     ds = dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a")
@@ -137,6 +130,43 @@ def test_dcor_hierarchy(monkeypatch):
     dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id=1")
     dsh = dclab.new_dataset(dso)
     assert np.all(dso["area_um"] == dsh["area_um"])
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_shape_contour():
+    # calibration beads
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert ds["contour"].shape == (5000, np.nan, 2)
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_shape_image():
+    # calibration beads
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert ds["image"].shape == (5000, 80, 250)
+        assert ds["image"][0].shape == (80, 250)
+        assert ds["image"][0][0].shape == (250,)
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_shape_mask():
+    # calibration beads
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert ds["mask"].shape == (5000, 80, 250)
+        assert ds["mask"][0].shape == (80, 250)
+        assert ds["mask"][0][0].shape == (250,)
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_shape_trace():
+    # calibration beads
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert ds["trace"].shape == (6, 5000, 177)
+        assert len(ds["trace"]["fl1_raw"]) == 5000
+        assert ds["trace"]["fl1_raw"].shape == (5000, 177)
+        assert len(ds["trace"]["fl1_raw"][0]) == 177
+        assert len(ds["trace"]["fl1_raw"][0]) != 5000
+        assert ds["trace"]["fl1_raw"][0].shape == (177,)
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")

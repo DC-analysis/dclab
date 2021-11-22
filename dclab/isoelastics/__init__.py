@@ -1,19 +1,20 @@
 """Isoelastics management"""
 import functools
-import warnings
-
 from pkg_resources import resource_filename
+import warnings
 
 import numpy as np
 
 from .. import definitions as dfn
 from ..features import emodulus as feat_emod
 
+
+#: List of isoelasticity lines in dclab
 ISOFILES = ["isoel-linear-2Daxis-analyt-area_um-deform.txt",
             "isoel-linear-2Daxis-FEM-area_um-deform.txt",
             "isoel-linear-2Daxis-FEM-volume-deform.txt",
             ]
-ISOFILES = [resource_filename("dclab.isoelastics", _if) for _if in ISOFILES]
+ISOFILES = [resource_filename("dclab.isoelastics", isf) for isf in ISOFILES]
 
 
 class IsoelasticsEmodulusMeaninglessWarning(UserWarning):
@@ -23,6 +24,12 @@ class IsoelasticsEmodulusMeaninglessWarning(UserWarning):
 class Isoelastics(object):
     def __init__(self, paths=None):
         """Isoelasticity line management
+
+        Parameters
+        ----------
+        paths: list of pathlib.Path or list of str
+            list of paths to files containing isoelasticity lines
+            (see e.g. :const:`ISOFILES`)
 
         .. versionchanged:: 0.24.0
             The isoelasticity lines of the analytical model
@@ -372,7 +379,7 @@ class Isoelastics(object):
 
         Parameters
         ----------
-        path: str
+        path: str or pathlib.Path
             Path to an isoelasticity lines text file
         """
         isodata, meta = feat_emod.load_mtext(path)

@@ -6,7 +6,7 @@ def compute_my_feature(rtdc_ds):
 
 info = {
     "method": compute_my_feature,
-    "description": "This plugin computes area times circularity",
+    "description": "Compute area times circularity",
     "feature names": ["circ_times_area"],
     "features required": ["circ", "area_um"],
     "version": "0.1.0",

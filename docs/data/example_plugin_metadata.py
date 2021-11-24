@@ -6,7 +6,7 @@ def compute_area_exponent(rtdc_ds):
 
 info = {
     "method": compute_area_exponent,
-    "description": "This plugin computes area to the power of exp",
+    "description": "Compute area to the power of exp",
     "feature names": ["area_exp"],
     "features required": ["area_um"],
     "config required": [["user", ["exp"]]],

@@ -1,3 +1,5 @@
+0.39.1
+ - fix: don't create __pycache__ folders for plugin features
 0.39.0
  - enh: implement .shape and .__len__ for non-scalar features
    and all file formats (#117)

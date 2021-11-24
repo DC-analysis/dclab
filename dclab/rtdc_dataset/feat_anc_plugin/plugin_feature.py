@@ -37,6 +37,7 @@ def import_plugin_feature_script(plugin_path):
     try:
         # insert the plugin directory to sys.path so we can import it
         sys.path.insert(-1, str(path.parent))
+        sys.dont_write_bytecode = True
         plugin = importlib.import_module(path.stem)
     except ModuleNotFoundError:
         raise PluginImportError("The plugin could be not be found at "
@@ -44,6 +45,7 @@ def import_plugin_feature_script(plugin_path):
     finally:
         # undo our path insertion
         sys.path.pop(0)
+        sys.dont_write_bytecode = False
 
     return plugin.info
 

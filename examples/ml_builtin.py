@@ -84,8 +84,10 @@ dc_model = hook_tensorflow.TensorflowModel(
     bare_model=bare_model,
     inputs=features,
     outputs=["ml_score_cel"],
-    output_labels=["Probability of having a cell"],
-    model_name="Distinguish between cells and beads",
+    info={
+        "description": "Distinguish between cells and beads",
+        "output labels": ["Probability of having a cell"],
+    }
 )
 dclab.MachineLearningFeature(feature_name="ml_score_cel",
                              dc_model=dc_model)

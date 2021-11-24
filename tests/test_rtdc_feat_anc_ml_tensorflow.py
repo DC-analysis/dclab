@@ -127,7 +127,7 @@ def test_af_ml_score_label_registered():
         bare_model=bare_model,
         inputs=ml_feats,
         outputs=["ml_score_low", "ml_score_hig"],
-        output_labels=["Low label", "High label"])
+        info={"output labels": ["Low label", "High label"]})
 
     # register the features
     feat_anc_ml.MachineLearningFeature(feature_name="ml_score_low",

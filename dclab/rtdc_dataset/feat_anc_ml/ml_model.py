@@ -1,12 +1,10 @@
 import abc
-import uuid
 
 import numpy as np
 
 
 class BaseModel(abc.ABC):
-    def __init__(self, bare_model, inputs, outputs, model_name=None,
-                 output_labels=None):
+    def __init__(self, bare_model, inputs, outputs, info=None):
         """
         Parameters
         ----------
@@ -18,17 +16,18 @@ class BaseModel(abc.ABC):
         outputs: list of str
             List of output features the model provides in that order, e.g.
             ``["ml_score_rbc", "ml_score_rt1", "ml_score_tfe"]``
-        model_name: str or None
-            The name of the models
-        output_labels: list of str
-            List of more descriptive labels for the features, e.g.
-            ``["red blood cell", "type 1 cell", "troll cell"]``.
+        info: dict
+            Dictionary with model metadata
         """
+        if info is None:
+            info = {}
+        info.setdefault("input features", inputs)
+        info.setdefault("output features", outputs)
         self.bare_model = bare_model
         self.inputs = inputs
         self.outputs = outputs
-        self.name = model_name or str(uuid.uuid4())[:5]
-        self.output_labels = output_labels or outputs
+        self.info = info
+        self.output_labels = info.get("output labels") or outputs
 
     @staticmethod
     def all_formats():

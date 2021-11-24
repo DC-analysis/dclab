@@ -164,8 +164,7 @@ def load_modc(path, from_format=None):
                     model = cls(bare_model=bare_model,
                                 inputs=model_dict["input features"],
                                 outputs=model_dict["output features"],
-                                output_labels=model_dict["output labels"],
-                                model_name=model_dict["name"]
+                                info=model_dict,
                                 )
                     break
             elif from_format and fmt == from_format:
@@ -212,9 +211,10 @@ def save_modc(path, dc_models):
         m_dict["index"] = ii
         m_dict["input features"] = mm.inputs
         m_dict["output features"] = mm.outputs
-        m_dict["output labels"] = mm.output_labels
-        m_dict["name"] = mm.name
         m_dict["path"] = p_mod.name
+        for key in ["description", "long description", "output labels"]:
+            if key in mm.info:
+                m_dict[key] = mm.info[key]
         model_data.append(m_dict)
 
     meta = {

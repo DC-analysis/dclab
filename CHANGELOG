@@ -1,6 +1,9 @@
-0.38.3
+0.39.0
  - enh: implement .shape and .__len__ for non-scalar features
    and all file formats (#117)
+ - ref: adjust ancillary machine-learning feature API to match
+   that of plugin features (this is not a breaking change,
+   because nobody is using machine-learning features yet)
  - ref: minor refactoring of tdms file format code might lead to
    faster loading of trace data
 0.38.2

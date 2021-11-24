@@ -45,8 +45,11 @@ where ``x`` can be any alphanumeric character (you are free to choose).
         bare_model=bare_model,
         inputs=["deform", "area_um"],
         outputs=["ml_score_rbc"],
-        model_name="RBC identification",
-        output_labels=["Red Blood Cells"])
+        info={
+            "description": "RBC identification",
+            "output labels": ["Red Blood Cells"]
+            }
+        )
 
     # once you get here, you can use your model directly for inference
     ds = dclab.new_dataset("path/to/a/dataset")
@@ -111,6 +114,7 @@ The corresponding index.json file could look like this:
       "models": [
         {
           "date": "2020-11-03 17:01",
+          "description": "Determine sensitivity X",
           "formats": {
             "tensorflow-SavedModel": "tensorflow-SavedModel.tf",
             "library-OtherFormat": "another-format"
@@ -119,7 +123,6 @@ The corresponding index.json file could look like this:
           "input features": [
             "deform"
           ],
-          "name": "Example Model 1",
           "output features": [
             "ml_score_low",
             "ml_score_hig"
@@ -133,6 +136,7 @@ The corresponding index.json file could look like this:
         },
         {
           "date": "2020-11-03 17:02",
+          "description": "Find RBCs and sad cells",
           "formats": {
             "tensorflow-SavedModel": "tensorflow-SavedModel.tf"
           },
@@ -141,7 +145,6 @@ The corresponding index.json file could look like this:
             "area_um",
             "image"
           ],
-          "name": "Example Model 2",
           "output features": [
             "ml_score_rbc",
             "ml_score_sad"

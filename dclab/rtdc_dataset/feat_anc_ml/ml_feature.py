@@ -1,6 +1,8 @@
 """
 .. versionadded:: 0.38.0
 """
+import hashlib
+
 from ..feat_anc_core import AncillaryFeature
 
 from . import modc
@@ -38,7 +40,9 @@ class MachineLearningFeature(AncillaryFeature):
                 raise ValueError("Cannot register two MachineLearningFeatures"
                                  + f"for the same feature '{feature_name}'!")
 
+        self.feature_name = feature_name
         self.modc_path = modc_path
+        self.ml_feature_info = self._process_ml_info(dc_model.info)
 
         # Instantiate the super class
         super(MachineLearningFeature, self).__init__(
@@ -46,8 +50,45 @@ class MachineLearningFeature(AncillaryFeature):
             method=dc_model.predict,
             req_features=dc_model.inputs,
             data=dc_model,
-            identifier=dc_model.name
+            identifier=self.ml_feature_info["identifier"],
         )
+
+    def _process_ml_info(self, original_info):
+        """Return dictionary with all relevant info for this instance
+        """
+        fidx = original_info["output features"].index(self.feature_name)
+
+        # determine feature label
+        if ("output labels" in original_info
+                and original_info["output labels"][fidx]):
+            label = original_info["output labels"][fidx]
+        else:
+            label = f"ML feature {self.feature_name}"
+
+        md5hasher = hashlib.md5()
+        md5hasher.update(original_info.get("sha256", "").encode())
+        md5hasher.update(original_info.get("description", "").encode())
+        md5hasher.update(original_info.get("long description", "").encode())
+        md5hasher.update(original_info.get("date", "").encode())
+        md5hasher.update(self.feature_name.encode("utf-8"))
+        for feat in original_info["input features"]:
+            md5hasher.update(feat.encode("utf-8"))
+        identifier = md5hasher.hexdigest()
+
+        feature_info = {
+            "description": original_info.get(
+                "description", "No description provided"),
+            "long description": original_info.get(
+                "long description", "No long description provided."),
+            "feature name": self.feature_name,
+            "feature label": label,
+            "features required": original_info["input features"],
+            "scalar feature": True,
+            "modc path": self.modc_path,
+            "identifier": identifier,
+        }
+
+        return feature_info
 
 
 def load_ml_feature(modc_path):

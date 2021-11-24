@@ -37,7 +37,7 @@ class MachineLearningFeature(AncillaryFeature):
         for af in AncillaryFeature.features:
             if (isinstance(af, MachineLearningFeature)
                     and af.feature_name == feature_name):
-                raise ValueError("Cannot register two MachineLearningFeatures"
+                raise ValueError("Cannot register two MachineLearningFeatures "
                                  + f"for the same feature '{feature_name}'!")
 
         self.feature_name = feature_name
@@ -76,6 +76,7 @@ class MachineLearningFeature(AncillaryFeature):
         identifier = md5hasher.hexdigest()
 
         feature_info = {
+            "date": original_info.get("date", "no date"),
             "description": original_info.get(
                 "description", "No description provided"),
             "long description": original_info.get(

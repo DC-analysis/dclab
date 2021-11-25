@@ -111,7 +111,7 @@ class RTDCBase(abc.ABC):
                 data = data_dict[key]
             return data
         else:
-            raise KeyError("Feature '{}' does not exist!".format(key))
+            raise KeyError(f"Feature '{key}' does not exist in {self}!")
 
     def __iter__(self):
         """An iterator over all valid scalar features"""

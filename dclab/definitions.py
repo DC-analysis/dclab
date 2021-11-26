@@ -253,11 +253,11 @@ for _i in range(10):
 #: list of non-scalar features
 FEATURES_NON_SCALAR = [
     # This is a (M, 2)-shaped array with integer contour coordinates
-    ["contour", "Binary event contour image"],
+    ["contour", "Event contour"],
     ["image", "Gray scale event image"],
     ["image_bg", "Gray scale event background image"],
     # This is the contour with holes filled
-    ["mask", "Binary region labeling the event in the image"],
+    ["mask", "Binary mask labeling the event in the image"],
     # See FLUOR_TRACES for valid keys
     ["trace", "Dictionary of fluorescence traces"],
 ]

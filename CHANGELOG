@@ -1,3 +1,6 @@
+0.39.2
+ - ref: renamed mask and contour labels
+ - ref: increase verbosity in error messages
 0.39.1
  - fix: don't create __pycache__ folders for plugin features
  - fix: add "date" to machine-learning feature info dict

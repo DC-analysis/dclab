@@ -19,7 +19,7 @@ def fbool(value):
         elif value:
             value = bool(float(value))
         else:
-            raise ValueError("empty string")
+            raise ValueError("Empty string provided for fbool!")
     else:
         value = bool(float(value))
     return value
@@ -37,7 +37,7 @@ def fint(value):
         elif value:
             value = int(float(value))
         else:
-            raise ValueError("empty string")
+            raise ValueError("Empty string provided for fint!")
     else:
         value = int(float(value))
     return value

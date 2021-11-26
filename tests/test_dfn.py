@@ -1,6 +1,19 @@
 import numpy as np
 
+import pytest
+
+
 from dclab.definitions import meta_logic, meta_parse
+
+
+def assert_is_bool_false(value):
+    assert isinstance(value, bool)
+    assert not value
+
+
+def assert_is_bool_true(value):
+    assert isinstance(value, bool)
+    assert value
 
 
 def test_meta_logic_config_key_exists():
@@ -63,3 +76,60 @@ def test_meta_logic_get_config_value_type():
     assert meta_logic.get_config_value_type(
         "online_filter", "area_um,deform polygon points") \
         is np.ndarray
+
+
+def test_meta_parse_f2dfloatarray():
+    assert meta_parse.f2dfloatarray([[1], [2]]).shape == (2, 1)
+
+
+def test_meta_parse_fbool():
+    assert_is_bool_true(meta_parse.fbool(True))
+    assert_is_bool_true(meta_parse.fbool("true"))
+    assert_is_bool_true(meta_parse.fbool("True"))
+    assert_is_bool_true(meta_parse.fbool("1"))
+    assert_is_bool_true(meta_parse.fbool(1))
+    assert_is_bool_true(meta_parse.fbool(2.2))
+
+    assert_is_bool_false(meta_parse.fbool(False))
+    assert_is_bool_false(meta_parse.fbool("false"))
+    assert_is_bool_false(meta_parse.fbool("False"))
+    assert_is_bool_false(meta_parse.fbool("0"))
+    assert_is_bool_false(meta_parse.fbool("0.0"))
+    assert_is_bool_false(meta_parse.fbool(0))
+    assert_is_bool_false(meta_parse.fbool(0.))
+
+    with pytest.raises(ValueError, match="Empty string provided for fbool!"):
+        meta_parse.fbool("")
+
+
+def test_meta_parse_fint():
+    assert meta_parse.fint(True) == 1
+    assert meta_parse.fint("true") == 1
+    assert meta_parse.fint("True") == 1
+    assert meta_parse.fint(1) == 1
+    assert meta_parse.fint(1.0) == 1
+    assert meta_parse.fint("1") == 1
+
+    assert meta_parse.fint(False) == 0
+    assert meta_parse.fint("False") == 0
+    assert meta_parse.fint("false") == 0
+    assert meta_parse.fint("0") == 0
+    assert meta_parse.fint("0.0") == 0
+    assert meta_parse.fint(0) == 0
+    assert meta_parse.fint(0.0) == 0
+
+    assert meta_parse.fint("20") == 20
+    assert meta_parse.fint(20.) == 20
+
+    with pytest.raises(ValueError, match="Empty string provided for fint!"):
+        meta_parse.fint("")
+
+
+def test_meta_parse_fintlist():
+    assert meta_parse.fintlist([True, 1, "1", 20.]) == [1, 1, 1, 20]
+    assert meta_parse.fintlist("[True, 1, 1, 20.]") == [1, 1, 1, 20]
+
+
+def test_meta_parse_lcstr():
+    assert meta_parse.lcstr("PETER") == "peter"
+    assert meta_parse.lcstr("Hans") == "hans"

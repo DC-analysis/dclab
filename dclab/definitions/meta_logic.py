@@ -5,7 +5,8 @@ def config_key_exists(section, key):
     """Return `True` if the configuration key exists"""
     valid = False
     if section == "user":
-        valid = True
+        if isinstance(key, str) and key.strip():  # sanity check
+            valid = True
     elif meta_const.config_funcs.get(section, {}).get(key, False):
         valid = True
     elif section == "online_filter":

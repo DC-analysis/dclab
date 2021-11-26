@@ -325,7 +325,7 @@ class ConfigurationJSONEncode(json.JSONEncoder):
 def verify_section_key(section, key):
     """Return True if the section-key combination exists"""
     wcount = 0
-    if section in dfn.config_keys and key in dfn.config_keys[section]:
+    if dfn.config_key_exists(section, key):
         pass
     elif section in ["plotting", "analysis"]:
         # hijacked by Shape-Out 1
@@ -351,18 +351,6 @@ def verify_section_key(section, key):
         else:
             warnings.warn(
                 "Unknown key '{}' in the 'filtering' section!".format(key),
-                UnknownConfigurationKeyWarning)
-            wcount += 1
-    elif section == "online_filter":
-        if key.count(",") and key.endswith("soft limit"):
-            # "online_filter:area_um,deform soft limit"
-            pass
-        elif key.count(",") and key.endswith("polygon points"):
-            # "online_filter:area_um,deform polygon points"
-            pass
-        else:
-            warnings.warn(
-                f"Unknown key '{key}' in the 'online_filter' section!",
                 UnknownConfigurationKeyWarning)
             wcount += 1
     elif section == "user":

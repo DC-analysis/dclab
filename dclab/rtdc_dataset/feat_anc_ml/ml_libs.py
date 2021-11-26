@@ -2,7 +2,7 @@ from distutils.version import LooseVersion
 import importlib
 
 
-class MockPackage(object):
+class MockPackage:
     def __init__(self, name, min_version):
         self.name = name
         self.min_version = min_version

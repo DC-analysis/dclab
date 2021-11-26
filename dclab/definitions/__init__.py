@@ -3,7 +3,11 @@ import warnings
 
 from .feat_const import (
     FEATURES_SCALAR, FEATURES_NON_SCALAR, FLUOR_TRACES,
-    feature_names, feature_labels, feature_name2label, scalar_feature_names
+    # these should not be used
+    feature_names, feature_labels, feature_name2label,
+    # this one should also not be used, but we wait with deprecation,
+    # because Shape-Out heavily relies on it
+    scalar_feature_names
     )
 from .feat_logic import (
     check_feature_shape, feature_exists, get_feature_label,
@@ -12,7 +16,10 @@ from .feat_logic import (
 from .meta_const import (
     CFG_ANALYSIS, CFG_METADATA,
     # these should not be used
-    config_descr, config_funcs, config_keys, config_types
+    config_descr, config_funcs, config_types,
+    # this one should also not be used, but we wait with deprecation,
+    # because dclab heavily relies on it
+    config_keys
     )
 from .meta_logic import (
     config_key_exists,
@@ -57,3 +64,18 @@ config_types = DeprecatedObject(config_types,
                                 "config_types",
                                 "get_config_value_type",
                                 )
+
+feature_names = DeprecatedObject(feature_names,
+                                 "feature_names",
+                                 "feature_exists",
+                                 )
+
+feature_labels = DeprecatedObject(feature_labels,
+                                  "feature_labels",
+                                  "get_feature_label",
+                                  )
+
+feature_name2label = DeprecatedObject(feature_name2label,
+                                      "feature_name2label",
+                                      "get_feature_label",
+                                      )

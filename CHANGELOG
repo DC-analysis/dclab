@@ -1,3 +1,7 @@
+0.39.3
+ - ref: deprecate these lists/dicts in dclab.definitions:
+   config_descr, config_funcs, config_types, feature_names,
+   feature_labels, feature_name2label
 0.39.2
  - ref: renamed mask and contour labels
  - ref: increase verbosity in error messages

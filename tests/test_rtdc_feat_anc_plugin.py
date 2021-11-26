@@ -151,7 +151,7 @@ def test_pf_attribute_plugin_feature_info():
 
 def test_pf_attributes():
     """Check the plugin feature attributes"""
-    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_path = data_dir / "feat_anc_plugin_creative.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     pf1, pf2 = plugin_list
     plugin_file_info = import_plugin_feature_script(plugin_path)
@@ -173,7 +173,7 @@ def test_pf_attributes():
 
 def test_pf_attributes_af_inherited():
     """Check the plugin feature attributes inherited from AncillaryFeature"""
-    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_path = data_dir / "feat_anc_plugin_creative.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     pf, _ = plugin_list
     plugin_file_info = import_plugin_feature_script(plugin_path)
@@ -351,7 +351,7 @@ def test_pf_export_non_scalar_bad_shape():
 
 def test_pf_feature_exists():
     """Basic check that the plugin feature name exists in definitions"""
-    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_path = data_dir / "feat_anc_plugin_creative.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert dclab.dfn.feature_exists(plugin_list[0].feature_name)
     assert dclab.dfn.feature_exists(plugin_list[1].feature_name)
@@ -375,7 +375,7 @@ def test_pf_filtering_with_plugin_feature():
 
 def test_pf_import_plugin_info():
     """Check the plugin test example info is a dict"""
-    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_path = data_dir / "feat_anc_plugin_creative.py"
     info = import_plugin_feature_script(plugin_path)
     assert isinstance(info, dict)
 
@@ -507,7 +507,7 @@ def test_pf_load_plugin():
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
-    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_path = data_dir / "feat_anc_plugin_creative.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert isinstance(plugin_list[0], PlugInFeature)
     assert isinstance(plugin_list[1], PlugInFeature)
@@ -547,7 +547,7 @@ def test_pf_remove_all_plugin_features():
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     assert "circ_per_area" not in ds.features_innate
     assert "circ_times_area" not in ds.features_innate
-    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_path = data_dir / "feat_anc_plugin_creative.py"
     dclab.load_plugin_feature(plugin_path)
     assert "circ_per_area" in ds
     assert "circ_times_area" in ds
@@ -570,7 +570,7 @@ def test_pf_remove_plugin_feature():
     assert "circ_per_area" not in ds
     assert "circ_times_area" not in ds
 
-    plugin_path = data_dir / "plugin_test_example.py"
+    plugin_path = data_dir / "feat_anc_plugin_creative.py"
     plugin_list = dclab.load_plugin_feature(plugin_path)
     assert len(plugin_list) == 2
     assert "circ_per_area" in ds

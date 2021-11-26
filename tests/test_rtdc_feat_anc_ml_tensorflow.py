@@ -11,9 +11,12 @@ from dclab import new_dataset
 from dclab.rtdc_dataset import feat_anc_ml
 from dclab.rtdc_dataset.feat_anc_ml import hook_tensorflow
 
-from helper_methods import example_data_dict
+from helper_methods import example_data_dict, retrieve_data
 
 tf = pytest.importorskip("tensorflow")
+
+
+data_dir = pathlib.Path(__file__).parent / "data"
 
 
 @pytest.fixture(autouse=True)
@@ -509,6 +512,15 @@ def test_model_tensorflow_has_softmax_layer_2():
                                                outputs=["ml_score_tst",
                                                         "ml_score_ts2"])
     assert dc_model.has_softmax_layer()
+
+
+def test_modc_apply_model():
+    feat_anc_ml.load_ml_feature(data_dir / "feat_anc_ml_tf_rbc.modc")
+    path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    with dclab.new_dataset(path) as ds:
+        assert np.sum(ds["ml_score_rbc"] < .5) == 12
+        assert np.sum(ds["ml_score_rbc"] >= .5) == 6
+        assert np.allclose(ds["ml_score_rbc"][0], 0.21917653)
 
 
 def test_modc_export_model_bad_path_1():

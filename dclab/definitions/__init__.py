@@ -6,7 +6,7 @@ from .feat_const import (
     # these should not be used
     feature_names, feature_labels, feature_name2label,
     # this one should also not be used, but we wait with deprecation,
-    # because Shape-Out heavily relies on it
+    # because Shape-Out heavily relies on it (it shouldn't)
     scalar_feature_names
     )
 from .feat_logic import (
@@ -14,12 +14,10 @@ from .feat_logic import (
     scalar_feature_exists
     )
 from .meta_const import (
-    CFG_ANALYSIS, CFG_METADATA,
-    # these should not be used
+    CFG_ANALYSIS, CFG_METADATA, config_keys,
+    # these should not be used (in contrast, `config_keys` is quite
+    # important for iterating over all internal configuration keys)
     config_descr, config_funcs, config_types,
-    # this one should also not be used, but we wait with deprecation,
-    # because dclab heavily relies on it
-    config_keys
     )
 from .meta_logic import (
     config_key_exists,

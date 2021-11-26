@@ -6,7 +6,7 @@ import importlib
 import pathlib
 import sys
 
-from ... import definitions as dfn
+from ...definitions import feat_logic
 from ..feat_anc_core import AncillaryFeature
 
 
@@ -117,7 +117,7 @@ def remove_plugin_feature(plugin_instance):
         # AncillaryFeature
         if plugin_instance.feature_name in PlugInFeature.feature_names:
             PlugInFeature.feature_names.remove(plugin_instance.feature_name)
-            dfn._remove_feature_from_definitions(plugin_instance.feature_name)
+            feat_logic.feature_deregister(plugin_instance.feature_name)
         PlugInFeature.features.remove(plugin_instance)
     else:
         raise TypeError(f"Type {type(plugin_instance)} should be an instance "
@@ -171,7 +171,7 @@ class PlugInFeature(AncillaryFeature):
         # This must be executed before initializing the super class
         # (AncillaryFeature). If we don't do this, then `remove_plugin_feature`
         # may end up removing innate features e.g., "deform".
-        dfn._add_feature_to_definitions(
+        feat_logic.feature_register(
             name=self.feature_name,
             label=self.plugin_feature_info["feature label"],
             is_scalar=self.plugin_feature_info["scalar feature"]

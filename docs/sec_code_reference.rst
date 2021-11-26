@@ -19,32 +19,47 @@ Global definitions
 ==================
 These definitionas are used throughout the dclab/Shape-In/Shape-Out ecosystem.
 
-Configuration
--------------
+Metadata
+--------
 Valid configuration sections and keys are described in:
 :ref:`sec_analysis_meta` and :ref:`sec_experiment_meta`.
+You should use the following methods instead of accessing
+the static metadata constants.
+
+.. autofunction:: dclab.definitions.config_key_exists
+
+.. autofunction:: dclab.definitions.get_config_value_descr
+
+.. autofunction:: dclab.definitions.get_config_value_func
+
+.. autofunction:: dclab.definitions.get_config_value_type
 
 
-.. autodata:: dclab.definitions.CFG_ANALYSIS
+These constants are also available in the ``dclab.definitions`` module.
+
+.. autodata:: dclab.definitions.meta_const.CFG_ANALYSIS
    :no-value:
 
-.. autodata:: dclab.definitions.CFG_METADATA
+.. autodata:: dclab.definitions.meta_const.CFG_METADATA
    :no-value:
 
-.. autodata:: dclab.definitions.config_funcs
+.. autodata:: dclab.definitions.meta_const.config_keys
    :no-value:
 
-.. autodata:: dclab.definitions.config_keys
-   :no-value:
 
-.. autodata:: dclab.definitions.config_types
-   :no-value:
+Metadata parsers
+----------------
+.. automodule:: dclab.definitions.meta_parse
+   :members:
+   :undoc-members:
 
 
 Features
 --------
-Features are discussed in more detail in: :ref:`sec_features`.
+Features are discussed in more detail in :ref:`sec_features`.
 
+
+.. autofunction:: dclab.definitions.check_feature_shape
 
 .. autofunction:: dclab.definitions.feature_exists
 
@@ -53,26 +68,23 @@ Features are discussed in more detail in: :ref:`sec_features`.
 .. autofunction:: dclab.definitions.scalar_feature_exists
 
 
-.. autodata:: dclab.definitions.FEATURES_NON_SCALAR
+These constants are also available in the ``dclab.definitions`` module.
+
+.. autodata:: dclab.definitions.feat_const.FEATURES_NON_SCALAR
    :no-value:
 
-.. autodata:: dclab.definitions.feature_names
+.. autodata:: dclab.definitions.feat_const.feature_names
    :no-value:
 
-.. autodata:: dclab.definitions.feature_labels
+.. autodata:: dclab.definitions.feat_const.feature_labels
    :no-value:
 
-.. autodata:: dclab.definitions.feature_name2label
+.. autodata:: dclab.definitions.feat_const.feature_name2label
    :no-value:
 
-.. autodata:: dclab.definitions.scalar_feature_names
+.. autodata:: dclab.definitions.feat_const.scalar_feature_names
    :no-value:
 
-Parse functions
----------------
-.. automodule:: dclab.parse_funcs
-   :members:
-   :undoc-members:
 
 
 .. _sec_ref_rtdc_dataset:

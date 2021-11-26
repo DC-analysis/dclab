@@ -4,6 +4,7 @@ import numpy as np
 
 
 def f2dfloatarray(value):
+    """numpy floating point array"""
     return np.array(value, dtype=float)
 
 

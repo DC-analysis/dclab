@@ -618,12 +618,16 @@ class IntegrityChecker(object):
                     val_act = self.ds._h5.attrs[entry]  # actual value
                     if isinstance(val_act, bytes):
                         val_act = val_act.decode("utf-8")
-                    # `func` may be None for e.g. online polygon filters
-                    # (because those are not hard-coded config keys)
-                    func = dfn.config_funcs.get(sec, {}).get(key)
-                    if func is not None:
+                    # Check whether the config key exists
+                    if dfn.config_key_exists(sec, key):
+                        func = dfn.get_config_value_func(sec, key)
                         val_exp = func(val_act)  # expected value
-                        if val_act != val_exp:
+                        if (isinstance(val_exp, (list, np.ndarray))
+                                and np.allclose(val_exp, val_act)):
+                            continue
+                        elif val_exp == val_act:
+                            continue
+                        else:
                             cues.append(ICue(
                                 msg=f"Metadata: [{sec}]: '{key}' should be "
                                     + f"'{val_exp}', but is '{val_act}'!",

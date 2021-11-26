@@ -1,8 +1,7 @@
 """
 .. versionadded:: 0.33.0
 """
-
-from .. import definitions as dfn
+from ..definitions import feat_logic
 
 from .fmt_hierarchy import RTDC_Hierarchy
 
@@ -26,7 +25,7 @@ def deregister_temporary_feature(feature):
     """
     if feature in _registered_temporary_features:
         _registered_temporary_features.remove(feature)
-        dfn._remove_feature_from_definitions(feature)
+        feat_logic.feature_deregister(feature)
 
 
 def register_temporary_feature(feature, label=None, is_scalar=True):
@@ -49,7 +48,7 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
     is_scalar: bool
         Whether or not the feature is a scalar feature
     """
-    dfn._add_feature_to_definitions(feature, label, is_scalar)
+    feat_logic.feature_register(feature, label, is_scalar)
     _registered_temporary_features.append(feature)
 
 
@@ -68,7 +67,7 @@ def set_temporary_feature(rtdc_ds, feature, data):
     data: np.ndarray
         The data
     """
-    if not dfn.feature_exists(feature):
+    if not feat_logic.feature_exists(feature):
         raise ValueError(
             "Temporary feature '{}' has not been registered!".format(feature))
     if isinstance(rtdc_ds, RTDC_Hierarchy):
@@ -78,5 +77,5 @@ def set_temporary_feature(rtdc_ds, feature, data):
         raise ValueError("The temporary feature `data` must have same length "
                          "as the dataset. Expected length {}, got length "
                          "{}!".format(len(rtdc_ds), len(data)))
-    dfn.check_feature_shape(feature, data)
+    feat_logic.check_feature_shape(feature, data)
     rtdc_ds._usertemp[feature] = data

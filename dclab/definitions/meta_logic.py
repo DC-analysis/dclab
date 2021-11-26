@@ -10,11 +10,12 @@ def config_key_exists(section, key):
     elif meta_const.config_funcs.get(section, {}).get(key, False):
         valid = True
     elif section == "online_filter":
-        if key.endswith("soft limit"):
+        if key.endswith("soft limit") or key.endswith("polygon points"):
             # "online_filter:area_um,deform soft limit"
-            valid = True
-        elif key.endswith("polygon points"):
-            valid = True
+            # "online_filter:area_um,deform polygon points"
+            f1, f2 = key.split(" ", 1)[0].split(",")
+            valid = (feat_logic.feature_exists(f1)
+                     and feat_logic.feature_exists(f2))
     return valid
 
 
@@ -31,6 +32,7 @@ def get_config_value_descr(section, key):
     elif section == "online_filter":
         if key.endswith("soft limit") or key.endswith("polygon points"):
             # "online_filter:area_um,deform soft limit"
+            # "online_filter:area_um,deform polygon points"
             f1, f2 = key.split(" ", 1)[0].split(",")
             # remove the units with rsplit
             l1 = feat_logic.get_feature_label(f1).rsplit(" [", 1)[0]
@@ -54,6 +56,7 @@ def get_config_value_func(section, key):
             # "online_filter:area_um,deform soft limit"
             func = meta_parse.fbool
         elif key.endswith("polygon points"):
+            # "online_filter:area_um,deform polygon points"
             func = meta_parse.f2dfloatarray
 
     if func is None:

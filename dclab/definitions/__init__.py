@@ -34,6 +34,14 @@ class DeprecatedObject:
         warnings.warn(self.message, DeprecationWarning)
         return self.anobject.__getitem__(item)
 
+    def __iter__(self):
+        warnings.warn(self.message, DeprecationWarning)
+        return self.anobject.__iter__()
+
+    def __contains__(self, item):
+        warnings.warn(self.message, DeprecationWarning)
+        return self.anobject.__contains__(item)
+
 
 config_descr = DeprecatedObject(config_descr,
                                 "config_descr",

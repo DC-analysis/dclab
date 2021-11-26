@@ -70,8 +70,8 @@ class Config(Base):
                 elif item[1] is float:
                     ref = ":class:`float`"
                 else:
-                    ref = ":func:`{f} <dclab.definitions.meta_parse.{f}>`".format(
-                        f=item[1].__name__)
+                    ref = ":func:`{f} <dclab.definitions" \
+                          + f".meta_parse.{item[1].__name__}>`"
                 rst.append("    {}\t {}\t {}".format(item[0],
                                                      ref,
                                                      item[2]))

@@ -2,6 +2,7 @@
  - ref: deprecate these lists/dicts in dclab.definitions:
    config_descr, config_funcs, config_types, feature_names,
    feature_labels, feature_name2label (#135)
+ - ref: use more intuitive trace feature in fmt_dcor
 0.39.2
  - ref: renamed mask and contour labels
  - ref: increase verbosity in error messages

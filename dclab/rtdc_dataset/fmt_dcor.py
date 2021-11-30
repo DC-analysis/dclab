@@ -168,7 +168,8 @@ class DCORTraceItem(DCORNonScalarFeature):
 
     @lru_cache(maxsize=100)
     def _get_item(self, event):
-        data = self.api.get(query="trace", trace=self.feat, event=event)
+        data = self.api.get(query="feature", feat="trace",
+                            trace=self.feat, event=event)
         return np.asarray(data)
 
 

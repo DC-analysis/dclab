@@ -146,7 +146,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
-    if yout is None and yout is None:
+    if xout is None and yout is None:
         xout = events_x
         yout = events_y
 
@@ -191,7 +191,7 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
-    if yout is None and yout is None:
+    if xout is None and yout is None:
         xout = events_x
         yout = events_y
 
@@ -242,7 +242,7 @@ def kde_none(events_x, events_y, xout=None, yout=None):
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
-    if yout is None and yout is None:
+    if xout is None and yout is None:
         xout = events_x
         _ = events_y
 
@@ -280,7 +280,7 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
-    if yout is None and yout is None:
+    if xout is None and yout is None:
         xout = events_x
         yout = events_y
     if bw is None:

@@ -200,7 +200,7 @@ class RTDCBase(abc.ABC):
             keyword arguments to `method`
         feat: str
             feature name for debugging
-        ret_scaled: bol
+        ret_scaled: bool
             whether or not to return the scaled array of `a`
         """
         if method_kw is None:
@@ -406,7 +406,7 @@ class RTDCBase(abc.ABC):
             Additional keyword arguments to the KDE method
         xscale: str
             If set to "log", take the logarithm of the x-values before
-            computing the KDE. This is useful when data are are
+            computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         yscale: str
             See `xscale`.

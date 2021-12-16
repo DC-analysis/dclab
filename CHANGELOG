@@ -1,3 +1,5 @@
+0.39.5
+ - fix: write FeatureSetNotIdenticalJoinWarnings to logs in dclab-join
 0.39.4
  - fix: KeyError object 'index_online' doesn't exist when joining
    two datasets with dclab-join (#158)

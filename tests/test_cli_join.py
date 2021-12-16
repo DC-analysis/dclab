@@ -1,7 +1,6 @@
 """Test CLI dclab-join"""
 import dclab
 from dclab import cli, new_dataset
-from dclab.cli import task_join
 
 import h5py
 import numpy as np
@@ -116,18 +115,22 @@ def test_join_rtdc_unequal_features_issue_157():
     # Second test: Now do the same thing with reversed dates
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
-        cli.join(path_out=path_out_b, paths_in=[path1, path2])
+    cli.join(path_out=path_out_b, paths_in=[path1, path2])
     with dclab.new_dataset(path_out_b) as ds:
         assert "volume" not in ds.features_innate
+        assert "dclab-join-feature-warnings" in ds.logs
+        log = "\n".join(ds.logs["dclab-join-feature-warnings"])
+        assert "volume" in log
 
     # Third test: we flip around paths_in to also test sorting
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
         cli.join(path_out=path_out_b, paths_in=[path2, path1])
     with dclab.new_dataset(path_out_b) as ds:
         assert "volume" not in ds.features_innate
+        assert "dclab-join-feature-warnings" in ds.logs
+        log = "\n".join(ds.logs["dclab-join-feature-warnings"])
+        assert "volume" in log
 
 
 def test_join_rtdc_unequal_features_issue_157_2():
@@ -153,19 +156,23 @@ def test_join_rtdc_unequal_features_issue_157_2():
         assert "ml_score_abc" not in ds.features_innate
 
     # First test
-    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
-        cli.join(path_out=path_out_a, paths_in=[path1, path2])
+    cli.join(path_out=path_out_a, paths_in=[path1, path2])
     with dclab.new_dataset(path_out_a) as ds:
         # Score cannot be computed for path2
         assert "ml_score_abc" not in ds.features_innate
+        assert "dclab-join-feature-warnings" in ds.logs
+        log = "\n".join(ds.logs["dclab-join-feature-warnings"])
+        assert "ml_score_abc" in log
 
     # Second test: Now do the same thing with reversed dates
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
-        cli.join(path_out=path_out_b, paths_in=[path1, path2])
+    cli.join(path_out=path_out_b, paths_in=[path1, path2])
     with dclab.new_dataset(path_out_b) as ds:
         assert "ml_score_abc" not in ds.features_innate
+        assert "dclab-join-feature-warnings" in ds.logs
+        log = "\n".join(ds.logs["dclab-join-feature-warnings"])
+        assert "ml_score_abc" in log
 
 
 @pytest.mark.filterwarnings(

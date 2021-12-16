@@ -1,4 +1,5 @@
 """Test CLI dclab-join"""
+import dclab
 from dclab import cli, new_dataset
 
 import h5py
@@ -60,6 +61,23 @@ def test_join_rtdc():
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
+
+
+def test_join_rtdc_unequal_features_issue_158():
+    """
+    dclab did not correctly access events/index_online before
+    """
+    path1 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path2 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_out_a = path1.with_name("outa.rtdc")
+
+    # this did not work
+    cli.join(path_out=path_out_a, paths_in=[path1, path2])
+
+    # verification
+    with dclab.new_dataset(path_out_a) as ds:
+        assert "index_online" in ds.features_innate
+        assert np.all(np.diff(ds["index_online"]) > 0)
 
 
 @pytest.mark.filterwarnings(

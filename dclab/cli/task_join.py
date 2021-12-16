@@ -86,7 +86,7 @@ def join(path_out=None, paths_in=None, metadata=None):
                         elif feat == "index_online":
                             if "events/index_online" in hw.h5file:
                                 # index_online is usually larger than index
-                                ido0 = hw.h5file["index_online"][-1] + 1
+                                ido0 = hw.h5file["events/index_online"][-1] + 1
                             else:
                                 ido0 = 0
                             fdata = dsi["index_online"] + ido0

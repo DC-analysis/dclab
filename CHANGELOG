@@ -1,4 +1,6 @@
 0.39.4
+ - fix: KeyError object 'index_online' doesn't exist when joining
+   two datasets with dclab-join (#158)
  - fix: generalize online_filter configuration keys (#156)
  - fix: relax validation of online_filter configuration key types
  - enh: add `with_unit` keyword to `get_feature_label`

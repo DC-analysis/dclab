@@ -3,6 +3,8 @@
    two datasets with dclab-join (#158)
  - fix: generalize online_filter configuration keys (#156)
  - fix: relax validation of online_filter configuration key types
+ - fix: make sure that only common features of the input files for
+   dclab-join are written to the output file (#157)
  - enh: add `with_unit` keyword to `get_feature_label`
  - ref: slightly modified online_filter configuration descriptions
 0.39.3

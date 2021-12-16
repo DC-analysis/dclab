@@ -1,6 +1,7 @@
 """Test CLI dclab-join"""
 import dclab
 from dclab import cli, new_dataset
+from dclab.cli import task_join
 
 import h5py
 import numpy as np
@@ -63,7 +64,7 @@ def test_join_rtdc():
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
 
 
-def test_join_rtdc_unequal_features_issue_158():
+def test_join_rtdc_index_online_issue_158():
     """
     dclab did not correctly access events/index_online before
     """
@@ -78,6 +79,93 @@ def test_join_rtdc_unequal_features_issue_158():
     with dclab.new_dataset(path_out_a) as ds:
         assert "index_online" in ds.features_innate
         assert np.all(np.diff(ds["index_online"]) > 0)
+
+
+def test_join_rtdc_unequal_features_issue_157():
+    """
+    If two files do not contain the same number of features, joining
+    should only take into account the same features and then should
+    issue a warning (which will then be written to the logs in DCKit).
+    """
+    path1 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path2 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_out_a = path1.with_name("outa.rtdc")
+    path_out_b = path1.with_name("outb.rtdc")
+
+    # add a feature to path1 and define order (join sorts the files with date)
+    with h5py.File(path1, "a") as h51:
+        h51["events"]["volume"] = h51["events"]["area_um"][:] ** 1.5
+        h51.attrs["experiment:date"] = "2020-01-01"
+    with h5py.File(path2, "a") as h51:
+        h51.attrs["experiment:date"] = "2021-01-01"
+
+    # sanity checks
+    with dclab.new_dataset(path1) as ds:
+        assert "volume" in ds.features_innate
+    with dclab.new_dataset(path2) as ds:
+        assert "volume" not in ds.features_innate
+
+    # First test
+    # There should be no warning here, because for path2 volume can be
+    # computed.
+    cli.join(path_out=path_out_a, paths_in=[path1, path2])
+    with dclab.new_dataset(path_out_a) as ds:
+        # Volume is in this file, because it can be computed for path2
+        assert "volume" in ds.features_innate
+
+    # Second test: Now do the same thing with reversed dates
+    with h5py.File(path2, "a") as h51:
+        h51.attrs["experiment:date"] = "2019-01-01"
+    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
+        cli.join(path_out=path_out_b, paths_in=[path1, path2])
+    with dclab.new_dataset(path_out_b) as ds:
+        assert "volume" not in ds.features_innate
+
+    # Third test: we flip around paths_in to also test sorting
+    with h5py.File(path2, "a") as h51:
+        h51.attrs["experiment:date"] = "2019-01-01"
+    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
+        cli.join(path_out=path_out_b, paths_in=[path2, path1])
+    with dclab.new_dataset(path_out_b) as ds:
+        assert "volume" not in ds.features_innate
+
+
+def test_join_rtdc_unequal_features_issue_157_2():
+    """
+    Same test as above, but we use a feature that cannot be computed
+    """
+    path1 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path2 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_out_a = path1.with_name("outa.rtdc")
+    path_out_b = path1.with_name("outb.rtdc")
+
+    # add a feature to path1 and define order (join sorts the files with date)
+    with h5py.File(path1, "a") as h51:
+        h51["events"]["ml_score_abc"] = np.log10(h51["events"]["area_um"][:])
+        h51.attrs["experiment:date"] = "2020-01-01"
+    with h5py.File(path2, "a") as h51:
+        h51.attrs["experiment:date"] = "2021-01-01"
+
+    # sanity checks
+    with dclab.new_dataset(path1) as ds:
+        assert "ml_score_abc" in ds.features_innate
+    with dclab.new_dataset(path2) as ds:
+        assert "ml_score_abc" not in ds.features_innate
+
+    # First test
+    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
+        cli.join(path_out=path_out_a, paths_in=[path1, path2])
+    with dclab.new_dataset(path_out_a) as ds:
+        # Score cannot be computed for path2
+        assert "ml_score_abc" not in ds.features_innate
+
+    # Second test: Now do the same thing with reversed dates
+    with h5py.File(path2, "a") as h51:
+        h51.attrs["experiment:date"] = "2019-01-01"
+    with pytest.warns(task_join.FeatureSetNotIdenticalJoinWarning):
+        cli.join(path_out=path_out_b, paths_in=[path1, path2])
+    with dclab.new_dataset(path_out_b) as ds:
+        assert "ml_score_abc" not in ds.features_innate
 
 
 @pytest.mark.filterwarnings(

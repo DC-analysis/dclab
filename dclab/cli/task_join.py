@@ -11,6 +11,10 @@ from .. import definitions as dfn
 from . import common
 
 
+class FeatureSetNotIdenticalJoinWarning(UserWarning):
+    pass
+
+
 def join(path_out=None, paths_in=None, metadata=None):
     """Join multiple RT-DC measurements into a single .rtdc file"""
     if metadata is None:
@@ -27,10 +31,11 @@ def join(path_out=None, paths_in=None, metadata=None):
     paths_in, path_out, path_temp = common.setup_task_paths(
         paths_in, path_out, allowed_input_suffixes=[".rtdc", ".tdms"])
 
-    # Determine input file order
+    # Order input files by date
     key_paths = []
     for pp in paths_in:
         with new_dataset(pp) as ds:
+            # sorting key
             key = "_".join([ds.config["experiment"]["date"],
                             ds.config["experiment"]["time"],
                             str(ds.config["experiment"]["run index"])
@@ -52,12 +57,41 @@ def join(path_out=None, paths_in=None, metadata=None):
                 toffsets[ii] += float(etime[8:])
     toffsets -= toffsets[0]
 
+    # Determine features to export (based on first file)
+    features = None
+    for pp in sorted_paths:
+        with new_dataset(pp) as ds:
+            # features present
+            if features is None:
+                # The initial features are the innate features of the
+                # first file (sorted by time). If we didn't use the innate
+                # features, then the resulting file might become large
+                # (e.g. if we included ancillary features).
+                features = sorted(ds.features_innate)
+            else:
+                # Remove features from the feature list, if it is not in
+                # this dataset, or cannot be computed on-the-fly.
+                for feat in features:
+                    if feat not in ds.features:
+                        features.remove(feat)
+                        warnings.warn(f"Excluding feature '{feat}', because "
+                                      + f"it is not present in '{pp}'!",
+                                      FeatureSetNotIdenticalJoinWarning)
+                # Warn the user if this dataset has an innate feature that
+                # is being ignored, because it is not an innate feature of
+                # the first dataset.
+                for feat in ds.features_innate:
+                    if feat not in features:
+                        warnings.warn(f"Ignoring feature '{feat}' in '{pp}', "
+                                      + "because it is not present in the "
+                                      + "other files being joined!",
+                                      FeatureSetNotIdenticalJoinWarning)
+
     logs = {}
     # Create initial output file
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         with new_dataset(sorted_paths[0]) as ds0:
-            features = sorted(ds0.features_innate)
             ds0.export.hdf5(path=path_temp,
                             features=features,
                             filtered=False,

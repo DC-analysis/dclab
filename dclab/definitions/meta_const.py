@@ -114,7 +114,8 @@ CFG_METADATA = {
         ["image blur", fint, "Odd sigma for Gaussian blur (21x21 kernel)"],
         ["no absdiff", fbool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
     ],
-    # All online filters
+    # All online-filter-related keywords (box filters, soft limit, and
+    # polygons are handled in `meta_logic`)
     "online_filter": [
         # "target*" is only set if measurement is stopped automatically.
         # "target*" is not necessarily reached (e.g. user aborted).

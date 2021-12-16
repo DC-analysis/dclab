@@ -16,66 +16,67 @@ def assert_is_bool_true(value):
     assert value
 
 
-def test_meta_logic_config_key_exists():
-    assert meta_logic.config_key_exists("user", "test")
-    assert not meta_logic.config_key_exists("user", 1)
-
-    assert meta_logic.config_key_exists("setup", "channel width")
-    assert not meta_logic.config_key_exists("setup", "funnel width")
-
-    assert meta_logic.config_key_exists("online_filter",
-                                        "area_um,deform soft limit")
-    assert not meta_logic.config_key_exists("online_filter",
-                                            "peter,deform soft limit")
-
-    assert meta_logic.config_key_exists("online_filter",
-                                        "area_um,deform polygon points")
-    assert not meta_logic.config_key_exists("online_filter",
-                                            "peter,deform polygon points")
-
-
-def test_meta_logic_get_config_value_descr():
-    assert meta_logic.get_config_value_descr("user", "key") == "key"
-
-    assert meta_logic.get_config_value_descr("experiment", "date") \
-        == "Date of measurement ('YYYY-MM-DD')"
-
-    assert meta_logic.get_config_value_descr(
-        "online_filter", "area_um,deform soft limit") \
-        == "Soft limit, polygon (Area, Deformation)"
-
-    assert meta_logic.get_config_value_descr(
-        "online_filter", "area_um,deform polygon points") \
-        == "Polygon (Area, Deformation)"
+@pytest.mark.parametrize("exists,sec,key", [
+    [True, "user", "test"],
+    [False, "user", 1],
+    [True, "setup", "channel width"],
+    [False, "setup", "funnel width"],
+    [True, "online_filter", "area_um,deform soft limit"],
+    [False, "online_filter", "peter,deform soft limit"],
+    [True, "online_filter", "area_um,deform polygon points"],
+    [False, "online_filter", "peter,deform polygon points"],
+])
+def test_meta_logic_config_key_exists(exists, sec, key):
+    if exists:
+        assert meta_logic.config_key_exists(sec, key)
+    else:
+        assert not meta_logic.config_key_exists(sec, key)
 
 
-def test_meta_logic_get_config_value_func():
+@pytest.mark.parametrize("sec,key,descr", [
+    ["user", "key", "key"],
+    ["experiment", "date", "Date of measurement ('YYYY-MM-DD')"],
+    ["online_filter",
+     "area_um,deform soft limit",
+     "Soft limit, polygon (Area, Deformation)"],
+    ["online_filter",
+     "area_um,deform polygon points",
+     "Polygon (Area, Deformation)"],
+])
+def test_meta_logic_get_config_value_descr(sec, key, descr):
+    assert meta_logic.get_config_value_descr(sec, key) == descr
+
+
+@pytest.mark.parametrize("sec,key,func", [
+    ["experiment", "date", str],
+    ["online_filter", "area_um,deform soft limit", meta_parse.fbool],
+    ["online_filter",
+     "area_um,deform polygon points",
+     meta_parse.f2dfloatarray],
+])
+def test_meta_logic_get_config_value_func(sec, key, func):
+    assert meta_logic.get_config_value_func(sec, key) is func
+
+
+def test_meta_logic_get_config_value_func_user():
     lamb = meta_logic.get_config_value_func("user", "key")
     assert lamb("peter") == "peter"
 
-    assert meta_logic.get_config_value_func("experiment", "date") is str
 
-    assert meta_logic.get_config_value_func(
-        "online_filter", "area_um,deform soft limit") \
-        is meta_parse.fbool
-
-    assert meta_logic.get_config_value_func(
-        "online_filter", "area_um,deform polygon points") \
-        is meta_parse.f2dfloatarray
-
-
-def test_meta_logic_get_config_value_type():
-    assert meta_logic.get_config_value_type("user", "key") is None
-
-    assert meta_logic.get_config_value_type("experiment", "date") is str
-
-    tsl = meta_logic.get_config_value_type(
-        "online_filter", "area_um,deform soft limit")
-    assert bool in tsl
-
-    assert meta_logic.get_config_value_type(
-        "online_filter", "area_um,deform polygon points") \
-        is np.ndarray
+@pytest.mark.parametrize("sec,key,dtype", [
+    ["user", "key", None],
+    ["experiment", "date", str],
+    ["online_filter", "area_um,deform soft limit", bool],
+    ["online_filter",
+     "area_um,deform polygon points",
+     np.ndarray],
+])
+def test_meta_logic_get_config_value_type(sec, key, dtype):
+    this_type = meta_logic.get_config_value_type(sec, key)
+    if isinstance(this_type, (tuple, list)):
+        assert dtype in this_type
+    else:
+        assert dtype is this_type
 
 
 def test_meta_parse_f2dfloatarray():

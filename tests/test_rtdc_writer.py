@@ -339,6 +339,23 @@ def test_mode():
         assert len(events2["area_um"]) == len(data["area_um"])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_open_from_h5group():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    with h5py.File(path, "a") as h5:
+        with dclab.RTDCWriter(h5) as hw:
+            assert not hw.owns_path
+            hw.store_log("peter", "hans")
+        # do it again (to make sure h5 is not closed)
+        with dclab.RTDCWriter(h5) as hw:
+            assert not hw.owns_path
+            hw.store_log("peter", "gert")
+    # sanity check
+    with dclab.new_dataset(path) as ds:
+        assert "".join(ds.logs["peter"]) == "hansgert"
+
+
 def test_real_time():
     # Create huge array
     n = 116

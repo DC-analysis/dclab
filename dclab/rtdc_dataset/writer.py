@@ -39,11 +39,13 @@ class RTDCWriter:
         self.mode = mode
         self.compression = compression
         if isinstance(path_or_h5file, h5py.Group):
+            self.owns_path = False
             self.path = pathlib.Path(path_or_h5file.file.filename)
             self.h5file = path_or_h5file
             if mode == "reset":
                 raise ValueError("'reset' mode incompatible with h5py.Group!")
         else:
+            self.owns_path = True
             self.path = pathlib.Path(path_or_h5file)
             self.h5file = h5py.File(path_or_h5file,
                                     mode=("w" if mode == "reset" else "a"))
@@ -58,7 +60,8 @@ class RTDCWriter:
         if len(self.h5file["events"]):
             self.rectify_metadata()
         self.version_brand()
-        self.h5file.close()
+        if self.owns_path:
+            self.h5file.close()
 
     def rectify_metadata(self):
         """Autocomplete the metadta of the RTDC-measurement
@@ -299,6 +302,8 @@ class RTDCWriter:
         """
         if old_version is None:
             old_version = self.h5file.attrs.get("setup:software version", "")
+        if isinstance(old_version, bytes):
+            old_version = old_version.decode("utf-8")
         version_chain = [vv.strip() for vv in old_version.split("|")]
         version_chain = [vv for vv in version_chain if vv]
         cur_version = "dclab {}".format(version)

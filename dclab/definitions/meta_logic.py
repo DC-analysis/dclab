@@ -1,3 +1,5 @@
+import numbers
+
 from . import feat_logic, meta_const, meta_parse
 
 
@@ -10,12 +12,17 @@ def config_key_exists(section, key):
     elif meta_const.config_funcs.get(section, {}).get(key, False):
         valid = True
     elif section == "online_filter":
-        if key.endswith("soft limit") or key.endswith("polygon points"):
+        if (key.count(",")
+                and (key.endswith("soft limit")
+                     or key.endswith("polygon points"))):
             # "online_filter:area_um,deform soft limit"
             # "online_filter:area_um,deform polygon points"
             f1, f2 = key.split(" ", 1)[0].split(",")
-            valid = (feat_logic.feature_exists(f1)
-                     and feat_logic.feature_exists(f2))
+            valid = (feat_logic.scalar_feature_exists(f1)
+                     and feat_logic.scalar_feature_exists(f2))
+        else:
+            feat = key.split(" ", 1)[0]
+            valid = feat_logic.scalar_feature_exists(feat)
     return valid
 
 
@@ -30,17 +37,33 @@ def get_config_value_descr(section, key):
     elif meta_const.config_descr.get(section, {}).get(key, False):
         descr = meta_const.config_descr[section][key]
     elif section == "online_filter":
-        if key.endswith("soft limit") or key.endswith("polygon points"):
+        if (key.count(",")
+                and (key.endswith("soft limit")
+                     or key.endswith("polygon points"))):
             # "online_filter:area_um,deform soft limit"
             # "online_filter:area_um,deform polygon points"
             f1, f2 = key.split(" ", 1)[0].split(",")
-            # remove the units with rsplit
-            l1 = feat_logic.get_feature_label(f1).rsplit(" [", 1)[0]
-            l2 = feat_logic.get_feature_label(f2).rsplit(" [", 1)[0]
+            # do not include units
+            l1 = feat_logic.get_feature_label(f1, with_unit=False)
+            l2 = feat_logic.get_feature_label(f2, with_unit=False)
             if key.endswith("soft limit"):
                 descr = f"Soft limit, polygon ({l1}, {l2})"
             elif key.endswith("polygon points"):
                 descr = f"Polygon ({l1}, {l2})"
+        else:
+            feat = key.split(" ", 1)[0]
+            if feat_logic.scalar_feature_exists(feat):
+                if key.endswith("soft limit"):
+                    # "online_filter:area_um soft limit"
+                    label = feat_logic.get_feature_label(feat, with_unit=False)
+                    descr = f"Soft limit, {label}"
+                elif key.endswith("min"):
+                    # "online_filter:area_um min"
+                    descr = f"Min. {feat_logic.get_feature_label(feat)}"
+                elif key.endswith("max"):
+                    # "online_filter:area_um max"
+                    descr = f"Max. {feat_logic.get_feature_label(feat)}"
+
     return descr
 
 
@@ -52,6 +75,7 @@ def get_config_value_func(section, key):
     elif meta_const.config_funcs.get(section, {}).get(key, False):
         func = meta_const.config_funcs[section][key]
     elif section == "online_filter":
+        # Note that for "min" and "max" values we do nothing (None)
         if key.endswith("soft limit"):
             # "online_filter:area_um,deform soft limit"
             func = meta_parse.fbool
@@ -81,4 +105,7 @@ def get_config_value_type(section, key):
             typ = meta_parse.func_types[meta_parse.fbool]
         elif key.endswith("polygon points"):
             typ = meta_parse.func_types[meta_parse.f2dfloatarray]
+        elif key.endswith("min") or key.endswith("max"):
+            # most-general type is a number
+            typ = numbers.Number
     return typ

@@ -1,3 +1,8 @@
+0.39.4
+ - fix: generalize online_filter configuration keys (#156)
+ - fix: relax validation of online_filter configuration key types
+ - enh: add `with_unit` keyword to `get_feature_label`
+ - ref: slightly modified online_filter configuration descriptions
 0.39.3
  - ref: deprecate these lists/dicts in dclab.definitions:
    config_descr, config_funcs, config_types, feature_names,

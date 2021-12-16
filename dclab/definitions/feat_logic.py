@@ -135,7 +135,7 @@ def feature_deregister(name):
         feat_const.scalar_feature_names.remove(name)
 
 
-def get_feature_label(name, rtdc_ds=None):
+def get_feature_label(name, rtdc_ds=None, with_unit=True):
     """Return the label corresponding to a feature name
 
     This function not only checks :const:`feature_name2label`,
@@ -145,6 +145,8 @@ def get_feature_label(name, rtdc_ds=None):
     ----------
     name: str
         name of a feature
+    with_unit: bool
+        set to False to remove units in square brackets
 
     Returns
     -------
@@ -170,6 +172,9 @@ def get_feature_label(name, rtdc_ds=None):
         else:
             # If that did not work, use a generic name.
             label = "ML score {}".format(name[-3:].upper())
+    if not with_unit:
+        if label.endswith("]") and label.count("["):
+            label = label.rsplit("[", 1)[0].strip()
     return label
 
 

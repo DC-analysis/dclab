@@ -1,3 +1,5 @@
+import numbers
+
 import numpy as np
 
 import pytest
@@ -25,6 +27,14 @@ def assert_is_bool_true(value):
     [False, "online_filter", "peter,deform soft limit"],
     [True, "online_filter", "area_um,deform polygon points"],
     [False, "online_filter", "peter,deform polygon points"],
+    [True, "online_filter", "pos_x max"],
+    [True, "online_filter", "pos_x min"],
+    [True, "online_filter", "pos_x soft limit"],
+    [True, "online_filter", "fl1_max max"],
+    [True, "online_filter", "fl2_max min"],
+    [True, "online_filter", "fl3_max soft limit"],
+    [True, "online_filter", "target duration"],
+    [True, "online_filter", "area_ratio max"],
 ])
 def test_meta_logic_config_key_exists(exists, sec, key):
     if exists:
@@ -42,6 +52,14 @@ def test_meta_logic_config_key_exists(exists, sec, key):
     ["online_filter",
      "area_um,deform polygon points",
      "Polygon (Area, Deformation)"],
+    ["online_filter", "fl1_max max", "Max. FL-1 maximum [a.u.]"],
+    ["online_filter", "fl1_max min", "Min. FL-1 maximum [a.u.]"],
+    ["online_filter",
+     "area_ratio soft limit",
+     "Soft limit, Porosity (convex to measured area ratio)"],
+    ["online_filter", "fl3_max soft limit", "Soft limit, FL-3 maximum"],
+    ["online_filter", "target duration", "Target measurement duration [min]"],
+    ["online_filter", "pos_x max", "Max. Position along channel axis [µm]"],
 ])
 def test_meta_logic_get_config_value_descr(sec, key, descr):
     assert meta_logic.get_config_value_descr(sec, key) == descr
@@ -70,6 +88,8 @@ def test_meta_logic_get_config_value_func_user():
     ["online_filter",
      "area_um,deform polygon points",
      np.ndarray],
+    ["online_filter", "fl1_max max", numbers.Number],
+    ["online_filter", "pos_x min", numbers.Number],
 ])
 def test_meta_logic_get_config_value_type(sec, key, dtype):
     this_type = meta_logic.get_config_value_type(sec, key)

@@ -85,6 +85,10 @@ class RTDCWriter:
         else:
             raise ValueError(f"No features in '{self.path}'!")
 
+        # make sure that "trace" is not empty
+        if "trace" in feats and len(self.h5file["events"]["trace"]) == 0:
+            feats.remove("trace")
+
         # set samples per event
         if "trace" in feats:
             traces = list(self.h5file["events"]["trace"].keys())

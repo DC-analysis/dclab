@@ -1,5 +1,6 @@
 0.39.8
  - enh: cache computed file hashes with additional os.stat info
+ - tests: fix tests on Windows
 0.39.7
  - fix: handle empty trace feature in RTDCWriter.rectify_metadata
 0.39.6

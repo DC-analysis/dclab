@@ -126,7 +126,7 @@ def test_join_rtdc_unequal_features_issue_157():
     # Third test: we flip around paths_in to also test sorting
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-        cli.join(path_out=path_out_c, paths_in=[path2, path1])
+    cli.join(path_out=path_out_c, paths_in=[path2, path1])
     with dclab.new_dataset(path_out_c) as ds:
         assert "volume" not in ds.features_innate
         assert "dclab-join-feature-warnings" in ds.logs

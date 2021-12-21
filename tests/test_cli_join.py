@@ -90,6 +90,7 @@ def test_join_rtdc_unequal_features_issue_157():
     path2 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
     path_out_a = path1.with_name("outa.rtdc")
     path_out_b = path1.with_name("outb.rtdc")
+    path_out_c = path1.with_name("outc.rtdc")
 
     # add a feature to path1 and define order (join sorts the files with date)
     with h5py.File(path1, "a") as h51:
@@ -125,8 +126,8 @@ def test_join_rtdc_unequal_features_issue_157():
     # Third test: we flip around paths_in to also test sorting
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-        cli.join(path_out=path_out_b, paths_in=[path2, path1])
-    with dclab.new_dataset(path_out_b) as ds:
+        cli.join(path_out=path_out_c, paths_in=[path2, path1])
+    with dclab.new_dataset(path_out_c) as ds:
         assert "volume" not in ds.features_innate
         assert "dclab-join-feature-warnings" in ds.logs
         log = "\n".join(ds.logs["dclab-join-feature-warnings"])

@@ -15,7 +15,7 @@ class PluginImportError(BaseException):
 
 
 def import_plugin_feature_script(plugin_path):
-    """Find the user-defined recipe and return the info dictionary
+    """Import the user-defined recipe and return the info dictionary
 
     Parameters
     ----------

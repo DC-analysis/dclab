@@ -16,7 +16,7 @@ FEATURES_SCALAR = [
     ["circ", "Circularity"],
     # deform is computed from the convex contour
     ["deform", "Deformation"],
-    ["emodulus", "Young's Modulus [kPa]"],
+    ["emodulus", "Young's modulus [kPa]"],
     # fl*_area, fl*_pos, and fl*_width values correspond to the
     # object for which the contour was found. For high concentrations,
     # these values could be error-prone due to the assignment from

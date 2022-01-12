@@ -1,5 +1,8 @@
 0.39.9
  - fix: spelling of Young's modulus (#159)
+ - ref: define minimal R version 3.6.0 in lme4 submodule and
+   propagate any errors with possible solutions to the user
+ - ref: extract exact version string for R
 0.39.8
  - enh: cache computed file hashes with additional os.stat info
  - tests: fix tests on Windows

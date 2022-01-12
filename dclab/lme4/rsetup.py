@@ -116,7 +116,12 @@ def get_r_path():
 
 def get_r_version():
     check_r()
-    return rpy2.situation.r_version_from_subprocess()
+    ver_string = rpy2.situation.r_version_from_subprocess().strip()
+    if ver_string:
+        # get the actual version string
+        if ver_string.startswith("R version "):
+            ver_string = ver_string.split(" ")[2]
+    return ver_string
 
 
 def has_lme4():

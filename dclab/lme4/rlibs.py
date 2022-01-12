@@ -1,6 +1,7 @@
 from distutils.version import LooseVersion
 import importlib
 import os
+import warnings
 
 #: Minimum R version
 #: This is actually a dependency for rpy2, because the API changed then
@@ -21,7 +22,23 @@ R_SUBMODULES_3 = [
 ]
 
 
-class VersionError(BaseException):
+class RPY2UnavailableError(BaseException):
+    pass
+
+
+class RPY2ImportError(RPY2UnavailableError):
+    pass
+
+
+class RPY2OutdatedError(RPY2UnavailableError):
+    pass
+
+
+class RUnavailableError(BaseException):
+    pass
+
+
+class ROutdatedError(RUnavailableError):
     pass
 
 
@@ -44,17 +61,24 @@ def import_r_submodules():
             mods = R_SUBMODULES + R_SUBMODULES_3
         else:
             mods = R_SUBMODULES
-        for sm in mods:
-            importlib.import_module(sm)
+        try:
+            for sm in mods:
+                importlib.import_module(sm)
+        except rpy2.rinterface_lib.openrlib.ffi.error as exc:
+            # This error happens when the installed R version is too old:
+            # "ffi.error: symbol 'R_tryCatchError' not found in library"
+            raise ROutdatedError(
+                f"Encountered '{exc.__class__.__name__}: {exc}'. "
+                f"Please make sure you have 'R>={R_MIN_VERSION}'!")
 
 
 try:
     rpy2 = importlib.import_module("rpy2")
     if LooseVersion(rpy2.__version__) < LooseVersion(RPY2_MIN_VERSION):
-        raise VersionError(f"Please install 'rpy2>={RPY2_MIN_VERSION}'!")
+        raise RPY2OutdatedError(f"Please install 'rpy2>={RPY2_MIN_VERSION}'!")
 except ImportError:
     rpy2 = MockRPackage(
-        ImportError(f"Please install 'rpy2>={RPY2_MIN_VERSION}'!"))
+        RPY2ImportError(f"Please install 'rpy2>={RPY2_MIN_VERSION}'!"))
     rpy2_is_version_3 = False
 except BaseException as e:
     rpy2 = MockRPackage(e)
@@ -63,11 +87,6 @@ else:
     rpy2_is_version_3 = LooseVersion(rpy2.__version__) >= LooseVersion("3.0")
     try:
         import_r_submodules()
-    except rpy2.rinterface_lib.openrlib.ffi.error as e:
-        # This error happens when the installed R version is too old:
-        # "ffi.error: symbol 'R_tryCatchError' not found in library"
-        # Let's hope there
-        rpy2 = MockRPackage(
-            ImportError(f"Encountered '{e.__class__.__name__}: {e}'. Please "
-                        f"make sure you have 'R>={R_MIN_VERSION}'!"))
-        rpy2_is_version_3 = False
+    except RUnavailableError as e:
+        warnings.warn("There is an issue with the linked R version: "
+                      + f"{e.__class__.__name__}: {e}")

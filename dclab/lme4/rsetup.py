@@ -2,7 +2,8 @@ import logging
 import os
 import subprocess as sp
 
-from .rlibs import rpy2, rpy2_is_version_3, import_r_submodules
+from .rlibs import (
+    RUnavailableError, rpy2, rpy2_is_version_3, import_r_submodules)
 
 # Disable rpy2 logger because of unnecessary prints to stdout
 logging.getLogger("rpy2.rinterface_lib.callbacks").disabled = True
@@ -134,7 +135,11 @@ def has_lme4():
 
 def has_r():
     """Return True if R is available"""
-    return rpy2.situation.get_r_home() is not None
+    try:
+        hasr = rpy2.situation.get_r_home() is not None
+    except RUnavailableError:
+        hasr = False
+    return hasr
 
 
 def import_lme4():

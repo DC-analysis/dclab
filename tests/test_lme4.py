@@ -1,4 +1,6 @@
 from distutils.version import LooseVersion
+from importlib import import_module
+from unittest import mock
 
 import numpy as np
 import pytest
@@ -64,6 +66,20 @@ def test_import_rpy2():
     assert LooseVersion(rpy2.__version__) >= LooseVersion(
         rlibs.RPY2_MIN_VERSION)
     assert situation.get_r_home() is not None
+
+
+def test_import_submodules_raise_r_unavailable_error():
+    import rpy2
+
+    def mocked_import_module(mod):
+        if mod == "rpy2.robjects.packages":
+            raise rpy2.rinterface_lib.openrlib.ffi.error("Testing")
+        else:
+            return import_module(mod)
+
+    with mock.patch("importlib.import_module", new=mocked_import_module):
+        with pytest.raises(rlibs.ROutdatedError, match="Testing"):
+            rlibs.import_r_submodules()
 
 
 def test_fail_add_same_dataset():

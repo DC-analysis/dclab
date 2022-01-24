@@ -22,6 +22,47 @@ class UnknownKeyWarning(UserWarning):
     pass
 
 
+class H5FileWapper:
+    def __init__(self, path):
+        """Wrapper around :class:`h5py.File` that enables reopening
+
+        Sometimes, when you are working with data on a network share,
+        you get temporary disconnects and then h5py might complain
+        with an OSError (e.g. Windows "[Error 22] Can't read data").
+        This wrapper tries to circumvent this issue by catching those
+        exceptions and trying to re-open the file.
+
+        These errors might get
+
+        - Linux: KeyError: "Unable to open object
+        """
+        self.h5 = h5py.File(path, mode="r")
+        self.path = pathlib.Path(path)
+
+    @property
+    def attrs(self):
+        try:
+            return self.h5.attrs
+        except BaseException:
+            self.assert_h5_available()
+            return self.h5.attrs
+
+    def assert_h5_available(self):
+        if self.path.exists():
+            try:
+                self.h5.close()
+            except RuntimeError:
+                pass
+            self.h5 = h5py.File(self.path, mode="r")
+
+    def __getitem__(self, item):
+        try:
+            return self.h5[item]
+        except BaseException:
+            self.assert_h5_available()
+            return self.h5[item]
+
+
 class H5ContourEvent:
     def __init__(self, h5group):
         self.h5group = h5group
@@ -221,7 +262,7 @@ class RTDC_HDF5(RTDCBase):
         self.path = h5path
 
         # Setup events
-        self._h5 = h5py.File(h5path, mode="r")
+        self._h5 = H5FileWapper(h5path)
         self._events = H5Events(self._h5)
 
         # Parse configuration

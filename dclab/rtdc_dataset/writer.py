@@ -469,7 +469,7 @@ class RTDCWriter:
     def write_text(self, group, name, lines):
         """Write text to an HDF5 dataset
 
-        Text data are written as as fixed-length string dataset.
+        Text data are written as a fixed-length string dataset.
 
         Parameters
         ----------

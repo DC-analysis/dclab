@@ -1,3 +1,5 @@
+0.39.10
+ - docs: properly document the shapes option of plugin features (#146)
 0.39.9
  - fix: spelling of Young's modulus (#159)
  - ref: define minimal R version 3.6.0 in lme4 submodule and

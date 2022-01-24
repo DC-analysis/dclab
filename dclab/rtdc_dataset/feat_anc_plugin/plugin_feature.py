@@ -25,8 +25,8 @@ def import_plugin_feature_script(plugin_path):
     Returns
     -------
     info: dict
-        dictionary with the information required to instantiate
-        one (or multiple) `PlugInFeature`
+        Dictionary with the information required to instantiate
+        one (or multiple) :class:`PlugInFeature`s.
 
     Raises
     ------
@@ -137,8 +137,39 @@ class PlugInFeature(AncillaryFeature):
             `info` dictionary in the plugin file.
             At least the following keys must be specified:
 
-            - "method": callable function
-            - "feature names": list of feature names
+            - "method": callable function computing the plugin feature
+              values (takes an :clas:`dclab.rtdc_dataset.core.RTDCBase`
+              as argument)
+            - "feature names": list of plugin feature names provided
+              by the plugin
+
+            The following features are optional (but some must
+            be specified in groups):
+
+            - "description": short (one-line) description of the plugin
+            - "long description": long description of the plugin
+            - "feature labels": feature labels used e.g. for plotting
+            - "feature shapes": list of tuples for each feature
+              indicating the shape (this is required only for
+              non-scalar features; for scalar features simply set
+              this to ``None`` or ``(1,)``.
+            - "scalar feature": list of boolean values indicating
+              whether the features are scalar
+            - "config required": configuration keys required to
+              compute the plugin features (see the `req_config`
+              parameter for :class:`dclab.rtdc_dataset.feat_anc_core
+              .ancillary_feature.AncillaryFeature`)
+            - "features required": list of feature names required to
+              compute the plugin features (see the `req_features`
+              parameter for :class:`dclab.rtdc_dataset.feat_anc_core
+              .ancillary_feature.AncillaryFeature`)
+            - "method check required": additional method that checks
+              whether the features can be computed (see the `req_func`
+              parameter for :class:`dclab.rtdc_dataset.feat_anc_core
+              .ancillary_feature.AncillaryFeature`)
+            - "version": version of this plugin (please use
+              semantic verioning)
+
         plugin_path: str or Path, optional
             path which was used to load the `PlugInFeature` with
             :func:`load_plugin_feature`.

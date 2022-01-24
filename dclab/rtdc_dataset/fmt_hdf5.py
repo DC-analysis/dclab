@@ -277,7 +277,7 @@ class RTDC_HDF5(RTDCBase):
 
     @staticmethod
     def parse_config(h5path):
-        """Parse the RT-DC configuration of an hdf5 file"""
+        """Parse the RT-DC configuration of an HDF5 file"""
         with h5py.File(h5path, mode="r") as fh5:
             h5attrs = dict(fh5.attrs)
 

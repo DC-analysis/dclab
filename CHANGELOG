@@ -1,4 +1,6 @@
 0.39.10
+ - fix: make absolutely sure HDF5 files are closed if RTDCWriter is
+   as a context manager
  - docs: properly document the shapes option of plugin features (#146)
 0.39.9
  - fix: spelling of Young's modulus (#159)

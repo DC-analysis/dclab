@@ -57,11 +57,16 @@ class RTDCWriter:
 
     def __exit__(self, type, value, tb):
         # close the HDF5 file
-        if len(self.h5file["events"]):
-            self.rectify_metadata()
-        self.version_brand()
-        if self.owns_path:
-            self.h5file.close()
+        try:
+            if len(self.h5file["events"]):
+                self.rectify_metadata()
+            self.version_brand()
+        except BaseException:
+            raise
+        finally:
+            # This is guaranteed to run if any exception is raised.
+            if self.owns_path:
+                self.h5file.close()
 
     def rectify_metadata(self):
         """Autocomplete the metadta of the RTDC-measurement

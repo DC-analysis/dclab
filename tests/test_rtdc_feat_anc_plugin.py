@@ -1,4 +1,7 @@
 import pathlib
+import tempfile
+import traceback
+
 import h5py
 import numpy as np
 import pytest
@@ -347,6 +350,44 @@ def test_pf_export_non_scalar_bad_shape():
         expath = h5path.with_name("exported.rtdc")
         with pytest.raises(ValueError, match="Bad shape"):
             ds.export.hdf5(expath, features=[pf.feature_name])
+
+
+def test_pf_import_error_attribution_issue_160_1():
+    """Test for PluginImportError (file not found)
+
+    When plugin features cannot be imported/found, a PluginImportError is
+    raised with a generic error message. However, if the plugin itself
+    contains an import that is not available, the actual exception
+    should be raised.
+    """
+    with pytest.raises(PluginImportError,
+                       match="The plugin could be not be found"):
+        import_plugin_feature_script("/does/not/exist/laksdlaisdlaism.py")
+
+
+def test_pf_import_error_attribution_issue_160_2():
+    """Test for bad import in plugin
+
+    When plugin features cannot be imported/found, a PluginImportError is
+    raised with a generic error message. However, if the plugin itself
+    contains an import that is not available, the actual exception
+    should be raised.
+    """
+    tdir = tempfile.mkdtemp(prefix="plugin_import_error_")
+    # create a plugin with an import that is not possible
+    plugin_path = pathlib.Path(tdir) / "bad_plugin.py"
+    good_plugin = (data_dir / "feat_anc_plugin_creative.py").read_text()
+    bad_plugin = "import unexistent_module_alsdalsdvnalksdnf\n" + good_plugin
+    plugin_path.write_text(bad_plugin)
+    with pytest.raises(PluginImportError,
+                       match="bad_plugin.py could not be loaded"):
+        import_plugin_feature_script(plugin_path)
+
+    try:
+        import_plugin_feature_script(plugin_path)
+    except PluginImportError:
+        tb = traceback.format_exc()
+        assert "No module named 'unexistent_module_alsdalsdvnalksdnf'" in tb
 
 
 def test_pf_feature_exists():

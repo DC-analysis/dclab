@@ -34,14 +34,17 @@ def import_plugin_feature_script(plugin_path):
         If the plugin can not be found
     """
     path = pathlib.Path(plugin_path)
+    if not path.exists():
+        raise PluginImportError("The plugin could be not be found at "
+                                f"'{plugin_path}'!")
     try:
         # insert the plugin directory to sys.path so we can import it
         sys.path.insert(-1, str(path.parent))
         sys.dont_write_bytecode = True
         plugin = importlib.import_module(path.stem)
-    except ModuleNotFoundError:
-        raise PluginImportError("The plugin could be not be found at "
-                                f"'{plugin_path}'!")
+    except BaseException as e:
+        raise PluginImportError(
+            f"The plugin {plugin_path} could not be loaded!") from e
     finally:
         # undo our path insertion
         sys.path.pop(0)

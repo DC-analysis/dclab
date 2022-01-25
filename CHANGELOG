@@ -1,6 +1,8 @@
 0.39.11
  - fix: misleading error message when loading plugin features
    with Python modules that are not available (#160)
+ - docs: add information on how to call CLI functions from within
+   Python (#145)
 0.39.10
  - fix: make absolutely sure HDF5 files are closed if RTDCWriter is
    usde as a context manager

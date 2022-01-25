@@ -3,6 +3,23 @@ Command-line interface
 ======================
 
 
+.. note::
+
+   You may also call all of these command-line functions from within
+   Python. For instance, to compress a dataset, you would use
+   :func:`dclab.cli.compress`:
+
+   .. code-block:: python
+
+       import dclab.cli
+       dclab.cli.compress(
+           path_out="/path/to/compressed_file.rtdc",
+           path_in="/path/to/original.rtdc")
+
+   For more information please take a look at the code reference
+   of the :ref:`CLI submodule <sec_ref_cli>`.
+
+
 .. _sec_compress:
 
 dclab-compress

@@ -321,6 +321,16 @@ Writing RT-DC files
    :undoc-members:
 
 
+.. _sec_ref_cli:
+
+Command-line interface methods
+==============================
+
+.. automodule:: dclab.cli
+   :members:
+   :imported-members:
+
+
 R and lme4
 ==========
 

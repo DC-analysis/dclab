@@ -64,6 +64,8 @@ def _hashfile_cached(path, stat, blocksize=65536, count=0,
     constructor: callable
         hash algorithm constructor
     """
+    print(path)
+    print(stat)
     assert stat, "We need stat for validating the cache"
     hasher = constructor()
     with path.open('rb') as fd:

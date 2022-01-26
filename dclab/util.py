@@ -31,9 +31,10 @@ def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
                       "`constructor` instead.")
         constructor = hasher_class
     path = pathlib.Path(fname).resolve()
+    path_stat = path.stat()
     return _hashfile_cached(
         path=path,
-        stat=path.stat(),
+        path_stats=(path_stat.st_mtime_ns, path_stat.st_size),
         blocksize=blocksize,
         count=count,
         constructor=constructor
@@ -41,7 +42,7 @@ def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
 
 
 @functools.lru_cache(maxsize=100)
-def _hashfile_cached(path, stat, blocksize=65536, count=0,
+def _hashfile_cached(path, path_stats, blocksize=65536, count=0,
                      constructor=hashlib.md5):
     """Cached hashfile using stat tuple as cache
 
@@ -51,8 +52,9 @@ def _hashfile_cached(path, stat, blocksize=65536, count=0,
     ----------
     path: pathlib.Path
         path to the file to be hashed
-    stat: named tuple
-        tuple of `os.stat_result` for `path`. This must be specified,
+    path_stats: tuple
+        tuple that contains information about the size and the
+        modification time of `path`. This must be specified,
         so that caching of the result is done properly in case the user
         modified `path` (this function is wrapped with
         functools.lru_cache)
@@ -64,9 +66,7 @@ def _hashfile_cached(path, stat, blocksize=65536, count=0,
     constructor: callable
         hash algorithm constructor
     """
-    print(path)
-    print(stat)
-    assert stat, "We need stat for validating the cache"
+    assert path_stats, "We need stat for validating the cache"
     hasher = constructor()
     with path.open('rb') as fd:
         buf = fd.read(blocksize)

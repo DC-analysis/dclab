@@ -10,13 +10,6 @@ is then available *automatically* for *every* dataset loaded in dclab.
 
 .. note::
 
-    This will in future be supported by Shape-Out. If you would like to
-    follow this development, you
-    should subscribe to the issue about `plugin features in Shape-Out2
-    <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut2/issues/85>`_.
-
-.. note::
-
     The advantages of plugin features over :ref:`temporary features <sec_av_feat_temp>`
     are that plugin features are reproducible, shareable, versionable, and
     generally more transparent. You should only use temporary features if

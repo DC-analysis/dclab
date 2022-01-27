@@ -1,6 +1,6 @@
 0.39.13
  - fix: recompute the "ml_class" feature if the ml_score features
-   changes (either the underlying model or the number of features)
+   change (either the underlying model or the number of features)
 0.39.12
  - fix: support nan values for the computation of the "ml_class"
    feature (#161)

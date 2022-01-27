@@ -80,7 +80,19 @@ def compute_ml_class(mm, sanity_checks=True):
 
 def has_ml_scores(mm):
     """Check whether the dataset has ml_scores defined"""
-    return bool(get_ml_score_names(mm))
+    # Return the sorted score names plus Ancillary feature hashes.
+    # This will be used to determine the hash of the ml_class feature,
+    # which is important in case the user replaces an ML feature
+    # with a new one.
+    features = get_ml_score_names(mm)
+    idlist = []
+    for feat in features:
+        # We also hash any other AncillaryFeature that might implement
+        # this ML score. But this use case is basically non-existent and
+        # the performance impact is probably negligible.
+        candidates = AncillaryFeature.get_instances(feat)
+        idlist.append((feat, [c.hash(mm) for c in candidates]))
+    return idlist
 
 
 def register():

@@ -4,6 +4,7 @@
 import hashlib
 
 from ..feat_anc_core import AncillaryFeature
+from ...util import obj2bytes
 
 from . import modc
 
@@ -90,6 +91,19 @@ class MachineLearningFeature(AncillaryFeature):
         }
 
         return feature_info
+
+    def hash(self, rtdc_ds):
+        """Used for identifying an ancillary ML computation
+
+        The required features, the used configuration keys/values, and
+        the return value of the requirement function are hashed. In
+        addition, the ML model's info dictionary is hashed.
+        """
+        super_hash = super(MachineLearningFeature, self).hash(rtdc_ds)
+        hasher = hashlib.md5()
+        hasher.update(obj2bytes(super_hash))
+        hasher.update(obj2bytes(self.data.info))
+        return hasher.hexdigest()
 
 
 def load_ml_feature(modc_path):

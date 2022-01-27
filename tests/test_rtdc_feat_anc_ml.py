@@ -12,6 +12,9 @@ from dclab.rtdc_dataset import feat_anc_ml
 from helper_methods import example_data_dict
 
 
+data_path = pathlib.Path(__file__).parent / "data"
+
+
 @pytest.fixture(autouse=True)
 def cleanup_plugin_features():
     """Fixture used to cleanup plugin feature tests"""
@@ -86,6 +89,27 @@ def test_af_ml_class_bad_score_nan():
                        atol=0,
                        rtol=0
                        )
+
+
+def test_af_ml_class_changed_features():
+    data = {"ml_score_011": [.1, .3, .1, 0.01, .59],
+            "ml_score_012": [.2, .1, .4, 0, .8],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" in ds
+    assert np.all(ds["ml_class"] == [1, 0, 1, 0, 1])
+    # This triggers a recomputation of the ml_class feature the
+    # next time it is accessed:
+    ds._events["ml_score_003"] = np.array([1, 1, 1, 1, 0])
+    assert np.all(ds["ml_class"] == [0, 0, 0, 0, 2])
+
+
+def test_af_ml_class_has_ml_score_false():
+    data = {"deform": [.1, .3, .1, 0.01, .59],
+            "area_um": [20, 10, 40, 100, 80],
+            }
+    ds = dclab.new_dataset(data)
+    assert "ml_class" not in ds
 
 
 def test_af_ml_class_single():

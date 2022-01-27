@@ -88,7 +88,7 @@ class AncillaryFeature:
             then the priority of the features defines which feature
             returns True in `self.is_available`. A higher value
             means a higher priority.
-        data: object
+        data: object or BaseModel
             Any other data relevant for the feature (e.g. the ML
             model for computing 'ml_score_xxx' features)
         identifier: None or str
@@ -225,8 +225,8 @@ class AncillaryFeature:
     def hash(self, rtdc_ds):
         """Used for identifying an ancillary computation
 
-        The data columns and the used configuration keys/values
-        are hashed.
+        The required features, the used configuration keys/values, and
+        the return value of the requirement function are hashed.
         """
         hasher = hashlib.md5()
         # data columns

@@ -81,6 +81,51 @@ def standard_model(tfdata, epochs=1, final_size=2):
     return model
 
 
+def test_af_ml_class_changed_model():
+    # setup
+    dict1 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict1["deform"] = np.linspace(.01, .02, 1000)
+    dict2 = example_data_dict(size=1000, keys=["area_um", "aspect", "fl1_max"])
+    dict2["deform"] = np.linspace(.03, .04, 1000)
+    ds1 = dclab.new_dataset(dict1)
+    ds2 = dclab.new_dataset(dict2)
+    tfdata = hook_tensorflow.assemble_tf_dataset_scalars(
+        dc_data=[ds1, ds2],
+        labels=[0, 1],
+        feature_inputs=["deform"])
+    bare_model1 = standard_model(tfdata, epochs=10)
+    dc_model1 = hook_tensorflow.TensorflowModel(
+        bare_model=bare_model1,
+        inputs=["deform"],
+        outputs=["ml_score_001", "ml_score_002"])
+
+    bare_model2 = standard_model(tfdata, epochs=10)
+    dc_model2 = hook_tensorflow.TensorflowModel(
+        bare_model=bare_model2,
+        inputs=["deform"],
+        # flip feature 1 and 2
+        outputs=["ml_score_002", "ml_score_001"])
+
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_001",
+                                       dc_model=dc_model1)
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_002",
+                                       dc_model=dc_model1)
+
+    # checkout the ml_class feature
+    assert "ml_score_001" in ds1
+    assert np.all(ds1["ml_class"] == 0)
+
+    feat_anc_ml.ml_feature.remove_all_ml_features()
+
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_001",
+                                       dc_model=dc_model2)
+    feat_anc_ml.MachineLearningFeature(feature_name="ml_score_002",
+                                       dc_model=dc_model2)
+
+    assert "ml_score_001" in ds1
+    assert np.all(ds1["ml_class"] == 1)
+
+
 def test_af_ml_score_basic():
     """Slight modification of related test in test_ml.py using ancillaries"""
     # setup

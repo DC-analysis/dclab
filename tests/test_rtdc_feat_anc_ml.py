@@ -75,13 +75,17 @@ def test_af_ml_class_bad_score_min():
 
 
 def test_af_ml_class_bad_score_nan():
-    data = {"ml_score_001": [.1, .3, np.nan, 0.01, .59],
-            "ml_score_002": [.2, .1, .4, 0, .8],
+    data = {"ml_score_001": [.1, .3, np.nan, np.nan, np.nan],
+            "ml_score_002": [.2, .1, .4, np.nan, 0],
             }
     ds = dclab.new_dataset(data)
     assert "ml_class" in ds
-    with pytest.raises(ValueError, match="nan values"):
-        ds["ml_class"]
+    assert np.allclose(ds["ml_class"],
+                       [1, 0, 1, -1, -1],
+                       equal_nan=True,
+                       atol=0,
+                       rtol=0
+                       )
 
 
 def test_af_ml_class_single():

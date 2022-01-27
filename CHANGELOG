@@ -1,4 +1,6 @@
 0.39.12
+ - fix: support nan values for the computation of the "ml_class"
+   feature (#161)
  - fix: cache of util.hashfile used access times of files (and thus
    might not have been of any use in some cases)
 0.39.11

@@ -70,16 +70,16 @@ class H5Events:
         # user-level checking is done in core.py
         assert dfn.feature_exists(key), "Feature '{}' not valid!".format(key)
         data = self._h5["events"][key]
-        if key in ["image", "image_bg"]:
-            return data
-        elif key == "contour":
+        if key == "contour":
             return H5ContourEvent(data)
         elif key == "mask":
             return H5MaskEvent(data)
         elif key == "trace":
             return H5TraceEvent(data)
-        else:
+        elif data.ndim == 1:
             return data[:]
+        else:
+            return data
 
     def __iter__(self):
         # dict-like behavior

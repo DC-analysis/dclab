@@ -131,6 +131,15 @@ def test_hash():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_load_non_scalar_data():
+    """Loading non-scalar data should return data as h5py.Dataset"""
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert isinstance(ds["image"], h5py.Dataset)
+    assert isinstance(ds["image_bg"], h5py.Dataset)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_shape_contour():
     ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     assert "contour" in ds.features_innate

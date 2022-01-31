@@ -194,7 +194,7 @@ class RTDCWriter:
                               + "for you and assume that you are storing "
                               + "multiple events at a time. If this works, "
                               + f"you could put the shape `{data[0].shape}` "
-                              + 'in the `info["feature labels"]` key of '
+                              + 'in the `info["feature shapes"]` key of '
                               + "your plugin feature.")
                 shape = data.shape[1:]
             if shape == data.shape:

@@ -566,6 +566,7 @@ def test_pf_load_non_scalar_plugin_data():
     """Test loading non-scalar plugin data format"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     info = example_plugin_info_non_scalar_feature()
+    info["feature shapes"] = [(80, 250)]
     PlugInFeature("image_gauss_filter", info)
 
     # Accessing non-scalar plugin data without prior saving and storing data in

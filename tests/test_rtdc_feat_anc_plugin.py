@@ -560,6 +560,49 @@ def test_pf_load_plugin():
     assert np.allclose(circ_times_area, ds["circ"] * ds["area_um"])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_load_non_scalar_plugin_data():
+    """Test loading non-scalar plugin data format"""
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
+    info = example_plugin_info_non_scalar_feature()
+    PlugInFeature("image_gauss_filter", info)
+
+    # Accessing non-scalar plugin data without prior saving and storing data in
+    # HDF5-format should return already computed data as np.ndarray
+    assert isinstance(ds["image_gauss_filter"], np.ndarray)
+
+    # Exporting the rtdc-file including the plugin-feature and then reloading
+    # it should load the non-scalar plugin data as h5py.Dataset
+    tdir = tempfile.mkdtemp()
+    pdir = pathlib.Path(tdir)
+    pfile = pdir / "tmp.rtdc"
+    features = ds.features + ["image_gauss_filter"]
+    ds.export.hdf5(pfile, features=features)
+    ds2 = dclab.new_dataset(pfile)
+    assert isinstance(ds2["image_gauss_filter"], h5py.Dataset)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_load_scalar_plugin_data():
+    """Test loading scalar plugin data return np.ndarray"""
+    ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
+    info = example_plugin_info_single_feature()
+    PlugInFeature("circ_per_area", info)
+    assert isinstance(ds["circ_per_area"], np.ndarray)
+
+    # Exporting the rtdc-file including the plugin-feature and then reloading
+    # it should still load scalar plugin data as np.ndarray
+    tdir = tempfile.mkdtemp()
+    pdir = pathlib.Path(tdir)
+    pfile = pdir / "tmp.rtdc"
+    features = ds.features + ["circ_per_area"]
+    ds.export.hdf5(pfile, features=features)
+    ds2 = dclab.new_dataset(pfile)
+    assert isinstance(ds2["circ_per_area"], np.ndarray)
+
+
 def test_pf_minimum_info_input():
     """Only method and feature names are required to create PlugInFeature"""
     info = {"method": compute_single_plugin_feature,

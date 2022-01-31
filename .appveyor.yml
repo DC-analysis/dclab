@@ -40,11 +40,12 @@ install:
 build: off
 
 test_script:
-  - appveyor-retry pip install pytest
-  - appveyor-retry pip install coverage
-  - appveyor-retry pip install codecov
-  - coverage run --source=dclab -m pytest tests
-  - coverage report -m
+  # pin oauthlib (might have sth to do with failing coverage)
+  - appveyor-retry pip install oauthlib==3.1.1 requests-oauthlib==1.3.0
+  - appveyor-retry pip install pytest coverage codecov
+  - python -m pytest tests
+  - python -m coverage run --source=dclab -m pytest tests
+  - python -m coverage report -m
   # Allow codecov to fail
   - codecov || exit 0
 

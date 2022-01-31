@@ -138,7 +138,7 @@ class ImageMap(object):
         self.filename = fname
 
     def __del__(self):
-        if self._cap is not None:
+        if self._cap is not None and hasattr(self._cap, "_proc"):
             if ISWIN and self._cap._proc is not None:
                 # This is a workaround for windows when pytest fails due
                 # to "OSError: [WinError 6] The handle is invalid",

@@ -562,7 +562,7 @@ def test_pf_load_plugin():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def ttttest_pf_load_non_scalar_plugin_data():
+def test_pf_load_non_scalar_plugin_data():
     """Test loading non-scalar plugin data format"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     info = example_plugin_info_non_scalar_feature()
@@ -585,7 +585,7 @@ def ttttest_pf_load_non_scalar_plugin_data():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def ttttest_pf_load_scalar_plugin_data():
+def test_pf_load_scalar_plugin_data():
     """Test loading scalar plugin data return np.ndarray"""
     ds = dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip"))
     info = example_plugin_info_single_feature()

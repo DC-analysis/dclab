@@ -79,6 +79,8 @@ class H5Events:
         elif data.ndim == 1:
             return data[:]
         else:
+            # for features like "image", "image_bg" and other non-scalar
+            # ancillary features
             return data
 
     def __iter__(self):

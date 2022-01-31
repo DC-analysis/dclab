@@ -579,8 +579,8 @@ def test_pf_load_non_scalar_plugin_data():
         pfile = pdir / "tmp.rtdc"
         features = ds.features + ["image_gauss_filter"]
         ds.export.hdf5(pfile, features=features)
-        ds2 = dclab.new_dataset(pfile)
-        assert isinstance(ds2["image_gauss_filter"], h5py.Dataset)
+        with dclab.new_dataset(pfile) as ds2:
+            assert isinstance(ds2["image_gauss_filter"], h5py.Dataset)
 
 
 @pytest.mark.filterwarnings(
@@ -599,8 +599,8 @@ def test_pf_load_scalar_plugin_data():
         pfile = pdir / "tmp.rtdc"
         features = ds.features + ["circ_per_area"]
         ds.export.hdf5(pfile, features=features)
-        ds2 = dclab.new_dataset(pfile)
-        assert isinstance(ds2["circ_per_area"], np.ndarray)
+        with dclab.new_dataset(pfile) as ds2:
+            assert isinstance(ds2["circ_per_area"], np.ndarray)
 
 
 def test_pf_minimum_info_input():

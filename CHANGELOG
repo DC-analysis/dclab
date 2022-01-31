@@ -1,5 +1,6 @@
-0.39.13
+0.39.14
  - fix: enable loading of non-scalar plugin data as h5py.Dataset (#162)
+0.39.13
  - fix: recompute the "ml_class" feature if the ml_score features
    change (either the underlying model or the number of features)
 0.39.12

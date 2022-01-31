@@ -574,13 +574,13 @@ def test_pf_load_non_scalar_plugin_data():
 
     # Exporting the rtdc-file including the plugin-feature and then reloading
     # it should load the non-scalar plugin data as h5py.Dataset
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
-        pdir = pathlib.Path(temp_dir)
-        pfile = pdir / "tmp.rtdc"
-        features = ds.features + ["image_gauss_filter"]
-        ds.export.hdf5(pfile, features=features)
-        ds2 = dclab.new_dataset(pfile)
-        assert isinstance(ds2["image_gauss_filter"], h5py.Dataset)
+    tdir = tempfile.mkdtemp()
+    pdir = pathlib.Path(tdir)
+    pfile = pdir / "tmp.rtdc"
+    features = ds.features + ["image_gauss_filter"]
+    ds.export.hdf5(pfile, features=features)
+    ds2 = dclab.new_dataset(pfile)
+    assert isinstance(ds2["image_gauss_filter"], h5py.Dataset)
 
 
 @pytest.mark.filterwarnings(
@@ -594,13 +594,13 @@ def test_pf_load_scalar_plugin_data():
 
     # Exporting the rtdc-file including the plugin-feature and then reloading
     # it should still load scalar plugin data as np.ndarray
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
-        pdir = pathlib.Path(temp_dir)
-        pfile = pdir / "tmp.rtdc"
-        features = ds.features + ["circ_per_area"]
-        ds.export.hdf5(pfile, features=features)
-        ds2 = dclab.new_dataset(pfile)
-        assert isinstance(ds2["circ_per_area"], np.ndarray)
+    tdir = tempfile.mkdtemp()
+    pdir = pathlib.Path(tdir)
+    pfile = pdir / "tmp.rtdc"
+    features = ds.features + ["circ_per_area"]
+    ds.export.hdf5(pfile, features=features)
+    ds2 = dclab.new_dataset(pfile)
+    assert isinstance(ds2["circ_per_area"], np.ndarray)
 
 
 def test_pf_minimum_info_input():

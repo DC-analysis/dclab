@@ -190,6 +190,22 @@ def test_features():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+def test_feature_contained():
+    path_im = retrieve_data("fmt-tdms_fl-image_2016.zip")
+    ds_im = new_dataset(path_im)
+    path_no_im = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
+    ds_no_im = new_dataset(path_no_im)
+
+    assert "image" in ds_im
+    assert "mask" in ds_im
+    assert "image" not in ds_no_im
+    assert "mask" not in ds_no_im
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_features_loaded():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
@@ -246,11 +262,11 @@ def test_index_slicing(feat, idxs):
 
 @pytest.mark.parametrize("feat", ["image", "mask"])
 @pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
-                                  [0, 1, 2], [True, True, True, False]])
+                                  [0, 1, 2], [False]+42*[True]])
 def test_index_slicing_tdms_fails(feat, idxs):
     """The tdms-file format does not support slice/array indexing"""
     pytest.importorskip("nptdms")
-    data = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
+    data = retrieve_data("fmt-tdms_fl-image_2016.zip")
     ds = new_dataset(data)
     ds.filter.manual[2] = False
     ch = new_dataset(ds)

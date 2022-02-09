@@ -316,6 +316,43 @@ class Export(object):
                        delimiter="\t")
 
 
+def yield_filtered_array_stacks(data, indices):
+    """Generator returning chunks with the filtered feature data
+
+    Parameters
+    ----------
+    data: np.ndarray or h5py.Dataset
+        The full, unfiltered input feature data.
+    indices: np.ndarray or list
+        The indices in data (first axis) that should be written
+        to the chunks returned by this generator.
+
+    Notes
+    -----
+    This method works with any feature dimension (e.g. it
+    works for image (2D) data and for trace data (1D)). It
+    is just important that `data` is indexable using integers
+    and that the events in `data` all have the same shape.
+    The dtype of the returned chunks is determined by the first
+    item in `data`.
+    """
+    # assemble filtered image stacks
+    data0 = data[0]
+    chunk_shape = tuple([CHUNK_SIZE] + list(data0.shape))
+    chunk = np.zeros(chunk_shape, dtype=data0.dtype)
+    jj = 0
+    for ii in indices:
+        chunk[jj] = data[ii]
+        if (jj + 1) % CHUNK_SIZE == 0:
+            jj = 0
+            yield chunk
+        else:
+            jj += 1
+    # yield remainder
+    if jj:
+        yield chunk[:jj]
+
+
 def store_filtered_feature(rtdc_writer, feat, data, filtarr):
     """Append filtered feature data to an HDF5 file
 
@@ -336,6 +373,9 @@ def store_filtered_feature(rtdc_writer, feat, data, filtarr):
     """
     indices = np.where(filtarr)[0]
     hw = rtdc_writer
+    if not hw.mode == "append":
+        raise ValueError("The `rtdc_writer` object must be created with"
+                         + f"`mode='append'`, got '{hw.mode}' for '{hw}'!")
     # event-wise, because
     # - tdms-based datasets don't allow indexing with numpy
     # - there might be memory issues
@@ -344,38 +384,20 @@ def store_filtered_feature(rtdc_writer, feat, data, filtarr):
             hw.store_feature("contour", data[ii])
     elif feat in ["mask", "image", "image_bg"]:
         # assemble filtered image stacks
-        im0 = data[0]
-        imstack = np.zeros((CHUNK_SIZE, im0.shape[0], im0.shape[1]),
-                           dtype=im0.dtype)
-        jj = 0
-        for ii in indices:
-            imstack[jj] = data[ii]
-            if (jj + 1) % CHUNK_SIZE == 0:
-                jj = 0
-                hw.store_feature(feat, imstack)
-            else:
-                jj += 1
-        # write rest
-        if jj:
-            hw.store_feature(feat, imstack[:jj, :, :])
+        for imstack in yield_filtered_array_stacks(data, indices):
+            hw.store_feature(feat, imstack)
     elif feat == "trace":
         # assemble filtered trace stacks
         for tr in data.keys():
-            tr0 = data[tr][0]
-            trstack = np.zeros((CHUNK_SIZE, len(tr0)), dtype=tr0.dtype)
-            jj = 0
-            for ii in indices:
-                trstack[jj] = data[tr][ii]
-                if (jj + 1) % CHUNK_SIZE == 0:
-                    jj = 0
-                    hw.store_feature("trace", {tr: trstack})
-                else:
-                    jj += 1
-            # write rest
-            if jj:
-                hw.store_feature("trace", {tr: trstack[:jj, :]})
-    else:
+            for trstack in yield_filtered_array_stacks(data[tr], indices):
+                hw.store_feature("trace", {tr: trstack})
+    elif dfn.scalar_feature_exists(feat):
         hw.store_feature(feat, data[filtarr])
+    else:
+        # Special case of plugin or temporary features.
+        shape = data[0].shape
+        for dstack in yield_filtered_array_stacks(data, indices):
+            hw.store_feature(feat, dstack, shape=shape)
 
 
 def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,

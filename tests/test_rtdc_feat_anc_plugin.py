@@ -14,6 +14,7 @@ from dclab.rtdc_dataset.feat_anc_plugin.plugin_feature import (
     PluginImportError)
 from dclab.rtdc_dataset.feat_anc_core.ancillary_feature import (
     BadFeatureSizeWarning)
+from dclab.rtdc_dataset.feat_temp import deregister_all
 from dclab.rtdc_dataset.fmt_hierarchy import ChildNDArray
 
 from helper_methods import retrieve_data
@@ -31,6 +32,7 @@ def cleanup_plugin_features():
     # code run after the test
     # remove our test plugin examples
     remove_all_plugin_features()
+    deregister_all()
 
 
 def compute_single_plugin_feature(rtdc_ds):
@@ -270,14 +272,77 @@ def test_pf_export_non_scalar():
 
         # export the data to a new file
         expath = h5path.with_name("exported.rtdc")
-        with pytest.warns(UserWarning, match="out on a limb"):
-            ds.export.hdf5(expath,
-                           features=[pf.feature_name])
+        ds.export.hdf5(expath, features=[pf.feature_name])
 
     # make sure that worked
     with h5py.File(expath, "r") as h5:
         assert pf.feature_name in h5["events"]
         assert np.allclose(h5["events"][pf.feature_name], image_gauss_filter)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_export_non_scalar_filtered_issue_166():
+    h5path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    # initialize PlugInFeature instance
+    info = example_plugin_info_non_scalar_feature()
+    info["feature shapes"] = [(80, 250)]
+    pf = PlugInFeature("image_gauss_filter", info)
+
+    with dclab.new_dataset(h5path) as ds:
+        # extract the feature information from the dataset
+        assert pf in PlugInFeature.features
+        image_gauss_filter = ds[pf.feature_name]
+        assert np.all(ds.filter.manual)  # just checking the default
+        ds.filter.manual[0] = False
+        ds.filter.manual[2] = False
+        image_gauss_filter_filtered = np.array(
+            image_gauss_filter[ds.filter.manual],
+            copy=True)
+        ds.apply_filter()
+
+        # export the data to a new file
+        expath = h5path.with_name("exported.rtdc")
+        ds.export.hdf5(expath, features=[pf.feature_name], filtered=True)
+
+    # make sure that worked
+    with h5py.File(expath, "r") as h5:
+        assert pf.feature_name in h5["events"]
+        assert np.allclose(h5["events"][pf.feature_name],
+                           image_gauss_filter_filtered)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_export_non_scalar_filtered_from_file_issue_166():
+    h5path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    expath = h5path.with_name("exported.rtdc")
+    # initialize PlugInFeature instance
+    info = example_plugin_info_non_scalar_feature()
+    info["feature shapes"] = [(80, 250)]
+    pf = PlugInFeature("image_gauss_filter", info)
+
+    # write the plugin feature data to an HDF5 file
+    with dclab.new_dataset(h5path) as ds:
+        # extract the feature information from the dataset
+        ds.export.hdf5(expath, features=[pf.feature_name])
+
+    # remove all plugin features and work with temporary feature
+    remove_all_plugin_features()
+
+    # try to load the plugin feature data from that HDF5 file and
+    # export it again (this time, the exporter has to get the data
+    # from the H5File object).
+    expath2 = h5path.with_name("exported2.rtdc")
+    dclab.register_temporary_feature("image_gauss_filter", is_scalar=False)
+    with dclab.new_dataset(expath) as ds2:
+        ds2.export.hdf5(expath2,
+                        features=["image_gauss_filter"],
+                        filtered=True)
+
+    # make sure that worked
+    with h5py.File(expath2, "r") as h5:
+        assert "image_gauss_filter" in h5["events"]
 
 
 @pytest.mark.filterwarnings(
@@ -333,24 +398,6 @@ def test_pf_export_non_scalar_no_warning():
     with h5py.File(expath, "r") as h5:
         assert pf.feature_name in h5["events"]
         assert np.allclose(h5["events"][pf.feature_name], image_gauss_filter)
-
-
-@pytest.mark.filterwarnings(
-    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_export_non_scalar_bad_shape():
-    h5path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
-    # initialize PlugInFeature instance
-    info = example_plugin_info_non_scalar_feature()
-    info["feature shapes"] = [(42, 27)]
-    pf = PlugInFeature("image_gauss_filter", info)
-
-    with dclab.new_dataset(h5path) as ds:
-        # extract the feature information from the dataset
-        assert pf in PlugInFeature.features
-        # export the data to a new file
-        expath = h5path.with_name("exported.rtdc")
-        with pytest.raises(ValueError, match="Bad shape"):
-            ds.export.hdf5(expath, features=[pf.feature_name])
 
 
 def test_pf_import_error_attribution_issue_160_1():

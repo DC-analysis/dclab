@@ -9,6 +9,8 @@ import pytest
 
 import dclab
 from dclab.rtdc_dataset import RTDCWriter, new_dataset
+from dclab.rtdc_dataset.feat_temp import (
+    register_temporary_feature, deregister_temporary_feature)
 
 from helper_methods import retrieve_data
 
@@ -337,6 +339,23 @@ def test_mode():
         assert "area_um" in events2.keys()
         assert "deform" in events2.keys()
         assert len(events2["area_um"]) == len(data["area_um"])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_non_scalar_bad_shape():
+    h5path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    exppath = h5path.with_name("exported.rtdc")
+
+    register_temporary_feature("peterpan", is_scalar=False)
+    with RTDCWriter(exppath, mode="append") as hw:
+        data = np.arange(10 * 3 * 5).reshape(10, 3, 5)
+        # This should work
+        hw.store_feature("peterpan", data, shape=(3, 5))
+        # This should not work
+        with pytest.raises(ValueError, match="Bad shape"):
+            hw.store_feature("peterpan", data, shape=(3, 6))
+    deregister_temporary_feature("peterpan")  # cleanup
 
 
 @pytest.mark.filterwarnings(

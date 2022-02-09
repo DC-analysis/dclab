@@ -260,10 +260,9 @@ class RTDC_Hierarchy(RTDCBase):
     def __getitem__(self, key):
         # contour, image, and traces are added automatically
         # to `self._events` in `self.apply_filter`.
-        
         if key in self._events:
             return self._events[key]
-        elif key in self.features_scalar or key in self.hparent._events:
+        elif key in self.features_scalar:
             item = self.hparent[key]
             return item[self.hparent.filter.all]
         else:
@@ -357,12 +356,6 @@ class RTDC_Hierarchy(RTDCBase):
                 self._events[feat] = ChildNDArray(self, feat)
         if "contour" in self.hparent:
             self._events["contour"] = ChildContour(self)
-#        if "image" in self.hparent:
-#            self._events["image"] = ChildImage(self)
-#        if "image_bg" in self.hparent:
-#            self._events["image_bg"] = ChildImageBG(self)
-#        if "mask" in self.hparent:
-#            self._events["mask"] = ChildMask(self)
         if "trace" in self.hparent:
             trdict = ChildTrace()
             for flname in dfn.FLUOR_TRACES:
@@ -375,6 +368,9 @@ class RTDC_Hierarchy(RTDCBase):
         # create a new filter if the parent changed
         self._check_parent_filter()
         super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
+
+        def register_features():
+
 
 
 def map_indices_child2parent(child, child_indices):

@@ -58,6 +58,7 @@ class RTDCWriter:
     def __exit__(self, type, value, tb):
         # close the HDF5 file
         try:
+            self.h5file.require_group("events")
             if len(self.h5file["events"]):
                 self.rectify_metadata()
             self.version_brand()
@@ -119,7 +120,7 @@ class RTDCWriter:
             self.h5file.attrs["imaging:roi size x"] = shape[1]
             self.h5file.attrs["imaging:roi size y"] = shape[0]
 
-    def store_feature(self, feat, data):
+    def store_feature(self, feat, data, shape=None):
         """Write feature data
 
         Parameters
@@ -128,6 +129,14 @@ class RTDCWriter:
             feature name
         data: np.ndarray or list or dict
             feature data
+        shape: tuple of int
+            For non-scalar features, this is the shape of the
+            feature for one event (e.g. `(90, 250)` for an "image".
+            Usually, you do not have to specify this value, but you
+            do need it in case of plugin features that don't have
+            the "feature shape" set or in case of temporary features.
+            If you don't specify it, then the shape is guessed based
+            on the data you provide and a UserWarning will be issued.
         """
         if not dfn.feature_exists(feat):
             raise ValueError(f"Undefined feature '{feat}'!")
@@ -178,25 +187,29 @@ class RTDCWriter:
                                    data=np.atleast_2d(data[tr_name])
                                    )
         else:
-            # OK, so we are dealing with a plugin feature or a temporary
-            # feature here. Now, we don't know the exact shape of that
-            # feature, but we give the user the option to advertise
-            # the shape of the feature in the plugin.
-            for pf in PlugInFeature.get_instances(feat):
-                if isinstance(pf, PlugInFeature):
-                    shape = pf.plugin_feature_info.get("feature shape")
-                    if shape is not None:
-                        break
-            else:
-                # Temporary features will have to live with this warning.
-                warnings.warn("There is no information about the shape of the "
-                              + f"feature '{feat}'. I am going out on a limb "
-                              + "for you and assume that you are storing "
-                              + "multiple events at a time. If this works, "
-                              + f"you could put the shape `{data[0].shape}` "
-                              + 'in the `info["feature shapes"]` key of '
-                              + "your plugin feature.")
-                shape = data.shape[1:]
+            if not shape:
+                # OK, so we are dealing with a plugin feature or a temporary
+                # feature here. Now, we don't know the exact shape of that
+                # feature, but we give the user the option to advertise
+                # the shape of the feature in the plugin.
+                # First, try to obtain the shape from the PluginFeature
+                # (if that exists).
+                for pf in PlugInFeature.get_instances(feat):
+                    if isinstance(pf, PlugInFeature):
+                        shape = pf.plugin_feature_info.get("feature shape")
+                        if shape is not None:
+                            break  # This is good.
+                else:
+                    # Temporary features will have to live with this warning.
+                    warnings.warn(
+                        "There is no information about the shape of the "
+                        + f"feature '{feat}'. I am going out on a limb "
+                        + "for you and assume that you are storing "
+                        + "multiple events at a time. If this works, "
+                        + f"you could put the shape `{data[0].shape}` "
+                        + 'in the `info["feature shapes"]` key of '
+                        + "your plugin feature.")
+                    shape = data.shape[1:]
             if shape == data.shape:
                 data = data.reshape(1, *shape)
             elif shape == data.shape[1:]:

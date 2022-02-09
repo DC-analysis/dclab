@@ -1,4 +1,10 @@
 0.39.15
+ - fix: properly handle user-defined (temporary or plugin) features
+   when exporting to HDF5 (#166)
+ - enh: add "shape" keyword argument in RTDCWrite.store_feature to
+   allow the user to pass the correct data shape; this reduces warning
+   messages when using the RTDCBase.export.hdf5 functionality
+ - ref: simplify data export to HDF5 with generator function
  - tests: use correct tdms-dataset for tdms tests
 0.39.14
  - fix: enable loading of non-scalar plugin data as h5py.Dataset (#162)

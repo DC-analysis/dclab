@@ -191,6 +191,7 @@ def test_features():
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 def test_feature_contained():
+    pytest.importorskip("nptdms")
     path_im = retrieve_data("fmt-tdms_fl-image_2016.zip")
     ds_im = new_dataset(path_im)
     path_no_im = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")

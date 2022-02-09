@@ -262,12 +262,12 @@ class RTDC_Hierarchy(RTDCBase):
         # to `self._events` in `self.apply_filter`.
         if key in self._events:
             return self._events[key]
-        elif key in self.features_scalar:
+        elif len(self.hparent[key].shape) > 1:
+            self._events.setdefault(key, ChildNDArray(self, key))
+            return self[key]
+        else:
             item = self.hparent[key]
             return item[self.hparent.filter.all]
-        else:
-            self._usertemp.setdefault(key, ChildNDArray(self, key))
-            return self[key]
 
     def __len__(self):
         return np.sum(self.hparent.filter.all)
@@ -368,9 +368,6 @@ class RTDC_Hierarchy(RTDCBase):
         # create a new filter if the parent changed
         self._check_parent_filter()
         super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
-
-        def register_features():
-
 
 
 def map_indices_child2parent(child, child_indices):

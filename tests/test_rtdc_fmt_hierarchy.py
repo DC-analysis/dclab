@@ -156,28 +156,6 @@ def test_feat_mask():
     assert np.all(ch["mask"][1] == ds["mask"][3])
 
 
-#@pytest.mark.filterwarnings(
-#    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-#@pytest.mark.filterwarnings(
-#    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
-#def test_feat_non_scalar():
-    # arrange
-    # register non-scalar temp-feature
-    # create parent
-    # Make sure the non-scalar feature in parent is called as hdf5-dataset,
-    # not as np.ndarray already.
-
-    # act 
-    # create child
-
-    # assert
-    # access non-scalar feature of child and see if:
-    # it works
-
-    # what is returned is a hdf5-Dataset (the lazey ChildBase)
-
-
-
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
@@ -293,7 +271,6 @@ def test_index_slicing_tdms_fails(feat, idxs):
     ds = new_dataset(data)
     ds.filter.manual[2] = False
     ch = new_dataset(ds)
-    import pdb;pdb.set_trace()
 
     with pytest.raises(NotImplementedError, match="scalar integers"):
         ch[feat][idxs]

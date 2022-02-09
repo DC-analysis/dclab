@@ -1,4 +1,5 @@
 0.39.14
+ - tests: correct tdms-dataset test
  - fix: enable loading of non-scalar plugin data as h5py.Dataset (#162)
  - build: minor fixes in CI and testing pipeline
 0.39.13

@@ -4,6 +4,7 @@ import pytest
 
 import dclab
 from dclab.rtdc_dataset.feat_temp import deregister_all
+from dclab.rtdc_dataset.fmt_hierarchy import ChildNDArray
 
 from helper_methods import retrieve_data
 
@@ -75,6 +76,34 @@ def test_export_and_load():
         # and a control check
         deregister_all()
         assert "fl1_mean" not in ds2
+
+###############################################################################
+# My Test START
+###############################################################################
+def test_inherited_non_scalar():
+    """Accessing inherited non-innate, non-scalar features"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    dclab.register_temporary_feature(feature="image_copy", is_scalar=False)
+
+    with dclab.new_dataset(h5path) as ds:
+        dclab.set_temporary_feature(rtdc_ds=ds, feature="image_copy",
+                                    data=ds["image"][:])
+        expath = h5path.with_name("exported.rtdc")
+        ds.export.hdf5(expath, features=ds.features_innate + ["image_copy"])
+
+    with dclab.new_dataset(expath) as ds2:
+        assert "image_copy" in ds2
+        # create child
+        ds2.filter.manual[0] = False
+        ds2.filter.manual[2] = False
+        ch2 = dclab.new_dataset(ds2)
+        assert isinstance(ch2["image_copy"], ChildNDArray)
+        assert ch2["image_copy"][:].ndim == 3
+        assert isinstance(ch2["image_copy"][:], np.ndarray)
+
+###############################################################################
+# My Test END
+###############################################################################
 
 
 @pytest.mark.filterwarnings(

@@ -1,6 +1,6 @@
 0.39.15
  - fix: fix accessing inherited non-scalar temporary or plugin features
-   for RTDC-Hierarchy class #165
+   for RTDC_Hierarchy class (#165)
  - tests: use correct tdms-dataset for tdms tests
 0.39.14
  - fix: enable loading of non-scalar plugin data as h5py.Dataset (#162)

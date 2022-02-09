@@ -132,6 +132,7 @@ def test_inherited_non_scalar():
         assert isinstance(ch["image_copy"], ChildNDArray)
         assert ch["image_copy"][:].ndim == 3
         assert isinstance(ch["image_copy"][:], np.ndarray)
+        assert np.all(ch["image_copy"][2] == ds["image_copy"][3])
 
 
 @pytest.mark.filterwarnings(

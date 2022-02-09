@@ -37,20 +37,20 @@ class ChildContour(ChildBase):
 
 
 class ChildNDArray(ChildBase):
-    def __init__(self, child, key):
+    def __init__(self, child, feat):
         super(ChildNDArray, self).__init__(child)
-        self.key = key
+        self.feat = feat
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
                                         child_indices=idx)
         hp = self.child.hparent
-        return hp[self.key][pidx]
+        return hp[self.feat][pidx]
 
     @property
     def shape(self):
         hp = self.child.hparent
-        return tuple([len(self)] + list(hp[self.key][0].shape))
+        return tuple([len(self)] + list(hp[self.feat][0].shape))
 
 
 class ChildTrace(dict):
@@ -263,8 +263,8 @@ class RTDC_Hierarchy(RTDCBase):
         if key in self._events:
             return self._events[key]
         elif len(self.hparent[key].shape) > 1:
-            self._events.setdefault(key, ChildNDArray(self, key))
-            return self[key]
+            self._events[key] = ChildNDArray(self, key)
+            return self._events[key]
         else:
             item = self.hparent[key]
             return item[self.hparent.filter.all]

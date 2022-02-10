@@ -1,4 +1,6 @@
 0.39.15
+ - fix: fix accessing inherited non-scalar temporary or plugin features
+   for RTDC_Hierarchy class (#165)
  - fix: properly handle user-defined (temporary or plugin) features
    when exporting to HDF5 (#166)
  - enh: add "shape" keyword argument in RTDCWrite.store_feature to

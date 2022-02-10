@@ -36,43 +36,21 @@ class ChildContour(ChildBase):
         return hp["contour"][pidx]
 
 
-class ChildImage(ChildBase):
+class ChildNDArray(ChildBase):
+    def __init__(self, child, feat):
+        super(ChildNDArray, self).__init__(child)
+        self.feat = feat
+
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
                                         child_indices=idx)
         hp = self.child.hparent
-        return hp["image"][pidx]
+        return hp[self.feat][pidx]
 
     @property
     def shape(self):
         hp = self.child.hparent
-        return tuple([len(self)] + list(hp["image"][0].shape))
-
-
-class ChildImageBG(ChildBase):
-    def __getitem__(self, idx):
-        pidx = map_indices_child2parent(child=self.child,
-                                        child_indices=idx)
-        hp = self.child.hparent
-        return hp["image_bg"][pidx]
-
-    @property
-    def shape(self):
-        hp = self.child.hparent
-        return tuple([len(self)] + list(hp["image_bg"][0].shape))
-
-
-class ChildMask(ChildBase):
-    def __getitem__(self, idx):
-        pidx = map_indices_child2parent(child=self.child,
-                                        child_indices=idx)
-        hp = self.child.hparent
-        return hp["mask"][pidx]
-
-    @property
-    def shape(self):
-        hp = self.child.hparent
-        return tuple([len(self)] + list(hp["mask"][0].shape))
+        return tuple([len(self)] + list(hp[self.feat][0].shape))
 
 
 class ChildTrace(dict):
@@ -284,6 +262,9 @@ class RTDC_Hierarchy(RTDCBase):
         # to `self._events` in `self.apply_filter`.
         if key in self._events:
             return self._events[key]
+        elif len(self.hparent[key].shape) > 1:
+            self._events[key] = ChildNDArray(self, key)
+            return self._events[key]
         else:
             item = self.hparent[key]
             return item[self.hparent.filter.all]
@@ -370,14 +351,11 @@ class RTDC_Hierarchy(RTDCBase):
         self._events = {}
         self._events["index"] = np.arange(1, event_count + 1)
         # set non-scalar column data
+        for feat in ["image", "image_bg", "mask"]:
+            if feat in self.hparent:
+                self._events[feat] = ChildNDArray(self, feat)
         if "contour" in self.hparent:
             self._events["contour"] = ChildContour(self)
-        if "image" in self.hparent:
-            self._events["image"] = ChildImage(self)
-        if "image_bg" in self.hparent:
-            self._events["image_bg"] = ChildImageBG(self)
-        if "mask" in self.hparent:
-            self._events["mask"] = ChildMask(self)
         if "trace" in self.hparent:
             trdict = ChildTrace()
             for flname in dfn.FLUOR_TRACES:

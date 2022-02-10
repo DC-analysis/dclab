@@ -15,6 +15,7 @@ from dclab.rtdc_dataset.feat_anc_plugin.plugin_feature import (
 from dclab.rtdc_dataset.feat_anc_core.ancillary_feature import (
     BadFeatureSizeWarning)
 from dclab.rtdc_dataset.feat_temp import deregister_all
+from dclab.rtdc_dataset.fmt_hierarchy import ChildNDArray
 
 from helper_methods import retrieve_data
 
@@ -497,6 +498,34 @@ def test_pf_incorrect_input_method():
     info["method"] = "this_is_a_string"
     with pytest.raises(ValueError, match="is not callable"):
         PlugInFeature("circ_per_area", info)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_inherited_non_scalar():
+    """Non scalar inherited plugin features should be of class ChildNDArray"""
+    info = example_plugin_info_non_scalar_feature()
+    PlugInFeature("image_gauss_filter", info)
+    with dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip")) as ds:
+        ds.filter.manual[2] = False
+        ch = dclab.new_dataset(ds)
+        assert "image_gauss_filter" in ch
+        assert isinstance(ch["image_gauss_filter"], ChildNDArray)
+        assert len(ch["image_gauss_filter"].shape) == 3
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_inherited_scalar():
+    """Scalar inherited PluginFeatures should be a 1D np.ndarray"""
+    info = example_plugin_info_single_feature()
+    PlugInFeature("circ_per_area", info)
+    with dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip")) as ds:
+        ds.filter.manual[2] = False
+        ch = dclab.new_dataset(ds)
+        assert "circ_per_area" in ch
+        assert isinstance(ch["circ_per_area"], np.ndarray)
+        assert ch["circ_per_area"].ndim == 1
 
 
 @pytest.mark.filterwarnings(

@@ -4,6 +4,7 @@ import pytest
 
 import dclab
 from dclab.rtdc_dataset.feat_temp import deregister_all
+from dclab.rtdc_dataset.fmt_hierarchy import ChildNDArray
 
 from helper_methods import retrieve_data
 
@@ -115,6 +116,39 @@ def test_hierarchy_not_supported():
             dclab.set_temporary_feature(rtdc_ds=child,
                                         feature="my_special_feature",
                                         data=np.arange(len(child)))
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_inherited_non_scalar():
+    """Accessing inherited non-innate, non-scalar features"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with dclab.new_dataset(h5path) as ds:
+        dclab.register_temporary_feature(feature="image_copy", is_scalar=False)
+        dclab.set_temporary_feature(rtdc_ds=ds, feature="image_copy",
+                                    data=ds["image"][:])
+        ds.filter.manual[2] = False
+        ch = dclab.new_dataset(ds)
+        assert isinstance(ch["image_copy"], ChildNDArray)
+        assert ch["image_copy"][:].ndim == 3
+        assert isinstance(ch["image_copy"][:], np.ndarray)
+        assert np.all(ch["image_copy"][2] == ds["image_copy"][3])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_inherited_scalar():
+    """Accessing inherited scalar feature should return np.ndarray"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with dclab.new_dataset(h5path) as ds:
+        dclab.register_temporary_feature("my_special_feature")
+        dclab.set_temporary_feature(rtdc_ds=ds,
+                                    feature="my_special_feature",
+                                    data=np.arange(len(ds)))
+        ds.filter.manual[2] = False
+        ch = dclab.new_dataset(ds)
+        assert "my_special_feature" in ch
+        assert isinstance(ch["my_special_feature"], np.ndarray)
 
 
 @pytest.mark.filterwarnings(

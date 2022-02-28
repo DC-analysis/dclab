@@ -127,9 +127,16 @@ def get_statistics(ds, methods=None, features=None):
     header = []
     values = []
 
+    # First loop over all methods that do not require a feature
+    for mt in methods:
+        meth = Statistics.available_methods[mt]
+        if not meth.req_feature:
+            values.append(meth(ds=ds))
+            header.append(mt)
+
     # To make sure that all methods are computed for each feature in a block,
     # we loop over all features. It would be easier to loop over the methods,
-    # but the resulting statistics would not be human-friendly.
+    # but the ordering of the resulting statistics would not be human-friendly.
     for ft in features:
         for mt in methods:
             meth = Statistics.available_methods[mt]
@@ -140,11 +147,6 @@ def get_statistics(ds, methods=None, features=None):
                     values.append(np.nan)
                 label = dfn.get_feature_label(ft, rtdc_ds=ds)
                 header.append(" ".join([mt, label]))
-            else:
-                # Prevent multiple entries of this method.
-                if not header.count(mt):
-                    values.append(meth(ds=ds))
-                    header.append(mt)
 
     return header, values
 

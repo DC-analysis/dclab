@@ -99,9 +99,16 @@ def test_false_method():
             break
 
 
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()
+def test_stats_without_features():
+    ddict = example_data_dict(size=5085, keys=["area_um", "deform"])
+    ds = dclab.new_dataset(ddict)
+
+    head1, vals1 = dclab.statistics.get_statistics(ds, features=["deform"])
+    head2, vals2 = dclab.statistics.get_statistics(
+        ds, methods=["Events", "Mean"], features=[])
+    head3, vals2 = dclab.statistics.get_statistics(
+        ds, methods=[], features=[])
+
+    assert "Events" in head1
+    assert "Events" in head2
+    assert "Events" not in head3

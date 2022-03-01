@@ -25,7 +25,7 @@ class PolygonFilter(object):
 
         Parameters
         ----------
-        axes: tuple of str
+        axes: tuple of str or list of str
             The axes/features on which the polygon is defined. The
             first axis is the x-axis. Example: ("area_um", "deform").
         points: array-like object of shape (N,2)
@@ -62,7 +62,7 @@ class PolygonFilter(object):
                 raise ValueError("Error, no such file: {}".format(filename))
             self.fileid = fileid
             # This also sets a unique id
-            self._load(filename)
+            self._load(filename, unique_id=unique_id)
         else:
             if len(axes) != 2:
                 raise ValueError("`axes` must have length 2, "
@@ -125,7 +125,7 @@ class PolygonFilter(object):
         if not isinstance(self.inverted, bool):
             raise PolygonFilterError("`inverted` must be boolean.")
 
-    def _load(self, filename):
+    def _load(self, filename, unique_id=None):
         """Import all filters from a text file"""
         filename = pathlib.Path(filename)
         with filename.open("r", errors="replace") as fd:
@@ -173,8 +173,9 @@ class PolygonFilter(object):
         # get only coordinates from points
         self.points = np.array([p[1] for p in points])
 
-        # overwrite unique id
-        unique_id = int(data[start-1].strip().strip("Polygon []"))
+        if unique_id is None:
+            # overwrite unique id
+            unique_id = int(data[start-1].strip().strip("Polygon []"))
         self._set_unique_id(unique_id)
 
     def _set_unique_id(self, unique_id):

@@ -1,3 +1,6 @@
+0.39.17
+ - enh: allow to specify unique_id of PolygonFilter when loading
+   from file
 0.39.16
  - fix: not all statistics exported if no feature was specified
 0.39.15

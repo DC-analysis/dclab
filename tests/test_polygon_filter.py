@@ -65,9 +65,6 @@ def test_import():
 
 
 def test_import_custom_unique_id():
-    ddict = example_data_dict(size=1000, keys=["aspect", "tilt"])
-    ds = dclab.new_dataset(ddict)
-
     # save polygon data
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
     with open(tf, "w") as fd:

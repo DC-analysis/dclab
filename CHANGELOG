@@ -2,6 +2,7 @@
  - fix: regression since 0.39.0; contours with wrong index where not
    repaired
  - ref: Python distutils library is deprecated
+ - ref: some scipy namespaces are deprecated
 0.39.17
  - enh: allow to specify unique_id of PolygonFilter when loading
    from file

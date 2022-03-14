@@ -5,7 +5,7 @@ import traceback
 import h5py
 import numpy as np
 import pytest
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 
 import dclab
 from dclab.rtdc_dataset.feat_anc_plugin.plugin_feature import (

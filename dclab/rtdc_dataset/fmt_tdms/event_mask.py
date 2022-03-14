@@ -24,7 +24,7 @@ class MaskColumn(object):
         mask = np.zeros(self._img_shape, dtype=bool)
         conti = self.contour[idx]
         mask[conti[:, 1], conti[:, 0]] = True
-        ndi.morphology.binary_fill_holes(mask, output=mask)
+        ndi.binary_fill_holes(mask, output=mask)
         return mask
 
     def __len__(self):

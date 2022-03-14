@@ -163,7 +163,7 @@ def get_inert_ratio_cvx(cont):
     for ii in range(length):
         try:
             chull = ssp.ConvexHull(cont[ii])
-        except ssp.qhull.QhullError:
+        except ssp.QhullError:
             pass
         else:
             hull = cont[ii][chull.vertices, :]

@@ -46,8 +46,8 @@ setup(
     long_description=open('README.rst').read() if exists('README.rst') else '',
     install_requires=[
         "h5py>=3.0.0",
-        "numpy>=1.17.0",  # numpy.random.default_rng
-        "scipy>=0.14.0",
+        "numpy>=1.21",  # CVE-2021-33430
+        "scipy>=1.8.0",  # deprecations in older versions
         ],
     ext_modules=[
         Extension("dclab.external.skimage._shared.geometry",

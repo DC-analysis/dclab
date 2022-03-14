@@ -1,4 +1,3 @@
-from distutils.version import LooseVersion
 from importlib import import_module
 from unittest import mock
 
@@ -6,6 +5,7 @@ import numpy as np
 import pytest
 
 import dclab
+from dclab.external.packaging import parse as parse_version
 from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup, rlibs
 
 
@@ -63,7 +63,7 @@ def test_basic_setup():
 def test_import_rpy2():
     import rpy2
     from rpy2 import situation
-    assert LooseVersion(rpy2.__version__) >= LooseVersion(
+    assert parse_version(rpy2.__version__) >= parse_version(
         rlibs.RPY2_MIN_VERSION)
     assert situation.get_r_home() is not None
 

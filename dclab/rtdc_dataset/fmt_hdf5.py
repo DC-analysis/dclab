@@ -1,5 +1,4 @@
 """RT-DC hdf5 format"""
-from distutils.version import LooseVersion
 import functools
 import numbers
 import pathlib
@@ -8,6 +7,7 @@ import h5py
 import numpy as np
 
 from .. import definitions as dfn
+from ..external.packaging import parse as parse_version
 from ..util import hashobj, hashfile
 
 from .config import Configuration
@@ -235,8 +235,8 @@ class RTDC_HDF5(RTDCBase):
         # check version
         rtdc_soft = self.config["setup"]["software version"]
         if rtdc_soft.startswith("dclab "):
-            rtdc_ver = LooseVersion(rtdc_soft.split(" ")[1])
-            if rtdc_ver < LooseVersion(MIN_DCLAB_EXPORT_VERSION):
+            rtdc_ver = parse_version(rtdc_soft.split(" ")[1])
+            if rtdc_ver < parse_version(MIN_DCLAB_EXPORT_VERSION):
                 msg = "The file {} was created ".format(self.path) \
                       + "with dclab {} which is ".format(rtdc_ver) \
                       + "not supported anymore! Please rerun " \
@@ -327,7 +327,7 @@ def is_defective_feature_volume(h5):
         last_version = software_version.split("|")[-1].strip()
         if last_version.startswith("dclab"):
             dclab_version = last_version.split()[1]
-            if LooseVersion(dclab_version) < LooseVersion("0.37.0"):
+            if parse_version(dclab_version) < parse_version("0.37.0"):
                 return True
     return False
 

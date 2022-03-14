@@ -1,7 +1,8 @@
 """RT-DC .tdms file format"""
-from distutils.version import LooseVersion
 import pathlib
 import time
+
+from ...external.packaging import parse as parse_version
 
 from .exc import ContourIndexingError  # noqa:F401
 from .exc import InvalidTDMSFileFormatError  # noqa:F401
@@ -13,7 +14,7 @@ try:
 except ModuleNotFoundError:
     NPTDMS_AVAILABLE = False
 else:
-    if LooseVersion(nptdms.__version__) < LooseVersion("0.23.0"):
+    if parse_version(nptdms.__version__) < parse_version("0.23.0"):
         raise ValueError("Please install nptdms>=0.23.0")
     NPTDMS_AVAILABLE = True
     from .event_contour import ContourColumn

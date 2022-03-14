@@ -1,7 +1,8 @@
-from distutils.version import LooseVersion
 import importlib
 import os
 import warnings
+
+from ..external.packaging import parse as parse_version
 
 #: Minimum R version
 #: This is actually a dependency for rpy2, because the API changed then
@@ -74,7 +75,7 @@ def import_r_submodules():
 
 try:
     rpy2 = importlib.import_module("rpy2")
-    if LooseVersion(rpy2.__version__) < LooseVersion(RPY2_MIN_VERSION):
+    if parse_version(rpy2.__version__) < parse_version(RPY2_MIN_VERSION):
         raise RPY2OutdatedError(f"Please install 'rpy2>={RPY2_MIN_VERSION}'!")
 except ImportError:
     rpy2 = MockRPackage(
@@ -84,7 +85,7 @@ except BaseException as e:
     rpy2 = MockRPackage(e)
     rpy2_is_version_3 = False
 else:
-    rpy2_is_version_3 = LooseVersion(rpy2.__version__) >= LooseVersion("3.0")
+    rpy2_is_version_3 = parse_version(rpy2.__version__) >= parse_version("3.0")
     try:
         import_r_submodules()
     except RUnavailableError as e:

@@ -1,5 +1,6 @@
-from distutils.version import LooseVersion
 import importlib
+
+from ...external.packaging import parse as parse_version
 
 
 class MockPackage:
@@ -15,7 +16,7 @@ def import_or_mock_package(name, min_version):
     if name not in _locals:
         try:
             _mod = importlib.import_module(name)
-            if LooseVersion(_mod.__version__) < LooseVersion(min_version):
+            if parse_version(_mod.__version__) < parse_version(min_version):
                 raise ValueError(f"Please install '{name}>={min_version}'!")
         except ImportError:
             _mod = MockPackage(name, min_version)

@@ -39,6 +39,10 @@ class ContourColumn(object):
             # prevent `determine_offset` to be called
             self._initialized = True
         self.frame = rtdc_dataset["frame"]
+        if "image" in rtdc_dataset:
+            self.image_shape = rtdc_dataset["image"].shape[1:]
+        else:
+            self.image_shape = None
         # if they are set, these features are used for verifying the contour
         self.pxfeat = {}
 
@@ -83,11 +87,11 @@ class ContourColumn(object):
                 if np.allclose(frame_soll, frame_ist, rtol=0):
                     cdata = self._contour_data[idn]
                     break
-        if cdata is None and self.shape and self.pxfeat:  #
+        if cdata is None and self.image_shape and self.pxfeat:
             # The frame is wrong, but the contour might be correct.
             # We check that by verifying several features.
             cdata2 = self._contour_data[idnew]
-            cont = np.zeros((self.shape[1], self.shape[0]))
+            cont = np.zeros((self.image_shape[1], self.image_shape[0]))
             cont[cdata2[:, 0], cdata2[:, 1]] = True
             mm = inert_ratio.cont_moments_cv(cdata2)
 

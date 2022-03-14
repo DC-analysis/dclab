@@ -96,6 +96,92 @@ def test_contour_corrupt():
         assert False
 
 
+def test_contour_unknown_offset():
+    tdms_path = retrieve_data("fmt-tdms_fl-image-bright_2017.zip")
+    cont_path = tdms_path.with_name("M4_0.040000ul_s_contours.txt")
+    # Insert a false contour
+    imaginary_contour = "\n".join([
+        "Contour in frame 141",
+        "(198, 30)",
+        "(197, 29)",
+        "(196, 28)",
+        "(196, 27)",
+        "(195, 27)",
+        "(194, 26)",
+        "(193, 25)",
+        "(192, 24)",
+        "(191, 25)",
+        "",
+        ])
+    cont_data = cont_path.read_text()
+    cont_path.write_text(imaginary_contour + cont_data)
+    with pytest.raises(dclab.rtdc_dataset.fmt_tdms.exc.ContourIndexingError,
+                       match="Contour data has unknown offset \(frame 141\)"):
+        ds = dclab.new_dataset(tdms_path)
+        ds["contour"].shape  # raises the error
+
+
+def test_contour_unknown_offset():
+    tdms_path = retrieve_data("fmt-tdms_fl-image-bright_2017.zip")
+    cont_path = tdms_path.with_name("M4_0.040000ul_s_contours.txt")
+    # Insert a false contour
+    imaginary_contour = "\n".join([
+        "Contour in frame 141",
+        "(198, 30)",
+        "(197, 29)",
+        "(196, 28)",
+        "(196, 27)",
+        "(195, 27)",
+        "(194, 26)",
+        "(193, 25)",
+        "(192, 24)",
+        "(191, 25)",
+        "",
+        ])
+    cont_data = cont_path.read_text()
+    cont_path.write_text(imaginary_contour + cont_data)
+    ds = dclab.new_dataset(tdms_path)
+    with pytest.raises(dclab.rtdc_dataset.fmt_tdms.exc.ContourIndexingError,
+                       match="Contour data has unknown offset \(frame 141\)"):
+        ds["contour"].shape  # raises the error
+
+    with pytest.raises(dclab.rtdc_dataset.fmt_tdms.exc.ContourIndexingError,
+                       match="Contour data has unknown offset \(frame 141\)"):
+        ds["contour"][0]  # raises the error
+
+
+def test_contour_wrong_frame_number():
+    tdms_path = retrieve_data("fmt-tdms_fl-image-bright_2017.zip")
+    cont_path = tdms_path.with_name("M4_0.040000ul_s_contours.txt")
+    # Insert a false contour
+    imaginary_contour = "\n".join([
+        "Contour in frame 141",
+        "(198, 30)",
+        "(197, 29)",
+        "(196, 28)",
+        "(196, 27)",
+        "(195, 27)",
+        "(194, 26)",
+        "(193, 25)",
+        "(192, 24)",
+        "(191, 25)",
+        "",
+        ])
+    contours = cont_path.read_text()
+    contours = contours.replace("Contour in frame 1410 ",
+                                "Contour in frame 1411 ")
+    cont_path.write_text(contours)
+    ds = dclab.new_dataset(tdms_path)
+    # sanity check
+    assert np.all(ds["contour"][1] != 0)
+    # test for regression before 0.39.18
+    assert ds["frame"][3] == 1410
+    assert np.all(ds["contour"][3][0] == (190, 24))
+    assert np.all(ds["contour"][3][2] == (192, 25))
+    assert np.all(ds["contour"][3][-2] == (192, 24))
+    assert np.all(ds["contour"][3][-1] == (191, 25))
+
+
 def test_contour_naming():
     # Test that we always find the correct contour name
     ds = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))

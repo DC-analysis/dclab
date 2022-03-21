@@ -132,7 +132,7 @@ def test_orientation():
                     pix=1,
                     fix_orientation=True)
 
-    assert np.all(v1 == v2)
+    assert np.allclose(v1, v2, atol=1e-11, rtol=0)
 
 
 def test_shape():

@@ -32,7 +32,7 @@ def test_cache():
 def test_cache_size():
     """Create more caches than cached.MAX_SIZE"""
     ss = 10
-    wait = .001
+    wait = .01
     cached.MAX_SIZE = ss
 
     @cached.Cache

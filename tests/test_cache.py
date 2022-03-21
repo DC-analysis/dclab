@@ -30,9 +30,9 @@ def test_cache():
 @pytest.mark.skipif(sys.version_info < (3, 3),
                     reason="perf_counter requires python3.3 or higher")
 def test_cache_size():
-    "Create more caches than cached.MAX_SIZE"
+    """Create more caches than cached.MAX_SIZE"""
     ss = 10
-    wait = .01
+    wait = .001
     cached.MAX_SIZE = ss
 
     @cached.Cache
@@ -50,7 +50,8 @@ def test_cache_size():
 
     func1(3.14)
     t3 = time.perf_counter()
-    assert t3 - t2 > wait
+    # time.sleep is apparently not that accurate, hence the "/2".
+    assert t3 - t2 > wait / 2
 
 
 if __name__ == "__main__":

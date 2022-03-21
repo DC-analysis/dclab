@@ -83,7 +83,7 @@ def find_data(path):
 
 
 def retrieve_data(zip_file):
-    """Eytract contents of data zip file and return data files
+    """Extract contents of data zip file and return data files
     """
     zpath = pathlib.Path(__file__).resolve().parent / "data" / zip_file
     # unpack

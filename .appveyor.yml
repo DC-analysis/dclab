@@ -29,8 +29,6 @@ install:
   - echo %PATH%
   # upgrade pip
   - appveyor-retry python -m pip install --upgrade pip wheel
-  # latest version of fcswrite
-  - appveyor-retry pip install git+git://github.com/ZELLMECHANIK-DRESDEN/fcswrite.git --no-deps
   # the rest
   - appveyor-retry pip install -e .[all]
   - python -m pip freeze

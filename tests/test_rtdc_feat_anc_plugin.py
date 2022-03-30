@@ -8,6 +8,7 @@ import pytest
 from scipy.ndimage import gaussian_filter
 
 import dclab
+from dclab.rtdc_dataset import RTDCWriter
 from dclab.rtdc_dataset.feat_anc_plugin.plugin_feature import (
     PlugInFeature, import_plugin_feature_script,
     remove_plugin_feature, remove_all_plugin_features,
@@ -903,7 +904,78 @@ def test_pf_wrong_length_2():
         with pytest.warns(BadFeatureSizeWarning,
                           match="to match event number"):
             ds[pf.feature_name]
+            
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_store_2D_plugin_data_with_shape():
+    """Test storage of 2D image plugin feature with shape info in recipe"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    info = example_plugin_info_non_scalar_feature()
+    info["feature shapes"] = [(80, 250)]
+    PlugInFeature("dummy_image", info)
+    # creating dummy 2D data
+    dummy_image = np.full((80, 250), 190, dtype=np.uint8)
+    with RTDCWriter(h5path) as hw:
+        hw.store_feature("dummy_image", dummy_image)
+    with h5py.File(h5path, mode="r") as h5:
+        events = h5["events"]
+        assert "dummy_image" in events.keys()
+        image = h5["events"]['dummy_image']
+        assert b'IMAGE' in image.attrs.get('CLASS')
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_store_3D_plugin_data_with_shape():
+    """Test storage of 3D image plugin feature with shape info in recipe"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    info = example_plugin_info_non_scalar_feature()
+    info["feature shapes"] = [(80, 250)]
+    PlugInFeature("dummy_image", info)
+    # creating dummy 3D data
+    dummy_image = np.full((10, 80, 250), 190, dtype=np.uint8)
+    with RTDCWriter(h5path) as hw:
+        hw.store_feature("dummy_image", dummy_image)
+    with h5py.File(h5path, mode="r") as h5:
+        events = h5["events"]
+        assert "dummy_image" in events.keys()
+        image = h5["events"]['image_gauss_filter']
+        assert b'IMAGE' in image.attrs.get('CLASS')
+        
+        
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_store_2D_plugin_data_without_shape():
+    """Test storage of 2D image plugin feature without shape info in recipe"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    info = example_plugin_info_non_scalar_feature()
+    PlugInFeature("dummy_image", info)
+    dummy_image = np.full((80, 250), 190, dtype=np.uint8)
+    with RTDCWriter(h5path) as hw:
+        hw.store_feature("dummy_image", dummy_image)
+    with h5py.File(h5path, mode="r") as h5:
+        events = h5["events"]
+        assert "dummy_image" in events.keys()
+        image = h5["events"]['dummy_image']
+        assert b'IMAGE' in image.attrs.get('CLASS')
+        
+        
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_store_3D_plugin_data_without_shape():
+    """Test storage of 3D image plugin feature without shape info in recipe"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    info = example_plugin_info_non_scalar_feature()
+    PlugInFeature("dummy_image", info)
+    dummy_image = np.full((10, 80, 250), 190, dtype=np.uint8)
+    with RTDCWriter(h5path) as hw:
+        hw.store_feature("dummy_image", dummy_image)
+    with h5py.File(h5path, mode="r") as h5:
+        events = h5["events"]
+        assert "dummy_image" in events.keys()
+        image = h5["events"]['dummy_image']
+        assert b'IMAGE' in image.attrs.get('CLASS')
 
 if __name__ == "__main__":
     # Run all tests

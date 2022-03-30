@@ -222,7 +222,6 @@ class RTDCWriter:
             # must be 3 dimensions --> (None, dim1, dim2).
             # If dim1 and dim2 are greater than 3, it would be considered as 
             # an image. Otherwise, a ndarray. 
-            
             if data.shape[1] > 3 and data.shape[2] > 3: 
                 self.write_image_grayscale(group=events, name=feat, data=data)
             else:

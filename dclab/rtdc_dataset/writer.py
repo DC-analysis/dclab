@@ -218,12 +218,17 @@ class RTDCWriter:
                 raise ValueError(f"Bad shape for {feat}! Expeted {shape}, "
                                  + f"but got {data.shape[1:]}!")
                 
-            # above code ensure that the shape of the (plugin or temp) data 
-            # must be 3 dimensions --> (None, dim1, dim2).
-            # If dim1 and dim2 are greater than 3, it would be considered as 
-            # an image. Otherwise, a ndarray. 
-            if data.shape[1] > 3 and data.shape[2] > 3: 
-                self.write_image_grayscale(group=events, name=feat, data=data)
+            # above code will ensure that the shape of the (plugin or temp)
+            # data would be greater than 2 dimensions --> (1, len of data) or
+            # (1, rows, columns) If No. of rows, columns are greater than 3,
+            # it would be considered as an image. Otherwise, a 1d-array.
+
+            if len(data.shape) >= 3:
+                if data.shape[1] > 3 and data.shape[2] > 3:
+                    self.write_image_grayscale(group=events, name=feat,
+                                               data=data, is_boolean=False)
+                else:
+                    self.write_ndarray(group=events, name=feat, data=data)
             else:
                 self.write_ndarray(group=events, name=feat, data=data)
 

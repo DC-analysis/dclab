@@ -185,7 +185,8 @@ class RTDCWriter:
                 self.write_ndarray(group=events.require_group("trace"),
                                    name=tr_name,
                                    data=np.atleast_2d(data[tr_name])
-                                   )
+                                  )
+
         else:
             if not shape:
                 # OK, so we are dealing with a plugin feature or a temporary
@@ -217,7 +218,7 @@ class RTDCWriter:
             else:
                 raise ValueError(f"Bad shape for {feat}! Expeted {shape}, "
                                  + f"but got {data.shape[1:]}!")
-                
+
             # above code will ensure that the shape of the (plugin or temp)
             # data would be greater than 2 dimensions --> (1, len of data) or
             # (1, rows, columns) If No. of rows, columns are greater than 3,

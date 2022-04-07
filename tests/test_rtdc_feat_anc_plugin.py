@@ -68,12 +68,6 @@ def compute_ragged_plugin_feature(rtdc_ds):
     return {"ragged_feat": ragged_feat}
 
 
-# def compute_4d_array_plugin_feature(rtdc_ds):
-#     """Basic plugin method that creates 4D array"""
-#     a4d_array_feat = np.ones((10, 11, 12, 13), dtype=int)
-#     return {"a4d_array_feat": a4d_array_feat}
-
-
 def example_plugin_info_single_feature():
     """plugin info for a single feature"""
     info = {
@@ -162,23 +156,6 @@ def example_plugin_info_ragged_data_feature():
         "version": "0.1.0",
     }
     return info
-
-
-# def example_plugin_info_4d_array_feature():
-#     """plugin info for non-image feature"""
-#     info = {
-#         "method": compute_4d_array_plugin_feature,
-#         "description": "This plugin will compute a 4d array feature",
-#         "long description": "This 4d array feature is a basic numpy array",
-#         "feature names": ["a4d_array_feat"],
-#         "feature labels": ["A basic 4D array"],
-#         "features required": ["contour"],
-#         "config required": [],
-#         "method check required": lambda x: True,
-#         "scalar feature": [False],
-#         "version": "0.1.0",
-#     }
-#     return info
 
 
 def compute_with_user_section(rtdc_ds):
@@ -1045,7 +1022,7 @@ def test_pf_store_mask_plugin_data_with_shape_issue_171():
         assert "mask_feat" in events.keys()
         feat = h5["events"]['mask_feat']
         fshape = feat.shape
-        assert len(fshape) == 3 and np.dtype(feat[0]) == bool
+        assert len(fshape) == 3 and feat[0].dtype == bool
         assert fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
         assert b'IMAGE' in feat.attrs.get('CLASS')
@@ -1069,7 +1046,7 @@ def test_pf_store_mask_plugin_data_without_shape_issue_171():
         assert "mask_feat" in events.keys()
         feat = h5["events"]['mask_feat']
         fshape = feat.shape
-        assert len(fshape) == 3 and np.dtype(feat[0]) == bool
+        assert len(fshape) == 3 and feat[0].dtype == bool
         assert fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
         assert b'IMAGE' in feat.attrs.get('CLASS')

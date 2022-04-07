@@ -184,9 +184,7 @@ class RTDCWriter:
                 # write trace
                 self.write_ndarray(group=events.require_group("trace"),
                                    name=tr_name,
-                                   data=np.atleast_2d(data[tr_name])
-                                  )
-
+                                   data=np.atleast_2d(data[tr_name]))
         else:
             if not shape:
                 # OK, so we are dealing with a plugin feature or a temporary

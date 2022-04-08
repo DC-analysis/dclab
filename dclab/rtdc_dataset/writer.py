@@ -185,6 +185,7 @@ class RTDCWriter:
                 self.write_ndarray(group=events.require_group("trace"),
                                    name=tr_name,
                                    data=np.atleast_2d(data[tr_name]))
+
         else:
             if not shape:
                 # OK, so we are dealing with a plugin feature or a temporary
@@ -209,23 +210,37 @@ class RTDCWriter:
                         + 'in the `info["feature shapes"]` key of '
                         + "your plugin feature.")
                     shape = data.shape[1:]
-            if shape == data.shape:
+
+            elif shape == data.shape:
                 data = data.reshape(1, *shape)
             elif shape == data.shape[1:]:
                 pass
             else:
-                raise ValueError(f"Bad shape for {feat}! Expeted {shape}, "
+                raise ValueError(f"Bad shape for {feat}! Expeted {shape},"
                                  + f"but got {data.shape[1:]}!")
 
-            # above code will ensure that the shape of the (plugin or temp)
-            # data would be greater than 2 dimensions --> (1, len of data) or
-            # (1, rows, columns) If No. of rows, columns are greater than 3,
-            # it would be considered as an image. Otherwise, a 1d-array.
-
             if len(data.shape) >= 3:
-                if data.shape[1] > 3 and data.shape[2] > 3:
+                if data.shape[1] > 3 and data.shape[2] > 3 and \
+                        data[0].dtype != bool:
                     self.write_image_grayscale(group=events, name=feat,
                                                data=data, is_boolean=False)
+
+                elif data.shape[1] > 3 and data.shape[2] > 3 and \
+                        data[0].dtype == bool:
+                    self.write_image_grayscale(group=events, name=feat,
+                                               data=data, is_boolean=True)
+                else:
+                    self.write_ndarray(group=events, name=feat, data=data)
+            elif len(data.shape) >= 2:
+                if data.shape[0] > 3 and data.shape[1] > 3 and \
+                        data.dtype != bool:
+                    self.write_image_grayscale(group=events, name=feat,
+                                               data=data, is_boolean=False)
+
+                elif data.shape[0] > 3 and data.shape[1] > 3 and \
+                        data.dtype == bool:
+                    self.write_image_grayscale(group=events, name=feat,
+                                               data=data, is_boolean=True)
                 else:
                     self.write_ndarray(group=events, name=feat, data=data)
             else:

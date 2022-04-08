@@ -57,15 +57,8 @@ def compute_non_scalar_plugin_feature(rtdc_ds):
 
 def compute_mask_plugin_feature(rtdc_ds):
     """Basic plugin method creates mask data (boolean data)"""
-    mask_feat = rtdc_ds["mask"]
+    mask_feat = np.logical_not(rtdc_ds["mask"])
     return {"mask_feat": mask_feat}
-
-
-def compute_ragged_plugin_feature(rtdc_ds):
-    """Basic plugin method creates arrays of different lengths (ragged)"""
-    # Ragged data (i.e. list of arrays of different lengths) --> Ex.contours
-    ragged_feat = rtdc_ds["contour"]  # shape --> [None, nan, 2]
-    return {"ragged_feat": ragged_feat}
 
 
 def example_plugin_info_single_feature():
@@ -132,24 +125,6 @@ def example_plugin_info_mask_feature():
         "feature names": ["mask_feat"],
         "feature labels": ["Mask or boolean Image"],
         "features required": ["mask"],
-        "config required": [],
-        "method check required": lambda x: True,
-        "scalar feature": [False],
-        "version": "0.1.0",
-    }
-    return info
-
-
-def example_plugin_info_ragged_data_feature():
-    """plugin info for non-image feature"""
-    info = {
-        "method": compute_ragged_plugin_feature,
-        "description": "This plugin will compute a ragged feature",
-        "long description": "This ragged feature is the contour "
-                            "data of RTDC",
-        "feature names": ["ragged_feat"],
-        "feature labels": ["Ragged or contour Data"],
-        "features required": ["contour"],
         "config required": [],
         "method check required": lambda x: True,
         "scalar feature": [False],
@@ -1014,7 +989,7 @@ def test_pf_store_mask_plugin_data_with_shape_issue_171():
     info["feature shapes"] = [(80, 250)]
     PlugInFeature("mask_feat", info)
     with dclab.new_dataset(h5path) as ds:
-        mask_feat = ds["mask"]
+        mask_feat = np.logical_not(ds["mask"])
     with RTDCWriter(h5path) as hw:
         hw.store_feature("mask_feat", mask_feat)
     with h5py.File(h5path, mode="r") as h5:
@@ -1022,8 +997,7 @@ def test_pf_store_mask_plugin_data_with_shape_issue_171():
         assert "mask_feat" in events.keys()
         feat = h5["events"]['mask_feat']
         fshape = feat.shape
-        assert len(fshape) == 3 and feat[0].dtype == bool
-        assert fshape[1] > 3 and fshape[2] > 3
+        assert len(fshape) == 3 and fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
         assert b'IMAGE' in feat.attrs.get('CLASS')
         assert b'IMAGE_SUBCLASS' in feat.attrs.keys()
@@ -1038,7 +1012,7 @@ def test_pf_store_mask_plugin_data_without_shape_issue_171():
     info = example_plugin_info_mask_feature()
     PlugInFeature("mask_feat", info)
     with dclab.new_dataset(h5path) as ds:
-        mask_feat = ds["mask"]
+        mask_feat = np.logical_not(ds["mask"])
     with RTDCWriter(h5path) as hw:
         hw.store_feature("mask_feat", mask_feat)
     with h5py.File(h5path, mode="r") as h5:
@@ -1046,32 +1020,10 @@ def test_pf_store_mask_plugin_data_without_shape_issue_171():
         assert "mask_feat" in events.keys()
         feat = h5["events"]['mask_feat']
         fshape = feat.shape
-        assert len(fshape) == 3 and feat[0].dtype == bool
-        assert fshape[1] > 3 and fshape[2] > 3
+        assert len(fshape) == 3 and fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
         assert b'IMAGE' in feat.attrs.get('CLASS')
         assert b'IMAGE_SUBCLASS' in feat.attrs.keys()
-
-
-@pytest.mark.filterwarnings(
-    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_ragged_plugin_data_issue_171():
-    """Test storage of ragged plugin feature"""
-    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
-    info = example_plugin_info_ragged_data_feature()
-    with dclab.new_dataset(h5path) as ds:
-        ragged_feat = ds["contour"]
-    PlugInFeature("ragged_feat", info)
-    with RTDCWriter(h5path) as hw:
-        hw.store_feature("ragged_feat", ragged_feat)
-    with h5py.File(h5path, mode="r") as h5:
-        events = h5["events"]
-        assert "ragged_feat" in events.keys()
-        feat = h5["events"]['ragged_feat']
-        fshape = feat.shape
-        assert (len(fshape) == 3) and (np.nan in fshape)
-        assert b'CLASS' not in feat.attrs.keys()
-        assert b'IMAGE_SUBCLASS' not in feat.attrs.keys()
 
 
 @pytest.mark.filterwarnings(

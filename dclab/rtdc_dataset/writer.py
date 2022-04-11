@@ -10,7 +10,6 @@ from .._version import version
 
 from .feat_anc_plugin import PlugInFeature
 
-
 #: Chunk size for storing HDF5 data
 CHUNK_SIZE = 100
 
@@ -218,31 +217,32 @@ class RTDCWriter:
             else:
                 raise ValueError(f"Bad shape for {feat}! Expeted {shape},"
                                  + f"but got {data.shape[1:]}!")
-
-            if len(data.shape) >= 3:
-                if data.shape[1] > 3 and data.shape[2] > 3 and \
-                        data[0].dtype != bool:
-                    self.write_image_grayscale(group=events, name=feat,
-                                               data=data, is_boolean=False)
-
-                elif data.shape[1] > 3 and data.shape[2] > 3 and \
-                        data[0].dtype == bool:
-                    self.write_image_grayscale(group=events, name=feat,
-                                               data=data, is_boolean=True)
+            # Condition for list of images or arrays of shape (None, H, W)
+            if data.ndim == 3:
+                dtype = data[0].dtype
+                # Check H, W, and dtype of images or arrays
+                if data.shape[1] > 3 and data.shape[2] > 3:
+                    self.write_image_grayscale(group=events,
+                                               name=feat,
+                                               data=data,
+                                               is_boolean=(dtype != bool))
                 else:
                     self.write_ndarray(group=events, name=feat, data=data)
-            elif len(data.shape) >= 2:
-                if data.shape[0] > 3 and data.shape[1] > 3 and \
-                        data.dtype != bool:
-                    self.write_image_grayscale(group=events, name=feat,
-                                               data=data, is_boolean=False)
-
-                elif data.shape[0] > 3 and data.shape[1] > 3 and \
-                        data.dtype == bool:
-                    self.write_image_grayscale(group=events, name=feat,
-                                               data=data, is_boolean=True)
+            # Condition for single image or array of shape (H, W)
+            elif data.ndim == 2:
+                dtype = data.dtype
+                # Check H, W, and dtype of image or array
+                if data.shape[0] > 3 and data.shape[1] > 3:
+                    self.write_image_grayscale(group=events,
+                                               name=feat,
+                                               data=data,
+                                               is_boolean=(dtype != bool))
                 else:
                     self.write_ndarray(group=events, name=feat, data=data)
+            # Condition for ragged/contour data
+            elif data.ndim == 1 and data.dtype == object:
+                self.write_ragged(group=events, name=feat, data=data)
+            # Condition for scalar features
             else:
                 self.write_ndarray(group=events, name=feat, data=data)
 
@@ -466,13 +466,13 @@ class RTDCWriter:
             for ii in range(num_chunks):
                 start = ii * CHUNK_SIZE
                 stop = start + CHUNK_SIZE
-                dset[offset+start:offset+stop] = data[start:stop]
+                dset[offset + start:offset + stop] = data[start:stop]
             # write remainder (if applicable)
             num_remain = len(data) % CHUNK_SIZE
             if num_remain:
-                start_e = num_chunks*CHUNK_SIZE
+                start_e = num_chunks * CHUNK_SIZE
                 stop_e = start_e + num_remain
-                dset[offset+start_e:offset+stop_e] = data[start_e:stop_e]
+                dset[offset + start_e:offset + stop_e] = data[start_e:stop_e]
         return dset
 
     def write_ragged(self, group, name, data):

@@ -61,6 +61,32 @@ def compute_mask_plugin_feature(rtdc_ds):
     return {"mask_feat": mask_feat}
 
 
+def compute_ragged_plugin_feature(rtdc_ds):
+    """Basic plugin method creates arrays of different lengths (ragged)"""
+    # Ragged data (i.e. list of arrays of different lengths) --> Ex.contours
+    cnts = rtdc_ds["contour"]  # shape --> [None, nan, 2]
+    dummy_cnts = [np.vstack((c, np.ones((5, 2)))) for c in cnts]
+    ragged_feat = np.array(dummy_cnts, dtype=object)
+    return {"ragged_feat": ragged_feat}
+
+def example_plugin_info_ragged_data_feature():
+    """plugin info for non-image feature"""
+    info = {
+        "method": compute_ragged_plugin_feature,
+        "description": "This plugin will compute a ragged feature",
+        "long description": "This ragged feature is the contour "
+                            "data of RTDC",
+        "feature names": ["ragged_feat"],
+        "feature labels": ["Ragged or contour Data"],
+        "features required": ["contour"],
+        "config required": [],
+        "method check required": lambda x: True,
+        "scalar feature": [False],
+        "version": "0.1.0",
+    }
+    return info
+
+
 def example_plugin_info_single_feature():
     """plugin info for a single feature"""
     info = {
@@ -123,7 +149,7 @@ def example_plugin_info_mask_feature():
         "long description": "This mask feature is the mask "
                             "data of RTDC",
         "feature names": ["mask_feat"],
-        "feature labels": ["Mask or boolean Image"],
+        "feature labels": ["Binary mask labeling the event in the image"],
         "features required": ["mask"],
         "config required": [],
         "method check required": lambda x: True,
@@ -933,8 +959,7 @@ def test_pf_wrong_length_2():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_store_image_plugin_data_with_shape_issue_171():
-    """Test storage of image plugin feature attributes with shape info
-    in the recipe"""
+    """Test storage of image plugin feature attributes with shape"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_non_scalar_feature()
     # Mention feature shape in the info
@@ -949,17 +974,17 @@ def test_pf_store_image_plugin_data_with_shape_issue_171():
         assert "image_gauss_filter" in events.keys()
         feat = h5["events"]['image_gauss_filter']
         fshape = feat.shape
-        assert len(fshape) == 3 and fshape[1] > 3 and fshape[2] > 3
+        assert feat.ndim == 3
+        assert fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
-        assert b'IMAGE' in feat.attrs.get('CLASS')
         assert b'IMAGE_SUBCLASS' in feat.attrs.keys()
+        assert b'IMAGE' in feat.attrs.get('CLASS')
 
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_store_image_plugin_data_without_shape_issue_171():
-    """Test storage of image plugin feature attributes without shape info
-     in the recipe"""
+    """Test storage of image plugin feature attributes without shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_non_scalar_feature()
     PlugInFeature("image_gauss_filter", info)
@@ -972,17 +997,17 @@ def test_pf_store_image_plugin_data_without_shape_issue_171():
         assert "image_gauss_filter" in events.keys()
         feat = h5["events"]['image_gauss_filter']
         fshape = feat.shape
-        assert len(fshape) == 3 and fshape[1] > 3 and fshape[2] > 3
+        assert feat.ndim == 3
+        assert fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
-        assert b'IMAGE' in feat.attrs.get('CLASS')
         assert b'IMAGE_SUBCLASS' in feat.attrs.keys()
+        assert b'IMAGE' in feat.attrs.get('CLASS')
 
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_store_mask_plugin_data_with_shape_issue_171():
-    """Test storage of mask plugin feature attributes with shape info
-    in the recipe"""
+    """Test storage of mask plugin feature attributes with shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_mask_feature()
     # Mention feature shape in the info
@@ -997,17 +1022,17 @@ def test_pf_store_mask_plugin_data_with_shape_issue_171():
         assert "mask_feat" in events.keys()
         feat = h5["events"]['mask_feat']
         fshape = feat.shape
-        assert len(fshape) == 3 and fshape[1] > 3 and fshape[2] > 3
+        assert feat.ndim == 3
+        assert fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
-        assert b'IMAGE' in feat.attrs.get('CLASS')
         assert b'IMAGE_SUBCLASS' in feat.attrs.keys()
+        assert b'IMAGE' in feat.attrs.get('CLASS')
 
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_store_mask_plugin_data_without_shape_issue_171():
-    """Test storage of mask plugin feature attributes without shape info
-     in the recipe"""
+    """Test storage of mask plugin feature attributes without shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_mask_feature()
     PlugInFeature("mask_feat", info)
@@ -1020,17 +1045,39 @@ def test_pf_store_mask_plugin_data_without_shape_issue_171():
         assert "mask_feat" in events.keys()
         feat = h5["events"]['mask_feat']
         fshape = feat.shape
-        assert len(fshape) == 3 and fshape[1] > 3 and fshape[2] > 3
+        assert feat.ndim == 3
+        assert fshape[1] > 3 and fshape[2] > 3
         assert b'CLASS' in feat.attrs.keys()
-        assert b'IMAGE' in feat.attrs.get('CLASS')
         assert b'IMAGE_SUBCLASS' in feat.attrs.keys()
+        assert b'IMAGE' in feat.attrs.get('CLASS')
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_store_ragged_plugin_data_issue_171():
+    """Test storage of ragged plugin feature"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    info = example_plugin_info_ragged_data_feature()
+    with dclab.new_dataset(h5path) as ds:
+        dummy_cnts = [np.vstack((c, np.ones((5, 2)))) for c in ds["contour"]]
+        ragged_feat = np.array(dummy_cnts, dtype=object)
+    PlugInFeature("ragged_feat", info)
+    with RTDCWriter(h5path) as hw:
+        hw.store_feature("ragged_feat", ragged_feat)
+    with h5py.File(h5path, mode="r") as h5:
+        events = h5["events"]
+        assert "ragged_feat" in events.keys()
+        feat = h5["events"]['ragged_feat']
+        fshape = feat.shape
+        assert (len(fshape) == 3) and (np.nan in fshape)
+        assert b'CLASS' not in feat.attrs.keys()
+        assert b'IMAGE_SUBCLASS' not in feat.attrs.keys()
 
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_store_scalar_plugin_data_with_shape_issue_171():
-    """Test storage of scalar plugin feature attributes with shape info in
-    recipe"""
+    """Test storage of scalar plugin feature attributes with shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         circ_per_area = ds["circ"] / ds["area_um"]
@@ -1044,8 +1091,7 @@ def test_pf_store_scalar_plugin_data_with_shape_issue_171():
         events = h5["events"]
         assert "circ_per_area" in events.keys()
         feat = h5["events"]['circ_per_area']
-        fshape = feat.shape
-        assert len(fshape) == 1
+        assert feat.ndim == 1
         assert b'CLASS' not in feat.attrs.keys()
         assert b'IMAGE_SUBCLASS' not in feat.attrs.keys()
 
@@ -1053,8 +1099,7 @@ def test_pf_store_scalar_plugin_data_with_shape_issue_171():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_store_scalar_plugin_data_without_shape_issue_171():
-    """Test storage of scalar plugin feature attributes with shape info in
-    recipe"""
+    """Test storage of scalar plugin feature attributes with shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         circ_per_area = ds["circ"] / ds["area_um"]
@@ -1066,6 +1111,7 @@ def test_pf_store_scalar_plugin_data_without_shape_issue_171():
         events = h5["events"]
         assert "circ_per_area" in events.keys()
         feat = h5["events"]['circ_per_area']
+        assert feat.ndim == 1
         assert b'CLASS' not in feat.attrs.keys()
         assert b'IMAGE_SUBCLASS' not in feat.attrs.keys()
 

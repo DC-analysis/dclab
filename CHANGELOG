@@ -1,7 +1,11 @@
-0.40.1
+0.41.0
+ - feat: pull DCOR access token management from downstream DCOR-Aid
+ - feat: allow to set alternate DCOR server certificate bundles by
+   appending paths `dclab.rtdc_dataset.fmt_dcor.DCOR_CERTS_SEARCH_PATHS`
  - enh: allow to skip checks and by default use the innate features
    during export of an RTDCBase
  - setup: remove appveyor build pipeline
+ - ref: cleanup fmt_dcor
 0.40.0
  - setup: bump numpy from 1.17.0 to 1.21.0
  - setup: bump scipy from 0.14.0 to 1.8.0

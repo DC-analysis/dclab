@@ -1,3 +1,4 @@
+import atexit
 import shutil
 import tempfile
 import time
@@ -19,4 +20,6 @@ def pytest_unconfigure(config):
     """
     called before test process is exited.
     """
+    # run exit functions (tmp_path from pytest would complain otherwise)
+    atexit._run_exitfuncs()
     shutil.rmtree(TMPDIR, ignore_errors=True)

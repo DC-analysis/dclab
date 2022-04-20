@@ -14,12 +14,4 @@ def pytest_configure(config):
     file after command line options have been parsed.
     """
     tempfile.tempdir = TMPDIR
-
-
-def pytest_unconfigure(config):
-    """
-    called before test process is exited.
-    """
-    # run exit functions (tmp_path from pytest would complain otherwise)
-    atexit._run_exitfuncs()
-    shutil.rmtree(TMPDIR, ignore_errors=True)
+    atexit.register(shutil.rmtree, TMPDIR, ignore_errors=True)

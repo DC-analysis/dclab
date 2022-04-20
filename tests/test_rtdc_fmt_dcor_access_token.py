@@ -1,5 +1,7 @@
 import pathlib
 
+import pytest
+
 from dclab.rtdc_dataset import fmt_dcor
 from dclab.rtdc_dataset.fmt_dcor import access_token
 
@@ -24,6 +26,9 @@ def test_get_hostname():
     assert hostname == "dcor.example.com"
 
 
+# feeling very confident about https://github.com/pytest-dev/pytest/pull/9871
+@pytest.mark.xfail(pytest.version_tuple < (7, 2, 0),
+                   reason="Requires pytest PR #9871 when run with coverage")
 def test_store_and_get_certificate(tmp_path):
     cert = access_token.get_certificate(
         datapath / "example_access_token.dcor-access", "42")

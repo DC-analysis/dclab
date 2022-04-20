@@ -159,7 +159,7 @@ class Export(object):
                            )
 
     def hdf5(self, path, features=None, filtered=True, override=False,
-             compression="gzip", perform_checks=True):
+             compression="gzip", skip_checks=False):
         """Export the data of the current instance to an HDF5 file
 
         Parameters
@@ -181,8 +181,8 @@ class Export(object):
         compression: str or None
             Compression method for e.g. "contour", "image", and "trace" data
             as well as logs; one of [None, "lzf", "gzip", "szip"].
-        perform_checks: bool
-            Check whether all features have the same length.
+        skip_checks: bool
+            Disable checking whether all features have the same length.
         """
         path = pathlib.Path(path)
         # Make sure that path ends with .rtdc
@@ -213,7 +213,7 @@ class Export(object):
         else:
             filtarr = None
 
-        if perform_checks:
+        if not skip_checks:
             # check that all features have same length and use the smallest
             # common length
             lengths = []

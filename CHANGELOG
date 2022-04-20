@@ -1,4 +1,6 @@
 0.40.1
+ - enh: allow to skip checks and by default use the innate features
+   during export of an RTDCBase
  - setup: remove appveyor build pipeline
 0.40.0
  - setup: bump numpy from 1.17.0 to 1.21.0

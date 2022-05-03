@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  R_LIBS_USER: $RUNNER_TEMP
+
 jobs:
   build:
 
@@ -35,7 +38,6 @@ jobs:
         # prerequisites
         python -m pip install --upgrade pip wheel
         python -m pip install codecov coverage flake8 pytest
-        # install dependencies
     - name: Install dclab with all possible dependencies
       if: matrix.extras == 'all'
       run: |

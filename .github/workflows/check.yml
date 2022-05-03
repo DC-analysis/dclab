@@ -4,9 +4,6 @@ on:
   push:
   pull_request:
 
-env:
-  R_LIBS_USER: $RUNNER_TEMP
-
 jobs:
   build:
 
@@ -33,6 +30,11 @@ jobs:
         sudo mkdir /usr/local/gfortran
         sudo ln -s /usr/local/Cellar/gcc@10/*/lib/gcc/10 /usr/local/gfortran/lib
         gfortran --version
+    - name: Perform modifications (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        # make R lib location writable
+        sudo chmod -R 777 /usr/local/lib/R/site-library
     - name: Install dependencies
       run: |
         # prerequisites
@@ -43,9 +45,7 @@ jobs:
       run: |
         pip install -e .[all]
         # Install required R packages
-        Rscript -e 'install.packages("stats")'
-        Rscript -e 'install.packages("nloptr")'
-        Rscript -e 'install.packages("lme4")'
+        python -c "import dclab; dclab.lme4.install_lme4()"
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor'
       run: |

@@ -40,6 +40,10 @@ jobs:
       if: matrix.extras == 'all'
       run: |
         pip install -e .[all]
+        # Install required R packages
+        Rscript -e 'install.packages("stats")'
+        Rscript -e 'install.packages("nloptr")'
+        Rscript -e 'install.packages("lme4")'
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor'
       run: |

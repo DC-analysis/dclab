@@ -3,6 +3,8 @@
    (and thus all other software downstream) by switching from a full
    SHA256 hash to a 5MB md5 hash; this speeds up operations on
    slow network shares
+ - ref: minor change when installing R packages
+   (rlme tests are broken on Windows currently)
  - ref: use np.float32 for principal inertia ratio computation
    (compatibility with OpenCV)
 0.41.0

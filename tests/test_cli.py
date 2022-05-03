@@ -128,6 +128,9 @@ def test_compress_already_compressed_force():
 def test_compress_log_md5_5m():
     """In dclab 0.42.0 we changed sha256 to md5-5M file checksums"""
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # sanity check (file is < 5MB)
+    h1 = hashlib.md5(path_in.read_bytes()).hexdigest()
+    assert h1 == "e49db02274ac75ab24911f893c41f5b0"
     # same directory (will be cleaned up with path_in)
     path_out1 = path_in.with_name("compressed_1.rtdc")
     cli.compress(path_out=path_out1, path_in=path_in)

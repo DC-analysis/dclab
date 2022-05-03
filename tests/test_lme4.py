@@ -1,4 +1,5 @@
 from importlib import import_module
+import os
 from unittest import mock
 
 import numpy as np
@@ -10,6 +11,8 @@ from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup, rlibs
 
 
 pytest.importorskip("rpy2")
+
+IS_ON_GITHUB_WINDOWS = os.environ.get("RUNNER_OS", "") == "Windows"
 
 
 def standard_datasets(set_region=True):
@@ -54,6 +57,8 @@ def test_differential():
     assert np.allclose([np.median(result[1])], [14.5])
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_basic_setup():
     assert rsetup.has_r()
     rsetup.install_lme4()
@@ -68,6 +73,8 @@ def test_import_rpy2():
     assert situation.get_r_home() is not None
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_import_submodules_raise_r_unavailable_error():
     import rpy2
 
@@ -82,6 +89,8 @@ def test_import_submodules_raise_r_unavailable_error():
             rlibs.import_r_submodules()
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_fail_add_same_dataset():
     datasets = standard_datasets(set_region=False)
 
@@ -92,6 +101,8 @@ def test_fail_add_same_dataset():
         rlme4.add_dataset(datasets[1], "control", 1)
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_fail_too_few_dataset():
     datasets = standard_datasets(set_region=False)
 
@@ -104,6 +115,8 @@ def test_fail_too_few_dataset():
         rlme4.fit()
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_fail_get_non_existent_data():
     datasets = standard_datasets(set_region=False)
 
@@ -118,6 +131,8 @@ def test_fail_get_non_existent_data():
         rlme4.get_feature_data(group="control", repetition=3)
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_glmer_basic_larger():
     """Original values in a generalized linear mixed model"""
     groups = ['treatment', 'control', 'treatment', 'control',
@@ -136,6 +151,8 @@ def test_glmer_basic_larger():
     assert res["model converged"]
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_glmer_differential():
     """Differential Deformation in a generalized linear mixed model"""
     groups = ['control', 'control', 'control', 'control', 'treatment',
@@ -154,6 +171,8 @@ def test_glmer_differential():
     assert res["model converged"]
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_lmer_basic():
     groups = ['control', 'treatment', 'control', 'treatment']
     repetitions = [1, 1, 2, 2]
@@ -192,6 +211,8 @@ def test_lmer_basic():
     assert res["model converged"]
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_lmer_basic_filtering():
     groups = ['control', 'treatment', 'control', 'treatment']
     repetitions = [1, 1, 2, 2]
@@ -228,6 +249,8 @@ def test_lmer_basic_filtering():
     assert not np.allclose(res["anova p-value"], res2["anova p-value"])
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_lmer_basic_larger():
     """Original values in a linear mixed model
 
@@ -251,6 +274,8 @@ def test_lmer_basic_larger():
     assert res["model converged"]
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_lmer_basic_nan():
     groups = ['control', 'treatment', 'control', 'treatment']
     repetitions = [1, 1, 2, 2]
@@ -279,6 +304,8 @@ def test_lmer_basic_nan():
     # assert res["model converged"]  # does not converge on Travis-CI
 
 
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_lmer_differential():
     """Differential Deformation in a linear mixed model"""
     groups = ['control', 'control', 'control', 'control', 'treatment',
@@ -299,11 +326,3 @@ def test_lmer_differential():
     assert np.allclose(res["fixed effects treatment"],
                        np.mean(res["fixed effects repetitions"], axis=1)[1])
     assert res["model converged"]
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

@@ -1,4 +1,8 @@
-0.41.1
+0.42.0
+ - enh: reduce computation time of file hashes in the cli submodule
+   (and thus all other software downstream) by switching from a full
+   SHA256 hash to a 5MB md5 hash; this speeds up operations on
+   slow network shares
  - ref: use np.float32 for principal inertia ratio computation
    (compatibility with OpenCV)
 0.41.0

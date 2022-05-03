@@ -1,5 +1,6 @@
 """Test command-line interface"""
 import hashlib
+import json
 import sys
 import tempfile
 import time
@@ -120,6 +121,23 @@ def test_compress_already_compressed_force():
     h1 = hashlib.md5(path_out1.read_bytes()).hexdigest()
     h2 = hashlib.md5(path_out2.read_bytes()).hexdigest()
     assert h1 != h2
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_compress_log_md5_5m():
+    """In dclab 0.42.0 we changed sha256 to md5-5M file checksums"""
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out1 = path_in.with_name("compressed_1.rtdc")
+    cli.compress(path_out=path_out1, path_in=path_in)
+    with dclab.new_dataset(path_out1) as ds:
+        log = ds.logs["dclab-compress"]
+    dcdict = json.loads("\n".join(log))
+    file = dcdict["files"][0]
+    assert file["index"] == 1
+    assert file["name"] == "mask_contour_reference.rtdc"
+    assert file["md5-5M"] == "e49db02274ac75ab24911f893c41f5b0"
 
 
 @pytest.mark.filterwarnings(

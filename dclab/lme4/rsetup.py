@@ -130,7 +130,8 @@ def has_lme4():
     check_r()
     lme4_there = rpy2.robjects.packages.isinstalled("lme4")
     statmod_there = rpy2.robjects.packages.isinstalled("statmod")
-    return lme4_there and statmod_there
+    nloptr_there = rpy2.robjects.packages.isinstalled("nloptr")
+    return lme4_there and statmod_there and nloptr_there
 
 
 def has_r():

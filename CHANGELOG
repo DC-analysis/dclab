@@ -1,3 +1,6 @@
+0.41.1
+ - ref: use np.float32 for principal inertia ratio computation
+   (compatibility with OpenCV)
 0.41.0
  - feat: pull DCOR access token management from downstream DCOR-Aid
  - feat: allow to set alternate DCOR server certificate bundles by

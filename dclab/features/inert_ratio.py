@@ -205,7 +205,8 @@ def get_inert_ratio_prnc(cont):
 
     length = len(cont)
 
-    inert_ratio_prnc = np.zeros(length, dtype=float) * np.nan
+    # np.float32 for compatibility with opencv
+    inert_ratio_prnc = np.zeros(length, dtype=np.float32) * np.nan
 
     for ii in range(length):
         moments = cont_moments_cv(cont[ii])

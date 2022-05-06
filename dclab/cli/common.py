@@ -51,8 +51,8 @@ def get_command_log(paths, custom_dict=None):
     Parameters
     ----------
     paths: list of pathlib.Path or str
-        paths of related measurement files; they are hashed
-        and included in the "files" key
+        paths of related measurement files; up to 5MB of each of
+        them is md5-hashed and included in the "files" key
     custom_dict: dict
         additional user-defined entries; must contain simple
         Python objects (json.dumps must still work)
@@ -63,7 +63,10 @@ def get_command_log(paths, custom_dict=None):
     data["files"] = []
     for ii, pp in enumerate(paths):
         fdict = {"name": pathlib.Path(pp).name,
-                 "sha256": util.hashfile(pp, constructor=hashlib.sha256),
+                 # Hash only 5 MB of the input file
+                 "md5-5M": util.hashfile(pp,
+                                         count=80,
+                                         constructor=hashlib.md5),
                  "index": ii+1
                  }
         data["files"].append(fdict)

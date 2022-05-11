@@ -209,7 +209,7 @@ class RTDCWriter:
                         + 'in the `info["feature shapes"]` key of '
                         + "your plugin feature.")
                     shape = data.shape[1:]
-            elif shape == data.shape:
+            if shape == data.shape:
                 data = data.reshape(1, *shape)
             elif shape == data.shape[1:]:
                 pass
@@ -219,6 +219,9 @@ class RTDCWriter:
             # Condition for ragged/contour data
             if data.ndim == 1 and isinstance(data[0], np.ndarray):
                 self.write_ragged(group=events, name=feat, data=data)
+            # Condition for scalar features
+            elif data.ndim == 1 and not isinstance(data[0], np.ndarray):
+                self.write_ndarray(group=events, name=feat, data=data)
             # Condition for single image or array of shape (H, W)
             elif data.ndim == 2:
                 dtype = data.dtype
@@ -237,9 +240,7 @@ class RTDCWriter:
                                                name=feat,
                                                data=data,
                                                is_boolean=(dtype != bool))
-            # Condition for scalar features
-            else:
-                self.write_ndarray(group=events, name=feat, data=data)
+
 
     def store_log(self, name, lines):
         """Write log data

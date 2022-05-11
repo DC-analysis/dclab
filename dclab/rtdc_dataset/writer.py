@@ -217,7 +217,7 @@ class RTDCWriter:
                 raise ValueError(f"Bad shape for {feat}! Expected {shape},"
                                  + f"but got {data.shape[1:]}!")
             # Condition for ragged/contour data
-            if data.ndim == 1:
+            if data.ndim == 1 and isinstance(data[0], np.ndarray):
                 self.write_ragged(group=events, name=feat, data=data)
             # Condition for single image or array of shape (H, W)
             elif data.ndim == 2:

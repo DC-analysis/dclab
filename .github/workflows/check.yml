@@ -3,8 +3,6 @@ name: Checks
 on:
   push:
   pull_request:
-  schedule:
-  - cron: "0 0 1 * *"
 
 jobs:
   build:
@@ -32,16 +30,22 @@ jobs:
         sudo mkdir /usr/local/gfortran
         sudo ln -s /usr/local/Cellar/gcc@10/*/lib/gcc/10 /usr/local/gfortran/lib
         gfortran --version
+    - name: Perform modifications (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        # make R lib location writable
+        sudo chmod -R 777 /usr/local/lib/R/site-library
     - name: Install dependencies
       run: |
         # prerequisites
         python -m pip install --upgrade pip wheel
         python -m pip install codecov coverage flake8 pytest
-        # install dependencies
     - name: Install dclab with all possible dependencies
       if: matrix.extras == 'all'
       run: |
         pip install -e .[all]
+        # Install required R packages
+        python -c "import dclab; dclab.lme4.install_lme4()"
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor'
       run: |

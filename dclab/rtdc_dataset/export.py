@@ -123,7 +123,7 @@ class Export(object):
         if not FCSWRITE_AVAILABLE:
             raise ModuleNotFoundError(
                 "Package `fcswrite` required for fcs export!")
-        features = [c.lower() for c in features]
+
         ds = self.rtdc_ds
 
         path = pathlib.Path(path)
@@ -158,8 +158,8 @@ class Export(object):
                            text_kw_pr=meta_data,
                            )
 
-    def hdf5(self, path, features, filtered=True, override=False,
-             compression="gzip"):
+    def hdf5(self, path, features=None, filtered=True, override=False,
+             compression="gzip", skip_checks=False):
         """Export the data of the current instance to an HDF5 file
 
         Parameters
@@ -171,6 +171,7 @@ class Export(object):
             The features in the resulting .rtdc file. These are strings
             that are defined by `dclab.definitions.feature_exists`, e.g.
             "area_cvx", "deform", "frame", "fl1_max", "image".
+            Defaults to `self.rtdc_ds.features_innate`.
         filtered: bool
             If set to `True`, only the filtered data
             (index in ds.filter.all) are used.
@@ -180,6 +181,8 @@ class Export(object):
         compression: str or None
             Compression method for e.g. "contour", "image", and "trace" data
             as well as logs; one of [None, "lzf", "gzip", "szip"].
+        skip_checks: bool
+            Disable checking whether all features have the same length.
         """
         path = pathlib.Path(path)
         # Make sure that path ends with .rtdc
@@ -191,6 +194,9 @@ class Export(object):
                           + "Please use the `override=True` option.")
         elif path.exists():
             path.unlink()
+
+        if features is None:
+            features = self.rtdc_ds.features_innate
 
         # decide which metadata to export
         meta = {}
@@ -207,27 +213,27 @@ class Export(object):
         else:
             filtarr = None
 
-        # check that all features have same length and use smallest
-        # common length
-        lengths = []
-        for feat in features:
-            if feat == "trace":
-                for tr in list(self.rtdc_ds["trace"].keys()):
-                    lengths.append(len(self.rtdc_ds["trace"][tr]))
-            else:
-                lengths.append(len(self.rtdc_ds[feat]))
-        lmin = np.min(lengths)
-        lmax = np.max(lengths)
-        if lmin != lmax:
-            if filtarr is None:
-                # we are forced to do filtering
-                filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
-            filtarr[lmin:] = False
-            warnings.warn(
-                "Not all features have the same length! "
-                + "Limiting output event count to {} ".format(lmin)
-                + "(max {}) in '{}'.".format(lmax, path),
-                LimitingExportSizeWarning)
+        if not skip_checks:
+            # check that all features have same length and use the smallest
+            # common length
+            lengths = []
+            for feat in features:
+                if feat == "trace":
+                    for tr in list(self.rtdc_ds["trace"].keys()):
+                        lengths.append(len(self.rtdc_ds["trace"][tr]))
+                else:
+                    lengths.append(len(self.rtdc_ds[feat]))
+            lmin = np.min(lengths)
+            lmax = np.max(lengths)
+            if lmin != lmax:
+                if filtarr is None:
+                    # we are forced to do filtering
+                    filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
+                filtarr[lmin:] = False
+                warnings.warn(
+                    "Not all features have the same length! Limiting output "
+                    + f"event count to {lmin} (max {lmax}) in '{lmin}'.",
+                    LimitingExportSizeWarning)
 
         # Perform actual export
         with RTDCWriter(path, mode="append", compression=compression) as hw:

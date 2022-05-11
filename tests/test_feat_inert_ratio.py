@@ -82,6 +82,7 @@ def test_inert_ratio_prnc():
     x1 = 1.7 * np.cos(t)
     y1 = 1.1 * np.sin(t)
     c1 = np.dstack((x1, y1))[0]
+    raw = ir.get_inert_ratio_raw(c1)
 
     phi = np.arctan2(y1, x1)
     rho = np.sqrt(x1**2 + y1**2)
@@ -93,10 +94,9 @@ def test_inert_ratio_prnc():
                 y2 = rho * np.sin(phi + theta) + pos_y
 
                 c2 = np.dstack((x2, y2))[0]
-                raw = ir.get_inert_ratio_raw(c1)
                 prnc = ir.get_inert_ratio_prnc(c2)
 
-                assert np.allclose(raw, prnc, rtol=0, atol=1e-10)
+                assert np.allclose(raw, prnc, rtol=0, atol=1e-7)
 
 
 def test_inert_ratio_prnc_simple_1():

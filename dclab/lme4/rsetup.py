@@ -130,7 +130,8 @@ def has_lme4():
     check_r()
     lme4_there = rpy2.robjects.packages.isinstalled("lme4")
     statmod_there = rpy2.robjects.packages.isinstalled("statmod")
-    return lme4_there and statmod_there
+    nloptr_there = rpy2.robjects.packages.isinstalled("nloptr")
+    return lme4_there and statmod_there and nloptr_there
 
 
 def has_r():
@@ -169,9 +170,10 @@ def install_lme4():
         utils.chooseCRANmirror(ind=1)
         # install lme4 to user data directory (say yes to user dir install)
         with AutoRConsole() as rc:
-            # install statmod first (Doesn't R have package dependencies?!)
+            # install statmod and nloptr first
+            # (Doesn't R have package dependencies?!)
             utils.install_packages(
-                rpy2.robjects.vectors.StrVector(["statmod", "lme4"]))
+                rpy2.robjects.vectors.StrVector(["statmod", "nloptr", "lme4"]))
         return rc
 
 

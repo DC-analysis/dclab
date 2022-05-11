@@ -241,7 +241,6 @@ class RTDCWriter:
                                                data=data,
                                                is_boolean=(dtype != bool))
 
-
     def store_log(self, name, lines):
         """Write log data
 

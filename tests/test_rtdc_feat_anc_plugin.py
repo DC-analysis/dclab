@@ -65,9 +65,9 @@ def compute_ragged_plugin_feature(rtdc_ds):
     """Basic plugin method creates arrays of different lengths (ragged)"""
     # Ragged data (i.e. list of arrays of different lengths) --> Ex.contours
     cnts = rtdc_ds["contour"]  # shape --> [None, nan, 2]
-    dummy_cnts = [np.vstack((c, np.ones((5, 2)))) for c in cnts]
-    ragged_feat = np.array(dummy_cnts, dtype=object)
+    ragged_feat = np.array([np.vstack((c, np.ones((3, 2)))) for c in cnts])
     return {"ragged_feat": ragged_feat}
+
 
 def example_plugin_info_ragged_data_feature():
     """plugin info for non-image feature"""
@@ -1059,19 +1059,18 @@ def test_pf_store_ragged_plugin_data_issue_171():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_ragged_data_feature()
     with dclab.new_dataset(h5path) as ds:
-        dummy_cnts = [np.vstack((c, np.ones((5, 2)))) for c in ds["contour"]]
-        ragged_feat = np.array(dummy_cnts, dtype=object)
+        cnts = ds["contour"]  # shape --> [None, nan, 2]
+        ragged_feat = np.array([np.vstack((c, np.ones((3, 2)))) for c in cnts])
     PlugInFeature("ragged_feat", info)
     with RTDCWriter(h5path) as hw:
         hw.store_feature("ragged_feat", ragged_feat)
     with h5py.File(h5path, mode="r") as h5:
         events = h5["events"]
         assert "ragged_feat" in events.keys()
-        feat = h5["events"]['ragged_feat']
-        fshape = feat.shape
-        assert (len(fshape) == 3) and (np.nan in fshape)
-        assert b'CLASS' not in feat.attrs.keys()
-        assert b'IMAGE_SUBCLASS' not in feat.attrs.keys()
+        assert np.allclose(events["ragged_feat"]["1"], ragged_feat[1])
+        assert np.allclose(events["ragged_feat"]["6"], ragged_feat[6])
+        assert events["ragged_feat"]["1"].shape == (57, 2)
+        assert events["ragged_feat"]["6"].shape == (52, 2)
 
 
 @pytest.mark.filterwarnings(

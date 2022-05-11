@@ -68,8 +68,8 @@ def test_bulk_image():
         assert np.allclose(events["image"][6], image[6])
         image = rtdc_data["events"]['image']
         assert b'IMAGE' in image.attrs.get('CLASS')
-        
-        
+
+
 def test_bulk_mask():
     num = 7
     mask = []
@@ -93,7 +93,6 @@ def test_bulk_mask():
         assert events["mask"][1].shape == (20, 10)
         mask = rtdc_data["events"]['mask']
         assert b'IMAGE' in mask.attrs.get('CLASS')
-        
 
 
 def test_bulk_logs():

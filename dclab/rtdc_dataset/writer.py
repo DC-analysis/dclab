@@ -209,25 +209,16 @@ class RTDCWriter:
                         + 'in the `info["feature shapes"]` key of '
                         + "your plugin feature.")
                     shape = data.shape[1:]
-
             elif shape == data.shape:
                 data = data.reshape(1, *shape)
             elif shape == data.shape[1:]:
                 pass
             else:
-                raise ValueError(f"Bad shape for {feat}! Expeted {shape},"
+                raise ValueError(f"Bad shape for {feat}! Expected {shape},"
                                  + f"but got {data.shape[1:]}!")
-            # Condition for list of images or arrays of shape (None, H, W)
-            if data.ndim == 3:
-                dtype = data[0].dtype
-                # Check H, W, and dtype of images or arrays
-                if data.shape[1] > 3 and data.shape[2] > 3:
-                    self.write_image_grayscale(group=events,
-                                               name=feat,
-                                               data=data,
-                                               is_boolean=(dtype != bool))
-                else:
-                    self.write_ndarray(group=events, name=feat, data=data)
+            # Condition for ragged/contour data
+            if data.ndim == 1:
+                self.write_ragged(group=events, name=feat, data=data)
             # Condition for single image or array of shape (H, W)
             elif data.ndim == 2:
                 dtype = data.dtype
@@ -239,9 +230,17 @@ class RTDCWriter:
                                                is_boolean=(dtype != bool))
                 else:
                     self.write_ndarray(group=events, name=feat, data=data)
-            # Condition for ragged/contour data
-            elif data.ndim == 1 and data.dtype == object:
-                self.write_ragged(group=events, name=feat, data=data)
+            # Condition for list of images or array of shape (None, H, W)
+            elif data.ndim == 3:
+                dtype = data[0].dtype
+                # Check H, W, and dtype of images or arrays
+                if data.shape[1] > 3 and data.shape[2] > 3:
+                    self.write_image_grayscale(group=events,
+                                               name=feat,
+                                               data=data,
+                                               is_boolean=(dtype != bool))
+                else:
+                    self.write_ndarray(group=events, name=feat, data=data)
             # Condition for scalar features
             else:
                 self.write_ndarray(group=events, name=feat, data=data)
@@ -476,7 +475,7 @@ class RTDCWriter:
         return dset
 
     def write_ragged(self, group, name, data):
-        """Write ragged data (i.e. list of arrays of different lenghts)
+        """Write ragged data (i.e. list of arrays of different lengths)
 
         Ragged array data (e.g. contour data) are stored in
         a separate group and each entry becomes an HDF5 dataset.

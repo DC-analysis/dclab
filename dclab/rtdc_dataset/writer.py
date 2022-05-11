@@ -228,8 +228,6 @@ class RTDCWriter:
                                                name=feat,
                                                data=data,
                                                is_boolean=(dtype != bool))
-                else:
-                    self.write_ndarray(group=events, name=feat, data=data)
             # Condition for list of images or array of shape (None, H, W)
             elif data.ndim == 3:
                 dtype = data[0].dtype
@@ -239,8 +237,6 @@ class RTDCWriter:
                                                name=feat,
                                                data=data,
                                                is_boolean=(dtype != bool))
-                else:
-                    self.write_ndarray(group=events, name=feat, data=data)
             # Condition for scalar features
             else:
                 self.write_ndarray(group=events, name=feat, data=data)

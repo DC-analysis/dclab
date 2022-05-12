@@ -208,38 +208,32 @@ class RTDCWriter:
                         + f"you could put the shape `{data[0].shape}` "
                         + 'in the `info["feature shapes"]` key of '
                         + "your plugin feature.")
-                    shape = data.shape[1:]
-            if shape == data.shape:
-                data = data.reshape(1, *shape)
-            elif shape == data.shape[1:]:
-                pass
-            else:
-                raise ValueError(f"Bad shape for {feat}! Expected {shape},"
-                                 + f"but got {data.shape[1:]}!")
-            # Condition for ragged/contour data
+            # Condition for ragged/contour data (array of arrays)
             if data.ndim == 1 and isinstance(data[0], np.ndarray):
                 self.write_ragged(group=events, name=feat, data=data)
-            # Condition for scalar features
+
+            # Condition for array of scalar features
             elif data.ndim == 1 and not isinstance(data[0], np.ndarray):
                 self.write_ndarray(group=events, name=feat, data=data)
+
             # Condition for single image or array of shape (H, W)
             elif data.ndim == 2:
                 dtype = data.dtype
-                # Check H, W, and dtype of image or array
-                if data.shape[0] > 3 and data.shape[1] > 3:
-                    self.write_image_grayscale(group=events,
-                                               name=feat,
-                                               data=data,
-                                               is_boolean=(dtype != bool))
+                data = data.reshape(1, *data.shape)
+                self.write_image_grayscale(group=events,
+                                           name=feat,
+                                           data=data,
+                                           is_boolean=(dtype != bool))
             # Condition for list of images or array of shape (None, H, W)
             elif data.ndim == 3:
                 dtype = data[0].dtype
-                # Check H, W, and dtype of images or arrays
-                if data.shape[1] > 3 and data.shape[2] > 3:
-                    self.write_image_grayscale(group=events,
-                                               name=feat,
-                                               data=data,
-                                               is_boolean=(dtype != bool))
+                self.write_image_grayscale(group=events,
+                                           name=feat,
+                                           data=data,
+                                           is_boolean=(dtype != bool))
+            else:
+                raise ValueError(f"Bad shape for {feat}! Expected 1D, 2D, "
+                                 + f"or 3D, but got {data.shape}!")
 
     def store_log(self, name, lines):
         """Write log data

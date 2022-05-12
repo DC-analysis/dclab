@@ -354,11 +354,9 @@ def test_non_scalar_bad_shape():
     register_temporary_feature("peterpan", is_scalar=False)
     with RTDCWriter(exppath, mode="append") as hw:
         data = np.arange(10 * 3 * 5).reshape(10, 3, 5)
-        # This should work
-        hw.store_feature("peterpan", data, shape=(3, 5))
-        # This should not work
+        data = data.reshape(1, *data.shape)
         with pytest.raises(ValueError, match="Bad shape"):
-            hw.store_feature("peterpan", data, shape=(3, 6))
+            hw.store_feature("peterpan", data)
     deregister_temporary_feature("peterpan")  # cleanup
 
 

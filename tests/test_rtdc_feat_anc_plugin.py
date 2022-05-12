@@ -65,7 +65,9 @@ def compute_ragged_plugin_feature(rtdc_ds):
     """Basic plugin method creates arrays of different lengths (ragged)"""
     # Ragged data (i.e. list of arrays of different lengths) --> Ex.contours
     cnts = rtdc_ds["contour"]  # shape --> [None, nan, 2]
-    ragged_feat = np.array([np.vstack((c, np.ones((3, 2)))) for c in cnts])
+    # Add dummy contour coordinates to the actual contours
+    ragged_feat = np.array([np.vstack((c, np.ones((3, 2)))) for c in cnts],
+                           dtype=object)
     return {"ragged_feat": ragged_feat}
 
 
@@ -1039,7 +1041,7 @@ def test_pf_store_mask_plugin_data_without_shape_issue_171():
     with dclab.new_dataset(h5path) as ds:
         mask_feat = np.logical_not(ds["mask"])
     with RTDCWriter(h5path) as hw:
-        hw.store_feature("mask_feat", mask_feat)
+        hw.store_feature("mask_feat", mask_feat, shape=(80, 250))
     with h5py.File(h5path, mode="r") as h5:
         events = h5["events"]
         assert "mask_feat" in events.keys()
@@ -1060,7 +1062,9 @@ def test_pf_store_ragged_plugin_data_issue_171():
     info = example_plugin_info_ragged_data_feature()
     with dclab.new_dataset(h5path) as ds:
         cnts = ds["contour"]  # shape --> [None, nan, 2]
-        ragged_feat = np.array([np.vstack((c, np.ones((3, 2)))) for c in cnts])
+        # Add dummy contour coordinates to the actual contours
+        ragged_feat = np.array([np.vstack((c, np.ones((3, 2)))) for c in cnts],
+                               dtype=object)
     PlugInFeature("ragged_feat", info)
     with RTDCWriter(h5path) as hw:
         hw.store_feature("ragged_feat", ragged_feat)
@@ -1075,14 +1079,12 @@ def test_pf_store_ragged_plugin_data_issue_171():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_scalar_plugin_data_with_shape_issue_171():
-    """Test storage of scalar plugin feature attributes with shape info"""
+def test_pf_store_scalar_plugin_data_issue_171():
+    """Test storage of scalar plugin feature attributes"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         circ_per_area = ds["circ"] / ds["area_um"]
     info = example_plugin_info_single_feature()
-    # Adding feature shape to the info
-    info["feature shapes"] = [circ_per_area.shape]
     PlugInFeature("circ_per_area", info)
     with RTDCWriter(h5path) as hw:
         hw.store_feature("circ_per_area", circ_per_area)
@@ -1091,28 +1093,23 @@ def test_pf_store_scalar_plugin_data_with_shape_issue_171():
         assert "circ_per_area" in events.keys()
         feat = h5["events"]['circ_per_area']
         assert feat.ndim == 1
-        assert b'CLASS' not in feat.attrs.keys()
-        assert b'IMAGE_SUBCLASS' not in feat.attrs.keys()
+        assert not isinstance(feat[0], np.ndarray)
 
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_scalar_plugin_data_without_shape_issue_171():
-    """Test storage of scalar plugin feature attributes with shape info"""
+def test_pf_wrong_plugin_data_shape_issue_171():
+    """Test storage of wrong data shape of plugin feature"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    info = example_plugin_info_non_scalar_feature()
+    PlugInFeature("image_gauss_filter", info)
     with dclab.new_dataset(h5path) as ds:
-        circ_per_area = ds["circ"] / ds["area_um"]
-    info = example_plugin_info_single_feature()
-    PlugInFeature("circ_per_area", info)
+        image_gauss_filter = gaussian_filter(ds["image"], sigma=(0, 1, 1))
+        im_shape = image_gauss_filter.shape
+        ext_image_gauss_filter = image_gauss_filter.reshape(1, *im_shape)
     with RTDCWriter(h5path) as hw:
-        hw.store_feature("circ_per_area", circ_per_area)
-    with h5py.File(h5path, mode="r") as h5:
-        events = h5["events"]
-        assert "circ_per_area" in events.keys()
-        feat = h5["events"]['circ_per_area']
-        assert feat.ndim == 1
-        assert b'CLASS' not in feat.attrs.keys()
-        assert b'IMAGE_SUBCLASS' not in feat.attrs.keys()
+        with pytest.raises(ValueError, match="Bad shape"):
+            hw.store_feature("image_gauss_filter", ext_image_gauss_filter)
 
 
 if __name__ == "__main__":

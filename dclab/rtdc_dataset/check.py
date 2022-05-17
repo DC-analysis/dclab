@@ -102,7 +102,7 @@ OPTIONAL_KEYS = {
 
 #: valid metadata choices
 #: .. versionchanged:: 0.29.1
-#:    medium not anymore restricted to certain set of choices
+#:    medium not restricted to certain set of choices anymore
 VALID_CHOICES = {}
 
 
@@ -111,7 +111,7 @@ class ICue(object):
     def __init__(self, msg, level, category, data=None, identifier=None,
                  cfg_section=None, cfg_key=None, cfg_choices=None):
         """Integrity cue"""
-        #: human readable message
+        #: human-readable message
         self.msg = msg
         #: severity level ("violation", "alert", or "info")
         self.level = level
@@ -155,7 +155,7 @@ class ICue(object):
                  other.cfg_key or "", other.category, other.msg))
 
     def __repr__(self):
-        return "<ICue: '{}' at 0x{}>".format(self.msg, hex(id(self)))
+        return f"<ICue: '{self.msg}' at 0x{hex(id(self))}>"
 
     @staticmethod
     def get_level_summary(cues):
@@ -195,7 +195,7 @@ class IntegrityChecker(object):
                 self.ds = load_file(path_or_ds)
                 for ww in ws:
                     self.warn_cues.append(ICue(
-                        msg="{}: {}".format(ww.category.__name__, ww.message),
+                        msg=f"{ww.category.__name__}: {ww.message}",
                         level="alert",
                         category="warning"))
             self.finally_close = True
@@ -203,10 +203,10 @@ class IntegrityChecker(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, tb):
+    def __exit__(self, *args):
         # close the file
         if self.finally_close and hasattr(self.ds, "__exit__"):
-            self.ds.__exit__(type, value, tb)
+            self.ds.__exit__(*args)
 
     @property
     def has_fluorescence(self):
@@ -256,22 +256,22 @@ class IntegrityChecker(object):
                     }
         elif self.ds.format == "hdf5":
             def iter_count_compression(h5):
-                comp = 0
-                noco = 0
+                comp_i = 0
+                noco_i = 0
                 for key in h5:
                     obj = h5[key]
                     if isinstance(obj, h5py.Dataset):
                         if obj.compression is None:
-                            noco += 1
+                            noco_i += 1
                         else:
-                            comp += 1
+                            comp_i += 1
                     elif isinstance(obj, h5py.Group):
                         coi, noi = iter_count_compression(obj)
-                        comp += coi
-                        noco += noi
+                        comp_i += coi
+                        noco_i += noi
                     else:
-                        raise ValueError("Unknown object: {}".format(obj))
-                return comp, noco
+                        raise ValueError(f"Unknown object: {obj}")
+                return comp_i, noco_i
 
             comp, noco = iter_count_compression(self.ds._h5)
             if noco == 0:
@@ -279,7 +279,7 @@ class IntegrityChecker(object):
             elif comp == 0:
                 compression = "None"
             else:
-                compression = "Partial ({} of {})".format(comp, noco + comp)
+                compression = f"Partial ({comp} of {noco+comp})"
             data = {"compressed": comp,
                     "total": noco + comp,
                     "uncompressed": noco,
@@ -288,7 +288,7 @@ class IntegrityChecker(object):
             compression = "Unknown"
             data = None
         cues.append(ICue(
-            msg="Compression: {}".format(compression),
+            msg=f"Compression: {compression}",
             level="info",
             category="general",
             data=data))
@@ -310,20 +310,19 @@ class IntegrityChecker(object):
         cues = []
         lends = len(self.ds)
         for feat in self.ds.features_innate:
-            msg = "Features: wrong event count: '{}' ({} of {})"
             if feat == "trace":
                 for tr in list(self.ds["trace"].keys()):
                     if len(self.ds["trace"][tr]) != lends:
                         cues.append(ICue(
-                            msg=msg.format("trace/" + tr,
-                                           len(self.ds["trace"][tr]),
-                                           lends),
+                            msg=f"Features: wrong event count: 'trace/{tr}' "
+                                + f"({len(self.ds['trace'][tr])} of {lends})",
                             level="violation",
                             category="feature size"))
             else:
                 if len(self.ds[feat]) != lends:
                     cues.append(ICue(
-                        msg=msg.format(feat, len(self.ds[feat]), lends),
+                        msg=f"Features: wrong event count: '{feat}' "
+                            + f"({len(self.ds[feat])} of {lends})",
                         level="violation",
                         category="feature size"))
         return cues
@@ -335,7 +334,7 @@ class IntegrityChecker(object):
             for feat in self.ds._h5["events"]:
                 if not dfn.feature_exists(feat):
                     cues.append(ICue(
-                        msg="Features: Unknown key '{}'".format(feat),
+                        msg=f"Features: Unknown key '{feat}'",
                         level="violation",
                         category="feature unknown"))
         return cues
@@ -343,15 +342,14 @@ class IntegrityChecker(object):
     def check_fl_metadata_channel_names(self, **kwargs):
         cues = []
         for ii in range(1, 4):
-            chn = "channel {} name".format(ii)
-            fli = "fl{}_max".format(ii)
+            chn = f"channel {ii} name"
+            fli = f"fl{ii}_max"
             if (fli in self.ds
                     and chn not in self.ds.config["fluorescence"]):
                 # Channel names must be defined when there is
                 # a corresponding fluorescence signal.
                 cues.append(ICue(
-                    msg="Metadata: Missing key [{}] '{}'".format(
-                        "fluorescence", chn),
+                    msg=f"Metadata: Missing key [fluorescence] '{chn}'",
                     level="alert",
                     category="metadata missing",
                     cfg_section="fluorescence",
@@ -361,8 +359,7 @@ class IntegrityChecker(object):
                 # Channel names must not be defined when there is
                 # no corresponding fluorescence signal.
                 cues.append(ICue(
-                    msg="Metadata: Unused key defined [{}] '{}'".format(
-                        "fluorescence", chn),
+                    msg=f"Metadata: Unused key defined [fluorescence] '{chn}'",
                     level="alert",
                     category="metadata invalid",
                     cfg_section="fluorescence",
@@ -376,8 +373,8 @@ class IntegrityChecker(object):
             chc1 = self.ds.config["fluorescence"]["channel count"]
             chc2 = 0
             for ii in range(1, 4):
-                chn = "channel {} name".format(ii)
-                ecn = "fl{}_max".format(ii)
+                chn = f"channel {ii} name"
+                ecn = f"fl{ii}_max"
                 if (chn in self.ds.config["fluorescence"] and
                         ecn in self.ds._events):
                     chc2 += 1
@@ -397,8 +394,8 @@ class IntegrityChecker(object):
             lsc1 = self.ds.config["fluorescence"]["laser count"]
             lsc2 = 0
             for ii in range(1, 4):
-                kl = "laser {} lambda".format(ii)
-                kp = "laser {} power".format(ii)
+                kl = f"laser {ii} lambda"
+                kp = f"laser {ii} power"
                 if (kl in self.ds.config["fluorescence"] and
                         kp in self.ds.config["fluorescence"] and
                         self.ds.config["fluorescence"][kp] != 0):
@@ -423,8 +420,7 @@ class IntegrityChecker(object):
                     if spek != spe:
                         cues.append(ICue(
                             msg="Metadata: wrong number of samples per "
-                                + "event: {} (expected {}, got {})".format(
-                                    key, spe, spek),
+                                + f"event: {key} (expected {spe}, got {spek})",
                             level="violation",
                             category="metadata wrong",
                             cfg_section="fluorescence",
@@ -441,8 +437,7 @@ class IntegrityChecker(object):
                     neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(
-                msg="Negative value for feature(s): {}".format(
-                    ", ".join(neg_feats)),
+                msg=f"Negative value for feature(s): {', '.join(neg_feats)}",
                 level="alert",
                 category="feature data"))
         return cues
@@ -457,8 +452,7 @@ class IntegrityChecker(object):
                     neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(
-                msg="Negative value for feature(s): {}".format(
-                    ", ".join(neg_feats)),
+                msg=f"Negative value for feature(s): {', '.join(neg_feats)}",
                 level="alert",
                 category="feature data"))
         return cues
@@ -477,8 +471,8 @@ class IntegrityChecker(object):
                 for k in ["flow rate", "flow rate sheath", "flow rate sample"]:
                     cues.append(ICue(
                         msg="Metadata: Flow rates don't add up (sheath "
-                            + "{:g} + sample {:g} != channel {:g})".format(
-                                frshe, frsam, frsum),
+                            + f"{frshe:g} + sample {frsam:g} "
+                            + f"!= channel {frsum:g})",
                         level="alert",
                         category="metadata wrong",
                         cfg_section="setup",
@@ -498,22 +492,20 @@ class IntegrityChecker(object):
                                      ['IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE']]:
                         if key not in imdat.attrs:
                             cues.append(ICue(
-                                msg="HDF5: '/{}': missing ".format(feat)
-                                    + "attribute '{}'".format(key),
+                                msg=f"HDF5: '/{feat}': missing "
+                                    + f"attribute '{key}'",
                                 level="alert",
                                 category="format HDF5"))
                         elif imdat.attrs.get_id(key).dtype.char != "S":
                             cues.append(ICue(
-                                msg="HDF5: '/{}': attribute '{}' ".format(
-                                    feat, key)
-                                + "should be fixed-length ASCII string",
+                                msg=f"HDF5: '/{key}': attribute '{feat}' "
+                                    + "should be fixed-length ASCII string",
                                 level="alert",
                                 category="format HDF5"))
                         elif imdat.attrs[key] != val:
                             cues.append(ICue(
-                                msg="HDF5: '/{}': attribute '{}' ".format(
-                                    feat, key)
-                                + "should have value '{}'".format(val),
+                                msg=f"HDF5: '/{feat}': attribute '{key}' "
+                                    + f"should have value '{val}'",
                                 level="alert",
                                 category="format HDF5"))
             # check length of logs
@@ -529,23 +521,23 @@ class IntegrityChecker(object):
                         for ii in range(len(log)):
                             if len(log[ii]) > LOG_MAX_LINE_LENGTH:
                                 cues.append(ICue(
-                                    msg="Logs: {} line {} ".format(logname, ii)
+                                    msg=f"Logs: {logname} line {ii} "
                                         + "exceeds maximum line length "
-                                        + "{}".format(LOG_MAX_LINE_LENGTH),
+                                        + f"{LOG_MAX_LINE_LENGTH}",
                                     level="alert",
                                     category="format HDF5"))
         return cues
 
     def check_info(self, **kwargs):
-        cues = []
-        cues.append(ICue(
-            msg="Fluorescence: {}".format(self.has_fluorescence),
-            level="info",
-            category="general"))
-        cues.append(ICue(
-            msg="Data file format: {}".format(self.ds.format),
-            level="info",
-            category="general"))
+        cues = [
+            ICue(
+                msg=f"Fluorescence: {self.has_fluorescence}",
+                level="info",
+                category="general"),
+            ICue(
+                msg=f"Data file format: {self.ds.format}",
+                level="info",
+                category="general")]
         return cues
 
     def check_metadata_bad(self, **kwargs):
@@ -562,9 +554,8 @@ class IntegrityChecker(object):
                         if soll != ist:
                             cues.append(ICue(
                                 msg="Metadata: Mismatch [imaging] "
-                                    + "'{}' and feature {} ".format(roi,
-                                                                    feat)
-                                    + "({} vs {})".format(ist, soll),
+                                    + f"'{roi}' and feature {feat} "
+                                    + f"({ist} vs {soll})",
                                 level="violation",
                                 category="metadata wrong",
                                 cfg_section="imaging",
@@ -599,8 +590,8 @@ class IntegrityChecker(object):
                     val = self.ds.config[sec][key]
                     if val not in VALID_CHOICES[sec][key]:
                         cues.append(ICue(
-                            msg="Metadata: Invalid value [{}] {}: '{}'".format(
-                                sec, key, val),
+                            msg=f"Metadata: Invalid value [{sec}] {key}: "
+                                + f"'{val}'",
                             level="violation",
                             category="metadata wrong",
                             cfg_section=sec,
@@ -665,7 +656,7 @@ class IntegrityChecker(object):
         for sec in secs_investiage:
             if sec not in self.ds.config and not expand_section:
                 cues.append(ICue(
-                    msg="Metadata: Missing section '{}'".format(sec),
+                    msg=f"Metadata: Missing section '{sec}'",
                     level="violation" if sec in important else "alert",
                     category="metadata missing",
                     cfg_section=sec))
@@ -680,8 +671,7 @@ class IntegrityChecker(object):
                         else:
                             level = "alert"
                         cues.append(ICue(
-                            msg="Metadata: Missing key [{}] '{}'".format(sec,
-                                                                         key),
+                            msg=f"Metadata: Missing key [{sec}] '{key}'",
                             level=level,
                             category="metadata missing",
                             cfg_section=sec,

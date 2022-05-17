@@ -1,3 +1,5 @@
+0.42.1
+ - ref: replace formats with f-strings in check.py
 0.42.0
  - enh: reduce computation time of file hashes in the cli submodule
    (and thus all other software downstream) by switching from a full

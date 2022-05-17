@@ -498,7 +498,7 @@ class IntegrityChecker(object):
                                 category="format HDF5"))
                         elif imdat.attrs.get_id(key).dtype.char != "S":
                             cues.append(ICue(
-                                msg=f"HDF5: '/{key}': attribute '{feat}' "
+                                msg=f"HDF5: '/{feat}': attribute '{key}' "
                                     + "should be fixed-length ASCII string",
                                 level="alert",
                                 category="format HDF5"))

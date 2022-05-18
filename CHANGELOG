@@ -1,4 +1,5 @@
 0.42.1
+ - fix: support "image_bg" feature for DCOR data
  - ref: replace formats with f-strings in check.py
 0.42.0
  - enh: reduce computation time of file hashes in the cli submodule

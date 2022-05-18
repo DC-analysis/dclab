@@ -161,12 +161,12 @@ class FeatureCache:
                 self._nonsc_features["trace"] = DCORTraceFeature(self.api,
                                                                  self._size)
             return self._nonsc_features["trace"]
-        elif key in ["image", "mask"]:
+        elif key in ["image", "image_bg", "mask"]:
             self._nonsc_features[key] = DCORImageFeature(key, self.api,
                                                          self._size)
             return self._nonsc_features[key]
         else:
-            raise ValueError(f"No DCOR handler for feature '{key}'!")
+            raise ValueError(f"No handler in dclab for DCOR feature '{key}'!")
 
     def __iter__(self):
         # dict-like behavior

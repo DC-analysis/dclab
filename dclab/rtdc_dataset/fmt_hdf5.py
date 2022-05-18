@@ -175,7 +175,7 @@ class H5MaskEvent:
 
 class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
     def __init__(self, h5ds):
-        """Lazy access to a scalar feature"""
+        """Lazy access to a scalar feature with cache"""
         self.h5ds = h5ds
         # for hashing in util.obj2bytes
         self.identifier = (self.h5ds.file.filename, self.h5ds.name)

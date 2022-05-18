@@ -1,3 +1,8 @@
+0.42.2
+ - fix: lazy-load scalar feature data for HDF5 data
+ - fix: fix repr string of AncillaryFeature when identifier is None
+ - ref: compute identifiers from HDF5 data using file system path
+   and HDF5 path
 0.42.1
  - fix: support "image_bg" feature for DCOR data
  - ref: replace formats with f-strings in check.py

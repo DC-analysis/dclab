@@ -670,14 +670,15 @@ def test_pf_load_scalar_plugin_data():
     assert isinstance(ds["circ_per_area"], np.ndarray)
 
     # Exporting the rtdc-file including the plugin-feature and then reloading
-    # it should still load scalar plugin data as np.ndarray
+    # it should load scalar plugin data as an H5ScalarEvent
     tdir = tempfile.mkdtemp()
     pdir = pathlib.Path(tdir)
     pfile = pdir / "tmp.rtdc"
     features = ds.features + ["circ_per_area"]
     ds.export.hdf5(pfile, features=features)
     ds2 = dclab.new_dataset(pfile)
-    assert isinstance(ds2["circ_per_area"], np.ndarray)
+    assert isinstance(ds2["circ_per_area"],
+                      dclab.rtdc_dataset.fmt_hdf5.H5ScalarEvent)
 
 
 def test_pf_minimum_info_input():

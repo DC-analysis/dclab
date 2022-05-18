@@ -25,7 +25,8 @@ class UnknownKeyWarning(UserWarning):
 class H5ContourEvent:
     def __init__(self, h5group):
         self.h5group = h5group
-        self.identifier = h5group["0"][:]
+        # for hashing in util.obj2bytes
+        self.identifier = (h5group.file.filename, h5group["0"].name)
 
     def __getitem__(self, key):
         if not isinstance(key, numbers.Integral):
@@ -77,7 +78,7 @@ class H5Events:
         elif key == "trace":
             return H5TraceEvent(data)
         elif data.ndim == 1:
-            return data[:]
+            return H5ScalarEvent(data)
         else:
             # for features like "image", "image_bg" and other non-scalar
             # ancillary features
@@ -151,7 +152,7 @@ class H5MaskEvent:
         self.h5dataset = h5dataset
         # identifier required because "mask" is used for computation
         # of ancillary feature "contour".
-        self.identifier = str(self.h5dataset.parent.parent.file)
+        self.identifier = (self.h5dataset.file.filename, self.h5dataset.name)
 
     def __getitem__(self, idx):
         return np.asarray(self.h5dataset[idx], dtype=bool)
@@ -170,6 +171,30 @@ class H5MaskEvent:
     @property
     def shape(self):
         return self.h5dataset.shape
+
+
+class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
+    def __init__(self, h5ds):
+        """Lazy access to a scalar feature"""
+        self.h5ds = h5ds
+        # for hashing in util.obj2bytes
+        self.identifier = (self.h5ds.file.filename, self.h5ds.name)
+        self._array = None
+
+    def __array__(self, dtype=None):
+        if self._array is None:
+            self._array = np.asarray(self.h5ds, dtype=dtype)
+        return self._array
+
+    def __getitem__(self, idx):
+        return self.__array__()[idx]
+
+    def __len__(self):
+        return len(self.h5ds)
+
+    @property
+    def shape(self):
+        return self.h5ds.shape
 
 
 class H5TraceEvent:

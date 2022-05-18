@@ -123,7 +123,7 @@ class AncillaryFeature:
         repre = " ".join([
             f"<{self.__class__.__name__}",
             f"'{self.feature_name}'",
-            f"(id {self.identifier[:5]}...)",
+            f"(id {self.identifier[:5]}...)" if self.identifier else "(no ID)",
             f"with priority {self.priority}",
             f"at {hex(id(self))}>",
         ])

@@ -164,6 +164,13 @@ class RTDCWriter:
             self.write_ndarray(group=events,
                                name="index",
                                data=np.arange(nev0 + 1, nev0 + nev + 1))
+        # This condition checks whether the given feature is a scalar or not.
+        # If it is a scalar feature, it will be saved in the rtdc file
+        # It also takes the scalar plugin feature into account because during
+        # the definition of plugin feature, PluginFeature class will register
+        # all the scalar features by appending them to list of features
+        # (see definition/feat_const.py, definition/feat_logic.py, and
+        # PluginFeature).
         elif dfn.scalar_feature_exists(feat):
             self.write_ndarray(group=events,
                                name=feat,
@@ -208,32 +215,35 @@ class RTDCWriter:
                         + f"you could put the shape `{data[0].shape}` "
                         + 'in the `info["feature shapes"]` key of '
                         + "your plugin feature.")
-            # Condition for ragged/contour data (array of arrays)
-            if data.ndim == 1 and isinstance(data[0], np.ndarray):
-                self.write_ragged(group=events, name=feat, data=data)
-
-            # Condition for array of scalar features
-            elif data.ndim == 1 and not isinstance(data[0], np.ndarray):
-                self.write_ndarray(group=events, name=feat, data=data)
-
-            # Condition for single image or array of shape (H, W)
-            elif data.ndim == 2:
-                dtype = data.dtype
-                data = data.reshape(1, *data.shape)
-                self.write_image_grayscale(group=events,
-                                           name=feat,
-                                           data=data,
-                                           is_boolean=(dtype != bool))
-            # Condition for list of images or array of shape (None, H, W)
-            elif data.ndim == 3:
-                dtype = data[0].dtype
-                self.write_image_grayscale(group=events,
-                                           name=feat,
-                                           data=data,
-                                           is_boolean=(dtype != bool))
+                    shape = data.shape[1:]
+            # Condition for single or multiple events to be saved
+            if shape == data.shape or shape == data.shape[1:]:
+                # Condition for ragged/contour data (array of arrays)
+                if data.ndim == 1 and isinstance(data[0], np.ndarray):
+                    self.write_ragged(group=events, name=feat, data=data)
+                # Condition for single image or array of shape (H, W). If the
+                # given data is a 2D, that means it is a single image therefore
+                #
+                elif data.ndim == 2:
+                    dtype = data.dtype
+                    data = data.reshape(1, *data.shape)
+                    self.write_image_grayscale(group=events,
+                                               name=feat,
+                                               data=data,
+                                               is_boolean=(dtype != bool))
+                # Condition for list of images or array of shape (None, H, W)
+                elif data.ndim == 3:
+                    dtype = data[0].dtype
+                    self.write_image_grayscale(group=events,
+                                               name=feat,
+                                               data=data,
+                                               is_boolean=(dtype != bool))
+                else:
+                    raise ValueError(f"Bad shape for {feat}! Expected 1D, 2D, "
+                                     + f"or 3D data, but got {data.shape}!")
             else:
-                raise ValueError(f"Bad shape for {feat}! Expected 1D, 2D, "
-                                 + f"or 3D, but got {data.shape}!")
+                raise ValueError(f"Bad shape for {feat}! Expected {shape}, "
+                                 + f"but got {data.shape[1:]}!")
 
     def store_log(self, name, lines):
         """Write log data

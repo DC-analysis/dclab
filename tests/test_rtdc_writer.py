@@ -90,6 +90,7 @@ def test_bulk_mask():
         assert "mask" in events.keys()
         # Masks are stored as uint8
         assert np.allclose(events["mask"][6], mask[6]*255)
+        assert events["mask"].shape == (7, 20, 10)
         assert events["mask"][1].shape == (20, 10)
         mask = rtdc_data["events"]['mask']
         assert b'IMAGE' in mask.attrs.get('CLASS')
@@ -347,17 +348,32 @@ def test_mode():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_non_scalar_bad_shape():
+def test_non_scalar_bad_shape_1():
     h5path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     exppath = h5path.with_name("exported.rtdc")
-
     register_temporary_feature("peterpan", is_scalar=False)
+    with RTDCWriter(exppath, mode="append") as hw:
+        data = np.arange(10 * 3 * 5).reshape(10, 3, 5)
+        # This should work
+        hw.store_feature("peterpan", data, shape=(3, 5))
+        # This should not work
+        with pytest.raises(ValueError, match="Bad shape"):
+            hw.store_feature("peterpan", data, shape=(3, 6))
+    deregister_temporary_feature("peterpan")  # cleanup
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_non_scalar_bad_shape_2():
+    h5path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    exppath = h5path.with_name("exported.rtdc")
+    register_temporary_feature("bad_data", is_scalar=False)
     with RTDCWriter(exppath, mode="append") as hw:
         data = np.arange(10 * 3 * 5).reshape(10, 3, 5)
         data = data.reshape(1, *data.shape)
         with pytest.raises(ValueError, match="Bad shape"):
-            hw.store_feature("peterpan", data)
-    deregister_temporary_feature("peterpan")  # cleanup
+            hw.store_feature("bad_data", data)
+    deregister_temporary_feature("bad_data")  # cleanup
 
 
 @pytest.mark.filterwarnings(

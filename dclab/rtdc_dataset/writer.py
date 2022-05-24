@@ -222,16 +222,15 @@ class RTDCWriter:
                 if data.ndim == 1 and isinstance(data[0], np.ndarray):
                     self.write_ragged(group=events, name=feat, data=data)
                 # Condition for single image or array of shape (H, W). If the
-                # given data is a 2D, that means it is a single image therefore
-                #
+                # given data is a 2D, it is more likely a single image feature
+                # therefore it will be saved with image attributes.
                 elif data.ndim == 2:
                     dtype = data.dtype
-                    data = data.reshape(1, *data.shape)
                     self.write_image_grayscale(group=events,
                                                name=feat,
                                                data=data,
                                                is_boolean=(dtype != bool))
-                # Condition for list of images or array of shape (None, H, W)
+                # Condition for list of images or array of shape (None, H, W).
                 elif data.ndim == 3:
                     dtype = data[0].dtype
                     self.write_image_grayscale(group=events,

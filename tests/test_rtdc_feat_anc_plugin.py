@@ -1014,8 +1014,7 @@ def test_pf_store_ragged_plugin_data():
     with dclab.new_dataset(h5path) as ds:
         cnts = ds["contour"]
         # Add dummy contour coordinates to the actual contours
-        # dummy = [np.vstack((c, np.ones((3, 2)))) for c in cnts]
-        dummy = [c for c in cnts]
+        dummy = [np.vstack((c, np.ones((3, 2)))) for c in cnts]
         ragged_feat = np.array(dummy, dtype=object)
     PlugInFeature("ragged_feat", info)
     with RTDCWriter(h5path) as hw:
@@ -1025,8 +1024,8 @@ def test_pf_store_ragged_plugin_data():
         assert "ragged_feat" in events.keys()
         assert np.allclose(events["ragged_feat"]["1"], ragged_feat[1])
         assert np.allclose(events["ragged_feat"]["6"], ragged_feat[6])
-        assert events["ragged_feat"]["1"].shape == (54, 2)
-        assert events["ragged_feat"]["6"].shape == (49, 2)
+        assert events["ragged_feat"]["1"].shape == (57, 2)
+        assert events["ragged_feat"]["6"].shape == (52, 2)
 
 
 @pytest.mark.filterwarnings(

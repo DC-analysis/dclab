@@ -109,10 +109,10 @@ CFG_METADATA = {
         # used for background correction.
         ["bg empty", fbool, "Background correction from empty frames only"],
         ["bin area min", fint, "Minium pixel area of binary image event"],
-        ["bin kernel", fint, "Odd ellipse kernel size, binary image morphing"],
-        ["bin threshold", fint, "Binary threshold for avg-bg-corrected image"],
+        ["bin kernel", fint, "Disk size for binary closing of mask image"],
+        ["bin threshold", fint, "Threshold for mask from bg-corrected image"],
         ["image blur", fint, "Odd sigma for Gaussian blur (21x21 kernel)"],
-        ["no absdiff", fbool, "Avoid OpenCV 'absdiff' for avg-bg-correction"],
+        ["no absdiff", fbool, "Do not use OpenCV 'absdiff' for bg-correction"],
     ],
     # All online-filter-related keywords (box filters, soft limit, and
     # polygons are handled in `meta_logic`)

@@ -180,6 +180,7 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
         # for hashing in util.obj2bytes
         self.identifier = (self.h5ds.file.filename, self.h5ds.name)
         self._array = None
+        self.ndim = 1  # matplotlib might expect this from an array
 
     def __array__(self, dtype=None):
         if self._array is None:

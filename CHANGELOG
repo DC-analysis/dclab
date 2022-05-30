@@ -1,3 +1,5 @@
+0.42.3
+ - docs: fix regression in builds due to new H5ScalarEvent
 0.42.2
  - fix: lazy-load scalar feature data for HDF5 data
  - fix: fix repr string of AncillaryFeature when identifier is None

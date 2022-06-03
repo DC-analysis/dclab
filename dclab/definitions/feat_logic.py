@@ -1,6 +1,7 @@
 from ..rtdc_dataset.feat_anc_core.ancillary_feature import AncillaryFeature
 
 from . import feat_const
+import numpy as np
 
 
 def check_feature_shape(name, data):
@@ -18,7 +19,9 @@ def check_feature_shape(name, data):
     ValueError
         If the data's shape does not match its scalar description
     """
-    if len(data.shape) == 1 and not scalar_feature_exists(name):
+    # For ragged data (contour like), additional condition has been added.
+    if len(data.shape) == 1 and not isinstance(data[0], np.ndarray) \
+            and not scalar_feature_exists(name):
         raise ValueError(f"Feature '{name}' is not a scalar feature, but "
                          "a 1D array was given for `data`!")
     elif len(data.shape) != 1 and scalar_feature_exists(name):

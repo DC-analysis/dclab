@@ -35,6 +35,7 @@ def test_bulk_contour():
     for ii in range(5, num + 5):
         cii = np.arange(2 * ii).reshape(2, ii)
         contour.append(cii)
+    print(len(contour))
     data = {"area_um": np.linspace(100.7, 110.9, num),
             "contour": contour}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",

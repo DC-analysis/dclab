@@ -66,8 +66,7 @@ def compute_ragged_plugin_feature(rtdc_ds):
     # Ragged data (i.e. list of arrays of different shapes) --> Ex.contours
     cnts = rtdc_ds["contour"]
     # Add dummy contour coordinates to the actual contours
-    # dummy = [np.vstack((c, np.ones((3, 2)))) for c in cnts]
-    dummy = [c for c in cnts]
+    dummy = [np.vstack((c, np.ones((3, 2)))) for c in cnts]
     ragged_feat = np.array(dummy, dtype=object)
     return {"ragged_feat": ragged_feat}
 
@@ -78,12 +77,11 @@ def example_plugin_info_ragged_data_feature():
         "method": compute_ragged_plugin_feature,
         "description": "This plugin will derive ragged feature from existing "
                        "contour data by simply adding some dummy coordinates",
-        "long description": "Ragged data or irregular data is nothing but a "
-                            "list of arrays of different shapes. For example, "
-                            "in contour feature, each contour of the cell has "
-                            "different number of coordinates. So we cannot "
-                            "save this feature as a regular matrix instead of "
-                            "array of objects",
+        "long description": "Ragged data or irregular data is a list of arrays "
+                            "of different shapes. In contour feature, each "
+                            "contour of the cell has different number of "
+                            "coordinates. So we cannot save this feature as a"
+                            "regular array",
         "feature names": ["ragged_feat"],
         "feature labels": ["Ragged Data"],
         "features required": ["contour"],
@@ -966,14 +964,14 @@ def test_pf_wrong_length_2():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_scalar_plugin_data_with_shape_info():
+def test_pf_store_scalar_plugin_data_with_shape_in_info():
     """Test storage of scalar plugin feature attributes"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
-    with dclab.new_dataset(h5path) as ds:
-        circ_per_area = ds["circ"] / ds["area_um"]
     info = example_plugin_info_single_feature()
-    info["feature shapes"] = [circ_per_area.shape]
+    info["feature shapes"] = [(7,)]
     PlugInFeature("circ_per_area", info)
+    with dclab.new_dataset(h5path) as ds:
+        circ_per_area = ds["circ_per_area"]
     with RTDCWriter(h5path) as hw:
         hw.store_feature("circ_per_area", circ_per_area)
     with h5py.File(h5path, mode="r") as h5:
@@ -987,13 +985,13 @@ def test_pf_store_scalar_plugin_data_with_shape_info():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_scalar_plugin_data_without_shape_info():
+def test_pf_store_scalar_plugin_data_without_shape_in_info():
     """Test storage of scalar plugin feature attributes"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
-    with dclab.new_dataset(h5path) as ds:
-        circ_per_area = ds["circ"] / ds["area_um"]
     info = example_plugin_info_single_feature()
     PlugInFeature("circ_per_area", info)
+    with dclab.new_dataset(h5path) as ds:
+        circ_per_area = ds["circ_per_area"]
     with RTDCWriter(h5path) as hw:
         hw.store_feature("circ_per_area", circ_per_area)
     with h5py.File(h5path, mode="r") as h5:
@@ -1011,12 +1009,9 @@ def test_pf_store_ragged_plugin_data():
     """Test storage of ragged plugin feature"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_ragged_data_feature()
-    with dclab.new_dataset(h5path) as ds:
-        cnts = ds["contour"]
-        # Add dummy contour coordinates to the actual contours
-        dummy = [np.vstack((c, np.ones((3, 2)))) for c in cnts]
-        ragged_feat = np.array(dummy, dtype=object)
     PlugInFeature("ragged_feat", info)
+    with dclab.new_dataset(h5path) as ds:
+        ragged_feat = ds["ragged_feat"]
     with RTDCWriter(h5path) as hw:
         hw.store_feature("ragged_feat", ragged_feat)
     with h5py.File(h5path, mode="r") as h5:
@@ -1030,7 +1025,7 @@ def test_pf_store_ragged_plugin_data():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_image_plugin_data_with_shape():
+def test_pf_store_image_plugin_data_with_shape_in_info():
     """Test storage of image plugin feature attributes with shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_non_scalar_feature()
@@ -1038,7 +1033,7 @@ def test_pf_store_image_plugin_data_with_shape():
     info["feature shapes"] = [(80, 250)]
     PlugInFeature("image_gauss_filter", info)
     with dclab.new_dataset(h5path) as ds:
-        image_gauss_filter = gaussian_filter(ds["image"], sigma=(0, 1, 1))
+        image_gauss_filter = ds["image_gauss_filter"]
     with RTDCWriter(h5path) as hw:
         hw.store_feature("image_gauss_filter", image_gauss_filter)
     with h5py.File(h5path, mode="r") as h5:
@@ -1056,13 +1051,13 @@ def test_pf_store_image_plugin_data_with_shape():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_image_plugin_data_without_shape():
+def test_pf_store_image_plugin_data_without_shape_in_info():
     """Test storage of image plugin feature attributes without shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_non_scalar_feature()
     PlugInFeature("image_gauss_filter", info)
     with dclab.new_dataset(h5path) as ds:
-        image_gauss_filter = gaussian_filter(ds["image"], sigma=(0, 1, 1))
+        image_gauss_filter = ds["image_gauss_filter"]
     with RTDCWriter(h5path) as hw:
         hw.store_feature("image_gauss_filter", image_gauss_filter)
     with h5py.File(h5path, mode="r") as h5:
@@ -1080,7 +1075,7 @@ def test_pf_store_image_plugin_data_without_shape():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_mask_plugin_data_with_shape():
+def test_pf_store_mask_plugin_data_with_shape_in_info():
     """Test storage of mask plugin feature attributes with shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_mask_feature()
@@ -1088,7 +1083,7 @@ def test_pf_store_mask_plugin_data_with_shape():
     info["feature shapes"] = [(80, 250)]
     PlugInFeature("mask_other", info)
     with dclab.new_dataset(h5path) as ds:
-        mask_other = np.logical_not(ds["mask"])
+        mask_other = ds["mask_other"]
     with RTDCWriter(h5path) as hw:
         hw.store_feature("mask_other", mask_other)
     with h5py.File(h5path, mode="r") as h5:
@@ -1106,13 +1101,13 @@ def test_pf_store_mask_plugin_data_with_shape():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_pf_store_mask_plugin_data_without_shape():
+def test_pf_store_mask_plugin_data_without_shape_in_info():
     """Test storage of mask plugin feature attributes without shape info"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     info = example_plugin_info_mask_feature()
     PlugInFeature("mask_other", info)
     with dclab.new_dataset(h5path) as ds:
-        mask_other = np.logical_not(ds["mask"])
+        mask_other = ds["mask_other"]
     with RTDCWriter(h5path) as hw:
         hw.store_feature("mask_other", mask_other)
     with h5py.File(h5path, mode="r") as h5:
@@ -1136,7 +1131,7 @@ def test_pf_wrong_plugin_data_shape():
     info = example_plugin_info_non_scalar_feature()
     PlugInFeature("image_gauss_filter", info)
     with dclab.new_dataset(h5path) as ds:
-        image_gauss_filter = gaussian_filter(ds["image"], sigma=(0, 1, 1))
+        image_gauss_filter = ds["image_gauss_filter"]
         im_shape = image_gauss_filter.shape
         ext_image_gauss_filter = image_gauss_filter.reshape(1, *im_shape)
     with RTDCWriter(h5path) as hw:

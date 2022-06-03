@@ -26,7 +26,11 @@ def test_bulk_scalar():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         events = rtdc_data["events"]
         assert "area_um" in events.keys()
-        assert np.all(events["area_um"][:] == data["area_um"])
+        area_um = events['area_um']
+        assert area_um.ndim == 1
+        assert area_um.shape == (100,)
+        assert np.all(area_um[:] == data["area_um"])
+        assert b'CLASS' not in area_um.attrs.keys()
 
 
 def test_bulk_contour():
@@ -35,7 +39,6 @@ def test_bulk_contour():
     for ii in range(5, num + 5):
         cii = np.arange(2 * ii).reshape(2, ii)
         contour.append(cii)
-    print(len(contour))
     data = {"area_um": np.linspace(100.7, 110.9, num),
             "contour": contour}
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
@@ -47,8 +50,9 @@ def test_bulk_contour():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         events = rtdc_data["events"]
         assert "contour" in events.keys()
-        assert np.allclose(events["contour"]["6"], contour[6])
-        assert events["contour"]["1"].shape == (2, 6)
+        evt_contour = events['contour']
+        assert np.allclose(evt_contour["6"], contour[6])
+        assert evt_contour["1"].shape == (2, 6)
 
 
 def test_bulk_image():
@@ -66,9 +70,12 @@ def test_bulk_image():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         events = rtdc_data["events"]
         assert "image" in events.keys()
-        assert np.allclose(events["image"][6], image[6])
-        image = rtdc_data["events"]['image']
-        assert b'IMAGE' in image.attrs.get('CLASS')
+        evt_image = events['image']
+        assert evt_image.ndim == 3
+        assert evt_image.shape == (20, 90, 50)
+        assert np.allclose(evt_image[6], image[6])
+        assert b'CLASS' in evt_image.attrs.keys()
+        assert b'IMAGE' in evt_image.attrs.get('CLASS')
 
 
 def test_bulk_mask():
@@ -89,12 +96,13 @@ def test_bulk_mask():
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         events = rtdc_data["events"]
         assert "mask" in events.keys()
+        evt_mask = events['mask']
+        assert evt_mask.ndim == 3
+        assert evt_mask.shape == (7, 20, 10)
         # Masks are stored as uint8
-        assert np.allclose(events["mask"][6], mask[6]*255)
-        assert events["mask"].shape == (7, 20, 10)
-        assert events["mask"][1].shape == (20, 10)
-        mask = rtdc_data["events"]['mask']
-        assert b'IMAGE' in mask.attrs.get('CLASS')
+        assert np.allclose(evt_mask[6], mask[6]*255)
+        assert b'CLASS' in evt_mask.attrs.keys()
+        assert b'IMAGE' in evt_mask.attrs.get('CLASS')
 
 
 def test_bulk_logs():

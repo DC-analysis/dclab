@@ -77,9 +77,9 @@ def example_plugin_info_ragged_data_feature():
         "method": compute_ragged_plugin_feature,
         "description": "This plugin will derive ragged feature from existing "
                        "contour data by simply adding some dummy coordinates",
-        "long description": "Ragged data or irregular data is a list of arrays "
-                            "of different shapes. In contour feature, each "
-                            "contour of the cell has different number of "
+        "long description": "Ragged data or irregular data is a list of "
+                            "arrays of different shapes. In contour feature, "
+                            "each contour of the cell has different number of "
                             "coordinates. So we cannot save this feature as a"
                             "regular array",
         "feature names": ["ragged_feat"],

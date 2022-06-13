@@ -79,7 +79,7 @@ FEATURES_SCALAR = [
 # Add userdef features
 for _i in range(10):
     FEATURES_SCALAR.append(["userdef{}".format(_i),
-                            "User defined {}".format(_i)
+                            "User-defined {}".format(_i)
                             ])
 
 #: list of non-scalar features

@@ -49,7 +49,7 @@ class RTDCWriter:
             self.path = pathlib.Path(path_or_h5file)
             self.h5file = h5py.File(path_or_h5file,
                                     mode=("w" if mode == "reset" else "a"))
-        #: unfortunate necessity, as len(h5py.Group) can be really slow
+        #: unfortunate necessity, as `len(h5py.Group)` can be really slow
         self._group_sizes = {}
 
     def __enter__(self):
@@ -233,12 +233,12 @@ class RTDCWriter:
         self.write_text(group=log_group, name=name, lines=lines)
 
     def store_metadata(self, meta):
-        """Store RT-DC meradata
+        """Store RT-DC metadata
 
         Parameters
         ----------
         meta: dict-like
-            The meta data to store. Each key depicts a meta data section
+            The metadata to store. Each key depicts a metadata section
             name whose data is given as a dictionary, e.g.::
 
                 meta = {"imaging": {"exposure time": 20,
@@ -460,7 +460,7 @@ class RTDCWriter:
             parent group
         name: str
             name of the dataset containing the text
-        data: list of np.ndarray
+        data: list of np.ndarray or np.ndarray
             the data in a list
         """
         if isinstance(data, np.ndarray) and len(data.shape) == 2:

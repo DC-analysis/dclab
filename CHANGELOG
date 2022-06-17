@@ -1,4 +1,5 @@
 0.42.3
+ - enh: support hierarhcy feature dtype property for image and mask event
  - docs: fix regression in builds due to new H5ScalarEvent
 0.42.2
  - fix: lazy-load scalar feature data for HDF5 data

@@ -48,6 +48,10 @@ class ChildNDArray(ChildBase):
         return hp[self.feat][pidx]
 
     @property
+    def dtype(self):
+        return self.child.hparent[self.feat].dtype
+
+    @property
     def shape(self):
         hp = self.child.hparent
         return tuple([len(self)] + list(hp[self.feat][0].shape))

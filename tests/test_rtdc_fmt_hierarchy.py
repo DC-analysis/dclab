@@ -34,6 +34,14 @@ def test_config_calculation():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_dtype_mask_image():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    assert ds["mask"].dtype == bool
+    assert ds["image"].dtype == np.uint8
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hierarchy_shape_contour():
     ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
     assert ds["contour"].shape == (5, np.nan, 2)

@@ -153,6 +153,7 @@ class H5MaskEvent:
         # identifier required because "mask" is used for computation
         # of ancillary feature "contour".
         self.identifier = (self.h5dataset.file.filename, self.h5dataset.name)
+        self.dtype = np.dtype(bool)
 
     def __getitem__(self, idx):
         return np.asarray(self.h5dataset[idx], dtype=bool)

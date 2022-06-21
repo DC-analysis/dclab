@@ -265,7 +265,8 @@ class IntegrityChecker(object):
                         # which does not show up in the `compression`
                         # attribute of `obj`.
                         if (obj.nbytes > obj.id.get_storage_size()
-                                or obj.size < np.sum(obj.chunks)):
+                                or (obj.chunks
+                                    and (obj.size < np.sum(obj.chunks)))):
                             # The data are compressed (or the data size
                             # is smaller than the number of chunks in which
                             # case compression might result in larger sizes).

@@ -264,7 +264,7 @@ class Export(object):
             hw.store_metadata(meta)
             # write each feature individually
             for feat in features:
-                if filtarr is None:
+                if filtarr is None or np.all(filtarr):
                     # We do not have to filter and can be fast
                     hw.store_feature(feat=feat, data=self.rtdc_ds[feat])
                 else:

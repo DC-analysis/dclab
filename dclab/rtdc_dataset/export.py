@@ -264,9 +264,21 @@ class Export(object):
             hw.store_metadata(meta)
             # write each feature individually
             for feat in features:
-                if filtarr is None or np.all(filtarr):
+                if (filtarr is None or
+                        # This does not work for the .tdms file format
+                        # (and probably also not for DCOR).
+                        (np.all(filtarr) and self.rtdc_ds.format == "hdf5")):
                     # We do not have to filter and can be fast
-                    hw.store_feature(feat=feat, data=self.rtdc_ds[feat])
+                    if dfn.scalar_feature_exists(feat):
+                        shape = (1,)
+                    elif feat in ["image", "image_bg", "mask", "trace"]:
+                        # known shape
+                        shape = None
+                    else:
+                        shape = np.array(self.rtdc_ds[feat][0]).shape
+                    hw.store_feature(feat=feat,
+                                     data=self.rtdc_ds[feat],
+                                     shape=shape)
                 else:
                     # We have to filter and will be slower
                     store_filtered_feature(rtdc_writer=hw,

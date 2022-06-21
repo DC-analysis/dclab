@@ -46,6 +46,7 @@ setup(
     long_description=open('README.rst').read() if exists('README.rst') else '',
     install_requires=[
         "h5py>=3.0.0",
+        "hdf5plugin>=3.3.1",
         "numpy>=1.21",  # CVE-2021-33430
         "scipy>=1.8.0",  # deprecations in older versions
         ],

@@ -3,6 +3,8 @@ import argparse
 import pathlib
 import warnings
 
+import hdf5plugin
+
 from ..rtdc_dataset import fmt_tdms, new_dataset, RTDCWriter
 
 from . import common
@@ -35,6 +37,7 @@ def split(path_in=None, path_out=None, split_events=10000,
     [out_paths]: list of pathlib.Path
         List of generated files (only if `ret_out_paths` is specified)
     """
+    cmp_kw = hdf5plugin.Zstd(clevel=5)
     if path_in is None:
         parser = split_parser()
         args = parser.parse_args()
@@ -99,7 +102,7 @@ def split(path_in=None, path_out=None, split_events=10000,
     # Add the logs and update sample name
     for ii, pt in enumerate(paths_temp):
         meta = {"experiment": {"sample": f"{sample_name} {ii+1}/{num_files}"}}
-        with RTDCWriter(pt) as hw:
+        with RTDCWriter(pt, compression_kwargs=cmp_kw) as hw:
             for name in logs:
                 hw.store_log(name, logs[name])
             hw.store_metadata(meta)

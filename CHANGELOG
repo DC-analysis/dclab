@@ -1,3 +1,6 @@
+0.43.0
+ - feat: introduce Zstandard compression via hdf5plugin
+ - ref: deprecate "compression" keyword argument for HDF5 export
 0.42.3
  - enh: support hierarhcy feature dtype property for image and mask event
  - docs: fix regression in builds due to new H5ScalarEvent

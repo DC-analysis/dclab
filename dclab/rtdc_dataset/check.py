@@ -261,10 +261,18 @@ class IntegrityChecker(object):
                 for key in h5:
                     obj = h5[key]
                     if isinstance(obj, h5py.Dataset):
-                        if obj.compression is None:
-                            noco_i += 1
-                        else:
+                        # Since version 0.43.0, we use Zstandard compression
+                        # which does not show up in the `compression`
+                        # attribute of `obj`.
+                        if (obj.nbytes > obj.id.get_storage_size()
+                                or obj.size < np.sum(obj.chunks)):
+                            # The data are compressed (or the data size
+                            # is smaller than the number of chunks in which
+                            # case compression might result in larger sizes).
                             comp_i += 1
+                        else:
+                            # no compression
+                            noco_i += 1
                     elif isinstance(obj, h5py.Group):
                         coi, noi = iter_count_compression(obj)
                         comp_i += coi

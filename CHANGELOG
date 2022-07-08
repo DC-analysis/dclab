@@ -1,5 +1,6 @@
-0.43.0
+0.43.1
  - fix: script fem2rtdc.py did not work with latest openCV (#176)
+ - ref: added tests and cleaned up fem2rtdc.py
 0.43.0
  - feat: introduce Zstandard compression via hdf5plugin
  - enh: speed-up HDF5 data export if `filltarr` are all-True

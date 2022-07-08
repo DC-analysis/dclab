@@ -27,7 +27,6 @@ import numpy as np
 import dclab
 from dclab.features.contour import get_contour
 from dclab.features.volume import get_volume
-from dclab.rtdc_dataset import write_hdf5
 
 
 def features_from_2daxis_simulation(fem_cont_2daxis, pixel_size=0.34,
@@ -142,25 +141,25 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
     """
     path = pathlib.Path(path)
 
-    h5mapped = []
+    writers_mapped = []
     for ii in range(repetitions):
         pi = path.with_suffix(".map{}.rtdc".format(ii + 1))
         if pi.exists():
             pi.unlink()
-        h5mapped.append(write_hdf5.write(path_or_h5file=pi, mode="append"))
+        writers_mapped.append(dclab.RTDCWriter(pi))
 
     # Exact data from simulations
-    po = path.with_suffix(".orig.rtdc")
-    if po.exists():
-        po.unlink()
-    h5orig = write_hdf5.write(path_or_h5file=po, mode="append")
+    path_orig = path.with_suffix(".orig.rtdc")
+    if path_orig.exists():
+        path_orig.unlink()
+    writer_orig = dclab.RTDCWriter(path_orig)
 
     # Extract dataset from simulation contour
     with h5py.File(path, "r") as h5:
         # determine total size
         ntot = 0
         for dk in h5.keys():
-            for sk in h5[dk]:
+            for _ in h5[dk]:
                 ntot += 1
 
         # metadata
@@ -184,16 +183,16 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
             },
         }
 
-        for ii, wrt in enumerate(h5mapped):
+        for ii, wi in enumerate(writers_mapped):
             mi = copy.deepcopy(meta)
             mi["experiment"]["run index"] = ii + 1
             mi["experiment"]["sample"] = "Contour mapping {}".format(ii + 1)
-            write_hdf5.write(wrt, meta=mi, mode="append")
+            wi.store_metadata(mi)
 
         mo = copy.deepcopy(meta)
         mo["experiment"]["run index"] = 1
         mo["experiment"]["sample"] = "Simulation reference"
-        write_hdf5.write(h5orig, meta=mo, mode="append")
+        writer_orig.store_metadata(mo)
 
         dkeys = sorted(h5.keys(), key=lambda x: int(x))
         ss = 0
@@ -204,11 +203,11 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
                     ss / ntot * 100), end="\r")
                 sim = h5[dk][sk]
                 simsym = sim["coords"][:]
-                for jj, wrt in enumerate(h5mapped):
+                for jj, wi in enumerate(writers_mapped):
                     feats = features_from_2daxis_simulation(
                         simsym, pixel_size=pixel_size, seed=jj)
-                    write_hdf5.write(wrt, data=feats, mode="append",
-                                     compression="gzip")
+                    for feat in feats:
+                        wi.store_feature(feat, feats[feat])
 
                 feats_orig = {
                     "area_um": sim.attrs["area"],
@@ -216,11 +215,13 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
                     "volume": sim.attrs["volume"],
                     "emodulus": sim.parent.attrs["emodulus"] / 1000,
                 }
-                write_hdf5.write(h5orig, data=feats_orig, mode="append",
-                                 compression="gzip")
+                for feat in feats_orig:
+                    writer_orig.store_feature(feat, feats_orig[feat])
 
-        for ho in h5mapped + [h5orig]:
-            ho.close()
+        for wr in writers_mapped + [writer_orig]:
+            wr.rectify_metadata()
+            wr.version_brand()
+            wr.h5file.close()
 
 
 def test_features_from_2daxis_simulation():
@@ -235,6 +236,65 @@ def test_features_from_2daxis_simulation():
     assert np.allclose(feats['pos_x'], 43.4609033733562)
     assert np.allclose(feats['pos_y'], 13.717804459691251)
     assert np.allclose(feats['volume'], 125.581725903289)
+
+
+def test_generate_rtdc_from_simulation(tmp_path):
+    # create a test file
+    path = tmp_path / "input_file.hdf5"
+    with h5py.File(path, "w") as h5:
+        h5["0/0/coords"] = test_coords
+        h5.attrs.update({
+            'authors': 'Someone',
+            'channel_width': 20.0,
+            'channel_width_unit': 'um',
+            'commit_hash': '1233454',
+            'date': '2019-11-13',
+            'dimensionality': '2Daxis',
+            'flow_rate': 0.04,
+            'flow_rate_unit': 'uL/s',
+            'fluid_density': 1000.0,
+            'fluid_density_unit': 'kg m^-3',
+            'fluid_viscosity': 0.015,
+            'fluid_viscosity_unit': 'Pa s',
+            'identifier': 'LE-2D-FEM-19',
+            'method': 'FEM',
+            'model': 'linear elastic',
+            'publication': 'https://doi.org/10.1021/acsbiomaterials.6b00558',
+            'software': 'custom C++ code',
+            'solid_density': 1000.0,
+            'solid_density_unit': 'kg m^-3',
+            'summary': 'Test dataset'})
+        h5["0"].attrs["emodulus"] = 740.83203
+        h5["0"].attrs["emodulus_unit"] = "Pa"
+        h5["0/0"].attrs["area"] = 36.42331
+        h5["0/0"].attrs["area_unit"] = "um^2"
+        h5["0/0"].attrs["deformation"] = 0.108169
+        h5["0/0"].attrs["deformation_unit"] = ""
+        h5["0/0"].attrs["radius"] = 3.282
+        h5["0/0"].attrs["radius_unit"] = "um"
+        h5["0/0"].attrs["sphere_volume"] = 148.0827
+        h5["0/0"].attrs["sphere_volume_unit"] = "um^3"
+        h5["0/0"].attrs["volume"] = 147.95604
+        h5["0/0"].attrs["volume_unit"] = "um^3"
+        h5["0/0/coords"].attrs["FIELD_0"] = "x"
+        h5["0/0/coords"].attrs["FIELD_1"] = "y"
+        h5["0/0/coords"].attrs["coords_unit"] = "um"
+
+    feats1 = features_from_2daxis_simulation(
+        fem_cont_2daxis=np.copy(test_coords),
+        pixel_size=0.34,
+        shape=(80, 250),
+        seed=0)
+
+    generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34)
+    with h5py.File(path.with_suffix(".map1.rtdc")) as h51:
+        assert np.allclose(feats1['area_um'], h51["events/area_um"][0])
+        assert np.allclose(feats1['deform'], h51["events/deform"][0])
+        assert np.allclose(feats1['inert_ratio_cvx'],
+                           h51["events/inert_ratio_cvx"][0])
+        assert np.allclose(feats1['pos_x'], h51["events/pos_x"][0])
+        assert np.allclose(feats1['pos_y'], h51["events/pos_y"][0])
+        assert np.allclose(feats1['volume'], h51["events/volume"][0])
 
 
 #: The first contour from https://doi.org/10.6084/m9.figshare.12155064.v3

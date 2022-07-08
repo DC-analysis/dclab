@@ -34,3 +34,4 @@ jobs:
     - name: Test scripts with pytest
       run: |
         pytest scripts/*.py
+      shell: bash

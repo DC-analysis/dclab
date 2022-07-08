@@ -28,7 +28,6 @@ import dclab
 from dclab.features.contour import get_contour
 from dclab.features.volume import get_volume
 from dclab.rtdc_dataset import write_hdf5
-from dclab.polygon_filter import PolygonFilter
 
 
 def features_from_2daxis_simulation(fem_cont_2daxis, pixel_size=0.34,
@@ -70,10 +69,19 @@ def features_from_2daxis_simulation(fem_cont_2daxis, pixel_size=0.34,
     cont_sim[:, 1] += shape[1] // 2 - np.mean(cont_sim[:, 1]) / 2 + offy
     # put on grid
     mask = np.zeros(shape)
-    for x in np.arange(shape[0]):
-        for y in np.arange(shape[1]):
-            # mask[x, y] = cv2.pointPolygonTest(cont_sim, (x, y), False) >= 0
-            mask[x, y] = PolygonFilter.point_in_poly((x, y), cont_sim)
+    xmin = int(np.floor(np.min(cont_sim[:, 0])))
+    xmax = int(np.ceil(np.max(cont_sim[:, 0])))
+    ymin = int(np.floor(np.min(cont_sim[:, 1])))
+    ymax = int(np.ceil(np.max(cont_sim[:, 1])))
+
+    xarr = np.arange(xmin, xmax)
+    yarr = np.arange(ymin, ymax)
+    xm, ym = np.meshgrid(xarr, yarr, indexing="ij")
+    points = np.zeros((xm.size, 2), dtype=int)
+    points[:, 0] = xm.flatten()
+    points[:, 1] = ym.flatten()
+    pip = dclab.polygon_filter.points_in_poly(points, cont_sim)
+    mask[points[:, 0], points[:, 1]] = pip
 
     return features_from_mask(mask, pixel_size=pixel_size)
 

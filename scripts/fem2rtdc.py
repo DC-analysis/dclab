@@ -46,11 +46,13 @@ def features_from_2daxis_simulation(fem_cont_2daxis, pixel_size=0.34,
         Detector pixel size [um]
     shape: tuple of int
         Detector shape / ROI in pixels
-    seed: int
+    seed: int or None
         Seed for numpy.random which is used for the random
-        displacements.
+        displacements. You may set this to `None` and set the
+        seed yourself.
     """
-    np.random.seed(seed)
+    if seed is not None:
+        np.random.seed(seed)
     offx = np.random.uniform(0, 1)
     offy = np.random.uniform(0, 1)
     # make contour circular
@@ -162,6 +164,8 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
             for _ in h5[dk]:
                 ntot += 1
 
+        dkeys = sorted(h5.keys(), key=lambda x: int(x))
+
         # metadata
         meta = {
             "setup": {
@@ -183,32 +187,16 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
             },
         }
 
-        for ii, wi in enumerate(writers_mapped):
-            mi = copy.deepcopy(meta)
-            mi["experiment"]["run index"] = ii + 1
-            mi["experiment"]["sample"] = "Contour mapping {}".format(ii + 1)
-            wi.store_metadata(mi)
-
+        print("Converting original simulation data to .rtdc.")
+        # Write unperturbed original data
         mo = copy.deepcopy(meta)
         mo["experiment"]["run index"] = 1
         mo["experiment"]["sample"] = "Simulation reference"
         writer_orig.store_metadata(mo)
 
-        dkeys = sorted(h5.keys(), key=lambda x: int(x))
-        ss = 0
         for dk in dkeys:
             for sk in h5[dk]:
-                ss += 1
-                print("Converting simulation data: {:.1f}%".format(
-                    ss / ntot * 100), end="\r")
                 sim = h5[dk][sk]
-                simsym = sim["coords"][:]
-                for jj, wi in enumerate(writers_mapped):
-                    feats = features_from_2daxis_simulation(
-                        simsym, pixel_size=pixel_size, seed=jj)
-                    for feat in feats:
-                        wi.store_feature(feat, feats[feat])
-
                 feats_orig = {
                     "area_um": sim.attrs["area"],
                     "deform": sim.attrs["deformation"],
@@ -217,6 +205,29 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
                 }
                 for feat in feats_orig:
                     writer_orig.store_feature(feat, feats_orig[feat])
+
+        # Write randomly shifted data
+        for ii, wi in enumerate(writers_mapped):
+            mi = copy.deepcopy(meta)
+            mi["experiment"]["run index"] = ii + 1
+            mi["experiment"]["sample"] = "Contour mapping {}".format(ii + 1)
+            wi.store_metadata(mi)
+
+        ss = 0
+        for jj, wi in enumerate(writers_mapped):
+            np.random.seed(jj)
+            for dk in dkeys:
+                for sk in h5[dk]:
+                    ss += 1
+                    print(
+                        f"Creating mask-shifted data {jj+1}: "
+                        + f"{ss / ntot / repetitions * 100:.1f}%", end="\r")
+                    sim = h5[dk][sk]
+                    simsym = sim["coords"][:]
+                    feats = features_from_2daxis_simulation(
+                        simsym, pixel_size=pixel_size, seed=None)
+                    for feat in feats:
+                        wi.store_feature(feat, feats[feat])
 
         for wr in writers_mapped + [writer_orig]:
             wr.rectify_metadata()

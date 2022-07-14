@@ -264,12 +264,10 @@ class IntegrityChecker(object):
                         # Since version 0.43.0, we use Zstandard compression
                         # which does not show up in the `compression`
                         # attribute of `obj`.
-                        if (obj.nbytes > obj.id.get_storage_size()
-                                or (obj.chunks
-                                    and (obj.size < np.sum(obj.chunks)))):
-                            # The data are compressed (or the data size
-                            # is smaller than the number of chunks in which
-                            # case compression might result in larger sizes).
+                        create_plist = obj.id.get_create_plist()
+                        filter_args = create_plist.get_filter_by_id(32015)
+                        if filter_args is not None and filter_args[1][0] >= 5:
+                            # data are compressed with at least level 5
                             comp_i += 1
                         else:
                             # no compression

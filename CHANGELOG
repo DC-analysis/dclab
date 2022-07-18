@@ -3,6 +3,7 @@
  - fix: properly implement random pixel offsets in fem2rtdc.py and
    and pixelation_correction.py (#178)
  - enh: improved test for compression (require Zstd with level >= 5)
+ - enh: added `close` method for `RTDCWriter`
  - ref: added tests and cleaned up fem2rtdc.py
 0.43.0
  - feat: introduce Zstandard compression via hdf5plugin

@@ -88,8 +88,12 @@ class RTDCWriter:
             raise
         finally:
             # This is guaranteed to run if any exception is raised.
-            if self.owns_path:
-                self.h5file.close()
+            self.close()
+
+    def close(self):
+        """Close the underlying HDF5 file if a path was given during init"""
+        if self.owns_path:
+            self.h5file.close()
 
     def rectify_metadata(self):
         """Autocomplete the metadta of the RTDC-measurement

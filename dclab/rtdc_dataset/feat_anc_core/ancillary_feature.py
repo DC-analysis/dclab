@@ -218,8 +218,13 @@ class AncillaryFeature:
         if not isinstance(data_dict, dict):
             data_dict = {self.feature_name: data_dict}
         data_dict = AncillaryFeature.check_data_size(rtdc_ds, data_dict)
+        if self.feature_name not in data_dict:
+            raise KeyError(
+                f"I expected the feature '{self.feature_name}' to be a key "
+                + f"in the dictionary returned by {self}. But I found only "
+                + f"the following: {sorted(data_dict.keys())}")
         for key in data_dict:
-            dfn.check_feature_shape(self.feature_name, data_dict[key])
+            dfn.check_feature_shape(key, data_dict[key])
         return data_dict
 
     def hash(self, rtdc_ds):

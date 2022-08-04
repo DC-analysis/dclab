@@ -210,6 +210,22 @@ def test_pf_bad_plugin_feature_name():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_pf_bad_method_dict_issue_179():
+    """When the plugin method returns a dictionary with a missing key"""
+    info = example_plugin_info_single_feature()
+    info["method"] = \
+        lambda x: {"circulority_peras_areat": compute_single_plugin_feature(x)}
+    PlugInFeature("circ_per_area", info)
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with dclab.new_dataset(h5path) as ds:
+        assert "circ_per_area" in ds, "Wrong method but still correct name"
+        with pytest.raises(KeyError,
+                           match="I expected the feature 'circ_per_area' to "):
+            ds["circ_per_area"]
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_exists_in_hierarchy():
     """Test that RTDCHierarchy works with PlugInFeature"""
     info = example_plugin_info_single_feature()

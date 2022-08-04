@@ -1,3 +1,5 @@
+0.43.2
+ - enh: detect confusion in plugin feature names (#179)
 0.43.1
  - fix: script fem2rtdc.py did not work with latest openCV (#176)
  - fix: properly implement random pixel offsets in fem2rtdc.py and

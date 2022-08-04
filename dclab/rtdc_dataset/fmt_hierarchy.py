@@ -245,6 +245,8 @@ class RTDC_Hierarchy(RTDCBase):
         self.path = hparent.path
         self.title = hparent.title + "_child"
 
+        self._events = {}
+
         #: hierarchy parent
         self.hparent = hparent
 
@@ -262,16 +264,29 @@ class RTDC_Hierarchy(RTDCBase):
         return self.hparent.__contains__(key)
 
     def __getitem__(self, key):
-        # contour, image, and traces are added automatically
-        # to `self._events` in `self.apply_filter`.
+        """Return the feature data and cache them in self._events"""
         if key in self._events:
-            return self._events[key]
-        elif len(self.hparent[key].shape) > 1:
-            self._events[key] = ChildNDArray(self, key)
-            return self._events[key]
+            data = self._events[key]
+        elif key in self.hparent:
+            if len(self.hparent[key].shape) > 1:
+                # non-scalar feature
+                data = ChildNDArray(self, key)
+            else:
+                # scalar feature
+                item = self.hparent[key]
+                data = item[self.hparent.filter.all]
+            if key in self.hparent.features_innate:
+                # Only cache features that will not change. Some features,
+                # such as emodulus, might change.
+                self._events[key] = data
         else:
-            item = self.hparent[key]
-            return item[self.hparent.filter.all]
+            raise KeyError(
+                f"The dataset {self} does not contain the feature '{key}'!"
+                + "If you are attempting to access an ancillary feature "
+                + "(e.g. emodulus), please make sure that the feature "
+                + f"data are computed for {self.get_root_parent()} (the"
+                + "root parent of this hierarchy child).")
+        return data
 
     def __len__(self):
         return np.sum(self.hparent.filter.all)
@@ -352,7 +367,7 @@ class RTDC_Hierarchy(RTDCBase):
         self.hparent.apply_filter(*args, **kwargs)
         # update event index
         event_count = np.sum(self.hparent.filter.all)
-        self._events = {}
+        self._events.clear()
         self._events["index"] = np.arange(1, event_count + 1)
         # set non-scalar column data
         for feat in ["image", "image_bg", "mask"]:
@@ -372,6 +387,13 @@ class RTDC_Hierarchy(RTDCBase):
         # create a new filter if the parent changed
         self._check_parent_filter()
         super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
+
+    def get_root_parent(self):
+        """Return the root parent of this dataset"""
+        if isinstance(self.hparent, RTDC_Hierarchy):
+            return self.hparent.get_root_parent()
+        else:
+            return self.hparent
 
 
 def map_indices_child2parent(child, child_indices):

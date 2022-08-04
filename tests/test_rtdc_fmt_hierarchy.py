@@ -32,6 +32,29 @@ def test_config_calculation():
     assert ch.config["calculation"]["emodulus temperature"] == 24.0
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
+def test_config_calculation_does_not_work_in_child_issue_92():
+    """As long as #92 is alive, this test should pass."""
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    ds = new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ch = new_dataset(ds)
+    ch.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "CellCarrier",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity": 0.5
+                                }
+    assert "emodulus" not in ch
+    with pytest.raises(
+            KeyError,
+            match="If you are attempting to access an ancillary feature"):
+        ch["emodulus"]
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dtype_mask_image():

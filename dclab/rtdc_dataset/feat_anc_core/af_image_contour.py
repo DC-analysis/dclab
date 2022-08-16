@@ -1,4 +1,3 @@
-
 from ... import features
 from .ancillary_feature import AncillaryFeature
 
@@ -14,6 +13,15 @@ def compute_bright(mm):
                                            ret_data="avg,sd",
                                            )
     return {"bright_avg": bavg, "bright_sd": bsd}
+
+
+def compute_bright_bc(mm):
+    bavg, bsd = features.bright_bc.get_bright_bc(mask=mm["mask"],
+                                                 image=mm["image"],
+                                                 image_bg=mm["image_bg"],
+                                                 ret_data="avg,sd",
+                                                 )
+    return {"bright_bc_avg": bavg, "bright_bc_sd": bsd}
 
 
 def compute_inert_ratio_cvx(mm):
@@ -53,6 +61,14 @@ def register():
     AncillaryFeature(feature_name="bright_sd",
                      method=compute_bright,
                      req_features=["image", "mask"])
+
+    AncillaryFeature(feature_name="bright_bc_avg",
+                     method=compute_bright_bc,
+                     req_features=["image", "image_bg", "mask"])
+
+    AncillaryFeature(feature_name="bright_bc_sd",
+                     method=compute_bright_bc,
+                     req_features=["image", "image_bg", "mask"])
 
     AncillaryFeature(feature_name="inert_ratio_cvx",
                      method=compute_inert_ratio_cvx,

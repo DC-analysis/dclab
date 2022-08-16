@@ -1,4 +1,5 @@
-0.43.2
+0.44.0
+ - feat: introduce background-corrected brightness features
  - enh: detect confusion in plugin feature names (#179)
  - enh: cache innate feature data for hierarchy children
  - enh: raise more verbose error message when the user tries to access

@@ -11,8 +11,10 @@ FEATURES_SCALAR = [
     # area_um is the convex area per definition
     ["area_um", "Area [µm²]"],
     ["aspect", "Aspect ratio of bounding box"],
-    ["bright_avg", "Brightness average within contour [a.u.]"],
-    ["bright_sd", "Brightness SD within contour [a.u.]"],
+    ["bright_avg", "Brightness average [a.u.]"],
+    ["bright_sd", "Brightness SD [a.u.]"],
+    ["bright_bc_avg", "Brightness average (bg-corrected) [a.u.]"],
+    ["bright_bc_sd", "Brightness SD (bg-corrected) [a.u.]"],
     ["circ", "Circularity"],
     # deform is computed from the convex contour
     ["deform", "Deformation"],

@@ -24,6 +24,14 @@ def compute_bright_bc(mm):
     return {"bright_bc_avg": bavg, "bright_bc_sd": bsd}
 
 
+def compute_bright_perc(mm):
+    p10, p90 = features.bright_perc.get_bright_perc(mask=mm["mask"],
+                                                    image=mm["image"],
+                                                    image_bg=mm["image_bg"],
+                                                    )
+    return {"bright_perc_10": p10, "bright_perc_90": p90}
+
+
 def compute_inert_ratio_cvx(mm):
     return features.inert_ratio.get_inert_ratio_cvx(cont=mm["contour"])
 
@@ -68,6 +76,14 @@ def register():
 
     AncillaryFeature(feature_name="bright_bc_sd",
                      method=compute_bright_bc,
+                     req_features=["image", "image_bg", "mask"])
+
+    AncillaryFeature(feature_name="bright_perc_10",
+                     method=compute_bright_perc,
+                     req_features=["image", "image_bg", "mask"])
+
+    AncillaryFeature(feature_name="bright_perc_90",
+                     method=compute_bright_perc,
                      req_features=["image", "image_bg", "mask"])
 
     AncillaryFeature(feature_name="inert_ratio_cvx",

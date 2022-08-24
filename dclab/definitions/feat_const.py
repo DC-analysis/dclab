@@ -11,10 +11,13 @@ FEATURES_SCALAR = [
     # area_um is the convex area per definition
     ["area_um", "Area [µm²]"],
     ["aspect", "Aspect ratio of bounding box"],
+    # Brightness values are computed only for pixels inside the mask
     ["bright_avg", "Brightness average [a.u.]"],
     ["bright_sd", "Brightness SD [a.u.]"],
-    ["bright_bc_avg", "Brightness average (bg-corrected) [a.u.]"],
-    ["bright_bc_sd", "Brightness SD (bg-corrected) [a.u.]"],
+    ["bright_bc_avg", "Brightness average (bgc) [a.u.]"],
+    ["bright_bc_sd", "Brightness SD (bgc) [a.u.]"],
+    ["bright_perc_10", "10th Percentile of brightness (bgc)"],
+    ["bright_perc_90", "90th Percentile of brightness (bgc)"],
     ["circ", "Circularity"],
     # deform is computed from the convex contour
     ["deform", "Deformation"],

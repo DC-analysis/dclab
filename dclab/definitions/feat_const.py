@@ -51,9 +51,9 @@ FEATURES_SCALAR = [
     ["frame", "Video frame number"],
     ["g_force", "Gravitational force in multiples of g"],
     # index starts with 1
-    ["index", "Event index (Dataset)"],
+    ["index", "Index (Dataset)"],
     # index_online may have missing values (#71)
-    ["index_online", "Event index (Online)"],
+    ["index_online", "Index (Online)"],
     # The inertia ratios of the event contours are defined by the
     # central second order moments of area (sqrt(m20/m02).
     ["inert_ratio_cvx", "Inertia ratio of convex contour"],
@@ -63,7 +63,7 @@ FEATURES_SCALAR = [
     # membership of individual events based on the `ml_score_???`
     # features.
     ["ml_class", "Most probable ML class"],
-    ["nevents", "Total number of events in the same image"],
+    ["nevents", "Number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
     # pos_x and pos_y are computed from the contour moments
@@ -74,8 +74,32 @@ FEATURES_SCALAR = [
     ["size_y", "Bounding box size y [µm]"],
     ["temp", "Chip temperature [°C]"],
     ["temp_amb", "Ambient temperature [°C]"],
+    # Haralick texture features can be computed using the mahotas package
+    # from the background-corrected and masked image
+    ["tex_asm_avg", "Texture angular second moment (avg)"],  # H1
+    ["tex_asm_ptp", "Texture angular second moment (ptp)"],  # H1
+    ["tex_con_avg", "Texture contrast (avg)"],  # H2
+    ["tex_con_ptp", "Texture contrast (ptp)"],  # H2
+    ["tex_cor_avg", "Texture correlation (avg)"],  # H3
+    ["tex_cor_ptp", "Texture correlation (ptp)"],  # H3
+    ["tex_den_avg", "Texture difference entropy (avg)"],  # 11
+    ["tex_den_ptp", "Texture difference entropy (ptp)"],  # 11
+    ["tex_ent_avg", "Texture entropy (avg)"],  # H9
+    ["tex_ent_ptp", "Texture entropy (ptp)"],  # H9
+    ["tex_f12_avg", "Texture First measure of correlation (avg)"],  # 12
+    ["tex_f12_ptp", "Texture First measure of correlation (ptp)"],  # 12
+    ["tex_f13_avg", "Texture Second measure of correlation (avg)"],  # 13
+    ["tex_f13_ptp", "Texture Second measure of correlation (ptp)"],  # 13
+    ["tex_idm_avg", "Texture inverse difference moment (avg)"],  # H5
+    ["tex_idm_ptp", "Texture inverse difference moment (ptp)"],  # H5
+    ["tex_sen_avg", "Texture sum entropy (avg)"],  # H8
+    ["tex_sen_ptp", "Texture sum entropy (ptp)"],  # H8
+    ["tex_sva_avg", "Texture sum variance (avg)"],  # H7
+    ["tex_sva_ptp", "Texture sum variance (ptp)"],  # H7
+    ["tex_var_avg", "Texture variance (avg)"],  # H4
+    ["tex_var_ptp", "Texture variance (ptp)"],  # H4
     ["tilt", "Absolute tilt of raw contour"],
-    ["time", "Event time [s]"],
+    ["time", "Time [s]"],
     # Volume is computed from the raw contour (i.e. with exclusions).
     # Fun fact: If we had decided to compute it from the convex contour,
     # then we would have close to none pixelation effects ¯\_(ツ)_/¯.

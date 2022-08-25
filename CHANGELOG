@@ -1,5 +1,7 @@
 0.45.0
  - feat: introduce 10th and 90th percentile brightness features
+ - enh: added definitions for the Haralick texture features
+   (computed using the mahotas package from bg-corrected event mask)
 0.44.0
  - feat: introduce background-corrected brightness features
  - enh: detect confusion in plugin feature names (#179)

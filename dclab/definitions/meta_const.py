@@ -115,7 +115,11 @@ CFG_METADATA = {
         ["no absdiff", fbool, "Do not use OpenCV 'absdiff' for bg-correction"],
     ],
     # All online-filter-related keywords (box filters, soft limit, and
-    # polygons are handled in `meta_logic`)
+    # polygons are handled in `meta_logic`).
+    # Note that "soft limit" means that the event is still included in
+    # the dataset, but is not counted for "target event count". On the
+    # other hand, "hard limit" means that only those events that are
+    # within that filter are written to the dataset.
     "online_filter": [
         # "target*" is only set if measurement is stopped automatically.
         # "target*" is not necessarily reached (e.g. user aborted).

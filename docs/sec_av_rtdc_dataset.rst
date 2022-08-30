@@ -85,7 +85,7 @@ Filters are used to mask e.g. debris or doublets from a dataset.
 
     # The boolean array `ds.filter.all` represents the applied filter
     # and can be used for indexing.
-    In [9]: ds["deform"].mean(), ds["deform"][ds.filter.all].mean()
+    In [9]: ds["deform"][:].mean(), ds["deform"][ds.filter.all].mean()
 
 Note that ``ds.apply_filter()`` must be called, otherwise
 ``ds.filter.all`` will not be updated.
@@ -152,7 +152,7 @@ Here are a few useful functionalities for scripting with dclab.
     In [18]: "image" in ds
 
     # accessing a feature and computing its mean
-    In [19]: ds["area_um"].mean()
+    In [19]: ds["area_um"][:].mean()
 
     # accessing the measurement configuration
     In [20]: ds.config.keys()
@@ -237,5 +237,5 @@ Note that data exported as HDF5 files can be loaded with dclab
 
     In [11]: ds2 = dclab.new_dataset("export_example.rtdc")
 
-    In [12]: ds2["deform"].mean()
+    In [12]: ds2["deform"][:].mean()
 

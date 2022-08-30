@@ -46,7 +46,7 @@ def test_basic():
     assert len(aler) == 16
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
-    assert "Compression: Partial (1 of 25)" in info
+    assert "Compression: None" in info
 
 
 @pytest.mark.filterwarnings(

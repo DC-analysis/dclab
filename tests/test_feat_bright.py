@@ -77,11 +77,3 @@ def test_simple_bright():
             avg, get_bright(mask=mask, image=image, ret_data="avg"))
         assert np.allclose(
             std, get_bright(mask=mask, image=image, ret_data="sd"))
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

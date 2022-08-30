@@ -312,7 +312,7 @@ def test_no_suffix():
     path2 = path + ".wrong_suffix"
     os.rename(path, path2)
     ds = new_dataset(path2)
-    assert(len(ds) == 8)
+    assert (len(ds) == 8)
 
 
 @pytest.mark.filterwarnings(

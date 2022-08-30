@@ -3,6 +3,7 @@ import argparse
 import time
 import warnings
 
+import hdf5plugin
 import numpy as np
 
 from ..rtdc_dataset import new_dataset, RTDCWriter
@@ -17,6 +18,7 @@ class FeatureSetNotIdenticalJoinWarning(UserWarning):
 
 def join(path_out=None, paths_in=None, metadata=None):
     """Join multiple RT-DC measurements into a single .rtdc file"""
+    cmp_kw = hdf5plugin.Zstd(clevel=5)
     if metadata is None:
         metadata = {"experiment": {"run index": 1}}
     if path_out is None or paths_in is None:
@@ -105,11 +107,11 @@ def join(path_out=None, paths_in=None, metadata=None):
                             features=features,
                             filtered=False,
                             override=True,
-                            compression="gzip")
+                            compression_kwargs=cmp_kw)
         if w:
             logs["dclab-join-warnings-#1"] = common.assemble_warnings(w)
 
-    with RTDCWriter(path_temp) as hw:
+    with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
         ii = 1
         # Append data from other files
         for pi, ti in zip(sorted_paths[1:], toffsets[1:]):

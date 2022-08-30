@@ -12,7 +12,18 @@ As an argument, you should pass a FEM simulation results HDF5 file
 for obtaining a volume-deformation look-up table and for visualizing
 pixelation effects using in-silico data (run fem2rtdc.py first).
 
-Please also see dclab issue #70 for a more broader view on things.
+Please also see dclab issue #70 for a broader view on things.
+
+Notes
+-----
+
+I added two example output .png files to this directory:
+
+ - pixelation_correction_2020.png: This is the original output file from
+   when this script was first implemented.
+ - pixelation_correction_2022.png: This is a revised version from 2022
+   which properly implements random offsets in the disk's mask images
+   (see dclab issue #178).
 """
 import argparse
 import os
@@ -89,7 +100,7 @@ def create_multiexp_model(n=5, x=None, x0=None, y=None, decaycoeffs=None,
     return mod, params
 
 
-def disk_image(area_um, seed=None):
+def disk_image(area_um, random_displacement=True, seed=None):
     """Compute pixelated disk image for a given event area
 
     The disk is mapped on a grid. A pixel is assumed to be
@@ -100,9 +111,14 @@ def disk_image(area_um, seed=None):
     ----------
     area_um: float
         Accurate area [µm²] of the event
+    random_displacement: bool
+        If set to True, randomly displace the center of the
+        disk by up to 1 px in x and y. If set to False, the center of
+        the disk is at the center between two pixels.
     seed: int or None
         Random seed to use when moving the disk in the x-y-plane
-        before performing the mapping onto the grid.
+        before performing the mapping onto the grid. Set to None if
+        you have to set the seed someplace else.
 
     Returns
     -------
@@ -121,13 +137,14 @@ def disk_image(area_um, seed=None):
     x = np.arange(size)
     xm, ym = np.meshgrid(x, x, indexing="ij")
 
-    if seed is None:
+    if not random_displacement:
         # centered between pixels
         offx = 0.5
         offy = 0.5
     else:
         # random offsets
-        np.random.seed(seed)
+        if seed is not None:
+            np.random.seed(seed)
         offx = np.random.uniform(0, 1)
         offy = np.random.uniform(0, 1)
     xm = xm - center + offx
@@ -314,7 +331,7 @@ def plot_and_fit_disk_data(ax1, ax2, ax3, ax4):
     We are only investigating discs/spheres here, because Herold
     already showed that using an ellipse does not really change
     things. In addition, we can overlay the disk plot with in-silico
-    data from the FEM dataset (see `plot_numerical_data`.
+    data from the FEM dataset (see `plot_numerical_data`).
 
     Parameters
     ----------
@@ -337,7 +354,7 @@ def plot_and_fit_disk_data(ax1, ax2, ax3, ax4):
       coincide with the fit here).
     """
     # sanity check (circle center positioned at pixel corner)
-    assert disk_image(np.pi*(PIXEL_SIZE*2)**2, None).sum() == 12
+    assert disk_image(np.pi*(PIXEL_SIZE*2)**2, False).sum() == 12
 
     N = 10000
     R = 5
@@ -353,10 +370,11 @@ def plot_and_fit_disk_data(ax1, ax2, ax3, ax4):
         true_deform = np.zeros(N*R, dtype=float)
         true_volume = np.zeros(N*R, dtype=float)
 
-        for ii, ari in enumerate(np.linspace(10, 1250, N)):
-            for rr in np.arange(R):
+        for rr in np.arange(R):
+            np.random.seed(R)
+            for ii, ari in enumerate(np.linspace(10, 1250, N)):
                 # Shape-In values
-                mask = disk_image(ari, seed=rr)
+                mask = disk_image(ari)
                 feats = features_from_mask(mask, pixel_size=PIXEL_SIZE)
                 area_um[rr + ii*R] = feats["area_um"]
                 deform[rr + ii*R] = feats["deform"]
@@ -615,5 +633,5 @@ if __name__ == "__main__":
         ax.set_yscale("log")
 
     plt.tight_layout()
-    plt.savefig("pixelation_correction_{}.png".format(PIXEL_SIZE), dpi=150)
+    plt.savefig("pixelation_correction_gen_{}.png".format(PIXEL_SIZE), dpi=150)
     plt.show()

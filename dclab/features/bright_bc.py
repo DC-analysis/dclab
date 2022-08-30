@@ -1,15 +1,16 @@
 """
 Computation of mean and standard deviation of grayscale values inside the
-RT-DC event image mask.
+RT-DC event image mask with background-correction taken into account.
 """
 import numpy as np
 
 
-def get_bright(mask, image, ret_data="avg,sd"):
-    """Compute avg and/or std of the event brightness
+def get_bright_bc(mask, image, image_bg, ret_data="avg,sd"):
+    """Compute avg and/or std of the background-corrected event brightness
 
-    The event brightness is defined by the gray-scale values of the
-    image data within the event mask area.
+    The background-corrected event brightness is defined by the
+    gray-scale values of the background-corrected image data
+    within the event mask area.
 
     Parameters
     ----------
@@ -18,6 +19,8 @@ def get_bright(mask, image, ret_data="avg,sd"):
     image: ndarray or list of ndarrays of shape (M,N)
         A 2D array that holds the image in form of grayscale values
         of an event.
+    image_bg: ndarray or list of ndarrays of shape (M,N)
+        A 2D array that holds the background image for the same event.
     ret_data: str
         A comma-separated list of metrices to compute
         - "avg": compute the average
@@ -40,13 +43,14 @@ def get_bright(mask, image, ret_data="avg,sd"):
 
     if isinstance(mask, np.ndarray) and len(mask.shape) == 2:
         # We have a single image
+        image_bg = [image_bg]
         image = [image]
         mask = [mask]
         ret_list = False
     else:
         ret_list = True
 
-    length = min(len(mask), len(image))
+    length = min(len(mask), len(image), len(image_bg))
 
     # Results are stored in a separate array initialized with nans
     if ret_avg:
@@ -55,7 +59,8 @@ def get_bright(mask, image, ret_data="avg,sd"):
         std = np.zeros(length, dtype=float) * np.nan
 
     for ii in range(length):
-        imgi = image[ii]
+        # cast to integer before subtraction
+        imgi = np.array(image[ii], dtype=int) - image_bg[ii]
         mski = mask[ii]
         # Assign results
         if ret_avg:

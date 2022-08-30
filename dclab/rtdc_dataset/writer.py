@@ -3,6 +3,7 @@ import pathlib
 import warnings
 
 import h5py
+import hdf5plugin
 import numpy as np
 
 from .. import definitions as dfn
@@ -15,7 +16,8 @@ CHUNK_SIZE = 100
 
 
 class RTDCWriter:
-    def __init__(self, path_or_h5file, mode="append", compression="gzip"):
+    def __init__(self, path_or_h5file, mode="append", compression_kwargs=None,
+                 compression="deprecated"):
         """RT-DC data writer classe
 
         Parameters
@@ -29,14 +31,34 @@ class RTDCWriter:
               - "replace": replace existing h5py Datasets with new features
                 (used for ancillary feature storage)
               - "reset": do not keep any previous data
+        compression_kwargs: dict
+            Dictionary with the keys "compression" and "compression_opts"
+            which are passed to :func:`h5py.H5File.create_dataset`. The
+            default is Zstandard compression with the lowest compression
+            level `hdf5plugin.Zstd(clevel=1)`.
         compression: str or None
             Compression method used for data storage;
             one of [None, "lzf", "gzip", "szip"].
+
+            .. deprecated:: 0.43.0
+                Use `compression_kwargs` instead.
         """
         if mode not in ["append", "replace", "reset"]:
             raise ValueError(f"Invalid mode '{mode}'!")
+        if compression != "deprecated":
+            warnings.warn("The `compression` kwarg is deprecated in favor of "
+                          "`compression_kwargs`!",
+                          DeprecationWarning)
+            if compression_kwargs is not None:
+                raise ValueError("You may not specify `compression` and "
+                                 "`compression_kwargs` at the same time!")
+            # be backwards-compatible
+            compression_kwargs = {"compression": compression}
+        if compression_kwargs is None:
+            compression_kwargs = hdf5plugin.Zstd(clevel=1)
+
         self.mode = mode
-        self.compression = compression
+        self.compression_kwargs = compression_kwargs
         if isinstance(path_or_h5file, h5py.Group):
             self.owns_path = False
             self.path = pathlib.Path(path_or_h5file.file.filename)
@@ -48,7 +70,7 @@ class RTDCWriter:
             self.path = pathlib.Path(path_or_h5file)
             self.h5file = h5py.File(path_or_h5file,
                                     mode=("w" if mode == "reset" else "a"))
-        #: unfortunate necessity, as len(h5py.Group) can be really slow
+        #: unfortunate necessity, as `len(h5py.Group)` can be really slow
         self._group_sizes = {}
 
     def __enter__(self):
@@ -65,8 +87,12 @@ class RTDCWriter:
             raise
         finally:
             # This is guaranteed to run if any exception is raised.
-            if self.owns_path:
-                self.h5file.close()
+            self.close()
+
+    def close(self):
+        """Close the underlying HDF5 file if a path was given during init"""
+        if self.owns_path:
+            self.h5file.close()
 
     def rectify_metadata(self):
         """Autocomplete the metadta of the RTDC-measurement
@@ -258,12 +284,12 @@ class RTDCWriter:
         self.write_text(group=log_group, name=name, lines=lines)
 
     def store_metadata(self, meta):
-        """Store RT-DC meradata
+        """Store RT-DC metadata
 
         Parameters
         ----------
         meta: dict-like
-            The meta data to store. Each key depicts a meta data section
+            The metadata to store. Each key depicts a metadata section
             name whose data is given as a dictionary, e.g.::
 
                 meta = {"imaging": {"exposure time": 20,
@@ -448,7 +474,7 @@ class RTDCWriter:
                 maxshape=maxshape,
                 chunks=chunks,
                 fletcher32=True,
-                compression=self.compression)
+                **self.compression_kwargs)
             offset = 0
         else:
             dset = group[name]
@@ -485,7 +511,7 @@ class RTDCWriter:
             parent group
         name: str
             name of the dataset containing the text
-        data: list of np.ndarray
+        data: list of np.ndarray or np.ndarray
             the data in a list
         """
         if isinstance(data, np.ndarray) and len(data.shape) == 2:
@@ -506,7 +532,7 @@ class RTDCWriter:
                                data=cc,
                                fletcher32=True,
                                chunks=cc.shape,
-                               compression=self.compression)
+                               **self.compression_kwargs)
             self._group_sizes[grp] += 1
 
     def write_text(self, group, name, lines):
@@ -558,7 +584,7 @@ class RTDCWriter:
                 maxshape=(None,),
                 chunks=True,
                 fletcher32=True,
-                compression=self.compression)
+                **self.compression_kwargs)
             line_offset = 0
         else:
             # TODO: test whether fixed length is long enough!

@@ -106,7 +106,7 @@ def obj2bytes(obj):
     elif hasattr(obj, "identifier"):
         return obj2bytes(obj.identifier)
     elif isinstance(obj, h5py.Dataset):
-        return obj2bytes(obj[0])
+        return obj2bytes((obj.file.filename, obj.name))
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))

@@ -3,6 +3,8 @@ import argparse
 import pathlib
 import warnings
 
+import hdf5plugin
+
 from ..rtdc_dataset import fmt_tdms, new_dataset, RTDCWriter
 
 from . import common
@@ -34,6 +36,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
     verbose: bool
         If `True`, print messages to stdout
     """
+    cmp_kw = hdf5plugin.Zstd(clevel=5)
     if path_tdms is None or path_rtdc is None:
         parser = tdms2rtdc_parser()
         args = parser.parse_args()
@@ -116,7 +119,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                                features=features,
                                filtered=True,
                                override=True,
-                               compression="gzip")
+                               compression_kwargs=cmp_kw)
 
                 # write logs
                 custom_dict = {}
@@ -135,7 +138,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                     logs["dclab-tdms2rtdc-warnings"] = \
                         common.assemble_warnings(w)
                 logs.update(ds.logs)
-                with RTDCWriter(path_temp) as hw:
+                with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
                     for name in logs:
                         hw.store_log(name, logs[name])
 

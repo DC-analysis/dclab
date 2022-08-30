@@ -4,6 +4,8 @@ import pathlib
 import shutil
 import warnings
 
+import hdf5plugin
+
 from ..rtdc_dataset import new_dataset, RTDCWriter
 from ..rtdc_dataset.check import IntegrityChecker
 
@@ -12,6 +14,7 @@ from . import common
 
 def compress(path_out=None, path_in=None, force=False, check_suffix=True):
     """Create a new dataset with all features compressed losslessly"""
+    cmp_kw = hdf5plugin.Zstd(clevel=5)
     if path_out is None or path_in is None:
         parser = compress_parser()
         args = parser.parse_args()
@@ -45,7 +48,7 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
             ds.export.hdf5(path=path_temp,
                            features=ds.features_innate,
                            filtered=False,
-                           compression="gzip",
+                           compression_kwargs=cmp_kw,
                            override=True)
             logs.update(ds.logs)
 
@@ -57,7 +60,7 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
             logs["dclab-compress-warnings"] = common.assemble_warnings(w)
 
     # Write log file
-    with RTDCWriter(path_temp) as hw:
+    with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
         for name in logs:
             hw.store_log(name, logs[name])
 

@@ -3,6 +3,8 @@ import argparse
 import pathlib
 import warnings
 
+import hdf5plugin
+
 from ..rtdc_dataset import new_dataset, RTDCWriter
 
 from . import common
@@ -10,6 +12,7 @@ from . import common
 
 def condense(path_out=None, path_in=None, check_suffix=True):
     """Create a new dataset with all (ancillary) scalar-only features"""
+    cmp_kw = hdf5plugin.Zstd(clevel=5)
     if path_out is None or path_in is None:
         parser = condense_parser()
         args = parser.parse_args()
@@ -33,7 +36,7 @@ def condense(path_out=None, path_in=None, check_suffix=True):
                            # We do not need filtering, because we are
                            # only interested in the scalar features.
                            filtered=False,
-                           compression="gzip",
+                           compression_kwargs=cmp_kw,
                            override=True)
             logs.update(ds.logs)
 
@@ -45,7 +48,7 @@ def condense(path_out=None, path_in=None, check_suffix=True):
             logs["dclab-condense-warnings"] = common.assemble_warnings(w)
 
     # Write log file
-    with RTDCWriter(path_temp) as hw:
+    with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
         for name in logs:
             hw.store_log(name, logs[name])
 

@@ -4,6 +4,7 @@ import pathlib
 import warnings
 
 import h5py
+import hdf5plugin
 
 try:
     import imageio
@@ -159,7 +160,8 @@ class Export(object):
                            )
 
     def hdf5(self, path, features=None, filtered=True, override=False,
-             compression="gzip", skip_checks=False):
+             compression_kwargs=None, compression="deprecated",
+             skip_checks=False):
         """Export the data of the current instance to an HDF5 file
 
         Parameters
@@ -178,12 +180,31 @@ class Export(object):
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
+        compression_kwargs: dict
+            Dictionary with the keys "compression" and "compression_opts"
+            which are passed to :func:`h5py.H5File.create_dataset`. The
+            default is Zstandard compression with the lowest compression
+            level `hdf5plugin.Zstd(clevel=1)`.
         compression: str or None
-            Compression method for e.g. "contour", "image", and "trace" data
-            as well as logs; one of [None, "lzf", "gzip", "szip"].
+            Compression method used for data storage;
+            one of [None, "lzf", "gzip", "szip"].
+
+            .. deprecated:: 0.43.0
+                Use `compression_kwargs` instead.
         skip_checks: bool
             Disable checking whether all features have the same length.
         """
+        if compression != "deprecated":
+            warnings.warn("The `compression` kwarg is deprecated in favor of "
+                          "`compression_kwargs`!",
+                          DeprecationWarning)
+            if compression_kwargs is not None:
+                raise ValueError("You may not specify `compression` and "
+                                 "`compression_kwargs` at the same time!")
+            # be backwards-compatible
+            compression_kwargs = {"compression": compression}
+        if compression_kwargs is None:
+            compression_kwargs = hdf5plugin.Zstd(clevel=1)
         path = pathlib.Path(path)
         # Make sure that path ends with .rtdc
         if path.suffix not in [".rtdc", ".rtdc~"]:
@@ -236,14 +257,28 @@ class Export(object):
                     LimitingExportSizeWarning)
 
         # Perform actual export
-        with RTDCWriter(path, mode="append", compression=compression) as hw:
+        with RTDCWriter(path,
+                        mode="append",
+                        compression_kwargs=compression_kwargs) as hw:
             # write meta data
             hw.store_metadata(meta)
             # write each feature individually
             for feat in features:
-                if filtarr is None:
+                if (filtarr is None or
+                        # This does not work for the .tdms file format
+                        # (and probably also not for DCOR).
+                        (np.all(filtarr) and self.rtdc_ds.format == "hdf5")):
                     # We do not have to filter and can be fast
-                    hw.store_feature(feat=feat, data=self.rtdc_ds[feat])
+                    if dfn.scalar_feature_exists(feat):
+                        shape = (1,)
+                    elif feat in ["image", "image_bg", "mask", "trace"]:
+                        # known shape
+                        shape = None
+                    else:
+                        shape = np.array(self.rtdc_ds[feat][0]).shape
+                    hw.store_feature(feat=feat,
+                                     data=self.rtdc_ds[feat],
+                                     shape=shape)
                 else:
                     # We have to filter and will be slower
                     store_filtered_feature(rtdc_writer=hw,

@@ -2,6 +2,8 @@
 import argparse
 import pathlib
 
+import hdf5plugin
+
 from ..rtdc_dataset import new_dataset, RTDCWriter
 from .. import definitions as dfn
 
@@ -10,6 +12,7 @@ from . import common
 
 def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
     """Repack/recreate an .rtdc file, optionally stripping the logs"""
+    cmp_kw = hdf5plugin.Zstd(clevel=5)
     if path_in is None and path_out is None:
         parser = repack_parser()
         args = parser.parse_args()
@@ -24,7 +27,10 @@ def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
     path_in, path_out, path_temp = common.setup_task_paths(
         path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
-    with new_dataset(path_in) as ds, RTDCWriter(path_temp, mode="reset") as hw:
+    with new_dataset(path_in) as ds, \
+            RTDCWriter(path_temp,
+                       mode="reset",
+                       compression_kwargs=cmp_kw) as hw:
         # write metadata first (to avoid resetting software version)
         # only export configuration meta data (no analysis-related config)
         meta = {}

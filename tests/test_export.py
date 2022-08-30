@@ -237,7 +237,7 @@ def test_hdf5_filtered_full(dataset):
     with new_dataset(retrieve_data(dataset)) as ds0:
         num = 100 % len(ds0) + len(ds0)
         ds0.export.hdf5(path_in, features=ds0.features_innate)
-        with RTDCWriter(path_in, compression=None) as hw:
+        with RTDCWriter(path_in) as hw:
             for _ in range(num):
                 for feat in ds0.features_innate:
                     hw.store_feature(feat, ds0[feat])
@@ -246,19 +246,17 @@ def test_hdf5_filtered_full(dataset):
     path_out1 = tdir / "out1.rtdc"
     with dclab.new_dataset(path_in) as ds:
         assert len(ds) >= 100
-        ds.export.hdf5(path_out1, features=ds.features_innate, filtered=False,
-                       compression=None)
+        ds.export.hdf5(path_out1, features=ds.features_innate, filtered=False)
 
     # 2. via export filtered
     path_out2 = tdir / "out2.rtdc"
     with dclab.new_dataset(path_in) as ds:
-        ds.export.hdf5(path_out2, features=ds.features_innate, filtered=True,
-                       compression=None)
+        ds.export.hdf5(path_out2, features=ds.features_innate, filtered=True)
 
     # 3. via RTDC writer
     path_out3 = tdir / "out3.rtdc"
     with dclab.new_dataset(path_in) as ds:
-        with RTDCWriter(path_out3, compression=None) as hw:
+        with RTDCWriter(path_out3) as hw:
             config = copy.deepcopy(dict(ds.config))
             config.pop("filtering", None)
             config.pop("analysis", None)
@@ -269,7 +267,7 @@ def test_hdf5_filtered_full(dataset):
     # 4. via export filtered function
     path_out4 = tdir / "out4.rtdc"
     with dclab.new_dataset(path_in) as ds:
-        with RTDCWriter(path_out4, compression=None) as hw:
+        with RTDCWriter(path_out4) as hw:
             config = copy.deepcopy(dict(ds.config))
             config.pop("filtering", None)
             config.pop("analysis", None)

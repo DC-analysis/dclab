@@ -86,3 +86,4 @@ _version_save.py
 pip-wheel-metadata
 
 .idea
+.Rhistory

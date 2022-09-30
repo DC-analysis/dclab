@@ -51,6 +51,10 @@ def features_from_2daxis_simulation(fem_cont_2daxis, pixel_size=0.34,
         displacements. You may set this to `None` and set the
         seed yourself.
     """
+    # Subtract the mean in x direction; this is important for mapping
+    # out the mask from the contour (too large values are outside the image)
+    fem_cont_2daxis[0] -= np.mean(fem_cont_2daxis[0])
+    assert np.all(fem_cont_2daxis[1] >= 0), "2D contour data must be positive"
     if seed is not None:
         np.random.seed(seed)
     offx = np.random.uniform(0, 1)

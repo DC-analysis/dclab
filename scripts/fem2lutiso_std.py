@@ -16,7 +16,7 @@ are defined in the Python files named according to the LUT identifier
 in the "fem_hooks" subdirectory.
 
 Note that a matplotlib window will open when the isoelastics are
-created so you can verify that everything is in order. Just close
+created, so you can verify that everything is in order. Just close
 that window to proceed.
 
 An example HDF5 file can be found on figshare
@@ -37,6 +37,8 @@ import h5py
 import matplotlib.pylab as plt
 import numpy as np
 import scipy.interpolate as spint
+from scipy import ndimage
+from skimage import morphology
 
 
 def get_isoelastics(lut, meta, processing=True):
@@ -79,6 +81,30 @@ def get_isoelastics(lut, meta, processing=True):
 
     emod = spint.griddata((wlut[:, 0], wlut[:, 1]), wlut[:, 2],
                           (xm, ym), method="linear")
+
+    # Find points that should not be in that 2D `emod` array.
+    # (bad interpolation from convex vs raw enclosing polygon)
+    mask = np.zeros_like(emod, dtype=bool)
+    for xi, yi, _ in wlut:
+        dx = np.abs(x-xi)
+        dy = np.abs(y-yi)
+        xidx = np.argmin(dx)
+        yidx = np.argmin(dy)
+        if dx[xidx] + dy[yidx] < 1:
+            mask[xidx, yidx] = True
+    # Apply a closing disk filter
+    # Zero-pad the mask beforehand (otherwise disk filter has edge-problems)
+    ds = 20  # disk closing size
+    mask_padded = np.pad(mask, ((ds, ds), (ds, ds)))
+    mask_padded_disk = morphology.binary_closing(mask_padded,
+                                                 footprint=morphology.disk(ds))
+    # Fill any holes (in case of sparse simulations)
+    ndimage.binary_fill_holes(mask_padded_disk, output=mask_padded_disk)
+    mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
+
+    # Remove the bad points from `emod`
+    #emod[~mask_disk] = np.nan
+    mask_disk = ~np.isnan(emod)
 
     # Determine the levels via a line plot through the
     # given LUT.
@@ -131,15 +157,19 @@ def get_isoelastics(lut, meta, processing=True):
         if phook is not None:
             contours = phook(contours)
 
-    plt.figure(figsize=(10, 5))
-    ax1 = plt.subplot(121)
+    plt.figure(figsize=(13, 5))
+    ax0 = plt.subplot(131, title="simulation density and mask generation")
+    ax0.imshow(1.*mask + mask_disk)
+
+    ax1 = plt.subplot(132, title="isoelastics interpolation on grid")
     ax1.imshow(emod)
     for cont in contours_px:
         ax1.plot(cont[:, 1], cont[:, 0], "x")
 
-    ax2 = plt.subplot(122)
+    ax2 = plt.subplot(133, title="extracted isoelastics")
     for cont in contours:
         ax2.plot(cont[:, 0], cont[:, 1], "-")
+    ax2.set_ylim(0, 0.2)
 
     plt.tight_layout()
     plt.show()

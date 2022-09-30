@@ -20,7 +20,7 @@ created, so you can verify that everything is in order. Just close
 that window to proceed.
 
 An example HDF5 file can be found on figshare
-(LE-2D-FEM-19, https://doi.org/10.6084/m9.figshare.12155064.v3).
+(LE-2D-FEM-19, https://doi.org/10.6084/m9.figshare.12155064.v4).
 """
 import argparse
 import copy
@@ -37,8 +37,127 @@ import h5py
 import matplotlib.pylab as plt
 import numpy as np
 import scipy.interpolate as spint
-from scipy import ndimage
+from scipy import interpolate, ndimage
 from skimage import morphology
+
+
+NORM = {
+    "area_um": [25, 290],
+    "deform": [0, 0.2],
+}
+
+
+def normalize_lut(lut, featx="area_um", featy="deform"):
+    sizex = int(250 * np.ptp(lut[:, 0] / (np.ptp(NORM[featx]))))
+    sizey = int(250 * np.ptp(lut[:, 1] / (np.ptp(NORM[featy]))))
+    wlut = np.array(lut, copy=True)
+    xmin, xnorm = NORM[featx]
+    wlut[:, 0] = (wlut[:, 0] - xmin) / xnorm
+    ymin, ynorm = NORM[featy]
+    wlut[:, 1] = (wlut[:, 1] - ymin) / ynorm
+    return wlut, sizex, sizey
+
+
+def denormalize_contour(contour, sizex, sizey,
+                        featx="area_um", featy="deform"):
+    ccu = np.zeros_like(contour)
+    xmin, xnorm = NORM[featx]
+    ccu[:, 0] = contour[:, 0] / sizex * xnorm + xmin
+
+    ymin, ynorm = NORM[featy]
+    ccu[:, 1] = contour[:, 1] / sizey * ynorm + ymin
+    return ccu
+
+
+def map_simulation_to_grid(lut, featx="area_um", featy="deform"):
+    # normalize
+    wlut, sizex, sizey = normalize_lut(lut, featx, featy)
+
+    # Compute gridded version
+    x = np.linspace(0, 1, sizex, endpoint=True)
+    y = np.linspace(0, 1, sizey, endpoint=True)
+
+    xm, ym = np.meshgrid(x, y, indexing="ij")
+
+    emod = spint.griddata((wlut[:, 0], wlut[:, 1]), wlut[:, 2],
+                          (xm, ym), method="linear")
+
+    # Find points that should not be in that 2D `emod` array.
+    # (bad interpolation from convex vs raw enclosing polygon)
+    mask_sim = np.zeros_like(emod, dtype=bool)
+    for xi, yi, _ in wlut:
+        dx = np.abs(x-xi)
+        dy = np.abs(y-yi)
+        xidx = np.argmin(dx)
+        yidx = np.argmin(dy)
+        if dx[xidx] + dy[yidx] < 1:
+            mask_sim[xidx, yidx] = True
+    # Apply a closing disk filter
+    # Zero-pad the mask beforehand (otherwise disk filter has edge-problems)
+    ds = 20  # disk closing size
+    mask_padded = np.pad(mask_sim, ((ds, ds), (ds, ds)))
+    mask_padded_disk = morphology.binary_closing(mask_padded,
+                                                 footprint=morphology.disk(ds))
+    # Fill any holes (in case of sparse simulations)
+    ndimage.binary_fill_holes(mask_padded_disk, output=mask_padded_disk)
+    mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
+    return dict(xm=xm,
+                ym=ym,
+                emod=emod,
+                mask_disk=mask_disk,
+                mask_sim=mask_sim,
+                )
+
+
+def extract_isoelastics_from_grid(lut, xm, ym, emod,
+                                  featx="area_um", featy="deform", **kwargs):
+    wlut, sizex, sizey = normalize_lut(lut, featx=featx, featy=featy)
+    # Determine the levels via a line plot through the
+    # given LUT.
+
+    # These are the original levels (by Christoph Herold):
+    # levels = [0.9 1.2 1.5 1.8 2.1 2.55 3. 3.6 4.2 5.4 6.9]
+    # These are the new levels (by the following algorithm for linear
+    # elastic material and 2Daxis dimensionality on first iteration):
+    # levels = [0.92 1.14 1.42 1.76 2.18 2.7 3.35 4.15 5.14 6.38 7.9 9.8 12.14]
+    l0 = np.nanpercentile(emod, 1)
+    l1 = np.nanpercentile(emod, 99)
+    dl = (l1 - l0) / 200
+    blob0 = np.where(np.abs(emod - l0) < .5*dl)
+    p0 = 0, blob0[1][-1]
+
+    blob1 = np.where(np.abs(emod - l1) < .5*dl)
+    p1 = blob1[0][-1], 0
+
+    xlev = np.linspace(xm[p0[0], 0], xm[p1[0], 0], 13, endpoint=True)
+    ylev = np.linspace(ym[0, p0[1]], ym[0, p1[1]], 13, endpoint=True)
+
+    elev = spint.griddata((wlut[:, 0], wlut[:, 1]), wlut[:, 2],
+                          (xlev, ylev), method="linear")
+    levels = elev[1:-1]
+    levels = np.round(levels, 2)
+
+    contours_px = []
+    contours = []
+    for level in levels:
+        conts = skimage.measure.find_contours(emod, level=level)
+        # get the longest one
+        idx = np.argmax([len(cc) for cc in conts])
+        cc = conts[idx]
+        # remove nan values
+        cc = cc[~np.isnan(np.sum(cc, axis=1))]
+        # downsample contour
+        keep = np.zeros(cc.shape[0], dtype=bool)
+        keep[0] = True
+        keep[-1] = True
+        keep[::2] = True
+        cc = cc[keep, :]
+        contours_px.append(cc)
+        # convert pixel to absolute area_um and deform
+        ccu = denormalize_contour(cc, sizex=sizex, sizey=sizey,
+                                  featx=featx, featy=featy)
+        contours.append(ccu)
+    return levels, contours, contours_px
 
 
 def get_isoelastics(lut, meta, processing=True):
@@ -63,92 +182,20 @@ def get_isoelastics(lut, meta, processing=True):
     isoealstics are determined by finding contour lines.
     """
     wlut = np.array(lut, copy=True)
-    # normalize
-    area_norm = wlut[:, 0].max()
-    emodulus.normalize(wlut[:, 0], area_norm)
+    # Map the simulation data to a 2d grid
+    grid_results_init = map_simulation_to_grid(wlut)
+    emod_init = grid_results_init["emod"]
+    mask_disk_init = grid_results_init["mask_disk"]
+    mask_sim_init = grid_results_init["mask_sim"]
 
-    defo_norm = wlut[:, 1].max()
-    emodulus.normalize(wlut[:, 1], defo_norm)
-
-    # Compute gridded version
-    size = 200  # please don't change (check contour downsampling)
-    area_min = wlut[:, 0].min()
-    deform_min = wlut[:, 1].min()
-    x = np.linspace(area_min, 1, size, endpoint=True)
-    y = np.linspace(deform_min, 1, size, endpoint=True)
-
-    xm, ym = np.meshgrid(x, y, indexing="ij")
-
-    emod = spint.griddata((wlut[:, 0], wlut[:, 1]), wlut[:, 2],
-                          (xm, ym), method="linear")
-
-    # Find points that should not be in that 2D `emod` array.
-    # (bad interpolation from convex vs raw enclosing polygon)
-    mask = np.zeros_like(emod, dtype=bool)
-    for xi, yi, _ in wlut:
-        dx = np.abs(x-xi)
-        dy = np.abs(y-yi)
-        xidx = np.argmin(dx)
-        yidx = np.argmin(dy)
-        if dx[xidx] + dy[yidx] < 1:
-            mask[xidx, yidx] = True
-    # Apply a closing disk filter
-    # Zero-pad the mask beforehand (otherwise disk filter has edge-problems)
-    ds = 20  # disk closing size
-    mask_padded = np.pad(mask, ((ds, ds), (ds, ds)))
-    mask_padded_disk = morphology.binary_closing(mask_padded,
-                                                 footprint=morphology.disk(ds))
-    # Fill any holes (in case of sparse simulations)
-    ndimage.binary_fill_holes(mask_padded_disk, output=mask_padded_disk)
-    mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
+    # Remember the original "support"
+    new_support = ~np.isnan(emod_init)
 
     # Remove the bad points from `emod`
-    emod[~mask_disk] = np.nan
+    emod_init[~mask_disk_init] = np.nan
 
-    # Determine the levels via a line plot through the
-    # given LUT.
-    # These indices are selected like that, because emod[0,:] is usually nan.
-    ids = size // 50
-
-    # These are the original levels (by Christoph Herold):
-    # levels = [0.9 1.2 1.5 1.8 2.1 2.55 3. 3.6 4.2 5.4 6.9]
-    # These are the new levels (by the following algorithm for linear
-    # elastic material and 2Daxis dimensionality):
-    # levels = [0.93 1.16 1.4 1.67 1.99 2.4 2.93 3.67 4.84 6.94 12.13]
-    deform_start = ym[0, :][~np.isnan(emod[ids, :])].max()
-    area_end = xm[:, 0][~np.isnan(emod[:, ids])].max()
-
-    xlev = np.linspace(area_min, area_end, 13, endpoint=True)
-    ylev = np.linspace(deform_start, deform_min, 13, endpoint=True)
-
-    elev = spint.griddata((wlut[:, 0], wlut[:, 1]), wlut[:, 2],
-                          (xlev, ylev), method="linear")
-    levels = elev[1:-1]
-    levels = np.round(levels, 2)
-
-    contours_px = []
-    contours = []
-    for level in levels:
-        conts = skimage.measure.find_contours(emod, level=level)
-        # get the longest one
-        idx = np.argmax([len(cc) for cc in conts])
-        cc = conts[idx]
-        # remove nan values
-        cc = cc[~np.isnan(np.sum(cc, axis=1))]
-        # downsample contour
-        keep = np.zeros(cc.shape[0], dtype=bool)
-        keep[0] = True
-        keep[-1] = True
-        keep[::2] = True
-        cc = cc[keep, :]
-        contours_px.append(cc)
-        # convert pixel to absolute area_um and deform
-        ccu = np.zeros_like(cc)
-        ccu[:, 0] = (cc[:, 0] / size * (1 - area_min) + area_min) * area_norm
-        ccu[:, 1] = (cc[:, 1] / size * (1 - deform_min) +
-                     deform_min) * defo_norm
-
-        contours.append(ccu)
+    levels, contours, contours_px = extract_isoelastics_from_grid(
+        wlut, **grid_results_init)
 
     if processing:
         phook = get_processing_hook(meta["identifier"],
@@ -156,9 +203,39 @@ def get_isoelastics(lut, meta, processing=True):
         if phook is not None:
             contours = phook(contours)
 
+    # Extend the LUT
+    wlut = np.array(lut, copy=True)
+    xmin, xmax = np.min(lut[:, 0]), np.max(lut[:, 0])
+    ymin, ymax = np.min(lut[:, 1]), np.max(lut[:, 1])
+
+    lut_app = []
+    for lev, cc in zip(levels, contours):
+        ip = interpolate.interp1d(cc[:, 0], cc[:, 1],
+                                  kind='slinear', fill_value="extrapolate")
+        new_cc = np.zeros((100, 3))
+        new_cc[:, 0] = np.linspace(cc[-1, 0], 2*cc[-1, 0], 100)
+        new_cc[:, 1] = ip(new_cc[:, 0])
+        new_cc[:, 2] = lev
+        for cx, cy, ce in new_cc:
+            if xmin < cx < xmax and ymin < cy < ymax:
+                lut_app.append([cx, cy, ce])
+    wlut = np.concatenate((wlut, lut_app))
+
+    # Here we do everything again with the new LUT.
+    # TODO:
+    # - Turn this entire LUT processing task into a class
+    # - Also complement the new LUT with data from many extrapolated
+    #   isoelastics.
+    grid_results = map_simulation_to_grid(wlut)
+    emod = grid_results["emod"]
+    emod[~new_support] = np.nan
+
+    levels, contours, contours_px = extract_isoelastics_from_grid(
+        wlut, **grid_results)
+
     plt.figure(figsize=(13, 5))
     ax0 = plt.subplot(131, title="simulation density and mask generation")
-    ax0.imshow(1.*mask + mask_disk)
+    ax0.imshow(1.*mask_sim_init + mask_disk_init)
 
     ax1 = plt.subplot(132, title="isoelastics interpolation on grid")
     ax1.imshow(emod)
@@ -169,6 +246,7 @@ def get_isoelastics(lut, meta, processing=True):
     for cont in contours:
         ax2.plot(cont[:, 0], cont[:, 1], "-")
     ax2.set_ylim(0, 0.2)
+    ax2.set_xlim(25, 300)
 
     plt.tight_layout()
     plt.show()

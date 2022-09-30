@@ -312,7 +312,7 @@ def test_generate_rtdc_from_simulation(tmp_path):
         assert np.allclose(feats1['volume'], h51["events/volume"][0])
 
 
-#: The first contour from https://doi.org/10.6084/m9.figshare.12155064.v3
+#: The first contour from https://doi.org/10.6084/m9.figshare.12155064.v4
 test_coords = np.array(
     [[-2.647751, -2.647751, -2.647751, -2.647141, -2.646541,
       -2.645251, -2.643971, -2.642191, -2.640421, -2.638001,

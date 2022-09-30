@@ -1,6 +1,6 @@
 """Hooks for the LE-2D-FEM-19 dataset
 
-https://doi.org/10.6084/m9.figshare.12155064.v3
+https://doi.org/10.6084/m9.figshare.12155064.v4
 See the individual functions for details.
 """
 import pathlib
@@ -72,20 +72,7 @@ def get_analytical_volume_lut_2daxis():
 
 
 def process_isoelastics(contour_lines):
-    """Avoid points at the boundary of the LUT for large deformations
-
-    Contour lines are modified in-place.
-
-    Isoelastics with a maximum deformation above 0.159 are cropped by
-    four points.
-    """
-    size = 200  # this is the size of the interpolatino grid for each axis
-    ids = size // 50
-    for ii, ccu in enumerate(contour_lines):
-        if ccu[-1, 1] > 0.159:
-            print("...Post-Processing: Cropping isoelastics above "
-                  + "deformation 0.159 by {} points.".format(ids))
-            contour_lines[ii] = ccu[:-ids, :]
+    """Nothing to do since 0.46.0"""
     return contour_lines
 
 

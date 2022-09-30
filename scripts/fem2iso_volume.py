@@ -15,7 +15,7 @@ in the "fem_hooks" subdirectory.
 The discussion related to this script is archived in issue #70 (dclab).
 
 An example HDF5 file can be found on figshare
-(LE-2D-FEM-19, https://doi.org/10.6084/m9.figshare.12155064.v3).
+(LE-2D-FEM-19, https://doi.org/10.6084/m9.figshare.12155064.v4).
 """
 import argparse
 import pathlib

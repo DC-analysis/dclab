@@ -103,8 +103,7 @@ def get_isoelastics(lut, meta, processing=True):
     mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
 
     # Remove the bad points from `emod`
-    #emod[~mask_disk] = np.nan
-    mask_disk = ~np.isnan(emod)
+    emod[~mask_disk] = np.nan
 
     # Determine the levels via a line plot through the
     # given LUT.

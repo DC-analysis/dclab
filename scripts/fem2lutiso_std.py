@@ -36,7 +36,7 @@ def main():
         print("Skipping all post-processing steps!")
 
     print("Extracting LUT and isoelastics")
-    lup = LutProcessor(path, use_hooks=not raw)
+    lup = LutProcessor(path, use_hooks=not raw, verbose=True)
     lut, contours, contour_levels = lup.assemble_lut_and_isoelastics()
 
     print("Saving LUT and isoelastics")

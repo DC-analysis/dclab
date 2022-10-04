@@ -71,8 +71,8 @@ def load_lut(lut_data="LE-2D-FEM-19"):
         lut_path = get_lut_path(lut_data)
         lut, meta = load_mtext(lut_path)
     else:
-        raise ValueError("`name_path_arr` must be path, identifier, or array, "
-                         "got '{}'!".format(lut_data))
+        raise ValueError("`name_path_arr` must be path, identifier, or tuple "
+                         f"of (array, dict), got '{lut_data}'!")
     return lut, meta
 
 

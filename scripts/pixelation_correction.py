@@ -36,7 +36,7 @@ import numpy as np
 
 
 from fem2rtdc import features_from_mask
-from fem2iso_volume import get_lut_volume
+from lut_recipes import LutProcessor
 
 #: You can edit the pixel size to see how the pixelation effect scales
 #: with the pixel size. The fits incorporate this parameter to always
@@ -44,6 +44,12 @@ from fem2iso_volume import get_lut_volume
 #: do this. Not that this does not affect the black dots, which are
 #: only plotted for comparison and were generated with fem2rtdc.py.
 PIXEL_SIZE = 0.34  # um/px
+
+
+def get_lut_volume(path):
+    lup = LutProcessor(path, use_hooks=True, featx="volume")
+    lut, _, _ = lup.assemble_lut_and_isoelastics()
+    return lut, lup.meta
 
 
 def create_multiexp_model(n=5, x=None, x0=None, y=None, decaycoeffs=None,
@@ -549,7 +555,7 @@ def plot_emodulus_deviation_dependency(path, ax5, ax6, ax7, ax8):
 
     # deform-volume
     ax7.set_ylabel("relative error (1-E/E0)")
-    lut_data_volume = get_lut_volume(path=path, processing=True)
+    lut_data_volume = get_lut_volume(path=path)
     volume = np.linspace(50, 3200, 200)
     emodkwv = dict(
         volume=volume,
@@ -570,7 +576,7 @@ def plot_emodulus_deviation_dependency(path, ax5, ax6, ax7, ax8):
 
     # volume-volume
     ax8.set_ylabel("negative relative error -(1-E/E0)")
-    lut_data_volume = get_lut_volume(path=path, processing=True)
+    lut_data_volume = get_lut_volume(path=path)
     volume = np.linspace(50, 3200, 200)
     emodkwv = dict(
         medium=15,
@@ -633,5 +639,6 @@ if __name__ == "__main__":
         ax.set_yscale("log")
 
     plt.tight_layout()
-    plt.savefig("pixelation_correction_gen_{}.png".format(PIXEL_SIZE), dpi=150)
+    plt.savefig(f"{path.stem}_pixelation_correction_gen_{PIXEL_SIZE}.png",
+                dpi=150)
     plt.show()

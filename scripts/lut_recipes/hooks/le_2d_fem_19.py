@@ -9,38 +9,30 @@ import pathlib
 from dclab.polygon_filter import points_in_poly
 import matplotlib.pylab as plt
 import numpy as np
-from scipy.optimize import fsolve
 from scipy import ndimage
 from skimage import morphology
 
 from dclab.features import emodulus
 
-
-def find_upper_intersection(func, points, xrange):
-    options = []
-    for ii in range(len(points)):
-        x1, y1 = points[ii]
-        x2, y2 = points[ii-1]
-        def funcs(x): return y1 + (y2-y1)/(x2-x1)*(x-x1)
-        ret = fsolve(lambda x: func(x) - funcs(x), xrange[0])
-        for r in ret:
-            if xrange[0] < r < xrange[1]:
-                options.append([r, func(r)])
-    options = np.array(options)
-    # If there are multiple options, choose the one that is closest to
-    # xrange[0].
-    ido = np.argmin(np.abs(options[:, 0] - xrange[0]))
-    return options[ido]
+from .common import find_upper_intersection
 
 
-def isoelastics_postprocess(isoel):
+def isoelastics_postprocess(lup, isoel):
     """Process extracted isoelastics"""
     new_isoel = []
     for ie in isoel:
         # remove noise at beginning
-        ie = ie[ie[:, 0] > 34.93]
+        if lup.featx == "area_um":
+            xmin = 34.93
+            crop = slice(1, -1)
+        elif lup.featx == "volume":
+            xmin = 160
+            crop = slice(1, -2)
+        else:
+            raise NotImplementedError(f"Unexpected axis {lup.featx}!")
+        ie = ie[ie[:, 0] > xmin]
         # remove boundary points
-        ie = ie[1:-1]
+        ie = ie[crop, :]
         new_isoel.append(ie)
     return new_isoel
 
@@ -107,13 +99,17 @@ def get_analytical_volume_lut_2daxis():
 
 
 def lut_preprocess(lup):
-    """Complement FEM LUT with analytical values and crop it
+    """Complement FEM LUT with analytical values, extrapolate, and crop it
 
     The LUT is complemented with analytical values from
     "LUT_analytical_linear-elastic_2Daxis.txt" for small deformation
     and area below 200um. The original FEM simulations did not cover that
     area, because of discretization problems (deformations smaller than
     0.005 could not be resolved).
+
+    A sparse region for larger deformation is complemented with
+    extrapolated isoelasticity lines (3rd order polynomial fit).
+    See https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/191.
 
     The LUT is cropped at a maximum area of 290um^2. The reason is that
     the axis-symmetric model becomes inaccurate when the object boundary
@@ -125,69 +121,75 @@ def lut_preprocess(lup):
     if lup.featx == "area_um" and lup.featy == "deform":
         # Add additional values from analytical simulations and crop.
         lup.lut_raw = lut_preprocess_area_um_deform(lup)
+        xmax = 290
+        num_isoel = 50
+    elif lup.featx == "volume" and lup.featy == "deform":
+        lup.lut_raw = lut_preprocess_volume_deform(lup)
+        xmax = 3200
+        num_isoel = 35
+    else:
+        raise NotImplementedError("Cannot process")
 
-        # Perform linear interpolation until convex hull.
-        # don't use small deformation values for isoelastics computation
-        lut_iso = lup.lut_raw[lup.lut_raw[:, 1] > 0.05]
+    # Perform linear interpolation until convex hull.
+    # don't use small deformation values for isoelastics computation
+    lut_iso = lup.lut_raw[lup.lut_raw[:, 1] > 0.05]
 
-        emod, mask_sim = lup.map_lut_to_grid(lut_iso)
-        # Find points that should not be in that 2D `emod` array.
-        # (bad interpolation from convex vs raw enclosing polygon)
-        # Apply a closing disk filter
-        # Zero-pad the mask beforehand (otherwise the disk filter is not
-        # properly applied to pixels at the boundary of the image)
-        ds = 20  # disk closing size
-        mask_padded = np.pad(mask_sim, ((ds, ds), (ds, ds)))
-        mask_padded_disk = morphology.binary_closing(
-            mask_padded, footprint=morphology.disk(ds))
-        # Fill any holes (in case of sparse simulations)
-        ndimage.binary_fill_holes(mask_padded_disk, output=mask_padded_disk)
-        mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
+    emod, mask_sim = lup.map_lut_to_grid(lut_iso)
+    # Find points that should not be in that 2D `emod` array.
+    # (bad interpolation from convex vs raw enclosing polygon)
+    # Apply a closing disk filter
+    # Zero-pad the mask beforehand (otherwise the disk filter is not
+    # properly applied to pixels at the boundary of the image)
+    ds = 20  # disk closing size
+    mask_padded = np.pad(mask_sim, ((ds, ds), (ds, ds)))
+    mask_padded_disk = morphology.binary_closing(
+        mask_padded, footprint=morphology.disk(ds))
+    # Fill any holes (in case of sparse simulations)
+    ndimage.binary_fill_holes(mask_padded_disk, output=mask_padded_disk)
+    mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
 
-        emod[~mask_disk] = np.nan
-        levels, contours, contours_px = lup.extract_isoelastics_from_grid(
-            emod, lut=lut_iso, num=50)
+    emod[~mask_disk] = np.nan
+    levels, contours, contours_px = lup.extract_isoelastics_from_grid(
+        emod, lut=lut_iso, num=num_isoel)
 
+    # Extend the LUT via extrapolation
+    lut_new = lup.lut_raw
+    ncs = []
+    if lup.verbose:
         ax1 = plt.subplot(121, title="extrapolation region")
         ax1.imshow(1.*mask_disk + mask_sim)
-
-        # Extend the LUT
-        lut_new = lup.lut_raw
-        ncs = []
         ax2 = plt.subplot(122, title="LUT extrapolation")
         plt.plot(lup.lut_raw[:, 0], lup.lut_raw[:, 1], ".")
-        for lev, cc in zip(levels, contours):
-            if np.isnan(lev) or len(cc) < 10:
-                continue
-            ip = np.polynomial.Polynomial.fit(cc[:, 0], cc[:, 1], 3)
-            new_cc = np.zeros((20, 3))
-            xrange = (cc[-1, 0], 1.2*cc[-1, 0])
-            new_cc[:, 0] = np.linspace(xrange[0], xrange[1], 20)
-            new_cc[:, 1] = ip(new_cc[:, 0])
-            new_cc[:, 2] = lev
-            inside = points_in_poly(new_cc[:, :2], lup.convex_hull)
-            parts = new_cc[inside]
-            lut_new = np.concatenate((lut_new, parts))
-            # Append boundary point
-            sx, sy = find_upper_intersection(
-                ip, lup.convex_hull, xrange=xrange)
-            new_cc = np.concatenate((new_cc, [[sx, sy, lev]]))
-            ncs.append(new_cc)
+    for lev, cc in zip(levels, contours):
+        if np.isnan(lev) or len(cc) < 10:
+            continue
+        ip = np.polynomial.Polynomial.fit(cc[:, 0], cc[:, 1], 3)
+        new_cc = np.zeros((20, 3))
+        xrange = (cc[-1, 0], 1.2*cc[-1, 0])
+        new_cc[:, 0] = np.linspace(xrange[0], xrange[1], 20)
+        new_cc[:, 1] = ip(new_cc[:, 0])
+        new_cc[:, 2] = lev
+        inside = points_in_poly(new_cc[:, :2], lup.convex_hull)
+        parts = new_cc[inside]
+        lut_new = np.concatenate((lut_new, parts))
+        # Append boundary point
+        sx, sy = find_upper_intersection(
+            ip, lup.convex_hull, xrange=xrange)
+        new_cc = np.concatenate((new_cc, [[sx, sy, lev]]))
+        ncs.append(new_cc)
 
+        if lup.verbose:
             xtest = np.linspace(cc[0, 0], 1.5*cc[-1, 0], 20, endpoint=True)
             ax2.plot(cc[:, 0], cc[:, 1], "o")
             ax2.plot(xtest, ip(xtest))
             ax2.plot(new_cc[:, 0], new_cc[:, 1], "x")
 
+    if lup.verbose:
         ax2.plot(lup.convex_hull[:, 0], lup.convex_hull[:, 1])
         ax2.set_ylim(0, 0.2)
-        ax2.set_xlim(25, 300)
+        ax2.set_xlim(0, xmax)
         plt.show()
-        lup.lut_raw = lut_new
-    elif lup.featx == "volume" and lup.featy == "deform":
-        lup.lut_raw = lut_preprocess_volume_deform(lup.lut_raw)
-    else:
-        raise NotImplementedError("Cannot process")
+    lup.lut_raw = lut_new
 
 
 def lut_preprocess_area_um_deform(lup):
@@ -211,8 +213,6 @@ def lut_preprocess_area_um_deform(lup):
     print(f"...Post-Processing: Adding analytical LUT from {ap}.")
     # load analytical data
     lut_ana = np.loadtxt(pathlib.Path(__file__).parent / ap)
-    print(lut_ana[:, 0].min())
-    print(lut_ana[:, 0].max())
     lut = np.concatenate((lut, lut_ana))
 
     print("...Post-Processing: Cropping LUT at 290um^2.")
@@ -223,7 +223,7 @@ def lut_preprocess_area_um_deform(lup):
     return lut
 
 
-def lut_preprocess_volume_deform(lut):
+def lut_preprocess_volume_deform(lup):
     """Complement FEM LUT with analytical values and crop it
 
     The LUT is complemented with analytical values from
@@ -241,6 +241,11 @@ def lut_preprocess_volume_deform(lut):
     symmetric around the object). In addition, there have been numerical
     errors due to meshing if the area is above 290um^2.
     """
+    print("...Post-Processing: Complementing analytical volume data.")
+    # load analytical data
+    lut_ana = get_analytical_volume_lut_2daxis()
+    lut = np.concatenate((lup.lut_raw, lut_ana))
+
     print("...Post-Processing: Cropping LUT at 3200um^3.")
     # the analytical part (below) is anyhow below 200um^2
     # We cannot crop at 290um^2, because this will result in
@@ -250,9 +255,7 @@ def lut_preprocess_volume_deform(lut):
     # guess a value here:
     lut = lut[lut[:, 0] < 3200, :]
 
-    print("...Post-Processing: Complementing analytical volume data.")
-    # load analytical data
-    lut_ana = get_analytical_volume_lut_2daxis()
-    lut = np.concatenate((lut, lut_ana))
+    lup.lut_raw = lut
+    lup.convex_hull[lup.convex_hull[:, 0] >= 3200, 0] = 3200
 
     return lut

@@ -16,12 +16,13 @@ from .hooks import lut_hooks
 NORM = {
     "area_um": 290,
     "deform": 0.2,
+    "volume": 3400,
 }
 
 
 class LutProcessor:
     def __init__(self, hdf5_path, featx="area_um", featy="deform",
-                 use_hooks=True):
+                 use_hooks=True, verbose=False):
         """Process simulation data in the HDF5 file format
 
         The simulation dataset must be an HDF5 file with a specific structure
@@ -55,9 +56,13 @@ class LutProcessor:
             feature along the y-direction of the LUT
         use_hooks: bool
             whether to perform custom LUT postprocessing using LUT hooks
+        verbose: bool
+            set to True to display informative plots
         """
+        self.verbose = verbose
         self.path = hdf5_path
         self.data, self.meta = self.get_lut_raw()
+        self.meta["column features"] = [featx, featy, "emodulus"]
         if use_hooks:
             self.hook = lut_hooks.get(self.meta["identifier"])
             if not self.hook:
@@ -71,6 +76,7 @@ class LutProcessor:
         lut[:, 0] = self.data[featx]
         lut[:, 1] = self.data[featy]
         lut[:, 2] = self.data["emodulus"]
+
         self.lut_raw = lut
 
         self.featx = featx
@@ -140,6 +146,22 @@ class LutProcessor:
         return emod, mask_sim
 
     def extract_isoelastics_from_grid(self, emod, lut=None, num=13):
+        """Extract isoelasitcs from gridded data
+
+        Parameters
+        ----------
+        emod: 2d np.ndarray
+            array containing Young's modulus gridded according to
+            `self.xitp` and `self.yitp`.
+        lut: 2d np.ndarray
+            LUT (like `self.lut_raw`).
+        num: int
+            number of isoelastics to compute. They will be evenly
+            distributed across the LUT using the coordinates
+            `self.xitp` and `self.yitp`. That means that if you pass
+            e.g. a smaller LUT, you will not get as many isoealstics
+            back, since they will be nan-valued.
+        """
         if lut is None:
             lut = self.lut_raw
         wlut = self.normalize_lut(lut)
@@ -169,6 +191,7 @@ class LutProcessor:
         elev = spint.griddata((wlut[:, 0], wlut[:, 1]), wlut[:, 2],
                               (xlev, ylev), method="linear")
         levels = elev[1:-1]
+
         levels = np.round(levels, 2)
 
         contours_px = []
@@ -266,34 +289,40 @@ class LutProcessor:
         return levels, contours, contours_px
 
     def assemble_lut_and_isoelastics(self):
+        """Apply pipeline, return the LUT, isoelastics, and isoelastics level
+
+        If `self.verbose` is True, then display informative plots.
+        """
         emod, mask_sim = self.map_lut_to_grid()
         levels, contours_ip, contours_px = self.compute_isoelastics(num=13)
 
         if self.hook:
-            contours_ip = self.hook.isoelastics_postprocess(contours_ip)
+            contours_ip = self.hook.isoelastics_postprocess(self, contours_ip)
 
         contours = []
         for cc in contours_ip:
             inside = points_in_poly(cc[:, :2], self.convex_hull)
             contours.append(cc[inside])
 
-        plt.figure(figsize=(13, 5))
-        ax0 = plt.subplot(131, title="simulation density and mask generation")
-        ax0.imshow(mask_sim)
+        if self.verbose:
+            plt.figure(figsize=(13, 5))
+            ax0 = plt.subplot(131,
+                              title="simulation density and mask generation")
+            ax0.imshow(mask_sim)
 
-        ax1 = plt.subplot(132, title="isoelastics interpolation on grid")
-        ax1.imshow(emod)
-        for cont in contours_px:
-            ax1.plot(cont[:, 1], cont[:, 0], "x")
+            ax1 = plt.subplot(132, title="isoelastics interpolation on grid")
+            ax1.imshow(emod)
+            for cont in contours_px:
+                ax1.plot(cont[:, 1], cont[:, 0], "x")
 
-        ax2 = plt.subplot(133, title="extracted isoelastics")
-        for cont in contours:
-            ax2.plot(cont[:, 0], cont[:, 1], "-")
-        ax2.set_ylim(0, 0.2)
-        ax2.set_xlim(25, 300)
+            ax2 = plt.subplot(133, title="extracted isoelastics")
+            for cont in contours:
+                ax2.plot(cont[:, 0], cont[:, 1], "-")
+            ax2.set_ylim(0, self.lut_raw[:, 1].max()*1.05)
+            ax2.set_xlim(0, self.lut_raw[:, 0].max()*1.05)
 
-        plt.tight_layout()
-        plt.show()
+            plt.tight_layout()
+            plt.show()
 
         assert len(contours) == len(levels)
 

@@ -266,10 +266,10 @@ def test_volume_basic():
                   lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
-    assert np.allclose(data[0][0], [1.65056e+02, 4.53159e-02, 1.05000e+00])
-    assert np.allclose(data[0][-1], [4.17498e+02, 1.33764e-01, 1.05000e+00])
-    assert np.allclose(data[1][0], [1.70582e+02, 2.79287e-02, 1.32000e+00])
-    assert np.allclose(data[-1][-1], [3.14755e+03, 1.52900e-02, 9.71000e+00])
+    assert np.allclose(data[0][0], [1.60502e+02, 4.38040e-02, 1.06000e+00])
+    assert np.allclose(data[0][-1], [4.32113e+02, 1.37544e-01, 1.06000e+00])
+    assert np.allclose(data[1][0], [1.61559e+02, 2.60143e-02, 1.34000e+00])
+    assert np.allclose(data[-1][-1], [3.18845e+03, 1.45521e-02, 1.01800e+01])
 
 
 def test_volume_pxcorr():
@@ -283,10 +283,10 @@ def test_volume_pxcorr():
                   lut_identifier="LE-2D-FEM-19",
                   add_px_err=True,
                   px_um=0.34)
-    ddelt = pxcorr.corr_deform_with_volume(1.65056e+02, px_um=0.34)
-    assert np.allclose(data[0][0], [1.65056e+02,
-                                    4.53159e-02 + ddelt,
-                                    1.05000e+00])
+    ddelt = pxcorr.corr_deform_with_volume(1.60502e+02, px_um=0.34)
+    assert np.allclose(data[0][0], [1.60502e+02,
+                                    4.38040e-02 + ddelt,
+                                    1.06000e+00])
 
 
 def test_volume_scale():
@@ -301,9 +301,9 @@ def test_volume_scale():
                   add_px_err=False,
                   px_um=None)
 
-    assert np.allclose(data[0][0], [1.65056e+02 * (25 / 20)**3,
-                                    4.53159e-02,
-                                    1.05000e+00 * (20 / 25)**3])
+    assert np.allclose(data[0][0], [1.60502e+02 * (25 / 20)**3,
+                                    4.38040e-02,
+                                    1.06000e+00 * (20 / 25)**3])
 
 
 def test_volume_scale_2():
@@ -317,9 +317,9 @@ def test_volume_scale_2():
                   lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
-    assert np.allclose(data[0][0], [1.65056e+02 * (25 / 20)**3,
-                                    4.53159e-02,
-                                    1.05000e+00 * (20 / 25)**3])
+    assert np.allclose(data[0][0], [1.60502e+02 * (25 / 20)**3,
+                                    4.38040e-02,
+                                    1.06000e+00 * (20 / 25)**3])
 
 
 def test_volume_switch():
@@ -333,8 +333,8 @@ def test_volume_switch():
                   lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
-    assert np.allclose(data[0][0], [4.53159e-02, 1.65056e+02, 1.05000e+00])
-    assert np.allclose(data[-1][-1], [1.52900e-02, 3.14755e+03, 9.71000e+00])
+    assert np.allclose(data[0][0], [4.38040e-02, 1.60502e+02, 1.06000e+00])
+    assert np.allclose(data[-1][-1], [1.45521e-02, 3.18845e+03, 1.01800e+01])
 
 
 def test_volume_switch_scale():
@@ -348,12 +348,12 @@ def test_volume_switch_scale():
                   lut_identifier="LE-2D-FEM-19",
                   add_px_err=False,
                   px_um=None)
-    assert np.allclose(data[0][0], [4.53159e-02,
-                                    1.65056e+02 * (25 / 20)**3,
-                                    1.05000e+00 * (20 / 25)**3])
-    assert np.allclose(data[-1][-1], [1.52900e-02,
-                                      3.14755e+03 * (25 / 20)**3,
-                                      9.71000e+00 * (20 / 25)**3])
+    assert np.allclose(data[0][0], [4.38040e-02,
+                                    1.60502e+02 * (25 / 20)**3,
+                                    1.06000e+00 * (20 / 25)**3])
+    assert np.allclose(data[-1][-1], [1.45521e-02,
+                                      3.18845e+03 * (25 / 20)**3,
+                                      1.01800e+01 * (20 / 25)**3])
 
 
 def test_with_rtdc():

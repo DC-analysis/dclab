@@ -1,5 +1,6 @@
 """Isoelastics management"""
 import functools
+import pathlib
 from pkg_resources import resource_filename
 import warnings
 
@@ -9,12 +10,10 @@ from .. import definitions as dfn
 from ..features import emodulus as feat_emod
 
 
+here = pathlib.Path(resource_filename("dclab", "isoelastics"))
+
 #: List of isoelasticity lines in dclab
-ISOFILES = ["isoel-linear-2Daxis-analyt-area_um-deform.txt",
-            "isoel-linear-2Daxis-FEM-area_um-deform.txt",
-            "isoel-linear-2Daxis-FEM-volume-deform.txt",
-            ]
-ISOFILES = [resource_filename("dclab.isoelastics", isf) for isf in ISOFILES]
+ISOFILES = sorted(here.glob("*.txt"))
 
 
 class IsoelasticsEmodulusMeaninglessWarning(UserWarning):

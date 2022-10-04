@@ -68,7 +68,7 @@ def lut_preprocess(lup):
             continue
         ip = np.polynomial.Polynomial.fit(cc[:, 0], cc[:, 1], 4)
         new_cc = np.zeros((50, 3))
-        xrange = (.9*cc[-1, 0], 1.2*cc[-1, 0])
+        xrange = (cc[-1, 0], 1.2*cc[-1, 0])
         new_cc[:, 0] = np.linspace(xrange[0], xrange[1], 50)
         new_cc[:, 1] = ip(new_cc[:, 0])
         new_cc[:, 2] = lev

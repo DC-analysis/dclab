@@ -15,27 +15,35 @@ from .common import find_upper_intersection
 
 def isoelastics_postprocess(lup, isoel):
     """Process extracted isoelastics"""
-    new_isoel = []
-    for ie in isoel:
-        new_isoel.append(ie[:-1, :])
-    return new_isoel
+    return isoel
 
 
 def lut_preprocess(lup):
-    """Extrapolate isoelasticity lines to convex hull
+    """Extrapolate isoelasticity lines beyond convex hull
 
     The extrapolation has similar results as shown in
     https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/191.
 
-    In contrast to the LE-2D-FEM-19 dataset, we use a  4th order
-    polynomial here.
+    For more information, please also look at
+    https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/188.
     """
-    xmax = lup.lut_raw[:, 0].max()
-    num_isoel = 35
+    if lup.featx == "area_um" and lup.featy == "deform":
+        xcrop = 200
+        num_isoel = 33
+    elif lup.featx == "volume" and lup.featy == "deform":
+        xcrop = 2300
+        num_isoel = 35
+    else:
+        raise NotImplementedError("Cannot process")
+
+    xmax = lup.lut_raw[:, 0].max() * 1.1
 
     # Perform linear interpolation until convex hull.
     # don't use small deformation values for isoelastics computation
-    lut_iso = lup.lut_raw[lup.lut_raw[:, 1] > 0.05]
+    lut_iso = lup.lut_raw[
+        np.logical_or(lup.lut_raw[:, 1] > 0.08,
+                      lup.lut_raw[:, 0] > xcrop)
+    ]
 
     emod, mask_sim = lup.map_lut_to_grid(lut_iso)
     # Find points that should not be in that 2D `emod` array.
@@ -66,13 +74,18 @@ def lut_preprocess(lup):
     for lev, cc in zip(levels, contours):
         if np.isnan(lev) or len(cc) < 10:
             continue
-        ip = np.polynomial.Polynomial.fit(cc[:, 0], cc[:, 1], 4)
-        new_cc = np.zeros((50, 3))
+        ip = np.polynomial.Polynomial.fit(cc[:, 0], cc[:, 1], 2)
+        new_cc = np.zeros((20, 3))
         xrange = (cc[-1, 0], 1.2*cc[-1, 0])
-        new_cc[:, 0] = np.linspace(xrange[0], xrange[1], 50)
+        new_cc[:, 0] = np.linspace(xrange[0], xrange[1], 20)
         new_cc[:, 1] = ip(new_cc[:, 0])
         new_cc[:, 2] = lev
         inside = points_in_poly(new_cc[:, :2], lup.convex_hull)
+        # Add a few points outside the convex hull for isoelastics computation
+        for ii in range(len(inside)):
+            if not inside[ii]:
+                inside[ii:ii+4] = True
+                break
         parts = new_cc[inside]
         lut_new = np.concatenate((lut_new, parts))
         # Append boundary point

@@ -24,15 +24,12 @@ def isoelastics_postprocess(lup, isoel):
         # remove noise at beginning
         if lup.featx == "area_um":
             xmin = 34.93
-            crop = slice(1, -1)
         elif lup.featx == "volume":
             xmin = 160
-            crop = slice(1, -2)
         else:
             raise NotImplementedError(f"Unexpected axis {lup.featx}!")
         ie = ie[ie[:, 0] > xmin]
-        # remove boundary points
-        ie = ie[crop, :]
+        ie = ie[ie[:, 1] < .187]
         new_isoel.append(ie)
     return new_isoel
 
@@ -121,18 +118,23 @@ def lut_preprocess(lup):
     if lup.featx == "area_um" and lup.featy == "deform":
         # Add additional values from analytical simulations and crop.
         lup.lut_raw = lut_preprocess_area_um_deform(lup)
-        xmax = 290
-        num_isoel = 50
+        xcrop = 170
+        xmax = 300
+        num_isoel = 30
     elif lup.featx == "volume" and lup.featy == "deform":
         lup.lut_raw = lut_preprocess_volume_deform(lup)
-        xmax = 3200
+        xcrop = 2300
+        xmax = 3450
         num_isoel = 35
     else:
         raise NotImplementedError("Cannot process")
 
     # Perform linear interpolation until convex hull.
     # don't use small deformation values for isoelastics computation
-    lut_iso = lup.lut_raw[lup.lut_raw[:, 1] > 0.05]
+    lut_iso = lup.lut_raw[
+        np.logical_or(lup.lut_raw[:, 1] > 0.05,
+                      lup.lut_raw[:, 0] > xcrop)
+    ]
 
     emod, mask_sim = lup.map_lut_to_grid(lut_iso)
     # Find points that should not be in that 2D `emod` array.
@@ -170,13 +172,22 @@ def lut_preprocess(lup):
         new_cc[:, 1] = ip(new_cc[:, 0])
         new_cc[:, 2] = lev
         inside = points_in_poly(new_cc[:, :2], lup.convex_hull)
+        # Add a few points outside the convex hull for isoelastics computation
+        for ii in range(len(inside)):
+            if not inside[ii]:
+                inside[ii:ii+3] = True
+                break
         parts = new_cc[inside]
         lut_new = np.concatenate((lut_new, parts))
         # Append boundary point
-        sx, sy = find_upper_intersection(
-            ip, lup.convex_hull, xrange=xrange)
-        new_cc = np.concatenate((new_cc, [[sx, sy, lev]]))
-        ncs.append(new_cc)
+        try:
+            sx, sy = find_upper_intersection(
+                ip, lup.convex_hull, xrange=xrange)
+        except BaseException:
+            continue
+        else:
+            new_cc = np.concatenate((new_cc, [[sx, sy, lev]]))
+            ncs.append(new_cc)
 
         if lup.verbose:
             xtest = np.linspace(cc[0, 0], 1.5*cc[-1, 0], 20, endpoint=True)

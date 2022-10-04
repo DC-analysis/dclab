@@ -20,6 +20,8 @@ An example HDF5 file can be found on figshare
 import argparse
 import pathlib
 
+import matplotlib.pylab as plt
+
 from lut_recipes import LutProcessor
 import fem2lutiso_std
 
@@ -45,7 +47,13 @@ def main():
 
     print("Extracting volume-deformation LUT")
     lup = LutProcessor(path, use_hooks=not raw, featx="volume", verbose=True)
-    _, contours, levels = lup.assemble_lut_and_isoelastics()
+    lut, contours, levels = lup.assemble_lut_and_isoelastics()
+
+    ax = plt.subplot(111, title="Final LUT and isoelastics")
+    ax.plot(lut[:, 0], lut[:, 1], ".", color="k")
+    for cc in contours:
+        ax.plot(cc[:, 0], cc[:, 1])
+    plt.show()
 
     fem2lutiso_std.save_iso(
         path=path.with_name(path.name.rsplit(".", 1)[0] + "_volume_iso.txt"),

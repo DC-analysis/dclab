@@ -126,6 +126,9 @@ class LutProcessor:
         if lut is None:
             lut = self.lut_raw
         lut = np.array(lut, copy=True)
+        lut = lut[lut[:, 0] <= self.xmax, :]
+        lut = lut[lut[:, 1] <= self.ymax, :]
+
         # normalize
         wlut = self.normalize_lut(lut)
 
@@ -331,13 +334,17 @@ class LutProcessor:
         return lut, contours, levels
 
     def shrink_lut(self, lut=None):
-        """Remove redundant values in a LUT
+        """Remove redundant values in a LUT and enforce the convex hull
 
         This is achieved by checking whether they can be reproduced
         through linear interpolation from the remaining values.
         """
+        print("...Shrinking LUT")
         if lut is None:
             lut = self.lut_raw
+
+        inside = points_in_poly(lut[:, :2], self.convex_hull)
+        lut = lut[inside]
 
         wlut = self.normalize_lut(lut)
 

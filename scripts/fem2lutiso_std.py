@@ -11,6 +11,7 @@ import copy
 import json
 import pathlib
 
+import matplotlib.pylab as plt
 import numpy as np
 
 from lut_recipes import LutProcessor
@@ -38,6 +39,12 @@ def main():
     print("Extracting LUT and isoelastics")
     lup = LutProcessor(path, use_hooks=not raw, verbose=True)
     lut, contours, contour_levels = lup.assemble_lut_and_isoelastics()
+
+    ax = plt.subplot(111, title="Final LUT and isoelastics")
+    ax.plot(lut[:, 0], lut[:, 1], ".", color="k")
+    for cc in contours:
+        ax.plot(cc[:, 0], cc[:, 1])
+    plt.show()
 
     print("Saving LUT and isoelastics")
     save_iso(path.with_name(path.name.rsplit(".", 1)[0] + "_iso.txt"),

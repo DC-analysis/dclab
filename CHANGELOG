@@ -1,5 +1,5 @@
 0.46.0
- - BREAKING CHANGE: The LUT data for LE-2D-FEM-19 had to be recalculated,
+ - BREAKING CHANGE: The LUT data for LE-2D-FEM-19 had to be revised,
    because the simulation support was sparse at high deformations (#191)
  - feat: added new LUT and isoelastics for HE-2D-FEM-22 (#188)
  - docs: new LUT data version 10.6084/m9.figshare.12155064.v4

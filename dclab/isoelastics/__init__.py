@@ -10,10 +10,10 @@ from .. import definitions as dfn
 from ..features import emodulus as feat_emod
 
 
-here = pathlib.Path(resource_filename("dclab", "isoelastics"))
+_iso_path = pathlib.Path(resource_filename("dclab", "isoelastics"))
 
 #: List of isoelasticity lines in dclab
-ISOFILES = sorted(here.glob("*.txt"))
+ISOFILES = sorted(_iso_path.glob("iso_*.txt"))
 
 
 class IsoelasticsEmodulusMeaninglessWarning(UserWarning):

@@ -16,7 +16,7 @@ from .viscosity import get_viscosity
 
 
 #: Set this to True to globally enable spline extrapolation when the
-#: `area_um`/`deform` data are outside of a LUT. This is discouraged and
+#: `area_um`/`deform` data are outside the LUT. This is discouraged and
 #: a :class:`KnowWhatYouAreDoingWarning` warning will be issued.
 INACCURATE_SPLINE_EXTRAPOLATION = False
 
@@ -97,7 +97,7 @@ def extrapolate_emodulus(lut, datax, deform, emod, deform_norm,
 
 def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
                  channel_width=20.0, flow_rate=0.16, px_um=0.34,
-                 temperature=23.0, lut_data="FEM-2Daxis",
+                 temperature=23.0, lut_data="LE-2D-FEM-19",
                  extrapolate=INACCURATE_SPLINE_EXTRAPOLATION, copy=True):
     """Compute apparent Young's modulus using a look-up table
 

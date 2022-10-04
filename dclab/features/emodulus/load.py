@@ -2,16 +2,19 @@ import copy
 import json
 import pathlib
 from pkg_resources import resource_filename
+import warnings
 
 import numpy as np
 
 from ... import definitions as dfn
 
 
+_lut_path = pathlib.Path(resource_filename("dclab.features", "emodulus"))
+
 #: Dictionary of look-up tables shipped with dclab.
-INTERNAL_LUTS = {
-    "LE-2D-FEM-19": "emodulus_lut_LE-2D-FEM-19.txt",
-}
+INTERNAL_LUTS = {}
+for _p in sorted(_lut_path.glob("lut_*.txt")):
+    INTERNAL_LUTS[_p.name[4:-4]] = _p.name
 
 #: Dictionary of look-up tables that the user added via :func:`register_lut`.
 EXTERNAL_LUTS = {}
@@ -27,6 +30,8 @@ def get_lut_path(path_or_id):
     """
     if path_or_id == "FEM-2Daxis":
         # backwards compatibility
+        warnings.warn("'FEM-2Daxis' is deprecated. Please use 'LE-2D-FEM-19'!",
+                      DeprecationWarning)
         path_or_id = "LE-2D-FEM-19"
     if pathlib.Path(path_or_id).exists():
         lut_path = pathlib.Path(path_or_id)

@@ -357,7 +357,7 @@ def test_bad_lut_data():
     'ignore::dclab.features.emodulus.KnowWhatYouAreDoingWarning')
 def test_extrapolate():
     """Test whether spline interpolation gives reasonable results"""
-    lut, _ = emodulus.load_lut("FEM-2Daxis")
+    lut, _ = emodulus.load_lut("LE-2D-FEM-19")
 
     area_norm = lut[:, 0].max()
     emodulus.normalize(lut[:, 0], area_norm)
@@ -395,7 +395,7 @@ def test_extrapolate():
 
 
 def test_load_lut_from_array():
-    ref_lut, ref_meta = emodulus.load_lut("FEM-2Daxis")
+    ref_lut, ref_meta = emodulus.load_lut("LE-2D-FEM-19")
     lut2, meta2 = emodulus.load_lut((ref_lut, ref_meta))
     assert np.all(ref_lut == lut2)
     assert ref_meta == meta2
@@ -404,7 +404,7 @@ def test_load_lut_from_array():
 
 
 def test_load_lut_from_path():
-    ref_lut, ref_meta = emodulus.load_lut("FEM-2Daxis")
+    ref_lut, ref_meta = emodulus.load_lut("LE-2D-FEM-19")
     path = resource_filename("dclab.features.emodulus",
                              emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
     lut2, meta2 = emodulus.load_lut(path)

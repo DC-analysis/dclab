@@ -9,6 +9,7 @@ import pathlib
 import matplotlib.pylab as plt
 import numpy as np
 from scipy import ndimage
+from scipy.spatial import ConvexHull
 from skimage import morphology
 
 from dclab.features import emodulus
@@ -228,7 +229,10 @@ def lut_preprocess_area_um_deform(lup):
     print("...Post-Processing: Cropping LUT at 290um^2.")
     lut = lut[lut[:, 0] < 290]
     lup.lut_raw = lut
-    lup.convex_hull[lup.convex_hull[:, 0] >= 290, 0] = 290
+
+    # Compute new convex hull of LUT
+    hull = ConvexHull(lut[:, :2])
+    lup.convex_hull = hull.points[hull.vertices, :]
 
     return lut
 
@@ -264,8 +268,9 @@ def lut_preprocess_volume_deform(lup):
     # in a value outside the lut (3700 something). So we just
     # guess a value here:
     lut = lut[lut[:, 0] < 3200, :]
-
     lup.lut_raw = lut
-    lup.convex_hull[lup.convex_hull[:, 0] >= 3200, 0] = 3200
+
+    hull = ConvexHull(lut[:, :2])
+    lup.convex_hull = hull.points[hull.vertices, :]
 
     return lut

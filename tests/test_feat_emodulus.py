@@ -391,7 +391,7 @@ def test_extrapolate():
             more_than_5perc.append([ids, res])
 
     assert len(more_than_5perc) == 0
-    assert valid_ones == 165
+    assert valid_ones == 151
 
 
 def test_load_lut_from_array():

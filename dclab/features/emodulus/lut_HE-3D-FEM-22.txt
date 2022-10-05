@@ -1,8 +1,8 @@
-# This hyperelastic look-up table was extracted from FEM simulations done
-# by Lucas Wittwer. See http://dx.doi.org/10.1021/acsbiomaterials.6b00558
-# and http://arxiv.org/abs/2208.12552 for more information. The table was
-# complemented with a few points near the convex hull by means of fitting
-# 3rd order polynomials and extrapolating towards the convex hull.
+# This hyperelastic look-up table was extracted from FEM simulations by
+# Lucas Wittwer (https://doi.org/10.6084/m9.figshare.20630940). The LUT
+# was additionally complemented near the convex hull by fitting a third
+# order polynomial to the isoelasticity lines and extrapolating the new
+# isoelastics model towards the convex hull.
 #
 # BEGIN METADATA
 # {
@@ -24,6 +24,7 @@
 #   "identifier": "HE-3D-FEM-22",
 #   "method": "FEM",
 #   "model": "hyper-elastic solid / non-Newtonian fluid",
+#   "publication": "https://arxiv.org/abs/2208.12552",
 #   "software": "COMSOL 5.5",
 #   "solid_density": 1000.0,
 #   "solid_density_unit": "kg m^-3",

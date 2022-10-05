@@ -1,6 +1,7 @@
 # These isoelasticity lines were extracted from FEM simulations conducted
-# by Lucas Wittwer. See http://dx.doi.org/10.1021/acsbiomaterials.6b00558
-# and http://arxiv.org/abs/2208.12552 for more information.
+# by Lucas Wittwer and were added to dclab 0.46.0. The model computations
+# were done with an equivalent channel radius for a square channel cross-
+# section using the factor 1.094.
 #
 # BEGIN METADATA
 # {
@@ -22,6 +23,7 @@
 #   "lut identifier": "HE-2D-FEM-22",
 #   "method": "FEM",
 #   "model": "hyper-elastic solid / non-Newtonian fluid",
+#   "publication": "https://arxiv.org/abs/2208.12552",
 #   "software": "COMSOL 5.5",
 #   "solid_density": 1000.0,
 #   "solid_density_unit": "kg m^-3",

@@ -86,6 +86,33 @@ used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
     effects according to :cite:`Herold2017`.
 
 
+HE-2D-FEM-22 and HE-3D-FEM-22
+-----------------------------
+These LUTs are based on a hyperelastic neo-Hookean material model for
+cells with a shear-thinning non-Newtonian fluid (e.g. 0.6% MC-PBS).
+The simulations were done in cylindrical (2D, with same scaling factor 1.094
+as for LE-2D-FEM-19) and square channel (3D) geometries as discussed
+in :cite:`Wittwer2022`. The original data used to generate these LUTs are
+available on figshare :cite:`FigshareWittwer2022`.
+
+.. figure:: figures/emodulus_20um_HE-2D-FEM-22.png
+    :target: images/emodulus_20um_HE-2D-FEM-22.png
+
+    Visualizations of the support and the values of the look-up table (LUT)
+    'HE-2D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C with an
+    effective pixel size of 0.34 µm. The data are corrected for pixelation
+    effects according to :cite:`Herold2017`.
+
+
+.. figure:: figures/emodulus_20um_HE-3D-FEM-22.png
+    :target: images/emodulus_20um_HE-3D-FEM-22.png
+
+    Visualizations of the support and the values of the look-up table (LUT)
+    'HE-3D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C with an
+    effective pixel size of 0.34 µm. The data are corrected for pixelation
+    effects according to :cite:`Herold2017`.
+
+
 external LUT
 ------------
 If you are generating LUTs yourself, you may register them in dclab using

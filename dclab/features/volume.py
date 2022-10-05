@@ -54,7 +54,7 @@ def get_volume(cont, pos_x, pos_y, pix, fix_orientation=False):
     ----------
     - https://de.wikipedia.org/wiki/Kegelstumpf#Formeln
     - Yields identical results to the Matlab script by Geoff Olynyk
-      <http://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve>`_
+      <https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve>`_
     """
     if np.isscalar(pos_x):
         cont = [cont]

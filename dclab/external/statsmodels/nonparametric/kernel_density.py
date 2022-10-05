@@ -8,7 +8,7 @@ References
     Princeton University Press. (2007)
 [2] Racine, Jeff. "Nonparametric Econometrics: A Primer," Foundation
     and Trends in Econometrics: Vol 3: No 1, pp1-88. (2008)
-    http://dx.doi.org/10.1561/0800000009
+    https://dx.doi.org/10.1561/0800000009
 [3] Racine, J., Li, Q. "Nonparametric Estimation of Distributions
     with Categorical and Continuous Data." Working Paper. (2000)
 [4] Racine, J. Li, Q. "Kernel Estimation of Multivariate Conditional

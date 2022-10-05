@@ -411,7 +411,7 @@ class RTDCWriter:
         # Create and Set image attributes:
         # HDFView recognizes this as a series of images.
         # Use np.string_ as per
-        # http://docs.h5py.org/en/stable/strings.html#compatibility
+        # https://docs.h5py.org/en/stable/strings.html#compatibility
         dset.attrs.create('CLASS', np.string_('IMAGE'))
         dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
         dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))

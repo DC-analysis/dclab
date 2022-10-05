@@ -22,7 +22,7 @@ def test_simple_emod_he_2d_fem_22():
 
     assert np.allclose(emod[10, 50], 1.2520069112713232)
     assert np.allclose(emod[50, 50], 0.6442604094086678)
-    assert np.allclose(emod[80, 50],0.575373042660183)
+    assert np.allclose(emod[80, 50], 0.575373042660183)
 
     assert np.allclose(emod[10, 80], 1.638297273096505)
     assert np.allclose(emod[50, 80], 0.8192363745146678)

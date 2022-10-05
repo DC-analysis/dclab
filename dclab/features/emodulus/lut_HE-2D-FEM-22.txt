@@ -2,7 +2,7 @@
 # by Lucas Wittwer. See http://dx.doi.org/10.1021/acsbiomaterials.6b00558
 # and http://arxiv.org/abs/2208.12552 for more information. The table was
 # complemented with a few points near the convex hull by means of fitting
-# 4th order polynomials and extrapolating towards the convex hull.
+# 2nd order polynomials and extrapolating towards the convex hull.
 #
 # BEGIN METADATA
 # {

@@ -391,7 +391,7 @@ def test_extrapolate():
             more_than_5perc.append([ids, res])
 
     assert len(more_than_5perc) == 0
-    assert valid_ones == 177
+    assert valid_ones == 165
 
 
 def test_load_lut_from_array():
@@ -544,7 +544,7 @@ def test_simple_emod():
                                  temperature=23)
 
     assert np.allclose(emod[10, 50], 1.1875799054283109)
-    assert np.allclose(emod[50, 50], 0.5527008920314138)
+    assert np.allclose(emod[50, 50], 0.5527066911133949)
     assert np.allclose(emod[80, 50], 0.4567858941760323)
 
     assert np.allclose(emod[10, 80], 1.5744560306483262)

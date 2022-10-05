@@ -102,10 +102,28 @@ class LutProcessor:
 
         # compute the convex hull
         hull = ConvexHull(lut[:, :2])
+
         self.convex_hull = hull.points[hull.vertices, :]
 
         if self.hook:
             self.hook.lut_preprocess(self)
+
+    def points_in_convex_hull(self, points):
+        convex_hull = np.array(self.convex_hull, copy=True)
+        mx, my = np.mean(convex_hull, axis=0)
+        for ii in range(len(convex_hull)):
+            xi, yi = convex_hull[ii]
+
+            dx = self.xptp / 1000
+            if xi < mx:
+                dx *= -1
+            convex_hull[ii][0] += dx
+
+            dy = self.yptp / 1000
+            if yi < my:
+                dy *= -1
+            convex_hull[ii, 1] += dy
+        return points_in_poly(points, convex_hull)
 
     def normalize_lut(self, lut):
         """Normalize an input LUT to the unit cube"""
@@ -304,7 +322,7 @@ class LutProcessor:
 
         contours = []
         for cc in contours_ip:
-            inside = points_in_poly(cc[:, :2], self.convex_hull)
+            inside = self.points_in_convex_hull(cc[:, :2])
             contours.append(cc[inside])
 
         if self.verbose:
@@ -343,7 +361,7 @@ class LutProcessor:
         if lut is None:
             lut = self.lut_raw
 
-        inside = points_in_poly(lut[:, :2], self.convex_hull)
+        inside = self.points_in_convex_hull(lut[:, :2])
         lut = lut[inside]
 
         wlut = self.normalize_lut(lut)

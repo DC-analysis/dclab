@@ -269,7 +269,7 @@ def test_volume_basic():
     assert np.allclose(data[0][0], [1.60502e+02, 4.38040e-02, 1.06000e+00])
     assert np.allclose(data[0][-1], [4.32113e+02, 1.37544e-01, 1.06000e+00])
     assert np.allclose(data[1][0], [1.61559e+02, 2.60143e-02, 1.34000e+00])
-    assert np.allclose(data[-1][-1], [3.18845e+03, 1.45521e-02, 1.01800e+01])
+    assert np.allclose(data[-1][-1], [3.20209e+03, 1.47986e-02, 1.01800e+01])
 
 
 def test_volume_pxcorr():
@@ -334,7 +334,7 @@ def test_volume_switch():
                   add_px_err=False,
                   px_um=None)
     assert np.allclose(data[0][0], [4.38040e-02, 1.60502e+02, 1.06000e+00])
-    assert np.allclose(data[-1][-1], [1.45521e-02, 3.18845e+03, 1.01800e+01])
+    assert np.allclose(data[-1][-1], [1.47986e-02, 3.20209e+03, 1.01800e+01])
 
 
 def test_volume_switch_scale():
@@ -351,8 +351,8 @@ def test_volume_switch_scale():
     assert np.allclose(data[0][0], [4.38040e-02,
                                     1.60502e+02 * (25 / 20)**3,
                                     1.06000e+00 * (20 / 25)**3])
-    assert np.allclose(data[-1][-1], [1.45521e-02,
-                                      3.18845e+03 * (25 / 20)**3,
+    assert np.allclose(data[-1][-1], [1.47986e-02,
+                                      3.20209e+03 * (25 / 20)**3,
                                       1.01800e+01 * (20 / 25)**3])
 
 

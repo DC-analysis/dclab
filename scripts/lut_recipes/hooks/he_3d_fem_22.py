@@ -4,7 +4,6 @@ https://doi.org/10.6084/m9.figshare.20630940.v1
 
 See the individual functions for details.
 """
-from dclab.polygon_filter import points_in_poly
 import matplotlib.pylab as plt
 import numpy as np
 from scipy import ndimage
@@ -70,7 +69,7 @@ def lut_preprocess(lup):
         new_cc[:, 0] = np.linspace(xrange[0], xrange[1], 20)
         new_cc[:, 1] = ip(new_cc[:, 0])
         new_cc[:, 2] = lev
-        inside = points_in_poly(new_cc[:, :2], lup.convex_hull)
+        inside = lup.points_in_convex_hull(new_cc[:, :2])
         # Add a few points outside the convex hull for isoelastics computation
         for ii in range(len(inside)):
             if not inside[ii]:

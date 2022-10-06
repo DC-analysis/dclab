@@ -94,7 +94,8 @@ for lut_name in [
                 pc = ax.pcolormesh(aa, dd, emod, shading="nearest", cmap=cmap,
                                    norm=norm, zorder=11)
                 ax.grid(zorder=10)
-                ax.yaxis.set_major_locator(MultipleLocator(0.05))  # ticks every .5
+                # ticks every .5
+                ax.yaxis.set_major_locator(MultipleLocator(0.05))
 
         axes[2][2].set_ylim(*ylim)
         axes[2][2].set_xlim(*xlim[channel_width])
@@ -105,7 +106,7 @@ for lut_name in [
 
         mappable = cm.ScalarMappable(norm=norm, cmap=cmap)
         plt.colorbar(pc, orientation="vertical", cax=cax, extend="both",
-                     label="apparent Young's modulus ({}) [kPa]".format(lut_name))
+                     label=f"apparent Young's modulus ({lut_name}) [kPa]")
 
         plt.savefig("_emodulus_{}um_{}.png".format(channel_width, lut_name),
                     dpi=150)

@@ -69,13 +69,13 @@ def set_temporary_feature(rtdc_ds, feature, data):
     """
     if not feat_logic.feature_exists(feature):
         raise ValueError(
-            "Temporary feature '{}' has not been registered!".format(feature))
+            f"Temporary feature '{feature}' has not been registered!")
     if isinstance(rtdc_ds, RTDC_Hierarchy):
         raise NotImplementedError("Setting temporary features for hierarchy "
                                   "children not implemented yet!")
     if len(data) != len(rtdc_ds):
-        raise ValueError("The temporary feature `data` must have same length "
-                         "as the dataset. Expected length {}, got length "
-                         "{}!".format(len(rtdc_ds), len(data)))
+        raise ValueError(f"The temporary feature {feature} must have same "
+                         f"length as the dataset. Expected length "
+                         f"{len(rtdc_ds)}, got length {len(data)}!")
     feat_logic.check_feature_shape(feature, data)
     rtdc_ds._usertemp[feature] = data

@@ -1,5 +1,7 @@
 0.46.1
  - fix: ConfigurationDict should not subclass from dict (#174)
+ - ref: use f-strings and print correct feature for temporary feature
+   error message (#193)
 0.46.0
  - BREAKING CHANGE: The LUT data for LE-2D-FEM-19 had to be revised,
    because the simulation support was sparse at high deformations (#191)

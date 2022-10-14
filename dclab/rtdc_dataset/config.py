@@ -1,5 +1,6 @@
 """RT-DC dataset configuration"""
 import copy
+from collections import UserDict
 import json
 import numbers
 import pathlib
@@ -31,7 +32,7 @@ class BadUserConfigurationValueWarning(UserWarning):
     pass
 
 
-class ConfigurationDict(dict):
+class ConfigurationDict(UserDict):
     def __init__(self, section=None, *args, **kwargs):
         """A case-insensitive dict that is section-aware
 
@@ -249,6 +250,11 @@ class Configuration(object):
         Note that the data type of some configuration options
         will likely be lost.
         """
+        # Dear future person,
+        # if you would like to implement `fromjson`, you will have
+        # to set the `section` properly in the ConfigurationDict.
+        # Besides the data types, there might be other things to
+        # look out for. ~paulmueller
         return json.dumps(dict(self), cls=ConfigurationJSONEncode)
 
     def keys(self):
@@ -311,7 +317,9 @@ class CaseInsensitiveDict(ConfigurationDict):
 
 class ConfigurationJSONEncode(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, np.ndarray):
+        if isinstance(obj, ConfigurationDict):
+            return dict(obj)
+        elif isinstance(obj, np.ndarray):
             return obj.tolist()
         elif isinstance(obj, numbers.Integral):
             return int(obj)

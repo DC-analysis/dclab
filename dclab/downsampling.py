@@ -1,5 +1,4 @@
 """Content-based downsampling of ndarrays"""
-
 import numpy as np
 
 from .cached import Cache
@@ -102,7 +101,7 @@ def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
 
     if remove_invalid:
         # Remove nan and inf values straight from the beginning.
-        # This might results in arrays smaller than `samples`,
+        # This might result in arrays smaller than `samples`,
         # but it makes sure that no inf/nan values will be plotted.
         bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
         ad = a[~bad]

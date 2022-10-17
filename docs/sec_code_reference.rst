@@ -208,6 +208,8 @@ downsampling
    :members:
    :undoc-members:
 
+   .. autofunction:: downsample_grid
+
 
 .. _sec_ref_features:
 

@@ -1,3 +1,6 @@
+0.46.2
+ - ref: use `functools.update_wrapper` in `Cache` wrapper
+ - docs: make sure `dclab.downsampling.downsample_grid` is in code ref
 0.46.1
  - fix: ConfigurationDict should not subclass from dict (#174)
  - ref: use f-strings and print correct feature for temporary feature

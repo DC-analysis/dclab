@@ -1,16 +1,16 @@
+"""Cache for fast "recomputation"
 """
-Cache for fast "recomputation"
-"""
-
+import functools
 import gc
 import hashlib
+
 import numpy as np
 
 
 MAX_SIZE = 100
 
 
-class Cache(object):
+class Cache:
     _cache = {}
     _keys = []
 
@@ -38,6 +38,7 @@ class Cache(object):
         `Cached` might return values of the wrong method.
         """
         self.func = func
+        functools.update_wrapper(self, func)
 
     def __call__(self, *args, **kwargs):
         self.ahash = hashlib.md5()
@@ -71,12 +72,8 @@ class Cache(object):
                 Cache._cache.pop(delref)
             return data
 
-    @property
-    def __doc__(self):
-        return self.func.__doc__
-
     def _update_hash(self, arg):
-        """ Takes an argument and updates the hash.
+        """Takes an argument and updates the hash.
         The argument can be an np.array, string, or list
         of things that are convertable to strings.
         """

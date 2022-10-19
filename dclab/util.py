@@ -1,11 +1,13 @@
 """Utility methods"""
 import functools
 import hashlib
+import numbers
 import pathlib
 import warnings
 
 import h5py
 import numpy as np
+from .rtdc_dataset.config import Configuration, ConfigurationDict
 
 
 def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
@@ -86,12 +88,18 @@ def hashobj(obj):
 
 
 def obj2bytes(obj):
-    """Bytes representation of an object for hashing"""
+    """Bytes representation of an object for hashing
+
+    Note that there is no guarantee that the bytes representation
+    returned is reproducible across sessions. This is currently the
+    case when an :class:`.RTDCBase` instance is passed. There is no
+    opinion on wether/how this should be changed.
+    """
     if isinstance(obj, str):
         return obj.encode("utf-8")
     elif isinstance(obj, pathlib.Path):
         return obj2bytes(str(obj))
-    elif isinstance(obj, (bool, int, float)):
+    elif isinstance(obj, (bool, numbers.Number)):
         return str(obj).encode("utf-8")
     elif obj is None:
         return b"none"
@@ -104,9 +112,25 @@ def obj2bytes(obj):
     elif isinstance(obj, dict):
         return obj2bytes(sorted(obj.items()))
     elif hasattr(obj, "identifier"):
+        # For RTDCBase, this identifier is not reproducible in-between
+        # sessions. We might want to change this to something that is
+        # reproducible in the future (if the need arises).
         return obj2bytes(obj.identifier)
     elif isinstance(obj, h5py.Dataset):
-        return obj2bytes((obj.file.filename, obj.name))
+        return obj2bytes([
+            # path in the HDF5 file
+            obj.name,
+            # filename
+            obj.file.filename,
+            # when the file was changed
+            pathlib.Path(obj.file.filename).stat().st_mtime,
+            # size of the file
+            pathlib.Path(obj.file.filename).stat().st_size,
+            ])
+    elif isinstance(obj, Configuration):
+        return obj2bytes(obj.tostring())
+    elif isinstance(obj, ConfigurationDict):
+        return obj2bytes(dict(obj))
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))

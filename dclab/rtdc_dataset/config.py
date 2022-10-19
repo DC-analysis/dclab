@@ -255,7 +255,9 @@ class Configuration(object):
         # to set the `section` properly in the ConfigurationDict.
         # Besides the data types, there might be other things to
         # look out for. ~paulmueller
-        return json.dumps(dict(self), cls=ConfigurationJSONEncode)
+        return json.dumps(dict(self),
+                          cls=ConfigurationJSONEncode,
+                          sort_keys=True)
 
     def keys(self):
         """Return the configuration keys (sections)"""

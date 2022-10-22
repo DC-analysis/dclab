@@ -60,6 +60,7 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+docs/my-data.rtdc
 docs/export_example.rtdc
 docs/export_example.tsv
 docs/dclab.bib.sav

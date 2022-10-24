@@ -35,7 +35,7 @@ def import_plugin_feature_script(plugin_path):
 
     Notes
     -----
-    There can be several plugin features being calculated in one recipe.
+    One recipe may define multiple plugin features.
     """
     path = pathlib.Path(plugin_path)
     if not path.exists():
@@ -77,7 +77,7 @@ def load_plugin_feature(plugin_path):
 
     Notes
     -----
-    There can be several plugin features being calculated in one recipe.
+    One recipe may define multiple plugin features.
 
     See Also
     --------

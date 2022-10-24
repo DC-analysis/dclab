@@ -62,12 +62,15 @@ Writing a plugin feature recipe
 ===============================
 A plugin feature recipe is defined in a Python script (e.g. `my_dclab_plugin.py`).
 A plugin feature recipe contains a function and an ``info`` dictionary.
-The function calculates the desired feature, and the dictionary defines
-any extra (meta-)information of the feature. Both "method" (the function)
-and "feature names" must be included in the ``info`` dictionary.
+The function calculates the desired feature and can even calculate several
+features, while  the dictionary defines any extra (meta-)information of the
+calculated feature (or features).
+Both, "method" (the function) and "feature names", must be included in the
+``info`` dictionary.
 Note that many of the items in the dictionary must be lists!
-Also note that a feature recipe may contain *multiple* features.
-Below are three examples of creating and using plugin features.
+Also note that in case a feature recipe contains *multiple* features, there
+must be only one function for their calculation and only one ``info``
+dictionary. Below are three examples of creating and using plugin features.
 
 .. note::
 
@@ -89,12 +92,12 @@ Advanced plugin feature recipe
 In :download:`this example <../examples/plugin_example.py>`, the function
 :func:`compute_some_new_features` defines two basic features:
 `"circ_per_area"` and `"circ_times_area"`. Notice that both features are
-computed in one function:
+computed in one function and that there is only one ``info`` dictionary:
 
 .. literalinclude:: ../examples/plugin_example.py
    :language: python
 
-Here, all possible keys in the `info` dictionaryare shown (but not all are used).
+Here, all possible keys in the `info` dictionary are shown (but not all are used).
 The keys are additional keyword arguments to the
 :class:`AncillaryFeature <dclab.rtdc_dataset.feat_anc_core.ancillary_feature.AncillaryFeature>`
 class:

@@ -32,6 +32,10 @@ def import_plugin_feature_script(plugin_path):
     ------
     PluginImportError
         If the plugin can not be found
+
+    Notes
+    -----
+    One recipe may define multiple plugin features.
     """
     path = pathlib.Path(plugin_path)
     if not path.exists():
@@ -70,6 +74,10 @@ def load_plugin_feature(plugin_path):
     ------
     ValueError
         If the script dictionary "feature names" are not a list
+
+    Notes
+    -----
+    One recipe may define multiple plugin features.
 
     See Also
     --------

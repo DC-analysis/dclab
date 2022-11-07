@@ -22,7 +22,6 @@ Documentation
 
    sec_changelog
    sec_z_bib
-   sec_imprint
 
 
 Indices and tables

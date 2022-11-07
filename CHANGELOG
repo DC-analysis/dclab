@@ -1,6 +1,7 @@
 0.46.3
  - docs: make compilation run on Windows
  - docs: update information on plugin features (#151)
+ - ref: remove Zellmechanik Dresden branding
 0.46.2
  - fix: support passing instances of `Configuration` and
    `ConfigurationDict` to `dclab.util.obj2bytes`

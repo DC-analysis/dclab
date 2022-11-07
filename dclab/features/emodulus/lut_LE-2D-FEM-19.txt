@@ -14,7 +14,7 @@
 # were complemented by extrapolation of 3rd order polynomial fits to
 # the upper parts (medium to high deformation) of the look-up table.
 # This is discussed in more detail in the online issue tracker found
-# at https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/191.
+# at https://github.com/DC-analysis/dclab/issues/191.
 #
 # BEGIN METADATA
 # {

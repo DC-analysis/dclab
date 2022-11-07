@@ -32,9 +32,9 @@ with respect to the following correction terms:
   significant effect on the interpolated Young's modulus, a systematic error
   in deformation may lead to a strong underestimation of the Young's modulus.
   A deeper analysis is visualized in the plot
-  `pixelation_correction.png <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/scripts/pixelation_correction.png>`_
+  `pixelation_correction.png <https://github.com/DC-analysis/dclab/blob/master/scripts/pixelation_correction.png>`_
   which was created with
-  `pixelation_correction.py <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/scripts/pixelation_correction.py>`_.
+  `pixelation_correction.py <https://github.com/DC-analysis/dclab/blob/master/scripts/pixelation_correction.py>`_.
   Thus, before interpolation, the measured deformation must be corrected
   using a hard-coded correction function :cite:`Herold2017`.
   The pixelation correction is implemented in the submodule
@@ -124,7 +124,7 @@ the function :func:`dclab.features.emodulus.load.register_lut`:
     dclab.features.emodulus.register_lut("/path/to/lut.txt")
 
 Please make sure that you adhere to the file format. An example can be found
-`here <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/dclab/features/emodulus/emodulus_lut_LE-2D-FEM-19.txt>`_.
+`here <https://github.com/DC-analysis/dclab/blob/master/dclab/features/emodulus/emodulus_lut_LE-2D-FEM-19.txt>`_.
 
 
 

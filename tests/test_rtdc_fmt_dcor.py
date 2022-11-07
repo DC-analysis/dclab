@@ -288,7 +288,7 @@ def test_is_dcor_url():
 
 
 def test_load_nonexistent_file_issue81():
-    """https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/81"""
+    """https://github.com/DC-analysis/dclab/issues/81"""
     try:
         dclab.new_dataset("path/does/not/exist.rtdc")
     except FileNotFoundError:

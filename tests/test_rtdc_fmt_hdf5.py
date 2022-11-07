@@ -183,7 +183,7 @@ def test_hdf5_shape_trace():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ignore_empty_hdf5_meta_data_attribute():
     """Ignore empty hdf5 attributes / dclab metadata"""
-    # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
+    # see https://github.com/DC-analysis/dclab/issues/109
     path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # add empty attribute
     with h5py.File(path, "r+") as h5:
@@ -200,7 +200,7 @@ def test_ignore_empty_hdf5_meta_data_attribute():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ignore_unknown_hdf5_meta_data_attribute():
     """Ignore unknown hdf5 attributes / dclab metadata"""
-    # see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/109
+    # see https://github.com/DC-analysis/dclab/issues/109
     path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # add empty attribute
     with h5py.File(path, "r+") as h5:

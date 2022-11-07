@@ -52,7 +52,7 @@ CFG_METADATA = {
         # of the possibility of integer overflows. Furthermore, DCKit can
         # set this parameter without modifying the original trace data
         # to correct/remove negative trace data
-        # (see https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues/101).
+        # (see https://github.com/DC-analysis/dclab/issues/101).
         # Note that traces accessed from RTDCBase instances are never
         # background-corrected!
         ["baseline 1 offset", fint, "Baseline offset channel 1"],

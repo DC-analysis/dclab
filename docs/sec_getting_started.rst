@@ -9,7 +9,7 @@ To install dclab, use one of the following methods:
     
 * from `PyPI <https://pypi.python.org/pypi/dclab>`_:
     ``pip install dclab[all]``
-* from `sources <https://github.com/ZellMechanik-Dresden/dclab>`_:
+* from `sources <https://github.com/DC-analysis/dclab>`_:
     ``pip install .[all]``
 
 The extra key ``[all]`` installs all possible dependencies in any
@@ -36,7 +36,7 @@ available for your platform and Python version, `Cython <http://cython.org/>`_
 will be installed to build the required dclab extensions. If this process
 fails, please request a binary wheel for your platform (e.g. Windows 64bit)
 and Python version (e.g. 3.6) by creating a new
-`issue <https://github.com/ZellMechanik-Dresden/dclab/issues>`_.
+`issue <https://github.com/DC-analysis/dclab/issues>`_.
 
 
 Use cases
@@ -53,7 +53,7 @@ Here is a list of use cases that would motivate an installation of dclab.
   multiple measurements at a time. Note that you should keep the original
   .tdms files backed-up somewhere, because there might be future
   improvements or bug fixes from which you would like to benefit.
-  Please note that `DCKit <https://github.com/ZELLMECHANIK-DRESDEN/DCKit/>`_
+  Please note that `DCKit <https://github.com/DC-analysis/DCKit/>`_
   offers a graphical user interface for batch conversion from .tdms to .rtdc.
 - You would like to apply a simple set of filters (e.g. polygon filters that you
   exported from within Shape-Out) to every new measurement you take and
@@ -76,7 +76,7 @@ Here is a list of use cases that would motivate an installation of dclab.
 If you are still unsure about whether to use dclab or not, you might
 want to look at the :ref:`example section <sec_examples>`. If you need
 advice, do not hesitate to
-`create an issue <https://github.com/ZELLMECHANIK-DRESDEN/dclab/issues>`_.
+`create an issue <https://github.com/DC-analysis/dclab/issues>`_.
 
 
 Basic usage
@@ -159,7 +159,7 @@ If you use dclab in a scientific publication, please cite it with:
 
    Paul Müller and others (2015), dclab version X.X.X: Python library for the
    post-measurement analysis of real-time deformability cytometry data sets
-   [Software]. Available at https://github.com/ZELLMECHANIK-DRESDEN/dclab.
+   [Software]. Available at https://github.com/DC-analysis/dclab.
 
 If the journal does not accept ``and others``, you can fill in the missing
-names from the `credits file <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/CREDITS>`_.
+names from the `credits file <https://github.com/DC-analysis/dclab/blob/master/CREDITS>`_.

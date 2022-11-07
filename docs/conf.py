@@ -35,7 +35,7 @@ plot_include_source = True
 
 # Display link to GitHub repo instead of doc on rtfd
 rst_prolog = """
-:github_url: https://github.com/ZELLMECHANIK-DRESDEN/dclab
+:github_url: https://github.com/DC-analysis/dclab
 """
 
 # -- General configuration ------------------------------------------------
@@ -83,7 +83,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'dclab'
-github_project = 'ZELLMECHANIK-DRESDEN/' + project
+github_project = 'DC-analysis/' + project
 credits_path = pathlib.Path(__file__).parent.parent / "CREDITS"
 if credits_path.exists():
     authors = [c.strip() for c in credits_path.read_text().split("\n")

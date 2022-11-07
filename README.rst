@@ -39,7 +39,7 @@ more, please (fork dclab and) create a separate branch,
 e.g. ``my_new_feature_dev``, and create a pull-request
 once you are done making your changes.
 Please make sure to edit the 
-`Changelog <https://github.com/ZELLMECHANIK-DRESDEN/dclab/blob/master/CHANGELOG>`__. 
+`Changelog <https://github.com/DC-analysis/dclab/blob/master/CHANGELOG>`__.
 
 **Very important:** Please always try to use ::
 
@@ -96,12 +96,12 @@ Appveyor and GitHub Actions will then automatically build source package and whe
 and publish them on PyPI.
 
 
-.. |dclab| image:: https://raw.github.com/ZELLMECHANIK-DRESDEN/dclab/master/docs/logo/dclab.png
+.. |dclab| image:: https://raw.github.com/DC-analysis/dclab/master/docs/logo/dclab.png
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
-.. |Build Status| image:: https://img.shields.io/github/workflow/status/ZELLMECHANIK-DRESDEN/dclab/Checks
-   :target: https://github.com/ZELLMECHANIK-DRESDEN/dclab/actions?query=workflow%3AChecks
-.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/ZELLMECHANIK-DRESDEN/dclab/master.svg
-   :target: https://codecov.io/gh/ZELLMECHANIK-DRESDEN/dclab
+.. |Build Status| image:: https://img.shields.io/github/workflow/status/DC-analysis/dclab/Checks
+   :target: https://github.com/DC-analysis/dclab/actions?query=workflow%3AChecks
+.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/dclab/master.svg
+   :target: https://codecov.io/gh/DC-analysis/dclab
 .. |Docs Status| image:: https://readthedocs.org/projects/dclab/badge/?version=latest
    :target: https://readthedocs.org/projects/dclab/builds/

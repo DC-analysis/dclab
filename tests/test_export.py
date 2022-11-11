@@ -391,6 +391,26 @@ def test_hdf5_index_online_replaces_index():
         assert "index_online" in h5["events"]
 
 
+@pytest.mark.parametrize("logs", [True, False])
+def test_hdf5_logs(logs):
+    keys = ["area_um", "deform", "time", "frame", "index_online"]
+    ddict = example_data_dict(size=10, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+    ds1.logs["iratrax"] = ["don't", "eat", "brown", "apples"]
+
+    edest = pathlib.Path(tempfile.mkdtemp())
+    f1 = edest / "dclab_test_export_hdf5_1.rtdc"
+    ds1.export.hdf5(f1, keys, logs=logs)
+    with h5py.File(f1, "r") as h5:
+        if logs:
+            assert "source_iratrax" in h5.get("logs", {})
+        else:
+            assert "source_iratrax" not in h5.get("logs", {})
+
+
 def test_hdf5_ml_score():
     data = {"ml_score_ds9": [.80, .31, .12, .01, .59, .40, .52],
             "ml_score_dsc": [.12, .52, .21, .24, .30, .22, .79],

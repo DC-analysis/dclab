@@ -159,8 +159,8 @@ class Export(object):
                            text_kw_pr=meta_data,
                            )
 
-    def hdf5(self, path, features=None, filtered=True, override=False,
-             compression_kwargs=None, compression="deprecated",
+    def hdf5(self, path, features=None, filtered=True, logs=False,
+             override=False, compression_kwargs=None, compression="deprecated",
              skip_checks=False):
         """Export the data of the current instance to an HDF5 file
 
@@ -177,6 +177,9 @@ class Export(object):
         filtered: bool
             If set to `True`, only the filtered data
             (index in ds.filter.all) are used.
+        logs: bool
+            Whether to store the logs of the original file prefixed with
+            "source_" to the output file.
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
@@ -262,6 +265,10 @@ class Export(object):
                         compression_kwargs=compression_kwargs) as hw:
             # write meta data
             hw.store_metadata(meta)
+            if logs:
+                # write logs
+                for log in self.rtdc_ds.logs:
+                    hw.store_log(f"source_{log}", self.rtdc_ds.logs[log])
             # write each feature individually
             for feat in features:
                 if (filtarr is None or

@@ -1,4 +1,3 @@
-
 #: List of scalar (one scalar value per event) features. This
 #: list does not include the `ml_score_???` features. If you
 #: need find out whether a feature name is valid, please use
@@ -48,6 +47,8 @@ FEATURES_SCALAR = [
     ["fl3_npeaks", "FL-3 number of peaks"],
     ["fl3_pos", "FL-3 position of peak [µs]"],
     ["fl3_width", "FL-3 width [µs]"],
+    # Sum of the flow rates for sample and sheath flow
+    ["flow_rate", "Flow rate [µLs⁻¹]"],
     ["frame", "Video frame number"],
     ["g_force", "Gravitational force in multiples of g"],
     # index starts with 1
@@ -70,6 +71,8 @@ FEATURES_SCALAR = [
     # "m10"/"m00" and "m01"/"m00" of the convex hull of "contour"
     ["pos_x", "Position along channel axis [µm]"],
     ["pos_y", "Position lateral in channel [µm]"],
+    # Sum of the pressures applied to sample and sheath flow
+    ["pressure", "Pressure [mPa]"],
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
     ["temp", "Chip temperature [°C]"],

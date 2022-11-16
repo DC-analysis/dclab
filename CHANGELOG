@@ -1,3 +1,8 @@
+0.46.5
+ - enh: new staticmethod RTDC_TDMS.extract_tdms_config for
+   extracting metadata from tdms-based datasets; This method
+   optionally returns a list of paths used for extracting metadata
+ - ref: cleanup in RTDC_TDMS with dict.setdefault
 0.46.4
  - enh: allow to export logs alongside HDF5 data (#180)
  - enh: add features flow_rate and pressure

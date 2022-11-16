@@ -1,4 +1,5 @@
 """RT-DC .tdms file format"""
+import copy
 import pathlib
 import time
 
@@ -21,7 +22,6 @@ else:
     from .event_image import ImageColumn
     from .event_mask import MaskColumn
     from .event_trace import TraceColumn
-    from . import naming
 
 import numpy as np
 
@@ -30,6 +30,8 @@ from ...util import hashobj, hashfile
 
 from ..config import Configuration
 from ..core import RTDCBase
+
+from . import naming
 
 
 class RTDC_TDMS(RTDCBase):
@@ -97,43 +99,56 @@ class RTDC_TDMS(RTDCBase):
     def __exit__(self, type, value, tb):
         del self._events["image"]._image_data
 
-    def _init_data_with_tdms(self, tdms_filename):
-        """Initializes the current RT-DC dataset with a tdms file.
+    @staticmethod
+    def extract_tdms_config(path,
+                            features_available=None,
+                            ret_source_files=False,
+                            ignore_missing=False):
+        """Extract as much metadata as possible for a .tdms dataset
+
+        Parameters
+        ----------
+        path: str or pathlib.Path
+            A path representing the dataset. This could be either a
+            .tdms file or an .avi file. The only thing important here
+            is the prefix (before the underscore "_") which determines
+            the location of the camera.ini and para.ini files.
+        features_available: list of str
+            List of features known to be available for this dataset.
+            Used for defining e.g. fluorescnence metadata.
+        ret_source_files: bool
+            Return the list of files used to extract metadata from.
+        ignore_missing: bool
+            Nevermind when para.ini or camera.ini files are missing.
+
+        Returns
+        -------
+        config: .Configuration
+            The metadata Configuration instance
+        source_paths: str
+            List of metadata file paths, only returned when ret_source_files
+            is True
         """
-        tdms_file = nptdms.TdmsFile(str(tdms_filename))
-        # time is always there
-        table = "Cell Track"
-        # Edit naming.dclab2tdms to add features
-        for arg in naming.tdms2dclab:
-            try:
-                data = tdms_file[table][arg].data
-            except KeyError:
-                pass
-            else:
-                if data is None or len(data) == 0:
-                    # Ignore empty features. npTDMS treats empty
-                    # features in the following way:
-                    # - in nptdms 0.8.2, `data` is `None`
-                    # - in nptdms 0.9.0, `data` is an array of length 0
-                    continue
-                self._events[naming.tdms2dclab[arg]] = data
-        if len(self._events) == 0:
-            raise IncompleteTDMSFileFormatError(
-                "No usable feature data found in '{}'!".format(tdms_filename))
+        if features_available is None:
+            features_available = []
+        mid = path.name.split("_")[0]
         # Set up configuration
-        config_paths = [self.path.with_name(self._mid + "_para.ini"),
-                        self.path.with_name(self._mid + "_camera.ini")]
-        for cp in config_paths:
-            if not cp.exists():
-                raise IncompleteTDMSFileFormatError(
-                    "Missing file: {}".format(cp))
-        shpin_set = self.path.with_name(self._mid + "_SoftwareSettings.ini")
+        config_paths = [path.with_name(mid + "_para.ini"),
+                        path.with_name(mid + "_camera.ini")]
+        if not ignore_missing:
+            for cp in config_paths:
+                if not cp.exists():
+                    raise IncompleteTDMSFileFormatError(
+                        "Missing file: {}".format(cp))
+        shpin_set = path.with_name(mid + "_SoftwareSettings.ini")
         if shpin_set.exists():
             config_paths.append(shpin_set)
 
         tdms_config = Configuration(files=config_paths, disable_checks=True)
 
         dclab_config = Configuration()
+
+        source_files = copy.copy(config_paths)
 
         for cfgii in [naming.configmap, naming.config_map_set]:
             for section in cfgii:
@@ -149,8 +164,9 @@ class RTDC_TDMS(RTDCBase):
                         dclab_config[section][pname] = convfunc(meta)
 
         # Additional information from log file
-        rtfdc_log = self.path.with_name(self._mid + "_log.ini")
+        rtfdc_log = path.with_name(mid + "_log.ini")
         if rtfdc_log.exists():
+            source_files.append(rtfdc_log)
             with rtfdc_log.open("r", errors="replace") as fd:
                 loglines = fd.readlines()
             for line in loglines:
@@ -159,8 +175,9 @@ class RTDC_TDMS(RTDCBase):
                     if sv:
                         dclab_config["setup"]["software version"] = sv
 
-        rtfdc_parm = self.path.with_name("parameters.txt")
+        rtfdc_parm = path.with_name("parameters.txt")
         if rtfdc_parm.exists():
+            source_files.append(rtfdc_parm)
             with rtfdc_parm.open("r", errors="replace") as fd:
                 parlines = fd.readlines()
             p1 = None
@@ -204,13 +221,25 @@ class RTDC_TDMS(RTDCBase):
             for ii in range(1, 4):
                 chn = "channel {} name".format(ii)
                 fln = "fl{}_max".format(ii)
-                if fln in self and chn not in dclab_config["fluorescence"]:
+                if (fln in features_available
+                        and chn not in dclab_config["fluorescence"]):
                     dclab_config["fluorescence"][chn] = "FL{}".format(ii)
             lc = bool(p1) + bool(p2) + bool(p3)
             dclab_config["fluorescence"]["laser count"] = lc
             li = (p1 is not None) + (p2 is not None) + (p3 is not None)
             dclab_config["fluorescence"]["lasers installed"] = li
             dclab_config["fluorescence"]["channels installed"] = 3
+
+        # fluorescence
+        if ("fluorescence" in dclab_config
+            or "fl1_max" in features_available
+            or "fl2_max" in features_available
+                or "fl3_max" in features_available):
+            # hardware-defined (always the same)
+            dclab_config["fluorescence"].setdefault("bit depth", 16)
+            dclab_config["fluorescence"].setdefault("laser 1 lambda", 488.)
+            dclab_config["fluorescence"].setdefault("laser 2 lambda", 561.)
+            dclab_config["fluorescence"].setdefault("laser 3 lambda", 640.)
 
         # Additional information from commented-out log-file (manual)
         with config_paths[0].open("r", errors="replace") as fd:
@@ -233,8 +262,86 @@ class RTDC_TDMS(RTDCBase):
                         val = float(ll.split("=")[1])
                         dclab_config["fluorescence"]["signal max"] = val
 
-        self.config = dclab_config
-        self._complete_config_tdms(tdms_config)
+        if dclab_config["imaging"].get("frame rate") == 0:
+            dclab_config["imaging"].pop("frame rate")
+
+        if dclab_config["setup"].get("flow rate") == 0:
+            dclab_config["setup"].pop("flow rate")
+
+        if "channel width" not in dclab_config["setup"]:
+            if "channel width" in tdms_config["general"]:
+                channel_width = tdms_config["general"]["channel width"]
+            elif dclab_config["setup"].get("flow rate", 0) < 0.16:
+                channel_width = 20.
+            else:
+                channel_width = 30.
+            dclab_config["setup"]["channel width"] = channel_width
+
+        if "sample" not in dclab_config["experiment"]:
+            # Measured sample or user-defined reference
+            sample = get_project_name_from_path(path)
+            dclab_config["experiment"]["sample"] = sample
+
+        # imaging
+        dclab_config["imaging"].setdefault("pixel size", 0.34)
+
+        # medium convention for CellCarrierB
+        if ("medium" in dclab_config["setup"] and
+                dclab_config["setup"]["medium"].lower() == "cellcarrier b"):
+            dclab_config["setup"]["medium"] = "CellCarrierB"
+
+        # replace "+" with ","
+        if "module composition" in dclab_config["setup"]:
+            mc = dclab_config["setup"]["module composition"]
+            if mc.count("+"):
+                mc2 = ", ".join([m.strip() for m in mc.split("+")])
+                dclab_config["setup"]["module composition"] = mc2
+
+        dclab_config["imaging"].setdefault("flash device", "LED")
+        dclab_config["imaging"].setdefault("flash duration", 2.0)
+        dclab_config["imaging"].setdefault("roi position x", 0)
+        dclab_config["imaging"].setdefault("roi position y", 0)
+
+        if mid.startswith("m") and mid[1] in "0123456789":
+            run_index = int(mid.strip("mM"))
+        else:
+            run_index = 1
+        dclab_config["experiment"].setdefault("run index", run_index)
+
+        if ret_source_files:
+            return dclab_config, source_files
+        else:
+            return dclab_config
+
+    def _init_data_with_tdms(self, tdms_filename):
+        """Initializes the current RT-DC dataset with a tdms file.
+        """
+        tdms_file = nptdms.TdmsFile(str(tdms_filename))
+        # time is always there
+        table = "Cell Track"
+        # Edit naming.dclab2tdms to add features
+        for arg in naming.tdms2dclab:
+            try:
+                data = tdms_file[table][arg].data
+            except KeyError:
+                pass
+            else:
+                if data is None or len(data) == 0:
+                    # Ignore empty features. npTDMS treats empty
+                    # features in the following way:
+                    # - in nptdms 0.8.2, `data` is `None`
+                    # - in nptdms 0.9.0, `data` is an array of length 0
+                    continue
+                self._events[naming.tdms2dclab[arg]] = data
+        if len(self._events) == 0:
+            raise IncompleteTDMSFileFormatError(
+                "No usable feature data found in '{}'!".format(tdms_filename))
+
+        self.config, config_paths = self.extract_tdms_config(
+            self.path,
+            features_available=sorted(self._events.keys()),
+            ret_source_files=True)
+        self._complete_config_with_data()
 
         self._init_filters()
 
@@ -248,78 +355,35 @@ class RTDC_TDMS(RTDCBase):
             pl = self.path.with_name(name)
             if pl.exists():
                 log_files.append(pl)
-        for pp in log_files:
+        for pp in sorted(set(log_files)):  # avoid duplicates
             with pp.open("r", errors="replace") as f:
                 cfg = [s.strip() for s in f.readlines()]
             self.logs[pp.name] = cfg
 
-    def _complete_config_tdms(self, residual_config={}):
-        # remove zero frame rate
-        if ("frame rate" in self.config["imaging"]
-                and self.config["imaging"]["frame rate"] == 0):
-            self.config["imaging"].pop("frame rate")
+    def _complete_config_with_data(self):
         # measurement start time
         tse = self.path.stat().st_mtime
         if "time" in self:
             # correct for duration of experiment
             tse -= self["time"][-1]
         loct = time.localtime(tse)
-        if "date" not in self.config["experiment"]:
-            # Date of measurement ('YYYY-MM-DD')
-            datestr = time.strftime("%Y-%m-%d", loct)
-            self.config["experiment"]["date"] = datestr
-        if "event count" not in self.config["experiment"]:
-            # Number of recorded events
-            self.config["experiment"]["event count"] = len(self)
-        if "sample" not in self.config["experiment"]:
-            # Measured sample or user-defined reference
-            sample = get_project_name_from_path(self.path)
-            self.config["experiment"]["sample"] = sample
-        if "time" not in self.config["experiment"]:
-            # Start time of measurement ('HH:MM:SS')
-            timestr = time.strftime("%H:%M:%S", loct)
-            self.config["experiment"]["time"] = timestr
-        # fluorescence
-        if ("fluorescence" in self.config
-            or "fl1_max" in self
-            or "fl2_max" in self
-                or "fl3_max" in self):
-            if "bit depth" not in self.config["fluorescence"]:
-                # hardware-defined (always the same)
-                self.config["fluorescence"]["bit depth"] = 16
-            if "laser 1 power" in self.config["fluorescence"]:
-                self.config["fluorescence"]["laser 1 lambda"] = 488.
-            if "laser 2 power" in self.config["fluorescence"]:
-                self.config["fluorescence"]["laser 2 lambda"] = 561.
-            if "laser 3 power" in self.config["fluorescence"]:
-                self.config["fluorescence"]["laser 3 lambda"] = 640.
+
+        # Start time of measurement ('HH:MM:SS')
+        timestr = time.strftime("%H:%M:%S", loct)
+        self.config["experiment"].setdefault("time", timestr)
+
+        # Date of measurement ('YYYY-MM-DD')
+        datestr = time.strftime("%Y-%m-%d", loct)
+        self.config["experiment"].setdefault("date", datestr)
+
+        # Number of recorded events
+        self.config["experiment"].setdefault("event count", len(self))
+
         # fmt_tdms
-        if "video frame offset" not in self.config["fmt_tdms"]:
-            self.config["fmt_tdms"]["video frame offset"] = 1
+        self.config["fmt_tdms"].setdefault("video frame offset", 1)
+
         # setup (compatibility to old tdms formats)
-        if "flow rate" not in self.config["setup"]:
-            self.config["setup"]["flow rate"] = np.nan
-        if "channel width" not in self.config["setup"]:
-            if "channel width" in residual_config["general"]:
-                channel_width = residual_config["general"]["channel width"]
-            elif self.config["setup"]["flow rate"] < 0.16:
-                channel_width = 20.
-            else:
-                channel_width = 30.
-            self.config["setup"]["channel width"] = channel_width
-        # imaging
-        if "pixel size" not in self.config["imaging"]:
-            self.config["imaging"]["pixel size"] = 0.34
-        # medium convention for CellCarrierB
-        if ("medium" in self.config["setup"] and
-                self.config["setup"]["medium"].lower() == "cellcarrier b"):
-            self.config["setup"]["medium"] = "CellCarrierB"
-        # replace "+" with ","
-        if "module composition" in self.config["setup"]:
-            mc = self.config["setup"]["module composition"]
-            if mc.count("+"):
-                mc2 = ", ".join([m.strip() for m in mc.split("+")])
-                self.config["setup"]["module composition"] = mc2
+        self.config["setup"].setdefault("flow rate", np.nan)
 
     @staticmethod
     def can_open(h5path):
@@ -350,7 +414,7 @@ def get_project_name_from_path(path, append_mx=False):
 
     Parameters
     ----------
-    path: str
+    path: str or pathlib.Path
         path to tdms file
     append_mx: bool
         append measurement number, e.g. "M1"

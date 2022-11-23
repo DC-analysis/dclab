@@ -119,7 +119,7 @@ class RTDC_TDMS(RTDCBase):
         ret_source_files: bool
             Return the list of files used to extract metadata from.
         ignore_missing: bool
-            Nevermind when para.ini or camera.ini files are missing.
+            Nevermind when para.ini is missing.
 
         Returns
         -------
@@ -133,16 +133,15 @@ class RTDC_TDMS(RTDCBase):
             features_available = []
         mid = path.name.split("_")[0]
         # Set up configuration
-        config_paths = [path.with_name(mid + "_para.ini"),
-                        path.with_name(mid + "_camera.ini")]
-        if not ignore_missing:
-            for cp in config_paths:
-                if not cp.exists():
-                    raise IncompleteTDMSFileFormatError(
-                        "Missing file: {}".format(cp))
-        shpin_set = path.with_name(mid + "_SoftwareSettings.ini")
-        if shpin_set.exists():
-            config_paths.append(shpin_set)
+        config_paths = []
+        para_ini = path.with_name(mid + "_para.ini")
+        if not para_ini.exists() and not ignore_missing:
+            raise IncompleteTDMSFileFormatError(f"Could not find {para_ini}!")
+        for pp in [para_ini,
+                   path.with_name(mid + "_camera.ini"),
+                   path.with_name(mid + "_SoftwareSettings.ini")]:
+            if pp.exists():
+                config_paths.append(pp)
 
         tdms_config = Configuration(files=config_paths, disable_checks=True)
 
@@ -242,8 +241,9 @@ class RTDC_TDMS(RTDCBase):
             dclab_config["fluorescence"].setdefault("laser 3 lambda", 640.)
 
         # Additional information from commented-out log-file (manual)
-        with config_paths[0].open("r", errors="replace") as fd:
-            lns = [s[1:].strip() for s in fd.readlines() if s.startswith("#")]
+        if para_ini.exists():
+            text = para_ini.read_text(errors="replace").split("\n")
+            lns = [s[1:].strip() for s in text if s.startswith("#")]
             if lns and lns[0] == "[FLUOR]":
                 if ("software version" not in dclab_config["setup"]
                         and lns[1].startswith("fRTDC")):
@@ -269,7 +269,7 @@ class RTDC_TDMS(RTDCBase):
             dclab_config["setup"].pop("flow rate")
 
         if "channel width" not in dclab_config["setup"]:
-            if "channel width" in tdms_config["general"]:
+            if "channel width" in tdms_config.get("general", {}):
                 channel_width = tdms_config["general"]["channel width"]
             elif dclab_config["setup"].get("flow rate", 0) < 0.16:
                 channel_width = 20.

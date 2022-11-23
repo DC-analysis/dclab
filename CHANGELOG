@@ -1,3 +1,5 @@
+0.46.6
+ - fix: tdms format config parser not working when para.ini missing
 0.46.5
  - enh: new staticmethod RTDC_TDMS.extract_tdms_config for
    extracting metadata from tdms-based datasets; This method

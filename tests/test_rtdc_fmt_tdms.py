@@ -481,6 +481,27 @@ def test_parameters_txt():
     assert ds.config["fluorescence"]["laser 3 power"] == 0
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_para_ini_fluorescence():
+    """Read commented-out parameters from para.ini"""
+    path = retrieve_data("fmt-tdms_fl_2015.zip")
+    (path.parent / "parameters.txt").unlink()
+    ds = new_dataset(path)
+
+    assert ds.config["setup"]["module composition"] == "Cell_Flow_2, Fluor"
+    assert ds.config["setup"]["software version"] == "fRT-DC V0.80 150601"
+    assert ds.config["setup"]["identifier"] == "47 red angels"
+    assert ds.config["setup"]["medium"] == "other"
+    assert ds.config["setup"]["flow rate sample"] == 0.01
+    assert ds.config["setup"]["flow rate sheath"] == 0.03
+    assert ds.config["imaging"]["pixel size"] == 0.34
+    assert ds.config["imaging"]["flash duration"] == 2
+    assert ds.config["fluorescence"]["sample rate"] == 1000000
+    assert ds.config["fluorescence"]["signal min"] == -1
+    assert ds.config["fluorescence"]["signal max"] == 1
+
+
 def test_pixel_size():
     path = retrieve_data("fmt-tdms_minimal_2016.zip")
     para = path.parent / "M1_para.ini"

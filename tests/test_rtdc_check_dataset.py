@@ -494,14 +494,11 @@ def test_load_with():
 
 def test_missing_file():
     pytest.importorskip("nptdms")
-    h5path = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
-    h5path.with_name("M1_para.ini").unlink()
-    try:
-        check_dataset(h5path)
-    except fmt_tdms.IncompleteTDMSFileFormatError:
-        pass
-    else:
-        assert False
+    tdmspath = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
+    tdmspath.with_name("M1_para.ini").unlink()
+    with pytest.raises(fmt_tdms.IncompleteTDMSFileFormatError,
+                       match="para.ini"):
+        check_dataset(tdmspath)
 
 
 def test_ml_class():

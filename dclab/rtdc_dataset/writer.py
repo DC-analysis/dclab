@@ -36,7 +36,8 @@ class RTDCWriter:
             Dictionary with the keys "compression" and "compression_opts"
             which are passed to :func:`h5py.H5File.create_dataset`. The
             default is Zstandard compression with the lowest compression
-            level `hdf5plugin.Zstd(clevel=1)`.
+            level `hdf5plugin.Zstd(clevel=1)`. To disable compression, use
+            `{"compression": None}`.
         compression: str or None
             Compression method used for data storage;
             one of [None, "lzf", "gzip", "szip"].

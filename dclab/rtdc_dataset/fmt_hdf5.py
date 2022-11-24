@@ -197,6 +197,14 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
         return len(self.h5ds)
 
     def _attr_ufunc(self, uname, ufunc):
+        """A wrapper for calling functions on the scalar feature data
+
+        The ideas are:
+
+        1. If there is a ufunc (max/mean/min) value stored in the dataset
+           attributes, then use this one.
+        2. If the ufunc is computed, it is cached permanently in self.attrs
+        """
         val = self.attrs.get(uname, None)
         if val is None:
             val = ufunc(self.__array__())

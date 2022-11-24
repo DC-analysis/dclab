@@ -205,7 +205,7 @@ def test_hdf5_ufuncs():
     # reference
     assert np.min(ds["area_cvx"]) == 226.0
     assert np.max(ds["area_cvx"]) == 287.5
-    assert np.allclose(np.mean(ds["area_cvx"]), 255.28572, rtol=0, atol=1e-8)
+    assert np.allclose(np.mean(ds["area_cvx"]), 255.28572, rtol=0, atol=1e-5)
 
 
 @pytest.mark.filterwarnings(

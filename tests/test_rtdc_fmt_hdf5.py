@@ -1,5 +1,6 @@
 """Test hdf5 file format"""
 import os
+import shutil
 
 import h5py
 import numpy as np
@@ -177,6 +178,34 @@ def test_hdf5_shape_trace():
     assert len(ds["trace"]) == 6
     assert len(ds["trace"]["fl1_raw"]) == 7
     assert len(ds["trace"]["fl1_raw"][0]) == 177
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_ufuncs():
+    path_orig = retrieve_data("fmt-hdf5_fl_2018.zip")
+    path_mod = path_orig.with_stem("modified")
+    shutil.copy2(path_orig, path_mod)
+    with h5py.File(path_mod, "a") as h5:
+        h5["events/area_cvx"].attrs["min"] = 10.
+        h5["events/area_cvx"].attrs["max"] = 100.
+        h5["events/area_cvx"].attrs["mean"] = 12.7
+
+    ds = new_dataset(path_orig)
+    ds_mod = new_dataset(path_mod)
+
+    assert len(ds) == 7
+    assert len(ds_mod) == 7
+
+    # modified
+    assert np.min(ds_mod["area_cvx"]) == 10
+    assert np.max(ds_mod["area_cvx"]) == 100
+    assert np.mean(ds_mod["area_cvx"]) == 12.7
+
+    # reference
+    assert np.min(ds["area_cvx"]) == 226.0
+    assert np.max(ds["area_cvx"]) == 287.5
+    assert np.allclose(np.mean(ds["area_cvx"]), 255.28572, rtol=0, atol=1e-8)
 
 
 @pytest.mark.filterwarnings(

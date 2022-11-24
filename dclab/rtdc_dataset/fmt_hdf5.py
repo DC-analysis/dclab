@@ -199,7 +199,7 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
     def _attr_ufunc(self, uname, ufunc):
         val = self.attrs.get(uname, None)
         if val is None:
-            val = ufunc(self.__array__)
+            val = ufunc(self.__array__())
             self.attrs[uname] = val
         return val
 

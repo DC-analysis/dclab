@@ -508,19 +508,68 @@ def test_replace_logs():
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_replace_logs_")
 
-    hw = RTDCWriter(rtdc_file)
-    hw.store_log("log1", ["hans", "und"])
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_log("log1", ["hans", "und"])
 
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == 2
 
-    hw = RTDCWriter(rtdc_file, mode="replace")
-    hw.store_log("log1", ["peter"])
+    with RTDCWriter(rtdc_file, mode="replace") as hw:
+        hw.store_log("log1", ["peter"])
 
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         logs = rtdc_data["logs"]
         assert len(logs["log1"]) == 1
+
+
+def test_scalar_ufuncs_attrs():
+    """Since version 0.46.7 we support caching min/max/mean as h5 attributes"""
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_replace_logs_")
+    deform = np.linspace(.1, .2, 254)
+    area_um = np.linspace(200, 500, 254)
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_feature("deform", deform)
+        hw.store_feature("area_um", area_um)
+
+    with h5py.File(rtdc_file) as h5:
+        assert np.allclose(h5["events/deform"].attrs["min"], 0.1)
+        assert np.allclose(h5["events/deform"].attrs["max"], 0.2)
+        assert np.allclose(h5["events/deform"].attrs["mean"], 0.15)
+
+        assert np.allclose(h5["events/area_um"].attrs["min"], 200)
+        assert np.allclose(h5["events/area_um"].attrs["max"], 500)
+        assert np.allclose(h5["events/area_um"].attrs["mean"], 350)
+
+
+def test_scalar_ufuncs_attrs_append():
+    """Since version 0.46.7 we support caching min/max/mean as h5 attributes"""
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_replace_logs_")
+    deform_a = np.linspace(.1, .2, 254)
+    area_um_a = np.linspace(200, 500, 254)
+    deform_b = np.linspace(.05, .1, 123)
+    area_um_b = np.linspace(200, 700, 123)
+
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_feature("deform", deform_a)
+        hw.store_feature("area_um", area_um_a)
+
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_feature("deform", deform_b)
+        hw.store_feature("area_um", area_um_b)
+
+    with h5py.File(rtdc_file) as h5:
+        assert np.allclose(h5["events/deform"].attrs["min"], 0.05)
+        assert np.allclose(h5["events/deform"].attrs["max"], 0.2)
+        assert np.allclose(h5["events/deform"].attrs["mean"],
+                           0.12553050397877985)
+
+        assert np.allclose(h5["events/area_um"].attrs["min"], 200)
+        assert np.allclose(h5["events/area_um"].attrs["max"], 700)
+        assert np.allclose(h5["events/area_um"].attrs["mean"],
+                           382.6259946949602)
 
 
 def test_version_branding_1_write_single_version():

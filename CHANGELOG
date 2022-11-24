@@ -1,5 +1,6 @@
 0.46.7
  - enh: new feature bg_bright: Median frame background brightness
+ - enh: add min/max/mean values as scalar dataset attributes (#175)
 0.46.6
  - fix: tdms format config parser not working when para.ini missing
 0.46.5

@@ -459,6 +459,26 @@ class RTDCWriter:
         if len(data.shape) == 1:
             # store scalar data in one go
             dset[offset:] = data
+            # store ufunc data for min/max
+            for uname, ufunc in [("min", np.nanmin),
+                                 ("max", np.nanmax)]:
+                val_a = dset.attrs.get(uname, None)
+                if val_a is not None:
+                    val_b = ufunc(data)
+                    val = ufunc([val_a, val_b])
+                else:
+                    val = ufunc(dset)
+                dset.attrs[uname] = val
+            # store ufunc data for mean (weighted with size)
+            mean_a = dset.attrs.get("mean", None)
+            if mean_a is not None:
+                num_a = offset
+                mean_b = np.nanmean(data)
+                num_b = data.size
+                mean = (mean_a * num_a + mean_b * num_b) / (num_a + num_b)
+            else:
+                mean = np.nanmean(dset)
+            dset.attrs["mean"] = mean
         else:
             # populate higher-dimensional data in chunks
             # (reduces file size, memory usage, and saves time)

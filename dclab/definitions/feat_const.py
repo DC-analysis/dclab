@@ -11,7 +11,7 @@ FEATURES_SCALAR = [
     ["area_um", "Area [µm²]"],
     ["aspect", "Aspect ratio of bounding box"],
     # The background brightness of the frame (not of the mask)
-    ["bg_bright", "Median frame background brightness [a.u.]"],
+    ["bg_med", "Median frame background brightness [a.u.]"],
     # Brightness values are computed only for pixels inside the mask
     ["bright_avg", "Brightness average [a.u.]"],
     ["bright_sd", "Brightness SD [a.u.]"],

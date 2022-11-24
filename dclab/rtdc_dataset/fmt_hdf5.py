@@ -182,6 +182,8 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
         self.identifier = (self.h5ds.file.filename, self.h5ds.name)
         self._array = None
         self.ndim = 1  # matplotlib might expect this from an array
+        # attrs
+        self.attrs = dict(self.h5ds.attrs)
 
     def __array__(self, dtype=None):
         if self._array is None:
@@ -193,6 +195,22 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
 
     def __len__(self):
         return len(self.h5ds)
+
+    def _attr_ufunc(self, uname, ufunc):
+        val = self.attrs.get(uname, None)
+        if val is None:
+            val = ufunc(self.__array__)
+            self.attrs[uname] = val
+        return val
+
+    def max(self, *args, **kwargs):
+        return self._attr_ufunc("max", np.nanmax)
+
+    def mean(self, *args, **kwargs):
+        return self._attr_ufunc("mean", np.nanmean)
+
+    def min(self, *args, **kwargs):
+        return self._attr_ufunc("min", np.nanmin)
 
     @property
     def shape(self):

@@ -199,6 +199,9 @@ class IntegrityChecker(object):
                         level="alert",
                         category="warning"))
             self.finally_close = True
+        import IPython
+        IPython.embed()
+        np.max(self.ds["index"])
 
     def __enter__(self):
         return self

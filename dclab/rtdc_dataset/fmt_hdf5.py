@@ -183,7 +183,7 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
         self._array = None
         self.ndim = 1  # matplotlib might expect this from an array
         # attrs
-        self.attrs = dict(self.h5ds.attrs)
+        self._ufunc_attrs = dict(self.h5ds.attrs)
 
     def __array__(self, dtype=None):
         if self._array is None:
@@ -196,7 +196,7 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
     def __len__(self):
         return len(self.h5ds)
 
-    def _attr_ufunc(self, uname, ufunc):
+    def _fetch_ufunc_attr(self, uname, ufunc):
         """A wrapper for calling functions on the scalar feature data
 
         The ideas are:
@@ -205,20 +205,20 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
            attributes, then use this one.
         2. If the ufunc is computed, it is cached permanently in self.attrs
         """
-        val = self.attrs.get(uname, None)
+        val = self._ufunc_attrs.get(uname, None)
         if val is None:
             val = ufunc(self.__array__())
-            self.attrs[uname] = val
+            self._ufunc_attrs[uname] = val
         return val
 
     def max(self, *args, **kwargs):
-        return self._attr_ufunc("max", np.nanmax)
+        return self._fetch_ufunc_attr("max", np.nanmax)
 
     def mean(self, *args, **kwargs):
-        return self._attr_ufunc("mean", np.nanmean)
+        return self._fetch_ufunc_attr("mean", np.nanmean)
 
     def min(self, *args, **kwargs):
-        return self._attr_ufunc("min", np.nanmin)
+        return self._fetch_ufunc_attr("min", np.nanmin)
 
     @property
     def shape(self):

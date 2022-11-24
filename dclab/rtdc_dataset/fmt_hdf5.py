@@ -203,7 +203,8 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
 
         1. If there is a ufunc (max/mean/min) value stored in the dataset
            attributes, then use this one.
-        2. If the ufunc is computed, it is cached permanently in self.attrs
+        2. If the ufunc is computed, it is cached permanently in
+           self._ufunc_attrs
         """
         val = self._ufunc_attrs.get(uname, None)
         if val is None:

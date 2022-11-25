@@ -19,6 +19,7 @@ class file_monitoring_lru_cache:
     and the other arguments to the decorated function, the
     size and the modification time of `path` is used as a
     key for the decorator.
+    If the path does not exist, no caching is done.
 
     Use case: Extract and cache metadata from a file on disk
     that may change.
@@ -35,13 +36,17 @@ class file_monitoring_lru_cache:
 
         @functools.wraps(func)
         def wrapper(path, *args, **kwargs):
-            path = pathlib.Path(path).resolve()
-            path_stat = path.stat()
-            return cached_wrapper(
-                path=path,
-                path_stats=(path_stat.st_mtime_ns, path_stat.st_size),
-                *args,
-                **kwargs)
+            full_path = pathlib.Path(path).resolve()
+            if full_path.exists():
+                path_stat = full_path.stat()
+                return cached_wrapper(
+                    path=full_path,
+                    path_stats=(path_stat.st_mtime_ns, path_stat.st_size),
+                    *args,
+                    **kwargs)
+            else:
+                # `func` will most-likely raise an exception
+                return func(path, *args, **kwargs)
 
         wrapper.cache_clear = cached_wrapper.cache_clear
         wrapper.cache_info = cached_wrapper.cache_info

@@ -83,7 +83,7 @@ class Filter(object):
         # old filter configuration of `rtdc_ds`
         self._old_config = {}
 
-    def update(self, rtdc_ds, force=[]):
+    def update(self, rtdc_ds, force=None):
         """Update the filters according to `rtdc_ds.config["filtering"]`
 
         Parameters
@@ -100,6 +100,8 @@ class Filter(object):
         :func:`ds.apply_filter <dclab.rtdc_dataset.RTDCBase.apply_filter>`
         is called.
         """
+        if force is None:
+            force = []
         # re-initialize important parameters
         self._init_rtdc_ds(rtdc_ds)
 

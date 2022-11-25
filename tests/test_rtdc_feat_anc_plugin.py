@@ -540,8 +540,9 @@ def test_pf_inherited_scalar():
         ds.filter.manual[2] = False
         ch = dclab.new_dataset(ds)
         assert "circ_per_area" in ch
-        assert isinstance(ch["circ_per_area"], np.ndarray)
-        assert ch["circ_per_area"].ndim == 1
+        assert isinstance(ch["circ_per_area"],
+                          (np.lib.mixins.NDArrayOperatorsMixin, np.ndarray))
+        assert len(ch["circ_per_area"].shape) == 1
 
 
 @pytest.mark.filterwarnings(

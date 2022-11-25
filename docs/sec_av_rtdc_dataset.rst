@@ -105,17 +105,22 @@ use hierarchies for keeping track of the individual filtering steps.
 
     In [8]: grandchild = dclab.new_dataset(child)
 
-    In [11]: grandchild.apply_filter()
+    In [11]: grandchild.rejuvenate()
 
     In [12]: len(ds), len(child), len(grandchild)
 
     In [13]: ds.filter.all.sum(), child.filter.all.sum(), grandchild.filter.all.sum()
 
-
-Note that calling ``grandchild.apply_filter()`` automatically calls
-``child.apply_filter()`` and ``ds.apply_filter()``. Also note that,
+Note that calling ``grandchild.rejuvenate()`` automatically calls
+``child.rejuvenate()`` and ``ds.apply_filter()``. Also note that,
 as expected, the size of each hierarchy child is identical to the sum of the
 boolean filtering array from its hierarchy parent.
+
+Always make sure to call `rejuvenate` to the youngest members of your
+hierarchy (here `grandchild`), when you changed a filter in the hierarchy
+or when you modified an ancillary feature or the dataset metadata/configuration.
+Otherwise you cannot be sure that all information properly propagated through
+your hierarchy (Your grandchild might be an orphan).
 
 
 Scripting goodies

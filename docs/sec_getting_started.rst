@@ -132,7 +132,10 @@ only contains the filtered data.
     ds_child = dclab.new_dataset(ds)
 
 The hierarchy child ``ds_child`` is dynamic, i.e. when the filters in ``ds``
-change, then ``ds_child`` also changes after calling ``ds_child.apply_filter()``.
+change, then ``ds_child`` also changes after calling ``ds_child.rejuvenate()``.
+Note that calling `rejuvenate` may be computationally expensive, so dclab
+does not call it automatically. It is your own responsibility to call it
+after updating the parent dataset.
 
 Non-scalar features do not support fancy indexing (i.e.
 ``ds["image"][ds.filter.all]`` will not work. Use a for-loop to extract them.

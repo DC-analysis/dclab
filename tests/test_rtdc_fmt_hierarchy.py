@@ -8,6 +8,26 @@ from dclab.rtdc_dataset import fmt_hierarchy, RTDCWriter
 from helper_methods import example_data_dict, retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_access_without_apply_filter():
+    ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
+    ds.filter.manual[0] = False
+    ds.apply_filter()
+    ch = new_dataset(ds)
+    assert len(ch["contour"]) == 4
+    assert np.allclose(ch["area_um"][0], 228.25221)
+    ds.filter.manual[1] = False
+    ds.apply_filter()
+    # In the future, accessing this object might yield an error or warning,
+    # depending on how problematic this approach is for the dclab users.
+    assert np.allclose(ch["area_um"][0], 228.25221)
+    assert ch.filter.parent_changed
+    ch.rejuvenate()
+    assert np.allclose(ch["area_um"][0], 156.349)
+    assert not ch.filter.parent_changed
+
+
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
                             + 'YoungsModulusLookupTableExceededWarning')
 def test_config_calculation():
@@ -25,11 +45,13 @@ def test_config_calculation():
     ch = new_dataset(ds)
     assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
     ds.config["calculation"]["emodulus temperature"] = 24.0
-    assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
     # the user still has to call `apply_filter` to update the config:
     assert not ch.config["calculation"]["emodulus temperature"] == 24.0
-    ch.apply_filter()
+    # ...and the cache
+    assert not np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
+    ch.rejuvenate()
     assert ch.config["calculation"]["emodulus temperature"] == 24.0
+    assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -69,6 +91,7 @@ def test_hierarchy_shape_contour():
     ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
     assert ds["contour"].shape == (5, np.nan, 2)
     ds.filter.manual[0] = False
+    ds.apply_filter()
     ch = new_dataset(ds)
     assert ch["contour"].shape == (4, np.nan, 2)
     assert len(ch["contour"]) == 4
@@ -260,9 +283,44 @@ def test_hierarchy_from_tdms():
     ds2 = new_dataset(ds1)
 
     ds1.filter.manual[0] = False
-    ds2.apply_filter()
+    ds2.rejuvenate()
     assert ds2.filter.all.shape[0] == ds1.filter.all.shape[0] - 1
     assert ds2["area_um"][0] == ds1["area_um"][1]
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hierarchy_ufuncs():
+    path = retrieve_data("fmt-hdf5_fl_2018.zip")
+
+    ds = new_dataset(path)
+    ds.filter.manual[0] = False
+    ds.apply_filter()
+    ch = new_dataset(ds)
+
+    assert len(ds) == 7
+    assert len(ch) == 6
+
+    # reference
+    assert np.min(ds["area_cvx"]) == 226.0
+    assert np.max(ds["area_cvx"]) == 287.5
+    assert np.allclose(np.mean(ds["area_cvx"]), 255.28572, rtol=0, atol=1e-5)
+
+    # filtered
+    assert np.min(ch["area_cvx"]) == 226.0
+    assert np.max(ch["area_cvx"]) == 287.5
+    assert np.allclose(np.mean(ch["area_cvx"]), 256.0, rtol=0, atol=1e-5)
+
+    # change the filter and make sure things changed for the child
+    ds.filter.manual[:4] = False
+    ch.rejuvenate()
+
+    assert np.min(ch["area_cvx"]) == 226.0
+    assert np.max(ch["area_cvx"]) == 279.5
+    assert np.allclose(np.mean(ch["area_cvx"]), 249.83333, rtol=0, atol=1e-5)
+
+    # make sure ufuncs are actually used
+    assert ch["area_cvx"]._ufunc_attrs["min"] == 226.0
 
 
 def test_index_deep_contour():
@@ -332,9 +390,9 @@ def test_manual_exclude():
     c2 = new_dataset(c1)
     c3 = new_dataset(c2)
     c1.filter.manual[0] = False
-    c2.apply_filter()
+    c2.rejuvenate()
     c2.filter.manual[1] = False
-    c3.apply_filter()
+    c3.rejuvenate()
 
     # simple exclusion of few events
     assert len(c3) == len(p) - 2
@@ -343,13 +401,13 @@ def test_manual_exclude():
     # child altogether, including the manual filter
     c3.filter.manual[0] = False
     c2.filter.manual[0] = False
-    c3.apply_filter()
+    c3.rejuvenate()
     assert np.alltrue(c3.filter.manual)
 
     # reinserting the event in the parent, retrieves back
     # the manual filter in the child
     c2.filter.manual[0] = True
-    c3.apply_filter()
+    c3.rejuvenate()
     assert not c3.filter.manual[0]
 
 
@@ -359,13 +417,13 @@ def test_manual_exclude_parent_changed():
     p.filter.manual[4] = False
     c = new_dataset(p)
     c.filter.manual[5] = False
-    c.apply_filter()
+    c.rejuvenate()
     p.config["filtering"]["tilt min"] = 0
     p.config["filtering"]["tilt max"] = .5
     p.apply_filter()
     assert np.sum(p.filter.all) == 21
-    # size of child is directly determined from parent
-    assert len(c) == 21
+    # size of child is not directly determined from parent
+    assert len(c) == 41
     # filters have not yet been updated
     assert len(c.filter.all) == 41
     assert c.filter.parent_changed
@@ -381,7 +439,7 @@ def test_manual_exclude_parent_changed():
         assert False, "expected HierarchyFilterError"
 
     # this can be resolved by applying the filter
-    c.apply_filter()
+    c.rejuvenate()
     c.filter.apply_manual_indices(c, [1, 2])
     assert c.filter.retrieve_manual_indices(c) == [1, 2]
 
@@ -398,11 +456,3 @@ def test_same_hash_different_identifier():
     assert len(ch1) == len(ds1) - 1
     assert ch1.hash == ch2.hash
     assert ch1.identifier != ch2.identifier
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

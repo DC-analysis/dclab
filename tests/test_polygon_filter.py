@@ -64,6 +64,30 @@ def test_import():
     assert len(dclab.PolygonFilter.instances) == 10
 
 
+def test_import_and_apply_to_hierarchy_child():
+    ddict = example_data_dict(size=1000, keys=["aspect", "tilt"])
+    ds = dclab.new_dataset(ddict)
+    ch1 = dclab.new_dataset(ds)
+
+    # save polygon data
+    _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
+    with open(tf, "w") as fd:
+        fd.write(filter_data)
+
+    # Add polygon filter
+    pf = dclab.PolygonFilter(filename=tf)
+    ch1.polygon_filter_add(pf)
+
+    ch1.apply_filter()
+
+    ch2 = dclab.new_dataset(ch1)
+
+    assert np.sum(ch1.filter.all) == 330
+
+    assert len(ch2) == 330
+    assert len(ch2["aspect"]) == 330
+
+
 def test_import_custom_unique_id():
     # save polygon data
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")

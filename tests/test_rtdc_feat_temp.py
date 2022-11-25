@@ -148,7 +148,8 @@ def test_inherited_scalar():
         ds.filter.manual[2] = False
         ch = dclab.new_dataset(ds)
         assert "my_special_feature" in ch
-        assert isinstance(ch["my_special_feature"], np.ndarray)
+        assert isinstance(ch["my_special_feature"],
+                          (np.lib.mixins.NDArrayOperatorsMixin, np.ndarray))
 
 
 @pytest.mark.filterwarnings(

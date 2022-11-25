@@ -244,9 +244,9 @@ class PolygonFilter(object):
 
     def filter(self, datax, datay):
         """Filter a set of datax and datay according to `self.points`"""
-        points = np.concatenate([datax.reshape(-1, 1),
-                                 datay.reshape(-1, 1)],
-                                axis=1)
+        points = np.zeros((datax.shape[0], 2), dtype=float)
+        points[:, 0] = datax
+        points[:, 1] = datay
         f = points_in_poly(points=points, verts=self.points)
 
         if self.inverted:

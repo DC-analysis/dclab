@@ -1,4 +1,5 @@
 """RT-DC hierarchy format"""
+import functools
 
 import numpy as np
 
@@ -55,6 +56,53 @@ class ChildNDArray(ChildBase):
     def shape(self):
         hp = self.child.hparent
         return tuple([len(self)] + list(hp[self.feat][0].shape))
+
+
+class ChildScalar(np.lib.mixins.NDArrayOperatorsMixin):
+    def __init__(self, child, feat):
+        self.child = child
+        self.feat = feat
+        self._array = None
+        # ufunc metadata attribute cache
+        self._ufunc_attrs = {}
+
+    def __array__(self, dtype=None):
+        if self._array is None:
+            hparent = self.child.hparent
+            filt_arr = hparent.filter.all
+            self._array = hparent[self.feat][filt_arr]
+        return self._array
+
+    def __getitem__(self, idx):
+        return self.__array__()[idx]
+
+    def __len__(self):
+        return len(self.child)
+
+    def _fetch_ufunc_attr(self, uname, ufunc):
+        """A wrapper for calling functions on the scalar feature data
+
+        If the ufunc is computed, it is cached permanently in
+        self._ufunc_attrs
+        """
+        val = self._ufunc_attrs.get(uname, None)
+        if val is None:
+            val = ufunc(self.__array__())
+            self._ufunc_attrs[uname] = val
+        return val
+
+    def max(self, *args, **kwargs):
+        return self._fetch_ufunc_attr("max", np.nanmax)
+
+    def mean(self, *args, **kwargs):
+        return self._fetch_ufunc_attr("mean", np.nanmean)
+
+    def min(self, *args, **kwargs):
+        return self._fetch_ufunc_attr("min", np.nanmin)
+
+    @property
+    def shape(self):
+        return len(self),
 
 
 class ChildTrace(dict):
@@ -263,31 +311,30 @@ class RTDC_Hierarchy(RTDCBase):
     def __contains__(self, key):
         return self.hparent.__contains__(key)
 
-    def __getitem__(self, key):
+    def __getitem__(self, feat):
         """Return the feature data and cache them in self._events"""
-        if key in self._events:
-            data = self._events[key]
-        elif key in self.hparent:
-            if len(self.hparent[key].shape) > 1:
+        if feat in self._events:
+            data = self._events[feat]
+        elif feat in self.hparent:
+            if len(self.hparent[feat].shape) > 1:
                 # non-scalar feature
-                data = ChildNDArray(self, key)
+                data = ChildNDArray(self, feat)
             else:
                 # scalar feature
-                item = self.hparent[key]
-                data = item[self.hparent.filter.all]
-            if key in self.hparent.features_innate:
-                # Only cache features that will not change. Some features,
-                # such as emodulus, might change.
-                self._events[key] = data
+                data = ChildScalar(self, feat)
+            # Cache everything, even the Young's modulus. The user is
+            # responsible for calling `rejuvenate` to reset everything.
+            self._events[feat] = data
         else:
             raise KeyError(
-                f"The dataset {self} does not contain the feature '{key}'!"
+                f"The dataset {self} does not contain the feature '{feat}'!"
                 + "If you are attempting to access an ancillary feature "
                 + "(e.g. emodulus), please make sure that the feature "
                 + f"data are computed for {self.get_root_parent()} (the"
                 + "root parent of this hierarchy child).")
         return data
 
+    @functools.lru_cache()
     def __len__(self):
         return np.sum(self.hparent.filter.all)
 
@@ -365,8 +412,12 @@ class RTDC_Hierarchy(RTDCBase):
 
         # Copy event data from hierarchy parent
         self.hparent.apply_filter(*args, **kwargs)
+
+        # Clear anything that has been cached until now
+        self.__len__.cache_clear()
+
         # update event index
-        event_count = np.sum(self.hparent.filter.all)
+        event_count = len(self)
         self._events.clear()
         self._events["index"] = np.arange(1, event_count + 1)
         # set non-scalar column data
@@ -394,6 +445,20 @@ class RTDC_Hierarchy(RTDCBase):
             return self.hparent.get_root_parent()
         else:
             return self.hparent
+
+    def rejuvenate(self):
+        """Redraw the hierarchy tree, updating config and features
+
+        You should call this function whenever you change something
+        in the hierarchy parent(s), be it filters or metadata for computing
+        ancillary features.
+
+        .. versionadded: 0.47.0
+            This is just an alias of `apply_filter`, but with a more
+            accurate name (not only the filters are applied, but alot
+            of other things might change).
+        """
+        self.apply_filter()
 
 
 def map_indices_child2parent(child, child_indices):

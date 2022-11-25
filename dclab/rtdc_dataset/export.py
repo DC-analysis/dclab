@@ -179,7 +179,7 @@ class Export(object):
             (index in ds.filter.all) are used.
         logs: bool
             Whether to store the logs of the original file prefixed with
-            "source_" to the output file.
+            `source_` to the output file.
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.

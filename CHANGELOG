@@ -4,7 +4,8 @@
    is now mandatory for all changes to propagate to the children)
  - feat: introduce `RTDC_Hierarchy.rejuvenate`, an alias for
    `apply_filter` which more accurately describes what happens there
- - enh: new feature bg_bright: Median frame background brightness
+ - feat: added file_monitoring_lru_cache convenience decorator
+ - enh: new feature bg_med: Median frame background brightness
  - enh: add min/max/mean values as scalar dataset attributes (#175)
 0.46.6
  - fix: tdms format config parser not working when para.ini missing

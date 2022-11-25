@@ -10,6 +10,46 @@ import numpy as np
 from .rtdc_dataset.config import Configuration, ConfigurationDict
 
 
+class file_monitoring_lru_cache:
+    """Decorator for caching data extracted from files
+
+    The function that is decorated with `file_monitoring_lru_cache`
+    must accept `path` as its first argument. Caching is
+    done with an `lru_cache`. In addition to the full path
+    and the other arguments to the decorated function, the
+    size and the modification time of `path` is used as a
+    key for the decorator.
+
+    Use case: Extract and cache metadata from a file on disk
+    that may change.
+    """
+    def __init__(self, maxsize=100):
+        self.lru_cache = functools.lru_cache(maxsize=maxsize)
+        self.cached_wrapper = None
+
+    def __call__(self, func):
+        @self.lru_cache
+        def cached_wrapper(path, path_stats, *args, **kwargs):
+            assert path_stats, "We need stat for validating the cache"
+            return func(path, *args, **kwargs)
+
+        @functools.wraps(func)
+        def wrapper(path, *args, **kwargs):
+            path = pathlib.Path(path).resolve()
+            path_stat = path.stat()
+            return cached_wrapper(
+                path=path,
+                path_stats=(path_stat.st_mtime_ns, path_stat.st_size),
+                *args,
+                **kwargs)
+
+        wrapper.cache_clear = cached_wrapper.cache_clear
+        wrapper.cache_info = cached_wrapper.cache_info
+
+        return wrapper
+
+
+@file_monitoring_lru_cache(maxsize=100)
 def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
              hasher_class=None):
     """Compute md5 hex-hash of a file
@@ -32,43 +72,9 @@ def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
         warnings.warn("The `hasher_class` argument is deprecated, please use "
                       "`constructor` instead.")
         constructor = hasher_class
-    path = pathlib.Path(fname).resolve()
-    path_stat = path.stat()
-    return _hashfile_cached(
-        path=path,
-        path_stats=(path_stat.st_mtime_ns, path_stat.st_size),
-        blocksize=blocksize,
-        count=count,
-        constructor=constructor
-    )
 
+    path = pathlib.Path(fname)
 
-@functools.lru_cache(maxsize=100)
-def _hashfile_cached(path, path_stats, blocksize=65536, count=0,
-                     constructor=hashlib.md5):
-    """Cached hashfile using stat tuple as cache
-
-    This is a privat function. Please use `hashfile` instead!
-
-    Parameters
-    ----------
-    path: pathlib.Path
-        path to the file to be hashed
-    path_stats: tuple
-        tuple that contains information about the size and the
-        modification time of `path`. This must be specified,
-        so that caching of the result is done properly in case the user
-        modified `path` (this function is wrapped with
-        functools.lru_cache)
-    blocksize: int
-        block size in bytes read from the file
-        (set to `0` to hash the entire file)
-    count: int
-        number of blocks read from the file
-    constructor: callable
-        hash algorithm constructor
-    """
-    assert path_stats, "We need stat for validating the cache"
     hasher = constructor()
     with path.open('rb') as fd:
         buf = fd.read(blocksize)

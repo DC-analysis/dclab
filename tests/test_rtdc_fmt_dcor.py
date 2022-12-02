@@ -53,6 +53,7 @@ def test_dcor_base(monkeypatch):
         assert len(dso) == len(ds)
         assert dso.config["setup"]["channel width"] == \
             ds.config["setup"]["channel width"]
+        assert ds["area_um"].ndim == 1  # important for matplotlib
         assert np.all(dso["area_um"] == ds["area_um"])
         assert np.all(dso["area_um"] == ds["area_um"])  # test cache
         assert np.all(dso["image"][4] == ds["image"][4])

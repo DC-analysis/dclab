@@ -65,6 +65,7 @@ class ChildScalar(np.lib.mixins.NDArrayOperatorsMixin):
         self._array = None
         # ufunc metadata attribute cache
         self._ufunc_attrs = {}
+        self.ndim = 1  # matplotlib might expect this from an array
 
     def __array__(self, dtype=None):
         if self._array is None:

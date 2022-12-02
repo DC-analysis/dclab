@@ -33,6 +33,7 @@ def test_contour_basic():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert len(ds) == 5
     assert len(ds["contour"]) == 5
+    assert ds["deform"].ndim == 1  # important for matplotlib
     assert np.allclose(np.average(ds["contour"][0]), 30.75)
     assert np.median(ds["contour"][0]) == 30.5
     assert np.median(ds["contour"][2]) == 31.5

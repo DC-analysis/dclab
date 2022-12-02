@@ -19,6 +19,7 @@ nptdms = pytest.importorskip("nptdms")
 
 def test_compatibility_minimal():
     ds = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
+    assert ds["area_um"].ndim == 1  # important for matplotlib
     assert ds.config["setup"]["channel width"] == 20
     assert ds.config["setup"]["chip region"].lower() == "channel"
     assert ds.config["setup"]["flow rate"] == 0.12

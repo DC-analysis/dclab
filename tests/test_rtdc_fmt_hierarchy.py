@@ -17,6 +17,7 @@ def test_access_without_apply_filter():
     ch = new_dataset(ds)
     assert len(ch["contour"]) == 4
     assert np.allclose(ch["area_um"][0], 228.25221)
+    assert ds["area_um"].ndim == 1  # important for matplotlib
     ds.filter.manual[1] = False
     ds.apply_filter()
     # In the future, accessing this object might yield an error or warning,

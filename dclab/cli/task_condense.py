@@ -6,6 +6,7 @@ import warnings
 import hdf5plugin
 
 from ..rtdc_dataset import new_dataset, RTDCWriter
+from .._version import version
 
 from . import common
 
@@ -65,4 +66,6 @@ def condense_parser():
                         help='Input path (.tdms or .rtdc file)')
     parser.add_argument('output', metavar="OUTPUT", type=str,
                         help='Output path (.rtdc file)')
+    parser.add_argument('--version', action='version',
+                        version=f'dclab-condense {version}')
     return parser

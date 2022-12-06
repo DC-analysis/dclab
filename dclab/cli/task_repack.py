@@ -6,6 +6,7 @@ import hdf5plugin
 
 from ..rtdc_dataset import new_dataset, RTDCWriter
 from .. import definitions as dfn
+from .._version import version
 
 from . import common
 
@@ -67,4 +68,6 @@ def repack_parser():
                         action='store_true',
                         help='Do not copy any logs to the output file.')
     parser.set_defaults(strip_logs=False)
+    parser.add_argument('--version', action='version',
+                        version=f'dclab-repack {version}')
     return parser

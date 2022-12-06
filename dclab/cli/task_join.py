@@ -8,6 +8,7 @@ import numpy as np
 
 from ..rtdc_dataset import new_dataset, RTDCWriter
 from .. import definitions as dfn
+from .._version import version
 
 from . import common
 
@@ -174,4 +175,6 @@ def join_parser():
     required_named = parser.add_argument_group('required named arguments')
     required_named.add_argument('-o', '--output', metavar="OUTPUT", type=str,
                                 help='Output path (.rtdc file)', required=True)
+    parser.add_argument('--version', action='version',
+                        version=f'dclab-join {version}')
     return parser

@@ -6,6 +6,7 @@ import warnings
 import hdf5plugin
 
 from ..rtdc_dataset import fmt_tdms, new_dataset, RTDCWriter
+from .._version import version
 
 from . import common
 
@@ -135,5 +136,6 @@ def split_parser():
                              + 'this option, if you wish to include these '
                              + 'events with empty image data.')
     parser.set_defaults(include_empty_boundary_images=False)
-
+    parser.add_argument('--version', action='version',
+                        version=f'dclab-split {version}')
     return parser

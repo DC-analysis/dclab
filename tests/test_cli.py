@@ -1,6 +1,8 @@
 """Test command-line interface"""
 import hashlib
+import io
 import json
+from unittest import mock
 import sys
 import tempfile
 import time
@@ -639,3 +641,19 @@ def test_verify_dataset_exit_code_violation_2(monkeypatch):
         h5.attrs["setup:flow rate sheath"] = 0
     exit_status = cli.verify_dataset(h5path)
     assert exit_status == 2  # zero flow rate
+
+
+@mock.patch('sys.stdout', new_callable=io.StringIO)
+def test_version(mock_stdout, monkeypatch):
+    def sys_exit(status):
+        return status
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    monkeypatch.setattr(sys, "argv", ["dclab-compress", "--version"])
+
+    parser = cli.compress_parser()
+    parser.parse_args()
+
+    stdout_printed = mock_stdout.getvalue()
+    assert stdout_printed.count("dclab-compress")
+    assert stdout_printed.count(dclab.__version__)

@@ -4,6 +4,7 @@ import pathlib
 import sys
 
 from ..rtdc_dataset import check_dataset, fmt_tdms
+from .._version import version
 
 from . import common
 
@@ -65,4 +66,6 @@ def verify_dataset_parser():
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('path', metavar='PATH', type=str,
                         help='Path to experimental dataset')
+    parser.add_argument('--version', action='version',
+                        version=f'dclab-verify-dataset {version}')
     return parser

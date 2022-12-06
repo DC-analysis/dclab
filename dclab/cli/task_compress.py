@@ -8,6 +8,7 @@ import hdf5plugin
 
 from ..rtdc_dataset import new_dataset, RTDCWriter
 from ..rtdc_dataset.check import IntegrityChecker
+from .._version import version
 
 from . import common
 
@@ -83,4 +84,6 @@ def compress_parser():
                         help='Force compression, even if the input dataset '
                              + 'is already compressed.')
     parser.set_defaults(force=False)
+    parser.add_argument('--version', action='version',
+                        version=f'dclab-compress {version}')
     return parser

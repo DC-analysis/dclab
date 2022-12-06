@@ -6,6 +6,7 @@ import warnings
 import hdf5plugin
 
 from ..rtdc_dataset import fmt_tdms, new_dataset, RTDCWriter
+from .._version import version
 
 from . import common
 
@@ -180,4 +181,6 @@ def tdms2rtdc_parser():
     parser.add_argument('rtdc_path', metavar="RTDC_PATH", type=str,
                         help='Output path (file or folder), existing data '
                              + 'will be overridden')
+    parser.add_argument('--version', action='version',
+                        version=f'dclab-tdms2rtdc {version}')
     return parser

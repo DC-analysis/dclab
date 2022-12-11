@@ -331,7 +331,7 @@ class RTDC_Hierarchy(RTDCBase):
                 f"The dataset {self} does not contain the feature '{feat}'!"
                 + "If you are attempting to access an ancillary feature "
                 + "(e.g. emodulus), please make sure that the feature "
-                + f"data are computed for {self.get_root_parent()} (the"
+                + f"data are computed for {self.get_root_parent()} (the "
                 + "root parent of this hierarchy child).")
         return data
 

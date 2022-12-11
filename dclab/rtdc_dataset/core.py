@@ -493,7 +493,7 @@ class RTDCBase(abc.ABC):
             the KDE estimate is computed from the points that
             are set in `self.filter.all`.
         kde_type: str
-            The KDE method to use
+            The KDE method to use, see :const:`.kde_methods.methods`
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
         xscale: str

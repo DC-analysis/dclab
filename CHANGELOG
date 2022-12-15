@@ -1,3 +1,5 @@
+0.47.3
+ - enh: implement RTDC_HDF5.__len__
 0.47.2
  - enh: add --version flag to CLI
 0.47.1

@@ -310,6 +310,14 @@ class RTDC_HDF5(RTDCBase):
         # close the HDF5 file
         self._h5.close()
 
+    @functools.lru_cache()
+    def __len__(self):
+        ec = self._h5.get("experiment:event count")
+        if ec is not None:
+            return ec
+        else:
+            return super(RTDC_HDF5, self).__len__()
+
     @staticmethod
     def can_open(h5path):
         """Check whether a given file is in the .rtdc file format"""

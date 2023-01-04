@@ -99,7 +99,7 @@ and publish them on PyPI.
 .. |dclab| image:: https://raw.github.com/DC-analysis/dclab/master/docs/logo/dclab.png
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
-.. |Build Status| image:: https://img.shields.io/github/workflow/status/DC-analysis/dclab/Checks
+.. |Build Status| image:: https://img.shields.io/github/actions/workflow/status/DC-analysis/dclab/check.yml
    :target: https://github.com/DC-analysis/dclab/actions?query=workflow%3AChecks
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/dclab/master.svg
    :target: https://codecov.io/gh/DC-analysis/dclab

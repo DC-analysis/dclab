@@ -28,7 +28,7 @@ jobs:
         # https://github.com/cbg-ethz/dce/blob/master/.github/workflows/pkgdown.yaml
         sudo ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
         sudo mkdir /usr/local/gfortran
-        sudo ln -s /usr/local/Cellar/gcc@10/*/lib/gcc/10 /usr/local/gfortran/lib
+        sudo ln -s /usr/local/Cellar/gcc@11/*/lib/gcc/11 /usr/local/gfortran/lib
         gfortran --version
     - name: Perform modifications (Linux)
       if: runner.os == 'Linux'

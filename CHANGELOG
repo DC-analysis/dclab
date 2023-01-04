@@ -1,4 +1,6 @@
 0.47.3
+ - fix: np.histrogram2d does not expect broken normed argument
+ - docs: fixed GH Actions badge
  - enh: implement RTDC_HDF5.__len__
 0.47.2
  - enh: add --version flag to CLI

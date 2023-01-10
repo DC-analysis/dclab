@@ -23,6 +23,14 @@ from .. import util
 from .._version import version
 
 
+class ExtendedJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, pathlib.Path):
+            return str(obj)
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
+
 def assemble_warnings(w):
     """pretty-format all warnings for logs"""
     wlog = []
@@ -73,7 +81,10 @@ def get_command_log(paths, custom_dict=None):
     final_data = {}
     final_data.update(custom_dict)
     final_data.update(data)
-    dump = json.dumps(final_data, sort_keys=True, indent=2).split("\n")
+    dump = json.dumps(final_data,
+                      sort_keys=True,
+                      indent=2,
+                      cls=ExtendedJSONEncoder).split("\n")
     return dump
 
 

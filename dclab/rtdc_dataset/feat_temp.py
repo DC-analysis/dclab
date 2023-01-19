@@ -61,7 +61,9 @@ def set_temporary_feature(rtdc_ds, feature, data):
     rtdc_ds: dclab.RTDCBase
         Dataset for which to set the feature. Note that the
         length of the feature `data` must match the number of events
-        in `rtdc_ds`.
+        in `rtdc_ds`. If the dataset is a hierarchy child, the data will also
+        be set in the parent dataset, but only for those events that are part
+        of the child. All non-child events become np.nan.
     feature: str
         Feature name
     data: np.ndarray

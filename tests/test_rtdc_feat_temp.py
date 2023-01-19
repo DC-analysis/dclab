@@ -99,23 +99,78 @@ def test_filtering():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_hierarchy_not_supported():
-    """Test for RTDCHierarchy (does not work)"""
-    # Hi there,
-    # if you are here. this means that this test failed and
-    # you just implemented temporary features for hierarchy
-    # datasets. I'm fine with that, just make sure that the
-    # root parent gets nan values.
-    # Cheers,
-    # Paul
+def test_hierarchy_children_basic():
+    """Test for RTDCHierarchy"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
         child = dclab.new_dataset(ds)
         dclab.register_temporary_feature("my_special_feature")
-        with pytest.raises(NotImplementedError):
-            dclab.set_temporary_feature(rtdc_ds=child,
-                                        feature="my_special_feature",
-                                        data=np.arange(len(child)))
+
+        dclab.set_temporary_feature(rtdc_ds=child,
+                                    feature="my_special_feature",
+                                    data=np.arange(len(child)))
+        assert "my_special_feature" in child.features
+        np.testing.assert_array_equal(child["my_special_feature"][:],
+                                      [0, 1, 2, 3, 4, 5, 6])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hierarchy_children_parent_filtered():
+    """Test for RTDCHierarchy"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with dclab.new_dataset(h5path) as ds:
+        ds.config["filtering"]["area_um min"] = 0.0
+        ds.config["filtering"]["area_um max"] = 33
+        ds.apply_filter()
+        child = dclab.new_dataset(ds)
+        dclab.register_temporary_feature("my_special_feature")
+
+        dclab.set_temporary_feature(rtdc_ds=child,
+                                    feature="my_special_feature",
+                                    data=np.arange(len(child)))
+        assert "my_special_feature" in child.features
+        np.testing.assert_array_equal(child["my_special_feature"][:],
+                                      [0, 1, 2, 3, 4, 5])
+        np.testing.assert_array_equal(ds["my_special_feature"][:],
+                                      [0, np.nan, 1, 2, 3, 4, 5])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hierarchy_children_grandchildren():
+    """Test for RTDCHierarchy"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with dclab.new_dataset(h5path) as ds:
+        ds.config["filtering"]["area_um min"] = 0.0
+        ds.config["filtering"]["area_um max"] = 33
+        ds.apply_filter()
+        child = dclab.new_dataset(ds)
+        child.config["filtering"]["deform min"] = 0
+        child.config["filtering"]["deform max"] = 0.012
+        child.rejuvenate()
+        grandchild = dclab.new_dataset(child)
+        dclab.register_temporary_feature("my_special_feature")
+
+        dclab.set_temporary_feature(rtdc_ds=child,
+                                    feature="my_special_feature",
+                                    data=np.arange(len(child)))
+        assert "my_special_feature" in child.features
+        np.testing.assert_array_equal(child["my_special_feature"][:],
+                                      [0, 1, 2, 3, 4, 5])
+        np.testing.assert_array_equal(ds["my_special_feature"][:],
+                                      [0, np.nan, 1, 2, 3, 4, 5])
+        assert "my_special_feature" in grandchild.features
+        assert len(grandchild) == 5
+        dclab.register_temporary_feature("feature_six")
+        dclab.set_temporary_feature(rtdc_ds=grandchild,
+                                    feature="feature_six",
+                                    data=np.array([6, 6, 6, 6, 6]))
+        assert "feature_six" in grandchild
+        assert "feature_six" in child
+        assert "feature_six" in ds
+        np.testing.assert_array_equal(ds["feature_six"],
+                                      [6, np.nan, 6, 6, 6, 6, np.nan])
 
 
 @pytest.mark.filterwarnings(

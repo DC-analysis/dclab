@@ -1,9 +1,10 @@
 """
 .. versionadded:: 0.33.0
 """
-from ..definitions import feat_logic
+import numpy as np
 
-from .fmt_hierarchy import RTDC_Hierarchy
+from ..definitions import feat_logic
+from .fmt_hierarchy import RTDC_Hierarchy, map_indices_child2root
 
 
 _registered_temporary_features = []
@@ -58,8 +59,7 @@ def set_temporary_feature(rtdc_ds, feature, data):
     Parameters
     ----------
     rtdc_ds: dclab.RTDCBase
-        Dataset for which to set the feature. Note that temporary
-        features cannot be set for hierarchy children and that the
+        Dataset for which to set the feature. Note that the
         length of the feature `data` must match the number of events
         in `rtdc_ds`.
     feature: str
@@ -70,12 +70,17 @@ def set_temporary_feature(rtdc_ds, feature, data):
     if not feat_logic.feature_exists(feature):
         raise ValueError(
             f"Temporary feature '{feature}' has not been registered!")
-    if isinstance(rtdc_ds, RTDC_Hierarchy):
-        raise NotImplementedError("Setting temporary features for hierarchy "
-                                  "children not implemented yet!")
     if len(data) != len(rtdc_ds):
         raise ValueError(f"The temporary feature {feature} must have same "
                          f"length as the dataset. Expected length "
                          f"{len(rtdc_ds)}, got length {len(data)}!")
+    if isinstance(rtdc_ds, RTDC_Hierarchy):
+        root_ids = map_indices_child2root(rtdc_ds, np.arange(len(rtdc_ds)))
+        root_parent = rtdc_ds.get_root_parent()
+        root_feat_data = np.empty((len(root_parent)))
+        root_feat_data[:] = np.nan
+        root_feat_data[root_ids] = data
+        feat_logic.check_feature_shape(feature, data)
+        root_parent._usertemp[feature] = root_feat_data
     feat_logic.check_feature_shape(feature, data)
     rtdc_ds._usertemp[feature] = data

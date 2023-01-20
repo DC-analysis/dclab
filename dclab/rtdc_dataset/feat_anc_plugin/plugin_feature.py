@@ -1,11 +1,12 @@
 """
 .. versionadded:: 0.34.0
 """
+from __future__ import annotations
 import hashlib
 import importlib
 import pathlib
 import sys
-from typing import List, Union, Optional
+from typing import List, Optional
 
 from ...definitions import feat_logic
 from ..feat_anc_core import AncillaryFeature
@@ -19,7 +20,7 @@ class PlugInFeature(AncillaryFeature):
     def __init__(self,
                  feature_name: str,
                  info: dict,
-                 plugin_path: Optional[Union[str, pathlib.Path]] = None):
+                 plugin_path: Optional[str | pathlib.Path] = None):
         """A user-defined plugin feature
 
         Parameters
@@ -205,7 +206,7 @@ class PlugInFeature(AncillaryFeature):
 
 
 def import_plugin_feature_script(
-        plugin_path: Union[str, pathlib.Path]) -> dict:
+        plugin_path: str | pathlib.Path) -> dict:
     """Import the user-defined recipe and return the info dictionary
 
     Parameters
@@ -249,7 +250,7 @@ def import_plugin_feature_script(
 
 
 def load_plugin_feature(
-        plugin_path: Union[str, pathlib.Path]) -> List[PlugInFeature]:
+        plugin_path: str | pathlib.Path) -> List[PlugInFeature]:
     """Find and load PlugInFeature(s) from a user-defined recipe
 
     Parameters

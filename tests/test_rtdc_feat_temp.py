@@ -160,6 +160,8 @@ def test_hierarchy_children_grandchildren():
                                       [0, 1, 2, 3, 4, 5])
         np.testing.assert_array_equal(ds["my_special_feature"][:],
                                       [0, np.nan, 1, 2, 3, 4, 5])
+        np.testing.assert_array_equal(grandchild["my_special_feature"],
+                                      [0, 1, 2, 3, 4])
         assert "my_special_feature" in grandchild.features
         assert len(grandchild) == 5
         dclab.register_temporary_feature("feature_six")

@@ -4,6 +4,7 @@
 import numpy as np
 
 from ..definitions import feat_logic
+
 from .fmt_hierarchy import RTDC_Hierarchy, map_indices_child2root
 
 
@@ -63,7 +64,8 @@ def set_temporary_feature(rtdc_ds, feature, data):
         length of the feature `data` must match the number of events
         in `rtdc_ds`. If the dataset is a hierarchy child, the data will also
         be set in the parent dataset, but only for those events that are part
-        of the child. All non-child events become np.nan.
+        of the child. For all events in the parent dataset that are not part
+        of the child dataset, the temporary feature is set to np.nan.
     feature: str
         Feature name
     data: np.ndarray
@@ -82,7 +84,8 @@ def set_temporary_feature(rtdc_ds, feature, data):
         root_feat_data = np.empty((len(root_parent)))
         root_feat_data[:] = np.nan
         root_feat_data[root_ids] = data
+        set_temporary_feature(root_parent, feature, root_feat_data)
+        rtdc_ds.rejuvenate()
+    else:
         feat_logic.check_feature_shape(feature, data)
-        root_parent._usertemp[feature] = root_feat_data
-    feat_logic.check_feature_shape(feature, data)
-    rtdc_ds._usertemp[feature] = data
+        rtdc_ds._usertemp[feature] = data

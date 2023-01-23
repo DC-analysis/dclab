@@ -1,10 +1,13 @@
 """
 .. versionadded:: 0.34.0
 """
+from __future__ import annotations
+
 import hashlib
 import importlib
 import pathlib
 import sys
+from typing import List, Optional
 
 from ...definitions import feat_logic
 from ..feat_anc_core import AncillaryFeature
@@ -14,129 +17,11 @@ class PluginImportError(BaseException):
     pass
 
 
-def import_plugin_feature_script(plugin_path):
-    """Import the user-defined recipe and return the info dictionary
-
-    Parameters
-    ----------
-    plugin_path: str or Path
-        pathname to a valid dclab plugin script
-
-    Returns
-    -------
-    info: dict
-        Dictionary with the information required to instantiate
-        one (or multiple) :class:`PlugInFeature`.
-
-    Raises
-    ------
-    PluginImportError
-        If the plugin can not be found
-
-    Notes
-    -----
-    One recipe may define multiple plugin features.
-    """
-    path = pathlib.Path(plugin_path)
-    if not path.exists():
-        raise PluginImportError("The plugin could be not be found at "
-                                f"'{plugin_path}'!")
-    try:
-        # insert the plugin directory to sys.path so we can import it
-        sys.path.insert(-1, str(path.parent))
-        sys.dont_write_bytecode = True
-        plugin = importlib.import_module(path.stem)
-    except BaseException as e:
-        raise PluginImportError(
-            f"The plugin {plugin_path} could not be loaded!") from e
-    finally:
-        # undo our path insertion
-        sys.path.pop(0)
-        sys.dont_write_bytecode = False
-
-    return plugin.info
-
-
-def load_plugin_feature(plugin_path):
-    """Find and load PlugInFeature(s) from a user-defined recipe
-
-    Parameters
-    ----------
-    plugin_path: str or Path
-        pathname to a valid dclab plugin Python script
-
-    Returns
-    -------
-    plugin_list: list of PlugInFeature
-        list of PlugInFeature instances loaded from `plugin_path`
-
-    Raises
-    ------
-    ValueError
-        If the script dictionary "feature names" are not a list
-
-    Notes
-    -----
-    One recipe may define multiple plugin features.
-
-    See Also
-    --------
-    import_plugin_feature_script: function that imports the plugin script
-    PlugInFeature: class handling the plugin feature information
-    dclab.rtdc_dataset.feat_temp.register_temporary_feature: alternative
-        method for creating user-defined features
-    """
-    info = import_plugin_feature_script(plugin_path)
-    if not isinstance(info["feature names"], list):
-        raise ValueError(
-            "'feature names' must be a list of strings.")
-
-    plugin_list = []
-    for feature_name in info["feature names"]:
-        plugin_list.append(PlugInFeature(feature_name, info, plugin_path))
-    return plugin_list
-
-
-def remove_all_plugin_features():
-    """Convenience function for removing all `PlugInFeature` instances
-
-    See Also
-    --------
-    remove_plugin_feature: remove a single `PlugInFeature` instance
-    """
-    for plugin_instance in reversed(PlugInFeature.features):
-        if isinstance(plugin_instance, PlugInFeature):
-            remove_plugin_feature(plugin_instance)
-
-
-def remove_plugin_feature(plugin_instance):
-    """Convenience function for removing a `PlugInFeature` instance
-
-    Parameters
-    ----------
-    plugin_instance: PlugInFeature
-        The `PlugInFeature` instance to be removed from dclab
-
-    Raises
-    ------
-    TypeError
-        If the `plugin_instance` is not a `PlugInFeature` instance
-    """
-    if isinstance(plugin_instance, PlugInFeature):
-        # This check is necessary for situations where the PlugInFeature fails
-        # between updating the `dclab.dfn` file and initialising the
-        # AncillaryFeature
-        if plugin_instance.feature_name in PlugInFeature.feature_names:
-            PlugInFeature.feature_names.remove(plugin_instance.feature_name)
-            feat_logic.feature_deregister(plugin_instance.feature_name)
-        PlugInFeature.features.remove(plugin_instance)
-    else:
-        raise TypeError(f"Type {type(plugin_instance)} should be an instance "
-                        f"of PlugInFeature. '{plugin_instance}' was given.")
-
-
 class PlugInFeature(AncillaryFeature):
-    def __init__(self, feature_name, info, plugin_path=None):
+    def __init__(self,
+                 feature_name: str,
+                 info: dict,
+                 plugin_path: Optional[str | pathlib.Path] = None):
         """A user-defined plugin feature
 
         Parameters
@@ -177,7 +62,7 @@ class PlugInFeature(AncillaryFeature):
             - "version": version of this plugin (please use
               semantic verioning)
 
-        plugin_path: str or Path, optional
+        plugin_path: str or pathlib.Path, optional
             path which was used to load the `PlugInFeature` with
             :func:`load_plugin_feature`.
 
@@ -225,7 +110,7 @@ class PlugInFeature(AncillaryFeature):
             identifier=self.plugin_feature_info["identifier"],
         )
 
-    def _process_plugin_info(self, original_info):
+    def _process_plugin_info(self, original_info: dict) -> dict:
         """Return dictionary with all relevant info for this instance
         """
         fidx = original_info["feature names"].index(self.feature_name)
@@ -286,7 +171,7 @@ class PlugInFeature(AncillaryFeature):
 
         return feature_info
 
-    def _sanity_check_original_info(self, original_info):
+    def _sanity_check_original_info(self, original_info: dict):
         """Various checks on the `original_info` attribute dict
 
         Raises
@@ -319,3 +204,126 @@ class PlugInFeature(AncillaryFeature):
                 "The `method` you have provided in the parameter `info` is "
                 f"not callable ('{original_info['method']}' is not "
                 "a function).")
+
+
+def import_plugin_feature_script(
+        plugin_path: str | pathlib.Path) -> dict:
+    """Import the user-defined recipe and return the info dictionary
+
+    Parameters
+    ----------
+    plugin_path: str or Path
+        pathname to a valid dclab plugin script
+
+    Returns
+    -------
+    info: dict
+        Dictionary with the information required to instantiate
+        one (or multiple) :class:`PlugInFeature`.
+
+    Raises
+    ------
+    PluginImportError
+        If the plugin can not be found
+
+    Notes
+    -----
+    One recipe may define multiple plugin features.
+    """
+    path = pathlib.Path(plugin_path)
+    if not path.exists():
+        raise PluginImportError("The plugin could be not be found at "
+                                f"'{plugin_path}'!")
+    try:
+        # insert the plugin directory to sys.path so we can import it
+        sys.path.insert(-1, str(path.parent))
+        sys.dont_write_bytecode = True
+        plugin = importlib.import_module(path.stem)
+    except BaseException as e:
+        raise PluginImportError(
+            f"The plugin {plugin_path} could not be loaded!") from e
+    finally:
+        # undo our path insertion
+        sys.path.pop(0)
+        sys.dont_write_bytecode = False
+
+    return plugin.info
+
+
+def load_plugin_feature(
+        plugin_path: str | pathlib.Path) -> List[PlugInFeature]:
+    """Find and load PlugInFeature(s) from a user-defined recipe
+
+    Parameters
+    ----------
+    plugin_path: str or Path
+        pathname to a valid dclab plugin Python script
+
+    Returns
+    -------
+    plugin_list: list of PlugInFeature
+        list of PlugInFeature instances loaded from `plugin_path`
+
+    Raises
+    ------
+    ValueError
+        If the script dictionary "feature names" are not a list
+
+    Notes
+    -----
+    One recipe may define multiple plugin features.
+
+    See Also
+    --------
+    import_plugin_feature_script: function that imports the plugin script
+    PlugInFeature: class handling the plugin feature information
+    dclab.rtdc_dataset.feat_temp.register_temporary_feature: alternative
+        method for creating user-defined features
+    """
+    info = import_plugin_feature_script(plugin_path)
+    if not isinstance(info["feature names"], list):
+        raise ValueError(
+            "'feature names' must be a list of strings.")
+
+    plugin_list = []
+    for feature_name in info["feature names"]:
+        plugin_list.append(PlugInFeature(feature_name, info, plugin_path))
+    return plugin_list
+
+
+def remove_all_plugin_features():
+    """Convenience function for removing all `PlugInFeature` instances
+
+    See Also
+    --------
+    remove_plugin_feature: remove a single `PlugInFeature` instance
+    """
+    for plugin_instance in reversed(PlugInFeature.features):
+        if isinstance(plugin_instance, PlugInFeature):
+            remove_plugin_feature(plugin_instance)
+
+
+def remove_plugin_feature(plugin_instance: PlugInFeature):
+    """Convenience function for removing a `PlugInFeature` instance
+
+    Parameters
+    ----------
+    plugin_instance: PlugInFeature
+        The `PlugInFeature` instance to be removed from dclab
+
+    Raises
+    ------
+    TypeError
+        If the `plugin_instance` is not a `PlugInFeature` instance
+    """
+    if isinstance(plugin_instance, PlugInFeature):
+        # This check is necessary for situations where the PlugInFeature fails
+        # between updating the `dclab.dfn` file and initialising the
+        # AncillaryFeature
+        if plugin_instance.feature_name in PlugInFeature.feature_names:
+            PlugInFeature.feature_names.remove(plugin_instance.feature_name)
+            feat_logic.feature_deregister(plugin_instance.feature_name)
+        PlugInFeature.features.remove(plugin_instance)
+    else:
+        raise TypeError(f"Type {type(plugin_instance)} should be an instance "
+                        f"of PlugInFeature. '{plugin_instance}' was given.")

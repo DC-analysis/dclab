@@ -1,10 +1,15 @@
 """
 .. versionadded:: 0.33.0
 """
+from __future__ import annotations
+
+from typing import Optional
+
 import numpy as np
 
 from ..definitions import feat_logic
 
+from .core import RTDCBase
 from .fmt_hierarchy import RTDC_Hierarchy, map_indices_child2root
 
 
@@ -17,7 +22,7 @@ def deregister_all():
         deregister_temporary_feature(feat)
 
 
-def deregister_temporary_feature(feature):
+def deregister_temporary_feature(feature: str):
     """Convenience function for deregistering a temporary feature
 
     This method is mostly used during testing. It does not
@@ -30,7 +35,9 @@ def deregister_temporary_feature(feature):
         feat_logic.feature_deregister(feature)
 
 
-def register_temporary_feature(feature, label=None, is_scalar=True):
+def register_temporary_feature(feature: str,
+                               label: Optional[str] = None,
+                               is_scalar: bool = True):
     """Register a new temporary feature
 
     Temporary features are custom features that can be defined ad hoc
@@ -54,7 +61,9 @@ def register_temporary_feature(feature, label=None, is_scalar=True):
     _registered_temporary_features.append(feature)
 
 
-def set_temporary_feature(rtdc_ds, feature, data):
+def set_temporary_feature(rtdc_ds: RTDCBase,
+                          feature: str,
+                          data: np.ndarray):
     """Set temporary feature data for a dataset
 
     Parameters

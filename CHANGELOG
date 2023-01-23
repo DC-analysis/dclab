@@ -1,5 +1,7 @@
 0.47.5
  - enh: allow temporary features for hierarchy children (#123)
+ - enh: more type annotations (partially #198)
+ - build: add Python 3.11 CI pipeline
 0.47.4
  - enh: allow pathlib.Path objects in cli.get_command_log custom dicts
 0.47.3

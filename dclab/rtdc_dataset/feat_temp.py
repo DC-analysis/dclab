@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 from typing import Optional
+
 import numpy as np
 
 from .core import RTDCBase
 from ..definitions import feat_logic
 
-from .fmt_hierarchy import RTDC_Hierarchy
+from .fmt_hierarchy import RTDC_Hierarchy, map_indices_child2root
 
 
 _registered_temporary_features = []
@@ -68,10 +69,12 @@ def set_temporary_feature(rtdc_ds: RTDCBase,
     Parameters
     ----------
     rtdc_ds: dclab.RTDCBase
-        Dataset for which to set the feature. Note that temporary
-        features cannot be set for hierarchy children and that the
+        Dataset for which to set the feature. Note that the
         length of the feature `data` must match the number of events
-        in `rtdc_ds`.
+        in `rtdc_ds`. If the dataset is a hierarchy child, the data will also
+        be set in the parent dataset, but only for those events that are part
+        of the child. For all events in the parent dataset that are not part
+        of the child dataset, the temporary feature is set to np.nan.
     feature: str
         Feature name
     data: np.ndarray
@@ -80,12 +83,18 @@ def set_temporary_feature(rtdc_ds: RTDCBase,
     if not feat_logic.feature_exists(feature):
         raise ValueError(
             f"Temporary feature '{feature}' has not been registered!")
-    if isinstance(rtdc_ds, RTDC_Hierarchy):
-        raise NotImplementedError("Setting temporary features for hierarchy "
-                                  "children not implemented yet!")
     if len(data) != len(rtdc_ds):
         raise ValueError(f"The temporary feature {feature} must have same "
                          f"length as the dataset. Expected length "
                          f"{len(rtdc_ds)}, got length {len(data)}!")
-    feat_logic.check_feature_shape(feature, data)
-    rtdc_ds._usertemp[feature] = data
+    if isinstance(rtdc_ds, RTDC_Hierarchy):
+        root_ids = map_indices_child2root(rtdc_ds, np.arange(len(rtdc_ds)))
+        root_parent = rtdc_ds.get_root_parent()
+        root_feat_data = np.empty((len(root_parent)))
+        root_feat_data[:] = np.nan
+        root_feat_data[root_ids] = data
+        set_temporary_feature(root_parent, feature, root_feat_data)
+        rtdc_ds.rejuvenate()
+    else:
+        feat_logic.check_feature_shape(feature, data)
+        rtdc_ds._usertemp[feature] = data

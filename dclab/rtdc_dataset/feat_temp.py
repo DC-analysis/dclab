@@ -2,10 +2,11 @@
 .. versionadded:: 0.33.0
 """
 from __future__ import annotations
+
 from typing import Optional
 import numpy as np
 
-import dclab.rtdc_dataset
+from .core import RTDCBase
 from ..definitions import feat_logic
 
 from .fmt_hierarchy import RTDC_Hierarchy
@@ -59,7 +60,7 @@ def register_temporary_feature(feature: str,
     _registered_temporary_features.append(feature)
 
 
-def set_temporary_feature(rtdc_ds: dclab.rtdc_dataset.RTDCBase,
+def set_temporary_feature(rtdc_ds: RTDCBase,
                           feature: str,
                           data: np.ndarray):
     """Set temporary feature data for a dataset

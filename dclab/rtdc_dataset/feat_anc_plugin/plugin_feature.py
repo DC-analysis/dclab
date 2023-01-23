@@ -2,6 +2,7 @@
 .. versionadded:: 0.34.0
 """
 from __future__ import annotations
+
 import hashlib
 import importlib
 import pathlib

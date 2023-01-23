@@ -7,9 +7,9 @@ from typing import Optional
 
 import numpy as np
 
-from .core import RTDCBase
 from ..definitions import feat_logic
 
+from .core import RTDCBase
 from .fmt_hierarchy import RTDC_Hierarchy, map_indices_child2root
 
 

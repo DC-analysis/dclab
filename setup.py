@@ -34,7 +34,7 @@ extras_require["all"] = list(set(sum(list(extras_require.values()), [])))
 
 setup(
     name=name,
-    maintainer=maintainer,
+    maintainer="Paul Müller",
     maintainer_email=maintainer_email,
     url='https://github.com/ZELLMECHANIK-DRESDEN/dclab',
     version=version,

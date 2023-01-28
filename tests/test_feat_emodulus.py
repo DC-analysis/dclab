@@ -43,13 +43,7 @@ def test_af_emodulus_known_media():
                        rtol=0, atol=1e-15)
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
-        if af.data == "DEPRECATED":
-            continue
-        if af.method.__name__ == "compute_emodulus_legacy":
-            assert af.is_available(ds)
-        else:
-            assert not af.is_available(ds)
-        if af.method.__name__ == "compute_emodulus_known_media":
+        if af.data == "case C":
             assert af.is_available(ds2)
         else:
             assert not af.is_available(ds2)
@@ -211,13 +205,7 @@ def test_af_emodulus_temp_feat():
                        rtol=0, atol=6.5e-14)
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
-        if af.data == "DEPRECATED":
-            continue
-        if af.method.__name__ == "compute_emodulus_legacy":
-            assert af.is_available(ds)
-        else:
-            assert not af.is_available(ds)
-        if af.method.__name__ == "compute_emodulus_temp_feat":
+        if af.data == "case A":
             assert af.is_available(ds2)
         else:
             assert not af.is_available(ds2)
@@ -299,13 +287,7 @@ def test_af_emodulus_visc_only():
                        rtol=0, atol=1e-15)
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
-        if af.data == "DEPRECATED":
-            continue
-        if af.method.__name__ == "compute_emodulus_legacy":
-            assert af.is_available(ds)
-        else:
-            assert not af.is_available(ds)
-        if af.method.__name__ == "compute_emodulus_visc_only":
+        if af.data == "case B":
             assert af.is_available(ds2)
         else:
             assert not af.is_available(ds2)

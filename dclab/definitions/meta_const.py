@@ -19,6 +19,7 @@ CFG_ANALYSIS = {
         ["emodulus medium", str, "Medium used (e.g. '0.49% MC-PBS')"],
         ["emodulus temperature", float, "Chip temperature [°C]"],
         ["emodulus viscosity", float, "Viscosity [Pa*s] if 'medium' unknown"],
+        ["emodulus viscosity model", str, "Viscosity model for known media"],
         ["crosstalk fl21", float, "Fluorescence crosstalk, channel 2 to 1"],
         ["crosstalk fl31", float, "Fluorescence crosstalk, channel 3 to 1"],
         ["crosstalk fl12", float, "Fluorescence crosstalk, channel 1 to 2"],

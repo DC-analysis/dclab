@@ -1,98 +1,76 @@
+import warnings
+
 from ... import features
 
 from .ancillary_feature import AncillaryFeature
 
 
-def compute_emodulus_legacy(mm):
-    """This is how it was done in Shape-Out 1"""
+def compute_emodulus(mm):
     calccfg = mm.config["calculation"]
-    lut_identifier = calccfg["emodulus lut"]
-    medium = calccfg["emodulus medium"]
-    assert isinstance(medium, str), "'emodulus medium' must be a string!"
-    viscosity = calccfg["emodulus viscosity"]
-    temperature = mm.config["calculation"]["emodulus temperature"]
-    if medium.lower() == "other":
-        medium = viscosity
-        temperature = None
+
+    medium = calccfg.get("emodulus medium", "other").lower()
+    temperature = calccfg.get("emodulus temperature", None)
+    viscosity = calccfg.get("emodulus viscosity", None)
+
+    if viscosity is not None and medium == "other":
+        # Case B from the docs
+        return compute_emodulus_visc_only(mm)
+    else:
+        # sanity checks
+        if not isinstance(medium, str):
+            raise ValueError(
+                f"'emodulus medium' must be a string, got '{medium}'!")
+        if medium not in features.emodulus.viscosity.KNOWN_MEDIA:
+            raise ValueError(
+                f"Only the following media are supported: "
+                f"{features.emodulus.viscosity.KNOWN_MEDIA}, got '{medium}'!")
+        # warnings
+        if "emodulus viscosity model" not in calccfg:
+            warnings.warn("Please specify the 'emodulus viscosity model' "
+                          "key in the 'calculation' config segion, falling "
+                          "back to 'herold-2017'!",
+                          DeprecationWarning)
+        # actual function calls
+        if temperature is not None:
+            # case C from the docs
+            temperature = mm.config["calculation"]["emodulus temperature"]
+            return compute_emodulus_known_media(mm, temperature=temperature)
+        elif "temp" in mm:
+            # case A from the docs
+            return compute_emodulus_known_media(mm, temperature=mm["temp"])
+
+
+def compute_emodulus_known_media(mm, temperature):
+    """Only use known media and one temperature for all"""
+    calccfg = mm.config["calculation"]
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(
         area_um=mm["area_um"],
         deform=mm["deform"],
-        medium=medium,
+        medium=calccfg["emodulus medium"],
         channel_width=mm.config["setup"]["channel width"],
         flow_rate=mm.config["setup"]["flow rate"],
         px_um=mm.config["imaging"]["pixel size"],
         temperature=temperature,
-        lut_data=lut_identifier,
-    )
-    return emod
-
-
-def compute_emodulus_known_media(mm):
-    """Only use known media and one temperature for all
-
-    This is a special case in :func:`compute_emodulus_legacy`.
-    """
-    calccfg = mm.config["calculation"]
-    lut_identifier = calccfg["emodulus lut"]
-    medium = calccfg["emodulus medium"]
-    assert isinstance(medium, str), "'emodulus medium' must be a string!"
-    if medium not in features.emodulus.viscosity.KNOWN_MEDIA:
-        raise ValueError("Only the following media are supported: {}".format(
-                         features.emodulus.viscosity.KNOWN_MEDIA))
-    # compute elastic modulus
-    emod = features.emodulus.get_emodulus(
-        area_um=mm["area_um"],
-        deform=mm["deform"],
-        medium=medium,
-        channel_width=mm.config["setup"]["channel width"],
-        flow_rate=mm.config["setup"]["flow rate"],
-        px_um=mm.config["imaging"]["pixel size"],
-        temperature=mm.config["calculation"]["emodulus temperature"],
-        lut_data=lut_identifier,
-    )
-    return emod
-
-
-def compute_emodulus_temp_feat(mm):
-    """Use the "temperature" feature"""
-    calccfg = mm.config["calculation"]
-    lut_identifier = calccfg["emodulus lut"]
-    medium = calccfg["emodulus medium"]
-    assert isinstance(medium, str), "'emodulus medium' must be a string!"
-    assert medium != "other"
-    # compute elastic modulus
-    emod = features.emodulus.get_emodulus(
-        area_um=mm["area_um"],
-        deform=mm["deform"],
-        medium=medium,
-        channel_width=mm.config["setup"]["channel width"],
-        flow_rate=mm.config["setup"]["flow rate"],
-        px_um=mm.config["imaging"]["pixel size"],
-        temperature=mm["temp"],
-        lut_data=lut_identifier,
+        lut_data=calccfg["emodulus lut"],
+        visc_model=calccfg.get("emodulus viscosity model", "herold-2017"),
     )
     return emod
 
 
 def compute_emodulus_visc_only(mm):
-    """The user entered the viscosity directly
-
-    This is a special case in :func:`compute_emodulus_legacy`.
-    """
+    """The user entered the viscosity directly"""
     calccfg = mm.config["calculation"]
-    lut_identifier = calccfg["emodulus lut"]
-    viscosity = calccfg["emodulus viscosity"]
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(
         area_um=mm["area_um"],
         deform=mm["deform"],
-        medium=viscosity,
+        medium=calccfg["emodulus viscosity"],
         channel_width=mm.config["setup"]["channel width"],
         flow_rate=mm.config["setup"]["flow rate"],
         px_um=mm.config["imaging"]["pixel size"],
         temperature=None,
-        lut_data=lut_identifier,
+        lut_data=calccfg["emodulus lut"],
     )
     return emod
 
@@ -122,19 +100,8 @@ def register():
     # Please note that registering these things is a delicate business,
     # because the priority has to be chosen carefully.
     AncillaryFeature(feature_name="emodulus",
-                     method=compute_emodulus_legacy,
-                     req_features=["area_um", "deform"],
-                     req_config=[["calculation", ["emodulus lut",
-                                                  "emodulus medium",
-                                                  "emodulus temperature",
-                                                  "emodulus viscosity"]],
-                                 ["imaging", ["pixel size"]],
-                                 ["setup", ["flow rate", "channel width"]]
-                                 ],
-                     req_func=is_channel,
-                     priority=3)
-    AncillaryFeature(feature_name="emodulus",
-                     method=compute_emodulus_known_media,
+                     method=compute_emodulus,
+                     data="case C",
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus lut",
                                                   "emodulus medium",
@@ -145,7 +112,8 @@ def register():
                      req_func=is_channel,
                      priority=2)
     AncillaryFeature(feature_name="emodulus",
-                     method=compute_emodulus_visc_only,
+                     data="case B",
+                     method=compute_emodulus,
                      req_features=["area_um", "deform"],
                      req_config=[["calculation", ["emodulus lut",
                                                   "emodulus viscosity"]],
@@ -155,7 +123,8 @@ def register():
                      req_func=is_channel,
                      priority=1)
     AncillaryFeature(feature_name="emodulus",
-                     method=compute_emodulus_temp_feat,
+                     data="case A",
+                     method=compute_emodulus,
                      req_features=["area_um", "deform", "temp"],
                      req_config=[["calculation", ["emodulus lut",
                                                   "emodulus medium"]],

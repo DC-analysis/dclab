@@ -48,6 +48,8 @@ with respect to the following correction terms:
   corrected which is done using hard-coded correction functions as
   described in the next section.
 
+.. _sec_emodulus_viscosity:
+
 Viscosity
 =========
 The computation of the viscosity is implemented in the :mod:`corresponding submodule
@@ -190,34 +192,42 @@ right away as an :ref:`ancillary feature <sec_features_ancillary>`
 Additional information is required. There are three scenarios:
 
 A) The viscosity/Young's modulus is computed individually from the chip
-   temperature for **each** event. Required information:
+   temperature for **each** event:
 
   - The `temp` feature which holds the chip temperature of each event
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus medium'
+  - The configuration key [calculation]: 'emodulus viscosity model'
 
 B) Set a global viscosity in [mPa·s]. Use this if you have measured the
    viscosity of your medium (and know all there is to know about shear
-   thinning :cite:`Herold2017`). Required information:
+   thinning :cite:`Herold2017` and temperature dependence):
 
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus viscosity'
 
-C) Compute the Young's modulus using the viscosities of known media.
+C) Compute the Young's modulus using the viscosities of known media for
+   a fixed temperature:
 
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus medium'
   - The configuration key [calculation]: 'emodulus temperature'
+  - The configuration key [calculation]: 'emodulus viscosity model'
 
   Note that if 'emodulus temperature' is given, then this temperature
   is used, even if the `temp` feature exists (scenario A).
 
-The key 'emodulus lut' is the LUT identifier (see previous section).
-The key 'emodulus medium' must be one of the supported media defined in
-:data:`dclab.features.emodulus.viscosity.KNOWN_MEDIA` and can be
-taken from [setup]: 'medium'.
-The key 'emodulus temperature' is the mean chip temperature and
-could possibly be available in [setup]: 'temperature'.
+Description of the configuration keywords:
+
+- 'emodulus lut': This is the LUT identifier (see previous section).
+- 'emodulus medium': This must be one of the supported media defined in
+  :data:`dclab.features.emodulus.viscosity.KNOWN_MEDIA` and can be
+  taken from the configuration key `[setup]: 'medium'`.
+- 'emodulus temperature': is the mean chip temperature and
+  could possibly be available in [setup]: 'temperature'.
+- 'emodulus viscosity model': This is the viscosity model key to use
+  (see :ref:`sec_emodulus_viscosity` above).
+  This key was introduced in dclab 0.48.0.
 
 
 .. plot::

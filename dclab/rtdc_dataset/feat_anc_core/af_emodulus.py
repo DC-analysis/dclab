@@ -106,6 +106,10 @@ def is_channel(mm):
 def register():
     # Please note that registering these things is a delicate business,
     # because the priority has to be chosen carefully.
+    # Note that here we have not included the "emodulus viscosity model"
+    # configuration keyword. This is checked in the `compute_emodulus`
+    # method above and a deprecation warning is issued, so old code
+    # does not break immediately.
     AncillaryFeature(feature_name="emodulus",
                      method=compute_emodulus,
                      data="case C",

@@ -167,7 +167,7 @@ def get_viscosity_mc_pbs_herold_2017(
         eta = 0.360 * (term1 * term2)**(0.634 - 1) * temp_corr * 1e3
     else:
         raise NotImplementedError(
-            f"Medium {medium} not supported for model `herold2017`!")
+            f"Medium {medium} not supported for model `herold-2017`!")
     return eta
 
 

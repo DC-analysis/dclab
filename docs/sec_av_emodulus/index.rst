@@ -173,6 +173,7 @@ Please make sure that you adhere to the file format. An example can be found
 `here <https://github.com/DC-analysis/dclab/blob/master/dclab/features/emodulus/emodulus_lut_LE-2D-FEM-19.txt>`_.
 
 
+.. _sec_emodulus_usage:
 
 Usage
 =====

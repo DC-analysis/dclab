@@ -6,6 +6,12 @@ from .ancillary_feature import AncillaryFeature
 
 
 def compute_emodulus(mm):
+    """Wrapper function for computing the Young's modulus
+
+    Please take a look at the docs :ref:`sec_emodulus_usage`
+    for more details on the three cases A, B, and C.
+    There are also some sanity checks taking place here.
+    """
     calccfg = mm.config["calculation"]
 
     medium = calccfg.get("emodulus medium", "other").lower()

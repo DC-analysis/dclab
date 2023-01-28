@@ -1,5 +1,4 @@
 """Viscosity computation for various media"""
-
 import warnings
 
 import numpy as np
@@ -7,8 +6,34 @@ import numpy as np
 from ...warn import PipelineWarning
 
 
-#: Media for which computation of viscosity is defined
-KNOWN_MEDIA = ["CellCarrier", "CellCarrierB", "water"]
+#: Dictionary with different names for one medium
+SAME_MEDIA = {
+    "0.49% MC-PBS": ["0.49% MC-PBS",
+                     "0.5% MC-PBS",
+                     "0.50% MC-PBS",
+                     "CellCarrier",
+                     ],
+    "0.59% MC-PBS": ["0.59% MC-PBS",
+                     "0.6% MC-PBS",
+                     "0.60% MC-PBS",
+                     "CellCarrier B",
+                     "CellCarrierB",
+                     ],
+    "0.83% MC-PBS": ["0.83% MC-PBS",
+                     "0.8% MC-PBS",
+                     "0.80% MC-PBS"],
+    "water": ["water"],
+}
+
+#: Many media names are actually shorthand for one medium
+ALIAS_MEDIA = {}
+for key in SAME_MEDIA:
+    for item in SAME_MEDIA[key]:
+        ALIAS_MEDIA[item] = key
+        ALIAS_MEDIA[item.lower()] = key  # also support all-lower case
+
+#: Media for which computation of viscosity is defined (has duplicate entries)
+KNOWN_MEDIA = sorted(ALIAS_MEDIA.keys())
 
 
 class TemperatureOutOfRangeWarning(PipelineWarning):

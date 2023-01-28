@@ -13,6 +13,10 @@ def compute_emodulus(mm):
     viscosity = calccfg.get("emodulus viscosity", None)
 
     if viscosity is not None and medium == "other":
+        # sanity checks
+        if temperature is not None:
+            warnings.warn("The 'emodulus temperature' configuration key is "
+                          "ignored if the 'emodulus viscosity' key is set!")
         # Case B from the docs
         return compute_emodulus_visc_only(mm)
     else:
@@ -24,6 +28,9 @@ def compute_emodulus(mm):
             raise ValueError(
                 f"Only the following media are supported: "
                 f"{features.emodulus.viscosity.KNOWN_MEDIA}, got '{medium}'!")
+        if viscosity is not None:
+            raise ValueError("You must not set the 'emodulus viscosity' "
+                             "configuration keyword for known media!")
         # warnings
         if "emodulus viscosity model" not in calccfg:
             warnings.warn("Please specify the 'emodulus viscosity model' "

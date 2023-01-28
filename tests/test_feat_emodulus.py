@@ -19,6 +19,26 @@ from helper_methods import example_data_dict
 def test_af_emodulus_known_media():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
+    # known-media
+    ds2 = dclab.new_dataset(ddict)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus medium": "CellCarrier",
+                                 "emodulus temperature": 23.0
+                                 }
+    # ancillary feature priority check
+    for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
+        if af.data == "case C":
+            assert af.is_available(ds2)
+        else:
+            assert not af.is_available(ds2)
+
+
+def test_af_emodulus_known_media_error_set_viscosity():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
     # legacy
     ds = dclab.new_dataset(ddict)
     ds.config["setup"]["flow rate"] = 0.16
@@ -29,31 +49,15 @@ def test_af_emodulus_known_media():
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
-    # known-media
-    ds2 = dclab.new_dataset(ddict)
-    ds2.config["setup"]["flow rate"] = 0.16
-    ds2.config["setup"]["channel width"] = 30
-    ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
-                                 "emodulus medium": "CellCarrier",
-                                 "emodulus temperature": 23.0
-                                 }
-    assert np.sum(~np.isnan(ds["emodulus"])) > 0
-    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=1e-15)
-    # ancillary feature priority check
-    for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
-        if af.data == "case C":
-            assert af.is_available(ds2)
-        else:
-            assert not af.is_available(ds2)
+    with pytest.raises(ValueError, match="must not"):
+        ds.__getitem__("emodulus")
 
 
 @pytest.mark.skipif(sys.version_info < (3, 3),
                     reason="perf_counter requires python3.3 or higher")
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
                             + 'YoungsModulusLookupTableExceededWarning')
-def test_af_emodulus_legacy():
+def test_af_emodulus_cache():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
     ds = dclab.new_dataset(ddict)
@@ -63,7 +67,6 @@ def test_af_emodulus_legacy():
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5
                                 }
     t1 = time.perf_counter()
     assert "emodulus" in ds
@@ -119,34 +122,6 @@ def test_af_emodulus_legacy_none2():
     assert "emodulus" not in ds, "emodulus lut should be missing"
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            + 'YoungsModulusLookupTableExceededWarning')
-def test_af_emodulus_legacy_viscosity_does_not_matter():
-    keys = ["area_um", "deform"]
-    ddict = example_data_dict(size=8472, keys=keys)
-    ds = dclab.new_dataset(ddict)
-    ds.config["setup"]["flow rate"] = 0.16
-    ds.config["setup"]["channel width"] = 30
-    ds.config["imaging"]["pixel size"] = .34
-    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
-                                "emodulus medium": "CellCarrier",
-                                "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5  # irrelevant
-                                }
-    ds2 = dclab.new_dataset(ddict)
-    ds2.config["setup"]["flow rate"] = 0.16
-    ds2.config["setup"]["channel width"] = 30
-    ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
-                                 "emodulus medium": "CellCarrier",
-                                 "emodulus temperature": 23.0,
-                                 "emodulus viscosity": 0.1  # irrelevant
-                                 }
-    assert np.sum(~np.isnan(ds["emodulus"])) > 0
-    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=1e-15)
-
-
 def test_af_emodulus_reservoir():
     """Reservoir measurements should not have emodulus"""
     keys = ["area_um", "deform"]
@@ -188,7 +163,6 @@ def test_af_emodulus_temp_feat():
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5
                                 }
     ddict2 = example_data_dict(size=8472, keys=keys)
     ddict2["temp"] = 23.0 * np.ones(8472)
@@ -224,7 +198,6 @@ def test_af_emodulus_temp_feat_2():
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5
                                 }
     ddict2 = example_data_dict(size=8472, keys=keys)
     ddict2["temp"] = 23.0 * np.ones(8472)
@@ -248,7 +221,6 @@ def test_af_emodulus_temp_feat_2():
     ds3.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                  "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.5,
-                                 "emodulus viscosity": 0.5
                                  }
     assert np.allclose(ds3["emodulus"][0], ds2["emodulus"][0], rtol=0,
                        atol=6e-14)
@@ -267,7 +239,6 @@ def test_af_emodulus_visc_only():
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5  # irrelevant
                                 }
     # visc-only
     ds2 = dclab.new_dataset(ddict)

@@ -1,3 +1,5 @@
+0.47.6
+ - docs: make "edit on GitHub" link lead to actual source file again
 0.47.5
  - enh: allow temporary features for hierarchy children (#123)
  - enh: more type annotations (partially #198)

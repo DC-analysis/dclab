@@ -33,11 +33,6 @@ autoclass_content = 'both'
 # include source of matplotlib plots
 plot_include_source = True
 
-# Display link to GitHub repo instead of doc on rtfd
-rst_prolog = """
-:github_url: https://github.com/DC-analysis/dclab
-"""
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

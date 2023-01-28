@@ -104,8 +104,8 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
 
     Notes
     -----
-    - CellCarrier and CellCarrier B media are optimized for
-      RT-DC measurements.
+    - CellCarrier (0.49% MC-PBS) and CellCarrier B (0.59% MC-PBS) are
+      media designed for RT-DC experiments.
     - A :class:`TemperatureOutOfRangeWarning` is issued if the
       input temperature range exceeds the temperature ranges of
       the models.

@@ -15,11 +15,8 @@ CFG_ANALYSIS = {
     ],
     # Addition user-defined data
     "calculation": [
-        # "emodulus lut" was introduced in 0.32.0 and will replace
-        # the deprecated "emodulus model".
         ["emodulus lut", str, "Look-up table identifier"],
-        ["emodulus model", lcstr, "Model [DEPRECATED]"],
-        ["emodulus medium", str, "Medium used (e.g. CellCarrierB, water)"],
+        ["emodulus medium", str, "Medium used (e.g. '0.49% MC-PBS')"],
         ["emodulus temperature", float, "Chip temperature [°C]"],
         ["emodulus viscosity", float, "Viscosity [Pa*s] if 'medium' unknown"],
         ["crosstalk fl21", float, "Fluorescence crosstalk, channel 2 to 1"],
@@ -135,7 +132,7 @@ CFG_METADATA = {
         ["flow rate sample", float, "Sample flow rate [µL/s]"],
         ["flow rate sheath", float, "Sheath flow rate [µL/s]"],
         ["identifier", str, "Unique setup identifier"],
-        # "medium" is one of CellCarrier, CellCarrierB, water, or other
+        # "medium" can have various values; it is used to calculate viscosity
         ["medium", str, "Medium used"],
         ["module composition", str, "Comma-separated list of modules used"],
         ["software version", str, "Acquisition software with version"],

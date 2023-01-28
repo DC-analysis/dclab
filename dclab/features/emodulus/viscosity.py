@@ -1,4 +1,7 @@
 """Viscosity computation for various media"""
+from __future__ import annotations
+
+from typing import Literal
 import warnings
 
 import numpy as np
@@ -40,7 +43,10 @@ class TemperatureOutOfRangeWarning(PipelineWarning):
     pass
 
 
-def check_temperature(model, temperature, tmin, tmax):
+def check_temperature(model: str,
+                      temperature: float | np.array,
+                      tmin: float,
+                      tmax: float):
     """Raise a TemperatureOutOfRangeWarning if applicable"""
     if np.min(temperature) < tmin or np.max(temperature) > tmax:
         warnings.warn(
@@ -50,8 +56,13 @@ def check_temperature(model, temperature, tmin, tmax):
             TemperatureOutOfRangeWarning)
 
 
-def get_viscosity(medium="0.49% MC-PBS", channel_width=20.0, flow_rate=0.16,
-                  temperature=23.0, model="herold-2017"):
+def get_viscosity(medium: str = "0.49% MC-PBS",
+                  channel_width: float = 20.0,
+                  flow_rate: float = 0.16,
+                  temperature: float = 23.0,
+                  model: Literal['herold-2017',
+                                 'buyukurganci-2022',
+                                 'kestin-1978'] = 'herold-2017'):
     """Returns the viscosity for RT-DC-specific media
 
     Media that are not pure (e.g. ketchup or polymer solutions)
@@ -123,15 +134,22 @@ def get_viscosity(medium="0.49% MC-PBS", channel_width=20.0, flow_rate=0.16,
 
 
 def get_viscosity_mc_pbs_buyukurganci_2022(
-        medium="0.49% MC-PBS", channel_width=20.0,
-        flow_rate=0.16, temperature=23.0):
+        medium: Literal["0.49% MC-PBS",
+                        "0.59% MC-PBS",
+                        "0.83% MC-PBS"] = "0.49% MC-PBS",
+        channel_width: float = 20.0,
+        flow_rate: float = 0.16,
+        temperature: float = 23.0):
     """Compute viscosity of MC-PBS according to :cite:`Buyukurganci2022`"""
     check_temperature("'buyukurganci-2022' MC-PBS", temperature, 22, 37)
     raise NotImplementedError("Model buyukurganci-2022 not implemented yet!")
 
 
-def get_viscosity_mc_pbs_herold_2017(medium="0.49% MC-PBS", channel_width=20.0,
-                                     flow_rate=0.16, temperature=23.0):
+def get_viscosity_mc_pbs_herold_2017(
+        medium: Literal["0.49% MC-PBS", "0.59% MC-PBS"] = "0.49% MC-PBS",
+        channel_width: float = 20.0,
+        flow_rate: float = 0.16,
+        temperature: float = 23.0):
     """Compute viscosity of MC-PBS according to :cite:`Herold2017`"""
     # see figure (9) in Herold arXiv:1704.00572 (2017)
     check_temperature("'herold-2017' MC-PBS", temperature, 18, 26)
@@ -153,7 +171,7 @@ def get_viscosity_mc_pbs_herold_2017(medium="0.49% MC-PBS", channel_width=20.0,
     return eta
 
 
-def get_viscosity_water_kestin_1978(temperature=23.0):
+def get_viscosity_water_kestin_1978(temperature: float = 23.0):
     """Compute the viscosity of water according to :cite:`Kestin_1978`"""
     # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
     check_temperature("'kestin-1978' water", temperature, 0, 40)

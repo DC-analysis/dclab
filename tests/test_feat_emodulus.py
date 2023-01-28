@@ -25,6 +25,7 @@ def test_af_emodulus_known_media():
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
     ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus viscosity model": "herold-2017",
                                  "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.0
                                  }
@@ -45,6 +46,7 @@ def test_af_emodulus_known_media_error_set_viscosity():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
@@ -65,6 +67,7 @@ def test_af_emodulus_cache():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 }
@@ -90,11 +93,14 @@ def test_af_emodulus_legacy_area():
     ds.config["setup"]["flow rate"] = 0.16
     ds.config["setup"]["channel width"] = 30
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
     assert "emodulus" in ds
+    with pytest.raises(ValueError, match="must not"):
+        ds.__getitem__("emodulus")
 
 
 def test_af_emodulus_legacy_none():
@@ -103,9 +109,9 @@ def test_af_emodulus_legacy_none():
     ds = dclab.new_dataset(ddict)
     assert "emodulus" not in ds, "not config for emodulus"
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5
                                 }
     assert "emodulus" not in ds, "column 'area_um' should be missing"
 
@@ -116,6 +122,7 @@ def test_af_emodulus_legacy_none2():
     ds = dclab.new_dataset(ddict)
     assert "emodulus" not in ds, "not config for emodulus"
     ds.config["calculation"] = {"emodulus medium": "CellCarrier",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus temperature": 23.0,
                                 "emodulus viscosity": 0.5
                                 }
@@ -132,9 +139,9 @@ def test_af_emodulus_reservoir():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5
                                 }
     assert "emodulus" in ds
     ds2 = dclab.new_dataset(ddict)
@@ -142,9 +149,9 @@ def test_af_emodulus_reservoir():
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
     ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus viscosity model": "herold-2017",
                                  "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.0,
-                                 "emodulus viscosity": 0.5
                                  }
     ds2.config["setup"]["chip region"] = "reservoir"
     assert "emodulus" not in ds2
@@ -161,6 +168,7 @@ def test_af_emodulus_temp_feat():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 }
@@ -172,6 +180,7 @@ def test_af_emodulus_temp_feat():
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
     ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus viscosity model": "herold-2017",
                                  "emodulus medium": "CellCarrier",
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
@@ -196,6 +205,7 @@ def test_af_emodulus_temp_feat_2():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 }
@@ -209,6 +219,7 @@ def test_af_emodulus_temp_feat_2():
     ds2.config["imaging"]["pixel size"] = .34
     ds2.config["calculation"] = {"emodulus medium": "CellCarrier",
                                  "emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus viscosity model": "herold-2017",
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"][1:], ds2["emodulus"][1:], equal_nan=True,
@@ -219,6 +230,7 @@ def test_af_emodulus_temp_feat_2():
     ds3.config["setup"]["channel width"] = 30
     ds3.config["imaging"]["pixel size"] = .34
     ds3.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus viscosity model": "herold-2017",
                                  "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.5,
                                  }
@@ -237,6 +249,7 @@ def test_af_emodulus_visc_only():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 }
@@ -281,7 +294,6 @@ def test_af_emodulus_visc_only_2():
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                 "emodulus medium": "other",
-                                "emodulus temperature": 47.0,  # irrelevant
                                 "emodulus viscosity": visc
                                 }
     # visc-only
@@ -412,6 +424,7 @@ def test_register_external_lut_and_get_emodulus():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0
                                 }
@@ -426,6 +439,7 @@ def test_register_external_lut_and_get_emodulus():
     ds2.config["setup"]["channel width"] = 30
     ds2.config["imaging"]["pixel size"] = .34
     ds2.config["calculation"] = {"emodulus lut": identifier,
+                                 "emodulus viscosity model": "herold-2017",
                                  "emodulus medium": "CellCarrier",
                                  "emodulus temperature": 23.0
                                  }
@@ -445,6 +459,7 @@ def test_register_external_lut_with_internal_identifier():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0
                                 }
@@ -470,6 +485,7 @@ def test_register_external_lut_without_identifier():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0
                                 }

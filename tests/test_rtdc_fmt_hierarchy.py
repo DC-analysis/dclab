@@ -39,6 +39,7 @@ def test_config_calculation():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
                                 }

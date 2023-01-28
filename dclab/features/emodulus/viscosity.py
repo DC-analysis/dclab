@@ -59,7 +59,7 @@ def check_temperature(model: str,
 def get_viscosity(medium: str = "0.49% MC-PBS",
                   channel_width: float = 20.0,
                   flow_rate: float = 0.16,
-                  temperature: float = 23.0,
+                  temperature: float | np.ndarray = 23.0,
                   model: Literal['herold-2017',
                                  'buyukurganci-2022',
                                  'kestin-1978'] = 'herold-2017'):

@@ -106,7 +106,7 @@ def get_emodulus(deform: float | np.array,
                  channel_width: float = 20.0,
                  flow_rate: float = 0.16,
                  px_um: float = 0.34,
-                 temperature: float = 23.0,
+                 temperature: float | np.ndarray | None = 23.0,
                  lut_data: str | pathlib.Path | np.ndarray = "LE-2D-FEM-19",
                  visc_model: Literal['herold-2017',
                                      'buyukurganci-2022',
@@ -143,8 +143,8 @@ def get_emodulus(deform: float | np.array,
     lut_data: path, str, or tuple of (np.ndarray of shape (N, 3), dict)
         The LUT data to use. If it is a key in :const:`INTERNAL_LUTS`,
         then the respective LUT will be used. Otherwise, a path to a
-        file on disk or a tuple (LUT array, meta data) is possible.
-        The LUT meta data is used to check whether the given features
+        file on disk or a tuple (LUT array, metadata) is possible.
+        The LUT metadata is used to check whether the given features
         (e.g. `area_um` and `deform`) are valid interpolation choices.
 
         .. versionadded:: 0.25.0

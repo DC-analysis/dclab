@@ -1,5 +1,9 @@
 """Computation of apparent Young's modulus for RT-DC measurements"""
+from __future__ import annotations
+
 import numbers
+import pathlib
+from typing import Literal
 import warnings
 
 import numpy as np
@@ -95,10 +99,20 @@ def extrapolate_emodulus(lut, datax, deform, emod, deform_norm,
     return emod
 
 
-def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
-                 channel_width=20.0, flow_rate=0.16, px_um=0.34,
-                 temperature=23.0, lut_data="LE-2D-FEM-19",
-                 extrapolate=INACCURATE_SPLINE_EXTRAPOLATION, copy=True):
+def get_emodulus(deform: float | np.array,
+                 area_um: float | np.array | None = None,
+                 volume: float | np.array | None = None,
+                 medium: str = "0.49% MC-PBS",
+                 channel_width: float = 20.0,
+                 flow_rate: float = 0.16,
+                 px_um: float = 0.34,
+                 temperature: float = 23.0,
+                 lut_data: str | pathlib.Path | np.ndarray = "LE-2D-FEM-19",
+                 visc_model: Literal['herold-2017',
+                                     'buyukurganci-2022',
+                                     'kestin-1978'] = "herold-2017",
+                 extrapolate: bool = INACCURATE_SPLINE_EXTRAPOLATION,
+                 copy: bool = True):
     """Compute apparent Young's modulus using a look-up table
 
     Parameters
@@ -134,6 +148,9 @@ def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
         (e.g. `area_um` and `deform`) are valid interpolation choices.
 
         .. versionadded:: 0.25.0
+    visc_model: str
+        The viscosity model to use,
+        see :func:`dclab.features.emodulus.viscosity.get_viscosity`
     extrapolate: bool
         Perform extrapolation using :func:`extrapolate_emodulus`. This
         is discouraged!
@@ -201,7 +218,8 @@ def get_emodulus(area_um=None, deform=None, volume=None, medium="CellCarrier",
                              + "`temperature` must be set to None!")
     else:
         visco = get_viscosity(medium=medium, channel_width=channel_width,
-                              flow_rate=flow_rate, temperature=temperature)
+                              flow_rate=flow_rate, temperature=temperature,
+                              model=visc_model)
 
     if isinstance(visco, np.ndarray):
         # New in dclab 0.20.0: Computation for viscosities array

@@ -40,8 +40,18 @@ class TemperatureOutOfRangeWarning(PipelineWarning):
     pass
 
 
-def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
-                  temperature=23.0):
+def check_temperature(model, temperature, tmin, tmax):
+    """Raise a TemperatureOutOfRangeWarning if applicable"""
+    if np.min(temperature) < tmin or np.max(temperature) > tmax:
+        warnings.warn(
+            f"For the {model} model, the temperature should be "
+            f"in [{tmin}, {tmax}] degC! Got min/max of "
+            f"[{np.min(temperature):.1f}, {np.max(temperature):.1f}] degC.",
+            TemperatureOutOfRangeWarning)
+
+
+def get_viscosity(medium="0.49% MC-PBS", channel_width=20.0, flow_rate=0.16,
+                  temperature=23.0, model="herold-2017"):
     """Returns the viscosity for RT-DC-specific media
 
     Media that are not pure (e.g. ketchup or polymer solutions)
@@ -69,6 +79,12 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
         Flow rate in µL/s
     temperature: float or ndarray
         Temperature in °C
+    model: str
+        The model name to use for computing the medium viscosity.
+        For water, this value is ignored, as there is only the
+        'kestin-1978' model :cite:`Kestin_1978`. For MC-PBS media,
+        there are the 'herold-2017' model :cite:`Herold2017` and the
+        'buyukurganci-2022' model :cite:`Buyukurganci2022`.
 
     Returns
     -------
@@ -79,57 +95,73 @@ def get_viscosity(medium="CellCarrier", channel_width=20.0, flow_rate=0.16,
     -----
     - CellCarrier and CellCarrier B media are optimized for
       RT-DC measurements.
-    - Values for the viscosity of water are computed using
-      equation (15) from :cite:`Kestin_1978`.
     - A :class:`TemperatureOutOfRangeWarning` is issued if the
-      input temperature range exceeds the temperature ranges given
-      by :cite:`Herold2017` and :cite:`Kestin_1978`.
+      input temperature range exceeds the temperature ranges of
+      the models.
     """
     # also support lower-case media and a space before the "B"
-    valmed = [v.lower() for v in KNOWN_MEDIA + ["CellCarrier B"]]
-    medium = medium.lower()
-    if medium not in valmed:
-        raise ValueError("Invalid medium: {}".format(medium))
+    if medium not in KNOWN_MEDIA:
+        raise ValueError(f"Invalid medium: {medium}")
+    medium = ALIAS_MEDIA[medium]
 
+    if medium == "water":
+        eta = get_viscosity_water_kestin_1978(temperature=temperature)
+    elif medium in ["0.49% MC-PBS", "0.59% MC-PBS", "0.83% MC-PBS"]:
+        kwargs = {"medium": medium,
+                  "temperature": temperature,
+                  "flow_rate": flow_rate,
+                  "channel_width": channel_width}
+        if model == "herold-2017":
+            eta = get_viscosity_mc_pbs_herold_2017(**kwargs)
+        elif model == "buyukurganci-2022":
+            eta = get_viscosity_mc_pbs_buyukurganci_2022(**kwargs)
+        else:
+            raise NotImplementedError(f"Unknown model '{model}' for MC-PBS!")
+    else:
+        raise NotImplementedError(f"Unknown medium '{medium}'!")
+    return eta
+
+
+def get_viscosity_mc_pbs_buyukurganci_2022(
+        medium="0.49% MC-PBS", channel_width=20.0,
+        flow_rate=0.16, temperature=23.0):
+    """Compute viscosity of MC-PBS according to :cite:`Buyukurganci2022`"""
+    check_temperature("'buyukurganci-2022' MC-PBS", temperature, 22, 37)
+    raise NotImplementedError("Model buyukurganci-2022 not implemented yet!")
+
+
+def get_viscosity_mc_pbs_herold_2017(medium="0.49% MC-PBS", channel_width=20.0,
+                                     flow_rate=0.16, temperature=23.0):
+    """Compute viscosity of MC-PBS according to :cite:`Herold2017`"""
+    # see figure (9) in Herold arXiv:1704.00572 (2017)
+    check_temperature("'herold-2017' MC-PBS", temperature, 16, 26)
     # convert flow_rate from µL/s to m³/s
     # convert channel_width from µm to m
     term1 = 1.1856 * 6 * flow_rate * 1e-9 / (channel_width * 1e-6)**3 * 2 / 3
 
-    if medium == "cellcarrier":
+    if medium == "0.49% MC-PBS":
         temp_corr = (temperature / 23.2)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.677)
         eta = 0.179 * (term1 * term2)**(0.677 - 1) * temp_corr * 1e3
-        if np.min(temperature) < 16 or np.max(temperature) > 26:
-            # see figure (9) in Herold arXiv:1704.00572 (2017)
-            warnings.warn("For CellCarrier, the temperature should be in "
-                          + "[18, 26] degC! Got min/max of "
-                          + "[{:.1f}, {:.1f}] degC.".format(
-                              np.min(temperature), np.max(temperature)),
-                          TemperatureOutOfRangeWarning)
-    elif medium in ["cellcarrierb", "cellcarrier b"]:
+    elif medium == "0.59% MC-PBS":
         temp_corr = (temperature / 23.6)**-0.866
         term2 = 0.6771 / 0.5928 + 0.2121 / (0.5928 * 0.634)
         eta = 0.360 * (term1 * term2)**(0.634 - 1) * temp_corr * 1e3
-        if np.min(temperature) < 16 or np.max(temperature) > 26:
-            # see figure (9) in Herold arXiv:1704.00572 (2017)
-            warnings.warn("For CellCarrier B, the temperature should be in "
-                          + "[18, 26] degC! Got min/max of "
-                          + "[{:.1f}, {:.1f}] degC.".format(
-                              np.min(temperature), np.max(temperature)),
-                          TemperatureOutOfRangeWarning)
-    elif medium == "water":
-        if np.min(temperature) < 0 or np.max(temperature) > 40:
-            # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
-            warnings.warn("For water, the temperature should be in [0, 40] "
-                          + "degC! Got min/max of "
-                          + "[{:.1f}, {:.1f}] degC.".format(
-                              np.min(temperature), np.max(temperature)),
-                          TemperatureOutOfRangeWarning)
-        eta0 = 1.002  # [mPa s]
-        right = (20-temperature) / (temperature + 96) \
-            * (+ 1.2364
-               - 1.37e-3 * (20 - temperature)
-               + 5.7e-6 * (20 - temperature)**2
-               )
-        eta = eta0 * 10**right
+    else:
+        raise NotImplementedError(
+            f"Medium {medium} not supported for model `herold2017`!")
+    return eta
+
+
+def get_viscosity_water_kestin_1978(temperature=23.0):
+    """Compute the viscosity of water according to :cite:`Kestin_1978`"""
+    # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
+    check_temperature("'kestin-1978' water", temperature, 0, 40)
+    eta0 = 1.002  # [mPa s]
+    right = (20-temperature) / (temperature + 96) \
+        * (+ 1.2364
+           - 1.37e-3 * (20 - temperature)
+           + 5.7e-6 * (20 - temperature)**2
+           )
+    eta = eta0 * 10**right
     return eta

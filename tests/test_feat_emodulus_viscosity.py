@@ -1,4 +1,3 @@
-
 import numpy as np
 import warnings
 
@@ -53,7 +52,7 @@ def test_cellcarrier_range():
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
         emodulus.viscosity.get_viscosity(medium="CellCarrier B",
-                                         temperature=np.arange(-2, 10))
+                                         temperature=np.linspace(1, 10, 8))
         assert issubclass(w[-1].category,
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
 
@@ -78,7 +77,7 @@ def test_cellcarrierb_range():
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
         emodulus.viscosity.get_viscosity(medium="CellCarrier",
-                                         temperature=np.arange(-2, 10))
+                                         temperature=np.arange(1, 10))
         assert issubclass(w[-1].category,
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
 

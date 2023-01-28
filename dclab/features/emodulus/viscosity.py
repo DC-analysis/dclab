@@ -134,7 +134,7 @@ def get_viscosity_mc_pbs_herold_2017(medium="0.49% MC-PBS", channel_width=20.0,
                                      flow_rate=0.16, temperature=23.0):
     """Compute viscosity of MC-PBS according to :cite:`Herold2017`"""
     # see figure (9) in Herold arXiv:1704.00572 (2017)
-    check_temperature("'herold-2017' MC-PBS", temperature, 16, 26)
+    check_temperature("'herold-2017' MC-PBS", temperature, 18, 26)
     # convert flow_rate from µL/s to m³/s
     # convert channel_width from µm to m
     term1 = 1.1856 * 6 * flow_rate * 1e-9 / (channel_width * 1e-6)**3 * 2 / 3

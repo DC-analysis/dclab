@@ -1,4 +1,5 @@
 0.47.6
+ - enh: increase verbosity when opening an .rtdc file failed
  - docs: make "edit on GitHub" link lead to actual source file again
 0.47.5
  - enh: allow temporary features for hierarchy children (#123)

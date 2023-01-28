@@ -4,7 +4,6 @@
 Young's modulus computation
 ===========================
 
-
 Background
 ==========
 The computation of the Young's modulus makes use of look-up tables (LUTs)
@@ -46,9 +45,54 @@ with respect to the following correction terms:
   `shear-thinning <https://en.wikipedia.org/wiki/Shear_thinning>`_.
   The viscosity of such media decreases with increasing flow rates. Since the
   viscosity is required to apply the scaling laws (above), it must be
-  corrected which is done using hard-coded correction functions
-  :cite:`Herold2017`. The computation of viscosity is implemented in the
-  submodule :mod:`dclab.features.emodulus.viscosity`.
+  corrected which is done using hard-coded correction functions as
+  described in the next section.
+
+Viscosity
+=========
+The computation of the viscosity is implemented in the :mod:`corresponding submodule
+<dclab.features.emodulus.viscosity>`. For regular RT-DC measurements, the medium
+used is methyl cellulose (MC) dissolved in phosphate-buffered saline (PBS).
+For the most common MC concentrations, dclab comes with hard-coded models that
+compute the corresponding medium viscosity. These models are the original
+`herold-2017` :cite:`Herold2017` model and the more recent
+`buyukurganci-2022` :cite:`Buyukurganci2022` model.
+
+.. todo::
+
+    This paragraph is imcomplete:
+
+    - Which of the models should one choose? https://github.com/DC-analysis/dclab/issues/197
+    - How does CellCarrier correspond to which concentration of MC in PBS?
+
+Herold 2017
+-----------
+
+.. todo:
+
+   - add a figure from the arxiv paper describing the essence
+   - add information, if applicable, why to not use this model?!
+
+
+Büyükurgancı 2022
+-----------------
+
+.. todo::
+
+   - The solutions change from the viscosity plateau at lower shear rates into a power law behavior at higher
+     shear rates, which can be considered fully developed above 5,000 s for all solutions.
+
+   - The shear thinning will start at lower shear rates for higher MC concentrations, which is typical for polymer
+     solutions.
+
+   - The results from both devices show that increases with the MC concentration while decreases, which means
+     that the viscosity increases and the solutions show stronger shear thinning.
+
+   - temperature-time scaling is applied
+
+   - describe the Concentration dependence
+
+   - add the figure with the Carreau-Yasuda model
 
 
 LUT selection
@@ -73,7 +117,7 @@ This was done with the spatial scaling factor 1.094
 used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
 
 
-.. figure:: figures/emodulus_20um_LE-2D-FEM-19.png
+.. figure:: figures_emodulus/emodulus_20um_LE-2D-FEM-19.png
     :target: images/emodulus_20um_LE-2D-FEM-19.png
 
     Visualizations of the support and the values of the look-up table (LUT)
@@ -95,7 +139,7 @@ as for LE-2D-FEM-19) and square channel (3D) geometries as discussed
 in :cite:`Wittwer2022`. The original data used to generate these LUTs are
 available on figshare :cite:`FigshareWittwer2022`.
 
-.. figure:: figures/emodulus_20um_HE-2D-FEM-22.png
+.. figure:: figures_emodulus/emodulus_20um_HE-2D-FEM-22.png
     :target: images/emodulus_20um_HE-2D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
@@ -104,7 +148,7 @@ available on figshare :cite:`FigshareWittwer2022`.
     effects according to :cite:`Herold2017`.
 
 
-.. figure:: figures/emodulus_20um_HE-3D-FEM-22.png
+.. figure:: figures_emodulus/emodulus_20um_HE-3D-FEM-22.png
     :target: images/emodulus_20um_HE-3D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
@@ -182,7 +226,7 @@ could possibly be available in [setup]: 'temperature'.
 
     import dclab
 
-    ds = dclab.new_dataset("data/example.rtdc")
+    ds = dclab.new_dataset("../data/example.rtdc")
 
     # Add additional information. We cannot go for (A), because this example
     # does not have the temperature feature (`"temp" not in ds`). We go for

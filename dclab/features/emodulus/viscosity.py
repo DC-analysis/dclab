@@ -133,6 +133,28 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
     return eta
 
 
+def shear_rate_square_channel(flow_rate, channel_width, flow_index):
+    """Returns The wall shear rate of a power law liquid in a squared channel.
+
+    Parameters
+    ----------
+    flow_rate: float
+        Flow rate in µL/s
+    channel_width: float
+        The channel width in µm
+    flow_index: float
+        Flow behavior index aka the power law exponent of the shear thinning
+
+    Returns
+    -------
+    shear_rate: float
+        Shear rate in 1/s.
+    """
+    # convert channel width to mm
+    channel_width = channel_width * 1e-3
+    return 8*flow_rate/(channel_width**3) * (0.6671 + 0.2121/flow_index)
+
+
 def get_viscosity_mc_pbs_buyukurganci_2022(
         medium: Literal["0.49% MC-PBS",
                         "0.59% MC-PBS",
@@ -142,7 +164,28 @@ def get_viscosity_mc_pbs_buyukurganci_2022(
         temperature: float = 23.0):
     """Compute viscosity of MC-PBS according to :cite:`Buyukurganci2022`"""
     check_temperature("'buyukurganci-2022' MC-PBS", temperature, 22, 37)
-    raise NotImplementedError("Model buyukurganci-2022 not implemented yet!")
+    # material constants for temperature behavior of MC dissolved in PBS:
+    alpha = 2.23
+    lambd = 3379.7
+    kelvin = temperature + 273.15
+
+    if medium == "0.49% MC-PBS":
+        a = 2e-6
+        beta = -0.0056
+    elif medium == "0.59% MC-PBS":
+        a = 6e-6
+        beta = -0.0744
+    elif medium == "0.83% MC-PBS":
+        a = 17e-6
+        beta = -0.1455
+    else:
+        raise NotImplementedError(
+            f"Medium {medium} not supported for model `buyukurganci-2022`!")
+
+    k = a * np.exp(lambd / kelvin)
+    n = alpha * kelvin + beta
+    shear_rate = shear_rate_square_channel(flow_rate, channel_width, n)
+    return k * shear_rate**(n - 1) * 1e3
 
 
 def get_viscosity_mc_pbs_herold_2017(

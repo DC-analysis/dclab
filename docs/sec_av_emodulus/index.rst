@@ -60,6 +60,19 @@ compute the corresponding medium viscosity. These models are the original
 `herold-2017` :cite:`Herold2017` model and the more recent
 `buyukurganci-2022` :cite:`Buyukurganci2022` model.
 
+The MC-PBS solutions show a shear thinning behavior, which can be described with
+a power law at sufficienty high shear rates:
+:math:`\eta = K\cdot \dot\gamma^{n-1}`, where :math:`\dot\gamma` is the shear
+rate, :math:`K` is the flow bahvior index and :math:`n` is the flow behavior
+index. The shear rate inside a square micro-channel cannot be described as a
+single number for a shear thinning liquid but the stress inside the channel is
+best described by the walls shear rate as proposed by Herold :cite:`Herold2017`
+and can be calculated with the following formula:
+:math:`\frac{8 Q}{L^3}\left( 0.6671 + \frac{0.2121}{n}\right)`. These
+considerations are the foundation for the viscosity calculations in the
+`herold-2017` :cite:`Herold2017` and
+`buyukurganci-2022` :cite:`Buyukurganci2022` models.
+
 .. todo::
 
     This paragraph is imcomplete:
@@ -78,6 +91,21 @@ Herold 2017
 
 Büyükurgancı 2022
 -----------------
+
+Büyükurgancı et al. characterized the viscosity curves of three MC-PBS
+solutions (0.49 w\% MC-PBS, 0.59 w\% MC-PBS, 0.83 w\% MC-PBS) in a temperature
+range of 22-37 °C.
+found that the power law parameters :math:`K` and :math:`n`
+are temperature dependent. The temperature dependence can be described as
+follows:
+
+:math:`n = \alpha\dcot T + \beta`
+
+:math:`K = A\cdot e^{\lambda/T}`
+
+It was found that :math:`\alpha` and :math:`\lambda` were not dependent on the
+MC concentration and can be considered material constants of MC dissolved in
+PBS. To best describe the behavior
 
 .. todo::
 

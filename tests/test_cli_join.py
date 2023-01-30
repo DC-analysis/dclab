@@ -217,10 +217,18 @@ def test_join_times():
     with h5py.File(path_in1, mode="a") as h1:
         h1.attrs["experiment:date"] = "2019-11-04"
         h1.attrs["experiment:time"] = "15:00:00"
+        # Necessary due to issue #204
+        time = np.array(h1["events/time"], dtype=float)
+        del h1["events/time"]
+        h1["events/time"] = time
 
     with h5py.File(path_in2, mode="a") as h2:
         h2.attrs["experiment:date"] = "2019-11-05"
         h2.attrs["experiment:time"] = "16:01:15.050"
+        # Necessary due to issue #204
+        time = np.array(h2["events/time"], dtype=float)
+        del h2["events/time"]
+        h2["events/time"] = time
 
     offset = 24 * 60 * 60 + 60 * 60 + 1 * 60 + 15 + .05
 

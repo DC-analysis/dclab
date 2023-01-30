@@ -315,7 +315,9 @@ def test_split():
         for pp in paths:
             with new_dataset(pp) as di:
                 for feat in ds.features_scalar:
-                    if feat == "index":
+                    if feat in ["index",
+                                "time",  # issue 204
+                                ]:
                         continue
                     assert np.all(
                         ds[feat][ecount:ecount + len(di)] == di[feat]), feat
@@ -407,7 +409,7 @@ def test_tdms2rtdc_features():
         assert len(ds2)
         assert set(ds1.features) == set(ds2.features)
         # features were computed
-        assert set(ds2._events.keys()) == set(ds1.features)
+        assert set(ds2.features_loaded) == set(ds1.features)
 
 
 def test_tdms2rtdc_remove_nan_image():

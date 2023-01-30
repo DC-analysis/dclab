@@ -12,7 +12,7 @@ for data visualization.
 RT-DC datasets can be based on a data file format
 (:class:`RTDC_TDMS <dclab.rtdc_dataset.RTDC_TDMS>` and
 :class:`RTDC_HDF5 <dclab.rtdc_dataset.RTDC_HDF5>`), accessed
-from an online repository (:class:`RTDC_HDF5 <dclab.rtdc_dataset.RTDC_DCOR>`),
+from an online repository (:class:`RTDC_DCOR <dclab.rtdc_dataset.RTDC_DCOR>`),
 created from user-defined
 dictionaries (:class:`RTDC_Dict <dclab.rtdc_dataset.RTDC_Dict>`),
 or derived from other RT-DC datasets

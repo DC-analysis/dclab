@@ -2,6 +2,7 @@
 import functools
 import numbers
 import pathlib
+import warnings
 
 import h5py
 import numpy as np
@@ -58,10 +59,11 @@ class H5ContourEvent:
 
 class H5Events:
     def __init__(self, h5):
-        self._h5 = h5
-        self._features = sorted(self._h5["events"].keys())
+        self.h5file = h5
+        self._features = sorted(self.h5file["events"].keys())
         # make sure that "trace" is not empty
-        if "trace" in self._features and len(self._h5["events"]["trace"]) == 0:
+        if ("trace" in self._features
+                and len(self.h5file["events"]["trace"]) == 0):
             self._features.remove("trace")
 
     def __contains__(self, key):
@@ -70,7 +72,7 @@ class H5Events:
     def __getitem__(self, key):
         # user-level checking is done in core.py
         assert dfn.feature_exists(key), "Feature '{}' not valid!".format(key)
-        data = self._h5["events"][key]
+        data = self.h5file["events"][key]
         if key == "contour":
             return H5ContourEvent(data)
         elif key == "mask":
@@ -95,7 +97,7 @@ class H5Events:
         if feat in DEFECTIVE_FEATURES and feat in self._features:
             # feature exists in the HDF5 file
             # workaround machinery for sorting out defective features
-            defective = DEFECTIVE_FEATURES[feat](self._h5)
+            defective = DEFECTIVE_FEATURES[feat](self.h5file)
         return defective
 
     def keys(self):
@@ -115,16 +117,16 @@ class H5Events:
 
 class H5Logs:
     def __init__(self, h5):
-        self._h5 = h5
+        self.h5file = h5
 
     def __getitem__(self, key):
         if key in self.keys():
-            log = list(self._h5["logs"][key])
+            log = list(self.h5file["logs"][key])
             if isinstance(log[0], bytes):
                 log = [li.decode("utf") for li in log]
         else:
-            raise KeyError(
-                f"Log '{key}' not found or empty in {self._h5.file.filename}!")
+            raise KeyError(f"Log '{key}' not found or empty "
+                           f"in {self.h5file.file.filename}!")
         return log
 
     def __iter__(self):
@@ -138,9 +140,9 @@ class H5Logs:
     @functools.lru_cache()
     def keys(self):
         names = []
-        if "logs" in self._h5:
-            for key in self._h5["logs"]:
-                if self._h5["logs"][key].size:
+        if "logs" in self.h5file:
+            for key in self.h5file["logs"]:
+                if self.h5file["logs"][key].size:
                     names.append(key)
         return names
 
@@ -277,14 +279,14 @@ class RTDC_HDF5(RTDCBase):
         self.path = h5path
 
         # Setup events
-        self._h5 = h5py.File(h5path, mode="r")
-        self._events = H5Events(self._h5)
+        self.h5file = h5py.File(h5path, mode="r")
+        self._events = H5Events(self.h5file)
 
         # Parse configuration
         self.config = RTDC_HDF5.parse_config(h5path)
 
         # Override logs property with HDF5 data
-        self.logs = H5Logs(self._h5)
+        self.logs = H5Logs(self.h5file)
 
         # check version
         rtdc_soft = self.config["setup"]["software version"]
@@ -308,15 +310,22 @@ class RTDC_HDF5(RTDCBase):
 
     def __exit__(self, type, value, tb):
         # close the HDF5 file
-        self._h5.close()
+        self.h5file.close()
 
     @functools.lru_cache()
     def __len__(self):
-        ec = self._h5.get("experiment:event count")
+        ec = self.h5file.get("experiment:event count")
         if ec is not None:
             return ec
         else:
             return super(RTDC_HDF5, self).__len__()
+
+    @property
+    def _h5(self):
+        warnings.warn("Access to the underlying HDF5 file is now public. "
+                      "Please use the `h5file` attribute instead of `_h5`!",
+                      DeprecationWarning)
+        return self.h5file
 
     @staticmethod
     def can_open(h5path):

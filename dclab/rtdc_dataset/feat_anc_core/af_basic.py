@@ -1,5 +1,5 @@
-
 import numpy as np
+
 from .ancillary_feature import AncillaryFeature
 
 
@@ -39,7 +39,13 @@ def compute_index(mm):
 
 def compute_time(mm):
     fr = mm.config["imaging"]["frame rate"]
-    return (mm["frame"] - mm["frame"][0]) / fr
+    # Check whether we are looking at a defective feature (#207),
+    # and add the offset from the initial file to the time.
+    if mm.format == "hdf5" and "time" in mm.h5file["events"]:
+        offset = mm.h5file["events/time"][0]
+    else:
+        offset = 0
+    return (mm["frame"] - mm["frame"][0]) / fr + offset
 
 
 AncillaryFeature(feature_name="time",

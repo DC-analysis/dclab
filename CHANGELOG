@@ -1,3 +1,6 @@
+0.47.7
+ - fix: include time offset when computing defective time feature (#207)
+ - ref: make the h5py.File object public in RTDC_HDF5
 0.47.6
  - fix: register float32 time from ShapeIn as defective feature
  - docs: make "edit on GitHub" link lead to actual source file again

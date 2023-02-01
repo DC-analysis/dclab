@@ -39,13 +39,11 @@ def compute_index(mm):
 
 def compute_time(mm):
     fr = mm.config["imaging"]["frame rate"]
-    # Check whether we are looking at a defective feature (#207),
-    # and add the offset from the initial file to the time.
-    if mm.format == "hdf5" and "time" in mm.h5file["events"]:
-        offset = mm.h5file["events/time"][0]
-    else:
-        offset = 0
-    return (mm["frame"] - mm["frame"][0]) / fr + offset
+    # Since version 0.47.8, we don't "normalize" the time anymore
+    # with the information from mm["frame"][0]. This is important
+    # for cases where it is important to know the time elapsed before
+    # the first event was recorded (issue #207).
+    return mm["frame"] / fr
 
 
 AncillaryFeature(feature_name="time",

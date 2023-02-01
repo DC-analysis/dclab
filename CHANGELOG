@@ -1,3 +1,5 @@
+0.47.8
+ - fix: implement cleaner solution for time computation (#207)
 0.47.7
  - fix: include time offset when computing defective time feature (#207)
  - ref: make the h5py.File object public in RTDC_HDF5

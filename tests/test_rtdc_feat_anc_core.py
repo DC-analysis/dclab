@@ -204,10 +204,12 @@ def test_af_recomputed_on_hash_change(fake_af_cleanup_fixture, path):
 def test_af_time():
     pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
-    tt = ds["time"]
-    assert tt[0] == 0
-    assert np.allclose(tt[1], 0.0385)
-    assert np.all(np.diff(tt) > 0)
+    time = ds["time"]
+    frame = ds["frame"]
+    fr = ds.config["imaging"]["frame rate"]
+    assert np.allclose(time[0], frame[0] / fr, atol=0, rtol=1e-7)
+    assert np.allclose(time[1], 82.526, atol=0, rtol=1e-7)
+    assert np.all(np.diff(time) > 0)
 
 
 @pytest.mark.filterwarnings(
@@ -219,11 +221,3 @@ def test_af_warning_from_check_data_size():
         data_dict = {"name1": data}
         with pytest.warns(BadFeatureSizeWarning):
             AncillaryFeature.check_data_size(ds, data_dict)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

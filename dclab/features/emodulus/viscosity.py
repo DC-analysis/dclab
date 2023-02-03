@@ -170,13 +170,13 @@ def get_viscosity_mc_pbs_buyukurganci_2022(
     kelvin = temperature + 273.15
 
     if medium == "0.49% MC-PBS":
-        a = 2e-6
+        a = 2.23e-6
         beta = -0.0056
     elif medium == "0.59% MC-PBS":
-        a = 6e-6
+        a = 5.7e-6
         beta = -0.0744
     elif medium == "0.83% MC-PBS":
-        a = 17e-6
+        a = 16.52e-6
         beta = -0.1455
     else:
         raise NotImplementedError(

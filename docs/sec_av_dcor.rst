@@ -71,13 +71,15 @@ logged in at https://dcor.mpl.mpg.de.
     Managing API Tokens on DCOR.
 
 - Deleting a token:
+
   Click on the tab "API Tokens" to view all currently existing tokens and
   the date they were last accessed. By clicking on the red "X" you can delete
   a token. It cannot be restored, so be careful when deleting tokens!
+
 - Creating a new token:
 
   To create a new token, insert a name in the field at the top and click
-  "Create Token". The newly generated token will be shown at the top of the
+  "Create API Token". The newly generated token will be shown at the top of the
   page. Make sure you copy it directly, because you will not be able to recall
   it again!
 
@@ -85,7 +87,8 @@ Accessing data on a different DCOR instance
 ===========================================
 
 To access data on a different DCOR instance, you have to pass the respective
-URL when opening the dataset via the keyword ``host``:
+URL when opening the dataset via the keyword ``host``. The procedure to
+retrieve the DCOR resource id is the same as for the default DCOR.
 
 .. code:: python
 

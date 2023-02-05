@@ -33,7 +33,7 @@ class APIHandler:
     """Handles the DCOR api with caching for simple queries"""
     #: these are cached to minimize network usage
     cache_queries = ["metadata", "size", "feature_list", "valid"]
-    #: DCOR API Keys in the current session
+    #: DCOR API Keys/Tokens in the current session
     api_keys = []
 
     def __init__(self, url, api_key="", cert_path=None):
@@ -54,15 +54,15 @@ class APIHandler:
         self.url = url
         #: keyword argument to :func:`requests.request`
         self.verify = cert_path or True
-        #: DCOR API token
+        #: DCOR API Token
         self.api_key = api_key
         self._cache = {}
 
     @classmethod
     def add_api_key(cls, api_key):
-        """Add an API Key to the base class
+        """Add an API Key/Token to the base class
 
-        When accessing the DCOR API, all available API Keys are
+        When accessing the DCOR API, all available API Keys/Tokens are
         used to access a resource (trial and error).
         """
         if api_key.strip() and api_key not in APIHandler.api_keys:

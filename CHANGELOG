@@ -1,3 +1,5 @@
+0.47.9
+ - docs: update part about DCOR (#182)
 0.47.8
  - fix: implement cleaner solution for time computation (#207)
 0.47.7

@@ -65,8 +65,8 @@ Managing API Tokens
 You can manage your API Tokens on your profile page when
 logged in at https://dcor.mpl.mpg.de.
 
-.. figure:: figures/API_Token_website.PNG
-    :target: images/API_Token_website.PNG
+.. figure:: figures/API_Token_website.png
+    :target: images/API_Token_website.png
 
     Managing API Tokens on DCOR.
 

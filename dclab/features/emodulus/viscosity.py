@@ -165,7 +165,7 @@ def get_viscosity_mc_pbs_buyukurganci_2022(
     """Compute viscosity of MC-PBS according to :cite:`Buyukurganci2022`"""
     check_temperature("'buyukurganci-2022' MC-PBS", temperature, 22, 37)
     # material constants for temperature behavior of MC dissolved in PBS:
-    alpha = 2.23
+    alpha = 0.00223
     lambd = 3379.7
     kelvin = temperature + 273.15
 

@@ -102,7 +102,7 @@ def extrapolate_emodulus(lut, datax, deform, emod, deform_norm,
 def get_emodulus(deform: float | np.array,
                  area_um: float | np.array | None = None,
                  volume: float | np.array | None = None,
-                 medium: str = "0.49% MC-PBS",
+                 medium: float | str = "0.49% MC-PBS",
                  channel_width: float = 20.0,
                  flow_rate: float = 0.16,
                  px_um: float = 0.34,
@@ -110,7 +110,8 @@ def get_emodulus(deform: float | np.array,
                  lut_data: str | pathlib.Path | np.ndarray = "LE-2D-FEM-19",
                  visc_model: Literal['herold-2017',
                                      'buyukurganci-2022',
-                                     'kestin-1978'] = "herold-2017",
+                                     'kestin-1978',
+                                     None] = "herold-2017",
                  extrapolate: bool = INACCURATE_SPLINE_EXTRAPOLATION,
                  copy: bool = True):
     """Compute apparent Young's modulus using a look-up table
@@ -130,7 +131,7 @@ def get_emodulus(deform: float | np.array,
         The medium to compute the viscosity for. If a string
         is given, the viscosity is computed. If a float is given,
         this value is used as the viscosity in mPa*s (Note that
-        `temperature` must be set to None in this case).
+        `temperature` and `visc_model` must be set to None in this case).
     channel_width: float
         The channel width [µm]
     flow_rate: float
@@ -216,6 +217,9 @@ def get_emodulus(deform: float | np.array,
         if temperature is not None:
             raise ValueError("If `medium` is given in Pa*s, then "
                              + "`temperature` must be set to None!")
+        if visc_model is not None:
+            raise ValueError("If `medium` is given in Pa*s, then "
+                             + "`visc_model` must be set to None!")
     else:
         visco = get_viscosity(medium=medium, channel_width=channel_width,
                               flow_rate=flow_rate, temperature=temperature,

@@ -162,9 +162,10 @@ used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
     cell area. The values of the Young's moduli in the regions
     shown depend on the channel size, the flow rate, the temperature,
     and the viscosity of the medium :cite:`Mietke2015`.
-    Here, they are computed for a 20 µm wide channel at 23°C with an
-    effective pixel size of 0.34 µm. The data are corrected for pixelation
-    effects according to :cite:`Herold2017`.
+    Here, they are computed for a 20 µm wide channel at 23°C using the
+    viscosity model `buyukurganci-2022` with an effective pixel size of
+    0.34 µm. The data are corrected for pixelation effects according
+    to :cite:`Herold2017`.
 
 
 HE-2D-FEM-22 and HE-3D-FEM-22
@@ -180,18 +181,20 @@ available on figshare :cite:`FigshareWittwer2022`.
     :target: images/emodulus_20um_HE-2D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
-    'HE-2D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C with an
-    effective pixel size of 0.34 µm. The data are corrected for pixelation
-    effects according to :cite:`Herold2017`.
+    'HE-2D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C
+    (`buyukurganci-2022` model) with an effective pixel size of 0.34 µm.
+    The data are corrected for pixelation effects according
+    to :cite:`Herold2017`.
 
 
 .. figure:: figures_emodulus/emodulus_20um_HE-3D-FEM-22.png
     :target: images/emodulus_20um_HE-3D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
-    'HE-3D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C with an
-    effective pixel size of 0.34 µm. The data are corrected for pixelation
-    effects according to :cite:`Herold2017`.
+    'HE-3D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C
+    (`buyukurganci-2022` model) with an effective pixel size of 0.34 µm.
+    The data are corrected for pixelation effects according
+    to :cite:`Herold2017`.
 
 
 external LUT
@@ -280,6 +283,7 @@ Description of the configuration keywords:
     ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
     ds.config["calculation"]["emodulus medium"] = ds.config["setup"]["medium"]
     ds.config["calculation"]["emodulus temperature"] = 23.0  # a guess
+    ds.config["calculation"]["emodulus viscosity model"] = 'buyukurganci-2022'
 
     # Plot a few features
     ax1 = plt.subplot(121)

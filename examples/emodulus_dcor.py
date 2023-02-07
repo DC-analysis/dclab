@@ -8,6 +8,9 @@ using the area-deformation look-up table implemented in dclab
 (right plot). For comparison, the flow-rate-dependent deformation
 is also shown (left plot).
 
+Note that this example uses the 'buyukurganci-2022' model for
+computing the viscosity, which was introduced in dclab 0.48.0.
+
 `The dataset <https://dcor.mpl.mpg.de/dataset/figshare-12721436-v1>`_
 is loaded directly from `DCOR <https://dcor.mpl.mpg.de>`_ and thus
 an active internet connection is required for this example.
@@ -36,6 +39,7 @@ for loc in ds_loc:
     ds.config["calculation"]["emodulus medium"] = ds.config["setup"]["medium"]
     ds.config["calculation"]["emodulus temperature"] = \
         ds.config["setup"]["temperature"]
+    ds.config["calculation"]["emodulus viscosity model"] = 'buyukurganci-2022'
     # filtering
     ds.config["filtering"]["area_ratio min"] = 1.0
     ds.config["filtering"]["area_ratio max"] = 1.1

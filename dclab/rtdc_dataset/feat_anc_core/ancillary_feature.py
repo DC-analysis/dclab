@@ -20,9 +20,12 @@ computed, but the prerequisites are evaluated:
 
     In [5]: ds.config["calculation"]["emodulus temperature"] = 23.0
 
-    In [6]: "emodulus" in ds  # nothing is computed
+    In [6]: ds.config["calculation"]["emodulus viscosity model"] = \
+'buyukurganci-2022'
 
-    In [7]: ds["emodulus"] # now data is computed and cached
+    In [7]: "emodulus" in ds  # nothing is computed yet
+
+    In [8]: ds["emodulus"]  # now data are computed and cached
 
 Once the data has been computed, `RTDCBase` caches it in
 the `_ancillaries` property dict together with a hash

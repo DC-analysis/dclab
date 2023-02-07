@@ -218,8 +218,10 @@ def get_emodulus(deform: float | np.array,
             raise ValueError("If `medium` is given in Pa*s, then "
                              + "`temperature` must be set to None!")
         if visc_model is not None:
-            raise ValueError("If `medium` is given in Pa*s, then "
-                             + "`visc_model` must be set to None!")
+            warnings.warn("If `medium` is given in Pa*s, then `visc_model` "
+                          "must be set to None. An exception will be raised "
+                          "in future versions of dclab.",
+                          DeprecationWarning)
     else:
         visco = get_viscosity(medium=medium, channel_width=channel_width,
                               flow_rate=flow_rate, temperature=temperature,

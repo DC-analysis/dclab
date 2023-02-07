@@ -83,6 +83,7 @@ def compute_emodulus_visc_only(mm):
         flow_rate=mm.config["setup"]["flow rate"],
         px_um=mm.config["imaging"]["pixel size"],
         temperature=None,
+        visc_model=None,
         lut_data=calccfg["emodulus lut"],
     )
     return emod

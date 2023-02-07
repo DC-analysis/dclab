@@ -80,7 +80,9 @@ considerations are the foundation for the viscosity calculations in the
     The temperature dependency was measured using a falling ball
     viscometer where the change in shear rate could not be controlled.
     For the `buyukurganci-2022` model, the temperature dependency was
-    measured as a function of shear rate.
+    measured as a function of shear rate. Take a look at the
+    :ref:`example script that compares these models <example_viscosity_models>`
+    to gain more insight.
 
 
 .. warning::

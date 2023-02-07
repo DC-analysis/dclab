@@ -12,6 +12,8 @@ Examples
 
 .. fancy_include:: emodulus_dcor.py
 
+.. fancy_include:: viscosity_models.py
+
 .. fancy_include:: lme4_lmer.py
 
 .. fancy_include:: lme4_glmer_diff.py

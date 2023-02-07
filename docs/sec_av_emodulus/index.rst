@@ -58,25 +58,35 @@ used is methyl cellulose (MC) dissolved in phosphate-buffered saline (PBS).
 For the most common MC concentrations, dclab comes with hard-coded models that
 compute the corresponding medium viscosity. These models are the original
 `herold-2017` :cite:`Herold2017` model and the more recent
-`buyukurganci-2022` :cite:`Buyukurganci2022`/:cite:`Reichel2023` model.
+`buyukurganci-2022` :cite:`Buyukurganci2022,Reichel2023` model.
 
-The MC-PBS solutions show a shear thinning behavior, which can be described with
-a power law at sufficienty high shear rates:
-:math:`\eta = K\cdot \dot\gamma^{n-1}`, where :math:`\dot\gamma` is the shear
-rate, :math:`K` is the flow bahvior index and :math:`n` is the flow behavior
-index. The shear rate inside a square micro-channel cannot be described as a
-single number for a shear thinning liquid but the stress inside the channel is
-best described by the walls shear rate as proposed by Herold :cite:`Herold2017`
-and can be calculated with the following formula:
-:math:`\frac{8 Q}{L^3}\left( 0.6671 + \frac{0.2121}{n}\right)`. These
-considerations are the foundation for the viscosity calculations in the
+The MC-PBS solutions show a shear thinning behavior, which can be described
+by the viscosity :math:`\eta` following a power law at sufficienty high
+shear rates :math:`\dot{\gamma}`:
+
+.. math::
+
+    \eta = K \cdot \left( \frac{ \dot{\gamma} }{ \dot{\gamma}_0} \right)^{n-1},
+
+where :math:`\dot\gamma` is the shear rate, :math:`K` is the flow consistency
+index and :math:`n` is the flow behavior index.
+The shear rate inside a square microchannel cannot be described as a
+single number for a shear thinning liquid. The shear rate is
+best described by the shear rate at the channel walls as proposed by
+Herold :cite:`Herold2017` and can be calculated as follows:
+
+.. math::
+
+    \dot\gamma = \frac{8 Q}{L^3}\left( 0.6671 + \frac{0.2121}{n}\right).
+
+These considerations are the foundation for the viscosity calculations in the
 `herold-2017` :cite:`Herold2017` and
 `buyukurganci-2022` :cite:`Buyukurganci2022` models.
 
 .. note::
 
     As discussed in :cite:`Reichel2023`, the `herold-2017` model
-    inaccurately models the temperature dependency of the viscosity.
+    inaccurately models the temperature dependency of the MC-PBS viscosity.
     The temperature dependency was measured using a falling ball
     viscometer where the change in shear rate could not be controlled.
     For the `buyukurganci-2022` model, the temperature dependency was
@@ -99,12 +109,8 @@ Büyükurgancı 2022
 
 Büyükurgancı et al. characterized the viscosity curves of three MC-PBS
 solutions (0.49 w\% MC-PBS, 0.59 w\% MC-PBS, 0.83 w\% MC-PBS) in a temperature
-range of 22-37 °C. The viscosity :math:`\eta` of MC-PBS has a power law
-dependency for large shear rates  :math:`\dot{\gamma}`:
-
-.. math::
-
-    \eta = K \cdot \left( \frac{ \dot{\gamma} }{ \dot{\gamma}_0} \right)^{n-1}
+range of 22-37 °C. As mentioned above, the viscosity follows a power law
+behavior for large shear rates.
 
 .. figure:: figures_viscosity/buyukurganci_22_fig3a.jpg
     :target: images/buyukurganci_22_fig3a.jpg
@@ -118,8 +124,8 @@ dependency for large shear rates  :math:`\dot{\gamma}`:
     cylinders (CC), cone plate (CP), and parallel disks (PP). See
     :cite:`Buyukurganci2022` for details.
 
-The power law parameters :math:`K` and :math:`n` are temperature dependent.
-The temperature dependency can be described as follows:
+The power law parameters :math:`K` and :math:`n` were found to be temperature
+dependent. The temperature dependency can be described as follows:
 
 .. math::
 

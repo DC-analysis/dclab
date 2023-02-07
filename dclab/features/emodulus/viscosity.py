@@ -162,7 +162,11 @@ def get_viscosity_mc_pbs_buyukurganci_2022(
         channel_width: float = 20.0,
         flow_rate: float = 0.16,
         temperature: float = 23.0):
-    """Compute viscosity of MC-PBS according to :cite:`Buyukurganci2022`"""
+    """Compute viscosity of MC-PBS according to :cite:`Buyukurganci2022`
+
+    This viscosity model was derived in :cite:`Buyukurganci2022`
+    and adapted for RT-DC in :cite:`Reichel2023`.
+    """
     check_temperature("'buyukurganci-2022' MC-PBS", temperature, 22, 37)
     # material constants for temperature behavior of MC dissolved in PBS:
     alpha = 0.00223
@@ -170,10 +174,10 @@ def get_viscosity_mc_pbs_buyukurganci_2022(
     kelvin = temperature + 273.15
 
     if medium == "0.49% MC-PBS":
-        a = 2.23e-6
+        a = 2.30e-6  # previously 2.23e-6, changed in Reichel2023 rev 2
         beta = -0.0056
     elif medium == "0.59% MC-PBS":
-        a = 5.7e-6
+        a = 5.70e-6
         beta = -0.0744
     elif medium == "0.83% MC-PBS":
         a = 16.52e-6

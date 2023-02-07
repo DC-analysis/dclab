@@ -58,7 +58,7 @@ used is methyl cellulose (MC) dissolved in phosphate-buffered saline (PBS).
 For the most common MC concentrations, dclab comes with hard-coded models that
 compute the corresponding medium viscosity. These models are the original
 `herold-2017` :cite:`Herold2017` model and the more recent
-`buyukurganci-2022` :cite:`Buyukurganci2022` model.
+`buyukurganci-2022` :cite:`Buyukurganci2022`/:cite:`Reichel2023` model.
 
 The MC-PBS solutions show a shear thinning behavior, which can be described with
 a power law at sufficienty high shear rates:
@@ -73,20 +73,14 @@ considerations are the foundation for the viscosity calculations in the
 `herold-2017` :cite:`Herold2017` and
 `buyukurganci-2022` :cite:`Buyukurganci2022` models.
 
-.. todo::
+.. note::
 
-    This paragraph is imcomplete:
-
-    - Which of the models should one choose? https://github.com/DC-analysis/dclab/issues/197
-    - How does CellCarrier correspond to which concentration of MC in PBS?
-
-Herold 2017
------------
-
-.. todo:
-
-   - add a figure from the arxiv paper describing the essence
-   - add information, if applicable, why to not use this model?!
+    As discussed in :cite:`Reichel2023`, the `herold-2017` model
+    inaccurately models the temperature dependency of the viscosity.
+    The temperature dependency was measured using a falling ball
+    viscometer where the change in shear rate could not be controlled.
+    For the `buyukurganci-2022` model, the temperature dependency was
+    measured as a function of shear rate.
 
 
 Büyükurgancı 2022
@@ -94,35 +88,39 @@ Büyükurgancı 2022
 
 Büyükurgancı et al. characterized the viscosity curves of three MC-PBS
 solutions (0.49 w\% MC-PBS, 0.59 w\% MC-PBS, 0.83 w\% MC-PBS) in a temperature
-range of 22-37 °C.
-found that the power law parameters :math:`K` and :math:`n`
-are temperature dependent. The temperature dependence can be described as
-follows:
+range of 22-37 °C. The viscosity :math:`\eta` of MC-PBS has a power law
+dependency for large shear rates  :math:`\dot{\gamma}`:
 
-:math:`n = \alpha\dcot T + \beta`
+.. math::
 
-:math:`K = A\cdot e^{\lambda/T}`
+    \eta = K \cdot \left( \frac{ \dot{\gamma} }{ \dot{\gamma}_0} \right)^{n-1}
 
-It was found that :math:`\alpha` and :math:`\lambda` were not dependent on the
+.. figure:: figures_viscosity/buyukurganci_22_fig3a.jpg
+    :target: images/buyukurganci_22_fig3a.jpg
+
+    The viscosity of MC-PBS changes from a viscosity plateau at lower
+    shear rates into a power law behavior at higher shear rates, which
+    can be considered fully developed above 5000 1/s.
+    Shear thinning starts at lower shear rates for higher concentrations of
+    MC-PBS, which is typical for polymer solutions.
+    The viscosity was measured using three viscometer designs: Concentric
+    cylinders (CC), cone plate (CP), and parallel disks (PP). See
+    :cite:`Buyukurganci2022` for details.
+
+The power law parameters :math:`K` and :math:`n` are temperature dependent.
+The temperature dependency can be described as follows:
+
+.. math::
+
+    n &= \alpha \cdot T + \beta
+
+    K &= A\cdot e^{\lambda/T}
+
+It was found that :math:`\alpha` and :math:`\lambda` are not dependent on the
 MC concentration and can be considered material constants of MC dissolved in
-PBS. To best describe the behavior
-
-.. todo::
-
-   - The solutions change from the viscosity plateau at lower shear rates into a power law behavior at higher
-     shear rates, which can be considered fully developed above 5,000 s for all solutions.
-
-   - The shear thinning will start at lower shear rates for higher MC concentrations, which is typical for polymer
-     solutions.
-
-   - The results from both devices show that increases with the MC concentration while decreases, which means
-     that the viscosity increases and the solutions show stronger shear thinning.
-
-   - temperature-time scaling is applied
-
-   - describe the Concentration dependence
-
-   - add the figure with the Carreau-Yasuda model
+PBS :cite:`Buyukurganci2022`. As a result, a global model, valid for the
+three measured concentrations of MC-PBS was proposed :cite:`Reichel2023`
+and implemented here in :func:`.get_viscosity_mc_pbs_buyukurganci_2022`.
 
 
 LUT selection

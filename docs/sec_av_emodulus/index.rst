@@ -83,6 +83,15 @@ considerations are the foundation for the viscosity calculations in the
     measured as a function of shear rate.
 
 
+.. warning::
+
+    Never compare the Young's moduli computed from different viscosity
+    models. Up until dclab 0.47.8, all values of the Young's modulus
+    were computed using the old `herold-2017` model. For new data
+    analysis pipelines, you should use the more accurate
+    `buyukurganci-2022` model.
+
+
 Büyükurgancı 2022
 -----------------
 

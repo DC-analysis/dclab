@@ -5,7 +5,6 @@
  - enh: use the 'buyukurganci-2022' model for isoelastics by default
  - enh: increase verbosity when opening an .rtdc file failed
  - enh: support shorthand for known media for viscosity computation
-0.47.9
  - docs: update part about DCOR (#182)
 0.47.8
  - fix: implement cleaner solution for time computation (#207)

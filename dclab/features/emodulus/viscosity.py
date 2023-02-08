@@ -211,7 +211,16 @@ def get_viscosity_mc_pbs_herold_2017(
         channel_width: float = 20.0,
         flow_rate: float = 0.16,
         temperature: float = 23.0):
-    """Compute viscosity of MC-PBS according to :cite:`Herold2017`"""
+    r"""Compute viscosity of MC-PBS according to :cite:`Herold2017`
+
+    Note that all the factors in equation 5.2 in :cite:`Herold2017`
+    compute to 8, which is essentially what is implemented in
+    :func:`shear_rate_square_channel`:
+
+    .. math::
+
+        1.1856 \cdot 6 \cdot \frac{2}{3} \cdot \frac{1}{0.5928} = 8
+    """
     # see figure (9) in Herold arXiv:1704.00572 (2017)
     check_temperature("'herold-2017' MC-PBS", temperature, 18, 26)
     # convert flow_rate from µL/s to m³/s

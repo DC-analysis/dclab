@@ -5,6 +5,15 @@
  - enh: use the 'buyukurganci-2022' model for isoelastics by default
  - enh: increase verbosity when opening an .rtdc file failed
  - enh: support shorthand for known media for viscosity computation
+0.47.9
+ - docs: update part about DCOR (#182)
+0.47.8
+ - fix: implement cleaner solution for time computation (#207)
+0.47.7
+ - fix: include time offset when computing defective time feature (#207)
+ - ref: make the h5py.File object public in RTDC_HDF5
+0.47.6
+ - fix: register float32 time from ShapeIn as defective feature
  - docs: make "edit on GitHub" link lead to actual source file again
 0.47.5
  - enh: allow temporary features for hierarchy children (#123)

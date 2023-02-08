@@ -38,8 +38,8 @@ field in (*Additional Information*). The DCOR format is documented in
 Private data
 ============
 
-If you want to access private data, you need to pass your personal
-API Key:
+If you want to access private data, you need to pass a personal
+API Token:
 
 .. code:: python
 
@@ -47,10 +47,10 @@ API Key:
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
                            api_key="XXXX-YYYY-ZZZZ")
 
-You can find your API Key in the left panel of your profile page when
+You can manage your API Tokens on your profile page when
 logged in at https://dcor.mpl.mpg.de.
 
-Alternatively, you can also set the API Key globally using
+Alternatively, you can also set an API Token globally using
 
 .. code:: python
 
@@ -58,3 +58,40 @@ Alternatively, you can also set the API Key globally using
     from dclab.rtdc_dataset.fmt_dcor import APIHandler
     APIHandler.add_api_key("XXXX-YYYY-ZZZZ")
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
+
+Managing API Tokens
+===================
+
+You can manage your API Tokens on your profile page when
+logged in at https://dcor.mpl.mpg.de.
+
+.. figure:: figures/DCOR_API_Token_website.png
+    :target: images/DCOR_API_Token_website.png
+
+    Managing API Tokens on DCOR.
+
+- Deleting a token:
+
+  Click on the tab "API Tokens" to view all currently existing tokens and
+  the date they were last accessed. By clicking on the red "X" you can delete
+  a token. It cannot be restored, so be careful when deleting tokens!
+
+- Creating a new token:
+
+  To create a new token, insert a name in the field at the top and click
+  "Create API Token". The newly generated token will be shown at the top of the
+  page. Make sure you copy it directly, because you will not be able to recall
+  it again!
+
+Accessing data on a different DCOR instance
+===========================================
+
+To access data on a different DCOR instance, you have to pass the respective
+URL when opening the dataset via the keyword ``host``. The procedure to
+retrieve the DCOR resource id is the same as for the default DCOR.
+
+.. code:: python
+
+    import dclab
+    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
+                           host="dcor-dev.mpl.mpg.de")

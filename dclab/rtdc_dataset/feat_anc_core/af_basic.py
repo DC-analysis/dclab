@@ -1,5 +1,5 @@
-
 import numpy as np
+
 from .ancillary_feature import AncillaryFeature
 
 
@@ -39,7 +39,11 @@ def compute_index(mm):
 
 def compute_time(mm):
     fr = mm.config["imaging"]["frame rate"]
-    return (mm["frame"] - mm["frame"][0]) / fr
+    # Since version 0.47.8, we don't "normalize" the time anymore
+    # with the information from mm["frame"][0]. This is important
+    # for cases where it is important to know the time elapsed before
+    # the first event was recorded (issue #207).
+    return mm["frame"] / fr
 
 
 AncillaryFeature(feature_name="time",

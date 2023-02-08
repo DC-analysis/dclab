@@ -281,7 +281,7 @@ class IntegrityChecker(object):
                         raise ValueError(f"Unknown object: {obj}")
                 return comp_i, noco_i
 
-            comp, noco = iter_count_compression(self.ds._h5)
+            comp, noco = iter_count_compression(self.ds.h5file)
             if noco == 0:
                 compression = "All"
             elif comp == 0:
@@ -339,7 +339,7 @@ class IntegrityChecker(object):
         """check for feature column names"""
         cues = []
         if self.ds.format == "hdf5":
-            for feat in self.ds._h5["events"]:
+            for feat in self.ds.h5file["events"]:
                 if not dfn.feature_exists(feat):
                     cues.append(ICue(
                         msg=f"Features: Unknown key '{feat}'",
@@ -611,10 +611,10 @@ class IntegrityChecker(object):
         """This is a low-level HDF5 check"""
         cues = []
         if self.ds.format == "hdf5":
-            for entry in self.ds._h5.attrs:
+            for entry in self.ds.h5file.attrs:
                 if entry.count(":"):
                     sec, key = entry.split(":")
-                    val_act = self.ds._h5.attrs[entry]  # actual value
+                    val_act = self.ds.h5file.attrs[entry]  # actual value
                     if isinstance(val_act, bytes):
                         val_act = val_act.decode("utf-8")
                     # Check whether the config key exists

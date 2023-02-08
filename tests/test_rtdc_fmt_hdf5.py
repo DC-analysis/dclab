@@ -66,6 +66,106 @@ def test_defective_feature_aspect():
         assert np.allclose(ds2["aspect"][0], aspect0)
 
 
+def test_defective_feature_time_issue_204_float32():
+    # see https://github.com/DC-analysis/dclab/issues/204
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    # sanity check
+    with h5py.File(h5path, "r") as h5:
+        assert h5["events/time"].dtype.char == "f"
+
+    with new_dataset(h5path) as ds:
+        # "time" is a rapid feature, so it will be in features_innate
+        assert "time" not in ds.features_innate
+
+
+def test_defective_feature_time_issue_204_noancil():
+    # see https://github.com/DC-analysis/dclab/issues/204
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        assert h5["events/time"].dtype.char == "f"
+        del h5["events/frame"]
+
+    with new_dataset(h5path) as ds:
+        assert "time" in ds.features_innate  # now it's there
+
+
+def test_defective_feature_time_issue_204_noshapein():
+    # see https://github.com/DC-analysis/dclab/issues/204
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        assert h5["events/time"].dtype.char == "f"
+        time = np.arange(h5["events/time"].size, dtype=float)
+        del h5["events/time"]
+        h5["events/time"] = time
+        # Set the software version to something else than Shape-In, but with
+        # a lower version of dclab.
+        h5.attrs["setup:software version"] = "Other device | dclab 0.30.0"
+
+    with new_dataset(h5path) as ds:
+        assert "time" in ds.features_innate  # It's not Shape-In, thus ignored
+
+
+def test_defective_feature_time_issue_204_old_dclab():
+    # see https://github.com/DC-analysis/dclab/issues/204
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        assert h5["events/time"].dtype.char == "f"
+        time = np.arange(h5["events/time"].size, dtype=float)
+        del h5["events/time"]
+        h5["events/time"] = time
+        # Set the software version to something else than Shape-In, but with
+        # a lower version of dclab.
+        h5.attrs["setup:software version"] = "ShapeIn 2.0.2 | dclab 0.30.0"
+
+    with new_dataset(h5path) as ds:
+        assert "time" not in ds.features_innate  # Recognized as old dclab
+
+
+def test_defective_feature_time_issue_204_new_dclab():
+    # see https://github.com/DC-analysis/dclab/issues/204
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        assert h5["events/time"].dtype.char == "f"
+        time = np.arange(h5["events/time"].size, dtype=float)
+        del h5["events/time"]
+        h5["events/time"] = time
+        # Set the software version to something else than Shape-In, but with
+        # a lower version of dclab.
+        h5.attrs["setup:software version"] = "ShapeIn 2.0.2 | dclab 0.50.0"
+
+    with new_dataset(h5path) as ds:
+        assert "time" in ds.features_innate  # Recognized as new dclab
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+def test_defective_feature_time_issue_207_with_offset():
+    # see https://github.com/DC-analysis/dclab/issues/207
+    h5path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["imaging:frame rate"] = 100
+        # write modified frames
+        frame_w_offset = h5["events/frame"][:]
+        frame_w_offset += 42 - frame_w_offset[0]
+        del h5["events/frame"]
+        h5["events/frame"] = frame_w_offset
+        # write wrong time
+        bad_time = np.arange(h5["events/time"].size, dtype=np.float32)
+        del h5["events/time"]
+        h5["events/time"] = bad_time
+
+    with new_dataset(h5path) as ds:
+        assert "time" not in ds.features_innate  # Recognized as float32
+        assert np.allclose(ds["time"][0], 0.42, atol=0, rtol=1e-7)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_defective_feature_volume():

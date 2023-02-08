@@ -4,7 +4,6 @@
 Young's modulus computation
 ===========================
 
-
 Background
 ==========
 The computation of the Young's modulus makes use of look-up tables (LUTs)
@@ -46,9 +45,99 @@ with respect to the following correction terms:
   `shear-thinning <https://en.wikipedia.org/wiki/Shear_thinning>`_.
   The viscosity of such media decreases with increasing flow rates. Since the
   viscosity is required to apply the scaling laws (above), it must be
-  corrected which is done using hard-coded correction functions
-  :cite:`Herold2017`. The computation of viscosity is implemented in the
-  submodule :mod:`dclab.features.emodulus.viscosity`.
+  corrected which is done using hard-coded correction functions as
+  described in the next section.
+
+.. _sec_emodulus_viscosity:
+
+Viscosity
+=========
+The computation of the viscosity is implemented in the :mod:`corresponding submodule
+<dclab.features.emodulus.viscosity>`. For regular RT-DC measurements, the medium
+used is methyl cellulose (MC) dissolved in phosphate-buffered saline (PBS).
+For the most common MC concentrations, dclab comes with hard-coded models that
+compute the corresponding medium viscosity. These models are the original
+`herold-2017` :cite:`Herold2017` model and the more recent
+`buyukurganci-2022` :cite:`Buyukurganci2022,Reichel2023` model.
+
+The MC-PBS solutions show a shear thinning behavior, which can be described
+by the viscosity :math:`\eta` following a power law at sufficienty high
+shear rates :math:`\dot{\gamma}`:
+
+.. math::
+
+    \eta = K \cdot \left( \frac{ \dot{\gamma} }{ \dot{\gamma}_0} \right)^{n-1},
+
+where :math:`\dot\gamma` is the shear rate, :math:`K` is the flow consistency
+index and :math:`n` is the flow behavior index.
+The shear rate inside a square microchannel cannot be described as a
+single number for a shear thinning liquid. The shear rate is
+best described by the shear rate at the channel walls as proposed by
+Herold :cite:`Herold2017` and can be calculated as follows:
+
+.. math::
+
+    \dot\gamma = \frac{8 Q}{L^3}\left( 0.6671 + \frac{0.2121}{n}\right).
+
+These considerations are the foundation for the viscosity calculations in the
+`herold-2017` :cite:`Herold2017` and
+`buyukurganci-2022` :cite:`Buyukurganci2022` models.
+
+.. note::
+
+    As discussed in :cite:`Reichel2023`, the `herold-2017` model
+    inaccurately models the temperature dependency of the MC-PBS viscosity.
+    The temperature dependency was measured using a falling ball
+    viscometer where the change in shear rate could not be controlled.
+    For the `buyukurganci-2022` model, the temperature dependency was
+    measured as a function of shear rate. Take a look at the
+    :ref:`example script that compares these models <example_viscosity_models>`
+    to gain more insight.
+
+
+.. warning::
+
+    Never compare the Young's moduli computed from different viscosity
+    models. Up until dclab 0.47.8, all values of the Young's modulus
+    were computed using the old `herold-2017` model. For new data
+    analysis pipelines, you should use the more accurate
+    `buyukurganci-2022` model.
+
+
+Büyükurgancı 2022
+-----------------
+
+Büyükurgancı et al. characterized the viscosity curves of three MC-PBS
+solutions (0.49 w\% MC-PBS, 0.59 w\% MC-PBS, 0.83 w\% MC-PBS) in a temperature
+range of 22-37 °C. As mentioned above, the viscosity follows a power law
+behavior for large shear rates.
+
+.. figure:: figures_viscosity/buyukurganci_22_fig3a.jpg
+    :target: images/buyukurganci_22_fig3a.jpg
+
+    The viscosity of MC-PBS changes from a viscosity plateau at lower
+    shear rates into a power law behavior at higher shear rates, which
+    can be considered fully developed above 5000 1/s.
+    Shear thinning starts at lower shear rates for higher concentrations of
+    MC-PBS, which is typical for polymer solutions.
+    The viscosity was measured using three viscometer designs: Concentric
+    cylinders (CC), cone plate (CP), and parallel disks (PP). See
+    :cite:`Buyukurganci2022` for details.
+
+The power law parameters :math:`K` and :math:`n` were found to be temperature
+dependent. The temperature dependency can be described as follows:
+
+.. math::
+
+    n &= \alpha \cdot T + \beta
+
+    K &= A\cdot e^{\lambda/T}
+
+It was found that :math:`\alpha` and :math:`\lambda` are not dependent on the
+MC concentration and can be considered material constants of MC dissolved in
+PBS :cite:`Buyukurganci2022`. As a result, a global model, valid for the
+three measured concentrations of MC-PBS was proposed :cite:`Reichel2023`
+and implemented here in :func:`.get_viscosity_mc_pbs_buyukurganci_2022`.
 
 
 LUT selection
@@ -73,7 +162,7 @@ This was done with the spatial scaling factor 1.094
 used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
 
 
-.. figure:: figures/emodulus_20um_LE-2D-FEM-19.png
+.. figure:: figures_emodulus/emodulus_20um_LE-2D-FEM-19.png
     :target: images/emodulus_20um_LE-2D-FEM-19.png
 
     Visualizations of the support and the values of the look-up table (LUT)
@@ -81,9 +170,10 @@ used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
     cell area. The values of the Young's moduli in the regions
     shown depend on the channel size, the flow rate, the temperature,
     and the viscosity of the medium :cite:`Mietke2015`.
-    Here, they are computed for a 20 µm wide channel at 23°C with an
-    effective pixel size of 0.34 µm. The data are corrected for pixelation
-    effects according to :cite:`Herold2017`.
+    Here, they are computed for a 20 µm wide channel at 23°C using the
+    viscosity model `buyukurganci-2022` with an effective pixel size of
+    0.34 µm. The data are corrected for pixelation effects according
+    to :cite:`Herold2017`.
 
 
 HE-2D-FEM-22 and HE-3D-FEM-22
@@ -95,22 +185,24 @@ as for LE-2D-FEM-19) and square channel (3D) geometries as discussed
 in :cite:`Wittwer2022`. The original data used to generate these LUTs are
 available on figshare :cite:`FigshareWittwer2022`.
 
-.. figure:: figures/emodulus_20um_HE-2D-FEM-22.png
+.. figure:: figures_emodulus/emodulus_20um_HE-2D-FEM-22.png
     :target: images/emodulus_20um_HE-2D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
-    'HE-2D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C with an
-    effective pixel size of 0.34 µm. The data are corrected for pixelation
-    effects according to :cite:`Herold2017`.
+    'HE-2D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C
+    (`buyukurganci-2022` model) with an effective pixel size of 0.34 µm.
+    The data are corrected for pixelation effects according
+    to :cite:`Herold2017`.
 
 
-.. figure:: figures/emodulus_20um_HE-3D-FEM-22.png
+.. figure:: figures_emodulus/emodulus_20um_HE-3D-FEM-22.png
     :target: images/emodulus_20um_HE-3D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
-    'HE-3D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C with an
-    effective pixel size of 0.34 µm. The data are corrected for pixelation
-    effects according to :cite:`Herold2017`.
+    'HE-3D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C
+    (`buyukurganci-2022` model) with an effective pixel size of 0.34 µm.
+    The data are corrected for pixelation effects according
+    to :cite:`Herold2017`.
 
 
 external LUT
@@ -127,6 +219,7 @@ Please make sure that you adhere to the file format. An example can be found
 `here <https://github.com/DC-analysis/dclab/blob/master/dclab/features/emodulus/emodulus_lut_LE-2D-FEM-19.txt>`_.
 
 
+.. _sec_emodulus_usage:
 
 Usage
 =====
@@ -146,34 +239,42 @@ right away as an :ref:`ancillary feature <sec_features_ancillary>`
 Additional information is required. There are three scenarios:
 
 A) The viscosity/Young's modulus is computed individually from the chip
-   temperature for **each** event. Required information:
+   temperature for **each** event:
 
   - The `temp` feature which holds the chip temperature of each event
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus medium'
+  - The configuration key [calculation]: 'emodulus viscosity model'
 
 B) Set a global viscosity in [mPa·s]. Use this if you have measured the
    viscosity of your medium (and know all there is to know about shear
-   thinning :cite:`Herold2017`). Required information:
+   thinning :cite:`Herold2017` and temperature dependence):
 
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus viscosity'
 
-C) Compute the Young's modulus using the viscosities of known media.
+C) Compute the Young's modulus using the viscosities of known media for
+   a fixed temperature:
 
   - The configuration key [calculation]: 'emodulus lut'
   - The configuration key [calculation]: 'emodulus medium'
   - The configuration key [calculation]: 'emodulus temperature'
+  - The configuration key [calculation]: 'emodulus viscosity model'
 
   Note that if 'emodulus temperature' is given, then this temperature
   is used, even if the `temp` feature exists (scenario A).
 
-The key 'emodulus lut' is the LUT identifier (see previous section).
-The key 'emodulus medium' must be one of the supported media defined in
-:data:`dclab.features.emodulus.viscosity.KNOWN_MEDIA` and can be
-taken from [setup]: 'medium'.
-The key 'emodulus temperature' is the mean chip temperature and
-could possibly be available in [setup]: 'temperature'.
+Description of the configuration keywords:
+
+- 'emodulus lut': This is the LUT identifier (see previous section).
+- 'emodulus medium': This must be one of the supported media defined in
+  :data:`dclab.features.emodulus.viscosity.KNOWN_MEDIA` and can be
+  taken from the configuration key `[setup]: 'medium'`.
+- 'emodulus temperature': is the mean chip temperature and
+  could possibly be available in [setup]: 'temperature'.
+- 'emodulus viscosity model': This is the viscosity model key to use
+  (see :ref:`sec_emodulus_viscosity` above).
+  This key was introduced in dclab 0.48.0.
 
 
 .. plot::
@@ -182,7 +283,7 @@ could possibly be available in [setup]: 'temperature'.
 
     import dclab
 
-    ds = dclab.new_dataset("data/example.rtdc")
+    ds = dclab.new_dataset("../data/example.rtdc")
 
     # Add additional information. We cannot go for (A), because this example
     # does not have the temperature feature (`"temp" not in ds`). We go for
@@ -190,6 +291,7 @@ could possibly be available in [setup]: 'temperature'.
     ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
     ds.config["calculation"]["emodulus medium"] = ds.config["setup"]["medium"]
     ds.config["calculation"]["emodulus temperature"] = 23.0  # a guess
+    ds.config["calculation"]["emodulus viscosity model"] = 'buyukurganci-2022'
 
     # Plot a few features
     ax1 = plt.subplot(121)

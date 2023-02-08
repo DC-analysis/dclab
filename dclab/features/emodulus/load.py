@@ -46,7 +46,7 @@ def get_lut_path(path_or_id):
     return lut_path
 
 
-def load_lut(lut_data="LE-2D-FEM-19"):
+def load_lut(lut_data: str | pathlib.Path | np.ndarray = "LE-2D-FEM-19"):
     """Load LUT data from disk
 
     Parameters

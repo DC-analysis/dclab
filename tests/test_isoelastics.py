@@ -1,6 +1,8 @@
 import pathlib
 import warnings
 
+import pytest
+
 import numpy as np
 
 import dclab
@@ -16,9 +18,10 @@ def get_isofile(name="example_isoelastics.txt"):
     return thisdir / "data" / name
 
 
-def test_bad_isoelastic():
+def test_bad_isoelastic_undefined_feature():
+    """bad feature"""
     i1 = iso.Isoelastics([get_isofile()])
-    try:
+    with pytest.raises(KeyError, match="area_ratio"):
         i1.get(col1="deform",
                col2="area_ratio",
                lut_identifier="test-LE-2D-ana-18",
@@ -26,16 +29,13 @@ def test_bad_isoelastic():
                flow_rate=0.04,
                viscosity=15,
                add_px_err=False,
-               px_um=None)
-    except KeyError:
-        pass
-    else:
-        assert False, "features should not work"
+               px_um=0.34)
 
 
-def test_bad_isoelastic_2():
+def test_bad_isoelastic_undefined_lut_for_data():
+    """Bad LUT identifier in isoelastics instance"""
     i1 = iso.Isoelastics([get_isofile()])
-    try:
+    with pytest.raises(KeyError, match="LE-2D-FEM-19"):
         i1.get(col1="deform",
                col2="area_um",
                lut_identifier="LE-2D-FEM-19",
@@ -43,16 +43,12 @@ def test_bad_isoelastic_2():
                flow_rate=0.04,
                viscosity=15,
                add_px_err=False,
-               px_um=None)
-    except KeyError:
-        pass
-    else:
-        assert False, "only analytical should not work with this set"
+               px_um=0.34)
 
 
-def test_bad_isoelastic_3():
+def test_bad_isoelastic_unknown_feature():
     i1 = iso.Isoelastics([get_isofile()])
-    try:
+    with pytest.raises(ValueError, match="bad_feature"):
         i1.get(col1="deform",
                col2="bad_feature",
                lut_identifier="LE-2D-FEM-19",
@@ -60,16 +56,12 @@ def test_bad_isoelastic_3():
                flow_rate=0.04,
                viscosity=15,
                add_px_err=False,
-               px_um=None)
-    except ValueError:
-        pass
-    else:
-        assert False, "bad feature does not work"
+               px_um=0.34)
 
 
-def test_bad_isoelastic_4():
+def test_bad_isoelastic_unknown_lut_identifier():
     i1 = iso.Isoelastics([get_isofile()])
-    try:
+    with pytest.raises(KeyError, match="LE-2D-FEM-99-nonexistent"):
         i1.get(col1="deform",
                col2="area_um",
                lut_identifier="LE-2D-FEM-99-nonexistent",
@@ -77,11 +69,7 @@ def test_bad_isoelastic_4():
                flow_rate=0.04,
                viscosity=15,
                add_px_err=False,
-               px_um=None)
-    except KeyError:
-        pass
-    else:
-        assert False, "bad lut_identifier does not work"
+               px_um=0.34)
 
 
 def test_circ():
@@ -378,7 +366,8 @@ def test_with_rtdc():
         medium="CellCarrier",
         channel_width=ds.config["setup"]["channel width"],
         flow_rate=ds.config["setup"]["flow rate"],
-        temperature=ds.config["setup"]["temperature"])
+        temperature=ds.config["setup"]["temperature"],
+        model='buyukurganci-2022')
     data2 = i1.get(col1="area_um",
                    col2="deform",
                    lut_identifier="LE-2D-FEM-19",
@@ -416,11 +405,3 @@ def test_with_rtdc_warning():
         assert issubclass(w[-1].category,
                           iso.IsoelasticsEmodulusMeaninglessWarning)
         assert "plotting" in str(w[-1].message)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

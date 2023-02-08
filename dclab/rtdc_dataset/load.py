@@ -57,8 +57,9 @@ def new_dataset(data, identifier=None, **kwargs):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
                                             **kwargs)
     elif isinstance(data, (pathlib.Path, str)):
-        if not pathlib.Path(data).exists():
-            raise FileNotFoundError("Could not find file '{}'!".format(data))
+        path = pathlib.Path(data).resolve()
+        if not path.exists():
+            raise FileNotFoundError(f"Could not find file '{path}'!")
         else:
             return load_file(data, identifier=identifier, **kwargs)
     else:

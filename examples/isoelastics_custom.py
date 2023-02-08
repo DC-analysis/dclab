@@ -50,6 +50,7 @@ for ii, lut_name in enumerate(["LE-2D-FEM-19", "HE-3D-FEM-22"]):
                                  flow_rate=0.04,
                                  px_um=0,
                                  temperature=None,
+                                 visc_model=None,
                                  lut_data=lut_name)
 
     levels = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 6.0]

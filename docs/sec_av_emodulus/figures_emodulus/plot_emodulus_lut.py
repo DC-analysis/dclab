@@ -88,6 +88,7 @@ for lut_name in [
                                              flow_rate=flow_rate,
                                              px_um=.34,
                                              temperature=23.0,
+                                             visc_model="buyukurganci-2022",
                                              lut_data=lut_name)
                 ax = axes[jj][ii]
                 ax.set_aspect("auto")

@@ -51,6 +51,7 @@ for ds in datasets:
     ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
     ds.config["calculation"]["emodulus medium"] = "CellCarrier"
     ds.config["calculation"]["emodulus temperature"] = 23.0
+    ds.config["calculation"]["emodulus viscosity model"] = 'buyukurganci-2022'
 
 # setup lme4 analysis
 rlme4 = lme4.Rlme4(model="lmer")

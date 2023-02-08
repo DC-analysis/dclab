@@ -39,9 +39,9 @@ def test_config_calculation():
     ds.config["setup"]["channel width"] = 30
     ds.config["imaging"]["pixel size"] = .34
     ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus viscosity model": "herold-2017",
                                 "emodulus medium": "CellCarrier",
                                 "emodulus temperature": 23.0,
-                                "emodulus viscosity": 0.5
                                 }
     ch = new_dataset(ds)
     assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)

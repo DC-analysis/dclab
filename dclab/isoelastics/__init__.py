@@ -357,7 +357,9 @@ class Isoelastics(object):
                     medium=cfg["setup"]["medium"],
                     channel_width=cfg["setup"]["channel width"],
                     flow_rate=cfg["setup"]["flow rate"],
-                    temperature=cfg["setup"]["temperature"])
+                    temperature=cfg["setup"]["temperature"],
+                    model='buyukurganci-2022',
+                )
             else:
                 warnings.warn("Computing emodulus data for isoelastics from "
                               + "RTDCBase is not possible. Isoelastics will "

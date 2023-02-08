@@ -117,37 +117,44 @@ def register():
     # configuration keyword. This is checked in the `compute_emodulus`
     # method above and a deprecation warning is issued, so old code
     # does not break immediately.
+    for pr, vm in [(1, ["emodulus viscosity model"]),
+                   (0, [])  # this is deprecated and should be removed!
+                   ]:
+        AncillaryFeature(feature_name="emodulus",
+                         method=compute_emodulus,
+                         data="case C",
+                         req_features=["area_um", "deform"],
+                         req_config=[["calculation", vm + [
+                                        "emodulus lut",
+                                        "emodulus medium",
+                                        "emodulus temperature"]],
+                                     ["imaging", ["pixel size"]],
+                                     ["setup", ["flow rate", "channel width"]]
+                                     ],
+                         req_func=is_channel,
+                         priority=4 + pr)
+        AncillaryFeature(feature_name="emodulus",
+                         data="case A",
+                         method=compute_emodulus,
+                         req_features=["area_um", "deform", "temp"],
+                         req_config=[["calculation", vm + [
+                                        "emodulus lut",
+                                        "emodulus medium"]],
+                                     ["imaging", ["pixel size"]],
+                                     ["setup", ["flow rate", "channel width"]]
+                                     ],
+                         req_func=is_channel,
+                         priority=0 + pr)
+
     AncillaryFeature(feature_name="emodulus",
+                     data="case B",
                      method=compute_emodulus,
-                     data="case C",
                      req_features=["area_um", "deform"],
-                     req_config=[["calculation", ["emodulus lut",
-                                                  "emodulus medium",
-                                                  "emodulus temperature"]],
+                     req_config=[["calculation", vm + [
+                                    "emodulus lut",
+                                    "emodulus viscosity"]],
                                  ["imaging", ["pixel size"]],
                                  ["setup", ["flow rate", "channel width"]]
                                  ],
                      req_func=is_channel,
                      priority=2)
-    AncillaryFeature(feature_name="emodulus",
-                     data="case B",
-                     method=compute_emodulus,
-                     req_features=["area_um", "deform"],
-                     req_config=[["calculation", ["emodulus lut",
-                                                  "emodulus viscosity"]],
-                                 ["imaging", ["pixel size"]],
-                                 ["setup", ["flow rate", "channel width"]]
-                                 ],
-                     req_func=is_channel,
-                     priority=1)
-    AncillaryFeature(feature_name="emodulus",
-                     data="case A",
-                     method=compute_emodulus,
-                     req_features=["area_um", "deform", "temp"],
-                     req_config=[["calculation", ["emodulus lut",
-                                                  "emodulus medium"]],
-                                 ["imaging", ["pixel size"]],
-                                 ["setup", ["flow rate", "channel width"]]
-                                 ],
-                     req_func=is_channel,
-                     priority=0)

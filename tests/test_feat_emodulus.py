@@ -16,6 +16,29 @@ from helper_methods import example_data_dict
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
                             + 'YoungsModulusLookupTableExceededWarning')
+def test_af_emodulus_ancil():
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    # known-media
+    ds2 = dclab.new_dataset(ddict)
+    ds2.config["setup"]["flow rate"] = 0.16
+    ds2.config["setup"]["channel width"] = 30
+    ds2.config["imaging"]["pixel size"] = .34
+    ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                 "emodulus viscosity model": "herold-2017",
+                                 "emodulus medium": "CellCarrier",
+                                 "emodulus temperature": 23.0
+                                 }
+    emod1 = ds2["emodulus"][:]
+    ds2.config["calculation"]["emodulus viscosity model"] = \
+        "buyukurganci-2022"
+    emod2 = ds2["emodulus"][:]
+
+    assert not np.allclose(emod1, emod2, equal_nan=True)
+
+
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
 def test_af_emodulus_known_media():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -31,6 +54,9 @@ def test_af_emodulus_known_media():
                                  }
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
+        if af.priority % 2 == 0:  # remove this case when removing deprecations
+            # exclude the old deprecated ancillary features
+            continue
         if af.data == "case C":
             assert af.is_available(ds2)
         else:
@@ -188,6 +214,9 @@ def test_af_emodulus_temp_feat():
                        rtol=0, atol=6.5e-14)
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
+        if af.priority % 2 == 0:  # remove this case when removing deprecations
+            # exclude the old deprecated ancillary features
+            continue
         if af.data == "case A":
             assert af.is_available(ds2)
         else:
@@ -272,6 +301,9 @@ def test_af_emodulus_visc_only():
                        rtol=0, atol=1e-15)
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
+        if af.priority % 2 == 0:  # remove this case when removing deprecations
+            # exclude the old deprecated ancillary features
+            continue
         if af.data == "case B":
             assert af.is_available(ds2)
         else:

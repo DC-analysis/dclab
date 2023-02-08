@@ -4,7 +4,7 @@ import warnings
 from dclab.features import emodulus
 
 
-def test_cell_carrier():
+def test_herold_cell_carrier():
     """Test using table from Christophs script"""
     ch_sizes = [15, 15, 15, 20, 20, 20, 20, 20, 30, 30, 30, 40, 40, 40]
     fl_rates = [0.016, 0.032, 0.048, 0.02, 0.04, 0.06,
@@ -30,7 +30,7 @@ def test_cell_carrier():
         assert np.allclose(np.round(eta, 1), b)
 
 
-def test_cellcarrier_range():
+def test_herold_cellcarrier_range():
     # test values
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
@@ -57,7 +57,7 @@ def test_cellcarrier_range():
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
 
 
-def test_cellcarrierb_range():
+def test_herold_cellcarrierb_range():
     # test values
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
@@ -82,7 +82,7 @@ def test_cellcarrierb_range():
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
 
 
-def test_water():
+def test_kestin_water():
     """Test with data from Kestin et al, J. Phys. Chem. 7(3) 1978"""
     ref = np.array([[0, 1791.5],
                     [5, 1519.3],
@@ -101,7 +101,7 @@ def test_water():
     assert np.allclose(res, ref[:, 1], rtol=8e-5, atol=0)
 
 
-def test_water_range():
+def test_kestin_water_range():
     # test values
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
@@ -124,11 +124,3 @@ def test_water_range():
                                          temperature=np.arange(-2, 10))
         assert issubclass(w[-1].category,
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

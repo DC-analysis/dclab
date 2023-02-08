@@ -61,8 +61,9 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
                   flow_rate: float = 0.16,
                   temperature: float | np.ndarray = 23.0,
                   model: Literal['herold-2017',
+                                 'herold-2017-fallback',
                                  'buyukurganci-2022',
-                                 'kestin-1978'] = 'herold-2017'):
+                                 'kestin-1978'] = 'herold-2017-fallback'):
     """Returns the viscosity for RT-DC-specific media
 
     Media that are not pure (e.g. ketchup or polymer solutions)
@@ -116,12 +117,25 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
     medium = ALIAS_MEDIA[medium]
 
     if medium == "water":
+        # We ignore the `model`, because it's user convenient.
         eta = get_viscosity_water_kestin_1978(temperature=temperature)
     elif medium in ["0.49% MC-PBS", "0.59% MC-PBS", "0.83% MC-PBS"]:
         kwargs = {"medium": medium,
                   "temperature": temperature,
                   "flow_rate": flow_rate,
                   "channel_width": channel_width}
+
+        # Let the user know that we have a new model in town.
+        if model == "herold-2017-fallback":
+            warnings.warn(
+                "dclab 0.48.0 introduced a more accurate model for computing "
+                "the MC-PBS viscosity. You are now using the old model "
+                "'herold-2017'. Unless you are reproducing an old analysis "
+                "pipeline, you should consider passing 'buyukurganci-2022' "
+                "as a viscosity model!",
+                DeprecationWarning)
+            model = "herold-2017"
+
         if model == "herold-2017":
             eta = get_viscosity_mc_pbs_herold_2017(**kwargs)
         elif model == "buyukurganci-2022":

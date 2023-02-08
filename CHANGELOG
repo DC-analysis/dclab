@@ -1,6 +1,8 @@
 0.48.0
  - BREAKING CHANGE: remove deprecated "emodulus model" key from
    dataset configuration
+ - feat: new 'buyukurganci-2022' model to compute MC-PBS viscosity (#197)
+ - enh: use the 'buyukurganci-2022' model for isoelastics by default
  - enh: increase verbosity when opening an .rtdc file failed
  - enh: support shorthand for known media for viscosity computation
  - docs: make "edit on GitHub" link lead to actual source file again

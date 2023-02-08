@@ -1,6 +1,7 @@
 """Test hdf5 file format"""
 import os
 import shutil
+import sys
 
 import h5py
 import numpy as np
@@ -283,6 +284,8 @@ def test_hdf5_shape_trace():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(sys.version_info < (3, 9),
+                    reason="requires python3.9 or higher")
 def test_hdf5_ufuncs():
     path_orig = retrieve_data("fmt-hdf5_fl_2018.zip")
     path_mod = path_orig.with_stem("modified")

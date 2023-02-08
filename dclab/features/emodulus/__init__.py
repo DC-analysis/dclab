@@ -109,9 +109,10 @@ def get_emodulus(deform: float | np.array,
                  temperature: float | np.ndarray | None = 23.0,
                  lut_data: str | pathlib.Path | np.ndarray = "LE-2D-FEM-19",
                  visc_model: Literal['herold-2017',
+                                     'herold-2017-fallback',
                                      'buyukurganci-2022',
                                      'kestin-1978',
-                                     None] = "herold-2017",
+                                     None] = "herold-2017-fallback",
                  extrapolate: bool = INACCURATE_SPLINE_EXTRAPOLATION,
                  copy: bool = True):
     """Compute apparent Young's modulus using a look-up table

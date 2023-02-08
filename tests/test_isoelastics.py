@@ -378,7 +378,8 @@ def test_with_rtdc():
         medium="CellCarrier",
         channel_width=ds.config["setup"]["channel width"],
         flow_rate=ds.config["setup"]["flow rate"],
-        temperature=ds.config["setup"]["temperature"])
+        temperature=ds.config["setup"]["temperature"],
+        model='buyukurganci-2022')
     data2 = i1.get(col1="area_um",
                    col2="deform",
                    lut_identifier="LE-2D-FEM-19",
@@ -416,11 +417,3 @@ def test_with_rtdc_warning():
         assert issubclass(w[-1].category,
                           iso.IsoelasticsEmodulusMeaninglessWarning)
         assert "plotting" in str(w[-1].message)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

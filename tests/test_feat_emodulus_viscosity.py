@@ -106,14 +106,16 @@ def test_herold_cell_carrier():
         eta = emodulus.viscosity.get_viscosity(medium="CellCarrier",
                                                channel_width=c,
                                                flow_rate=f,
-                                               temperature=t)
+                                               temperature=t,
+                                               model="herold-2017")
         assert np.allclose(np.round(eta, 1), a)
 
     for c, f, t, b in zip(ch_sizes, fl_rates, temps, eta_b):
         eta = emodulus.viscosity.get_viscosity(medium="CellCarrier B",
                                                channel_width=c,
                                                flow_rate=f,
-                                               temperature=t)
+                                               temperature=t,
+                                               model="herold-2017")
         assert np.allclose(np.round(eta, 1), b)
 
 

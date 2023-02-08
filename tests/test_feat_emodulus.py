@@ -262,7 +262,8 @@ def test_af_emodulus_visc_only():
         medium="CellCarrier",
         channel_width=30,
         flow_rate=0.16,
-        temperature=23.0)
+        temperature=23.0,
+        model="herold-2017")
     ds2.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
                                  "emodulus viscosity": visc
                                  }
@@ -286,7 +287,9 @@ def test_af_emodulus_visc_only_2():
         medium="CellCarrier",
         channel_width=30,
         flow_rate=0.16,
-        temperature=23.0)
+        temperature=23.0,
+        model="herold-2017",
+    )
     # legacy
     ds = dclab.new_dataset(ddict)
     ds.config["setup"]["flow rate"] = 0.16
@@ -510,7 +513,8 @@ def test_simple_emod():
                                  channel_width=30,
                                  flow_rate=0.16,
                                  px_um=0,  # without pixelation correction
-                                 temperature=23)
+                                 temperature=23,
+                                 visc_model="herold-2017")
 
     assert np.allclose(emod[10, 50], 1.1875799054283109)
     assert np.allclose(emod[50, 50], 0.5527066911133949)

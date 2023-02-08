@@ -117,13 +117,14 @@ def test_herold_cell_carrier():
         assert np.allclose(np.round(eta, 1), b)
 
 
-def test_herold_cellcarrier_range():
+@pytest.mark.parametrize("medium", ["0.49% MC-PBS", "0.59% MC-PBS"])
+def test_herold_cellcarrier_range(medium):
     # test values
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
         emodulus.viscosity.get_viscosity(
-            medium="CellCarrier B", temperature=15)
+            medium=medium, temperature=15, model="herold-2017")
         assert issubclass(w[-1].category,
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
 
@@ -131,40 +132,16 @@ def test_herold_cellcarrier_range():
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
         emodulus.viscosity.get_viscosity(
-            medium="CellCarrier B", temperature=28)
+            medium=medium, temperature=28, model="herold-2017")
         assert issubclass(w[-1].category,
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
 
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        emodulus.viscosity.get_viscosity(medium="CellCarrier B",
-                                         temperature=np.linspace(1, 10, 8))
-        assert issubclass(w[-1].category,
-                          emodulus.viscosity.TemperatureOutOfRangeWarning)
-
-
-def test_herold_cellcarrierb_range():
-    # test values
-    with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter("always")
-        emodulus.viscosity.get_viscosity(medium="CellCarrier", temperature=15)
-        assert issubclass(w[-1].category,
-                          emodulus.viscosity.TemperatureOutOfRangeWarning)
-
-    with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter("always")
-        emodulus.viscosity.get_viscosity(medium="CellCarrier", temperature=28)
-        assert issubclass(w[-1].category,
-                          emodulus.viscosity.TemperatureOutOfRangeWarning)
-
-    with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter("always")
-        emodulus.viscosity.get_viscosity(medium="CellCarrier",
-                                         temperature=np.arange(1, 10))
+        emodulus.viscosity.get_viscosity(medium=medium,
+                                         temperature=np.linspace(1, 10, 8),
+                                         model="herold-2017")
         assert issubclass(w[-1].category,
                           emodulus.viscosity.TemperatureOutOfRangeWarning)
 

@@ -16,6 +16,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 import pathlib
+import os
 import os.path as op
 import sys
 
@@ -24,6 +25,8 @@ import dclab
 pdir = op.dirname(op.dirname(op.abspath(__file__)))
 # include extensions
 sys.path.append(op.abspath('extensions'))
+
+os.environ["RPY2_CFFI_MODE"] = "ABI"
 
 # http://www.sphinx-doc.org/en/stable/ext/autodoc.html#confval-autodoc_member_order
 # Order class attributes and functions in separate blocks

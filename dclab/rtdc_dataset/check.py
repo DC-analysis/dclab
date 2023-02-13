@@ -751,7 +751,7 @@ class IntegrityChecker(object):
         """
         cues = []
         from_zmd = "ZMD" in self.ds.config["setup"].get("identifier", "")
-        if from_zmd:
+        if from_zmd and "temp" in self.ds:
             temp = self.ds["temp"]
             if np.allclose(temp[:10], 0) and np.allclose(temp, 0):
                 cues.append(ICue(

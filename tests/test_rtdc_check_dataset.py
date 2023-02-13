@@ -450,6 +450,21 @@ def test_ic_sanity():
     assert cues[0].level == "violation"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_ic_temp_allzero_issue_183():
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with h5py.File(h5path, "a") as h5:
+        assert "temp" not in h5["events"]
+        h5["events/temp"] = np.zeros(len(h5["events/deform"]))
+    with check.IntegrityChecker(h5path) as ic:
+        cues = ic.check_temperature_zero_zmd()
+        assert cues
+        assert cues[0].category == "feature data"
+        assert cues[0].msg.count("temp")
+        assert cues[0].level == "violation"
+
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')

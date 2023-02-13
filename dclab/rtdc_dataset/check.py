@@ -744,6 +744,23 @@ class IntegrityChecker(object):
                 cfg_key="medium"))
         return cues
 
+    def check_temperature_zero_zmd(self, **kwargs):
+        """If there is a loose cable, then temperature might be all-zero
+
+        https://github.com/DC-analysis/dclab/issues/183
+        """
+        cues = []
+        from_zmd = "ZMD" in self.ds.config["setup"].get("identifier", "")
+        if from_zmd:
+            temp = self.ds["temp"]
+            if np.allclose(temp[:10], 0) and np.allclose(temp, 0):
+                cues.append(ICue(
+                    msg="Feature: The 'temp' feature is all-zero, check "
+                        "the cables of the temperature sensor!",
+                    level="violation",
+                    category="feature data"))
+        return cues
+
     def sanity_check(self):
         """Sanity check that tests whether the data can be accessed"""
         cues = []

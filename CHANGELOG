@@ -1,5 +1,5 @@
 0.48.2
- - enh: many-fold increase in HDF5 dataset read speed via caching
+ - enh: many-fold increase in HDF5 dataset read speed via caching (#189)
  - enh: detect all-zero temperature in dclab-verify-dataset (#183)
 0.48.1
  - fix: emodulus values were not correctly cached

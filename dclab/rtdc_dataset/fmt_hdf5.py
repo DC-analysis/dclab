@@ -76,9 +76,9 @@ class H5Events:
         return key in self.keys()
 
     def __getitem__(self, key):
-        # user-level checking is done in core.py
-        assert dfn.feature_exists(key), "Feature '{}' not valid!".format(key)
         if key not in self._cached_events:
+            # user-level checking is done in core.py
+            assert dfn.feature_exists(key), f"Feature '{key}' does not exist!"
             data = self.h5file["events"][key]
             if key == "contour":
                 fdata = H5ContourEvent(data)

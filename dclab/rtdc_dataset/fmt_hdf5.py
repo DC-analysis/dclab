@@ -60,6 +60,12 @@ class H5ContourEvent:
 class H5Events:
     def __init__(self, h5):
         self.h5file = h5
+        # According to https://github.com/h5py/h5py/issues/1960, we always
+        # have to keep a reference to the HDF5 dataset, otherwise it will
+        # be garbage-collected immediately. In addition to caching the HDF5
+        # datasets, we cache the wrapping classes in the `self._cached_events`
+        # dictionary.
+        self._cached_events = {}
         self._features = sorted(self.h5file["events"].keys())
         # make sure that "trace" is not empty
         if ("trace" in self._features
@@ -72,19 +78,22 @@ class H5Events:
     def __getitem__(self, key):
         # user-level checking is done in core.py
         assert dfn.feature_exists(key), "Feature '{}' not valid!".format(key)
-        data = self.h5file["events"][key]
-        if key == "contour":
-            return H5ContourEvent(data)
-        elif key == "mask":
-            return H5MaskEvent(data)
-        elif key == "trace":
-            return H5TraceEvent(data)
-        elif data.ndim == 1:
-            return H5ScalarEvent(data)
-        else:
-            # for features like "image", "image_bg" and other non-scalar
-            # ancillary features
-            return data
+        if key not in self._cached_events:
+            data = self.h5file["events"][key]
+            if key == "contour":
+                fdata = H5ContourEvent(data)
+            elif key == "mask":
+                fdata = H5MaskEvent(data)
+            elif key == "trace":
+                fdata = H5TraceEvent(data)
+            elif data.ndim == 1:
+                fdata = H5ScalarEvent(data)
+            else:
+                # for features like "image", "image_bg" and other non-scalar
+                # ancillary features
+                fdata = data
+            self._cached_events[key] = fdata
+        return self._cached_events[key]
 
     def __iter__(self):
         # dict-like behavior
@@ -279,7 +288,14 @@ class RTDC_HDF5(RTDCBase):
         self.path = h5path
 
         # Setup events
-        self.h5file = h5py.File(h5path, mode="r")
+        self.h5file = h5py.File(
+            h5path,
+            mode="r",
+            # Increase the read cache (which defaults to 1MiB), since
+            # normally we have around 2.5MiB image chunks.
+            rdcc_nbytes=10*1024**2,
+            rdcc_w0=0,
+            )
         self._events = H5Events(self.h5file)
 
         # Parse configuration

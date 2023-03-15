@@ -45,6 +45,21 @@ def test_af_inert_ratio_prnc():
     assert np.allclose(diff[0], 0, atol=1.2e-3, rtol=0)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.parametrize("file", [
+    "fmt-hdf5_fl_2017.zip",
+    "fmt-hdf5_mask-contour_2018.zip",
+    "fmt-hdf5_image-bg_2020.zip",
+    "fmt-hdf5_polygon_gate_2021.zip",
+    "fmt-hdf5_fl_wide-channel_2023.zip",
+    ])
+def test_af_inert_ratio_prnc_greater_than_one_issue_212(file):
+    ds = new_dataset(retrieve_data(file))
+    prnc = ds["inert_ratio_prnc"]
+    assert np.all(prnc >= 1)
+
+
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
@@ -159,11 +174,3 @@ def test_tilt():
         if th > np.pi/2:
             th = np.pi - th
         assert np.allclose(tilt, th)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

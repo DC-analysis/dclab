@@ -1,5 +1,4 @@
 """Computation of inertia ratio from contour data"""
-
 import numpy as np
 import scipy.spatial as ssp
 
@@ -21,15 +20,25 @@ def cont_moments_cv(cont,
     dbl_epsilon: float
         The value of ``DBL_EPSILON`` in OpenCV/gcc.
 
+    .. versionchanged:: 0.48.2
+
+        For long channels, an integer overflow could occur in previous
+        versions, leading to false contour moments.
+        See https://github.com/DC-analysis/dclab/issues/212
+
     Returns
     -------
     moments: dict
         A dictionary of moments. If the moment `m00` is smaller
         than half of `flt_epsilon`, `None` is returned.
     """
-    # Make sure we have no unsigned integers
-    if np.issubdtype(cont.dtype, np.unsignedinteger):
+    # Make sure we have 64bit integer or floating point values.
+    # If the input data was int32, then integer overflows could occur
+    # for mu20 and mu02 (https://github.com/DC-analysis/dclab/issues/212).
+    if np.issubdtype(cont.dtype, np.integer):
         cont = cont.astype(int)
+    elif np.issubdtype(cont.dtype, np.floating):
+        cont = cont.astype(float)
 
     xi = cont[:, 0]
     yi = cont[:, 1]
@@ -130,6 +139,12 @@ def get_inert_ratio_cvx(cont):
     inert_ratio_cvx: float or ndarray of size N
         The inertia ratio of the contour's convex hull
 
+    .. versionchanged:: 0.48.2
+
+        For long channels, an integer overflow could occur in previous
+        versions, leading invalid or nan values.
+        See https://github.com/DC-analysis/dclab/issues/212
+
     Notes
     -----
     The contour moments mu20 and mu02 are computed the same way they
@@ -182,6 +197,12 @@ def get_inert_ratio_prnc(cont):
     makes it applicable to reservoir measurements where e.g.
     cells are not aligned with the channel.
 
+    .. versionchanged:: 0.48.2
+
+        For long channels, an integer overflow could occur in previous
+        versions, leading to a principal inertia ratio smaller than one.
+        See https://github.com/DC-analysis/dclab/issues/212
+
     Parameters
     ----------
     cont: ndarray or list of ndarrays of shape (N,2)
@@ -204,21 +225,25 @@ def get_inert_ratio_prnc(cont):
         ret_list = True
 
     length = len(cont)
-
     # np.float32 for compatibility with opencv
     inert_ratio_prnc = np.zeros(length, dtype=np.float32) * np.nan
 
     for ii in range(length):
-        moments = cont_moments_cv(cont[ii])
+        # As discussed in https://github.com/DC-analysis/dclab/issues/212,
+        # `cont_moments_cv` now already properly casts everything. But since
+        # we have to create a floating point contour anyway, we can just
+        # create a copy here and be safe.
+        cc = np.array(cont[ii], dtype=float, copy=True)
+        moments = cont_moments_cv(cc)
+
         if moments is not None:
             # orientation of the contour
             orient = 0.5 * np.arctan2(2 * moments['mu11'],
                                       moments['mu02'] - moments['mu20'])
-            # require floating point array (only copy if necessary)
-            cc = np.array(cont[ii], dtype=float, copy=False)
             # rotate contour
             rho = np.sqrt(cc[:, 0]**2 + cc[:, 1]**2)
             phi = np.arctan2(cc[:, 1], cc[:, 0]) + orient + np.pi / 2
+            # change contour data in-place (we already created a copy)
             cc[:, 0] = rho * np.cos(phi)
             cc[:, 1] = rho * np.sin(phi)
             # compute inertia ratio of rotated contour
@@ -249,6 +274,12 @@ def get_inert_ratio_raw(cont):
     -------
     inert_ratio_raw: float or ndarray of size N
         The inertia ratio of the contour
+
+    .. versionchanged:: 0.48.2
+
+        For long channels, an integer overflow could occur in previous
+        versions, leading invalid or nan values.
+        See https://github.com/DC-analysis/dclab/issues/212
 
     Notes
     -----
@@ -305,6 +336,12 @@ def get_tilt(cont):
     -------
     tilt: float or ndarray of size N
         Tilt of the contour in the interval [0, PI/2]
+
+    .. versionchanged:: 0.48.2
+
+        For long channels, an integer overflow could occur in previous
+        versions, leading to invalid tilt values of PI/2.
+        See https://github.com/DC-analysis/dclab/issues/212
 
     References
     ----------

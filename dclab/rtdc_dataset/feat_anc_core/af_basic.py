@@ -43,7 +43,7 @@ def compute_time(mm):
     # with the information from mm["frame"][0]. This is important
     # for cases where it is important to know the time elapsed before
     # the first event was recorded (issue #207).
-    return mm["frame"] / fr
+    return np.array(mm["frame"], dtype=float) / fr
 
 
 AncillaryFeature(feature_name="time",

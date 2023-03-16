@@ -476,7 +476,14 @@ def is_defective_feature_volume(h5):
 def is_defective_feature_inert_ratio(h5):
     """For long channels, there was an integer overflow until 0.48.1
 
-    see https://github.com/DC-analysis/dclab/issues/212
+    The problem here is that not only the channel length, but also
+    the length of the contour play a role. All point coordinates of
+    the contour are summed up and multiplied with one another which
+    leads to integer overflows when computing mu20.
+
+    Thus, this test is only a best guess, but still quite fast.
+
+    See also https://github.com/DC-analysis/dclab/issues/212
     """
     # determine whether the image width is larger than 500px
     # If this file was written with dclab, then we always have the ROI size,

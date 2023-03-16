@@ -111,6 +111,8 @@ def test_defective_feature_inert_ratio_control_1():
         assert np.all(ds[feat] == 1)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_defective_feature_inert_ratio_control_2():
     feat = "inert_ratio_prnc"
     # see https://github.com/DC-analysis/dclab/issues/212

@@ -110,13 +110,12 @@ class H5Events:
             defective = DEFECTIVE_FEATURES[feat](self.h5file)
         return defective
 
-    @functools.lru_cache()
     def keys(self):
         """Returns list of valid features
 
         Checks for
-        - defective features
-        - existing feature names
+        - defective features: whether the data in the HDF5 file is invalid
+        - existing feature names: dynamic, depending on e.g. plugin features
         """
         features = []
         for key in self._features:

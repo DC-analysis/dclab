@@ -1,7 +1,9 @@
 """Test hdf5 file format"""
 import os
+import pathlib
 import shutil
 import sys
+import tempfile
 
 import h5py
 import numpy as np
@@ -77,6 +79,24 @@ def test_defective_feature_time_issue_204_float32():
     with new_dataset(h5path) as ds:
         # "time" is a rapid feature, so it will be in features_innate
         assert "time" not in ds.features_innate
+
+
+def test_defective_feature_time_issue_204_float32_exported():
+    # see https://github.com/DC-analysis/dclab/issues/204
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    # sanity check
+    with h5py.File(h5path, "r") as h5:
+        assert h5["events/time"].dtype.char == "f"
+
+    tmp_path = pathlib.Path(tempfile.mkdtemp("test_204")) / "test_204.rtdc"
+
+    with new_dataset(h5path) as ds:
+        # "time" is a rapid feature, so it will be in features_innate
+        ds.export.hdf5(tmp_path, features=["deform", "time"])
+
+    with new_dataset(tmp_path) as ds:
+        # time should now be innate
+        assert "time" in ds.features_innate
 
 
 def test_defective_feature_time_issue_204_noancil():

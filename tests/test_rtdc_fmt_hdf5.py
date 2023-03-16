@@ -69,6 +69,64 @@ def test_defective_feature_aspect():
         assert np.allclose(ds2["aspect"][0], aspect0)
 
 
+@pytest.mark.parametrize("feat", [
+    "inert_ratio_cvx",
+    "inert_ratio_prnc",
+    "inert_ratio_raw",
+    "tilt"])
+def test_defective_feature_inert_ratio_prnc(feat):
+    # see https://github.com/DC-analysis/dclab/issues/212
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        size = len(h5["/events/deform"])
+        h5.attrs["setup:software version"] = "dclab 0.48.0"
+        h5[f"/events/{feat}"] = np.ones(size)
+
+    tmp_path = pathlib.Path(tempfile.mkdtemp("test_212")) / "test_212.rtdc"
+
+    with new_dataset(h5path) as ds:
+        # "feat" is defective
+        assert feat not in ds.features_innate
+        ds.export.hdf5(tmp_path, features=["deform", feat])
+
+    with new_dataset(tmp_path) as ds:
+        assert feat in ds.features_innate
+        assert not np.all(ds[feat] == 1)
+
+
+def test_defective_feature_inert_ratio_control_1():
+    feat = "inert_ratio_prnc"
+    # see https://github.com/DC-analysis/dclab/issues/212
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        size = len(h5["/events/deform"])
+        h5.attrs["setup:software version"] = "dclab 0.48.3"
+        h5[f"/events/{feat}"] = np.ones(size)
+
+    with new_dataset(h5path) as ds:
+        # "feat" is defective
+        assert feat in ds.features_innate
+        assert np.all(ds[feat] == 1)
+
+
+def test_defective_feature_inert_ratio_control_2():
+    feat = "inert_ratio_prnc"
+    # see https://github.com/DC-analysis/dclab/issues/212
+    h5path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    # sanity check
+    with h5py.File(h5path, "a") as h5:
+        size = len(h5["/events/deform"])
+        h5.attrs["setup:software version"] = "dclab 0.48.0"
+        h5[f"/events/{feat}"] = np.ones(size)
+
+    with new_dataset(h5path) as ds:
+        # "feat" is defective
+        assert feat in ds.features_innate
+        assert np.all(ds[feat] == 1)
+
+
 def test_defective_feature_time_issue_204_float32():
     # see https://github.com/DC-analysis/dclab/issues/204
     h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")

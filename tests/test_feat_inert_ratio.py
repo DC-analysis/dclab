@@ -47,6 +47,8 @@ def test_af_inert_ratio_prnc():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
+    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
 @pytest.mark.parametrize("file", [
     "fmt-hdf5_fl_2017.zip",
     "fmt-hdf5_mask-contour_2018.zip",

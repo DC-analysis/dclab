@@ -1,5 +1,8 @@
 0.48.3
  - fix: always treat ancillary time as float64
+ - enh: add defective feature check for inertia ratio features
+   inert_ratio_cvx, inert_ratio_prnc, inert_ratio_raw, and tilt (#212)
+ - enh: cache available feature names in the HDF5 format
 0.48.2
  - fix: invalid computation of inertia ratio features (inert_ratio_cvx,
    inert_ratio_prnc, inert_ratio_raw, tilt) for events with large

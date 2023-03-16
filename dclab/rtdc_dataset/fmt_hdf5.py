@@ -100,6 +100,7 @@ class H5Events:
         for key in self.keys():
             yield key
 
+    @functools.lru_cache()
     def _is_defective_feature(self, feat):
         """Whether the stored feature is defective"""
         defective = False
@@ -109,6 +110,7 @@ class H5Events:
             defective = DEFECTIVE_FEATURES[feat](self.h5file)
         return defective
 
+    @functools.lru_cache()
     def keys(self):
         """Returns list of valid features
 
@@ -393,11 +395,16 @@ class RTDC_HDF5(RTDCBase):
         return self._hash
 
 
-def is_defective_feature_aspect(h5):
-    """In Shape-In 2.0.6, there was a wrong variable cast"""
-    software_version = h5.attrs["setup:software version"]
+def get_software_version_from_h5(h5):
+    software_version = h5.attrs.get("setup:software version", "")
     if isinstance(software_version, bytes):
         software_version = software_version.decode("utf-8")
+    return software_version
+
+
+def is_defective_feature_aspect(h5):
+    """In Shape-In 2.0.6, there was a wrong variable cast"""
+    software_version = get_software_version_from_h5(h5)
     return software_version in ["ShapeIn 2.0.6", "ShapeIn 2.0.7"]
 
 
@@ -424,9 +431,7 @@ def is_defective_feature_time(h5):
         return True
 
     # Consider the software
-    software_version = h5.attrs["setup:software version"]
-    if isinstance(software_version, bytes):
-        software_version = software_version.decode("utf-8")
+    software_version = get_software_version_from_h5(h5)
 
     # Only Shape-In stores false data, so we can ignore other recording
     # software.
@@ -459,15 +464,38 @@ def is_defective_feature_volume(h5):
     if "dclab_issue_141" in list(h5.get("logs", {}).keys()):
         return False
     # if that does not apply, check the software version
-    software_version = h5.attrs["setup:software version"]
-    if isinstance(software_version, bytes):
-        software_version = software_version.decode("utf-8")
+    software_version = get_software_version_from_h5(h5)
     if software_version:
         last_version = software_version.split("|")[-1].strip()
         if last_version.startswith("dclab"):
             dclab_version = last_version.split()[1]
             if parse_version(dclab_version) < parse_version("0.37.0"):
                 return True
+    return False
+
+
+def is_defective_feature_inert_ratio(h5):
+    """For long channels, there was an integer overflow until 0.48.1
+
+    see https://github.com/DC-analysis/dclab/issues/212
+    """
+    # determine whether the image width is larger than 500px
+    # If this file was written with dclab, then we always have the ROI size,
+    # so we don't have to check the actual image.
+    width_large = h5.attrs.get("imaging:roi size x", 0) > 500
+
+    if width_large:
+        # determine whether the software version was outdated
+        software_version = get_software_version_from_h5(h5)
+        if software_version:
+            last_version = software_version.split("|")[-1].strip()
+            if last_version.startswith("dclab"):
+                dclab_version = last_version.split()[1]
+                # The fix was implemented in 0.48.2, but this method here
+                # was only implemented in 0.48.3, so we might have leaked
+                # old data into new files.
+                if parse_version(dclab_version) < parse_version("0.48.3"):
+                    return True
     return False
 
 
@@ -480,6 +508,10 @@ MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 DEFECTIVE_FEATURES = {
     # feature: [HDF5_attribute, matching_value]
     "aspect": is_defective_feature_aspect,
+    "inert_ratio_cvx": is_defective_feature_inert_ratio,
+    "inert_ratio_prnc": is_defective_feature_inert_ratio,
+    "inert_ratio_raw": is_defective_feature_inert_ratio,
+    "tilt": is_defective_feature_inert_ratio,
     "time": is_defective_feature_time,
     "volume": is_defective_feature_volume,
 }

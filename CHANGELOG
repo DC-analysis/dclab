@@ -3,6 +3,7 @@
  - enh: feed kwargs to sp.check_output to avoid pop-up command prompts
  - ref: migrate from "tensorflow-SavedModel" to "tf" in ml submodule
  - build: migrate to pyproject.toml (except for cython extensions)
+ - build: add manylinux wheels using cibuildwheel
 0.48.4
  - fix: do not cache all feature names, only defective feature names,
    because some features can be (de)registered dynamically

@@ -15,7 +15,11 @@ def verify_dataset(path_in=None):
         parser = verify_dataset_parser()
         args = parser.parse_args()
         path_in = pathlib.Path(args.path).resolve()
-    common.print_info(f"Checking {path_in}")
+    if not path_in.exists():
+        common.print_violation(f"File not found: {path_in}")
+        return sys.exit(4)
+    else:
+        common.print_info(f"Checking {path_in}")
     # The exit status of this script. Non-zero exit status means:
     # 1: alerts
     # 2: violations

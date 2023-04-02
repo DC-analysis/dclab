@@ -1,3 +1,5 @@
+0.48.5
+ - fix: CLI dclab-verify-datasets now complains about missing input data
 0.48.4
  - fix: do not cache all feature names, only defective feature names,
    because some features can be (de)registered dynamically

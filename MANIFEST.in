@@ -8,4 +8,5 @@ recursive-include docs *.py *.md *.txt *.rst *.bib *.gif *.jpg
 recursive-include examples *.py *.jpg *.npy *.npz
 recursive-include tests *.zip *.md *.py *.txt
 prune docs/_build
-exclude docs/_version_save.py
+prune .*
+prune .*/

@@ -20,4 +20,4 @@ from .rtdc_dataset.feat_anc_plugin.plugin_feature import (
     PlugInFeature, load_plugin_feature)
 from . import statistics
 
-from ._version import version as __version__
+from ._version import __version__, __version_tuple__

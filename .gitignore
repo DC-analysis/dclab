@@ -81,7 +81,7 @@ ENV/
 env.bak/
 venv.bak/
 
-_version_save.py
+dclab/_version.py
 *.bib.bak
 .pytest_cache
 pip-wheel-metadata

@@ -26,7 +26,7 @@ jobs:
         python -m pip install codecov coverage flake8 pytest
     - name: Install dependencies
       run: |
-        pip install -e .
+        pip install .
         pip install -r scripts/requirements.txt
     - name: List installed packages
       run: |

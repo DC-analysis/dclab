@@ -50,5 +50,5 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_PWD }}
         run: |
-          pip install twine
+          pipx install twine
           twine upload --skip-existing dist/*

@@ -1,5 +1,6 @@
 0.48.5
  - fix: CLI dclab-verify-datasets now complains about missing input data
+ - enh: feed kwargs to sp.check_output to avoid pop-up command prompts
 0.48.4
  - fix: do not cache all feature names, only defective feature names,
    because some features can be (de)registered dynamically

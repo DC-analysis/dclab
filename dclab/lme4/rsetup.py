@@ -179,7 +179,25 @@ def install_lme4():
 
 def set_r_path(r_path):
     """Set the path of the R executable/binary for rpy2"""
-    tmp = sp.check_output((r_path, 'RHOME'), universal_newlines=True)
+    if hasattr(sp, 'STARTUPINFO'):
+        # On Windows, subprocess calls will pop up a command window by
+        # default when run from Pyinstaller with the ``--noconsole``
+        # option. Avoid this distraction.
+        si = sp.STARTUPINFO()
+        si.dwFlags |= sp.STARTF_USESHOWWINDOW
+        # Windows doesn't search the path by default. Pass it an
+        # environment so it will.
+        env = os.environ
+    else:
+        si = None
+        env = None
+
+    tmp = sp.check_output((r_path, 'RHOME'),
+                          startupinfo=si,
+                          env=env,
+                          text=True,
+                          )
+
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith('WARNING'):
         res = r_home[1]

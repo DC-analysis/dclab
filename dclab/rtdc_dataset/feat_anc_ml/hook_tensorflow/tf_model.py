@@ -11,7 +11,7 @@ class TensorflowModel(BaseModel):
     """Handle tensorflow models"""
     @staticmethod
     def supported_formats():
-        return [{"name": "tensorflow-SavedModel",
+        return [{"name": "tensorflow",
                  "suffix": ".tf",
                  "requirements": "tensorflow"}
                 ]
@@ -25,11 +25,11 @@ class TensorflowModel(BaseModel):
         return bare_model
 
     @staticmethod
-    def save_bare_model(path, bare_model, save_format="tf"):
+    def save_bare_model(path, bare_model, save_format="tensorflow"):
         """Save a tensorflow model"""
-        assert save_format == "tf"
+        assert save_format == "tensorflow"
         tf.keras.models.save_model(model=bare_model,
-                                   save_format=save_format,
+                                   save_format="tf",
                                    filepath=path)
 
     def predict(self, ds, batch_size=32):

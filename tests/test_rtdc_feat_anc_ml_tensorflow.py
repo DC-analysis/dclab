@@ -598,7 +598,7 @@ def test_modc_export_model_enforce_format():
     bare_model = make_bare_model()
     feat_anc_ml.modc.export_model(path=tmpdir,
                                   model=bare_model,
-                                  enforce_formats=["tf"]
+                                  enforce_formats=["tensorflow"]
                                   )
 
 
@@ -624,7 +624,7 @@ def test_modc_export_model_enforce_format_bad_model():
                              "|Expected a Trackable object for export"):
         feat_anc_ml.modc.export_model(path=tmpdir,
                                       model=mock.MagicMock(),
-                                      enforce_formats=["tf"]
+                                      enforce_formats=["tensorflow"]
                                       )
 
 

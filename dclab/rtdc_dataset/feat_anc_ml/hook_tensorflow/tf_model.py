@@ -25,9 +25,9 @@ class TensorflowModel(BaseModel):
         return bare_model
 
     @staticmethod
-    def save_bare_model(path, bare_model, save_format="tensorflow-SavedModel"):
+    def save_bare_model(path, bare_model, save_format="tf"):
         """Save a tensorflow model"""
-        assert save_format == "tensorflow-SavedModel"
+        assert save_format == "tf"
         tf.keras.models.save_model(model=bare_model,
                                    save_format=save_format,
                                    filepath=path)

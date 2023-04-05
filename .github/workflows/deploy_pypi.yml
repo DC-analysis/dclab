@@ -22,10 +22,6 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.12.1
 
-      - uses: actions/upload-artifact@v3
-        with:
-          path: ./wheelhouse/*.whl
-
       - name: publish
         env:
           TWINE_USERNAME: __token__

@@ -86,6 +86,27 @@ def test_condense():
         assert "dclab-condense" in dsj.logs
         assert len(dsj)
         assert len(dsj) == len(ds0)
+        assert "volume" in dsj.features_innate
+        for feat in dsj.features:
+            assert np.all(dsj[feat] == ds0[feat])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_condense_no_ancillary_features():
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("condensed.rtdc")
+
+    with mock.patch("sys.argv", ["", "--no-ancillary-features",
+                                 str(path_in), str(path_out)]):
+        cli.condense()
+
+    with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
+        assert "dclab-condense" in dsj.logs
+        assert len(dsj)
+        assert len(dsj) == len(ds0)
+        assert "volume" not in dsj.features_innate
         for feat in dsj.features:
             assert np.all(dsj[feat] == ds0[feat])
 

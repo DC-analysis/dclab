@@ -1,3 +1,6 @@
+0.48.8
+ - enh: CLI new --no-ancillary-features keyword argument for
+   dclab-condense to skip the computation of expensive features
 0.48.7
  - maintenance release
 0.48.6

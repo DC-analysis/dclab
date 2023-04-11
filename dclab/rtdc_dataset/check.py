@@ -336,11 +336,24 @@ class IntegrityChecker(object):
         return cues
 
     def check_features_unknown_hdf5(self, **kwargs):
-        """check for feature column names"""
+        """Check for features that are not defined in dclab
+
+        The idea here is to make sure that third-party software is made
+        aware of the fact that it is storing unknown features in an HDF5
+        file. If this is the case, then this will e.g. raise an error in
+        DCOR-Aid, such that people don't lose new features upon upload.
+        """
+        # Ignored unknown features are features that are actually known
+        # but omitting them is not a big deal.
+        ignore_unknown_features = [
+            "def",  # An old Shape-In version stored "def" instead of "deform"
+            ]
         cues = []
         if self.ds.format == "hdf5":
             for feat in self.ds.h5file["events"]:
                 if not dfn.feature_exists(feat):
+                    if feat in ignore_unknown_features:
+                        continue
                     cues.append(ICue(
                         msg=f"Features: Unknown key '{feat}'",
                         level="violation",

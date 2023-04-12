@@ -1,18 +1,8 @@
 """Load RT-DC datasets"""
-
 import pathlib
-import warnings
 
 from .core import RTDCBase
 from . import fmt_dict, fmt_dcor, fmt_hdf5, fmt_tdms, fmt_hierarchy
-
-
-def check_dataset(path_or_ds):
-    """deprecated, to not use"""
-    warnings.warn("Please use dclab.rtdc_dataset.check.check_dataset!",
-                  DeprecationWarning)
-    from . import check  # avoid circular import
-    return check.check_dataset(path_or_ds)
 
 
 def load_file(path, identifier=None, **kwargs):

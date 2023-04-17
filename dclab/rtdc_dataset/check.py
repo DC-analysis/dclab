@@ -6,6 +6,7 @@ import warnings
 import h5py
 import numpy as np
 
+from .copier import is_properly_compressed
 from .core import RTDCBase
 from .fmt_hierarchy import RTDC_Hierarchy
 from .load import load_file
@@ -262,12 +263,7 @@ class IntegrityChecker(object):
                 for key in h5:
                     obj = h5[key]
                     if isinstance(obj, h5py.Dataset):
-                        # Since version 0.43.0, we use Zstandard compression
-                        # which does not show up in the `compression`
-                        # attribute of `obj`.
-                        create_plist = obj.id.get_create_plist()
-                        filter_args = create_plist.get_filter_by_id(32015)
-                        if filter_args is not None and filter_args[1][0] >= 5:
+                        if is_properly_compressed(obj):
                             # data are compressed with at least level 5
                             comp_i += 1
                         else:

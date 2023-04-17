@@ -41,7 +41,7 @@ jobs:
       run: |
         # prerequisites
         python -m pip install --upgrade pip wheel
-        python -m pip install codecov coverage flake8 pytest
+        python -m pip install coverage flake8 pytest
     - name: Install dclab with all possible dependencies
       if: matrix.extras == 'all'
       run: |
@@ -65,7 +65,5 @@ jobs:
     - name: Lint with flake8
       run: |
         flake8 .
-    - name: Submit code coverage
-      run: |
-        coverage report -m
-        codecov
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3

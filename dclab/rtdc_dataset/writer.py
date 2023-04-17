@@ -32,7 +32,7 @@ class RTDCWriter:
               - "replace": replace existing h5py Datasets with new features
                 (used for ancillary feature storage)
               - "reset": do not keep any previous data
-        compression_kwargs: dict
+        compression_kwargs: dict-like
             Dictionary with the keys "compression" and "compression_opts"
             which are passed to :func:`h5py.H5File.create_dataset`. The
             default is Zstandard compression with the lowest compression

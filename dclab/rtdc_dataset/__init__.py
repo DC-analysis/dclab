@@ -3,6 +3,7 @@ from ..util import hashfile
 
 from .check import IntegrityChecker, check_dataset
 from .config import Configuration
+from .copier import h5ds_copy, is_properly_compressed, rtdc_copy
 from .core import RTDCBase
 from .fmt_dcor import RTDC_DCOR
 from .fmt_dict import RTDC_Dict

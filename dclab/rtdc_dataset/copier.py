@@ -92,25 +92,44 @@ def h5ds_copy(src_loc, src_name, dst_loc, dst_name=None,
     src = src_loc[src_name]
     if isinstance(src, h5py.Dataset):
         if ensure_compression and not is_properly_compressed(src):
+            # Chunk size larger than dataset size is not allowed
+            # in h5py's `make_new_dset`.
+            if src.chunks and src.chunks[0] > src.shape[0]:
+                # The chunks in the input file are larger than the dataset
+                # shape. So we set the chunks to the shape. Here, we only
+                # check for the first axis (event count for feature data),
+                # because if the chunks vary in any other dimension then
+                # there is something fundamentally wrong with the input
+                # dataset (which we don't want to endorse, and where there
+                # could potentially be a lot of data put into ram).
+                chunks = list(src.chunks)
+                chunks[0] = src.shape[0]
+                chunks = tuple(chunks)
+            else:
+                # original chunk size is fine
+                chunks = src.chunks
             # Manually create a compressed version of the dataset.
             dst = dst_loc.create_dataset(name=dst_name,
                                          shape=src.shape,
                                          dtype=src.dtype,
-                                         chunks=src.chunks,
+                                         chunks=chunks,
                                          fletcher32=True,
                                          **compression_kwargs
                                          )
-            for chunk in src.iter_chunks():
-                dst[chunk] = src[chunk]
+            if chunks is None:
+                dst[:] = src[:]
+            else:
+                for chunk in src.iter_chunks():
+                    dst[chunk] = src[chunk]
             # Also write all the attributes
             for key in src.attrs:
                 dst.attrs[key] = src.attrs[key]
         else:
             # Copy the Dataset to the destination as-is.
             h5py.h5o.copy(src_loc=src_loc.id,
-                          src_name=src_name,
-                          dst_loc=dst_loc,
-                          dst_name=dst_name,
+                          src_name=src_name.encode(),
+                          dst_loc=dst_loc.id,
+                          dst_name=dst_name.encode(),
                           )
     else:
         raise ValueError(f"The object {src_name} in {src.file} is not "

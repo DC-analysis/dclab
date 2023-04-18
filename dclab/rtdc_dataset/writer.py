@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import copy
 import pathlib
+from typing import Dict, Literal
 import warnings
 
 import h5py
@@ -17,8 +20,11 @@ CHUNK_SIZE = 100
 
 
 class RTDCWriter:
-    def __init__(self, path_or_h5file, mode="append", compression_kwargs=None,
-                 compression="deprecated"):
+    def __init__(self,
+                 path_or_h5file: str | pathlib.Path | h5py.File,
+                 mode: Literal['append', 'replace', 'reset'] = "append",
+                 compression_kwargs: Dict = None,
+                 compression: str = "deprecated"):
         """RT-DC data writer classe
 
         Parameters

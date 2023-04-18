@@ -76,6 +76,32 @@ def test_copy_logs():
         assert is_properly_compressed(hc["logs/test_log"])
 
 
+def test_copy_logs_variable_length_string():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # add variable-length log to source file
+    with h5py.File(path, "a") as h5:
+        data = ["hans", "peter", "und", "zapadust"]
+        h5.require_group("logs")
+        h5["logs"]["var_log"] = data
+        assert h5["logs"]["var_log"].dtype.kind == "O"
+        assert h5["logs/var_log"].dtype.str == "|O"
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["events/deform"])
+        assert is_properly_compressed(hc["events/image"])
+        assert is_properly_compressed(hc["logs/var_log"])
+        assert hc["logs/var_log"].dtype.kind == "S"
+        assert hc["logs/var_log"].dtype.str == "|S100"
+
+
 def test_copy_tables():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")

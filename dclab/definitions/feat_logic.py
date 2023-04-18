@@ -1,5 +1,3 @@
-from ..rtdc_dataset.feat_anc_core.ancillary_feature import AncillaryFeature
-
 from . import feat_const
 
 
@@ -158,6 +156,8 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
     TODO: extract feature label from ancillary information when an rtdc_ds is
     given.
     """
+    # TODO: Is there another way of avoiding this circular import?
+    from ..rtdc_dataset.feat_anc_core.ancillary_feature import AncillaryFeature
     assert feature_exists(name)
     if name in feat_const.feature_name2label:
         label = feat_const.feature_name2label[name]

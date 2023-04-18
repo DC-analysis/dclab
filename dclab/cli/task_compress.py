@@ -1,6 +1,5 @@
 """Compress .rtdc files"""
 import argparse
-import hashlib
 import pathlib
 import warnings
 
@@ -53,9 +52,7 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
             for lkey in ["dclab-compress", "dclab-compress-warnings"]:
                 if lkey in hc["logs"]:
                     # This is cached, so no worry calling it multiple times.
-                    md55m = util.hashfile(path_in,
-                                          count=80,
-                                          constructor=hashlib.md5)
+                    md55m = util.hashfile(path_in, count=80)
                     # rename
                     hc["logs"][f"{lkey}_{md55m}"] = hc["logs"][lkey]
                     del hc["logs"][lkey]

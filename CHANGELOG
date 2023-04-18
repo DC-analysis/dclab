@@ -1,7 +1,7 @@
 0.49.0
  - feat: implement `is_properly_compressed`, `rtdc_copy`, and
    `h5ds_copy` in `dclab.rtdc_dataset.copier` (#216)
- - enh: CLI use `rtdc_copy` in dclab-compress
+ - enh: CLI use `rtdc_copy` in dclab-compress and dclab-condense (#216)
  - enh: ignore "def" feature when performing an unknown-feature check
  - ref: remove deprecated method dclab.load.check_dataset
 0.48.8

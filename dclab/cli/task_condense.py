@@ -3,9 +3,11 @@ import argparse
 import pathlib
 import warnings
 
+import h5py
 import hdf5plugin
 
-from ..rtdc_dataset import new_dataset, RTDCWriter
+from ..rtdc_dataset import new_dataset, rtdc_copy, RTDCWriter
+from .. import util
 from .._version import version
 
 from . import common
@@ -29,13 +31,22 @@ def condense(path_out=None, path_in=None, ancillaries=True,
     path_in, path_out, path_temp = common.setup_task_paths(
         path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
-    logs = {}
-
     cmd_dict = {}
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        with new_dataset(path_in) as ds:
+        with new_dataset(path_in) as ds, h5py.File(path_temp, "w") as hc:
+            # If we have an input HDF5 file, then we might readily copy most
+            # of the features over using rtdc_copy. If we have a .tdms file,
+            # then we have to go the long path.
+            if ds.format == "hdf5":
+                rtdc_copy(src_h5file=ds.h5file,
+                          dst_h5file=hc,
+                          features="scalar",
+                          include_logs=True,
+                          include_tables=True,
+                          meta_prefix="")
+
             # scalar features
             feats_sc = ds.features_scalar
             # loaded (computationally cheap) scalar features
@@ -52,18 +63,28 @@ def condense(path_out=None, path_in=None, ancillaries=True,
             else:
                 features = feats_sc_in
 
-            ds.export.hdf5(path=path_temp,
-                           features=features,
-                           # We do not need filtering, because we are
-                           # only interested in the scalar features.
-                           filtered=False,
-                           compression_kwargs=cmp_kw,
-                           override=True)
-            logs.update(ds.logs)
+            # rename old dclab-condense logs
+            for lkey in ["dclab-condense", "dclab-condense-warnings"]:
+                if lkey in hc["logs"]:
+                    # This is cached, so no worry calling it multiple times.
+                    md55m = util.hashfile(path_in, count=80)
+                    # rename
+                    hc["logs"][f"{lkey}_{md55m}"] = hc["logs"][lkey]
+                    del hc["logs"][lkey]
+
+            # Write all remaining scalar features to the file
+            # (these are *all* features for .tdms data).
+            with RTDCWriter(hc,
+                            mode="append",
+                            compression_kwargs=cmp_kw,
+                            ) as hw:
+                for feat in features:
+                    if feat not in hc["events"]:
+                        hw.store_feature(feat=feat, data=ds[feat])
 
         # command log
-        logs["dclab-condense"] = common.get_command_log(paths=[path_in],
-                                                        custom_dict=cmd_dict)
+        logs = {"dclab-condense": common.get_command_log(paths=[path_in],
+                                                         custom_dict=cmd_dict)}
 
         # warnings log
         if w:

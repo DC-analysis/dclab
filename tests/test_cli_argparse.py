@@ -49,26 +49,11 @@ def test_compress_already_compressed_no_force():
 
     h1 = hashlib.md5(path_out.read_bytes()).hexdigest()
     h2 = hashlib.md5(path_out2.read_bytes()).hexdigest()
-    assert h1 == h2
-
-
-@pytest.mark.filterwarnings(
-    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_compress_already_compressed_with_force():
-    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
-    # same directory (will be cleaned up with path_in)
-    path_out = path_in.with_name("compressed.rtdc")
-    path_out2 = path_in.with_name("compressed2.rtdc")
-
-    with mock.patch("sys.argv", ["", str(path_in), str(path_out)]):
-        cli.compress()
-
-    with mock.patch("sys.argv",
-                    ["", "--force", str(path_out), str(path_out2)]):
-        cli.compress()
-
-    h1 = hashlib.md5(path_out.read_bytes()).hexdigest()
-    h2 = hashlib.md5(path_out2.read_bytes()).hexdigest()
+    # Changed in dclab 0.49.0: Since the compression step should also check
+    # for defective features, it is important to revisit the entire file.
+    # As such, it is cleaner to rewrite the entire dataset, since we can now
+    # copy single HDF5 Datasets without having to redo the compression.
+    # assert h1 == h2
     assert h1 != h2
 
 

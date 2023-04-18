@@ -1,13 +1,14 @@
 """Compress .rtdc files"""
 import argparse
+import hashlib
 import pathlib
-import shutil
 import warnings
 
 import hdf5plugin
+import h5py
 
-from ..rtdc_dataset import new_dataset, RTDCWriter
-from ..rtdc_dataset.check import IntegrityChecker
+from ..rtdc_dataset import rtdc_copy, RTDCWriter
+from .. import util
 from .._version import version
 
 from . import common
@@ -30,38 +31,46 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
     path_in, path_out, path_temp = common.setup_task_paths(
         path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
-    if not force:
-        # Check whether the input file is already compressed
-        # (This is not done in force-mode)
-        ic = IntegrityChecker(path_in)
-        cue = ic.check_compression()[0]
-        if cue.data["uncompressed"] == 0:
-            # we are done here
-            shutil.copy2(path_in, path_temp)  # copy with metadata
-            path_temp.rename(path_out)
-            return
-
-    logs = {}
+    if force:
+        warnings.warn(
+            "The `force` keyword argument is deprecated since dclab 0.49.0, "
+            "because compressed HDF5 Datasets are now copied and there "
+            "is no reason to avoid or use force anymore.",
+            DeprecationWarning)
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        with new_dataset(path_in) as ds:
-            ds.export.hdf5(path=path_temp,
-                           features=ds.features_innate,
-                           filtered=False,
-                           compression_kwargs=cmp_kw,
-                           override=True)
-            logs.update(ds.logs)
+        with h5py.File(path_in) as h5, h5py.File(path_temp, "w") as hc:
+            rtdc_copy(src_h5file=h5,
+                      dst_h5file=hc,
+                      features="all",
+                      include_logs=True,
+                      include_tables=True,
+                      meta_prefix="",
+                      )
+
+            # rename old dclab-compress logs
+            for lkey in ["dclab-compress", "dclab-compress-warnings"]:
+                if lkey in hc["logs"]:
+                    # This is cached, so no worry calling it multiple times.
+                    md55m = util.hashfile(path_in,
+                                          count=80,
+                                          constructor=hashlib.md5)
+                    # rename
+                    hc["logs"][f"{lkey}_{md55m}"] = hc["logs"][lkey]
+                    del hc["logs"][lkey]
 
         # command log
-        logs["dclab-compress"] = common.get_command_log(paths=[path_in])
+        logs = {"dclab-compress": common.get_command_log(paths=[path_in])}
 
         # warnings log
         if w:
             logs["dclab-compress-warnings"] = common.assemble_warnings(w)
 
     # Write log file
-    with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
+    with RTDCWriter(path_temp,
+                    compression_kwargs=cmp_kw,
+                    mode="append") as hw:
         for name in logs:
             hw.store_log(name, logs[name])
 
@@ -81,8 +90,7 @@ def compress_parser():
     parser.add_argument('--force',
                         dest='force',
                         action='store_true',
-                        help='Force compression, even if the input dataset '
-                             + 'is already compressed.')
+                        help='DEPRECATED')
     parser.set_defaults(force=False)
     parser.add_argument('--version', action='version',
                         version=f'dclab-compress {version}')

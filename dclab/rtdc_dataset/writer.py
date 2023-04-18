@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 import copy
 import pathlib
-from typing import Dict, Literal, Type
+from typing import Dict, Literal
 import warnings
 
 import h5py

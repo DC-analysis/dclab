@@ -3,6 +3,7 @@ import h5py
 import numpy as np
 import pytest
 
+import dclab
 from dclab import new_dataset
 from dclab.rtdc_dataset import is_properly_compressed, rtdc_copy
 from dclab.rtdc_dataset import RTDCWriter
@@ -114,6 +115,21 @@ def test_copy_tables():
         assert np.all(tab_data["beer"][:].flatten() == 1000)
         assert np.all(tab_data["chocolate"][:].flatten() == np.linspace(
             np.pi, 2*np.pi, 10))
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_copy_metadata_config():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    with dclab.new_dataset(path_copy) as ds:
+        assert ds.config["experiment"]["sample"] == "background image example"
 
 
 def test_copy_metadata_of_datasets():

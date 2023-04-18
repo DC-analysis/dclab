@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 import copy
 import pathlib
-from typing import Dict, Literal
+from typing import Dict, Literal, Type
 import warnings
 
 import h5py
@@ -23,7 +24,7 @@ class RTDCWriter:
     def __init__(self,
                  path_or_h5file: str | pathlib.Path | h5py.File,
                  mode: Literal['append', 'replace', 'reset'] = "append",
-                 compression_kwargs: Dict = None,
+                 compression_kwargs: Dict | Mapping = None,
                  compression: str = "deprecated"):
         """RT-DC data writer classe
 

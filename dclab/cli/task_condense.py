@@ -63,6 +63,10 @@ def condense(path_out=None, path_in=None, ancillaries=True,
             else:
                 features = feats_sc_in
 
+            # command log
+            logs = {"dclab-condense": common.get_command_log(
+                paths=[path_in], custom_dict=cmd_dict)}
+
             # rename old dclab-condense logs
             for lkey in ["dclab-condense", "dclab-condense-warnings"]:
                 if lkey in hc["logs"]:
@@ -81,10 +85,6 @@ def condense(path_out=None, path_in=None, ancillaries=True,
                 for feat in features:
                     if feat not in hc["events"]:
                         hw.store_feature(feat=feat, data=ds[feat])
-
-        # command log
-        logs = {"dclab-condense": common.get_command_log(paths=[path_in],
-                                                         custom_dict=cmd_dict)}
 
         # warnings log
         if w:

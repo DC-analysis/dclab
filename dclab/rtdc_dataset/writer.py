@@ -341,6 +341,19 @@ class RTDCWriter:
                     convfunc = dfn.get_config_value_func(sec, ck)
                     self.h5file.attrs[idk] = convfunc(value)
 
+    def store_table(self, name, cmp_array):
+        """Store a compound array table"""
+        group = self.h5file.require_group("tables")
+        tab = group.create_dataset(
+            name,
+            data=cmp_array,
+            fletcher32=True,
+            **self.compression_kwargs)
+        # Also store metadata
+        if hasattr(cmp_array, "attrs"):
+            for key in cmp_array.attrs:
+                tab.attrs[key] = cmp_array.attrs[key]
+
     def version_brand(self, old_version=None, write_attribute=True):
         """Perform version branding
 

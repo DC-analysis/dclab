@@ -60,7 +60,8 @@ def test_join_rtdc():
         assert np.all(dsj["circ"][:len(ds0)] == ds0["circ"])
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
-        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg-#1"]
+        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg_src-#1"]
+        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg_src-#2"]
 
 
 def test_join_rtdc_index_online_issue_158():

@@ -53,6 +53,9 @@ class RTDCBase(abc.ABC):
         #: Dictionary of log files. Each log file is a list of strings
         #: (one string per line).
         self.logs = {}
+        #: Dictionary of tables. Each table is an indexable compound numpy
+        #: array.
+        self.tables = {}
         #: Title of the measurement
         self.title = None
         #: Path or DCOR identifier of the dataset (set to "none"

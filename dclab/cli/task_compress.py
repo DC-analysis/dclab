@@ -37,6 +37,9 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
             "is no reason to avoid or use force anymore.",
             DeprecationWarning)
 
+    # command log
+    logs = {"dclab-compress": common.get_command_log(paths=[path_in])}
+
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         with h5py.File(path_in) as h5, h5py.File(path_temp, "w") as hc:
@@ -56,9 +59,6 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
                     # rename
                     hc["logs"][f"{lkey}_{md55m}"] = hc["logs"][lkey]
                     del hc["logs"][lkey]
-
-        # command log
-        logs = {"dclab-compress": common.get_command_log(paths=[path_in])}
 
         # warnings log
         if w:

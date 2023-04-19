@@ -46,6 +46,8 @@ def join(path_out=None, paths_in=None, metadata=None):
             key_paths.append((key, pp))
     sorted_paths = [p[1] for p in sorted(key_paths, key=lambda x: x[0])]
 
+    logs = {"dclab-join": common.get_command_log(paths=sorted_paths)}
+
     # Determine temporal offsets
     toffsets = np.zeros(len(sorted_paths), dtype=float)
     for ii, pp in enumerate(sorted_paths):
@@ -60,7 +62,6 @@ def join(path_out=None, paths_in=None, metadata=None):
                 toffsets[ii] += float(etime[8:])
     toffsets -= toffsets[0]
 
-    logs = {}
     # Determine features to export (based on first file)
     with warnings.catch_warnings(record=True) as w:
         # Catch all FeatureSetNotIdenticalJoinWarnings
@@ -108,17 +109,27 @@ def join(path_out=None, paths_in=None, metadata=None):
                             features=features,
                             filtered=False,
                             override=True,
+                            logs=True,
+                            tables=True,
+                            meta_prefix="src-#1_",
                             compression_kwargs=cmp_kw)
+            # store configuration
+            cfg0 = ds0.config.tostring(
+                sections=dfn.CFG_METADATA).split("\n")
         if w:
             logs["dclab-join-warnings-#1"] = common.assemble_warnings(w)
 
     with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
+        # store configuration of first dataset
+        hw.store_log(name="cfg_src-#1", lines=cfg0)
         ii = 1
         # Append data from other files
         for pi, ti in zip(sorted_paths[1:], toffsets[1:]):
             ii += 1  # we start with the second dataset
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
+                meta_key = f"src-#{ii}"
+                meta_prefix = meta_key + "_"
                 with new_dataset(pi) as dsi:
                     for feat in features:
                         if feat == "time":
@@ -139,20 +150,22 @@ def join(path_out=None, paths_in=None, metadata=None):
                         else:
                             fdata = dsi[feat]
                         hw.store_feature(feat=feat, data=fdata)
+                    # store logs
+                    for log in ds.logs:
+                        hw.store_log(name=meta_prefix + log,
+                                     lines=ds.logs[log])
+                    # store tables
+                    for tab in ds.tables:
+                        hw.store_table(name=meta_prefix + tab,
+                                       cmp_array=ds.tables[tab])
+                    # store configuration
+                    cfg = ds.config.tostring(
+                        sections=dfn.CFG_METADATA).split("\n")
+                    hw.store_log(name="cfg_" + meta_key,
+                                 lines=cfg)
                 if w:
-                    lkey = f"dclab-join-warnings-#{ii}"
-                    logs[lkey] = common.assemble_warnings(w)
-
-        # Logs and configs from source files
-        logs["dclab-join"] = common.get_command_log(paths=sorted_paths)
-        for ii, pp in enumerate(sorted_paths):
-            with new_dataset(pp) as ds:
-                # data file logs
-                for ll in ds.logs:
-                    logs[f"src-#{ii+1}_{ll}"] = ds.logs[ll]
-                # configuration
-                cfg = ds.config.tostring(sections=dfn.CFG_METADATA).split("\n")
-                logs[f"cfg-#{ii+1}"] = cfg
+                    hw.store_log(name=f"dclab-join-warnings-#{ii}",
+                                 lines=common.assemble_warnings(w))
 
         # Write logs and missing meta data
         for name in logs:

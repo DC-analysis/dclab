@@ -55,7 +55,9 @@ def split(path_in=None, path_out=None, split_events=10000,
 
     path_in = pathlib.Path(path_in)
     path_out = pathlib.Path(path_out)
+
     logs = {"dclab-split": common.get_command_log(paths=[path_in])}
+
     paths_gen = []
     paths_temp = []
     with warnings.catch_warnings(record=True) as w:
@@ -74,8 +76,6 @@ def split(path_in=None, path_out=None, split_events=10000,
                     fmt_tdms.event_image.InitialFrameMissingWarning)
 
         with new_dataset(path_in) as ds:
-            for ll in ds.logs:
-                logs[f"src-{ll}"] = ds.logs[ll]
             num_files = len(ds) // split_events
             if len(ds) % split_events:
                 num_files += 1
@@ -93,8 +93,11 @@ def split(path_in=None, path_out=None, split_events=10000,
                     initial=skip_initial_empty_image,
                     final=skip_final_empty_image)
                 ds.apply_filter()
-                ds.export.hdf5(
-                    path=pt, features=ds.features_innate, filtered=True)
+                ds.export.hdf5(path=pt,
+                               features=ds.features_innate,
+                               logs=True,
+                               tables=True,
+                               filtered=True)
 
         if w:
             logs["dclab-split-warnings"] = common.assemble_warnings(w)

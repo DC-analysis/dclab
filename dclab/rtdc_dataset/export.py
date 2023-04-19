@@ -159,9 +159,10 @@ class Export(object):
                            text_kw_pr=meta_data,
                            )
 
-    def hdf5(self, path, features=None, filtered=True, logs=False,
-             override=False, compression_kwargs=None, compression="deprecated",
-             skip_checks=False):
+    def hdf5(self, path, features=None, filtered=True,
+             logs=False, tables=False, meta_prefix="src_",
+             override=False, compression_kwargs=None,
+             compression="deprecated", skip_checks=False):
         """Export the data of the current instance to an HDF5 file
 
         Parameters
@@ -180,6 +181,11 @@ class Export(object):
         logs: bool
             Whether to store the logs of the original file prefixed with
             `source_` to the output file.
+        tables: bool
+            Whether to store the tables of the original file prefixed with
+            `source_` to the output file.
+        meta_prefix: str
+            Prefix for log and table names in the exported file
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
@@ -218,6 +224,9 @@ class Export(object):
                           + "Please use the `override=True` option.")
         elif path.exists():
             path.unlink()
+
+        # make sure the parent directory exists
+        path.parent.mkdir(parents=True, exist_ok=True)
 
         if features is None:
             features = self.rtdc_ds.features_innate
@@ -268,7 +277,15 @@ class Export(object):
             if logs:
                 # write logs
                 for log in self.rtdc_ds.logs:
-                    hw.store_log(f"source_{log}", self.rtdc_ds.logs[log])
+                    hw.store_log(f"{meta_prefix}{log}",
+                                 self.rtdc_ds.logs[log])
+
+            if tables:
+                # write tables
+                for tab in self.rtdc_ds.tables:
+                    hw.store_table(f"{meta_prefix}{tab}",
+                                   self.rtdc_ds.tables[tab])
+
             # write each feature individually
             for feat in features:
                 if (filtarr is None or

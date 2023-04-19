@@ -406,9 +406,9 @@ def test_hdf5_logs(logs):
     ds1.export.hdf5(f1, keys, logs=logs)
     with h5py.File(f1, "r") as h5:
         if logs:
-            assert "source_iratrax" in h5.get("logs", {})
+            assert "src_iratrax" in h5.get("logs", {})
         else:
-            assert "source_iratrax" not in h5.get("logs", {})
+            assert "src_iratrax" not in h5.get("logs", {})
 
 
 def test_hdf5_ml_score():
@@ -449,6 +449,37 @@ def test_hdf5_override():
         pass
     else:
         raise ValueError("Should append .rtdc and not override!")
+
+
+@pytest.mark.parametrize("tables", [True, False])
+def test_hdf5_tables(tables):
+    keys = ["area_um", "deform", "time", "frame", "index_online"]
+    ddict = example_data_dict(size=10, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+
+    # generate a table
+    columns = ["bread", "beer", "chocolate"]
+    ds_dt = np.dtype({'names': columns,
+                      'formats': [float] * len(columns)})
+    tab_data = np.zeros((10, len(columns)))
+    tab_data[:, 0] = np.arange(10)
+    tab_data[:, 1] = 1000
+    tab_data[:, 2] = np.linspace(np.pi, 2*np.pi, 10)
+    rec_arr = np.rec.array(tab_data, dtype=ds_dt)
+
+    ds1.tables["iratrax"] = rec_arr
+
+    edest = pathlib.Path(tempfile.mkdtemp())
+    f1 = edest / "dclab_test_export_hdf5_1.rtdc"
+    ds1.export.hdf5(f1, keys, tables=tables)
+    with h5py.File(f1, "r") as h5:
+        if tables:
+            assert "src_iratrax" in h5.get("tables", {})
+        else:
+            assert "src_iratrax" not in h5.get("tables", {})
 
 
 def test_hdf5_trace_from_tdms():

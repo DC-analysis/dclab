@@ -135,8 +135,9 @@ class H5Logs:
             if isinstance(log[0], bytes):
                 log = [li.decode("utf") for li in log]
         else:
-            raise KeyError(f"Log '{key}' not found or empty "
-                           f"in {self.h5file.file.filename}!")
+            raise KeyError(
+                f"File {self.h5file.file.filename} does not have the log "
+                f"'{key}'. Available logs are {self.keys()}.")
         return log
 
     def __iter__(self):
@@ -238,6 +239,36 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
         return self.h5ds.shape
 
 
+class H5Tables:
+    def __init__(self, h5):
+        self.h5file = h5
+
+    def __getitem__(self, key):
+        if key in self.keys():
+            tab = self.h5file["tables"][key]
+        else:
+            raise KeyError(f"Table '{key}' not found or empty "
+                           f"in {self.h5file.file.filename}!")
+        return tab
+
+    def __iter__(self):
+        # dict-like behavior
+        for key in self.keys():
+            yield key
+
+    def __len__(self):
+        return len(self.keys())
+
+    @functools.lru_cache()
+    def keys(self):
+        names = []
+        if "tables" in self.h5file:
+            for key in self.h5file["tables"]:
+                if self.h5file["tables"][key].size:
+                    names.append(key)
+        return names
+
+
 class H5TraceEvent:
     def __init__(self, h5group):
         self.h5group = h5group
@@ -304,6 +335,9 @@ class RTDC_HDF5(RTDCBase):
 
         # Override logs property with HDF5 data
         self.logs = H5Logs(self.h5file)
+
+        # Override the tables property with HDF5 data
+        self.tables = H5Tables(self.h5file)
 
         # check version
         rtdc_soft = self.config["setup"]["software version"]

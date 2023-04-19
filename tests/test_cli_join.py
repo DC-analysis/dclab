@@ -37,8 +37,8 @@ def test_join_tdms_logs():
 
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert "dclab-join" in dsj.logs
-        assert "cfg-#1" in dsj.logs
-        assert "software version = ShapeIn 2.0.1" in dsj.logs["cfg-#1"]
+        assert "cfg_src-#1" in dsj.logs
+        assert "software version = ShapeIn 2.0.1" in dsj.logs["cfg_src-#1"]
         assert ds0.logs
         for key in ds0.logs:
             jkey = "src-#1_" + key

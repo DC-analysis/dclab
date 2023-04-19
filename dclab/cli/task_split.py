@@ -97,7 +97,9 @@ def split(path_in=None, path_out=None, split_events=10000,
                                features=ds.features_innate,
                                logs=True,
                                tables=True,
-                               filtered=True)
+                               filtered=True,
+                               compression_kwargs=cmp_kw,
+                               )
 
         if w:
             logs["dclab-split-warnings"] = common.assemble_warnings(w)

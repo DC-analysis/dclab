@@ -27,6 +27,43 @@ def test_check_suffix_disabled_repack():
                check_suffix=False)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.parametrize("method", ["compress", "condense", "repack"])
+def test_compressed(method):
+    """Make sure the output data are compressed"""
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("out.rtdc")
+
+    mcallable = getattr(cli, method)
+    mcallable(path_in=path_in,
+              path_out=path_out)
+
+    ic = rtdc_dataset.check.IntegrityChecker(path_out)
+    ccue = ic.check_compression()[0]
+    assert ccue.data["uncompressed"] == 0
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_compressed_split():
+    """Make sure the split output data are compressed"""
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.parent
+
+    paths = cli.split(path_in=path_in,
+                      path_out=path_out,
+                      split_events=3,
+                      ret_out_paths=True)
+
+    for pp in paths:
+        ic = rtdc_dataset.check.IntegrityChecker(pp)
+        ccue = ic.check_compression()[0]
+        assert ccue.data["uncompressed"] == 0
+
+
 def test_method_available():
     # DCOR depotize needs this
     assert hasattr(cli, "get_job_info")

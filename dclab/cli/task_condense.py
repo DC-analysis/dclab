@@ -59,7 +59,11 @@ def condense(path_out=None, path_in=None, ancillaries=True,
             if ancillaries:
                 features = feats_sc
                 cmd_dict["features_computed"] = feats_sc_anc
-                print("Computing ancillary features:", " ".join(feats_sc_anc))
+                if feats_sc_anc:
+                    print("Computing ancillary features:",
+                          " ".join(feats_sc_anc))
+                else:
+                    print("No ancillary features to compute.")
             else:
                 features = feats_sc_in
 

@@ -37,11 +37,11 @@ def join(path_out=None, paths_in=None, metadata=None):
     # Order input files by date
     key_paths = []
     for pp in paths_in:
-        with new_dataset(pp) as ds:
+        with new_dataset(pp) as dsa:
             # sorting key
-            key = "_".join([ds.config["experiment"]["date"],
-                            ds.config["experiment"]["time"],
-                            str(ds.config["experiment"]["run index"])
+            key = "_".join([dsa.config["experiment"]["date"],
+                            dsa.config["experiment"]["time"],
+                            str(dsa.config["experiment"]["run index"])
                             ])
             key_paths.append((key, pp))
     sorted_paths = [p[1] for p in sorted(key_paths, key=lambda x: x[0])]
@@ -51,9 +51,9 @@ def join(path_out=None, paths_in=None, metadata=None):
     # Determine temporal offsets
     toffsets = np.zeros(len(sorted_paths), dtype=float)
     for ii, pp in enumerate(sorted_paths):
-        with new_dataset(pp) as ds:
-            etime = ds.config["experiment"]["time"]
-            st = time.strptime(ds.config["experiment"]["date"]
+        with new_dataset(pp) as dsb:
+            etime = dsb.config["experiment"]["time"]
+            st = time.strptime(dsb.config["experiment"]["date"]
                                + etime[:8],
                                "%Y-%m-%d%H:%M:%S")
             toffsets[ii] = time.mktime(st)
@@ -70,19 +70,19 @@ def join(path_out=None, paths_in=None, metadata=None):
                               category=FeatureSetNotIdenticalJoinWarning)
         features = None
         for pp in sorted_paths:
-            with new_dataset(pp) as ds:
+            with new_dataset(pp) as dsc:
                 # features present
                 if features is None:
                     # The initial features are the innate features of the
                     # first file (sorted by time). If we didn't use the innate
                     # features, then the resulting file might become large
                     # (e.g. if we included ancillary features).
-                    features = sorted(ds.features_innate)
+                    features = sorted(dsc.features_innate)
                 else:
                     # Remove features from the feature list, if it is not in
                     # this dataset, or cannot be computed on-the-fly.
                     for feat in features:
-                        if feat not in ds.features:
+                        if feat not in dsc.features:
                             features.remove(feat)
                             warnings.warn(
                                 f"Excluding feature '{feat}', because "
@@ -91,7 +91,7 @@ def join(path_out=None, paths_in=None, metadata=None):
                     # Warn the user if this dataset has an innate feature that
                     # is being ignored, because it is not an innate feature of
                     # the first dataset.
-                    for feat in ds.features_innate:
+                    for feat in dsc.features_innate:
                         if feat not in features:
                             warnings.warn(
                                 f"Ignoring feature '{feat}' in '{pp}', "
@@ -151,15 +151,15 @@ def join(path_out=None, paths_in=None, metadata=None):
                             fdata = dsi[feat]
                         hw.store_feature(feat=feat, data=fdata)
                     # store logs
-                    for log in ds.logs:
+                    for log in dsi.logs:
                         hw.store_log(name=meta_prefix + log,
-                                     lines=ds.logs[log])
+                                     lines=dsi.logs[log])
                     # store tables
-                    for tab in ds.tables:
+                    for tab in dsi.tables:
                         hw.store_table(name=meta_prefix + tab,
-                                       cmp_array=ds.tables[tab])
+                                       cmp_array=dsi.tables[tab])
                     # store configuration
-                    cfg = ds.config.tostring(
+                    cfg = dsi.config.tostring(
                         sections=dfn.CFG_METADATA).split("\n")
                     hw.store_log(name="cfg_" + meta_key,
                                  lines=cfg)

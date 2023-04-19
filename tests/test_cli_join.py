@@ -1,4 +1,6 @@
 """Test CLI dclab-join"""
+import shutil
+
 import dclab
 from dclab import cli, new_dataset
 
@@ -39,6 +41,9 @@ def test_join_tdms_logs():
         assert "dclab-join" in dsj.logs
         assert "cfg_src-#1" in dsj.logs
         assert "software version = ShapeIn 2.0.1" in dsj.logs["cfg_src-#1"]
+        assert "software version = ShapeIn 2.0.1" in dsj.logs["cfg_src-#2"]
+        assert "src-#1_M1_camera.ini" in dsj.logs
+        assert "src-#2_M1_camera.ini" in dsj.logs
         assert ds0.logs
         for key in ds0.logs:
             jkey = "src-#1_" + key
@@ -62,6 +67,29 @@ def test_join_rtdc():
         assert set(dsj.features) == set(ds0.features)
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg_src-#1"]
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg_src-#2"]
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_join_rtdc_logs():
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # create second file with new log
+    path_in_2 = path_in.with_name("second.rtdc")
+    shutil.copy2(path_in, path_in_2)
+    with dclab.RTDCWriter(path_in_2, mode="append") as hw:
+        hw.store_log("Dummy", [
+            "One, two, three, four",
+            "Everybody get on the dance floor",
+            "Five, six, seven, eight",
+            "It's 4 a.m. and I'm wide awake"
+        ])
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("out.rtdc")
+
+    cli.join(path_out=path_out, paths_in=[path_in, path_in_2])
+
+    with h5py.File(path_out) as h5:
+        assert "src-#2_Dummy" in h5["logs"]
 
 
 def test_join_rtdc_index_online_issue_158():

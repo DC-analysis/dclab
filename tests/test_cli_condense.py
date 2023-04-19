@@ -78,3 +78,19 @@ def test_condense_no_ancillary_features_control():
         assert "area_um" not in ds0.features_innate, "sanity check"
         assert "area_um" in ds0.features
         assert "area_um" in dsj.features_innate
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_condense_wo_logs():
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    with h5py.File(path_in, "a") as h5:
+        del h5["logs"]
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("condensed.rtdc")
+
+    cli.condense(path_out=path_out, path_in=path_in)
+    with new_dataset(path_out) as ds:
+        assert len(ds.logs) == 2
+        assert "dclab-condense" in ds.logs
+        assert "dclab-condense-warnings" in ds.logs

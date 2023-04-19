@@ -51,6 +51,20 @@ def test_compress():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_compress_wo_logs():
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    with h5py.File(path_in, "a") as h5:
+        del h5["logs"]
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("compressed.rtdc")
+
+    cli.compress(path_out=path_out, path_in=path_in)
+    with new_dataset(path_out) as ds:
+        assert len(ds.logs) == 1
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_already_compressed():
     """By default, an already compressed dataset should not be compressed"""
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")

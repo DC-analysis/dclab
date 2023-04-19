@@ -47,6 +47,8 @@ def condense(path_out=None, path_in=None, ancillaries=True,
                           include_tables=True,
                           meta_prefix="")
 
+            hc.require_group("logs")
+
             # scalar features
             feats_sc = ds.features_scalar
             # loaded (computationally cheap) scalar features

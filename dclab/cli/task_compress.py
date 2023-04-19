@@ -51,6 +51,7 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
                       meta_prefix="",
                       )
 
+            hc.require_group("logs")
             # rename old dclab-compress logs
             for lkey in ["dclab-compress", "dclab-compress-warnings"]:
                 if lkey in hc["logs"]:

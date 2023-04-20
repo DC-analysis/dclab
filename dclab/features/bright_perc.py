@@ -40,8 +40,8 @@ def get_bright_perc(mask, image, image_bg):
 
     length = min(len(mask), len(image), len(image_bg))
 
-    p10 = np.zeros(length, dtype=float) * np.nan
-    p90 = np.zeros(length, dtype=float) * np.nan
+    p10 = np.zeros(length, dtype=np.float64) * np.nan
+    p90 = np.zeros(length, dtype=np.float64) * np.nan
 
     for ii in range(length):
         # cast to integer before subtraction

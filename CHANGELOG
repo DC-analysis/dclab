@@ -2,6 +2,9 @@
  - feat: implement `is_properly_compressed`, `rtdc_copy`, and
    `h5ds_copy` in `dclab.rtdc_dataset.copier` (#216)
  - feat: support "tables" (compound arrays) in HDF5 files
+ - fix: explicitly use 64bit ints and floats when instantiating numpy
+   arrays, because numpy on Windows defaults to 32bit ints
+   which resulted in overflows when computing inertia ratio
  - enh: unify names of exported logs
  - enh: CLI use `rtdc_copy` in dclab-compress, dclab-condense,
    and dclab-repack (#216)

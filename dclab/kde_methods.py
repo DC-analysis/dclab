@@ -92,11 +92,11 @@ def ignore_nan_inf(kde_method):
                        *args, **kwargs):
         bad_in = get_bad_vals(events_x, events_y)
         if xout is None:
-            density = np.zeros_like(events_x, dtype=float)
+            density = np.zeros_like(events_x, dtype=np.float64)
             bad_out = bad_in
             xo = yo = None
         else:
-            density = np.zeros_like(xout, dtype=float)
+            density = np.zeros_like(xout, dtype=np.float64)
             bad_out = get_bad_vals(xout, yout)
             xo = xout[~bad_out]
             yo = yout[~bad_out]

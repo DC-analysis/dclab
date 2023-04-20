@@ -68,7 +68,7 @@ class PolygonFilter(object):
                 raise ValueError("`axes` must have length 2, "
                                  + "got '{}'!".format(axes))
             self.axes = axes
-            self.points = np.array(points, dtype=float)
+            self.points = np.array(points, dtype=np.float64)
             self.name = name
             if unique_id is None:
                 # Force giving away a unique id
@@ -162,7 +162,7 @@ class PolygonFilter(object):
                 if val == "True":
                     self.inverted = True
             elif var.lower().startswith("point"):
-                val = np.array(val.strip("[]").split(), dtype=float)
+                val = np.array(val.strip("[]").split(), dtype=np.float64)
                 points.append([int(var[5:]), val])
             else:
                 raise KeyError("Unknown variable: {} = {}".
@@ -244,7 +244,7 @@ class PolygonFilter(object):
 
     def filter(self, datax, datay):
         """Filter a set of datax and datay according to `self.points`"""
-        points = np.zeros((datax.shape[0], 2), dtype=float)
+        points = np.zeros((datax.shape[0], 2), dtype=np.float64)
         points[:, 0] = datax
         points[:, 1] = datay
         f = points_in_poly(points=points, verts=self.points)

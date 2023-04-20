@@ -73,7 +73,7 @@ def get_volume(cont, pos_x, pos_y, pix, fix_orientation=False):
         raise ValueError("Number of given contours too small!")
 
     # results are stored in a separate array initialized with nans
-    v_avg = np.zeros_like(pos_x, dtype=float)*np.nan
+    v_avg = np.zeros_like(pos_x, dtype=np.float64) * np.nan
 
     # v_avg has the shape of `pos_x`. We are iterating over the smallest
     # length for `cont` and `pos_x`.

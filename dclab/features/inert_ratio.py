@@ -36,9 +36,9 @@ def cont_moments_cv(cont,
     # If the input data was int32, then integer overflows could occur
     # for mu20 and mu02 (https://github.com/DC-analysis/dclab/issues/212).
     if np.issubdtype(cont.dtype, np.integer):
-        cont = cont.astype(int)
+        cont = cont.astype(np.int64)
     elif np.issubdtype(cont.dtype, np.floating):
-        cont = cont.astype(float)
+        cont = cont.astype(np.float64)
 
     xi = cont[:, 0]
     yi = cont[:, 1]
@@ -173,7 +173,7 @@ def get_inert_ratio_cvx(cont):
 
     length = len(cont)
 
-    inert_ratio_cvx = np.zeros(length, dtype=float) * np.nan
+    inert_ratio_cvx = np.zeros(length, dtype=np.float64) * np.nan
 
     for ii in range(length):
         try:
@@ -233,7 +233,7 @@ def get_inert_ratio_prnc(cont):
         # `cont_moments_cv` now already properly casts everything. But since
         # we have to create a floating point contour anyway, we can just
         # create a copy here and be safe.
-        cc = np.array(cont[ii], dtype=float, copy=True)
+        cc = np.array(cont[ii], dtype=np.float64, copy=True)
         moments = cont_moments_cv(cc)
 
         if moments is not None:
@@ -308,7 +308,7 @@ def get_inert_ratio_raw(cont):
 
     length = len(cont)
 
-    inert_ratio_raw = np.zeros(length, dtype=float) * np.nan
+    inert_ratio_raw = np.zeros(length, dtype=np.float64) * np.nan
 
     for ii in range(length):
         moments = cont_moments_cv(cont[ii])
@@ -357,7 +357,7 @@ def get_tilt(cont):
 
     length = len(cont)
 
-    tilt = np.zeros(length, dtype=float) * np.nan
+    tilt = np.zeros(length, dtype=np.float64) * np.nan
 
     for ii in range(length):
         moments = cont_moments_cv(cont[ii])

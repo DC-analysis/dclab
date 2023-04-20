@@ -49,7 +49,7 @@ def join(path_out=None, paths_in=None, metadata=None):
     logs = {"dclab-join": common.get_command_log(paths=sorted_paths)}
 
     # Determine temporal offsets
-    toffsets = np.zeros(len(sorted_paths), dtype=float)
+    toffsets = np.zeros(len(sorted_paths), dtype=np.float64)
     for ii, pp in enumerate(sorted_paths):
         with new_dataset(pp) as dsb:
             etime = dsb.config["experiment"]["time"]

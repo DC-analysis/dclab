@@ -50,9 +50,9 @@ def get_bright(mask, image, ret_data="avg,sd"):
 
     # Results are stored in a separate array initialized with nans
     if ret_avg:
-        avg = np.zeros(length, dtype=float) * np.nan
+        avg = np.zeros(length, dtype=np.float64) * np.nan
     if ret_std:
-        std = np.zeros(length, dtype=float) * np.nan
+        std = np.zeros(length, dtype=np.float64) * np.nan
 
     for ii in range(length):
         imgi = image[ii]

@@ -155,6 +155,23 @@ def test_inert_ratio_raw_with_old_shapein_issue_224():
     assert "inert_ratio_cvx" in ds.features_loaded
 
 
+@pytest.mark.parametrize("si_string", ["ShapeIn 2.0.5", "2.3.1"])
+def test_inert_raio_with_new_shapein_issue_224(si_string):
+    path = retrieve_data("fmt-hdf5_wide-channel_2023.zip")
+
+    # make the file look like it has been created with an old Shape-In version
+    with h5py.File(path, "a") as h5:
+        h5["events/inert_ratio_cvx"][:] = 1
+        assert np.allclose(h5["events/inert_ratio_cvx"][:], 1)
+        h5.attrs["setup:software version"] = si_string + " | dclab 0.47.2"
+        # Create a Shape-In acquisition log so that it is not considered a
+        # defective feature.
+        h5["logs/shapein-acquisition"] = ["test"]
+
+    ds = dclab.new_dataset(path)
+    assert "inert_ratio_cvx" in ds.features_loaded
+
+
 def test_inert_ratio_prnc():
     """Test equivalence of inert_ratio_raw and inert_ratio_prnc"""
     t = np.linspace(0, 2*np.pi, 300)

@@ -554,11 +554,19 @@ def is_defective_feature_inert_ratio_raw_cvx(h5):
         version_pipeline = [v.strip() for v in software_version.split("|")]
         first_version = version_pipeline[0]
         if first_version.startswith("ShapeIn"):
-            # New versions of Shape-In compute the inertia ratio
             si_version = first_version.split()[1]
-            # We trust Shape-In >= 2.0.5
-            if parse_version(si_version) >= parse_version("2.0.5"):
-                return False
+        elif "shapein-acquisition" in h5.get("logs", []):
+            # Later versions of Shape-In do not anymore write "ShapeIn" in the
+            # version string.
+            si_version = first_version
+        else:
+            # Some other software was used to record the data and dclab
+            # very likely stored the wrong inertia ratio.
+            return True
+
+        # We trust Shape-In >= 2.0.5
+        if parse_version(si_version) >= parse_version("2.0.5"):
+            return False
 
         return True
 

@@ -107,6 +107,30 @@ def test_inert_ratio_raw_correct_issue_224():
     assert np.allclose(ds["inert_ratio_cvx"], 1)
 
 
+def test_inert_ratio_raw_with_integer_precision_issue_223():
+    """Test computation of inert_ratio_raw
+
+    On Windows, we had the problem that due to the default integer
+    not being int64, the inertia ratio was not computed correctly.
+    """
+    path = retrieve_data("fmt-hdf5_wide-channel_2023.zip")
+
+    # make the file look like it has been created with an old Shape-In version
+    with h5py.File(path, "a") as h5:
+        inert_ratio_raw = h5["events/inert_ratio_raw"][:]
+        del h5["events/inert_ratio_raw"]
+
+    ds = dclab.new_dataset(path)
+    assert "inert_ratio_raw" not in ds.features_loaded
+    assert np.allclose(inert_ratio_raw,
+                       ds["inert_ratio_raw"],
+                       atol=0,
+                       rtol=1e-5,
+                       equal_nan=False,  # sic!
+                       )
+    assert not np.sum(np.isnan(ds["inert_ratio_raw"]))
+
+
 def test_inert_ratio_raw_with_old_dclab_issue_224():
     path = retrieve_data("fmt-hdf5_wide-channel_2023.zip")
 

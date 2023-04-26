@@ -1,6 +1,7 @@
 0.49.1
  - fix: do not recompute inert_ratio_cvx and inert_ratio_raw
    computed with Shape-In >= 2.0.5 (#224)
+ - tests: add additional test for inertia ratio (#223)
 0.49.0
  - feat: implement `is_properly_compressed`, `rtdc_copy`, and
    `h5ds_copy` in `dclab.rtdc_dataset.copier` (#216)

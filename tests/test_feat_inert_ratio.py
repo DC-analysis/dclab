@@ -1,3 +1,4 @@
+import h5py
 import numpy as np
 import pytest
 
@@ -90,6 +91,44 @@ def test_inert_ratio_raw():
     ref = np.array([4.25854232,  1.22342663,  4.64971179,  1.70914857,
                     3.62797492, 1.51502192,  2.74757573,  1.79841136])
     assert np.allclose(ref, raw, rtol=0, atol=5e-9)
+
+
+def test_inert_ratio_raw_correct_issue_224():
+    path = retrieve_data("fmt-hdf5_wide-channel_2023.zip")
+
+    # make the file look like it has been created with an old Shape-In version
+    with h5py.File(path, "a") as h5:
+        h5["events/inert_ratio_cvx"][:] = 1
+        assert np.allclose(h5["events/inert_ratio_cvx"][:], 1)
+        h5.attrs["setup:software version"] = "ShapeIn 2.0.4 | dclab 0.49.0"
+
+    ds = dclab.new_dataset(path)
+    assert "inert_ratio_cvx" in ds.features_loaded
+    assert np.allclose(ds["inert_ratio_cvx"], 1)
+
+
+def test_inert_ratio_raw_with_old_dclab_issue_224():
+    path = retrieve_data("fmt-hdf5_wide-channel_2023.zip")
+
+    # make the file look like it has been created with an old Shape-In version
+    with h5py.File(path, "a") as h5:
+        h5.attrs["setup:software version"] = "ShapeIn 2.0.4 | dclab 0.48.0"
+
+    ds = dclab.new_dataset(path)
+    assert "inert_ratio_cvx" not in ds.features_loaded
+
+
+def test_inert_ratio_raw_with_old_shapein_issue_224():
+    path = retrieve_data("fmt-hdf5_wide-channel_2023.zip")
+
+    # make the file look like it has been created with an old Shape-In version
+    with h5py.File(path, "a") as h5:
+        h5["events/inert_ratio_cvx"][:] = 1
+        assert np.allclose(h5["events/inert_ratio_cvx"][:], 1)
+        h5.attrs["setup:software version"] = "ShapeIn 2.0.4"
+
+    ds = dclab.new_dataset(path)
+    assert "inert_ratio_cvx" in ds.features_loaded
 
 
 def test_inert_ratio_prnc():

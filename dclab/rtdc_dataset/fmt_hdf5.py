@@ -528,7 +528,8 @@ def is_defective_feature_inert_ratio(h5):
         # determine whether the software version was outdated
         software_version = get_software_version_from_h5(h5)
         if software_version:
-            last_version = software_version.split("|")[-1].strip()
+            version_pipeline = [v.strip() for v in software_version.split("|")]
+            last_version = version_pipeline[-1]
             if last_version.startswith("dclab"):
                 dclab_version = last_version.split()[1]
                 # The fix was implemented in 0.48.2, but this method here
@@ -536,6 +537,31 @@ def is_defective_feature_inert_ratio(h5):
                 # old data into new files.
                 if parse_version(dclab_version) < parse_version("0.48.3"):
                     return True
+    return False
+
+
+def is_defective_feature_inert_ratio_raw_cvx(h5):
+    """Additional check for `inert_ratio_raw` and `inert_ratio_cvx`
+
+    These features were computed with Shape-In and were very likely
+    computed correctly.
+
+    See https://github.com/DC-analysis/dclab/issues/224
+    """
+    if is_defective_feature_inert_ratio(h5):
+        # Possibly affected. Only return False if Shape-In check is negative
+        software_version = get_software_version_from_h5(h5)
+        version_pipeline = [v.strip() for v in software_version.split("|")]
+        first_version = version_pipeline[0]
+        if first_version.startswith("ShapeIn"):
+            # New versions of Shape-In compute the inertia ratio
+            si_version = first_version.split()[1]
+            # We trust Shape-In >= 2.0.5
+            if parse_version(si_version) >= parse_version("2.0.5"):
+                return False
+
+        return True
+
     return False
 
 
@@ -548,9 +574,9 @@ MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 DEFECTIVE_FEATURES = {
     # feature: [HDF5_attribute, matching_value]
     "aspect": is_defective_feature_aspect,
-    "inert_ratio_cvx": is_defective_feature_inert_ratio,
+    "inert_ratio_cvx": is_defective_feature_inert_ratio_raw_cvx,
     "inert_ratio_prnc": is_defective_feature_inert_ratio,
-    "inert_ratio_raw": is_defective_feature_inert_ratio,
+    "inert_ratio_raw": is_defective_feature_inert_ratio_raw_cvx,
     "tilt": is_defective_feature_inert_ratio,
     "time": is_defective_feature_time,
     "volume": is_defective_feature_volume,

@@ -98,6 +98,14 @@ CFG_METADATA = {
         ["roi size x", fint, "Image width [px]"],
         ["roi size y", fint, "Image height [px]"],
     ],
+    # All qpi-related keywords
+    "qpi": [
+        ["laser lambda", float, "Laser wavelength [nm]"],
+        ["refractive index medium", float, "Refractive index of Medium"],
+        ["alpha cell type RBC", float, "Specific refractive increment [ml/g]"],
+        ["alpha cell type non-RBC", float,
+         "Specific refractive increment [ml/g]"],
+    ],
     # All parameters for online contour extraction from the event images
     "online_contour": [
         # The option "bg empty" was introduced in dclab 0.34.0 and

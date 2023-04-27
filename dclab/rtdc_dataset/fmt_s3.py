@@ -1,6 +1,13 @@
 import re
 
-import s3fs
+
+try:
+    import s3fs
+except ModuleNotFoundError:
+    S3FS_AVAILABLE = False
+else:
+    S3FS_AVAILABLE = True
+
 
 from .fmt_hdf5 import RTDC_HDF5
 
@@ -42,6 +49,10 @@ class RTDC_S3(RTDC_HDF5):
         path: pathlib.Path
             Path to the experimental HDF5 (.rtdc) file
         """
+        if not S3FS_AVAILABLE:
+            raise ModuleNotFoundError(
+                "Package `s3fs` required for S3 format!")
+
         proto, s3_string = url.split("://", 1)
         s3_endpoint, s3_path = s3_string.split("/", 1)
         self._fs = s3fs.S3FileSystem(

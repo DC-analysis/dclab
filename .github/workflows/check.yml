@@ -12,7 +12,7 @@ jobs:
       matrix:
         python-version: ['3.8', '3.10']
         os: [macos-latest, ubuntu-latest, windows-latest]
-        extras: ['all', 'dcor', 'none']
+        extras: ['all', 'dcor-s3', none']
 
     steps:
     - uses: actions/checkout@v3
@@ -49,9 +49,9 @@ jobs:
         # Install required R packages
         python -c "import dclab; dclab.lme4.install_lme4()"
     - name: Install dclab with DCOR dependencies
-      if: matrix.extras == 'dcor'
+      if: matrix.extras == 'dcor-s3'
       run: |
-        pip install -e .[dcor]
+        pip install -e .[dcor,s3]
     - name: Install dclab with minimal dependencies
       if: matrix.extras == 'none'
       run: |

@@ -1,5 +1,4 @@
-""" Test functions for loading contours
-"""
+"""Test functions for RT-DC configuration metadata"""
 import os
 import tempfile
 import pathlib

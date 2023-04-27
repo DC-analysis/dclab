@@ -1,7 +1,10 @@
 """RT-DC hdf5 format"""
+from __future__ import annotations
+
 import functools
 import numbers
 import pathlib
+from typing import Any, Dict, BinaryIO
 import warnings
 
 import h5py
@@ -296,13 +299,19 @@ class H5TraceEvent:
 
 
 class RTDC_HDF5(RTDCBase):
-    def __init__(self, h5path, *args, **kwargs):
+    def __init__(self,
+                 h5path: str | pathlib.Path | BinaryIO,
+                 h5kwargs: Dict[str, Any] = None,
+                 *args,
+                 **kwargs):
         """HDF5 file format for RT-DC measurements
 
         Parameters
         ----------
-        h5path: str or pathlib.Path
+        h5path: str or pathlib.Path or file-like object
             Path to a '.tdms' measurement file.
+        h5kwargs: dict
+            Additional keyword arguments given to :class:`h5py.File`
         *args:
             Arguments for `RTDCBase`
         **kwargs:
@@ -314,8 +323,19 @@ class RTDC_HDF5(RTDCBase):
             Path to the experimental HDF5 (.rtdc) file
         """
         super(RTDC_HDF5, self).__init__(*args, **kwargs)
+        if h5kwargs is None:
+            h5kwargs = {}
 
-        h5path = pathlib.Path(h5path)
+        # Increase the read cache (which defaults to 1MiB), since
+        # normally we have around 2.5MiB image chunks.
+        h5kwargs.setdefault("rdcc_nbytes", 10*1024**2)
+        h5kwargs.setdefault("rdcc_w0", 0)
+
+        if isinstance(h5path, (str, pathlib.Path)):
+            h5path = pathlib.Path(h5path)
+        else:
+            h5path = h5path
+
         self._hash = None
         self.path = h5path
 
@@ -323,11 +343,9 @@ class RTDC_HDF5(RTDCBase):
         self.h5file = h5py.File(
             h5path,
             mode="r",
-            # Increase the read cache (which defaults to 1MiB), since
-            # normally we have around 2.5MiB image chunks.
-            rdcc_nbytes=10*1024**2,
-            rdcc_w0=0,
+            **h5kwargs,
             )
+
         self._events = H5Events(self.h5file)
 
         # Parse configuration

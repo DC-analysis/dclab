@@ -49,7 +49,9 @@ def test_dcor_base(monkeypatch):
                         "APIHandler",
                         MockAPIHandler)
     with dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip")) as ds:
-        dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id=1")
+        dso = dclab.new_dataset(
+            "https://example.com/api/3/action/dcserv?id="
+            "b1404eb5-f661-4920-be79-5ff4e85915d1")
         assert len(dso) == len(ds)
         assert dso.config["setup"]["channel width"] == \
             ds.config["setup"]["channel width"]
@@ -128,7 +130,8 @@ def test_dcor_hierarchy(monkeypatch):
     monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor,
                         "APIHandler",
                         MockAPIHandler)
-    dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id=1")
+    dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id="
+                            "b1404eb5-f661-4920-be79-5ff4e85915d5")
     dsh = dclab.new_dataset(dso)
     assert np.all(dso["area_um"] == dsh["area_um"])
 
@@ -240,38 +243,46 @@ def test_dcor_slicing_trace(idxs):
 
 
 def test_get_full_url():
-    target = "https://example.com/api/3/action/dcserv?id=123456"
+    target = "https://example.com/api/3/action/dcserv?id=" \
+             "b1404eb5-f661-4920-be79-5ff4e85915d5"
     assert RTDC_DCOR.get_full_url(
-        url="123456",
+        url="b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=True,
         host="example.com") == target
     assert RTDC_DCOR.get_full_url(
-        url="http://example.com/api/3/action/dcserv?id=123456",
+        url="http://example.com/api/3/action/dcserv?id="
+            "b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=True,
         host="example.com") == target
     assert RTDC_DCOR.get_full_url(
-        url="example.com/api/3/action/dcserv?id=123456",
+        url="example.com/api/3/action/dcserv?id="
+            "b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=True,
         host="example.com") == target
     assert RTDC_DCOR.get_full_url(
-        url="https://example.com/api/3/action/dcserv?id=123456",
+        url="https://example.com/api/3/action/dcserv?id="
+            "b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=None,
         host="example.com") == target
     assert RTDC_DCOR.get_full_url(
-        url="123456",
+        url="b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=None,
         host="example.com") == target
-    target2 = "http://example.com/api/3/action/dcserv?id=123456"
+    target2 = "http://example.com/api/3/action/dcserv?id=" \
+              "b1404eb5-f661-4920-be79-5ff4e85915d5"
     assert RTDC_DCOR.get_full_url(
-        url="example.com/api/3/action/dcserv?id=123456",
+        url="example.com/api/3/action/dcserv?id="
+            "b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=False,
         host="example.com") == target2
     assert RTDC_DCOR.get_full_url(
-        url="https://example.com/api/3/action/dcserv?id=123456",
+        url="https://example.com/api/3/action/dcserv?id="
+            "b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=False,
         host="example.com") == target2
     assert RTDC_DCOR.get_full_url(
-        url="http://example.com/api/3/action/dcserv?id=123456",
+        url="http://example.com/api/3/action/dcserv?id="
+            "b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=None,
         host="example.com") == target2
 
@@ -279,13 +290,19 @@ def test_get_full_url():
 def test_is_dcor_url():
     assert is_dcor_url("2cea205f-2d9d-26d0-b44c-0a11d5379152")
     assert not is_dcor_url("2cea205f-2d9d")
-    assert is_dcor_url("https://example.com/api/3/action/dcserv?id=123456")
-    assert is_dcor_url("http://example.com/api/3/action/dcserv?id=123456")
-    assert is_dcor_url("example.com/api/3/action/dcserv?id=123456")
+    assert is_dcor_url("https://example.com/api/3/action/dcserv?id="
+                       "2cea205f-2d9d-26d0-b44c-0a11d5379152")
+    assert is_dcor_url("http://example.com/api/3/action/dcserv?id="
+                       "2cea205f-2d9d-26d0-b44c-0a11d5379152")
+    assert is_dcor_url("example.com/api/3/action/dcserv?id="
+                       "2cea205f-2d9d-26d0-b44c-0a11d5379152")
     assert not is_dcor_url(
-        pathlib.Path("example.com/api/3/action/dcserv?id=123456"))
+        pathlib.Path("example.com/api/3/action/dcserv?id="
+                     "2cea205f-2d9d-26d0-b44c-0a11d5379152"))
     assert not is_dcor_url(2.0)
     assert not is_dcor_url("/home/peter/pan")
+    assert not is_dcor_url("https://example.com/api/3/action/dcserv?id="
+                           "2cea205f-2d9d-26d0-b44c-")
 
 
 def test_load_nonexistent_file_issue81():
@@ -296,14 +313,3 @@ def test_load_nonexistent_file_issue81():
         pass
     else:
         assert False, "Non-existent files should raise FileNotFoundError"
-
-
-if __name__ == "__main__":
-    # Run all tests
-    from inspect import signature
-    loc = locals()
-    for key in list(loc.keys()):
-        if (key.startswith("test_")
-            and hasattr(loc[key], "__call__")
-                and "monkeypatch" not in signature(loc[key]).parameters):
-            loc[key]()

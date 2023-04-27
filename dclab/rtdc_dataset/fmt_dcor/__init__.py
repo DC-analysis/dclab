@@ -1,8 +1,8 @@
 """DCOR client interface"""
 import json
 import pathlib
+import re
 import time
-import uuid
 
 from ...util import hashobj
 
@@ -23,6 +23,12 @@ else:
 #: for a specific host. The directory should contain files named after the
 #: hostname, e.g. "dcor.mpl.mpg.de.cert".
 DCOR_CERTS_SEARCH_PATHS = []
+
+#: Regular expression for matching a DCOR resource URL
+REGEXP_DCOR_URL = re.compile(
+    r"^(https?:\/\/)?"  # protocol
+    r"([a-z0-9-\.]*\/?api\/3\/action\/dcserv\?id=)?"  # host with API
+    r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$")  # id
 
 
 class DCORAccessError(BaseException):
@@ -268,20 +274,5 @@ def get_server_cert_path(host):
 def is_dcor_url(string):
     if not isinstance(string, str):
         return False
-    elif is_uuid(string):
-        return True
-    else:  # we have a string
-        if string.startswith("http://") or string.startswith("https://"):
-            return True  # pretty safe bet
-        elif string.count("/api/3/action/dcserv?id="):
-            return True  # not so safe, but highly improbable folder structure
-        else:
-            return False
-
-
-def is_uuid(string):
-    try:
-        uuid_obj = uuid.UUID(string)
-    except ValueError:
-        return False
-    return str(uuid_obj) == string
+    else:
+        return REGEXP_DCOR_URL.match(string.strip())

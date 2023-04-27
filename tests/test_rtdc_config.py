@@ -79,7 +79,7 @@ def test_config_save_load():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
-@pytest.mark.parametrize("path", list(data_path.glob("fmt-hdf5_*")))
+@pytest.mark.parametrize("path", list(data_path.glob("fmt-hdf5_*.zip")))
 def test_config_to_json(path):
     ds = new_dataset(retrieve_data(path.name))
     ds.config.tojson()

@@ -1,4 +1,5 @@
-0.49.2
+0.50.0
+ - feat: support opening objects on S3-compatible storage (#213)
  - enh: use regexp to identify valid DCOR URLs
  - enh: allow to pass keyword arguments to h5py.File for fmt_hdf5
 0.49.1

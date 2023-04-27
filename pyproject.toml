@@ -34,14 +34,16 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-all = ["dclab[dcor,lme4,ml,tdms,export]"]
+all = ["dclab[dcor,export,lme4,ml,s3,tdms]"]
 dcor = ["requests"]
-lme4 = ["rpy2>=2.9.4"]
-ml = ["tensorflow>=2.0"]
-tdms = ["imageio[ffmpeg]", "nptdms>=0.23.0"]
 export = ["fcswrite>=0.5.0",  # fcs export
           "imageio[ffmpeg]",  # avi export
 ]
+lme4 = ["rpy2>=2.9.4"]
+ml = ["tensorflow>=2.0"]
+s3 = ["s3fs"]
+tdms = ["imageio[ffmpeg]", "nptdms>=0.23.0"]
+
 
 [project.scripts]
 dclab-compress = "dclab.cli:compress"

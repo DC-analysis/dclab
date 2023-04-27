@@ -2,7 +2,7 @@
 import pathlib
 
 from .core import RTDCBase
-from . import fmt_dict, fmt_dcor, fmt_hdf5, fmt_tdms, fmt_hierarchy
+from . import fmt_s3, fmt_dict, fmt_dcor, fmt_hdf5, fmt_tdms, fmt_hierarchy
 
 
 def load_file(path, identifier=None, **kwargs):
@@ -43,6 +43,8 @@ def new_dataset(data, identifier=None, **kwargs):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
     elif fmt_dcor.is_dcor_url(data):
         return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
+    elif fmt_s3.is_s3_url(data):
+        return fmt_s3.RTDC_S3(data, identifier=identifier, **kwargs)
     elif isinstance(data, RTDCBase):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
                                             **kwargs)

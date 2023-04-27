@@ -18,13 +18,14 @@ a subset of these:
 
 - ``pip install dclab``: for the basic dclab functionalities
 - ``pip install dclab[dcor]``: to :ref:`access online data <sec_av_dcor>` from `DCOR <https://dcor.mpl.mpg.de/>`_
+- ``pip install dclab[export]``: for .avi and .fcs export
 - ``pip install dclab[lme4]``: for :ref:`linear mixed effects model analysis <sec_av_lme4>` using `R/lme4 <https://cran.r-project.org/web/packages/lme4/index.html>`_
 - ``pip install dclab[ml]``: for :ref:`machine-learning applications <sec_av_ml>`
 - ``pip install dclab[tdms]``: for the (outdated) .tdms file format
-- ``pip install dclab[export]``: for .avi and .fcs export
+- ``pip install dclab[s3]``: for accessing .rtdc (HDF5) data on S3-compatible storage
 
-You may also combine these dependencies, i.e. ``pip install dclab[dcor,ml]``
-for DCOR and machine-learning support.
+You may also combine these dependencies, i.e. ``pip install dclab[dcor,s3]``
+for DCOR and S3 support.
 
 In addition, dclab already comes with code from `OpenCV <https://opencv.org/>`_
 (computation of moments) and `scikit-image <http://scikit-image.org/>`_

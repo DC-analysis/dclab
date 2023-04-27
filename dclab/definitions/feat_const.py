@@ -109,6 +109,10 @@ FEATURES_SCALAR = [
     # Fun fact: If we had decided to compute it from the convex contour,
     # then we would have close to none pixelation effects ¯\_(ツ)_/¯.
     ["volume", "Volume [µm³]"],
+    # QPI features computed from holographic data
+    ["qpi_dm", "Dry Mass [pg]"],
+    ["qpi_ri", "Refractive Index"],
+    ["qpi_pha_int", "Integrated Phase [rad]"],
 ]
 # Add userdef features
 for _i in range(10):
@@ -126,6 +130,11 @@ FEATURES_NON_SCALAR = [
     ["mask", "Binary mask labeling the event in the image"],
     # See FLUOR_TRACES for valid keys
     ["trace", "Dictionary of fluorescence traces"],
+    # QPI features computed from holographic data
+    ["qpi_oah", "Off axis hologram"],
+    ["qpi_oah_bg", "Off axis hologram background image"],
+    ["qpi_pha", "Hologram phase image [rad]"],
+    ["qpi_amp", "Hologram amplitude image"],
 ]
 
 #: List of fluorescence traces

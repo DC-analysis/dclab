@@ -55,13 +55,24 @@ class RTDC_S3(RTDC_HDF5):
 
         proto, s3_string = url.split("://", 1)
         s3_endpoint, s3_path = s3_string.split("/", 1)
-        self._fs = s3fs.S3FileSystem(
-            key=secret_id,
-            secret=secret_key,
-            client_kwargs={"endpoint_url": f"{proto}://{s3_endpoint}"},
+        s3fskw = {
+            "client_kwargs": {"endpoint_url": f"{proto}://{s3_endpoint}"},
             # A large block size makes loading metadata really slow.
-            default_block_size=2048,
-        )
+            "default_block_size": 2048,
+        }
+        if secret_id and secret_key:
+            # We have an id-key pair.
+            s3fskw["key"] = secret_id
+            s3fskw["secret"] = secret_key
+            s3fskw["anon"] = False  # this is the default
+        else:
+            # Anonymous access has to be enabled explicitly.
+            # Normally, s3fs would check for credentials in
+            # environment variables and does not fall back to
+            # anonymous use.
+            s3fskw["anon"] = True
+
+        self._fs = s3fs.S3FileSystem(**s3fskw)
         self._f3d = self._fs.open(s3_path, mode='rb')
         super(RTDC_S3, self).__init__(
             h5path=self._f3d,

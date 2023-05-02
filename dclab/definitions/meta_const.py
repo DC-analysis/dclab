@@ -2,7 +2,6 @@ import copy
 
 from .meta_parse import fbool, fint, fintlist, func_types, lcstr
 
-
 #: All configuration keywords editable by the user
 CFG_ANALYSIS = {
     # filtering parameters
@@ -28,7 +27,6 @@ CFG_ANALYSIS = {
         ["crosstalk fl23", float, "Fluorescence crosstalk, channel 2 to 3"],
     ]
 }
-
 
 #: All read-only configuration keywords for a measurement
 CFG_METADATA = {
@@ -98,14 +96,6 @@ CFG_METADATA = {
         ["roi size x", fint, "Image width [px]"],
         ["roi size y", fint, "Image height [px]"],
     ],
-    # All qpi-related keywords
-    "qpi": [
-        ["laser lambda", float, "Laser wavelength [nm]"],
-        ["refractive index medium", float, "Refractive index of Medium"],
-        ["alpha cell type RBC", float, "Specific refractive increment [ml/g]"],
-        ["alpha cell type non-RBC", float,
-         "Specific refractive increment [ml/g]"],
-    ],
     # All parameters for online contour extraction from the event images
     "online_contour": [
         # The option "bg empty" was introduced in dclab 0.34.0 and
@@ -132,6 +122,26 @@ CFG_METADATA = {
         ["target duration", float, "Target measurement duration [min]"],
         ["target event count", fint, "Target event count for online gating"],
     ],
+    # All qpi-related keywords
+    "qpi": [
+        # experiment-related qpi metadata
+        ["wavelength", float, "Laser wavelength [nm]"],
+        ["medium index", float, "Refractive index of Medium"],
+        ["alpha cell type RBC", float, "Specific refractive increment [ml/g]"],
+        ["alpha cell type non-RBC", float,
+         "Specific refractive increment [ml/g]"],
+        # post-analysis-related qpi metadata
+        ["software version", str, "Software version used"],
+
+        ["filter_name", str, "Fourier filter used"],
+        ["filter_size", str, "Fourier filter size [pix]"],
+        ["sideband_freq", float, "Radius of sideband [pix]"],
+        ["padding", fbool, "If padding was used"],
+
+        ["fit_offset", str, "Fitting offset for processing hologram"],
+        ["fit_profile", str, "Fitting profile for processing hologram"],
+        ["border_px", fint, "Size of border for processing hologram [pix]"],
+    ],
     # All setup-related keywords, except imaging
     "setup": [
         ["channel width", float, "Width of microfluidic channel [µm]"],
@@ -148,7 +158,6 @@ CFG_METADATA = {
         ["temperature", float, "Mean chip temperature [°C]"],
     ],
 }
-
 
 # CFG convenience lists and dicts
 _cfg = copy.deepcopy(CFG_METADATA)

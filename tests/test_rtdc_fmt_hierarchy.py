@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 
+import dclab
 from dclab import new_dataset
 from dclab.rtdc_dataset import fmt_hierarchy, RTDCWriter
 
@@ -76,6 +77,15 @@ def test_config_calculation_does_not_work_in_child_issue_92():
             KeyError,
             match="If you are attempting to access an ancillary feature"):
         ch["emodulus"]
+
+
+def test_hierarchy_logs():
+    """Since version 0.50.1, hierarchy children inherit logs"""
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip"))
+    assert len(ds.logs)
+    ch = dclab.new_dataset(ds)
+    assert ch.logs
+    assert ch.logs["dclab-compress"][0] == "{"
 
 
 @pytest.mark.filterwarnings(

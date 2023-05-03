@@ -293,6 +293,8 @@ class RTDC_Hierarchy(RTDCBase):
 
         self.path = hparent.path
         self.title = hparent.title + "_child"
+        self.logs = hparent.logs
+        self.tables = hparent.tables
 
         self._events = {}
 

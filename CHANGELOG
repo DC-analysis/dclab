@@ -1,5 +1,6 @@
 0.50.1
  - enh: support reading 'logs' from DCOR datasets
+ - enh: hierarchy parents inherit their parent's logs and tables
 0.50.0
  - feat: support opening objects on S3-compatible storage (#213)
  - feat: support opening file-like objects as HDF5 data

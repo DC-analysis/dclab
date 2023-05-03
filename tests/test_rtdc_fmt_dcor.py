@@ -137,6 +137,14 @@ def test_dcor_hierarchy(monkeypatch):
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+def test_dcor_logs():
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert len(ds.logs) == 1
+        assert ds.logs["log"][0] \
+               == "[LOG] number of written datasets 0  10:04:05.893"
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_shape_contour():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:

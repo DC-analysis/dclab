@@ -1,4 +1,5 @@
 """DCOR client interface"""
+import functools
 import json
 import pathlib
 import re
@@ -121,6 +122,25 @@ class APIHandler:
         return result
 
 
+class DCORLogs:
+    def __init__(self, api):
+        self.api = api
+
+    def __getitem__(self, key):
+        return self._logs[key]
+
+    def __len__(self):
+        return len(self._logs)
+
+    def keys(self):
+        return self._logs.keys()
+
+    @property
+    @functools.lru_cache()
+    def _logs(self):
+        return self.api.get(query="logs")
+
+
 class RTDC_DCOR(RTDCBase):
     def __init__(self, url, host="dcor.mpl.mpg.de", api_key="",
                  use_ssl=None, cert_path=None, *args, **kwargs):
@@ -176,14 +196,14 @@ class RTDC_DCOR(RTDCBase):
         # Parse configuration
         self.config = Configuration(cfg=self.api.get(query="metadata"))
 
+        # Lazy logs
+        self.logs = DCORLogs(self.api)
+
         # Get size
         self._size = int(self.api.get(query="size"))
 
         # Setup events
         self._events = FeatureCache(self.api, size=self._size)
-
-        # Override logs property with HDF5 data
-        self.logs = {}
 
         self.title = f"{self.config['experiment']['sample']} - " \
             + f"M{self.config['experiment']['run index']}"

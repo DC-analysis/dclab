@@ -1,4 +1,5 @@
 """Load RT-DC datasets"""
+import io
 import pathlib
 
 from .core import RTDCBase
@@ -41,6 +42,8 @@ def new_dataset(data, identifier=None, **kwargs):
     """
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
+    elif isinstance(data, io.BytesIO):
+        return fmt_hdf5.RTDC_HDF5(data, **kwargs)
     elif fmt_dcor.is_dcor_url(data):
         return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
     elif fmt_s3.is_s3_url(data):

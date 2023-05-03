@@ -1,4 +1,5 @@
 """Test hdf5 file format"""
+import io
 import os
 import pathlib
 import shutil
@@ -11,7 +12,7 @@ import pytest
 
 import dclab
 from dclab import new_dataset, rtdc_dataset
-from dclab.rtdc_dataset import config
+from dclab.rtdc_dataset import config, rtdc_copy
 
 from helper_methods import retrieve_data
 
@@ -312,6 +313,32 @@ def test_hash():
     assert ds.format == "hdf5"
 
 
+def test_fileio_basic():
+    """Basic file IO functionality tests"""
+    path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    # Create a file object
+    fd = io.BytesIO()
+    # create a copy
+    with h5py.File(fd, "w") as hio, h5py.File(path) as h5:
+        rtdc_copy(src_h5file=h5, dst_h5file=hio)
+
+    ds = dclab.new_dataset(fd)
+    assert len(ds) == 10
+    assert str(ds).count("RTDC_HDF5")
+    assert ds.__repr__().count("mm-hdf5")
+    assert ds.__repr__().count("BytesIO")
+    assert np.allclose(ds["deform"].mean(),
+                       0.03620073944330215454,
+                       atol=0, rtol=1e-10)
+    assert np.allclose(ds.h5file["/events/deform"].attrs["mean"],
+                       0.03620073944330215454,
+                       atol=0, rtol=1e-10)
+    assert "volume" in ds.features
+    assert "volume" not in ds.features_innate
+    assert np.allclose(ds["volume"][0], 2898.67525650645,
+                       rtol=1e-10, atol=0)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_load_non_scalar_data():
@@ -584,11 +611,3 @@ def test_trace():
     assert ds["trace"]["fl1_raw"].shape == (5, 100)
     assert np.allclose(np.average(
         ds["trace"]["fl1_median"][0]), 0.027744706519425219)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in sorted(list(loc.keys())):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

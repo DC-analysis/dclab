@@ -1,3 +1,5 @@
+0.50.2
+ - enh: support reading 'tables' from DCOR datasets (#221)
 0.50.1
  - enh: support reading 'logs' from DCOR datasets
  - enh: hierarchy parents inherit their parent's logs and tables

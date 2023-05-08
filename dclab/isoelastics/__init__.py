@@ -1,4 +1,5 @@
 """Isoelastics management"""
+import collections
 import functools
 import pathlib
 from pkg_resources import resource_filename
@@ -405,7 +406,7 @@ class Isoelastics(object):
                  lut_identifier=meta["lut identifier"])
 
 
-class AutoRecursiveDict(dict):
+class AutoRecursiveDict(collections.UserDict):
     def __getitem__(self, key):
         if key not in self:
             self[key] = AutoRecursiveDict()

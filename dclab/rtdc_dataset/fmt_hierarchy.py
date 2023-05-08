@@ -1,4 +1,5 @@
 """RT-DC hierarchy format"""
+import collections
 import functools
 
 import numpy as np
@@ -106,7 +107,7 @@ class ChildScalar(np.lib.mixins.NDArrayOperatorsMixin):
         return len(self),
 
 
-class ChildTrace(dict):
+class ChildTrace(collections.UserDict):
     @property
     def shape(self):
         # set proper shape (#117)

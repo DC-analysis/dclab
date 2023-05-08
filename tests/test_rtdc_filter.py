@@ -1,10 +1,11 @@
-
 import warnings
 
 import numpy as np
 
 import dclab
 from dclab.rtdc_dataset import new_dataset
+
+import pytest
 
 from helper_methods import example_data_dict
 
@@ -103,6 +104,17 @@ def test_only_one_boundary_error():
         assert False, "setting only half of a box filter should not work"
 
 
+@pytest.mark.parametrize("prop", ["all", "box", "invalid", "polygon"])
+def test_readonly_properties(prop):
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform",
+                                               "emodulus"])
+    ds = new_dataset(ddict)
+    thing = getattr(ds.filter, prop)
+    with pytest.raises(ValueError,
+                       match="assignment destination is read-only"):
+        thing[:10] = False
+
+
 def test_remove_ancillary_feature():
     """When a feature is removed, the box boolean filter must be deleted"""
     ddict = example_data_dict(size=8472, keys=["area_um", "deform",
@@ -121,11 +133,3 @@ def test_remove_ancillary_feature():
     ds.apply_filter()
     numevents2 = np.sum(ds.filter.all)
     assert numevents != numevents2
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

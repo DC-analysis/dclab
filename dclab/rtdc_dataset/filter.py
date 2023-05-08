@@ -27,6 +27,8 @@ class Filter(object):
         self._box_filters = {}
         # dictionary of (hash, boolean array) for polygon filters
         self._poly_filters = {}
+        # dictionary of all internal property filters
+        self._array_props = {}
         # initialize important parameters
         self._init_rtdc_ds(rtdc_ds)
         # initialize properties
@@ -41,6 +43,40 @@ class Filter(object):
         else:
             raise KeyError("Feature not available: '{}'".format(key))
         return self._box_filters[key]
+
+    @property
+    def all(self):
+        """All filters combined (see :func:`Filter.update`)
+
+        Use this property to filter the features of
+        :class:`dclab.rtdc_dataset.RTDCBase` instances
+        """
+        return self._get_ro_array("all")
+
+    @property
+    def box(self):
+        """All box filters"""
+        return self._get_ro_array("box")
+
+    @property
+    def polygon(self):
+        """Polygon filters"""
+        return self._get_ro_array("polygon")
+
+    @property
+    def invalid(self):
+        """Invalid (nan/inf) events"""
+        return self._get_ro_array("invalid")
+
+    def _get_ro_array(self, key):
+        view = self._get_rw_array(key).view()
+        view.flags.writeable = False
+        return view
+
+    def _get_rw_array(self, key):
+        if key not in self._array_props:
+            self._array_props[key] = np.ones(self.size, dtype=bool)
+        return self._array_props[key]
 
     def _init_rtdc_ds(self, rtdc_ds):
         #: Available feature names
@@ -65,21 +101,12 @@ class Filter(object):
 
     def reset(self):
         """Reset all filters"""
-        self._box_filters = {}
-        self._poly_filters = {}
-        #: All filters combined (see :func:`Filter.update`);
-        #: Use this property to filter the features of
-        #: :class:`dclab.rtdc_dataset.RTDCBase` instances
-        self.all = np.ones(self.size, dtype=bool)
-        #: All box filters
-        self.box = np.ones(self.size, dtype=bool)
-        #: Invalid (nan/inf) events
-        self.invalid = np.ones(self.size, dtype=bool)
+        self._box_filters.clear()
+        self._poly_filters.clear()
+        self._array_props.clear()
         #: 1D boolean array for manually excluding events; `False` values
         #: are excluded.
         self.manual = np.ones(self.size, dtype=bool)
-        #: Polygon filters
-        self.polygon = np.ones(self.size, dtype=bool)
         # old filter configuration of `rtdc_ds`
         self._old_config = {}
 
@@ -121,12 +148,13 @@ class Filter(object):
                 newvals.append(cfg_cur[skey])
 
         # 1. Invalid filters
-        self.invalid[:] = True
+        arr_invalid = self._get_rw_array("invalid")
+        arr_invalid[:] = True
         if cfg_cur["remove invalid events"]:
             for feat in self.features:
                 data = rtdc_ds[feat]
                 invalid = np.isinf(data) | np.isnan(data)
-                self.invalid &= ~invalid
+                arr_invalid &= ~invalid
 
         # 2. Filter all feature min/max values.
         feat2filter = []
@@ -182,7 +210,7 @@ class Filter(object):
                                   + "nan-values! Box filters remove those."
                             warnings.warn(msg, NanWarning)
                     else:
-                        idx = slice(0, len(self.all))  # place-holder for [:]
+                        idx = slice(0, self.size)  # place-holder for [:]
                     feat_filt[idx] &= ivalstart <= data[idx]
                     feat_filt[idx] &= data[idx] <= ivalend
             elif must_be_filtered:
@@ -190,9 +218,10 @@ class Filter(object):
                               + "not contain the feature '{}'! ".format(feat)
                               + "A box filter has been ignored.")
         # store box filters
-        self.box[:] = True
+        arr_box = self._get_rw_array("box")
+        arr_box[:] = True
         for feat in self._box_filters:
-            self.box &= self._box_filters[feat]
+            arr_box &= self._box_filters[feat]
 
         # 3. Filter with polygon filters
         # check if something has changed
@@ -205,28 +234,30 @@ class Filter(object):
                 datay = rtdc_ds[pf.axes[1]]
                 self._poly_filters[pf_id] = (pf.hash, pf.filter(datax, datay))
         # store polygon filters
-        self.polygon[:] = True
+        arr_polygon = self._get_rw_array("polygon")
+        arr_polygon[:] = True
         for pf_id in self._poly_filters:
-            self.polygon &= self._poly_filters[pf_id][1]
+            arr_polygon &= self._poly_filters[pf_id][1]
 
         # 4. Finally combine all filters and apply "limit events"
         # get a list of all filters
+        arr_all = self._get_rw_array("all")
         if cfg_cur["enable filters"]:
-            self.all[:] = self.invalid & self.manual & self.polygon & self.box
+            arr_all[:] = arr_box & arr_invalid & arr_polygon & self.manual
 
             # Filter with configuration keyword argument "limit events".
             # This additional step limits the total number of events in
             # self.all.
             if cfg_cur["limit events"] > 0:
                 limit = cfg_cur["limit events"]
-                sub = self.all[self.all]
-                _f, idx = downsampling.downsample_rand(sub,
-                                                       samples=limit,
-                                                       ret_idx=True)
+                sub = arr_all[arr_all]
+                _, idx = downsampling.downsample_rand(sub,
+                                                      samples=limit,
+                                                      ret_idx=True)
                 sub[~idx] = False
-                self.all[self.all] = sub
+                arr_all[arr_all] = sub
         else:
-            self.all[:] = True
+            arr_all[:] = True
 
         # Actual filtering is then done during plotting
         self._old_config = rtdc_ds.config.copy()["filtering"]

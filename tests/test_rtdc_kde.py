@@ -1,4 +1,3 @@
-
 import numpy as np
 import dclab
 
@@ -8,7 +7,8 @@ from helper_methods import example_data_dict
 def test_kde_empty():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)
-    ds.filter.all[:] = 0
+    ds.filter.manual[:] = 0
+    ds.apply_filter()
     a = ds.get_kde_scatter()
     assert len(a) == 0
 
@@ -113,11 +113,3 @@ def test_kde_positions():
     sc2 = ds.get_kde_scatter(xax="area_um", yax="deform",
                              positions=(ds["area_um"], ds["deform"]))
     assert np.all(sc == sc2)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

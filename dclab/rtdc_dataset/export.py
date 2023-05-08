@@ -262,6 +262,9 @@ class Export(object):
                 if filtarr is None:
                     # we are forced to do filtering
                     filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
+                else:
+                    # have to create a copy, because rtdc_ds.filter.all is ro!
+                    filtarr = np.copy(filtarr)
                 filtarr[lmin:] = False
                 warnings.warn(
                     "Not all features have the same length! Limiting output "

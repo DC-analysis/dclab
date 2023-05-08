@@ -77,18 +77,23 @@ Filters are used to mask e.g. debris or doublets from a dataset.
     In [7]: ds.config["filtering"]["deform max"] = .15
 
     # Manually excluding events using array indices is also possible:
-    # `ds.filter.manual` is a 1D boolean array of size `len(ds)`
-    # where `False` values mean that the events are excluded.
+    # The writeable `ds.filter.manual` is a 1D boolean array of size `len(ds)`
+    # where `False` can manually set, implying that these events are excluded.
+    # The following line sets the four events located at indices
+    # 0, 345, 400, and 1000 to False, so that they are added to ds.filter.all
+    # when `ds.apply_filter()` is called.
     In [8]: ds.filter.manual[[0, 400, 345, 1000]] = False
 
     In [9]: ds.apply_filter()
 
-    # The boolean array `ds.filter.all` represents the applied filter
+    In [10]: assert not ds.filter.all[345]
+
+    # The read-only boolean array `ds.filter.all` represents the applied filter
     # and can be used for indexing.
-    In [9]: ds["deform"][:].mean(), ds["deform"][ds.filter.all].mean()
+    In [11]: ds["deform"][:].mean(), ds["deform"][ds.filter.all].mean()
 
 Note that ``ds.apply_filter()`` must be called, otherwise
-``ds.filter.all`` will not be updated.
+``ds.filter.all`` is not updated.
 
 Creating hierarchies
 --------------------

@@ -1,4 +1,5 @@
 """RT-DC dictionary format"""
+import collections
 import time
 
 import numpy as np
@@ -26,7 +27,7 @@ class DictContourEvent:
         return len(self.contours)
 
 
-class DictTraceEvent(dict):
+class DictTraceEvent(collections.UserDict):
 
     @property
     def shape(self):
@@ -81,6 +82,10 @@ class RTDC_Dict(RTDCBase):
                     data = ddict[feat]
             else:
                 raise ValueError("Invalid feature name '{}'".format(feat))
+            if isinstance(data, np.ndarray):
+                # Convert numpy array to read-only array
+                data = data.view()
+                data.setflags(write=False)
             self._events[feat] = data
 
         event_count = len(ddict[list(ddict.keys())[0]])

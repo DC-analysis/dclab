@@ -3,6 +3,8 @@ import numpy as np
 
 from dclab import new_dataset
 
+import pytest
+
 from helper_methods import example_data_dict
 
 
@@ -29,6 +31,14 @@ def test_min_max_update():
     ds.apply_filter()
 
     assert ds.filter.all.sum() == 22
+
+
+def test_readonly():
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    with pytest.raises(ValueError,
+                       match="assignment destination is read-only"):
+        ds["area_um"][:10] = 1
 
 
 def test_shape_dict_contour():

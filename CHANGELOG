@@ -1,6 +1,6 @@
 0.50.3
  - fix: do not allow editing reserved filter properties (#210)
- - fix: do not allow editing temporary featires (#202)
+ - fix: do not allow editing temporary features (#202)
  - ref: read-only features and proper subclassing in `RTDC_Dict`
  - ref: subclass from `collections.UserDict` and not from `dict`
  - docs: add more information about manual filters (#173)

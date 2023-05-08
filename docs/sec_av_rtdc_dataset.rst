@@ -6,9 +6,9 @@ RT-DC datasets
 Knowing and understanding the :ref:`RT-DC dataset classes <sec_ref_rtdc_dataset>`
 is an important prerequisite when working with dclab. They are all
 derived from :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` which
-gives access to features with a dictionary-like interface, facilitates data export
-or filtering, and comes with several convenience methods that are useful
-for data visualization.
+allows read-only access to all features with a dictionary-like interface,
+facilitates data export or filtering, and comes with several convenience
+methods that are useful for data visualization.
 RT-DC datasets can be based on a data file format
 (:class:`RTDC_TDMS <dclab.rtdc_dataset.RTDC_TDMS>` and
 :class:`RTDC_HDF5 <dclab.rtdc_dataset.RTDC_HDF5>`), accessed

@@ -21,6 +21,7 @@ instance, the feature "index" enumerates all recorded events, the
 feature "deform" contains the deformation values of all events.
 There are scalar features, i.e. features that assign a single number
 to an event, and non-scalar features, such as "image" and "contour".
+All features in a dataset are exposed as read-only to the user.
 The following features are supported by dclab:
 
 .. _sec_features_scalar:

@@ -36,7 +36,7 @@ Note that if you are installing from source or if no binary wheel is
 available for your platform and Python version, `Cython <http://cython.org/>`_
 will be installed to build the required dclab extensions. If this process
 fails, please request a binary wheel for your platform (e.g. Windows 64bit)
-and Python version (e.g. 3.6) by creating a new
+and Python version (e.g. 3.12) by creating a new
 `issue <https://github.com/DC-analysis/dclab/issues>`_.
 
 
@@ -99,7 +99,8 @@ Experimental RT-DC datasets are always loaded with the
 
 
 The object returned by `new_dataset` is always an instance of
-:class:`RTDCBase <dclab.rtdc_dataset.core.RTDCBase>`. To show all
+:class:`RTDCBase <dclab.rtdc_dataset.core.RTDCBase>`. It enables read-only (!)
+access to all features (e.g. "deform", "area_um") of the dataset. To show all
 available features, use:
 
 .. code-block:: python
@@ -118,7 +119,7 @@ filtered by editing the configuration of ``ds`` and calling ``ds.apply_filter()`
     ds.config["filtering"]["area_um max"] = amax
     ds.apply_filter()  # this step is important!
 
-This will update the binary array ``ds.filter.all`` which can be used to
+This will update the binary, read-only array ``ds.filter.all`` which can be used to
 extract the filtered data:
 
 .. code-block:: python
@@ -138,8 +139,8 @@ Note that calling `rejuvenate` may be computationally expensive, so dclab
 does not call it automatically. It is your own responsibility to call it
 after updating the parent dataset.
 
-Non-scalar features do not support fancy indexing (i.e.
-``ds["image"][ds.filter.all]`` will not work. Use a for-loop to extract them.
+Non-scalar features may not (depending on the file format) support fancy indexing (i.e.
+``ds["image"][ds.filter.all]`` might not work. Use a for-loop to extract them.
 
 .. code-block:: python
 

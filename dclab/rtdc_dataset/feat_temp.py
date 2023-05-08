@@ -97,4 +97,6 @@ def set_temporary_feature(rtdc_ds: RTDCBase,
         rtdc_ds.rejuvenate()
     else:
         feat_logic.check_feature_shape(feature, data)
-        rtdc_ds._usertemp[feature] = data
+        data_ro = data.view()
+        data_ro.setflags(write=False)
+        rtdc_ds._usertemp[feature] = data_ro

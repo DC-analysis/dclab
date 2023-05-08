@@ -237,6 +237,21 @@ def test_load_temporary_feature_from_disk():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_readonly():
+    """Temporary features should be read-only"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with dclab.new_dataset(h5path) as ds:
+        dclab.register_temporary_feature("my_special_feature")
+        dclab.set_temporary_feature(rtdc_ds=ds,
+                                    feature="my_special_feature",
+                                    data=np.arange(len(ds)))
+        with pytest.raises(ValueError,
+                           match="assignment destination is read-only"):
+            ds["my_special_feature"][:10] = 1
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_register_after_loading():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with dclab.new_dataset(h5path) as ds:
@@ -327,12 +342,3 @@ def test_wrong_name():
             dclab.set_temporary_feature(rtdc_ds=ds,
                                         feature="my_other_feature",
                                         data=np.arange(len(ds)))
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()
-            deregister_all()

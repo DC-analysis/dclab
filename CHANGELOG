@@ -1,5 +1,6 @@
 0.50.3
  - fix: do not allow editing reserved filter properties (#210)
+ - fix: do not allow editing temporary featires (#202)
 0.50.2
  - enh: support reading 'tables' from DCOR datasets (#221)
 0.50.1

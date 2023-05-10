@@ -1,6 +1,6 @@
 import copy
 
-from .meta_parse import fbool, fint, fintlist, func_types, lcstr
+from .meta_parse import fbool, fint, fintlist, func_types, lcstr, f2dfloatarray
 
 #: All configuration keywords editable by the user
 CFG_ANALYSIS = {
@@ -25,6 +25,9 @@ CFG_ANALYSIS = {
         ["crosstalk fl32", float, "Fluorescence crosstalk, channel 3 to 2"],
         ["crosstalk fl13", float, "Fluorescence crosstalk, channel 1 to 3"],
         ["crosstalk fl23", float, "Fluorescence crosstalk, channel 2 to 3"],
+        # qpi-related calculations
+        ["qpi alpha RBC", float, "Specific refractive increment [ml/g]"],
+        ["qpi alpha non-RBC", float, "Specific refractive increment [ml/g]"],
     ]
 }
 
@@ -127,17 +130,16 @@ CFG_METADATA = {
         # experiment-related qpi metadata
         ["wavelength", float, "Laser wavelength [nm]"],
         ["medium index", float, "Refractive index of Medium"],
-        ["alpha cell type RBC", float, "Specific refractive increment [ml/g]"],
-        ["alpha cell type non-RBC", float,
-         "Specific refractive increment [ml/g]"],
         # post-analysis-related qpi metadata
         ["software version", str, "Software version used"],
-
+        # calculation of pha and amp from hologram
         ["filter_name", str, "Fourier filter used"],
-        ["filter_size", str, "Fourier filter size [pix]"],
-        ["sideband_freq", float, "Radius of sideband [pix]"],
+        ["filter_size", str, "Fourier filter size [1/pix]"],
+        ["filter_size_interpretation", str, "How to interpret filter size"],
+        ["sideband_freq", f2dfloatarray,
+         "Frequency coordinates of the sideband [1/pix]"],
+        # processing of hologram
         ["padding", fbool, "If padding was used"],
-
         ["fit_offset", str, "Fitting offset for processing hologram"],
         ["fit_profile", str, "Fitting profile for processing hologram"],
         ["border_px", fint, "Size of border for processing hologram [pix]"],

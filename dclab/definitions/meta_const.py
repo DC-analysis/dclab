@@ -1,6 +1,6 @@
 import copy
 
-from .meta_parse import fbool, fint, fintlist, func_types, lcstr, f2dfloatarray
+from .meta_parse import fbool, fint, fintlist, func_types, lcstr, f1dfloattuple
 
 #: All configuration keywords editable by the user
 CFG_ANALYSIS = {
@@ -136,7 +136,7 @@ CFG_METADATA = {
         ["filter_name", str, "Fourier filter used"],
         ["filter_size", str, "Fourier filter size [1/pix]"],
         ["filter_size_interpretation", str, "How to interpret filter size"],
-        ["sideband_freq", f2dfloatarray,
+        ["sideband_freq", f1dfloattuple,
          "Frequency coordinates of the sideband [1/pix]"],
         # processing of hologram
         ["padding", fbool, "If padding was used"],

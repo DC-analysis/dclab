@@ -103,6 +103,18 @@ def test_meta_parse_f2dfloatarray():
     assert meta_parse.f2dfloatarray([[1], [2]]).shape == (2, 1)
 
 
+def test_meta_parse_f1dfloattuple():
+    assert meta_parse.f1dfloattuple([1, 2]) == (1.0, 2.0)
+    assert meta_parse.f1dfloattuple((8, 9)) == (8.0, 9.0)
+    assert meta_parse.f1dfloattuple([-8.999, 0.332]) == (-8.999, 0.332)
+    assert meta_parse.f1dfloattuple((-8.999, 0.332)) == (-8.999, 0.332)
+    assert meta_parse.f1dfloattuple(np.array([3, -1])) == (3.0, -1.0)
+    with pytest.raises(TypeError):
+        # the given value must be 1d
+        assert meta_parse.f1dfloattuple(
+            np.array([[3, -1], [4, 5.5]])) == (3.0, -1.0, 4.5, 5.5)
+
+
 def test_meta_parse_fbool():
     assert_is_bool_true(meta_parse.fbool(True))
     assert_is_bool_true(meta_parse.fbool("true"))

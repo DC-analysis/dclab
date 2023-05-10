@@ -7,6 +7,11 @@ def f2dfloatarray(value):
     """numpy floating point array"""
     return np.array(value, dtype=np.float64)
 
+def f1dfloattuple(value):
+    """Tuple of floats"""
+    value = tuple(float(i) for i in value)
+    return value
+
 
 def fbool(value):
     """boolean"""

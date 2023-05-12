@@ -3,14 +3,17 @@ import numbers
 import numpy as np
 
 
+def f1dfloattuple(value):
+    """Tuple of floats"""
+    if np.array(value).ndim != 1:
+        raise ValueError("Value is not 1 dimensional!")
+    value = tuple(float(i) for i in value)
+    return value
+
+
 def f2dfloatarray(value):
     """numpy floating point array"""
     return np.array(value, dtype=np.float64)
-
-def f1dfloattuple(value):
-    """Tuple of floats"""
-    value = tuple(float(i) for i in value)
-    return value
 
 
 def fbool(value):
@@ -28,6 +31,16 @@ def fbool(value):
     else:
         value = bool(float(value))
     return value
+
+
+def fboolorfloat(value):
+    """Bool or float"""
+    if isinstance(value, (str, bool)):
+        return fbool(value)
+    elif isinstance(value, (int, float)):
+        return float(value)
+    else:
+        raise ValueError("Value could not be converted to bool or float!")
 
 
 def fint(value):

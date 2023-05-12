@@ -4,7 +4,6 @@ import numpy as np
 
 import pytest
 
-
 from dclab.definitions import meta_logic, meta_parse
 
 
@@ -109,10 +108,9 @@ def test_meta_parse_f1dfloattuple():
     assert meta_parse.f1dfloattuple([-8.999, 0.332]) == (-8.999, 0.332)
     assert meta_parse.f1dfloattuple((-8.999, 0.332)) == (-8.999, 0.332)
     assert meta_parse.f1dfloattuple(np.array([3, -1])) == (3.0, -1.0)
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError, match="Value is not 1 dimensional!"):
         # the given value must be 1d
-        assert meta_parse.f1dfloattuple(
-            np.array([[3, -1], [4, 5.5]])) == (3.0, -1.0, 4.5, 5.5)
+        assert meta_parse.f1dfloattuple(np.array([[3, -1], [4, 5.5]]))
 
 
 def test_meta_parse_fbool():
@@ -133,6 +131,24 @@ def test_meta_parse_fbool():
 
     with pytest.raises(ValueError, match="Empty string provided for fbool!"):
         meta_parse.fbool("")
+
+
+def test_meta_parse_fboolorfloat():
+    """Check fboolorfloat format"""
+    assert meta_parse.fboolorfloat(True) is True
+    assert meta_parse.fboolorfloat(False) is False
+    assert meta_parse.fboolorfloat("true") is True
+    assert meta_parse.fboolorfloat("False") is False
+
+    assert meta_parse.fboolorfloat(2.0) == 2.0
+    assert meta_parse.fboolorfloat(-0.44) == -0.44
+
+    assert meta_parse.fboolorfloat(1) == 1.0
+    assert meta_parse.fboolorfloat(-42) == -42.0
+
+    with pytest.raises(ValueError,
+                       match="Value could not be converted to bool or float!"):
+        assert meta_parse.fboolorfloat([1, 2, 3])
 
 
 def test_meta_parse_fint():

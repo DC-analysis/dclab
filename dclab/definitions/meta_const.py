@@ -131,9 +131,7 @@ CFG_METADATA = {
         ["medium index", float, "Refractive index of Medium"],
         # post-analysis-related qpi metadata
         ["software version", str, "Software version used"],
-
         # calculation of pha and amp from hologram
-        # preparation for Fourier transform
         ["padding", fbool, "If padding was used"],
         ["subtract_mean", fbool, "Subtract mean of hologram before FFT"],
         # pipeline_kws
@@ -144,19 +142,18 @@ CFG_METADATA = {
         ["sideband_freq", f1dfloattuple,
          "Frequency coordinates of the sideband [1/pix]"],
         ["invert_phase", fbool, "Invert the phase data"],
-
-        ["pixel_size_qpi", float,
-         "Image space pixel size after iFFT [um]. "
-         "Depends on `scale_to_filter`. "
-         "If `scale_to_filter` is False, this does not change."
-         "If `scale_to_filter` is not False, this value will differ from "
-         "`qpi_holo` `pixel size`."
-         ],
-
+        # "pixel_size_qpi" depends on `scale_to_filter`.
+        # If `scale_to_filter` is False, this does not change.
+        # If `scale_to_filter` is not False, this value will differ from
+        # `qpi_holo` `pixel size`.
+        ["pixel_size_qpi", float, "Image space pixel size after iFFT [um]."],
         # postprocessing of phase and amplitude
-        ["fit_offset", str, "Fitting offset for processing hologram"],
-        ["fit_profile", str, "Fitting profile for processing hologram"],
-        ["border_px", fint, "Size of border for processing hologram [pix]"],
+        ["amp fit_offset", str, "Fitting offset for processing amplitude"],
+        ["amp fit_profile", str, "Fitting profile for processing amplitude"],
+        ["amp border_px", fint, "Size of border for processing amplitude [pix]"],  # noqa:  E501
+        ["pha fit_offset", str, "Fitting offset for processing phase"],
+        ["pha fit_profile", str, "Fitting profile for processing phase"],
+        ["pha border_px", fint, "Size of border for processing phase [pix]"],
     ],
     # All setup-related keywords, except imaging
     "setup": [

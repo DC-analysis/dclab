@@ -1,6 +1,8 @@
 import copy
 
-from .meta_parse import fbool, fint, fintlist, func_types, lcstr, f1dfloattuple
+from .meta_parse import (
+    fbool, fint, fintlist, func_types, lcstr, f1dfloattuple, fboolorfloat
+)
 
 #: All configuration keywords editable by the user
 CFG_ANALYSIS = {
@@ -25,9 +27,6 @@ CFG_ANALYSIS = {
         ["crosstalk fl32", float, "Fluorescence crosstalk, channel 3 to 2"],
         ["crosstalk fl13", float, "Fluorescence crosstalk, channel 1 to 3"],
         ["crosstalk fl23", float, "Fluorescence crosstalk, channel 2 to 3"],
-        # qpi-related calculations
-        ["qpi alpha RBC", float, "Specific refractive increment [ml/g]"],
-        ["qpi alpha non-RBC", float, "Specific refractive increment [ml/g]"],
     ]
 }
 
@@ -127,19 +126,34 @@ CFG_METADATA = {
     ],
     # All qpi-related keywords
     "qpi": [
-        # experiment-related qpi metadata
+        # experiment-related qpi metadata, see qpretrieve for details
         ["wavelength", float, "Laser wavelength [nm]"],
         ["medium index", float, "Refractive index of Medium"],
         # post-analysis-related qpi metadata
         ["software version", str, "Software version used"],
+
         # calculation of pha and amp from hologram
+        # preparation for Fourier transform
+        ["padding", fbool, "If padding was used"],
+        ["subtract_mean", fbool, "Subtract mean of hologram before FFT"],
+        # pipeline_kws
         ["filter_name", str, "Fourier filter used"],
         ["filter_size", str, "Fourier filter size [1/pix]"],
         ["filter_size_interpretation", str, "How to interpret filter size"],
+        ["scale_to_filter", fboolorfloat, "Crop Fourier image before iFFT"],
         ["sideband_freq", f1dfloattuple,
          "Frequency coordinates of the sideband [1/pix]"],
-        # processing of hologram
-        ["padding", fbool, "If padding was used"],
+        ["invert_phase", fbool, "Invert the phase data"],
+
+        ["pixel_size_qpi", float,
+         "Image space pixel size after iFFT [um]. "
+         "Depends on `scale_to_filter`. "
+         "If `scale_to_filter` is False, this does not change."
+         "If `scale_to_filter` is not False, this value will differ from "
+         "`qpi_holo` `pixel size`."
+         ],
+
+        # postprocessing of phase and amplitude
         ["fit_offset", str, "Fitting offset for processing hologram"],
         ["fit_profile", str, "Fitting profile for processing hologram"],
         ["border_px", fint, "Size of border for processing hologram [pix]"],

@@ -19,6 +19,7 @@ import pathlib
 import os
 import os.path as op
 import sys
+import tomllib
 
 import dclab
 # include parent directory
@@ -82,12 +83,10 @@ master_doc = 'index'
 # General information about the project.
 project = 'dclab'
 github_project = 'DC-analysis/' + project
-credits_path = pathlib.Path(__file__).parent.parent / "CREDITS"
-if credits_path.exists():
-    authors = [c.strip() for c in credits_path.read_text().split("\n")
-               if c and not c.startswith("#")]
-else:
-    authors = ["Paul Müller"]
+
+with (pathlib.Path(__file__).parent.parent / "pyproject.toml").open("rb") as f:
+    data = tomllib.load(f)
+authors = [a["name"] for a in data["project"]["authors"]]
 author = ", ".join(authors)
 copyright = '2015, ' + author
 

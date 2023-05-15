@@ -167,4 +167,4 @@ If you use dclab in a scientific publication, please cite it with:
    [Software]. Available at https://github.com/DC-analysis/dclab.
 
 If the journal does not accept ``and others``, you can fill in the missing
-names from the `credits file <https://github.com/DC-analysis/dclab/blob/master/CREDITS>`_.
+names from the `pyproject.toml file <https://github.com/DC-analysis/dclab/blob/master/pyproject.toml>`_.

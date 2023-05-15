@@ -12,6 +12,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dclab"
 authors = [
+    # In alphabetical order.
+    {name = "Benedikt Hartmann"},
+    {name = "Eoghan O'Connell"},
+    {name = "Maik Herbig"},
+    {name = "Maximilian Schlögel"},
+    {name = "Paul Müller"},
+    {name = "Philipp Rosendahl"},
+]
+maintainers = [
     {name = "Paul Müller", email="dev@craban.de"},
 ]
 description = "Library for real-time deformability cytometry (RT-DC)"
@@ -24,7 +33,7 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Visualization',
     'Intended Audience :: Science/Research',
 ]
-license = {"file" = "LICENSE"}
+license = {text = "GPL version 2.0 or later"}
 dependencies = [
     "h5py>=3.0.0",
     "hdf5plugin>=3.3.1",
@@ -59,8 +68,8 @@ homepage = "https://github.com/DC-Analysis/dclab"
 documentation = "https://dclab.readthedocs.io/en/stable/"
 changelog = "https://dclab.readthedocs.io/en/stable/sec_changelog.html"
 
-[tool.setuptools]
-packages = ["dclab"]
+[tool.setuptools.packages]
+find = {}
 
 [tool.setuptools_scm]
 write_to = "dclab/_version.py"

@@ -29,6 +29,7 @@ def new_dataset(data, identifier=None, **kwargs):
         - subclass of `RTDCBase`
           (will create a hierarchy child)
         - DCOR resource URL
+        - URL to file in S3-compatible object store
     identifier: str
         A unique identifier for this dataset. If set to `None`
         an identifier is generated.

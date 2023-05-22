@@ -309,7 +309,7 @@ class RTDC_HDF5(RTDCBase):
         Parameters
         ----------
         h5path: str or pathlib.Path or file-like object
-            Path to a '.tdms' measurement file.
+            Path to an '.rtdc' measurement file or a file-like object
         h5kwargs: dict
             Additional keyword arguments given to :class:`h5py.File`
         *args:

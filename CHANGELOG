@@ -3,6 +3,7 @@
  - fix: minor bug lead to issue with latest rpy2 versions (invisible)
  - docs: restructuring and introduction of new features
  - ref: restructured fmt_hdf5 submodule
+ - ref: remove deprecated `write` method for creating .rtdc files
 0.50.4
  - setup: cleanup pyproject.toml
 0.50.3

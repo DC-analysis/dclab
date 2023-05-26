@@ -19,8 +19,8 @@ or derived from other RT-DC datasets
 (:class:`RTDC_Hierarchy <dclab.rtdc_dataset.RTDC_Hierarchy>`).
 
 
-Basic usage
-===========
+Opening a dataset
+=================
 The convenience function :func:`dclab.new_dataset` takes care of determining
 the data format and returns the corresponding derived class.
 
@@ -33,8 +33,8 @@ the data format and returns the corresponding derived class.
     In [3]: ds.__class__.__name__
 
 
-Working with other data
------------------------
+Creating an in-memory dataset
+=============================
 It is also possible to load other data into dclab from a dictionary.
 
 .. ipython::
@@ -65,8 +65,39 @@ make use of the :class:`RTDCWriter <dclab.rtdc_dataset.writer.RTDCWriter>` class
     In [7]: print(ds_custom.config["experiment"])
 
 
-Using filters
--------------
+Exporting data
+==============
+The :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class has the attribute
+:attr:`RTDCBase.export <dclab.rtdc_dataset.RTDCBase.export>`
+which allows to export event data to several data file formats. See
+:ref:`sec_ref_rtdc_export` for more information.
+
+.. ipython::
+
+    In [9]: ds.export.tsv(path="export_example.tsv",
+       ...:               features=["area_um", "deform"],
+       ...:               filtered=True,
+       ...:               override=True)
+       ...:
+
+    In [9]: ds.export.hdf5(path="export_example.rtdc",
+       ...:                features=["area_um", "aspect", "deform"],
+       ...:                filtered=True,
+       ...:                override=True)
+       ...:
+
+Note that data exported as HDF5 files can be loaded with dclab
+(reproducing the previously computed statistics - without filters).
+
+.. ipython::
+
+    In [11]: ds2 = dclab.new_dataset("export_example.rtdc")
+
+    In [12]: ds2["deform"][:].mean()
+
+
+Filtering (Gating)
+==================
 Filters are used to mask e.g. debris or doublets from a dataset.
 
 .. ipython::
@@ -95,8 +126,9 @@ Filters are used to mask e.g. debris or doublets from a dataset.
 Note that ``ds.apply_filter()`` must be called, otherwise
 ``ds.filter.all`` is not updated.
 
+
 Creating hierarchies
---------------------
+====================
 When applying filtering operations, it is sometimes helpful to
 use hierarchies for keeping track of the individual filtering steps.
 
@@ -128,54 +160,8 @@ Otherwise you cannot be sure that all information properly propagated through
 your hierarchy (Your grandchild might be an orphan).
 
 
-Scripting goodies
------------------
-Here are a few useful functionalities for scripting with dclab.
-
-.. ipython::
-
-    # unique identifier of the RTDCBase instance (not reproducible)
-    In [14]: ds.identifier
-
-    # reproducible hash of the dataset
-    In [15]: ds.hash
-
-    # dataset format
-    In [15]: ds.format
-
-    # all available features
-    In [16]: ds.features
-
-    # scalar (one number per event) features
-    In [16]: ds.features_scalar
-
-    # innate (present in the underlying data file) features
-    In [16]: ds.features_innate
-
-    # loaded (innate and computed ancillaries) features
-    In [16]: ds.features_loaded
-
-    # test feature availability (success)
-    In [17]: "area_um" in ds
-
-    # test feature availability (failure)
-    In [18]: "image" in ds
-
-    # accessing a feature and computing its mean
-    In [19]: ds["area_um"][:].mean()
-
-    # accessing the measurement configuration
-    In [20]: ds.config.keys()
-
-    In [21]: ds.config["experiment"]
-
-    # determine the identifier of the hierarchy parent
-    In [22]: child.config["filtering"]["hierarchy parent"]
-
-    
-
-Statistics
-==========
+Computing feature statistics
+============================
 The :ref:`sec_ref_statistics` module comes with a predefined set of
 methods to compute simple feature statistics. 
 
@@ -219,33 +205,47 @@ These are the available statistics methods:
     In [9]: dclab.statistics.Statistics.available_methods.keys()
 
 
-Export
-======
-The :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class has the attribute
-:attr:`RTDCBase.export <dclab.rtdc_dataset.RTDCBase.export>`
-which allows to export event data to several data file formats. See
-:ref:`sec_ref_rtdc_export` for more information.
+
+Commonly used scripting examples
+================================
+Here are a few useful functionalities for scripting with dclab.
 
 .. ipython::
 
-    In [9]: ds.export.tsv(path="export_example.tsv",
-       ...:               features=["area_um", "deform"],
-       ...:               filtered=True,
-       ...:               override=True)
-       ...:
+    # unique identifier of the RTDCBase instance (not reproducible)
+    In [14]: ds.identifier
 
-    In [9]: ds.export.hdf5(path="export_example.rtdc",
-       ...:                features=["area_um", "aspect", "deform"],
-       ...:                filtered=True,
-       ...:                override=True)
-       ...:
+    # reproducible hash of the dataset
+    In [15]: ds.hash
 
-Note that data exported as HDF5 files can be loaded with dclab
-(reproducing the previously computed statistics - without filters).
+    # dataset format
+    In [15]: ds.format
 
-.. ipython::
+    # all available features
+    In [16]: ds.features
 
-    In [11]: ds2 = dclab.new_dataset("export_example.rtdc")
+    # scalar (one number per event) features
+    In [16]: ds.features_scalar
 
-    In [12]: ds2["deform"][:].mean()
+    # innate (present in the underlying data file) features
+    In [16]: ds.features_innate
 
+    # loaded (innate and computed ancillaries) features
+    In [16]: ds.features_loaded
+
+    # test feature availability (success)
+    In [17]: "area_um" in ds
+
+    # test feature availability (failure)
+    In [18]: "image" in ds
+
+    # accessing a feature and computing its mean
+    In [19]: ds["area_um"][:].mean()
+
+    # accessing the measurement configuration
+    In [20]: ds.config.keys()
+
+    In [21]: ds.config["experiment"]
+
+    # determine the identifier of the hierarchy parent
+    In [22]: child.config["filtering"]["hierarchy parent"]

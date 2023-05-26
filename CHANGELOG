@@ -1,7 +1,7 @@
 0.51.0
  - feat: introduce read-support for local basins (upstream features)
  - fix: minor bug lead to issue with latest rpy2 versions (invisible)
- - docs: minor typo cleanup
+ - docs: minor typo cleanup and restructuring
  - ref: restructured fmt_hdf5 submodule
 0.50.4
  - setup: cleanup pyproject.toml

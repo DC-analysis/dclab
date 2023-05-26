@@ -21,8 +21,8 @@ a subset of these:
 - ``pip install dclab[export]``: for .avi and .fcs export
 - ``pip install dclab[lme4]``: for :ref:`linear mixed effects model analysis <sec_av_lme4>` using `R/lme4 <https://cran.r-project.org/web/packages/lme4/index.html>`_
 - ``pip install dclab[ml]``: for :ref:`machine-learning applications <sec_av_ml>`
-- ``pip install dclab[tdms]``: for the (outdated) .tdms file format
 - ``pip install dclab[s3]``: for accessing .rtdc (HDF5) data on S3-compatible storage
+- ``pip install dclab[tdms]``: for the (outdated) .tdms file format
 
 You may also combine these dependencies, i.e. ``pip install dclab[dcor,s3]``
 for DCOR and S3 support.
@@ -30,7 +30,7 @@ for DCOR and S3 support.
 In addition, dclab already comes with code from `OpenCV <https://opencv.org/>`_
 (computation of moments) and `scikit-image <http://scikit-image.org/>`_
 (computation of contours and points in polygons) to reduce the list of
-dependencies (these libraries are not required by dclab).
+dependencies (these libraries are not required to run dclab).
 
 Note that if you are installing from source or if no binary wheel is
 available for your platform and Python version, `Cython <http://cython.org/>`_
@@ -56,6 +56,10 @@ Here is a list of use cases that would motivate an installation of dclab.
   improvements or bug fixes from which you would like to benefit.
   Please note that `DCKit <https://github.com/DC-analysis/DCKit/>`_
   offers a graphical user interface for batch conversion from .tdms to .rtdc.
+- You have built your own deformability cytometry device and would like to
+  use the powers of dclab to analyze your data. There is user-convenient
+  :class:`.RTDCWriter` class that allows you to convert your tabular data
+  to *.rtdc* files, see also :ref:`working-with-other-data`.
 - You would like to apply a simple set of filters (e.g. polygon filters that you
   exported from within Shape-Out) to every new measurement you take and
   apply a custom data analysis pipeline to the filtered data. This is a
@@ -83,7 +87,7 @@ advice, do not hesitate to
 Basic usage
 ===========
 Experimental RT-DC datasets are always loaded with the
-:func:`new_dataset <dclab.rtdc_dataset.load.new_dataset>` method:
+:func:`.new_dataset` method:
 
 .. code-block:: python
 
@@ -98,8 +102,8 @@ Experimental RT-DC datasets are always loaded with the
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
 
 
-The object returned by `new_dataset` is always an instance of
-:class:`RTDCBase <dclab.rtdc_dataset.core.RTDCBase>`. It enables read-only (!)
+The object returned by :func:`.new_dataset` is always an instance of
+:class:`.RTDCBase`. It enables read-only (!)
 access to all features (e.g. "deform", "area_um") of the dataset. To show all
 available features, use:
 

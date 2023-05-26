@@ -90,9 +90,9 @@ def test_basin_features_error_external_links_dataset():
     h5path_small = h5path.with_name("smaller.rtdc")
 
     # Dataset creation
-    with (h5py.File(h5path) as src,
-          h5py.File(h5path_small, "w") as dst,
-          h5py.File(h5path_image, "w") as h5):
+    with h5py.File(h5path) as src, \
+            h5py.File(h5path_small, "w") as dst, \
+            h5py.File(h5path_image, "w") as h5:
         # first, copy all the scalar features to the new file
         rtdc_dataset.rtdc_copy(src_h5file=src,
                                dst_h5file=dst,
@@ -137,9 +137,9 @@ def test_basin_features_error_external_links_group():
     h5path_small = h5path.with_name("smaller.rtdc")
 
     # Dataset creation
-    with (h5py.File(h5path) as src,
-          h5py.File(h5path_small, "w") as dst,
-          h5py.File(h5path_logs, "w") as h5):
+    with h5py.File(h5path) as src, \
+            h5py.File(h5path_small, "w") as dst, \
+            h5py.File(h5path_logs, "w") as h5:
         # first, copy all the scalar features to the new file
         rtdc_dataset.rtdc_copy(src_h5file=src,
                                dst_h5file=dst,
@@ -184,8 +184,7 @@ def test_basin_features_error_original_links_dataset():
     h5path_image = h5path.with_name("image.hdf5")
 
     # Dataset creation
-    with (h5py.File(h5path) as src,
-          h5py.File(h5path_image, "w") as h5):
+    with h5py.File(h5path) as src, h5py.File(h5path_image, "w") as h5:
         # write image data to separate file
         h5["image"] = src["/events/image"][:]
 

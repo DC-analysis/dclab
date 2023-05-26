@@ -222,7 +222,7 @@ class Rlme4(object):
             # p values.
             rpy2.robjects.globalenv["Model"] = r_model
             rpy2.robjects.globalenv["NullModel"] = r_nullmodel
-            r_anova = r("Anova = anova(Model, NullModel)")
+            r_anova = r("anova(Model, NullModel)")
             try:
                 pvalue = r_anova.rx2["Pr(>Chisq)"][1]
             except ValueError:  # rpy2 2.9.4

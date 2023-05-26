@@ -1,9 +1,16 @@
 """
-Basins are files or links that point to other .rtdc files which
-originate from the same dataset but contain more features. Basins
+Basins are other .rtdc files on disk or online (DCOR, S3) which originate
+from the same dataset but (potentially) contain more features. Basins
 are useful if you would like to have a small copy of selected
 features in a separate file while still being able to access
-all features from the original dataset.
+all features from the original file. E.g. you could load a small
+.rtdc file from your local disk and access the larger "image"
+feature data from an S3 basin. Basins are active by default, which
+means that if you load a dataset that defines basins and these
+basins are available, they will be integrated seamlessly into your
+analysis pipeline. You can find out which features originate from
+other basins via the ``features_basin`` property of an
+:class:`.RTDCBase` instance.
 """
 from __future__ import annotations
 

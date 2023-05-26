@@ -118,6 +118,7 @@ Dictionary format
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_Dict
 
+
 HDF5 (.rtdc) format
 -------------------
 
@@ -127,10 +128,25 @@ HDF5 (.rtdc) format
 .. autodata:: dclab.rtdc_dataset.fmt_hdf5.MIN_DCLAB_EXPORT_VERSION
 
 
+HDF5 basins
+...........
+
+.. automodule:: dclab.rtdc_dataset.fmt_hdf5.basins
+    :members:
+
+
+
 Hierarchy format
 ----------------
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_Hierarchy
+
+
+S3 file format
+--------------
+
+.. autoclass:: dclab.rtdc_dataset.RTDC_S3
+
 
 TDMS format
 -----------

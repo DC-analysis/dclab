@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
-from dclab.rtdc_dataset.fmt_hdf5 import (
+from dclab.rtdc_dataset.fmt_hdf5.basins import (
     ExternalDataForbiddenError,
     check_external,
     initialize_basin_flooded_h5file)

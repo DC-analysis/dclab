@@ -1,6 +1,7 @@
 0.51.0
  - feat: introduce read-support for local basins (upstream features)
  - docs: minor typo cleanup
+ - ref: restructured fmt_hdf5 submodule
 0.50.4
  - setup: cleanup pyproject.toml
 0.50.3

@@ -1,3 +1,6 @@
+0.51.0
+ - feat: introduce read-support for local basins (upstream features)
+ - docs: minor typo cleanup
 0.50.4
  - setup: cleanup pyproject.toml
 0.50.3

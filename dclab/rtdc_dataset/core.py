@@ -41,6 +41,8 @@ class RTDCBase(abc.ABC):
         self._ancillaries = {}
         # Temporary features are defined by the user ad hoc at runtime.
         self._usertemp = {}
+        # Basin features to be populated by the subclasses (used by RTDC_HDF5)
+        self._features_basin = []
         #: Configuration of the measurement
         self.config = None
         #: Export functionalities; instance of
@@ -267,6 +269,11 @@ class RTDCBase(abc.ABC):
                 mycols.append(col)
         mycols.sort()
         return mycols
+
+    @property
+    def features_basin(self):
+        """All features accessed via upstream basins from other locations"""
+        return self._features_basin
 
     @property
     def features_innate(self):

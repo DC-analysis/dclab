@@ -305,8 +305,7 @@ def test_user_section_set_save_reload_fmt_dict():
     ds.config["experiment"]["sample"] = "test"
     ds.config["experiment"]["run index"] = 1
     expath = tpath / "exported.rtdc"
-    with expath as exp:
-        ds.export.hdf5(exp, features=["deform", "area_um"])
+    ds.export.hdf5(expath, features=["deform", "area_um"])
     # make sure that worked
     with h5py.File(expath, "r") as h5:
         assert h5.attrs["user:some metadata"] == 42

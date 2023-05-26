@@ -139,7 +139,7 @@ class PlugInFeature(AncillaryFeature):
         # We assume that the script does not import any other custom
         # Python scripts.
         md5hasher = hashlib.md5()
-        if self.plugin_path is not None:
+        if isinstance(self.plugin_path, pathlib.Path):
             md5hasher.update(self.plugin_path.read_bytes())
         else:
             md5hasher.update(original_info["method"].__code__.co_code)

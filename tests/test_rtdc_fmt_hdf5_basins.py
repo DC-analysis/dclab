@@ -8,6 +8,8 @@ from dclab import new_dataset, rtdc_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_hdf5.basins import (
     ExternalDataForbiddenError,
     check_external,
+    get_measurement_identifier,
+    file_matches_identifier,
     initialize_basin_flooded_h5file)
 
 from helper_methods import retrieve_data
@@ -200,3 +202,48 @@ def test_basin_features_error_original_links_dataset():
     with pytest.raises(ExternalDataForbiddenError,
                        match=r"not permitted for security reasons"):
         initialize_basin_flooded_h5file(h5path, external="raise")
+
+
+def test_basin_identifiers_from_run_identifier():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    with h5py.File(h5path, "w") as hw:
+        hw.attrs["experiment:run identifier"] = "hey-you-ekelpack"
+    with h5py.File(h5path) as h5:
+        assert get_measurement_identifier(h5) == "hey-you-ekelpack"
+
+
+def test_basin_identifiers_from_time_and_setup_id():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    with h5py.File(h5path) as h5:
+        assert get_measurement_identifier(h5) == \
+               "01cd05a0-e084-0451-c470-2a2bf13c9e2d"
+
+
+def test_basin_identifier_matches_file():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    assert file_matches_identifier(
+        muid="01cd05a0-e084-0451-c470-2a2bf13c9e2d",
+        path=h5path)
+
+
+def test_basin_identifier_matches_file_control():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    assert not file_matches_identifier(
+        muid="21cd05a0-e084-0451-c470-2a2bf13c9e2a",
+        path=h5path)
+
+
+def test_basin_identifier_matches_file_none():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    assert file_matches_identifier(
+        muid=None,
+        path=h5path)
+
+
+def test_basin_identifier_matches_file_none_invalid():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    with h5py.File(h5path, "a") as h5:
+        del h5.attrs["setup:identifier"]
+    assert not file_matches_identifier(
+        muid="01cd05a0-e084-0451-c470-2a2bf13c9e2d",
+        path=h5path)

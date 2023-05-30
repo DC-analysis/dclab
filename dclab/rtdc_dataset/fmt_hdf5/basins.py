@@ -14,10 +14,12 @@ other basins via the ``features_basin`` property of an
 """
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import pathlib
 from typing import Any, BinaryIO, Dict, Literal
+import uuid
 import warnings
 
 import h5py
@@ -141,6 +143,54 @@ def combine_h5files(paths: list,
     return fd, linked_features
 
 
+def get_measurement_identifier(h5file):
+    """Return a unique measurement identifier for an open :class:`h5py.File`
+
+    Return the [experiment]:"run index" configuration key, if it
+    exists. Otherwise, return the MD5 sum computed from the measurement
+    time, date, and setup identifier.
+
+    Returns `None` if no identifier could be found or computed.
+    """
+    identifier = h5file.attrs.get("experiment:run identifier", None)
+    if identifier is None:
+        time = h5file.attrs.get("experiment:time", None)
+        date = h5file.attrs.get("experiment:date", None)
+        sid = h5file.attrs.get("setup:identifier", None)
+        if None not in [time, date, sid]:
+            # only compute an identifier if all of the above are defined.
+            hasher = hashlib.md5(f"{time}_{date}_{sid}".encode("utf-8"))
+            identifier = str(uuid.UUID(hex=hasher.hexdigest()))
+    return identifier
+
+
+def file_matches_identifier(path, muid):
+    """Return True if the measurement identifiers match or if `muid` is None
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        The path to check for the measurement identifier.
+    muid: str or None
+        The measurement identifier string that is searched in `path`
+        using :func:`get_measurement_identifier`. If `muid` is None,
+        and `path` exists, then the identifier checks are skipped
+        and True is returned.
+    """
+    match = False
+
+    if muid is not None and path.exists():
+        # Verify dataset identifier
+        with h5py.File(path) as h5:
+            h5muid = get_measurement_identifier(h5)
+            match = muid == h5muid
+    elif muid is None and path.exists():
+        # Not enough information, default to True
+        match = True
+
+    return match
+
+
 def initialize_basin_flooded_h5file(
         h5path: str | pathlib.Path | BinaryIO,
         h5kwargs: Dict[str, Any] | None = None,
@@ -184,7 +234,6 @@ def initialize_basin_flooded_h5file(
     TODO
     ----
     - Support for S3 basins
-    - Reference/Identifier check for `file` basins
     - Make used basins available to user
     - Definition of basins specifications (order/priority, text, type, ...)
     - Also return features that are accessed online-only in a seprate list
@@ -201,6 +250,8 @@ def initialize_basin_flooded_h5file(
     h5init = h5py.File(h5path, mode="r", **h5kwargs)
     if external == "raise":
         assert_no_external(h5init)
+    # Read or compute the identifier of the source file
+    muid = get_measurement_identifier(h5init)
     # Check whether there are supported basins
     basin_list = []
     for bk in sorted(h5init.get("basins", [])):  # priority via `sorted`
@@ -212,13 +263,13 @@ def initialize_basin_flooded_h5file(
         if bdict["type"] == "file":
             for pp in bdict["paths"]:
                 pp = pathlib.Path(pp)
-                # Check absolute and relative paths
-                if pp.exists():
+                # Check absolute path first
+                if file_matches_identifier(pp, muid):
                     basin_list.append(pp)
                     break
-                # Also check for relative paths
+                # Also check for relative path
                 rp = h5path.parent / pp
-                if rp.exists():
+                if file_matches_identifier(rp, muid):
                     basin_list.append(rp)
                     break
         else:

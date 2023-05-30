@@ -37,6 +37,7 @@ CFG_METADATA = {
         ["date", str, "Date of measurement ('YYYY-MM-DD')"],
         ["event count", fint, "Number of recorded events"],
         ["run index", fint, "Index of measurement run"],
+        ["run identifier", str, "Unique measurement identifier"],
         ["sample", str, "Measured sample or user-defined reference"],
         ["time", str, "Start time of measurement ('HH:MM:SS[.S]')"],
     ],

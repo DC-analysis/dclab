@@ -76,6 +76,9 @@ LOG_MAX_LINE_LENGTH = 100
 
 #: keys that are optional
 OPTIONAL_KEYS = {
+    "experiment": [
+        "run identifier",
+    ],
     "fluorescence": [
         "baseline 1 offset",
         "baseline 2 offset",

@@ -125,14 +125,10 @@ HDF5 (.rtdc) format
 .. autoclass:: dclab.rtdc_dataset.RTDC_HDF5
     :members:
 
-.. autodata:: dclab.rtdc_dataset.fmt_hdf5.MIN_DCLAB_EXPORT_VERSION
-
-
-HDF5 basins
-...........
-
-.. automodule:: dclab.rtdc_dataset.fmt_hdf5.basins
+.. autoclass:: dclab.rtdc_dataset.fmt_hdf5.base.HDF5Basin
     :members:
+
+.. autodata:: dclab.rtdc_dataset.fmt_hdf5.MIN_DCLAB_EXPORT_VERSION
 
 
 
@@ -161,6 +157,14 @@ TDMS format
 
 
 .. _cr_ancillaries:
+
+
+Basin features
+--------------
+.. automodule:: dclab.rtdc_dataset.feat_basin.Basin
+    :members:
+
+
 
 Ancillaries
 -----------
@@ -330,6 +334,21 @@ statistics
 
 
 .. _sec_ref_writer:
+
+
+HDF5 manipulation
+=================
+
+.. automodule:: dclab.rtdc_dataset.copier
+   :members:
+   :undoc-members:
+
+
+.. automodule:: dclab.rtdc_dataset.linker
+   :members:
+   :undoc-members:
+
+
 
 Writing RT-DC files
 ===================

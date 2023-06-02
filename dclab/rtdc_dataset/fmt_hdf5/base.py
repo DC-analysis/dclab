@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import functools
+import json
 import pathlib
 from typing import Any, BinaryIO, Dict
 import warnings
@@ -13,11 +14,15 @@ from ...util import hashobj, hashfile
 
 from ..config import Configuration
 from ..core import RTDCBase
+from .. import feat_basin
 
-from . import basins
 from . import events
 from . import logs
 from . import tables
+
+
+#: rtdc files exported with dclab prior to this version are not supported
+MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 
 
 class OldFormatNotSupportedError(BaseException):
@@ -62,14 +67,15 @@ class RTDC_HDF5(RTDCBase):
         self._hash = None
         self.path = h5path
 
-        # In dclab 0.51.0, we introduced basins, a simple way of combining
-        # HDF5-based datasets (including the :class:`.HDF5_S3` format)
-        # *during* initialization. The idea is to be able to store parts
-        # of the dataset (e.g. images) in a separate file that could then
-        # be hosted on an S3 instance.
-        self.h5file, fbasin = basins.initialize_basin_flooded_h5file(
-            h5path, h5kwargs)
-        self._features_basin += fbasin
+        # Increase the read cache (which defaults to 1MiB), since
+        # normally we have around 2.5MiB image chunks.
+        if h5kwargs is None:
+            h5kwargs = {}
+        h5kwargs.setdefault("rdcc_nbytes", 10 * 1024 ** 2)
+        h5kwargs.setdefault("rdcc_w0", 0)
+
+        self.h5kwargs = h5kwargs
+        self.h5file = h5py.File(h5path, **h5kwargs)
 
         self._events = events.H5Events(self.h5file)
 
@@ -170,6 +176,24 @@ class RTDC_HDF5(RTDCBase):
             self._hash = hashobj(tohash)
         return self._hash
 
+    def basins_get_dicts(self):
+        """Return list of dicts for all basins defined in `self.h5file`"""
+        basins = []
+        for bk in sorted(self.h5file.get("basins", [])):  # `sorted` priority
+            bdat = list(self.h5file["basins"][bk])
+            if isinstance(bdat[0], bytes):
+                bdat = [bi.decode("utf") for bi in bdat]
+            bdict = json.loads(" ".join(bdat))
+            basins.append(bdict)
+        return basins
 
-#: rtdc files exported with dclab prior to this version are not supported
-MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
+
+class HDF5Basin(feat_basin.Basin):
+    basin_format = "hdf5"
+    basin_type = "file"
+
+    def load_dataset(self, location, **kwargs):
+        return RTDC_HDF5(location, enable_basins=False, **kwargs)
+
+    def is_available(self):
+        return pathlib.Path(self.location).exists()

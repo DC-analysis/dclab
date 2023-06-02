@@ -1,5 +1,10 @@
 """RT-DC dataset core classes and methods"""
 import abc
+import hashlib
+import itertools
+import pathlib
+from typing import Literal
+import uuid
 import random
 import warnings
 
@@ -11,6 +16,7 @@ from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 
 from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
+from . import feat_basin
 from .export import Export
 from .filter import Filter
 
@@ -20,7 +26,7 @@ class LogTransformWarning(UserWarning):
 
 
 class RTDCBase(abc.ABC):
-    def __init__(self, identifier=None):
+    def __init__(self, identifier=None, enable_basins=True):
         """RT-DC measurement base class
 
         Notes
@@ -41,8 +47,8 @@ class RTDCBase(abc.ABC):
         self._ancillaries = {}
         # Temporary features are defined by the user ad hoc at runtime.
         self._usertemp = {}
-        # Basin features to be populated by the subclasses (used by RTDC_HDF5)
-        self._features_basin = []
+        # List of :class:`.Basin` for external features
+        self.basins = []
         #: Configuration of the measurement
         self.config = None
         #: Export functionalities; instance of
@@ -63,27 +69,33 @@ class RTDCBase(abc.ABC):
         #: Path or DCOR identifier of the dataset (set to "none"
         #: for :class:`RTDC_Dict`)
         self.path = None
-        # Unique identifier
+        # Unique, random identifier
         if identifier is None:
-            # Generate a unique identifier for this dataset
+            # Generate a unique, random identifier for this dataset
             rhex = [random.choice('0123456789abcdef') for _n in range(7)]
             self._identifier = "mm-{}_{}".format(self.format, "".join(rhex))
         else:
             self._identifier = identifier
 
-    def __contains__(self, key):
+        # TODO: restructure class instantiation so this is not part of
+        # self.init_filters anymore.
+        self._enable_basins = enable_basins
+
+    def __contains__(self, feat):
         ct = False
-        if key in self._events or key in self._usertemp:
+        if (feat in self._events
+                or feat in self._usertemp
+                or feat in self.features_basin):
             ct = True
         else:
             # Check ancillary features data
-            if key in self._ancillaries:
+            if feat in self._ancillaries:
                 # already computed
                 ct = True
-            elif key in AncillaryFeature.feature_names:
+            elif feat in AncillaryFeature.feature_names:
                 # get all instance of AncillaryFeature that
-                # compute the feature `key`
-                instlist = AncillaryFeature.get_instances(key)
+                # check availability of the feature `feat`
+                instlist = AncillaryFeature.get_instances(feat)
                 for inst in instlist:
                     if inst.is_available(self):
                         # to be computed
@@ -91,32 +103,29 @@ class RTDCBase(abc.ABC):
                         break
         return ct
 
-    def __getitem__(self, key):
-        if key in self._events:
-            return self._events[key]
-        elif key in self._usertemp:
-            return self._usertemp[key]
-        # Try to find the feature in the ancillary features
-        # (see feat_anc_core submodule for more information).
-        # These features are cached in `self._ancillaries`.
-        ancol = AncillaryFeature.available_features(self)
-        if key in ancol:
-            # The feature is available.
-            anhash = ancol[key].hash(self)
-            if (key in self._ancillaries and
-                    self._ancillaries[key][0] == anhash):
-                # Use cached value
-                data = self._ancillaries[key][1]
-            else:
-                # Compute new value
-                data_dict = ancol[key].compute(self)
-                for okey in data_dict:
-                    # Store computed value in `self._ancillaries`.
-                    self._ancillaries[okey] = (anhash, data_dict[okey])
-                data = data_dict[key]
+    def __getitem__(self, feat):
+        if feat in self._events:
+            return self._events[feat]
+        elif feat in self._usertemp:
+            return self._usertemp[feat]
+        # 1. Check for cached ancillary data
+        data = self._get_ancillary_feature_data(feat, no_compute=True)
+        if data is not None:
             return data
-        else:
-            raise KeyError(f"Feature '{key}' does not exist in {self}!")
+        # 2. Check for file-based basin data
+        data = self._get_basin_feature_data(feat, basin_type="file")
+        if data is not None:
+            return data
+        # 3. Check for other basin data
+        data = self._get_basin_feature_data(feat)
+        if data is not None:
+            return data
+        # 4. Check for ancillary features that can be computed
+        data = self._get_ancillary_feature_data(feat)
+        if data is not None:
+            return data
+        # Not here ¯\_(ツ)_/¯
+        raise KeyError(f"Feature '{feat}' does not exist in {self}!")
 
     def __iter__(self):
         """An iterator over all valid scalar features"""
@@ -146,6 +155,78 @@ class RTDCBase(abc.ABC):
         if self.path != "none":
             repre += " ({})>".format(self.path)
         return repre
+
+    def _get_ancillary_feature_data(self,
+                                    feat: str,
+                                    no_compute: bool = False):
+        """Return feature data of ancillary features
+
+        Parameters
+        ----------
+        feat: str
+            Name of the feature
+        no_compute: bool
+            Whether to bother computing the feature. If it is not
+            already computed, return None instead
+
+        Returns
+        -------
+        data:
+            The feature object (array-like) or None if it could not
+            be found or was not computed.
+        """
+        data = None
+        # Try to find the feature in the ancillary features
+        # (see feat_anc_core submodule for more information).
+        # These features are cached in `self._ancillaries`.
+        ancol = AncillaryFeature.available_features(self)
+        if feat in ancol:
+            # The feature is available.
+            anhash = ancol[feat].hash(self)
+            if (feat in self._ancillaries and
+                    self._ancillaries[feat][0] == anhash):
+                # Use cached value
+                data = self._ancillaries[feat][1]
+            elif not no_compute:
+                # Compute new value
+                data_dict = ancol[feat].compute(self)
+                for okey in data_dict:
+                    # Store computed value in `self._ancillaries`.
+                    self._ancillaries[okey] = (anhash, data_dict[okey])
+                data = data_dict[feat]
+        return data
+
+    def _get_basin_feature_data(
+            self,
+            feat: str,
+            basin_type: Literal["file", "remote", None] = None):
+        """Return feature data from basins
+
+        Parameters
+        ----------
+        feat: str
+            Name of the feature
+        basin_type: str or bool
+            The basin type to look at, which is either "file"-based
+            (e.g. local on disk), "remote"-based (e.g. S3) all
+            basins (None, default).
+
+        Returns
+        -------
+        data:
+            The feature object (array-like) or None if it could not
+            be found or was not computed.
+        """
+        data = None
+        if self.basins:
+            for bn in self.basins:
+                if basin_type is not None and basin_type != bn.basin_type:
+                    # User asked for specific basin type
+                    continue
+                if feat in bn.features:
+                    data = bn.get_feature_data(feat)
+                    break
+        return data
 
     @staticmethod
     def _apply_scale(a, scale, feat):
@@ -229,6 +310,9 @@ class RTDCBase(abc.ABC):
         feats = list(self._events.keys())
         feats += list(self._usertemp.keys())
         feats += list(AncillaryFeature.feature_names)
+        if self.basins:
+            feats += list(
+                itertools.chain(*[bn.features for bn in self.basins]))
         feats = sorted(set(feats))
         # exclude non-standard features
         featsv = [ff for ff in feats if dfn.feature_exists(ff)]
@@ -255,6 +339,11 @@ class RTDCBase(abc.ABC):
         self.filter = Filter(self)
         self.reset_filter()
 
+        # TODO: properly restructure subclass instantiation to avoid this here:
+        # Enable basins
+        if self._enable_basins:
+            self.basins_enable()
+
     @property
     def identifier(self):
         """Unique (unreproducible) identifier"""
@@ -273,7 +362,11 @@ class RTDCBase(abc.ABC):
     @property
     def features_basin(self):
         """All features accessed via upstream basins from other locations"""
-        return self._features_basin
+        if self.basins:
+            return sorted(set(list(
+                itertools.chain(*[bn.features for bn in self.basins]))))
+        else:
+            return []
 
     @property
     def features_innate(self):
@@ -550,6 +643,77 @@ class RTDCBase(abc.ABC):
             density = np.array([])
 
         return density
+
+    def basins_get_dicts(self):
+        """Return the list dictionaries describing the dataset's basins"""
+        # Only implement this for classes that support this
+        return []
+
+    def basins_enable(self):
+        """Load all basins defined in the
+
+        .. versionadded:: 0.51.0
+
+        In dclab 0.51.0, we introduced basins, a simple way of combining
+        HDF5-based datasets (including the :class:`.HDF5_S3` format).
+        The idea is to be able to store parts of the dataset
+        (e.g. images) in a separate file that could then be located
+        someplace else (e.g. an S3 object store).
+
+        If an RT-DC file has "basins" defined, then these are sought out and
+        made available via the `features_basin` property.
+        """
+        bc = feat_basin.get_basin_classes()
+        muid = self.get_measurement_identifier()
+        for bdict in self.basins_get_dicts():
+            # Check whether this basin is supported and exists
+            if bdict["type"] == "file":
+                for pp in bdict["paths"]:
+                    pp = pathlib.Path(pp)
+                    # Instantiate the proper basin class
+                    bcls = bc[bdict["format"]]
+                    # Try absolute path
+                    bna = bcls(pp)
+                    if (bna.is_available()
+                            and bna.get_measurement_identifier() == muid):
+                        self.basins.append(bna)
+                        break
+                    # Try relative path
+                    thispath = pathlib.Path(self.path)
+                    if thispath.exists():
+                        # Insert relative path
+                        bnr = bcls(thispath.parent / pp)
+                        if (bnr.is_available()
+                                and bnr.get_measurement_identifier() == muid):
+                            self.basins.append(bnr)
+                            break
+            else:
+                warnings.warn(
+                    f"Encountered unsupported basin type '{bdict['type']}'!")
+
+    def get_measurement_identifier(self):
+        """Return a unique measurement identifier
+
+        Return the [experiment]:"run index" configuration feat, if it
+        exists. Otherwise, return the MD5 sum computed from the measurement
+        time, date, and setup identifier.
+
+        Returns `None` if no identifier could be found or computed.
+
+        .. versionadded:: 0.51.0
+
+        """
+        identifier = self.config.get("experiment", {}).get("run identifier",
+                                                           None)
+        if identifier is None:
+            time = self.config.get("experiment", {}).get("time", None)
+            date = self.config.get("experiment", {}).get("date", None)
+            sid = self.config.get("setup", {}).get("identifier", None)
+            if None not in [time, date, sid]:
+                # only compute an identifier if all of the above are defined.
+                hasher = hashlib.md5(f"{time}_{date}_{sid}".encode("utf-8"))
+                identifier = str(uuid.UUID(hex=hasher.hexdigest()))
+        return identifier
 
     def polygon_filter_add(self, filt):
         """Associate a Polygon Filter with this instance

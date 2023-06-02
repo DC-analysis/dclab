@@ -156,6 +156,23 @@ class RTDCBase(abc.ABC):
             repre += " ({})>".format(self.path)
         return repre
 
+    def _finalize_init(self):
+        """Subclasses must call this method at the end of `__init__`"""
+        self._finalize_init_basins()
+        self._finalize_init_filters()
+
+    def _finalize_init_basins(self):
+        """Initialize basins"""
+        if self._enable_basins:
+            self.basins_enable()
+
+    def _finalize_init_filters(self):
+        """Initialize filtering"""
+        #: Filtering functionalities (this is an instance of
+        #: :class:`dclab.rtdc_dataset.filter.Filter`.
+        self.filter = Filter(self)
+        self.reset_filter()
+
     def _get_ancillary_feature_data(self,
                                     feat: str,
                                     no_compute: bool = False):
@@ -332,17 +349,6 @@ class RTDCBase(abc.ABC):
             "RTDCBase._plot_filter has been removed in dclab 0.16.0. "
             + "Please use the output of RTDCBase.downsample_scatter "
             + "with the argument ret_mask instead.")
-
-    def _init_filters(self):
-        #: Filtering functionalities (this is an instance of
-        #: :class:`dclab.rtdc_dataset.filter.Filter`.
-        self.filter = Filter(self)
-        self.reset_filter()
-
-        # TODO: properly restructure subclass instantiation to avoid this here:
-        # Enable basins
-        if self._enable_basins:
-            self.basins_enable()
 
     @property
     def identifier(self):

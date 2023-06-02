@@ -243,8 +243,8 @@ class RTDC_DCOR(RTDCBase):
         self.title = f"{self.config['experiment']['sample']} - " \
             + f"M{self.config['experiment']['run index']}"
 
-        # Set up filtering
-        self._init_filters()
+        # Finalize initialization
+        self._finalize_init()
 
     def __enter__(self):
         return self

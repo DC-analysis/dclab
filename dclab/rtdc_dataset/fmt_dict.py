@@ -92,8 +92,9 @@ class RTDC_Dict(RTDCBase):
 
         self.config = Configuration()
         self.config["experiment"]["event count"] = event_count
-        # Set up filtering
-        self._init_filters()
+
+        # Finish initialization
+        self._finalize_init()
 
     @property
     def hash(self):

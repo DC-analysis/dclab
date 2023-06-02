@@ -307,6 +307,10 @@ class RTDC_Hierarchy(RTDCBase):
         self.config = self._create_config()  # init config
         self._update_config()  # sets e.g. event count
 
+        # We are not calling `_finalize_init`, because that would imply
+        # calling `_finalize_init_filters`.
+        self._finalize_init_basins()
+
         if apply_filter:
             # Apply the filter
             # This will also populate all event attributes

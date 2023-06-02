@@ -102,8 +102,8 @@ class RTDC_HDF5(RTDCBase):
         self.title = "{} - M{}".format(self.config["experiment"]["sample"],
                                        self.config["experiment"]["run index"])
 
-        # Set up filtering
-        self._init_filters()
+        # Finalize initialization
+        self._finalize_init()
 
     def __enter__(self):
         return self

@@ -74,6 +74,7 @@ class RTDC_S3(RTDC_HDF5):
 
         self._fs = s3fs.S3FileSystem(**s3fskw)
         self._f3d = self._fs.open(s3_path, mode='rb')
+        # This also takes care of `_finalize_init`
         super(RTDC_S3, self).__init__(
             h5path=self._f3d,
             *args,

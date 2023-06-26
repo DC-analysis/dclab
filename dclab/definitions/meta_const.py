@@ -129,31 +129,36 @@ CFG_METADATA = {
         # experiment-related qpi metadata, see qpretrieve for details
         ["wavelength", float, "Laser wavelength [nm]"],
         ["medium index", float, "Refractive index of Medium"],
+        ["pixel size raw oah", float, "Image space pixel size after iFFT [um]."],
         # post-analysis-related qpi metadata
         ["software version", str, "Software version used"],
+        # `qpi_oah_bg` - how background image was created
+        ["qpi bg method", str, "Experimental qpi_oah_bg 'experimental' "
+                               "or Computation method e.g. 'sparsemed'"],
         # calculation of pha and amp from hologram
-        ["padding", fbool, "If padding was used"],
-        ["subtract_mean", fbool, "Subtract mean of hologram before FFT"],
+        ["padding", fint, "Level of padding used (0 means no padding)"],
+        ["subtract mean", fbool, "Subtract mean of hologram before FFT"],
         # pipeline_kws
-        ["filter_name", str, "Fourier filter used"],
-        ["filter_size", str, "Fourier filter size [1/pix]"],
-        ["filter_size_interpretation", str, "How to interpret filter size"],
-        ["scale_to_filter", fboolorfloat, "Crop Fourier image before iFFT"],
-        ["sideband_freq", f1dfloattuple,
+        ["filter name", str, "Fourier filter used"],
+        ["filter size", str, "Fourier filter size [1/pix]"],
+        ["filter size interpretation", str, "How to interpret filter size"],
+        ["scale to filter", fboolorfloat, "Crop Fourier image before iFFT"],
+        ["sideband freq", f1dfloattuple,
          "Frequency coordinates of the sideband [1/pix]"],
-        ["invert_phase", fbool, "Invert the phase data"],
-        # "pixel_size_qpi" depends on `scale_to_filter`.
+        ["invert phase", fbool, "Invert the phase data"],
+        # "pixel size proc qpi" depends on `scale_to_filter`.
         # If `scale_to_filter` is False, this does not change.
         # If `scale_to_filter` is not False, this value will differ from
-        # `qpi_holo` `pixel size`.
-        ["pixel_size_qpi", float, "Image space pixel size after iFFT [um]."],
+        # "pixel size raw oah".
+        # RTDC "imaging:pixel size" will be the same as "pixel size proc qpi"
+        ["pixel size proc qpi", float, "Image space pixel size after iFFT [um]."],
         # postprocessing of phase and amplitude
-        ["amp fit_offset", str, "Fitting offset for processing amplitude"],
-        ["amp fit_profile", str, "Fitting profile for processing amplitude"],
-        ["amp border_px", fint, "Size of border for processing amplitude [pix]"],  # noqa:  E501
-        ["pha fit_offset", str, "Fitting offset for processing phase"],
-        ["pha fit_profile", str, "Fitting profile for processing phase"],
-        ["pha border_px", fint, "Size of border for processing phase [pix]"],
+        ["amp fit offset", str, "Fitting offset for processing amplitude"],
+        ["amp fit profile", str, "Fitting profile for processing amplitude"],
+        ["amp border px", fint, "Size of border for processing amplitude [pix]"],  # noqa:  E501
+        ["pha fit offset", str, "Fitting offset for processing phase"],
+        ["pha fit profile", str, "Fitting profile for processing phase"],
+        ["pha border px", fint, "Size of border for processing phase [pix]"],
     ],
     # All setup-related keywords, except imaging
     "setup": [

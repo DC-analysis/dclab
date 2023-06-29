@@ -1,7 +1,7 @@
 import copy
 
 from .meta_parse import (
-    fbool, fint, fintlist, func_types, lcstr, f1dfloattuple, fboolorfloat
+    fbool, fint, fintlist, func_types, lcstr, f1dfloatduple, fboolorfloat
 )
 
 #: All configuration keywords editable by the user

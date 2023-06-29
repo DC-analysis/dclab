@@ -76,11 +76,11 @@ FEATURES_SCALAR = [
     # Sum of the pressures applied to sample and sheath flow
     ["pressure", "Pressure [mPa]"],
     # QPI features computed from holographic data
-    ["qpi_dm_avg", "Dry Mass (avg) [pg]"],
-    ["qpi_dm_sd", "Dry Mass (sd) [pg]"],
-    ["qpi_pha_int", "Integrated Phase [rad]"],
-    ["qpi_ri_avg", "Refractive Index (avg)"],
-    ["qpi_ri_sd", "Refractive Index (sd)"],
+    ["qpi_dm_avg", "Dry mass (average) [pg]"],
+    ["qpi_dm_sd", "Dry mass (SD) [pg]"],
+    ["qpi_pha_int", "Integrated phase [rad]"],
+    ["qpi_ri_avg", "Refractive index (average)"],
+    ["qpi_ri_sd", "Refractive index (SD)"],
     # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
@@ -134,9 +134,9 @@ FEATURES_NON_SCALAR = [
     # See FLUOR_TRACES for valid keys
     ["trace", "Dictionary of fluorescence traces"],
     # QPI experimental holographic data
-    ["qpi_oah", "Off axis hologram"],
+    ["qpi_oah", "Off-axis hologram"],
     # QPI holographic background data (experimental or computed)
-    ["qpi_oah_bg", "Off axis hologram background image"],
+    ["qpi_oah_bg", "Off-axis hologram background"],
     # QPI features computed from holographic data
     ["qpi_pha", "Hologram phase image [rad]"],
     ["qpi_amp", "Hologram amplitude image"],

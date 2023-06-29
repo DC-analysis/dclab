@@ -146,7 +146,7 @@ CFG_METADATA = {
         ["filter size", float, "Fourier filter size [1/pix]"],
         ["scale to filter", fboolorfloat, "Scale QPI data to filter size"],
         # x, y coordinates
-        ["sideband freq", f1dfloattuple, "Sideband coordinates [1/pix]"],
+        ["sideband freq", f1dfloatduple, "Sideband coordinates [1/pix]"],
         ["invert phase", fbool, "Invert the phase data"],
         # "pixel size proc" depends on `scale_to_filter`.
         # If `scale_to_filter` is False, this is equal to "pixel size raw".

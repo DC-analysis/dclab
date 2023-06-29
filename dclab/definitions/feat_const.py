@@ -75,6 +75,13 @@ FEATURES_SCALAR = [
     ["pos_y", "Position lateral in channel [µm]"],
     # Sum of the pressures applied to sample and sheath flow
     ["pressure", "Pressure [mPa]"],
+    # QPI features computed from holographic data
+    ["qpi_dm_avg", "Dry Mass (avg) [pg]"],
+    ["qpi_dm_sd", "Dry Mass (sd) [pg]"],
+    ["qpi_pha_int", "Integrated Phase [rad]"],
+    ["qpi_ri_avg", "Refractive Index (avg)"],
+    ["qpi_ri_sd", "Refractive Index (sd)"],
+    # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
     ["temp", "Chip temperature [°C]"],
@@ -109,12 +116,6 @@ FEATURES_SCALAR = [
     # Fun fact: If we had decided to compute it from the convex contour,
     # then we would have close to none pixelation effects ¯\_(ツ)_/¯.
     ["volume", "Volume [µm³]"],
-    # QPI features computed from holographic data
-    ["qpi_dm_avg", "Dry Mass (avg) [pg]"],
-    ["qpi_dm_sd", "Dry Mass (sd) [pg]"],
-    ["qpi_ri_avg", "Refractive Index (avg) [a.u.]"],
-    ["qpi_ri_sd", "Refractive Index (sd) [a.u.]"],
-    ["qpi_pha_int", "Integrated Phase [rad]"],
 ]
 # Add userdef features
 for _i in range(10):

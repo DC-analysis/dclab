@@ -3,11 +3,13 @@ import numbers
 import numpy as np
 
 
-def f1dfloattuple(value):
-    """Tuple of floats"""
+def f1dfloatduple(value):
+    """Tuple of two floats (duple)"""
     if np.array(value).ndim != 1:
-        raise ValueError("Value is not 1 dimensional!")
+        raise ValueError(f"Value is not 1 dimensional, got {value}.")
     value = tuple(float(i) for i in value)
+    if len(value) != 2:
+        raise ValueError(f"Value must be of length two, got {len(value)}.")
     return value
 
 
@@ -35,12 +37,13 @@ def fbool(value):
 
 def fboolorfloat(value):
     """Bool or float"""
-    if isinstance(value, (str, bool)):
+    if isinstance(value, (str, bool)) or value == 0:
         return fbool(value)
     elif isinstance(value, (int, float)):
         return float(value)
     else:
-        raise ValueError("Value could not be converted to bool or float!")
+        raise ValueError(f"Value could not be converted to bool "
+                         f"or float, got {value}!")
 
 
 def fint(value):

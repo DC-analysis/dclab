@@ -127,38 +127,45 @@ CFG_METADATA = {
     # All qpi-related keywords
     "qpi": [
         # experiment-related qpi metadata, see qpretrieve for details
-        ["wavelength", float, "Laser wavelength [nm]"],
-        ["medium index", float, "Refractive index of Medium"],
-        ["pixel size raw oah", float, "Image space pixel size after iFFT [um]."],
+        ["wavelength", float, "Imaging wavelength [nm]"],
+        ["medium index", float, "Refractive index of medium"],
+        ["pixel size raw", float, "Hologram pixel size [µm]."],
         # post-analysis-related qpi metadata
-        ["software version", str, "Software version used"],
-        # `qpi_oah_bg` - how background image was created
-        ["qpi bg method", str, "Experimental qpi_oah_bg 'experimental' "
-                               "or Computation method e.g. 'sparsemed'"],
+        ["software version", str, "Software version(s)"],
+        # How background image was created 'experimental' or
+        # computation method e.g. 'sparsemed'
+        ["bg method", str, "Background computation method"],
         # calculation of pha and amp from hologram
-        ["padding", fint, "Level of padding used (0 means no padding)"],
-        ["subtract mean", fbool, "Subtract mean of hologram before FFT"],
+        # FFT preprocessing
+        # padding: 0 means no padding
+        ["padding", fint, "Level of padding"],
+        ["subtract mean", fbool, "Subtract mean before processing"],
         # pipeline_kws
         ["filter name", str, "Fourier filter used"],
-        ["filter size", str, "Fourier filter size [1/pix]"],
-        ["filter size interpretation", str, "How to interpret filter size"],
-        ["scale to filter", fboolorfloat, "Crop Fourier image before iFFT"],
-        ["sideband freq", f1dfloattuple,
-         "Frequency coordinates of the sideband [1/pix]"],
+        # Corresponds to `filter_size_interpretation="frequency index"`
+        ["filter size", float, "Fourier filter size [1/pix]"],
+        ["scale to filter", fboolorfloat, "Scale QPI data to filter size"],
+        # x, y coordinates
+        ["sideband freq", f1dfloattuple, "Sideband coordinates [1/pix]"],
         ["invert phase", fbool, "Invert the phase data"],
-        # "pixel size proc qpi" depends on `scale_to_filter`.
-        # If `scale_to_filter` is False, this does not change.
-        # If `scale_to_filter` is not False, this value will differ from
-        # "pixel size raw oah".
-        # RTDC "imaging:pixel size" will be the same as "pixel size proc qpi"
-        ["pixel size proc qpi", float, "Image space pixel size after iFFT [um]."],
+        # "pixel size proc" depends on `scale_to_filter`.
+        # If `scale_to_filter` is False, this is equal to "pixel size raw".
+        # If `scale_to_filter` is True or a float, this value will differ from
+        # "pixel size raw".
+        # RTDC "imaging:pixel size" equals "pixel size proc"
+        ["pixel size proc", float, "QPI pixel size [µm]."],
         # postprocessing of phase and amplitude
-        ["amp fit offset", str, "Fitting offset for processing amplitude"],
-        ["amp fit profile", str, "Fitting profile for processing amplitude"],
-        ["amp border px", fint, "Size of border for processing amplitude [pix]"],  # noqa:  E501
-        ["pha fit offset", str, "Fitting offset for processing phase"],
-        ["pha fit profile", str, "Fitting profile for processing phase"],
-        ["pha border px", fint, "Size of border for processing phase [pix]"],
+        ["amp fit offset", str, "Amplitude offset correction"],
+        ["amp fit profile", str, "Amplitude profile correction"],
+        ["pha fit offset", str, "Phase offset correction"],
+        ["pha fit profile", str, "Phase profile correction"],
+        # QPImage background correction mask information
+        ["amp border px", fint, "Width of border for amplitude [pix]"],
+        ["pha border px", fint, "Width of border for phase [pix]"],
+        # Forward compatible QPImage background correction for trivial
+        # masks e.g. "tblr". "tb" useful for RTDC channel.
+        ["amp border loc", str, "Border location specifier for amplitude"],
+        ["pha border loc", str, "Border location specifier for phase"],
     ],
     # All setup-related keywords, except imaging
     "setup": [

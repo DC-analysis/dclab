@@ -143,6 +143,21 @@ def test_copy_tables():
             np.pi, 2*np.pi, 10))
 
 
+def test_copy_tables_hdf5_issue_3214():
+    """Checks for a bug in HDF5
+
+    https://github.com/HDFGroup/hdf5/issues/3214
+    """
+    path = retrieve_data("fmt-hdf5_segfault-compound_2023.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # This caused a segmentation fault when using h5py.h5o.copy
+    # with "tables/cytoshot_monitor".
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_copy_metadata_config():

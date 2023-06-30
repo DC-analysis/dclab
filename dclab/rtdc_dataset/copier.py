@@ -38,11 +38,21 @@ def rtdc_copy(src_h5file: h5py.Group,
     if include_tables and "tables" in src_h5file:
         dst_h5file.require_group("tables")
         for tkey in src_h5file["tables"]:
-            h5ds_copy(src_loc=src_h5file["tables"],
-                      src_name=tkey,
-                      dst_loc=dst_h5file["tables"],
-                      dst_name=meta_prefix + tkey,
-                      recursive=False)
+            # There appears to be a problem with h5copy in some rare
+            # situations, so we do not use h5copy, but read and write
+            # the table data directly.
+            # https://github.com/HDFGroup/hdf5/issues/3214
+            # The following caused a Segmentation fault:
+            # h5ds_copy(src_loc=src_h5file["tables"],
+            #           src_name=tkey,
+            #           dst_loc=dst_h5file["tables"],
+            #           dst_name=meta_prefix + tkey,
+            #           recursive=False)
+            dst_h5file["tables"].create_dataset(
+                name=tkey,
+                data=src_h5file["tables"][tkey][:],
+                fletcher32=True,
+                **hdf5plugin.Zstd(clevel=5))
 
     # events
     if features != "none":

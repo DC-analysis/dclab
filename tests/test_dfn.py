@@ -1,4 +1,5 @@
 import numbers
+import re
 
 import numpy as np
 
@@ -108,7 +109,13 @@ def test_meta_parse_f1dfloatduple():
     assert meta_parse.f1dfloatduple([-8.999, 0.332]) == (-8.999, 0.332)
     assert meta_parse.f1dfloatduple((-8.999, 0.332)) == (-8.999, 0.332)
     assert meta_parse.f1dfloatduple(np.array([3, -1])) == (3.0, -1.0)
-    with pytest.raises(ValueError, match="Value is not 1 dimensional!"):
+    with pytest.raises(ValueError, match="Value must be of length two, "
+                                         "got length 3!"):
+        # the given value must be 1d
+        assert meta_parse.f1dfloatduple((3, -1, 5.6))
+    with pytest.raises(ValueError, match=re.escape(
+            "Value is not 1 dimensional, "
+            "got [[ 3.  -1. ]\n [ 4.   5.5]]!")):
         # the given value must be 1d
         assert meta_parse.f1dfloatduple(np.array([[3, -1], [4, 5.5]]))
 
@@ -146,8 +153,8 @@ def test_meta_parse_fboolorfloat():
     assert meta_parse.fboolorfloat(1) == 1.0
     assert meta_parse.fboolorfloat(-42) == -42.0
 
-    with pytest.raises(ValueError,
-                       match="Value could not be converted to bool or float!"):
+    with pytest.raises(ValueError, match=re.escape(
+            "Value could not be converted to bool or float, got [1, 2, 3]!")):
         assert meta_parse.fboolorfloat([1, 2, 3])
 
 

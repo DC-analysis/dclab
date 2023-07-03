@@ -6,10 +6,11 @@ import numpy as np
 def f1dfloatduple(value):
     """Tuple of two floats (duple)"""
     if np.array(value).ndim != 1:
-        raise ValueError(f"Value is not 1 dimensional, got {value}.")
+        raise ValueError(f"Value is not 1 dimensional, got {value}!")
     value = tuple(float(i) for i in value)
     if len(value) != 2:
-        raise ValueError(f"Value must be of length two, got {len(value)}.")
+        raise ValueError(f"Value must be of length two, "
+                         f"got length {len(value)}!")
     return value
 
 

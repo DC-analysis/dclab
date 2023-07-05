@@ -145,7 +145,7 @@ CFG_METADATA = {
         # Corresponds to `filter_size_interpretation="frequency index"`
         ["filter size", float, "Fourier filter size [1/pix]"],
         ["scale to filter", fboolorfloat, "Scale QPI data to filter size"],
-        # x, y coordinates
+        # x, y coordinates, don't set if you wish None to be the default
         ["sideband freq", f1dfloatduple, "Sideband coordinates [1/pix]"],
         ["invert phase", fbool, "Invert the phase data"],
         # "pixel size proc" depends on `scale_to_filter`.

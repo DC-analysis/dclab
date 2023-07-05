@@ -84,8 +84,10 @@ def lcstr(astr):
 
 #: maps functions to their expected output types
 func_types = {
+    f1dfloatduple: tuple,
     f2dfloatarray: np.ndarray,
     fbool: (bool, np.bool_),
+    fboolorfloat: (bool, float),
     fint: numbers.Integral,
     fintlist: list,
     float: numbers.Number,

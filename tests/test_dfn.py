@@ -119,6 +119,10 @@ def test_meta_parse_f1dfloatduple():
         # the given value must be 1d
         assert meta_parse.f1dfloatduple(np.array([[3, -1], [4, 5.5]]))
 
+    # check the func_types mapping
+    typ = meta_parse.func_types[meta_parse.f1dfloatduple]
+    assert isinstance((1.0, 2.0), typ)
+
 
 def test_meta_parse_fbool():
     assert_is_bool_true(meta_parse.fbool(True))
@@ -156,6 +160,11 @@ def test_meta_parse_fboolorfloat():
     with pytest.raises(ValueError, match=re.escape(
             "Value could not be converted to bool or float, got [1, 2, 3]!")):
         assert meta_parse.fboolorfloat([1, 2, 3])
+
+    # check the func_types mapping
+    typ = meta_parse.func_types[meta_parse.fboolorfloat]
+    assert isinstance(True, typ)
+    assert isinstance(2.0, typ)
 
 
 def test_meta_parse_fint():

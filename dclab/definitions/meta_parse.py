@@ -87,7 +87,7 @@ func_types = {
     f1dfloatduple: tuple,
     f2dfloatarray: np.ndarray,
     fbool: (bool, np.bool_),
-    fboolorfloat: (bool, float),
+    fboolorfloat: (bool, np.bool_, float),
     fint: numbers.Integral,
     fintlist: list,
     float: numbers.Number,

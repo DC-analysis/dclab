@@ -166,6 +166,10 @@ CFG_METADATA = {
         # masks e.g. "tblr". "tb" useful for RTDC channel.
         ["amp border loc", str, "Border location specifier for amplitude"],
         ["pha border loc", str, "Border location specifier for phase"],
+        # refocusing metadata
+        ["focus metric", str, "Metric used to calculate focus"],
+        ["focus minimizer", str, "Minimizer used to calculate focus"],
+        ["focus kernel", str, "Propagation kernel"],
     ],
     # All setup-related keywords, except imaging
     "setup": [

@@ -82,7 +82,7 @@ FEATURES_SCALAR = [
     ["qpi_ri_avg", "Refractive index (average)"],
     ["qpi_ri_sd", "Refractive index (SD)"],
     # QPI features from refocused events
-    ["qpi_focus", "Computed focus distance [m]"],
+    ["qpi_focus", "Computed focus distance [µm]"],
     # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],

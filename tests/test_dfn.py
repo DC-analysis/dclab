@@ -1,5 +1,6 @@
 import numbers
 import re
+from inspect import getmembers, isfunction
 
 import numpy as np
 
@@ -198,3 +199,15 @@ def test_meta_parse_fintlist():
 def test_meta_parse_lcstr():
     assert meta_parse.lcstr("PETER") == "peter"
     assert meta_parse.lcstr("Hans") == "hans"
+
+
+def test_meta_parse_function_mapping():
+    """Each function should have type(s) mapping in `meta_parse.func_types`"""
+
+    meta_parse_funcs = getmembers(meta_parse, isfunction)
+    type_mapping = list(meta_parse.func_types.keys())
+
+    for meta_parse_func in meta_parse_funcs:
+        assert meta_parse_func[1] in type_mapping, (
+            f"The `meta_parse` module function `{meta_parse_func}` does not "
+            "have a type mapping in meta_parse.func_types.")

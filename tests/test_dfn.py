@@ -1,9 +1,10 @@
 import numbers
+import re
+from inspect import getmembers, isfunction
 
 import numpy as np
 
 import pytest
-
 
 from dclab.definitions import meta_logic, meta_parse
 
@@ -103,6 +104,27 @@ def test_meta_parse_f2dfloatarray():
     assert meta_parse.f2dfloatarray([[1], [2]]).shape == (2, 1)
 
 
+def test_meta_parse_f1dfloatduple():
+    assert meta_parse.f1dfloatduple([1, 2]) == (1.0, 2.0)
+    assert meta_parse.f1dfloatduple((8, 9)) == (8.0, 9.0)
+    assert meta_parse.f1dfloatduple([-8.999, 0.332]) == (-8.999, 0.332)
+    assert meta_parse.f1dfloatduple((-8.999, 0.332)) == (-8.999, 0.332)
+    assert meta_parse.f1dfloatduple(np.array([3, -1])) == (3.0, -1.0)
+    with pytest.raises(ValueError, match="Value must be of length two, "
+                                         "got length 3!"):
+        # the given value must be 1d
+        assert meta_parse.f1dfloatduple((3, -1, 5.6))
+    with pytest.raises(ValueError, match=re.escape(
+            "Value is not 1 dimensional, "
+            "got [[ 3.  -1. ]\n [ 4.   5.5]]!")):
+        # the given value must be 1d
+        assert meta_parse.f1dfloatduple(np.array([[3, -1], [4, 5.5]]))
+
+    # check the func_types mapping
+    typ = meta_parse.func_types[meta_parse.f1dfloatduple]
+    assert isinstance((1.0, 2.0), typ)
+
+
 def test_meta_parse_fbool():
     assert_is_bool_true(meta_parse.fbool(True))
     assert_is_bool_true(meta_parse.fbool("true"))
@@ -121,6 +143,29 @@ def test_meta_parse_fbool():
 
     with pytest.raises(ValueError, match="Empty string provided for fbool!"):
         meta_parse.fbool("")
+
+
+def test_meta_parse_fboolorfloat():
+    """Check fboolorfloat format"""
+    assert meta_parse.fboolorfloat(True) is True
+    assert meta_parse.fboolorfloat(False) is False
+    assert meta_parse.fboolorfloat("true") is True
+    assert meta_parse.fboolorfloat("False") is False
+
+    assert meta_parse.fboolorfloat(2.0) == 2.0
+    assert meta_parse.fboolorfloat(-0.44) == -0.44
+
+    assert meta_parse.fboolorfloat(1) == 1.0
+    assert meta_parse.fboolorfloat(-42) == -42.0
+
+    with pytest.raises(ValueError, match=re.escape(
+            "Value could not be converted to bool or float, got [1, 2, 3]!")):
+        assert meta_parse.fboolorfloat([1, 2, 3])
+
+    # check the func_types mapping
+    typ = meta_parse.func_types[meta_parse.fboolorfloat]
+    assert isinstance(True, typ)
+    assert isinstance(2.0, typ)
 
 
 def test_meta_parse_fint():
@@ -154,3 +199,15 @@ def test_meta_parse_fintlist():
 def test_meta_parse_lcstr():
     assert meta_parse.lcstr("PETER") == "peter"
     assert meta_parse.lcstr("Hans") == "hans"
+
+
+def test_meta_parse_function_mapping():
+    """Each function should have type(s) mapping in `meta_parse.func_types`"""
+
+    meta_parse_funcs = getmembers(meta_parse, isfunction)
+    type_mapping = list(meta_parse.func_types.keys())
+
+    for meta_parse_func in meta_parse_funcs:
+        assert meta_parse_func[1] in type_mapping, (
+            f"The `meta_parse` module function `{meta_parse_func}` does not "
+            "have a type mapping in meta_parse.func_types.")

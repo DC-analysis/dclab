@@ -68,6 +68,36 @@ def test_bulk_image():
         assert np.allclose(events["image"][6], image[6])
 
 
+@pytest.mark.parametrize(
+    "feat,dtype", [
+        ("qpi_oah", np.uint8),
+        ("qpi_oah_bg", np.uint8),
+        ("qpi_pha", np.float32),
+        ("qpi_amp", np.float32),
+    ]
+)
+def test_bulk_qpi2d(feat, dtype):
+    num = 7
+    feat_data = np.zeros((20, 90, 50), dtype=dtype)
+    if dtype == np.uint8:
+        feat_data += np.arange(90, dtype=dtype).reshape(1, 90, 1)
+    else:
+        feat_data += np.linspace(0.8, 1.1, 90, dtype=dtype).reshape(1, 90, 1)
+    data = {"area_um": np.linspace(100.7, 110.9, num),
+            feat: feat_data}
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_bulk_qpi_")
+    with RTDCWriter(rtdc_file) as hw:
+        for feat in data:
+            hw.store_feature(feat, data[feat])
+    # Read the file:
+    with h5py.File(rtdc_file, mode="r") as rtdc_data:
+        events = rtdc_data["events"]
+        assert feat in events.keys()
+        assert np.allclose(events[feat][6], feat_data[6])
+        assert events[feat][:].dtype == dtype
+
+
 def test_bulk_mask():
     num = 7
     mask = []

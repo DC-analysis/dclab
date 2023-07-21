@@ -572,6 +572,129 @@ def test_scalar_ufuncs_attrs_append():
                            382.6259946949602)
 
 
+def test_tables_recarray():
+    """Write a numpy recarray table to an .rtdc file"""
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_tables_recarray")
+
+    # generate a table
+    columns = ["bread", "beer", "chocolate"]
+    ds_dt = np.dtype({'names': columns,
+                      'formats': [np.float64] * len(columns)})
+    tab_data = np.zeros((10, len(columns)))
+    tab_data[:, 0] = np.arange(10)
+    tab_data[:, 1] = 1000
+    tab_data[:, 2] = np.linspace(np.pi, 2*np.pi, 10)
+    rec_arr = np.rec.array(tab_data, dtype=ds_dt)
+    # sanity check
+    assert np.all(rec_arr["bread"][:].flatten() == np.arange(10))
+    assert np.all(rec_arr["beer"][:].flatten() == 1000)
+    assert np.all(rec_arr["chocolate"][:].flatten() == np.linspace(
+        np.pi, 2 * np.pi, 10))
+
+    # Write the table to the .rtdc file
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_table("food", rec_arr)
+
+    # Check whether this worked
+    with h5py.File(rtdc_file) as h5:
+        assert np.all(h5["tables"]["food"]["bread"].flat == np.arange(10))
+
+
+def test_tables_recarray_from_h5array():
+    """Write a numpy recarray table to an .rtdc file read from another file"""
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_tables_recarray")
+    rtdc_file2 = tempfile.mktemp(suffix=".rtdc",
+                                 prefix="dclab_test_tables_recarray")
+
+    # generate a table
+    columns = ["bread", "beer", "chocolate"]
+    ds_dt = np.dtype({'names': columns,
+                      'formats': [np.float64] * len(columns)})
+    tab_data = np.zeros((10, len(columns)))
+    tab_data[:, 0] = np.arange(10)
+    tab_data[:, 1] = 1000
+    tab_data[:, 2] = np.linspace(np.pi, 2*np.pi, 10)
+    rec_arr = np.rec.array(tab_data, dtype=ds_dt)
+    # sanity check
+    assert np.all(rec_arr["bread"][:].flatten() == np.arange(10))
+    assert np.all(rec_arr["beer"][:].flatten() == 1000)
+    assert np.all(rec_arr["chocolate"][:].flatten() == np.linspace(
+        np.pi, 2 * np.pi, 10))
+
+    # Write the table to the .rtdc file
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_table("food", rec_arr)
+
+    # Write a copy of that table directly to another HDF5 file
+    with h5py.File(rtdc_file) as h5, RTDCWriter(rtdc_file2) as hw2:
+        hw2.store_table("food2", h5["tables"]["food"])
+
+    # Check whether that worked
+    with h5py.File(rtdc_file2) as h52:
+        assert np.all(h52["tables"]["food2"]["bread"].flat == np.arange(10))
+
+
+def test_tables_recarray_from_dict():
+    """Write a numpy recarray table to an .rtdc file"""
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_tables_recarray")
+
+    # generate a table
+    tab_data = {
+        "bread": np.arange(10),
+        "beer": np.full(10, 1000),
+        "chocolate": np.linspace(np.pi, 2*np.pi, 10)
+    }
+
+    # Write the table to the .rtdc file
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_table("food", tab_data)
+
+    # Check whether this worked
+    with h5py.File(rtdc_file) as h5:
+        assert np.all(h5["tables"]["food"]["bread"].flat == np.arange(10))
+
+
+def test_tables_recarray_from_dict_with_lists():
+    """Write a numpy recarray table to an .rtdc file"""
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_tables_recarray")
+
+    # generate a table
+    tab_data = {
+        "bread": np.arange(10).tolist(),
+        "beer": np.full(10, 1000).tolist(),
+        "chocolate": np.linspace(np.pi, 2*np.pi, 10).tolist()
+    }
+
+    # Write the table to the .rtdc file
+    with RTDCWriter(rtdc_file) as hw:
+        hw.store_table("food", tab_data)
+
+    # Check whether this worked
+    with h5py.File(rtdc_file) as h5:
+        assert np.all(h5["tables"]["food"]["bread"].flat == np.arange(10))
+
+
+def test_tables_recarray_invalid():
+    """Write a numpy recarray table to an .rtdc file"""
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_tables_recarray")
+
+    # generate an invalid table
+    tab_data = [np.arange(10),
+                np.full(10, 1000),
+                np.linspace(np.pi, 2*np.pi, 10),
+                ]
+
+    # Write the table to the .rtdc file
+    with RTDCWriter(rtdc_file) as hw:
+        with pytest.raises(NotImplementedError, match="list"):
+            hw.store_table("food", tab_data)
+
+
 def test_version_branding_1_write_single_version():
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_branding_")
@@ -639,11 +762,3 @@ def test_version_branding_4_dont_write_attribute():
 
     with h5py.File(rtdc_file) as h5:
         assert h5.attrs["setup:software version"] == expected_version
-
-
-if __name__ == "__main__":
-    # Run all tests
-    loc = locals()
-    for key in list(loc.keys()):
-        if key.startswith("test_") and hasattr(loc[key], "__call__"):
-            loc[key]()

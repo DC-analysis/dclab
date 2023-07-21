@@ -109,7 +109,7 @@ def test_copy_tables():
     # generate a table
     columns = ["bread", "beer", "chocolate"]
     ds_dt = np.dtype({'names': columns,
-                      'formats': [float] * len(columns)})
+                      'formats': [np.float64] * len(columns)})
     tab_data = np.zeros((10, len(columns)))
     tab_data[:, 0] = np.arange(10)
     tab_data[:, 1] = 1000

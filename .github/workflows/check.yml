@@ -42,7 +42,7 @@ jobs:
         # prerequisites
         python -m pip install --upgrade pip wheel
         python -m pip install coverage flake8 pytest
-    - name: Downgrade pip (Windows)
+    - name: Downgrade rpy2 (Windows)
       if: runner.os == 'Windows'
       run: |
         # Force installation of rpy2 3.5.12

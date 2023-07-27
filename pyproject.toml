@@ -69,9 +69,6 @@ tracker = "https://github.com/DC-Analysis/dclab/issues"
 documentation = "https://dclab.readthedocs.io/en/stable/"
 changelog = "https://dclab.readthedocs.io/en/stable/sec_changelog.html"
 
-[tool.setuptools.packages]
-find = {}
-
 [tool.setuptools_scm]
 write_to = "dclab/_version.py"
 version_scheme = "post-release"

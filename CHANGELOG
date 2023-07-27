@@ -1,3 +1,5 @@
+0.51.3
+ - setup: wrong package setup
 0.51.2
  - enh: support dictionary of arrays in RTDCWriter.store_table
  - tests: added missing test files

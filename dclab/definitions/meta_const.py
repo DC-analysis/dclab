@@ -168,7 +168,7 @@ CFG_METADATA = {
         ["amp border loc", str, "Border location specifier for amplitude"],
         ["pha border loc", str, "Border location specifier for phase"],
         # refocusing metadata
-        ["focus interval", f1dfloatduple, "Focus interval to search [m]"],
+        ["focus interval", f1dfloatduple, "Focus interval to search [µm]"],
         ["focus metric", str, "Metric used to calculate focus"],
         ["focus minimizer", str, "Minimizer used to calculate focus"],
         ["focus kernel", str, "Propagation kernel"],

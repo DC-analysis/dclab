@@ -5,9 +5,9 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
-  post_checkout:
-    - git fetch --unshallow || true
   jobs:
+    post_checkout:
+      - git fetch --unshallow || true
     pre_install:
       - RPY2_CFFI_MODE=ABI
 python:

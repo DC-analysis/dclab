@@ -1,7 +1,8 @@
 import copy
 
-from .meta_parse import fbool, fint, fintlist, func_types, lcstr
-
+from .meta_parse import (
+    fbool, fint, fintlist, func_types, lcstr, f1dfloatduple, fboolorfloat
+)
 
 #: All configuration keywords editable by the user
 CFG_ANALYSIS = {
@@ -28,7 +29,6 @@ CFG_ANALYSIS = {
         ["crosstalk fl23", float, "Fluorescence crosstalk, channel 2 to 3"],
     ]
 }
-
 
 #: All read-only configuration keywords for a measurement
 CFG_METADATA = {
@@ -125,6 +125,55 @@ CFG_METADATA = {
         ["target duration", float, "Target measurement duration [min]"],
         ["target event count", fint, "Target event count for online gating"],
     ],
+    # All qpi-related keywords
+    "qpi": [
+        # experiment-related qpi metadata, see qpretrieve for details
+        ["wavelength", float, "Imaging wavelength [nm]"],
+        ["medium index", float, "Refractive index of medium"],
+        ["pixel size raw", float, "Hologram pixel size [µm]."],
+        # post-analysis-related qpi metadata
+        ["software version", str, "Software version(s)"],
+        # How background image was created 'experimental' or
+        # computation method e.g. 'sparsemed'
+        ["bg method", str, "Background computation method"],
+        # calculation of pha and amp from hologram
+        # FFT preprocessing
+        # padding: 0 means no padding
+        ["padding", fint, "Level of padding"],
+        ["subtract mean", fbool, "Subtract mean before processing"],
+        # pipeline_kws
+        ["filter name", str, "Fourier filter used"],
+        # Corresponds to `filter_size_interpretation="frequency index"`
+        ["filter size", float, "Fourier filter size [1/pix]"],
+        ["scale to filter", fboolorfloat, "Scale QPI data to filter size"],
+        # x, y coordinates, don't set if you wish None to be the default
+        ["sideband freq", f1dfloatduple, "Sideband coordinates [1/pix]"],
+        ["invert phase", fbool, "Invert the phase data"],
+        # "pixel size proc" depends on `scale_to_filter`.
+        # If `scale_to_filter` is False, this is equal to "pixel size raw".
+        # If `scale_to_filter` is True or a float, this value will differ from
+        # "pixel size raw".
+        # RTDC "imaging:pixel size" equals "pixel size proc"
+        ["pixel size proc", float, "QPI pixel size [µm]."],
+        # postprocessing of phase and amplitude
+        ["amp fit offset", str, "Amplitude offset correction"],
+        ["amp fit profile", str, "Amplitude profile correction"],
+        ["pha fit offset", str, "Phase offset correction"],
+        ["pha fit profile", str, "Phase profile correction"],
+        # QPImage background correction mask information
+        ["amp border px", fint, "Width of border for amplitude [pix]"],
+        ["pha border px", fint, "Width of border for phase [pix]"],
+        # Forward compatible QPImage background correction for trivial
+        # masks e.g. "tblr". "tb" useful for RTDC channel.
+        ["amp border loc", str, "Border location specifier for amplitude"],
+        ["pha border loc", str, "Border location specifier for phase"],
+        # refocusing metadata
+        ["focus interval", f1dfloatduple, "Focus interval to search [µm]"],
+        ["focus metric", str, "Metric used to calculate focus"],
+        ["focus minimizer", str, "Minimizer used to calculate focus"],
+        ["focus kernel", str, "Propagation kernel"],
+        ["focus padding", fint, "Level of padding for refocus"],
+    ],
     # All setup-related keywords, except imaging
     "setup": [
         ["channel width", float, "Width of microfluidic channel [µm]"],
@@ -141,7 +190,6 @@ CFG_METADATA = {
         ["temperature", float, "Mean chip temperature [°C]"],
     ],
 }
-
 
 # CFG convenience lists and dicts
 _cfg = copy.deepcopy(CFG_METADATA)

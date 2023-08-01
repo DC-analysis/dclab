@@ -75,6 +75,15 @@ FEATURES_SCALAR = [
     ["pos_y", "Position lateral in channel [µm]"],
     # Sum of the pressures applied to sample and sheath flow
     ["pressure", "Pressure [mPa]"],
+    # QPI features computed from holographic data
+    ["qpi_dm_avg", "Dry mass (average) [pg]"],
+    ["qpi_dm_sd", "Dry mass (SD) [pg]"],
+    ["qpi_pha_int", "Integrated phase [rad]"],
+    ["qpi_ri_avg", "Refractive index (average)"],
+    ["qpi_ri_sd", "Refractive index (SD)"],
+    # QPI features from refocused events
+    ["qpi_focus", "Computed focus distance [µm]"],
+    # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
     ["temp", "Chip temperature [°C]"],
@@ -126,6 +135,13 @@ FEATURES_NON_SCALAR = [
     ["mask", "Binary mask labeling the event in the image"],
     # See FLUOR_TRACES for valid keys
     ["trace", "Dictionary of fluorescence traces"],
+    # QPI experimental holographic data
+    ["qpi_oah", "Off-axis hologram"],
+    # QPI holographic background data (experimental or computed)
+    ["qpi_oah_bg", "Off-axis hologram background"],
+    # QPI features computed from holographic data
+    ["qpi_pha", "Hologram phase image [rad]"],
+    ["qpi_amp", "Hologram amplitude image"],
 ]
 
 #: List of fluorescence traces

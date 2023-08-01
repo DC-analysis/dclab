@@ -633,7 +633,7 @@ class IntegrityChecker(object):
                     if dfn.config_key_exists(sec, key):
                         func = dfn.get_config_value_func(sec, key)
                         val_exp = func(val_act)  # expected value
-                        if (isinstance(val_exp, (list, np.ndarray))
+                        if (isinstance(val_exp, (list, tuple, np.ndarray))
                                 and np.allclose(val_exp, val_act)):
                             continue
                         elif val_exp == val_act:

@@ -1,3 +1,5 @@
+0.52.0
+ - feat: qpi features and related metadata added to definitions (#192)
 0.51.4
  - setup: wrong package setup
 0.51.3

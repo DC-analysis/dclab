@@ -3,6 +3,17 @@ import numbers
 import numpy as np
 
 
+def f1dfloatduple(value):
+    """Tuple of two floats (duple)"""
+    if np.array(value).ndim != 1:
+        raise ValueError(f"Value is not 1 dimensional, got {value}!")
+    value = tuple(float(i) for i in value)
+    if len(value) != 2:
+        raise ValueError(f"Value must be of length two, "
+                         f"got length {len(value)}!")
+    return value
+
+
 def f2dfloatarray(value):
     """numpy floating point array"""
     return np.array(value, dtype=np.float64)
@@ -23,6 +34,17 @@ def fbool(value):
     else:
         value = bool(float(value))
     return value
+
+
+def fboolorfloat(value):
+    """Bool or float"""
+    if isinstance(value, (str, bool)) or value == 0:
+        return fbool(value)
+    elif isinstance(value, (int, float)):
+        return float(value)
+    else:
+        raise ValueError(f"Value could not be converted to bool "
+                         f"or float, got {value}!")
 
 
 def fint(value):
@@ -62,8 +84,10 @@ def lcstr(astr):
 
 #: maps functions to their expected output types
 func_types = {
+    f1dfloatduple: (tuple, np.ndarray),
     f2dfloatarray: np.ndarray,
     fbool: (bool, np.bool_),
+    fboolorfloat: (bool, np.bool_, float),
     fint: numbers.Integral,
     fintlist: list,
     float: numbers.Number,

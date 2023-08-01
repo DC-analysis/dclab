@@ -15,7 +15,6 @@ from .._version import version
 
 from .feat_anc_plugin import PlugInFeature
 
-
 #: Chunk size for storing HDF5 data
 CHUNK_SIZE = 100
 
@@ -205,11 +204,15 @@ class RTDCWriter:
                                data=np.atleast_1d(data))
         elif feat == "contour":
             self.write_ragged(group=events, name=feat, data=data)
-        elif feat in ["image", "image_bg", "mask"]:
+        elif feat in ["image", "image_bg", "mask", "qpi_oah", "qpi_oah_bg"]:
             self.write_image_grayscale(group=events,
                                        name=feat,
                                        data=data,
                                        is_boolean=(feat == "mask"))
+        elif feat in ["qpi_amp", "qpi_pha"]:
+            self.write_image_float32(group=events,
+                                     name=feat,
+                                     data=data)
         elif feat == "trace":
             for tr_name in data.keys():
                 # verify trace names
@@ -429,6 +432,41 @@ class RTDCWriter:
         else:
             return new_version
 
+    def write_image_float32(self, group, name, data):
+        """Write 32bit floating point image array
+
+        This function wraps :func:`RTDCWriter.write_ndarray`
+        and adds image attributes to the HDF5 file so HDFView
+        can display the images properly.
+
+        Parameters
+        ----------
+        group: h5py.Group
+            parent group
+        name: str
+            name of the dataset containing the text
+        data: np.ndarray or list of np.ndarray
+            image data
+        """
+        if isinstance(data, (list, tuple)):
+            # images may be in lists
+            data = np.atleast_2d(data)
+
+        if len(data.shape) == 2:
+            # put single event in 3D array
+            data = data[np.newaxis]
+
+        dset = self.write_ndarray(group=group, name=name, data=data,
+                                  dtype=np.float32)
+
+        # Create and Set image attributes:
+        # HDFView recognizes this as a series of images.
+        # Use np.string_ as per
+        # https://docs.h5py.org/en/stable/strings.html#compatibility
+        dset.attrs.create('CLASS', np.string_('IMAGE'))
+        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
+        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
+
     def write_image_grayscale(self, group, name, data, is_boolean):
         """Write grayscale image data to and HDF5 dataset
 
@@ -445,7 +483,7 @@ class RTDCWriter:
         data: np.ndarray or list of np.ndarray
             image data
         is_boolean: bool
-            whether or not the input data is of boolean nature
+            whether the input data is of boolean nature
             (e.g. mask data) - if so, data are converted to uint8
         """
         if isinstance(data, (list, tuple)):

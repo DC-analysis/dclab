@@ -75,7 +75,7 @@ class ConfigurationDict(UserDict):
                 typ = dfn.get_config_value_type(self.section, key)
                 if typ is not None and not isinstance(value, typ):
                     warnings.warn(
-                        f"Type of confguration key [{self.section}]: {key} "
+                        f"Type of configuration key [{self.section}]: {key} "
                         f"should be {typ}, got {type(value)}!",
                         WrongConfigurationTypeWarning)
                 # convert value to its correct type (independent of case above)

@@ -1,5 +1,6 @@
 0.52.1
  - setup: force requests >= 2.31.0 (CVE-2023-32681)
+ - setup: bump scipy to 1.10.0 (CVE-2023-25399)
 0.52.0
  - feat: qpi features and related metadata added to definitions (#192)
 0.51.4

@@ -165,7 +165,7 @@ class DCORTables:
         for key in table_data:
             columns, data = table_data[key]
             ds_dt = np.dtype({'names': columns,
-                              'formats': [float] * len(columns)})
+                              'formats': [np.float64] * len(columns)})
             tab_data = np.asarray(data)
             rec_arr = np.rec.array(tab_data, dtype=ds_dt)
             tables[key] = rec_arr

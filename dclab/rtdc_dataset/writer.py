@@ -345,7 +345,48 @@ class RTDCWriter:
                     self.h5file.attrs[idk] = convfunc(value)
 
     def store_table(self, name, cmp_array):
-        """Store a compound array table"""
+        """Store a compound array table
+
+        Tables are semi-metadata. They may contain information collected
+        during a measurement (but with a lower temporal resolution) or
+        other tabular data relevant for a dataset. Tables have named
+        columns. Therefore, they can be represented as a numy recarray,
+        and they should be stored as such in an HDF5 file (compund dataset).
+
+        Parameters
+        ----------
+        name: str
+            Name of the table
+        cmp_array: np.recarray, h5py.Dataset, or dict
+            If a np.recarray or h5py.Dataset are provided, then they
+            are written as-is to the file. If a dictionary is provided,
+            then the dictionary is converted into a numpy recarray.
+        """
+        if isinstance(cmp_array, (np.recarray, h5py.Dataset)):
+            # A table is a compound array (np.recarray). If we are here,
+            # this means that the user passed an instance of np.recarray
+            # or an instance h5py.Dataset (which we trust to be a proper
+            # compound dataset at this point). No additional steps needed.
+            pass
+        elif isinstance(cmp_array, dict):
+            # The user passed a dict which we now have to convert to a
+            # compound dataset. We do this because we are user-convenient.
+            # The user should not need to wade through these steps:
+            columns = list(cmp_array.keys())
+            # Everything should be floats in a table.
+            ds_dt = np.dtype({'names': columns,
+                              'formats': [np.float64] * len(columns)})
+            # We trust the user to provide a dictionary with one-dimensional
+            # lists or arrays of the same length.
+            tabsize = len(cmp_array[columns[0]])
+            tab_data = np.zeros((tabsize, len(columns)))
+            for ii, tab in enumerate(columns):
+                tab_data[:, ii] = cmp_array[tab]
+            # Now create a new compound array (discarding the old dict)
+            cmp_array = np.rec.array(tab_data, dtype=ds_dt)
+        else:
+            raise NotImplementedError(
+                f"Cannot convert {type(cmp_array)} to table!")
         group = self.h5file.require_group("tables")
         tab = group.create_dataset(
             name,

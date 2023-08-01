@@ -69,8 +69,11 @@ tracker = "https://github.com/DC-Analysis/dclab/issues"
 documentation = "https://dclab.readthedocs.io/en/stable/"
 changelog = "https://dclab.readthedocs.io/en/stable/sec_changelog.html"
 
-[tool.setuptools.packages]
-find = {}
+# We need the following, because automatic package discovery does not work
+# when running cibuildwheel on GitHub Actions (there will be a "wheelhouse"
+# directory).
+[tool.setuptools]
+packages = ["dclab"]
 
 [tool.setuptools_scm]
 write_to = "dclab/_version.py"

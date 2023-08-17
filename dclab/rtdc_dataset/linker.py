@@ -110,7 +110,7 @@ def combine_h5files(
                     # https://github.com/h5py/h5py/blob/master/
                     # h5py/_hl/attrs.py
                     hv.attrs.update(h5.attrs)
-                    # Also, write logs/tables/... (anything that is
+                    # Also, write basins/logs/tables/... (anything that is
                     # not events) only once.
                     for group in h5:
                         if group != "events":

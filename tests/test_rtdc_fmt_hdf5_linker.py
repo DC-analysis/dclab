@@ -113,3 +113,24 @@ def test_linker_features_error_original_links_dataset():
     with pytest.raises(ExternalDataForbiddenError,
                        match=r"not permitted for security reasons"):
         combine_h5files([h5path], external="raise")
+
+
+def test_linker_logs():
+    h5path = retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip")
+    fd = combine_h5files([h5path], external="raise")
+    with new_dataset(fd) as ds:
+        assert ds.logs
+        assert len(ds.logs) == 2
+        assert "so2exp_cytoshot-acquisition" in ds.logs
+
+
+def test_linker_tables():
+    h5path = retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip")
+    fd = combine_h5files([h5path], external="raise")
+    with new_dataset(fd) as ds:
+        assert ds.tables
+        assert len(ds.tables) == 2
+        assert "so2exp_cytoshot_monitor" in ds.tables
+        assert np.allclose(
+            ds.tables["so2exp_cytoshot_monitor"]["rotation"][0],
+            2.0625)

@@ -331,7 +331,7 @@ class RTDCWriter:
                 value = meta[sec][ck]
                 if isinstance(value, bytes):
                     # We never store byte attribute values.
-                    # In this case, `conffunc` should be `str` or `lcstr` or
+                    # In this case, `convfunc` should be `str` or `lcstr` or
                     # somesuch. But we don't test that, because no other
                     # datatype competes with str for bytes.
                     value = value.decode("utf-8")

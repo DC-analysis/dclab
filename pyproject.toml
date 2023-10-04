@@ -1,9 +1,8 @@
 [build-system]
 # Defined by PEP 518:
-# use oldest-supported-numpy (https://github.com/pypa/pip/issues/9542#issuecomment-771200755)
 requires = [
     # for building Cython extensions
-    "cython", "oldest-supported-numpy", "setuptools", "wheel",
+    "cython", "setuptools", "wheel",
     # for version management
     "setuptools>=45", "setuptools_scm[toml]>=6.2"
 ]

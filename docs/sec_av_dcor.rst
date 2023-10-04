@@ -31,7 +31,7 @@ like so:
 
 To determine the DCOR resource id, go to https://dcor.mpl.mpg.de,
 find the resource you are interested in, scroll down to the bottom,
-and copy the value from the **id** (not *package id* or *revision id*)
+and copy the value from the **id** (**not** *package id* or *revision id*)
 field in (*Additional Information*). The DCOR format is documented in
 :ref:`sec_ref_rtdc_dataset_dcor`.
 
@@ -39,16 +39,13 @@ Private data
 ============
 
 If you want to access private data, you need to pass a personal
-API Token:
+API Token.
 
 .. code:: python
 
     import dclab
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
                            api_key="XXXX-YYYY-ZZZZ")
-
-You can manage your API Tokens on your profile page when
-logged in at https://dcor.mpl.mpg.de.
 
 Alternatively, you can also set an API Token globally using
 
@@ -58,6 +55,8 @@ Alternatively, you can also set an API Token globally using
     from dclab.rtdc_dataset.fmt_dcor import APIHandler
     APIHandler.add_api_key("XXXX-YYYY-ZZZZ")
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
+
+.. _sec_av_dcor_token:
 
 Managing API Tokens
 ===================
@@ -95,3 +94,47 @@ retrieve the DCOR resource id is the same as for the default DCOR.
     import dclab
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
                            host="dcor-dev.mpl.mpg.de")
+
+
+.. _sec_av_dcor_s3:
+
+
+Bypassing DCOR and using S3 directly
+====================================
+
+The :ref:`DCOR format <sec_ref_rtdc_dataset_dcor>` connects to the
+`dcserv API <https://github.com/DCOR-dev/ckanext-dc_serve/blob/master/ckanext/dc_serve/serve.py>`_
+on on the DCOR server side.
+Internally, DCOR uses an `S3-compatible <https://en.wikipedia.org/wiki/Amazon_S3>`_
+object store to manage all resources.
+In some scenarios you might want to bypass this API and access individual DCOR resources directly.
+
+Advantages:
+
+- potentially faster access to HDF5 data using the :ref:`S3 format <sec_ref_rtdc_dataset_s3>`
+  or other software, since the ``dcserv`` wrapper is bypassed
+- you don't have to depend on dclab in your code
+
+Disadvantages:
+
+- no direct access to private resources: You either need to use the ``dcserv``
+  API to obtain a presigned S3 URL (which also has an expiry date) or you
+  need to own S3 credentials for the object store.
+- no direct access to features from the condensed file: DCOR automatically computes a
+  condensed file upon upload. This file contains only (but more) scalar features.
+  The ``dcserv`` API transparently combines features from the original and
+  the condensed file.
+
+Resources are stored in the following pattern by DCOR::
+
+    https://{endpoint_domain}/{instance-specific-prefix}{circle-id}/resource/{resource-id}
+
+For instance, the `calibration beads dataset
+<https://dcor.mpl.mpg.de/dataset/figshare-7771184-v2/resource/fb719fb2-bd9f-817a-7d70-f4002af916f0>`_,
+has this S3 URL::
+
+    https://objectstore.hpccloud.mpcdf.mpg.de/circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0
+
+You can access condensed resources by replacing ``resource`` with ``condensed`` in the above URL::
+
+    https://objectstore.hpccloud.mpcdf.mpg.de/circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/condensed/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0

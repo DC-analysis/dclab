@@ -10,6 +10,8 @@ on DCOR) to a new file. Depending on the situation, one or more of the
 following subsection will probably cover what you need.
 
 
+.. _sec_av_dc_io_export:
+
 Exporting data
 ==============
 The :class:`RTDCBase <.RTDCBase>` class has the attribute
@@ -58,6 +60,8 @@ Note that data exported as HDF5 files can be loaded with dclab
     In [11]: ds2["deform"][:].mean()
 
 
+.. _sec_av_dc_io_write:
+
 Writing to an .rtdc file
 ========================
 
@@ -77,3 +81,19 @@ make use of the :class:`RTDCWriter <dclab.rtdc_dataset.writer.RTDCWriter>` class
     In [6]: print(ds_custom.features)
 
     In [7]: print(ds_custom.config["experiment"])
+
+
+.. _sec_av_dc_io_copy:
+
+Copying (parts of) a dataset
+============================
+
+In some situations, you would only like to copy an entire feature column
+from one dataset to a new file without modification. The :mod:`copier
+<dclab.rtdc_dataset.copier>` submodule enables this on a low-level.
+
+- Use the :func:`.rtdc_copy` method to create a compressed version of a DC
+  dataset opened as an HDF5 file (:class:`.RTDC_HDF5` or :class:`.RTDC_S3`).
+- Use the :func:`.h5ds_copy` method to copy parts of an HDF5 dataset to
+  another HDF5 file, with the option to enforce compression (if the source
+  :class:`h5py.Dataset` is not compressed properly already).

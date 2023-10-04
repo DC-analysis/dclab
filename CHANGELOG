@@ -1,4 +1,5 @@
 0.52.1
+ - docs: document the copier submodule (#218)
  - docs: simplify headings in advanced section
  - docs: refactor writing DC data into its own subsection
  - docs: add advanced section on how to work with S3 data (#228)

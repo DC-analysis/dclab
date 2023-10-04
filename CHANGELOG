@@ -1,4 +1,6 @@
 0.52.1
+ - docs: simplify headings in advanced section
+ - docs: refactor writing DC data into its own subsection
  - docs: add advanced section on how to work with S3 data (#228)
  - docs: add information about S3 object storage in DCOR section
  - setup: force requests >= 2.31.0 (CVE-2023-32681)

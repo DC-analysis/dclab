@@ -11,7 +11,8 @@ functionalities.
    :caption: Contents:
 
    sec_av_notation
-   sec_av_rtdc_dataset
+   sec_av_dc_usage
+   sec_av_dc_io
    sec_av_feat_plugin
    sec_av_feat_temp
    sec_av_scatter

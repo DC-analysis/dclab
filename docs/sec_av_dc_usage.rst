@@ -1,8 +1,8 @@
 .. _sec_av_datasets:
 
-==============
-RT-DC datasets
-==============
+=============
+Using DC data
+=============
 Knowing and understanding the :ref:`RT-DC dataset classes <sec_ref_rtdc_dataset>`
 is an important prerequisite when working with dclab. They are all
 derived from :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` which
@@ -19,8 +19,8 @@ or derived from other RT-DC datasets
 (:class:`RTDC_Hierarchy <dclab.rtdc_dataset.RTDC_Hierarchy>`).
 
 
-Opening a dataset
-=================
+Opening a file
+==============
 The convenience function :func:`dclab.new_dataset` takes care of determining
 the data format and returns the corresponding derived class.
 
@@ -46,54 +46,6 @@ It is also possible to load other data into dclab from a dictionary.
     In [5]: ds_dict = dclab.new_dataset(data)
 
     In [6]: ds_dict.__class__.__name__
-
-If you would like to create your own .rtdc files, you can
-make use of the :class:`RTDCWriter <dclab.rtdc_dataset.writer.RTDCWriter>` class.
-
-.. ipython::
-
-    In [4]: with dclab.RTDCWriter("my-data.rtdc", mode="reset") as hw:
-       ...:     hw.store_metadata({"experiment": {"sample": "my sample",
-       ...:                                       "run index": 1}})
-       ...:     hw.store_feature("deform", np.random.rand(100))
-       ...:     hw.store_feature("area_um", np.random.rand(100))
-
-    In [5]: ds_custom = dclab.new_dataset("my-data.rtdc")
-
-    In [6]: print(ds_custom.features)
-
-    In [7]: print(ds_custom.config["experiment"])
-
-
-Exporting data
-==============
-The :class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class has the attribute
-:attr:`RTDCBase.export <dclab.rtdc_dataset.RTDCBase.export>`
-which allows to export event data to several data file formats. See
-:ref:`sec_ref_rtdc_export` for more information.
-
-.. ipython::
-
-    In [9]: ds.export.tsv(path="export_example.tsv",
-       ...:               features=["area_um", "deform"],
-       ...:               filtered=True,
-       ...:               override=True)
-       ...:
-
-    In [9]: ds.export.hdf5(path="export_example.rtdc",
-       ...:                features=["area_um", "aspect", "deform"],
-       ...:                filtered=True,
-       ...:                override=True)
-       ...:
-
-Note that data exported as HDF5 files can be loaded with dclab
-(reproducing the previously computed statistics - without filters).
-
-.. ipython::
-
-    In [11]: ds2 = dclab.new_dataset("export_example.rtdc")
-
-    In [12]: ds2["deform"][:].mean()
 
 
 Filtering (Gating)

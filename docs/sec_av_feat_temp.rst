@@ -1,8 +1,8 @@
 .. _sec_av_feat_temp:
 
-===============================
-User-defined temporary features
-===============================
+==================
+Temporary features
+==================
 If :ref:`plugin features <sec_av_feat_plugin>` are not suitable for your
 task, either because your feature data cannot be obtained automatically
 or because you are just testing things, you are in the right place.

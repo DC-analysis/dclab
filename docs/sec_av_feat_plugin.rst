@@ -1,8 +1,8 @@
 .. _sec_av_feat_plugin:
 
-============================
-User-defined plugin features
-============================
+===============
+Plugin features
+===============
 For specialized applications, the features defined internally in dclab might
 not be enough to describe certain aspects of your data. Plugin features
 allow you to define a recipe for computing a new feature. This new feature

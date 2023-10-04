@@ -1,8 +1,8 @@
 .. _sec_av_s3:
 
-===============================================
-Accessing data in an S3-compatible object store
-===============================================
+=========
+S3 access
+=========
 
 Since DC datasets can become quite large, it often makes sense to put them
 somewhere centrally, such as a shared network drive or :ref:`DCOR <sec_av_dcor>`.

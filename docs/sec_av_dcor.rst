@@ -1,8 +1,8 @@
 .. _sec_av_dcor:
 
-===================
-Accessing DCOR data
-===================
+===========
+DCOR access
+===========
 
 The `deformability cytometry open repository (DCOR)
 <https://dcor.mpl.mpg.de>`_ allows you to upload and access RT-DC

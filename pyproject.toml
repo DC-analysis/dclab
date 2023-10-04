@@ -77,3 +77,8 @@ packages = ["dclab"]
 [tool.setuptools_scm]
 write_to = "dclab/_version.py"
 version_scheme = "post-release"
+
+[tool.cibuildwheel]
+# Only build on platforms that numpy supports and that people will actually use.
+build = "cp*"
+skip = "*musllinux* *32 *i686 *_ppc64le *_s390x"

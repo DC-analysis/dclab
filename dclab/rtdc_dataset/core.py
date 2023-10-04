@@ -651,7 +651,7 @@ class RTDCBase(abc.ABC):
         return density
 
     def basins_get_dicts(self):
-        """Return the list dictionaries describing the dataset's basins"""
+        """Return the list of dictionaries describing the dataset's basins"""
         # Only implement this for classes that support this
         return []
 
@@ -700,7 +700,7 @@ class RTDCBase(abc.ABC):
     def get_measurement_identifier(self):
         """Return a unique measurement identifier
 
-        Return the [experiment]:"run index" configuration feat, if it
+        Return the [experiment]:"run identifier" configuration feat, if it
         exists. Otherwise, return the MD5 sum computed from the measurement
         time, date, and setup identifier.
 

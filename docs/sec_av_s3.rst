@@ -16,17 +16,13 @@ Public data
 Opening public datasets on S3 is straight forward. To get started, you only
 need to know the URL of the object:
 
-.. ipython::
+.. code:: python
 
-    In [1]: import dclab
-
-    In [2]: s3_url = "https://objectstore.hpccloud.mpcdf.mpg.de/circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0"
-
-    In [3]: ds = dclab.new_dataset(s3_url)
-
-    In [4]: print(ds.config)
-
-    In [5]: del ds
+    import dclab
+    s3_url = "https://objectstore.hpccloud.mpcdf.mpg.de/circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0"
+    ds = dclab.new_dataset(s3_url)
+    print(ds.config)
+    del ds
 
 
 Private data

@@ -59,7 +59,7 @@ Here is a list of use cases that would motivate an installation of dclab.
 - You have built your own deformability cytometry device and would like to
   use the powers of dclab to analyze your data. There is user-convenient
   :class:`.RTDCWriter` class that allows you to convert your tabular data
-  to *.rtdc* files, see also :ref:`working-with-other-data`.
+  to *.rtdc* files.
 - You would like to apply a simple set of filters (e.g. polygon filters that you
   exported from within Shape-Out) to every new measurement you take and
   apply a custom data analysis pipeline to the filtered data. This is a

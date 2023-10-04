@@ -1,9 +1,10 @@
 0.52.1
+ - docs: add advanced section on how to work with S3 data (#228)
  - docs: add information about S3 object storage in DCOR section
  - setup: force requests >= 2.31.0 (CVE-2023-32681)
  - setup: bump scipy to 1.10.0 (CVE-2023-25399)
  - tests: add test tables and logs tests for linker
- - tests: add tests for S3 file format
+ - tests: add tests for S3 file format (#228)
 0.52.0
  - feat: qpi features and related metadata added to definitions (#192)
 0.51.4

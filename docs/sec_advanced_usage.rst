@@ -19,5 +19,6 @@ functionalities.
    sec_av_emodulus/index
    sec_av_lme4
    sec_av_dcor
+   sec_av_s3
    sec_av_ml
    

@@ -34,7 +34,7 @@ class RTDC_S3(RTDC_HDF5):
         Parameters
         ----------
         url: str
-            Path to the object in an S3 instance
+            Full URL to an object in an S3 instance
         secret_id: str
             S3 access identifier
         secret_key: str
@@ -46,8 +46,8 @@ class RTDC_S3(RTDC_HDF5):
 
         Attributes
         ----------
-        path: pathlib.Path
-            Path to the experimental HDF5 (.rtdc) file
+        path: str
+            The URL to the object
         """
         if not S3FS_AVAILABLE:
             raise ModuleNotFoundError(

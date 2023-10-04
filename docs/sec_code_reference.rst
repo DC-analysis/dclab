@@ -99,26 +99,6 @@ Base class
     :members:
 
 
-.. _sec_ref_rtdc_dataset_dcor:
-
-DCOR (online) format
---------------------
-
-.. autoclass:: dclab.rtdc_dataset.RTDC_DCOR
-    :members:
-
-
-.. autoclass:: dclab.rtdc_dataset.fmt_dcor.APIHandler
-    :members:
-
-
-
-Dictionary format
------------------
-
-.. autoclass:: dclab.rtdc_dataset.RTDC_Dict
-
-
 HDF5 (.rtdc) format
 -------------------
 
@@ -132,16 +112,38 @@ HDF5 (.rtdc) format
 
 
 
+.. _sec_ref_rtdc_dataset_dcor:
+
+DCOR (online) format
+--------------------
+
+.. autoclass:: dclab.rtdc_dataset.RTDC_DCOR
+    :members:
+
+
+.. autoclass:: dclab.rtdc_dataset.fmt_dcor.APIHandler
+    :members:
+
+
+.. _sec_ref_rtdc_dataset_s3:
+
+S3 (online) file format
+-----------------------
+
+.. autoclass:: dclab.rtdc_dataset.RTDC_S3
+
+
+Dictionary format
+-----------------
+
+.. autoclass:: dclab.rtdc_dataset.RTDC_Dict
+
+
 Hierarchy format
 ----------------
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_Hierarchy
 
-
-S3 file format
---------------
-
-.. autoclass:: dclab.rtdc_dataset.RTDC_S3
 
 
 TDMS format

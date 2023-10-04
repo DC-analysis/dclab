@@ -7,7 +7,7 @@ import pytest
 
 import dclab
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
-from dclab.rtdc_dataset.fmt_hdf5.base import HDF5Basin
+from dclab.rtdc_dataset.fmt_hdf5.basin import HDF5Basin
 
 
 from helper_methods import retrieve_data

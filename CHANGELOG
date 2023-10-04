@@ -1,3 +1,5 @@
+0.52.4
+ - ref: HDF5Basin gets its own submodule
 0.52.3
  - maintenance release
 0.52.2

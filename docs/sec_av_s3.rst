@@ -26,6 +26,8 @@ need to know the URL of the object:
 
     In [4]: print(ds.config)
 
+    In [5]: del ds
+
 
 Private data
 ============

@@ -2,7 +2,7 @@
 # Defined by PEP 518:
 requires = [
     # for building Cython extensions
-    "cython", "setuptools", "wheel",
+    "cython", "numpy", "setuptools", "wheel",
     # for version management
     "setuptools>=45", "setuptools_scm[toml]>=6.2"
 ]

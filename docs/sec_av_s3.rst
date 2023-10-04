@@ -22,7 +22,6 @@ need to know the URL of the object:
     s3_url = "https://objectstore.hpccloud.mpcdf.mpg.de/circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0"
     ds = dclab.new_dataset(s3_url)
     print(ds.config)
-    del ds
 
 
 Private data

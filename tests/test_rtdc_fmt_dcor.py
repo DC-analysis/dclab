@@ -20,7 +20,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     allow_module_level=True)
 
 
-class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):
+class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):
     def get(self, query, feat=None, trace=None, event=None):
         """Mocks communication with the DCOR API"""
         h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -44,7 +44,7 @@ class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_base(monkeypatch):
-    monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor,
+    monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor.api,
                         "APIHandler",
                         MockAPIHandler)
     with dclab.new_dataset(retrieve_data("fmt-hdf5_fl_2018.zip")) as ds:
@@ -122,7 +122,7 @@ def test_dcor_hash():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_hierarchy(monkeypatch):
-    monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor,
+    monkeypatch.setattr(dclab.rtdc_dataset.fmt_dcor.api,
                         "APIHandler",
                         MockAPIHandler)
     dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id="

@@ -54,7 +54,7 @@ class RTDCBase(abc.ABC):
         #: Export functionalities; instance of
         #: :class:`dclab.rtdc_dataset.export.Export`.
         self.export = Export(self)
-        # The filtering class is initialized with self._init_filters
+        # The filtering class is initialized with self._finalize_init_filters
         #: Filtering functionalities; instance of
         #: :class:`dclab.rtdc_dataset.filter.Filter`.
         self.filter = None
@@ -77,8 +77,7 @@ class RTDCBase(abc.ABC):
         else:
             self._identifier = identifier
 
-        # TODO: restructure class instantiation so this is not part of
-        # self.init_filters anymore.
+        # Basins are initialized with _finalize_init_basins
         self._enable_basins = enable_basins
 
     def __contains__(self, feat):

@@ -105,7 +105,7 @@ HDF5 (.rtdc) format
 .. autoclass:: dclab.rtdc_dataset.RTDC_HDF5
     :members:
 
-.. autoclass:: dclab.rtdc_dataset.fmt_hdf5.base.HDF5Basin
+.. autoclass:: dclab.rtdc_dataset.fmt_hdf5.basin.HDF5Basin
     :members:
 
 .. autodata:: dclab.rtdc_dataset.fmt_hdf5.MIN_DCLAB_EXPORT_VERSION
@@ -121,7 +121,7 @@ DCOR (online) format
     :members:
 
 
-.. autoclass:: dclab.rtdc_dataset.fmt_dcor.APIHandler
+.. autoclass:: dclab.rtdc_dataset.fmt_dcor.api.APIHandler
     :members:
 
 
@@ -130,20 +130,21 @@ DCOR (online) format
 S3 (online) file format
 -----------------------
 
-.. autoclass:: dclab.rtdc_dataset.RTDC_S3
+.. automodule:: dclab.rtdc_dataset.fmt_s3
+    :members:
 
 
 Dictionary format
 -----------------
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_Dict
-
+    :members:
 
 Hierarchy format
 ----------------
 
 .. autoclass:: dclab.rtdc_dataset.RTDC_Hierarchy
-
+    :members:
 
 
 TDMS format
@@ -163,7 +164,7 @@ TDMS format
 
 Basin features
 --------------
-.. automodule:: dclab.rtdc_dataset.feat_basin.Basin
+.. autoclass:: dclab.rtdc_dataset.feat_basin.Basin
     :members:
 
 

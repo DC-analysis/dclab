@@ -10,13 +10,14 @@ allows read-only access to all features with a dictionary-like interface,
 facilitates data export or filtering, and comes with several convenience
 methods that are useful for data visualization.
 RT-DC datasets can be based on a data file format
-(:class:`RTDC_TDMS <dclab.rtdc_dataset.RTDC_TDMS>` and
-:class:`RTDC_HDF5 <dclab.rtdc_dataset.RTDC_HDF5>`), accessed
-from an online repository (:class:`RTDC_DCOR <dclab.rtdc_dataset.RTDC_DCOR>`),
+(:class:`RTDC_TDMS <.RTDC_TDMS>` and
+:class:`RTDC_HDF5 <.RTDC_HDF5>`), accessed
+from an online repository (:class:`RTDC_DCOR <.RTDC_DCOR>` or
+:class:`RTDC_S3 <.RTDC_S3>`),
 created from user-defined
-dictionaries (:class:`RTDC_Dict <dclab.rtdc_dataset.RTDC_Dict>`),
+dictionaries (:class:`RTDC_Dict <.RTDC_Dict>`),
 or derived from other RT-DC datasets
-(:class:`RTDC_Hierarchy <dclab.rtdc_dataset.RTDC_Hierarchy>`).
+(:class:`RTDC_Hierarchy <.RTDC_Hierarchy>`).
 
 
 Opening a file

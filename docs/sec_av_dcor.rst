@@ -52,7 +52,7 @@ Alternatively, you can also set an API Token globally using
 .. code:: python
 
     import dclab
-    from dclab.rtdc_dataset.fmt_dcor import APIHandler
+    from dclab.rtdc_dataset.fmt_dcor.api import APIHandler
     APIHandler.add_api_key("XXXX-YYYY-ZZZZ")
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
 

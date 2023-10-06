@@ -26,16 +26,21 @@ class Basin(abc.ABC):
     id_getters = {}
 
     def __init__(self, location, name=None, description=None, **kwargs):
+        #: location of the basin (e.g. path or URL)
         self.location = location
+        #: user-defined name of the basin
         self.name = name
+        #: lengthy description of the basin
         self.description = description
+        #: additional keyword arguments passed to the basin
         self.kwargs = kwargs
         self._ds = None
 
     @property
     @abc.abstractmethod
     def basin_format(self):
-        """Basin format (:class:`.RTDCBase` subclass)"""
+        """Basin format (:class:`.RTDCBase` subclass), e.g. "hdf5" or "s3"
+        """
         # to be implemented in subclasses
 
     @property

@@ -248,3 +248,46 @@ in a post-measurement step like so.
 User-defined metadata can also be used with user-defined
 :ref:`plugin features <sec_av_feat_plugin_user_meta>`. This allows you
 to design plugin features which utilize your pipeline-specific metadata.
+
+
+Basins
+------
+Since dclab 0.51.0, you can define so-called *basins* in .rtdc files.
+Basins are files or remote locations that contain additional
+:ref:`features <sec_features>` that are not part of the file you opened
+initially.
+
+For instance, you might want to compute some additional features for a
+measurement, but you want to avoid editing the original file ``data/example.rtdc``,
+and you also need to have access to the features of the original file when working with
+the new file ``test.rtdc``.
+
+
+    .. ipython::
+
+        In [1]: import dclab
+
+        # Create the smaller file with the basin defined.
+        In [2]: with dclab.new_dataset("data/example.rtdc") as dso, dclab.RTDCWriter("test.rtdc", mode="reset") as hw:
+           ...:    # copy metadata
+           ...:    meta = dict(dso.config)
+           ...:    meta.pop("filtering")
+           ...:    hw.store_metadata(meta)
+           ...:    # store a feature from the original dataset
+           ...:    hw.store_feature("deform", dso["deform"])
+           ...:    # store a user-defined featurr
+           ...:    hw.store_feature("userdef1", 2.5*dso["deform"])
+           ...:    # store the basin information
+           ...:    hw.store_basin(basin_name="mytest",
+           ...:                   basin_type="file",
+           ...:                   basin_format="hdf5",
+           ...:                   basin_locs=["data/example.rtdc"])
+
+        In [3]: ds2 = dclab.new_dataset("test.rtdc")
+
+        # the basin in "test.rtdc" gives you access to features stored in "data/example.rtdc"
+        In [4]: print(ds2.features)
+
+
+For more information, please take a look at the documentation of :class:`.Basin`
+and its subclasses.

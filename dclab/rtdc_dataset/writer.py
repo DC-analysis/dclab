@@ -17,7 +17,6 @@ from ..util import hashobj
 from .._version import version
 
 from .feat_anc_plugin import PlugInFeature
-from .load import new_dataset
 
 #: Chunk size for storing HDF5 data
 CHUNK_SIZE = 100
@@ -189,6 +188,8 @@ class RTDCWriter:
             e.g. temporarily not available
         """
         if verify:
+            # We have to import this here to avoid circular imports
+            from .load import new_dataset
             # Make sure the basin can be opened by dclab, verify its ID
             cur_id = self.h5file.attrs.get("experiment:run identifier")
             for loc in basin_locs:

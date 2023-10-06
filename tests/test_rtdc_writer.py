@@ -152,9 +152,9 @@ def test_basin_url(tmp_path):
 
     with new_dataset(path) as ds:
         assert ds.basins[0].name == "s3test"
-        assert ds.basins[0].type == "remote"
-        assert ds.basins[0].format == "s3"
-        assert ds.basins[0].locations == [s3_url]
+        assert ds.basins[0].basin_type == "remote"
+        assert ds.basins[0].basin_format == "s3"
+        assert ds.basins[0].location == s3_url
         assert ds.basins[0].description == "Me very first online dataset"
         assert len(ds) == 5000
         assert np.allclose(ds["deform"][0],

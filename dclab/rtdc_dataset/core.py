@@ -681,8 +681,10 @@ class RTDCBase(abc.ABC):
                     pp = pathlib.Path(pp)
                     # Instantiate the proper basin class
                     bcls = bc[bdict["format"]]
+                    kwargs = {"name": bdict.get("name"),
+                              "description": bdict.get("description")}
                     # Try absolute path
-                    bna = bcls(pp)
+                    bna = bcls(pp, **kwargs)
                     if (bna.is_available()
                             and bna.get_measurement_identifier() == muid):
                         self.basins.append(bna)
@@ -691,7 +693,7 @@ class RTDCBase(abc.ABC):
                     thispath = pathlib.Path(self.path)
                     if thispath.exists():
                         # Insert relative path
-                        bnr = bcls(thispath.parent / pp)
+                        bnr = bcls(thispath.parent / pp, **kwargs)
                         if (bnr.is_available()
                                 and bnr.get_measurement_identifier() == muid):
                             self.basins.append(bnr)

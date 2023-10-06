@@ -25,8 +25,10 @@ class Basin(abc.ABC):
     """
     id_getters = {}
 
-    def __init__(self, location, **kwargs):
+    def __init__(self, location, name=None, description=None, **kwargs):
         self.location = location
+        self.name = name
+        self.description = description
         self.kwargs = kwargs
         self._ds = None
 

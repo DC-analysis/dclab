@@ -203,7 +203,7 @@ class RTDCWriter:
                                 f"Measurement identifier mismatch between "
                                 f"{self.path} ({cur_id}) and {loc} ({ds_id})!")
         bdat = {
-            "descriptoin": basin_descr,
+            "description": basin_descr,
             "format": basin_format,
             "name": basin_name,
             "type": basin_type,

@@ -676,13 +676,13 @@ class RTDCBase(abc.ABC):
         muid = self.get_measurement_identifier()
         for bdict in self.basins_get_dicts():
             # Check whether this basin is supported and exists
+            kwargs = {"name": bdict.get("name"),
+                      "description": bdict.get("description")}
             if bdict["type"] == "file":
                 for pp in bdict["paths"]:
                     pp = pathlib.Path(pp)
                     # Instantiate the proper basin class
                     bcls = bc[bdict["format"]]
-                    kwargs = {"name": bdict.get("name"),
-                              "description": bdict.get("description")}
                     # Try absolute path
                     bna = bcls(pp, **kwargs)
                     if (bna.is_available()
@@ -702,7 +702,7 @@ class RTDCBase(abc.ABC):
                 for url in bdict["urls"]:
                     # Instantiate the proper basin class
                     bcls = bc[bdict["format"]]
-                    bna = bcls(url)
+                    bna = bcls(url, **kwargs)
                     if (bna.is_available()
                             and bna.get_measurement_identifier() == muid):
                         self.basins.append(bna)

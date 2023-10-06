@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import copy
+import json
+import os
 import pathlib
-from typing import Dict, Literal
+from typing import Dict, List, Literal
 import warnings
 
 import h5py
@@ -11,9 +13,11 @@ import hdf5plugin
 import numpy as np
 
 from .. import definitions as dfn
+from ..util import hashobj
 from .._version import version
 
 from .feat_anc_plugin import PlugInFeature
+from .load import new_dataset
 
 #: Chunk size for storing HDF5 data
 CHUNK_SIZE = 100
@@ -152,6 +156,84 @@ class RTDCWriter:
             # update shape
             self.h5file.attrs["imaging:roi size x"] = shape[1]
             self.h5file.attrs["imaging:roi size y"] = shape[0]
+
+    def store_basin(self,
+                    basin_name: str,
+                    basin_type: Literal['file', 'remote'],
+                    basin_format: str,
+                    basin_locs: List[str | pathlib.Path],
+                    basin_descr: str | None = None,
+                    verify: bool = True,
+                    ):
+        """Write basin information
+
+        Parameters
+        ----------
+        basin_name: str
+            basin name; Names do not have to be unique.
+        basin_type: str
+            basin type (file or remote); Files are paths accessible by the
+            operating system (including e.g. network shares) whereas
+            remote locations normally require an active internet connection.
+        basin_format: str
+            The basin format must match the ``format`` property of an
+            :class:`.RTDCBase` subclass (e.g. "hdf5" or "dcor")
+        basin_locs: list
+            location of the basin as a string or (optionally)
+            a ``pathlib.Path``
+        basin_descr: str
+            optional string describing the basin
+        verify: bool
+            whether to verify the basin before storing it; You might have
+            set this to False if you would like to write a basin that is
+            e.g. temporarily not available
+        """
+        if verify:
+            # Make sure the basin can be opened by dclab, verify its ID
+            cur_id = self.h5file.attrs.get("experiment:run identifier")
+            for loc in basin_locs:
+                with new_dataset(loc) as ds:
+                    # We can open the file, which is great.
+                    if cur_id:
+                        # Compare the IDs.
+                        ds_id = ds.get_measurement_identifier()
+                        if ds_id != cur_id:
+                            raise ValueError(
+                                f"Measurement identifier mismatch between "
+                                f"{self.path} ({cur_id}) and {loc} ({ds_id})!")
+        bdat = {
+            "descriptoin": basin_descr,
+            "format": basin_format,
+            "name": basin_name,
+            "type": basin_type,
+        }
+        if basin_type == "file":
+            flocs = []
+            for pp in basin_locs:
+                pp = pathlib.Path(pp)
+                if verify:
+                    flocs.append(str(pp.resolve()))
+                    # Also store the relative path for user convenience.
+                    # Don't use pathlib.Path.relative_to, because that
+                    # is deprecated in Python 3.12.
+                    # Also, just look in subdirectories which simplifies
+                    # path resolution.
+                    this_parent = str(self.path.parent) + os.sep
+                    path_parent = str(pp.parent) + os.sep
+                    if path_parent.startswith(this_parent):
+                        flocs.append(str(pp).replace(this_parent, "", 1))
+                else:
+                    # We already did (or did not upon user request) verify
+                    # the path. Just pass it on to the list.
+                    flocs.append(str(pp))
+            bdat["paths"] = flocs
+        else:
+            bdat["urls"] = [str(p) for p in basin_locs]
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = self.h5file.require_group("basins")
+        key = hashobj(blines)
+        if key not in basins:
+            self.write_text(basins, key, blines)
 
     def store_feature(self, feat, data, shape=None):
         """Write feature data

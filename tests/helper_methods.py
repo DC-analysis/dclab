@@ -1,4 +1,5 @@
 import pathlib
+import socket
 import tempfile
 import zipfile
 
@@ -6,6 +7,17 @@ import numpy as np
 
 from dclab.rtdc_dataset import fmt_tdms
 from dclab import definitions as dfn
+from dclab.rtdc_dataset.fmt_dcor import REQUESTS_AVAILABLE  # noqa: F401
+from dclab.rtdc_dataset.fmt_s3 import S3FS_AVAILABLE  # noqa: F401
+
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    try:
+        s.connect(("dcor.mpl.mpg.de", 443))
+    except (socket.gaierror, OSError):
+        DCOR_AVAILABLE = False
+    else:
+        DCOR_AVAILABLE = True
 
 
 def calltracker(func):

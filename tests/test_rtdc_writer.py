@@ -12,7 +12,155 @@ from dclab.rtdc_dataset import RTDCWriter, new_dataset
 from dclab.rtdc_dataset.feat_temp import (
     register_temporary_feature, deregister_temporary_feature)
 
-from helper_methods import retrieve_data
+from helper_methods import retrieve_data, DCOR_AVAILABLE, S3FS_AVAILABLE
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_file():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_test = path.parent / "test.h5"
+    # We basically create a file that consists only of the metadata.
+    with RTDCWriter(path_test) as hw, new_dataset(path) as dsorig:
+        hw.store_basin(basin_name="get-out",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path],
+                       basin_descr="My very first basin-only dataset",
+                       verify=True,
+                       )
+        meta = dict(dsorig.config)
+        meta.pop("filtering")
+        hw.store_metadata(meta)
+
+    # OK, now open the dataset and make sure that it contains all information.
+    with new_dataset(path_test) as ds:
+        assert len(ds) == 5
+        assert ds.config["experiment"]["sample"] == "background image example"
+        assert np.allclose(ds["deform"][2],
+                           0.029980043,
+                           atol=0,
+                           rtol=1e-5)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_file_relative():
+    """Test whether storing the relative path works"""
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_test = path.parent / "test.h5"
+    # We basically create a file that consists only of the metadata.
+    with RTDCWriter(path_test) as hw, new_dataset(path) as dsorig:
+        hw.store_basin(basin_name="get-out",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path],
+                       basin_descr="My very first basin-only dataset",
+                       verify=True
+                       )
+        meta = dict(dsorig.config)
+        meta.pop("filtering")
+        hw.store_metadata(meta)
+
+    # Now to the relative testing part. We just move everything one directory
+    # down. So the absolute paths will not be valid anymore.
+    newdir = path.parent / "new"
+    newdir.mkdir()
+    new_path = newdir / path.name
+    new_path_test = newdir / path_test.name
+    path.rename(new_path)
+    path_test.rename(new_path_test)
+
+    # OK, now open the dataset and make sure that it contains all information.
+    with new_dataset(new_path_test) as ds:
+        assert len(ds.basins) == 1
+        assert len(ds) == 5
+        assert ds.config["experiment"]["sample"] == "background image example"
+        assert np.allclose(ds["deform"][2],
+                           0.029980043,
+                           atol=0,
+                           rtol=1e-5)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_file_identifier_mismatch():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    with RTDCWriter(path) as ho:
+        ho.store_metadata({"experiment": {"run identifier": "captain-proton"}})
+
+    path_test = path.parent / "test.h5"
+    # We basically create a file that consists only of the metadata.
+    with RTDCWriter(path_test) as hw, new_dataset(path) as dsorig:
+        meta = dict(dsorig.config)
+        meta.pop("filtering")
+        hw.store_metadata(meta)
+        hw.store_metadata({"experiment": {"run identifier": "janeway"}})
+        with pytest.raises(ValueError, match="identifier mismatch"):
+            hw.store_basin(basin_name="get-out",
+                           basin_type="file",
+                           basin_format="hdf5",
+                           basin_locs=[path],
+                           basin_descr="My very first basin-only dataset",
+                           verify=True
+                           )
+        # But it should work when verify is False
+        hw.store_basin(basin_name="get-out",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path],
+                       basin_descr="My very first basin-only dataset",
+                       verify=False
+                       )
+
+    # Then, we have zero basins...
+    with new_dataset(path_test) as ds:
+        assert len(ds.basins) == 0
+
+    # ...unless we change the run identifier to match the basin.
+    with RTDCWriter(path_test) as hw:
+        hw.store_metadata({"experiment": {"run identifier": "captain-proton"}})
+
+    with new_dataset(path_test) as ds:
+        assert len(ds.basins) == 1
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+@pytest.mark.skipif(not S3FS_AVAILABLE, reason="s3fs not available!")
+def test_basin_url(tmp_path):
+    # Create an empty dataset that links to an S3 instance
+    # This is the calibration beads measurement.
+    # https://dcor.mpl.mpg.de/dataset/figshare-7771184-v2/
+    # resource/fb719fb2-bd9f-817a-7d70-f4002af916f0
+    s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
+              "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+              "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+    with new_dataset(s3_url) as ds:
+        meta = dict(ds.config)
+        meta.pop("filtering")
+
+    path = tmp_path / "basins3test.rtdc"
+    with RTDCWriter(path) as hw:
+        hw.store_metadata(meta)
+        hw.store_basin(basin_name="s3test",
+                       basin_type="remote",
+                       basin_format="s3",
+                       basin_locs=[s3_url],
+                       basin_descr="Me very first online dataset",
+                       verify=True,
+                       )
+
+    with new_dataset(path) as ds:
+        assert ds.basins[0].name == "s3test"
+        assert ds.basins[0].type == "remote"
+        assert ds.basins[0].format == "s3"
+        assert ds.basins[0].locations == [s3_url]
+        assert ds.basins[0].description == "Me very first online dataset"
+        assert len(ds) == 5000
+        assert np.allclose(ds["deform"][0],
+                           0.009741939,
+                           atol=0,
+                           rtol=1e-5)
 
 
 def test_bulk_scalar():

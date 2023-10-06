@@ -41,7 +41,7 @@ def test_disable_filters():
     ds.apply_filter()
     ds.config["filtering"]["enable filters"] = False
     ds.apply_filter()
-    assert np.alltrue(ds.filter.all)
+    assert np.all(ds.filter.all)
 
 
 def test_filter_manual():

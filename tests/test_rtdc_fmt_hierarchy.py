@@ -413,7 +413,7 @@ def test_manual_exclude():
     c3.filter.manual[0] = False
     c2.filter.manual[0] = False
     c3.rejuvenate()
-    assert np.alltrue(c3.filter.manual)
+    assert np.all(c3.filter.manual)
 
     # reinserting the event in the parent, retrieves back
     # the manual filter in the child

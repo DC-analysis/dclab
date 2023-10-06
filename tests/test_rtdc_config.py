@@ -11,6 +11,7 @@ import numpy as np
 import h5py
 
 import dclab
+from dclab.rtdc_dataset.fmt_dcor import REQUESTS_AVAILABLE
 from dclab.rtdc_dataset import new_dataset
 import dclab.rtdc_dataset.config as dccfg
 
@@ -325,6 +326,7 @@ def test_user_section_set_save_reload_fmt_dict():
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
+@pytest.mark.skipif(not REQUESTS_AVAILABLE, reason="requests not available")
 def test_user_section_set_save_reload_fmt_dcor():
     """Check that 'user' section metadata works for RTDC_DCOR"""
     # create temp directory for storing outputted file

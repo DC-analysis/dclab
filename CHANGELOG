@@ -1,4 +1,6 @@
-0.52.7
+0.53.0
+ - feat: introduce remote type basin format s3
+ - enh: improve URL parsing for s3 format
  - enh: extract dataset size from metadata before resorting to features
  - enh: support remote basins
 0.52.6

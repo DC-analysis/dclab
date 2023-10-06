@@ -3,6 +3,7 @@
  - feat: implement `store_basin` in `RTDCWriter`
  - docs: add information about basins
  - ref: expand `fmt_dcor` submodule laterally
+ - ref: deprecate the `feat_anc_ml` submodule
  - enh: improve URL parsing for s3 format
  - enh: extract dataset size from metadata before resorting to features
  - enh: support remote basins

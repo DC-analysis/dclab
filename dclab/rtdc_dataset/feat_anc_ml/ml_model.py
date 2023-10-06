@@ -1,4 +1,5 @@
 import abc
+import warnings
 
 import numpy as np
 
@@ -28,6 +29,11 @@ class BaseModel(abc.ABC):
         self.outputs = outputs
         self.info = info
         self.output_labels = info.get("output labels") or outputs
+        warnings.warn(
+            "Machine-learning-based analysis in dclab is deprecated in dclab. "
+            "If you need this feature, please join the discussion here: "
+            "https://github.com/DC-analysis/dclab/issues/236",
+            DeprecationWarning)
 
     @staticmethod
     def all_formats():

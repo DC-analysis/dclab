@@ -1,5 +1,7 @@
 """Load RT-DC datasets"""
+import errno
 import io
+import os
 import pathlib
 
 from .core import RTDCBase
@@ -55,7 +57,8 @@ def new_dataset(data, identifier=None, **kwargs):
     elif isinstance(data, (pathlib.Path, str)):
         path = pathlib.Path(data).resolve()
         if not path.exists():
-            raise FileNotFoundError(f"Could not find file '{path}'!")
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), str(path))
         else:
             return load_file(data, identifier=identifier, **kwargs)
     else:

@@ -12,13 +12,12 @@ from helper_methods import retrieve_data
 
 pytest.importorskip("requests")
 
-
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     try:
         s.connect(("dcor.mpl.mpg.de", 443))
-        DCOR_AVAILABLE = True
     except (socket.gaierror, OSError):
-        DCOR_AVAILABLE = False
+        pytest.skip("No connection to DCOR",
+                    allow_module_level=True)
 
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.APIHandler):
@@ -75,7 +74,6 @@ def test_dcor_base(monkeypatch):
             assert np.all(t1 == t2)
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_cache_scalar():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -90,7 +88,6 @@ def test_dcor_cache_scalar():
         assert ds["area_um"] is not area_um, "test removal from cache"
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_cache_trace():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -103,7 +100,6 @@ def test_dcor_cache_trace():
         assert ds["trace"]["fl1_raw"][1] is not trace0, "Check proper caching"
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_data():
     # reticulocytes.rtdc contains contour data
     ds = dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a")
@@ -117,7 +113,6 @@ def test_dcor_data():
     assert np.sum(ds["trace"]["fl1_median"][2167]) == 183045
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_hash():
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
     # hash includes the full URL (path)
@@ -136,7 +131,6 @@ def test_dcor_hierarchy(monkeypatch):
     assert np.all(dso["area_um"] == dsh["area_um"])
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_logs():
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
         assert len(ds.logs) == 1
@@ -144,7 +138,6 @@ def test_dcor_logs():
                == "[LOG] number of written datasets 0  10:04:05.893"
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_shape_contour():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -152,7 +145,6 @@ def test_dcor_shape_contour():
         assert ds["contour"].shape == (5000, np.nan, 2)
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_shape_image():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -162,7 +154,6 @@ def test_dcor_shape_image():
         assert ds["image"][0][0].shape == (250,)
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_shape_mask():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -172,7 +163,6 @@ def test_dcor_shape_mask():
         assert ds["mask"][0][0].shape == (250,)
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 def test_dcor_shape_trace():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -185,7 +175,6 @@ def test_dcor_shape_trace():
         assert ds["trace"]["fl1_raw"][0].shape == (177,)
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 @pytest.mark.parametrize("idxs", [slice(0, 5, 2),
                                   np.array([0, 2, 4]),
                                   [0, 2, 4]
@@ -207,7 +196,6 @@ def test_dcor_slicing_contour(idxs):
     assert np.all(data_sliced[2] == data_ref[2])
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 @pytest.mark.parametrize("feat", ["image", "mask"])
 @pytest.mark.parametrize("idxs", [slice(0, 5, 2),
                                   np.array([0, 2, 4]),
@@ -229,7 +217,6 @@ def test_dcor_slicing_image_mask(feat, idxs):
     assert np.all(data_sliced[2] == data_ref[2])
 
 
-@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 @pytest.mark.parametrize("idxs", [slice(0, 5, 2),
                                   np.array([0, 2, 4]),
                                   [0, 2, 4]

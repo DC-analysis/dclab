@@ -1,8 +1,10 @@
 """Test functions for RT-DC configuration metadata"""
 import os
-import tempfile
 import pathlib
+import socket
+import tempfile
 import warnings
+
 import pytest
 
 import numpy as np
@@ -11,12 +13,20 @@ import h5py
 import dclab
 from dclab.rtdc_dataset import new_dataset
 import dclab.rtdc_dataset.config as dccfg
-from test_rtdc_fmt_dcor import DCOR_AVAILABLE
 
 from helper_methods import retrieve_data, example_data_dict
 
 
 data_path = pathlib.Path(__file__).parent / "data"
+
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    try:
+        s.connect(("dcor.mpl.mpg.de", 443))
+    except (socket.gaierror, OSError):
+        DCOR_AVAILABLE = False
+    else:
+        DCOR_AVAILABLE = True
 
 
 def equals(a, b):

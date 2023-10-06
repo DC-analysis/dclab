@@ -1,3 +1,6 @@
+0.52.7
+ - enh: extract dataset size from metadata before resorting to features
+ - enh: support remote basins
 0.52.6
  - maintenance release
 0.52.5

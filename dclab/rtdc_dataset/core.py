@@ -138,6 +138,11 @@ class RTDCBase(abc.ABC):
             yield col
 
     def __len__(self):
+        # Try to get length from metadata.
+        length = self.config["experiment"].get("event count")
+        if length:
+            return length
+        # Try to get the length from the feature sizes
         keys = list(self._events.keys())
         keys.sort()
         for kk in keys:
@@ -145,8 +150,7 @@ class RTDCBase(abc.ABC):
             if length:
                 return length
         else:
-            msg = "Could not determine size of dataset '{}'.".format(self)
-            raise ValueError(msg)
+            raise ValueError(f"Could not determine size of dataset '{self}'.")
 
     def __repr__(self):
         repre = "<{} '{}' at {}".format(self.__class__.__name__,
@@ -693,6 +697,15 @@ class RTDCBase(abc.ABC):
                                 and bnr.get_measurement_identifier() == muid):
                             self.basins.append(bnr)
                             break
+            elif bdict["type"] == "remote":
+                for url in bdict["urls"]:
+                    # Instantiate the proper basin class
+                    bcls = bc[bdict["format"]]
+                    bna = bcls(url)
+                    if (bna.is_available()
+                            and bna.get_measurement_identifier() == muid):
+                        self.basins.append(bna)
+                        break
             else:
                 warnings.warn(
                     f"Encountered unsupported basin type '{bdict['type']}'!")

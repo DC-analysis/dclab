@@ -155,7 +155,10 @@ def is_s3_object_available(url: str,
                                          secret_key=secret_key)
                 _, s3_path = parse_s3_url(url)
                 fs = s3fs.S3FileSystem(**s3fskw)
-                avail = fs.exists(s3_path)
+                try:
+                    avail = fs.exists(s3_path)
+                except OSError:
+                    pass
     return avail
 
 

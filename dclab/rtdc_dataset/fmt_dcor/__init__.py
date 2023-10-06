@@ -269,7 +269,7 @@ class RTDC_DCOR(RTDCBase):
             - dcor.mpl.mpg.de/api/3/action/dcserv?id=caab96f6-df12-
               4299-aa2e-089e390aafd5
             - caab96f6-df12-4299-aa2e-089e390aafd5
-        use_ssl: bool
+        use_ssl: bool or None
             Set this to False to disable SSL (should only be used for
             testing). Defaults to None (does not force SSL if the URL
             starts with "http://").

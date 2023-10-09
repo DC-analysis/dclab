@@ -107,6 +107,14 @@ class RTDC_DCOR(RTDCBase):
     def __len__(self):
         return self._size
 
+    @property
+    def hash(self):
+        """Hash value based on file name and content"""
+        if self._hash is None:
+            tohash = [self.path]
+            self._hash = hashobj(tohash)
+        return self._hash
+
     @staticmethod
     def get_full_url(url, use_ssl, host):
         """Return the full URL to a DCOR resource
@@ -149,13 +157,16 @@ class RTDC_DCOR(RTDCBase):
         new_url = f"{web}://{host}/{api_path}"
         return new_url
 
-    @property
-    def hash(self):
-        """Hash value based on file name and content"""
-        if self._hash is None:
-            tohash = [self.path]
-            self._hash = hashobj(tohash)
-        return self._hash
+    def basins_get_dicts(self):
+        """Return list of dicts for all basins defined in `self.h5file`"""
+        try:
+            basins = self.api.get(query="basins")
+        except api.DCORAccessError:
+            # TODO: Do not catch this exception when all DCOR instances
+            #       implement the 'basins' query.
+            # This means that the server does not implement the 'basins' query.
+            basins = []
+        return basins
 
 
 def get_host_from_url(url):

@@ -1,3 +1,5 @@
+0.53.2
+ - enh: implement retrieving basins in fmt_dcor
 0.53.1
  - fix: catch OSError when accessing invalid S3 URL
  - enh: implement `Configuration.as_dict`

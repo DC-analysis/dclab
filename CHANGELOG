@@ -1,5 +1,7 @@
 0.53.1
  - fix: catch OSError when accessing invalid S3 URL
+ - enh: implement `Configuration.as_dict`
+ - enh: implement `Basin.as_dict`
 0.53.0
  - feat: introduce remote type basin format s3
  - feat: implement `store_basin` in `RTDCWriter`

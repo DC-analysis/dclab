@@ -30,6 +30,31 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     allow_module_level=True)
 
 
+def test_basin_as_dict(tmp_path):
+    h5path = tmp_path / "test_basin_s3.rtdc"
+
+    with h5py.File(h5path, "a") as dst, new_dataset(s3_url) as src:
+        # Store non-existent basin information
+        with RTDCWriter(dst, mode="append") as hw:
+            meta = src.config.as_dict(pop_filtering=True)
+            hw.store_metadata(meta)
+            hw.store_basin(basin_name="example basin",
+                           basin_type="remote",
+                           basin_format="s3",
+                           basin_locs=[s3_url],
+                           basin_descr="an example S3 test basin",
+                           )
+
+    with new_dataset(h5path) as ds:
+        assert ds._enable_basins
+        bdict = ds.basins[0].as_dict()
+        assert bdict["name"] == "example basin"
+        assert bdict["type"] == "remote"
+        assert bdict["format"] == "s3"
+        assert bdict["urls"] == [s3_url]
+        assert bdict["description"] == "an example S3 test basin"
+
+
 @pytest.mark.parametrize("url", [
     "https://example.com/nonexistentbucket/nonexistentkey",
     f"https://objectstore.hpccloud.mpcdf.mpg.de/noexist-{uuid.uuid4()}/key",
@@ -78,8 +103,7 @@ def test_create_basin_file_with_no_data(tmp_path):
         basins = dst.require_group("basins")
         with RTDCWriter(dst, mode="append") as hw:
             hw.write_text(basins, "my_basin", blines)
-            meta = dict(src.config)
-            meta.pop("filtering")
+            meta = src.config.as_dict(pop_filtering=True)
             hw.store_metadata(meta)
 
     with new_dataset(h5path) as ds:

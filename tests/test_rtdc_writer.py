@@ -29,8 +29,7 @@ def test_basin_file():
                        basin_descr="My very first basin-only dataset",
                        verify=True,
                        )
-        meta = dict(dsorig.config)
-        meta.pop("filtering")
+        meta = dsorig.config.as_dict(pop_filtering=True)
         hw.store_metadata(meta)
 
     # OK, now open the dataset and make sure that it contains all information.
@@ -58,8 +57,7 @@ def test_basin_file_relative():
                        basin_descr="My very first basin-only dataset",
                        verify=True
                        )
-        meta = dict(dsorig.config)
-        meta.pop("filtering")
+        meta = dsorig.config.as_dict(pop_filtering=True)
         hw.store_metadata(meta)
 
     # Now to the relative testing part. We just move everything one directory
@@ -92,8 +90,7 @@ def test_basin_file_identifier_mismatch():
     path_test = path.parent / "test.h5"
     # We basically create a file that consists only of the metadata.
     with RTDCWriter(path_test) as hw, new_dataset(path) as dsorig:
-        meta = dict(dsorig.config)
-        meta.pop("filtering")
+        meta = dsorig.config.as_dict(pop_filtering=True)
         hw.store_metadata(meta)
         hw.store_metadata({"experiment": {"run identifier": "janeway"}})
         with pytest.raises(ValueError, match="identifier mismatch"):
@@ -136,8 +133,7 @@ def test_basin_url(tmp_path):
               "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
               "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
     with new_dataset(s3_url) as ds:
-        meta = dict(ds.config)
-        meta.pop("filtering")
+        meta = ds.config.as_dict(pop_filtering=True)
 
     path = tmp_path / "basins3test.rtdc"
     with RTDCWriter(path) as hw:

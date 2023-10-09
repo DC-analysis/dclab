@@ -1,4 +1,3 @@
-import copy
 import io
 import os
 from os.path import join
@@ -257,9 +256,7 @@ def test_hdf5_filtered_full(dataset):
     path_out3 = tdir / "out3.rtdc"
     with dclab.new_dataset(path_in) as ds:
         with RTDCWriter(path_out3) as hw:
-            config = copy.deepcopy(dict(ds.config))
-            config.pop("filtering", None)
-            config.pop("analysis", None)
+            config = ds.config.as_dict(pop_filtering=True)
             hw.store_metadata(config)
             for feat in ds.features_innate:
                 hw.store_feature(feat, ds[feat])
@@ -268,9 +265,7 @@ def test_hdf5_filtered_full(dataset):
     path_out4 = tdir / "out4.rtdc"
     with dclab.new_dataset(path_in) as ds:
         with RTDCWriter(path_out4) as hw:
-            config = copy.deepcopy(dict(ds.config))
-            config.pop("filtering", None)
-            config.pop("analysis", None)
+            config = ds.config.as_dict(pop_filtering=True)
             hw.store_metadata(config)
             for feat in ds.features_innate:
                 store_filtered_feature(rtdc_writer=hw,

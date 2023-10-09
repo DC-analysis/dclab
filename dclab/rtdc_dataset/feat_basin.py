@@ -63,6 +63,20 @@ class Basin(abc.ABC):
         """Features made available by the basin"""
         return self.ds.features_innate
 
+    def as_dict(self):
+        """Return basin kwargs for :func:`RTDCWriter.store_basin`"""
+        bdict = {
+            "name": self.name,
+            "description": self.description,
+            "type": self.basin_type,
+            "format": self.basin_format
+        }
+        if self.basin_type == "file":
+            bdict["paths"] = [str(self.location)]
+        else:
+            bdict["urls"] = [self.location]
+        return bdict
+
     def get_feature_data(self, feat):
         """Return an object representing feature data of the basin"""
         return self.ds[feat]

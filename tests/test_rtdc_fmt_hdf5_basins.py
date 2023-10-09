@@ -13,6 +13,32 @@ from dclab.rtdc_dataset.fmt_hdf5.basin import HDF5Basin
 from helper_methods import retrieve_data
 
 
+def test_basin_as_dict():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(basin_name="example basin",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[h5path],
+                       basin_descr="an example test basin",
+                       )
+
+    with dclab.new_dataset(h5path_small) as ds:
+        bdict = ds.basins[0].as_dict()
+        assert bdict["name"] == "example basin"
+        assert bdict["type"] == "file"
+        assert bdict["format"] == "hdf5"
+        assert bdict["paths"] == [str(h5path)]
+        assert bdict["description"] == "an example test basin"
+
+
 def test_basin_not_available():
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
     h5path_small = h5path.with_name("smaller.rtdc")

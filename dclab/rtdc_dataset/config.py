@@ -229,6 +229,12 @@ class Configuration(object):
                 raise KeyError(
                     "No default value set for [filtering]:{}".format(item[0]))
 
+    def as_dict(self, pop_filtering=False):
+        data = json.loads(self.tojson())
+        if pop_filtering:
+            data.pop("filtering", None)
+        return data
+
     def copy(self):
         """Return copy of current configuration"""
         return Configuration(cfg=copy.deepcopy(self._cfg))

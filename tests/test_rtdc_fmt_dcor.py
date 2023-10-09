@@ -27,6 +27,8 @@ class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):
         with dclab.new_dataset(h5path) as ds:
             if query == "size":
                 return len(ds)
+            elif query == "basins":
+                return []
             elif query == "metadata":
                 return ds.config
             elif query == "feature_list":

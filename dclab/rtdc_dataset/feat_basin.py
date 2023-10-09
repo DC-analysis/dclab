@@ -65,17 +65,13 @@ class Basin(abc.ABC):
 
     def as_dict(self):
         """Return basin kwargs for :func:`RTDCWriter.store_basin`"""
-        bdict = {
-            "name": self.name,
-            "description": self.description,
-            "type": self.basin_type,
-            "format": self.basin_format
+        return {
+            "basin_name": self.name,
+            "basin_type": self.basin_type,
+            "basin_format": self.basin_format,
+            "basin_locs": [self.location],
+            "basin_descr": self.description,
         }
-        if self.basin_type == "file":
-            bdict["paths"] = [str(self.location)]
-        else:
-            bdict["urls"] = [self.location]
-        return bdict
 
     def get_feature_data(self, feat):
         """Return an object representing feature data of the basin"""

@@ -1,4 +1,5 @@
 import json
+import pathlib
 
 import h5py
 import numpy as np
@@ -32,11 +33,35 @@ def test_basin_as_dict():
 
     with dclab.new_dataset(h5path_small) as ds:
         bdict = ds.basins[0].as_dict()
-        assert bdict["name"] == "example basin"
-        assert bdict["type"] == "file"
-        assert bdict["format"] == "hdf5"
-        assert bdict["paths"] == [str(h5path)]
-        assert bdict["description"] == "an example test basin"
+        assert bdict["basin_name"] == "example basin"
+        assert bdict["basin_type"] == "file"
+        assert bdict["basin_format"] == "hdf5"
+        assert [str(p.resolve()) for p in bdict["basin_locs"]] == \
+               [str(pathlib.Path(h5path).resolve())]
+        assert bdict["basin_descr"] == "an example test basin"
+
+    # Now use the data from `bdict` to create a new basin
+    h5path_two = h5path.with_name("smaller_two.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_two) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(**bdict)
+
+    del bdict
+    del ds
+
+    with dclab.new_dataset(h5path_small) as ds2:
+        bdict2 = ds2.basins[0].as_dict()
+        assert bdict2["basin_name"] == "example basin"
+        assert bdict2["basin_type"] == "file"
+        assert bdict2["basin_format"] == "hdf5"
+        assert [str(p.resolve()) for p in bdict2["basin_locs"]] == \
+               [str(pathlib.Path(h5path).resolve())]
+        assert bdict2["basin_descr"] == "an example test basin"
 
 
 def test_basin_not_available():

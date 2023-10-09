@@ -31,6 +31,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 
 def test_basin_as_dict(tmp_path):
+    tmp_path = tmp_path.resolve()
     h5path = tmp_path / "test_basin_s3.rtdc"
 
     with h5py.File(h5path, "a") as dst, new_dataset(s3_url) as src:
@@ -48,11 +49,31 @@ def test_basin_as_dict(tmp_path):
     with new_dataset(h5path) as ds:
         assert ds._enable_basins
         bdict = ds.basins[0].as_dict()
-        assert bdict["name"] == "example basin"
-        assert bdict["type"] == "remote"
-        assert bdict["format"] == "s3"
-        assert bdict["urls"] == [s3_url]
-        assert bdict["description"] == "an example S3 test basin"
+        assert bdict["basin_name"] == "example basin"
+        assert bdict["basin_type"] == "remote"
+        assert bdict["basin_format"] == "s3"
+        assert bdict["basin_locs"] == [s3_url]
+        assert bdict["basin_descr"] == "an example S3 test basin"
+
+    # Now use the data from `bdict` to create a new basin
+    h5path_two = h5path.with_name("smaller_two.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_two) as hw:
+        # first, copy all the scalar features to the new file
+        hw.store_metadata(meta)
+        hw.store_basin(**bdict)
+
+    del bdict
+    del ds
+
+    with new_dataset(h5path_two) as ds2:
+        bdict2 = ds2.basins[0].as_dict()
+        assert bdict2["basin_name"] == "example basin"
+        assert bdict2["basin_type"] == "remote"
+        assert bdict2["basin_format"] == "s3"
+        assert bdict2["basin_locs"] == [s3_url]
+        assert bdict2["basin_descr"] == "an example S3 test basin"
 
 
 @pytest.mark.parametrize("url", [

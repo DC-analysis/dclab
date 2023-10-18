@@ -21,6 +21,4 @@ class HDF5Basin(feat_basin.Basin):
             avail = pathlib.Path(self.location).exists()
         except OSError:
             pass
-        else:
-            avail = True
         return avail

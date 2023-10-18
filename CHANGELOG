@@ -1,3 +1,5 @@
+0.53.3
+ - fix: bad hdf5 basin check
 0.53.2
  - fix: catch OSError when accessing invalid hdf5 basin
  - enh: implement retrieving basins in fmt_dcor

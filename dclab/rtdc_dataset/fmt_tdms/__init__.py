@@ -343,9 +343,6 @@ class RTDC_TDMS(RTDCBase):
             ret_source_files=True)
         self._complete_config_with_data()
 
-        # Finalize initialization of base class
-        self._finalize_init()
-
         # Load log files
         log_files = config_paths
         for name in [self._mid + "_events.txt",

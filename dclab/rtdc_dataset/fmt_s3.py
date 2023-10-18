@@ -62,10 +62,9 @@ class RTDC_S3(RTDC_HDF5):
                                  secret_id=secret_id,
                                  secret_key=secret_key)
         _, s3_path = parse_s3_url(url)
-
         self._fs = s3fs.S3FileSystem(**s3fskw)
         self._f3d = self._fs.open(s3_path, mode='rb')
-        # This also takes care of `_finalize_init`
+        # Initialize the HDF5 dataset
         super(RTDC_S3, self).__init__(
             h5path=self._f3d,
             *args,
@@ -101,12 +100,11 @@ def get_s3fs_kwargs(url: str,
     secret_key: str
         Secret S3 access key
     """
-    s3_endpoint, s3_path = parse_s3_url(url)
+    s3_endpoint, _ = parse_s3_url(url)
     s3fskw = {
-        "client_kwargs": {
-            "endpoint_url": s3_endpoint},
+        "endpoint_url": s3_endpoint,
         # A large block size makes loading metadata really slow.
-        "default_block_size": 2048,
+        "default_block_size": 2**20,
     }
     if secret_id and secret_key:
         # We have an id-key pair.
@@ -122,6 +120,7 @@ def get_s3fs_kwargs(url: str,
     return s3fskw
 
 
+@functools.lru_cache()
 def is_s3_object_available(url: str,
                            secret_id: str = "",
                            secret_key: str = "",

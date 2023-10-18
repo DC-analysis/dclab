@@ -302,14 +302,8 @@ class RTDC_Hierarchy(RTDCBase):
         #: hierarchy parent
         self.hparent = hparent
 
-        self.filter = HierarchyFilter(self)
-
         self.config = self._create_config()  # init config
         self._update_config()  # sets e.g. event count
-
-        # We are not calling `_finalize_init`, because that would imply
-        # calling `_finalize_init_filters`.
-        self._finalize_init_basins()
 
         if apply_filter:
             # Apply the filter
@@ -346,6 +340,15 @@ class RTDC_Hierarchy(RTDCBase):
     def __len__(self):
         return np.sum(self.hparent.filter.all)
 
+    def _assert_filter(self):
+        """Make sure filters exists
+
+        Override from base class that uses :class:`.HierarchyFilter`
+        instead of :class:`.Filter`.
+        """
+        if self._ds_filter is None:
+            self._ds_filter = HierarchyFilter(self)
+
     def _check_parent_filter(self):
         """Reset filter if parent changed
 
@@ -356,7 +359,8 @@ class RTDC_Hierarchy(RTDCBase):
         """
         if self.filter.parent_changed:
             manual_pidx = self.filter.retrieve_manual_indices(self)
-            self.filter = HierarchyFilter(self)
+            self._ds_filter = None  # forces recreation of HierarchyFilter
+            self._assert_filter()
             self.filter.apply_manual_indices(self, manual_pidx)
 
     def _create_config(self):

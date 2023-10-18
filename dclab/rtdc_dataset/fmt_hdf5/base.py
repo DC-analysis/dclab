@@ -79,7 +79,7 @@ class RTDC_HDF5(RTDCBase):
         self._events = events.H5Events(self.h5file)
 
         # Parse configuration
-        self.config = RTDC_HDF5.parse_config(h5path)
+        self.config = RTDC_HDF5.parse_config(self.h5file)
 
         # Override logs property with HDF5 data
         self.logs = logs.H5Logs(self.h5file)
@@ -100,9 +100,6 @@ class RTDC_HDF5(RTDCBase):
 
         self.title = "{} - M{}".format(self.config["experiment"]["sample"],
                                        self.config["experiment"]["run index"])
-
-        # Finalize initialization
-        self._finalize_init()
 
     def __enter__(self):
         return self
@@ -149,9 +146,15 @@ class RTDC_HDF5(RTDCBase):
 
     @staticmethod
     def parse_config(h5path):
-        """Parse the RT-DC configuration of an HDF5 file"""
-        with h5py.File(h5path, mode="r") as fh5:
-            h5attrs = dict(fh5.attrs)
+        """Parse the RT-DC configuration of an HDF5 file
+
+        `h5path` may be a h5py.File object or an actual path
+        """
+        if not isinstance(h5path, h5py.File):
+            with h5py.File(h5path, mode="r") as fh5:
+                h5attrs = dict(fh5.attrs)
+        else:
+            h5attrs = dict(h5path.attrs)
 
         # Convert byte strings to unicode strings
         # https://github.com/h5py/h5py/issues/379

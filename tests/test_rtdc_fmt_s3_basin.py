@@ -64,9 +64,6 @@ def test_basin_as_dict(tmp_path):
         hw.store_metadata(meta)
         hw.store_basin(**bdict)
 
-    del bdict
-    del ds
-
     with new_dataset(h5path_two) as ds2:
         bdict2 = ds2.basins[0].as_dict()
         assert bdict2["basin_name"] == "example basin"

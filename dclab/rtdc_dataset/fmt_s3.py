@@ -104,7 +104,7 @@ def get_s3fs_kwargs(url: str,
     s3fskw = {
         "endpoint_url": s3_endpoint,
         # A large block size makes loading metadata really slow.
-        "default_block_size": 2**20,
+        "default_block_size": 2**18,
     }
     if secret_id and secret_key:
         # We have an id-key pair.

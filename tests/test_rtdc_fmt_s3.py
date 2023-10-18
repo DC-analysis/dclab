@@ -32,12 +32,12 @@ def test_cache_features():
 
     ds = dclab.new_dataset(s3_url)
     t0 = time.perf_counter()
-    _ = ds["deform"]
+    _ = ds["deform"][:]
     t1 = time.perf_counter()
     for ii in range(50):
-        _ = ds["deform"]
+        _ = ds["deform"][:]
     t2 = time.perf_counter()
-    assert t2-t1 < t1 - t0
+    assert t2 - t1 < t1 - t0
 
 
 @pytest.mark.parametrize("url, avail", [

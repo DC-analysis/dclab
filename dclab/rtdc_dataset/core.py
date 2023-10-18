@@ -54,10 +54,9 @@ class RTDCBase(abc.ABC):
         #: Export functionalities; instance of
         #: :class:`dclab.rtdc_dataset.export.Export`.
         self.export = Export(self)
-        # The filtering class is initialized with self._finalize_init_filters
-        #: Filtering functionalities; instance of
-        #: :class:`dclab.rtdc_dataset.filter.Filter`.
-        self.filter = None
+        # Filtering functionalities; instance of
+        # :class:`dclab.rtdc_dataset.filter.Filter`.
+        self._ds_filter = None
         #: Dictionary of log files. Each log file is a list of strings
         #: (one string per line).
         self.logs = {}
@@ -159,22 +158,22 @@ class RTDCBase(abc.ABC):
             repre += " ({})>".format(self.path)
         return repre
 
+    @property
+    def filter(self):
+        """Filtering functionalities; instance of :class:`.Filter`"""
+        if self._ds_filter is None:
+            self._ds_filter = Filter(self)
+            self.reset_filter()
+        return self._filter
+
     def _finalize_init(self):
         """Subclasses must call this method at the end of `__init__`"""
         self._finalize_init_basins()
-        self._finalize_init_filters()
 
     def _finalize_init_basins(self):
         """Initialize basins"""
         if self._enable_basins:
             self.basins_enable()
-
-    def _finalize_init_filters(self):
-        """Initialize filtering"""
-        #: Filtering functionalities (this is an instance of
-        #: :class:`dclab.rtdc_dataset.filter.Filter`.
-        self.filter = Filter(self)
-        self.reset_filter()
 
     def _get_ancillary_feature_data(self,
                                     feat: str,

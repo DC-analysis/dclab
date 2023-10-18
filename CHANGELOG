@@ -1,4 +1,5 @@
 0.53.2
+ - fix: catch OSError when accessing invalid hdf5 basin
  - enh: implement retrieving basins in fmt_dcor
 0.53.1
  - fix: catch OSError when accessing invalid S3 URL

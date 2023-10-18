@@ -54,11 +54,17 @@ class H5Events:
         # datasets, we cache the wrapping classes in the `self._cached_events`
         # dictionary.
         self._cached_events = {}
-        self._features = sorted(self.h5file["events"].keys())
-        # make sure that "trace" is not empty
-        if ("trace" in self._features
-                and len(self.h5file["events"]["trace"]) == 0):
-            self._features.remove("trace")
+        self._features_list = None
+
+    @property
+    def _features(self):
+        if self._features_list is None:
+            self._features_list = sorted(self.h5file["events"].keys())
+            # make sure that "trace" is not empty
+            if ("trace" in self._features
+                    and len(self.h5file["events"]["trace"]) == 0):
+                self._features_list.remove("trace")
+        return self._features_list
 
     def __contains__(self, key):
         return key in self.keys()

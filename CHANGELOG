@@ -1,6 +1,7 @@
 0.53.4
  - enh: lazy initialization of .RTDCBase.filters
  - enh: lazy initialization of .RTDCBase.basins
+ - enh: lazy loading of feature list for HDF5 data
 0.53.3
  - fix: bad hdf5 basin check
 0.53.2

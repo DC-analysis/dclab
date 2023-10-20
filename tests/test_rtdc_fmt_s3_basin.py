@@ -10,6 +10,11 @@ import pytest
 from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_s3 import S3Basin
 
+try:
+    from s3fs import S3FileSystem
+except ImportError:
+    S3FileSystem = None
+
 
 from helper_methods import retrieve_data
 
@@ -28,6 +33,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     except (socket.gaierror, OSError):
         pytest.skip("No connection to DCOR",
                     allow_module_level=True)
+
+
+@pytest.fixture()
+def s3fs_cleanup():
+    # Clear the cache so we get a clean slate every time we instantiate
+    # an S3FileSystem.
+    yield
+    S3FileSystem.cachable = False
 
 
 def test_basin_as_dict(tmp_path):

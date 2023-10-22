@@ -105,8 +105,18 @@ class RTDC_HDF5(RTDCBase):
         return self
 
     def __exit__(self, type, value, tb):
-        # close the HDF5 file
+        self.close()
+
+    def close(self):
+        """Close the underlying HDF5 file"""
+        # This is a partial workaround for issue #238
+        # https://github.com/DC-analysis/dclab/issues/238
+        # TODO: Refactor .RTDCBase with context managers that call `close`.
         self.h5file.close()
+        if self._basins:
+            for b in self._basins:
+                if b._ds is not None:
+                    b._ds.close()
 
     @functools.lru_cache()
     def __len__(self):

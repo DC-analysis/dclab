@@ -1,4 +1,5 @@
 0.53.4
+ - fix: partial workaround for #238
  - enh: lazy initialization of .RTDCBase.filters
  - enh: lazy initialization of .RTDCBase.basins
  - enh: lazy loading of feature list for HDF5 data

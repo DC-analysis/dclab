@@ -1,3 +1,5 @@
+0.54.1
+ - fix: properly check for basin availability before getting features
 0.54.0
  - fix: partial workaround for #238
  - fix: hash alias for HDF5 Datasets in files not in the file system

@@ -342,9 +342,9 @@ class RTDCBase(abc.ABC):
         feats = list(self._events.keys())
         feats += list(self._usertemp.keys())
         feats += list(AncillaryFeature.feature_names)
-        if self.basins:
-            feats += list(
-                itertools.chain(*[bn.features for bn in self.basins]))
+        for bn in self.basins:
+            if bn.is_available():
+                feats += bn.features
         feats = sorted(set(feats))
         # exclude non-standard features
         featsv = [ff for ff in feats if dfn.feature_exists(ff)]

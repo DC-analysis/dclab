@@ -143,7 +143,7 @@ def get_emodulus(deform: float | np.array,
     temperature: float, ndarray, or None
         Temperature [°C] of the event(s)
     lut_data: path, str, or tuple of (np.ndarray of shape (N, 3), dict)
-        The LUT data to use. If it is a key in :const:`INTERNAL_LUTS`,
+        The LUT data to use. If it is a built-in identifier,
         then the respective LUT will be used. Otherwise, a path to a
         file on disk or a tuple (LUT array, metadata) is possible.
         The LUT metadata is used to check whether the given features

@@ -1,5 +1,7 @@
 import pathlib
-from pkg_resources import resource_filename
+# replace this import when dropping support for Python 3.8
+# from importlib import resources as importlib_resources
+import importlib_resources
 import sys
 import tempfile
 import time
@@ -386,7 +388,7 @@ def test_extrapolate():
             inplace=True)
         valid = ~np.isnan(emod)
         valid_ones += np.sum(valid)
-        res = np.abs(lut[ids, 2] - emod)[valid]/lut[ids, 2][valid]
+        res = np.abs(lut[ids, 2] - emod)[valid] / lut[ids, 2][valid]
         if np.sum(res > .05):
             more_than_5perc.append([ids, res])
 
@@ -405,11 +407,12 @@ def test_load_lut_from_array():
 
 def test_load_lut_from_path():
     ref_lut, ref_meta = emodulus.load_lut("LE-2D-FEM-19")
-    path = resource_filename("dclab.features.emodulus",
-                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
-    lut2, meta2 = emodulus.load_lut(path)
-    assert np.all(ref_lut == lut2)
-    assert ref_meta == meta2
+    ref = importlib_resources.files(
+        "dclab.features.emodulus") / "lut_LE-2D-FEM-19.txt"
+    with importlib_resources.as_file(ref) as path:
+        lut2, meta2 = emodulus.load_lut(path)
+        assert np.all(ref_lut == lut2)
+        assert ref_meta == meta2
 
 
 def test_load_lut_from_badobject():
@@ -441,11 +444,12 @@ def test_pixelation_correction_volume():
 def test_register_external_lut():
     """Load an external LUT and compute YM data"""
     identifier = "test-test_register_external_lut"
-    path = resource_filename("dclab.features.emodulus",
-                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
-    emodulus.register_lut(path, identifier=identifier)
-    # cleanup
-    emodulus.load.EXTERNAL_LUTS.clear()
+    ref = importlib_resources.files(
+        "dclab.features.emodulus") / "lut_LE-2D-FEM-19.txt"
+    with importlib_resources.as_file(ref) as path:
+        emodulus.register_lut(path, identifier=identifier)
+        # cleanup
+        emodulus.load.EXTERNAL_LUTS.clear()
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -466,21 +470,22 @@ def test_register_external_lut_and_get_emodulus():
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     # from external LUT
     identifier = "test-test_register_external_lut"
-    path = resource_filename("dclab.features.emodulus",
-                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
-    emodulus.register_lut(path, identifier=identifier)
-    ds2 = dclab.new_dataset(ddict)
-    ds2.config["setup"]["flow rate"] = 0.16
-    ds2.config["setup"]["channel width"] = 30
-    ds2.config["imaging"]["pixel size"] = .34
-    ds2.config["calculation"] = {"emodulus lut": identifier,
-                                 "emodulus viscosity model": "herold-2017",
-                                 "emodulus medium": "CellCarrier",
-                                 "emodulus temperature": 23.0
-                                 }
-    assert np.sum(~np.isnan(ds2["emodulus"])) > 0
-    assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=1e-15)
+    ref = importlib_resources.files(
+        "dclab.features.emodulus") / "lut_LE-2D-FEM-19.txt"
+    with importlib_resources.as_file(ref) as path:
+        emodulus.register_lut(path, identifier=identifier)
+        ds2 = dclab.new_dataset(ddict)
+        ds2.config["setup"]["flow rate"] = 0.16
+        ds2.config["setup"]["channel width"] = 30
+        ds2.config["imaging"]["pixel size"] = .34
+        ds2.config["calculation"] = {"emodulus lut": identifier,
+                                     "emodulus viscosity model": "herold-2017",
+                                     "emodulus medium": "CellCarrier",
+                                     "emodulus temperature": 23.0
+                                     }
+        assert np.sum(~np.isnan(ds2["emodulus"])) > 0
+        assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
+                           rtol=0, atol=1e-15)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -500,13 +505,14 @@ def test_register_external_lut_with_internal_identifier():
                                 }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     # from external LUT
-    path = resource_filename("dclab.features.emodulus",
-                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
-    path2 = pathlib.Path(tempfile.mkdtemp("external_lut_with_id")) / "lut.txt"
-    text = pathlib.Path(path).read_text().split("\n")
-    text[33] = '#   "identifier": "LE-2D-FEM-19b",'
-    path2.write_text("\n".join(text))
-    emodulus.register_lut(path2)
+    ref = importlib_resources.files(
+        "dclab.features.emodulus") / "lut_LE-2D-FEM-19.txt"
+    with importlib_resources.as_file(ref) as path:
+        path2 = pathlib.Path(tempfile.mkdtemp("external_lut_with_id")) / "lut.txt"
+        text = pathlib.Path(path).read_text().split("\n")
+        text[33] = '#   "identifier": "LE-2D-FEM-19b",'
+        path2.write_text("\n".join(text))
+        emodulus.register_lut(path2)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -526,10 +532,11 @@ def test_register_external_lut_without_identifier():
                                 }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     # from external LUT
-    path = resource_filename("dclab.features.emodulus",
-                             emodulus.load.INTERNAL_LUTS["LE-2D-FEM-19"])
-    with pytest.raises(ValueError):
-        emodulus.register_lut(path)
+    ref = importlib_resources.files(
+        "dclab.features.emodulus") / "lut_LE-2D-FEM-19.txt"
+    with importlib_resources.as_file(ref) as path:
+        with pytest.raises(ValueError):
+            emodulus.register_lut(path)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'

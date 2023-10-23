@@ -8,6 +8,9 @@
  - enh: lazy initialization of .RTDCBase.filters
  - enh: lazy initialization of .RTDCBase.basins
  - enh: lazy loading of feature list for HDF5 data
+ - setup: migrate from pkg_resources to importlib_resources
+ - ref: remove the dclab.isoelastics.ISOFILES constant
+ - ref: remove the dclab.features.emodulus.INTERNAL_LUTS constant
 0.53.3
  - fix: bad hdf5 basin check
 0.53.2

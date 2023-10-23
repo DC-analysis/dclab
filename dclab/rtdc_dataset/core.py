@@ -1,7 +1,6 @@
 """RT-DC dataset core classes and methods"""
 import abc
 import hashlib
-import itertools
 import pathlib
 from typing import Literal
 import uuid

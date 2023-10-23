@@ -75,7 +75,7 @@ def test_basin_feature_restriction_verify():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_test = path.parent / "test.h5"
     # We basically create a file that consists only of the metadata.
-    with RTDCWriter(path_test) as hw, new_dataset(path) as dsorig:
+    with RTDCWriter(path_test) as hw:
         with pytest.raises(ValueError, match="blablabla"):
             hw.store_basin(basin_name="get-out",
                            basin_type="file",

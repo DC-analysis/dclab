@@ -19,7 +19,6 @@ from . import events
 from . import logs
 from . import tables
 
-
 #: rtdc files exported with dclab prior to this version are not supported
 MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 
@@ -88,7 +87,7 @@ class RTDC_HDF5(RTDCBase):
         self.tables = tables.H5Tables(self.h5file)
 
         # check version
-        rtdc_soft = self.config["setup"]["software version"]
+        rtdc_soft = self.config["setup"].get("software version", "unknown")
         if rtdc_soft.startswith("dclab "):
             rtdc_ver = parse_version(rtdc_soft.split(" ")[1])
             if rtdc_ver < parse_version(MIN_DCLAB_EXPORT_VERSION):
@@ -98,8 +97,9 @@ class RTDC_HDF5(RTDCBase):
                       + "dclab-tdms2rtdc / export the data again."
                 raise OldFormatNotSupportedError(msg)
 
-        self.title = "{} - M{}".format(self.config["experiment"]["sample"],
-                                       self.config["experiment"]["run index"])
+        self.title = "{} - M{}".format(
+            self.config["experiment"].get("sample", "undefined sample"),
+            self.config["experiment"].get("run index", "0"))
 
     def __enter__(self):
         return self

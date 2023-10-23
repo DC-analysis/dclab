@@ -1,5 +1,6 @@
-0.53.4
+0.54.0
  - fix: partial workaround for #238
+ - enh: do not immediately raise an exception when metadata are missing
  - enh: lazy initialization of .RTDCBase.filters
  - enh: lazy initialization of .RTDCBase.basins
  - enh: lazy loading of feature list for HDF5 data

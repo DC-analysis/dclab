@@ -4,6 +4,7 @@ import functools
 class H5Logs:
     def __init__(self, h5):
         self.h5file = h5
+        self._cache_keys = None
 
     def __getitem__(self, key):
         if key in self.keys():
@@ -24,11 +25,12 @@ class H5Logs:
     def __len__(self):
         return len(self.keys())
 
-    @functools.lru_cache()
     def keys(self):
-        names = []
-        if "logs" in self.h5file:
-            for key in self.h5file["logs"]:
-                if self.h5file["logs"][key].size:
-                    names.append(key)
-        return names
+        if self._cache_keys is None:
+            names = []
+            if "logs" in self.h5file:
+                for key in self.h5file["logs"]:
+                    if self.h5file["logs"][key].size:
+                        names.append(key)
+            self._cache_keys = names
+        return self._cache_keys

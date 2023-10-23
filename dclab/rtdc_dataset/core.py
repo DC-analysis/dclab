@@ -38,6 +38,8 @@ class RTDCBase(abc.ABC):
         #: Dataset format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
 
+        # Cache attribute used for __len__()-function
+        self._length = None
         self._polygon_filter_ids = []
         # Events have the feature name as keys and contain nD ndarrays.
         self._events = {}
@@ -135,6 +137,13 @@ class RTDCBase(abc.ABC):
             yield col
 
     def __len__(self):
+        if self._length is None:
+            self._length = self._get_length()
+        return self._length
+
+    def _get_length(self):
+        """ implement here what is currently in __len__ + caching attribute (_length) """
+        """ and child-classes can override """
         # Try to get length from metadata.
         length = self.config["experiment"].get("event count")
         if length:
@@ -148,6 +157,10 @@ class RTDCBase(abc.ABC):
                 return length
         else:
             raise ValueError(f"Could not determine size of dataset '{self}'.")
+
+    @abstractmethod
+    def my_function(self):
+        pass
 
     def __repr__(self):
         repre = "<{} '{}' at {}".format(self.__class__.__name__,

@@ -17,6 +17,7 @@ class H5ContourEvent:
         self.h5group = h5group
         # for hashing in util.obj2bytes
         self.identifier = (h5group.file.filename, h5group["0"].name)
+        self._length = None
 
     def __getitem__(self, key):
         if not isinstance(key, numbers.Integral):
@@ -56,6 +57,7 @@ class H5Events:
         # datasets, we cache the wrapping classes in the `self._cached_events`
         # dictionary.
         self._cached_events = {}
+        self._defective_features = {}
         self._features_list = None
 
     @property
@@ -97,15 +99,16 @@ class H5Events:
         for key in self.keys():
             yield key
 
-    @functools.lru_cache()
     def _is_defective_feature(self, feat):
         """Whether the stored feature is defective"""
-        defective = False
-        if feat in feat_defect.DEFECTIVE_FEATURES and feat in self._features:
-            # feature exists in the HDF5 file
-            # workaround machinery for sorting out defective features
-            defective = feat_defect.DEFECTIVE_FEATURES[feat](self.h5file)
-        return defective
+        if feat not in self._defective_features:
+            defective = False
+            if feat in feat_defect.DEFECTIVE_FEATURES and feat in self._features:
+                # feature exists in the HDF5 file
+                # workaround machinery for sorting out defective features
+                defective = feat_defect.DEFECTIVE_FEATURES[feat](self.h5file)
+            self._defective_features[feat] = defective
+        return self._defective_features[feat]
 
     def keys(self):
         """Returns list of valid features

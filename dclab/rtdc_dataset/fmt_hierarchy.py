@@ -426,7 +426,8 @@ class RTDC_Hierarchy(RTDCBase):
         self.hparent.apply_filter(*args, **kwargs)
 
         # Clear anything that has been cached until now
-        self.__len__.cache_clear()
+#        self.__len__.cache_clear()
+        self._length = None
 
         # update event index
         event_count = len(self)

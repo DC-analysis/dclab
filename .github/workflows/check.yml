@@ -15,7 +15,7 @@ jobs:
         extras: ['all', 'dcor-s3', 'none']
         exclude:
           # probably due to dependency issues, s3 tests keep hanging here
-          - pyhton-version: '3.8'
+          - python-version: '3.8'
             os: windows-latest
             extras: 'all'
 

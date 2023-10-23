@@ -77,11 +77,23 @@ class S3Basin(Basin):
     basin_format = "s3"
     basin_type = "remote"
 
+    def __init__(self, *args, **kwargs):
+        self._available_verified = False
+        super(S3Basin, self).__init__(*args, **kwargs)
+
     def load_dataset(self, location, **kwargs):
         return RTDC_S3(location, enable_basins=False, **kwargs)
 
     def is_available(self):
-        return S3FS_AVAILABLE and is_s3_object_available(self.location)
+        """Check for s3fs and object availability
+
+        Caching policy: Once this method returns True, it will always
+        return True.
+        """
+        if not self._available_verified:
+            self._available_verified = (
+                    S3FS_AVAILABLE and is_s3_object_available(self.location))
+        return self._available_verified
 
 
 @functools.lru_cache()
@@ -104,7 +116,7 @@ def get_s3fs_kwargs(url: str,
     s3fskw = {
         "endpoint_url": s3_endpoint,
         # A large block size makes loading metadata really slow.
-        "default_block_size": 4096,
+        "default_block_size": 2**18,
     }
     if secret_id and secret_key:
         # We have an id-key pair.

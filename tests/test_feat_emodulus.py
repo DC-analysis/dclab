@@ -508,7 +508,8 @@ def test_register_external_lut_with_internal_identifier():
     ref = importlib_resources.files(
         "dclab.features.emodulus") / "lut_LE-2D-FEM-19.txt"
     with importlib_resources.as_file(ref) as path:
-        path2 = pathlib.Path(tempfile.mkdtemp("external_lut_with_id")) / "lut.txt"
+        path2 = pathlib.Path(
+            tempfile.mkdtemp("external_lut_with_id")) / "lut.txt"
         text = pathlib.Path(path).read_text().split("\n")
         text[33] = '#   "identifier": "LE-2D-FEM-19b",'
         path2.write_text("\n".join(text))

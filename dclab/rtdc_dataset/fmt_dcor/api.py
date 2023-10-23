@@ -54,7 +54,9 @@ class APIHandler:
 
     def _get(self, query, feat=None, trace=None, event=None, api_key="",
              retries=3):
-        qstr = f"&query={query}"
+        # "version=2" introduced in dclab 0.54.3
+        # (supported since ckanext.dc_serve 0.13.2)
+        qstr = f"&version=2&query={query}"
         if feat is not None:
             qstr += f"&feature={feat}"
         if trace is not None:

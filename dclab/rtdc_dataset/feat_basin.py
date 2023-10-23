@@ -25,16 +25,58 @@ class Basin(abc.ABC):
     """
     id_getters = {}
 
-    def __init__(self, location, name=None, description=None, **kwargs):
+    def __init__(self, location, name=None, description=None,
+                 features=None, measurement_identifier=None, **kwargs):
+        """
+
+        Parameters
+        ----------
+        location: str
+            Location of the basin, this can be a path or a URL, depending
+            on the implementation of the subclass
+        name: str
+            Human-readable name of the basin
+        description: str
+            Lengthy descrition of the basin
+        features: list of str
+            List of features this basin provides; This list is enforced,
+            even if the basin actually contains more features.
+        measurement_identifier: str
+            A measurement identifier against which to check the basin.
+            If this is set to None (default), there is no certainty
+            that the downstream dataset is from the same measurement.
+        """
         #: location of the basin (e.g. path or URL)
         self.location = location
         #: user-defined name of the basin
         self.name = name
         #: lengthy description of the basin
         self.description = description
+        # features this basin provides
+        self._features = features
+        #: measurement identifier of the referencing dataset
+        self.measurement_identifier = measurement_identifier
+        self._measurement_identifier_verified = False
         #: additional keyword arguments passed to the basin
         self.kwargs = kwargs
         self._ds = None
+
+    def _assert_measurement_identifier(self):
+        """Make sure the basin matches the measurement identifier
+
+        This method caches its result, i.e. only the first call is slow.
+        """
+        if not self._measurement_identifier_verified:
+            if self.measurement_identifier is None:
+                self._measurement_identifier_verified = True
+            else:
+                self._measurement_identifier_verified = (
+                    self.get_measurement_identifier()
+                    == self.measurement_identifier)
+        if not self._measurement_identifier_verified:
+            raise KeyError(f"Measurement identifier of {self.ds} "
+                           f"({self.get_measurement_identifier()}) does "
+                           f"not match {self.measurement_identifier}!")
 
     @property
     @abc.abstractmethod
@@ -61,7 +103,9 @@ class Basin(abc.ABC):
     @property
     def features(self):
         """Features made available by the basin"""
-        return self.ds.features_innate
+        if self._features is None:
+            self._features = self.ds.features_innate
+        return self._features
 
     def as_dict(self):
         """Return basin kwargs for :func:`RTDCWriter.store_basin`
@@ -79,10 +123,12 @@ class Basin(abc.ABC):
             "basin_format": self.basin_format,
             "basin_locs": [self.location],
             "basin_descr": self.description,
+            "basin_feats": self.features,
         }
 
     def get_feature_data(self, feat):
         """Return an object representing feature data of the basin"""
+        self._assert_measurement_identifier()
         return self.ds[feat]
 
     def get_measurement_identifier(self):

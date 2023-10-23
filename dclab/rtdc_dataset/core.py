@@ -246,7 +246,17 @@ class RTDCBase(abc.ABC):
                     # User asked for specific basin type
                     continue
                 if feat in bn.features:
-                    data = bn.get_feature_data(feat)
+                    # There are all kinds of errors that may happen here.
+                    # TODO:
+                    #  Introduce some kind of callback so the user knows
+                    #  why the data are not available. The current solution
+                    #  (fail silently) is not sufficiently transparent,
+                    #  especially when considering networking issues.
+                    try:
+                        data = bn.get_feature_data(feat)
+                    except BaseException:
+                        # Basin data not available
+                        pass
                     break
         return data
 
@@ -309,7 +319,7 @@ class RTDCBase(abc.ABC):
         feat: str
             feature name for debugging
         ret_scaled: bool
-            whether or not to return the scaled array of `a`
+            whether to return the scaled array of `a`
         """
         if method_kw is None:
             method_kw = {}
@@ -374,8 +384,11 @@ class RTDCBase(abc.ABC):
     def features_basin(self):
         """All features accessed via upstream basins from other locations"""
         if self.basins:
-            return sorted(set(list(
-                itertools.chain(*[bn.features for bn in self.basins]))))
+            features = []
+            for bn in self.basins:
+                if bn.is_available():
+                    features += bn.features
+            return sorted(set(features))
         else:
             return []
 
@@ -679,8 +692,15 @@ class RTDCBase(abc.ABC):
         muid = self.get_measurement_identifier()
         for bdict in self.basins_get_dicts():
             # Check whether this basin is supported and exists
-            kwargs = {"name": bdict.get("name"),
-                      "description": bdict.get("description")}
+            kwargs = {
+                "name": bdict.get("name"),
+                "description": bdict.get("description"),
+                # Honor features intended by basin creator.
+                "features": bdict.get("features"),
+                # Make sure the measurement identifier is checked.
+                "measurement_identifier": self.get_measurement_identifier(),
+                }
+
             if bdict["type"] == "file":
                 for pp in bdict["paths"]:
                     pp = pathlib.Path(pp)
@@ -706,10 +726,13 @@ class RTDCBase(abc.ABC):
                     # Instantiate the proper basin class
                     bcls = bc[bdict["format"]]
                     bna = bcls(url, **kwargs)
-                    if (bna.is_available()
-                            and bna.get_measurement_identifier() == muid):
-                        basins.append(bna)
-                        break
+                    # In contrast to file-type basins, we just add all remote
+                    # basins without checking first. We do not check for
+                    # the availability of remote basins, because they could
+                    # be temporarily inaccessible (unstable network connection)
+                    # and because checking the availability of remote basins
+                    # normally takes a lot of time.
+                    basins.append(bna)
             else:
                 warnings.warn(
                     f"Encountered unsupported basin type '{bdict['type']}'!")

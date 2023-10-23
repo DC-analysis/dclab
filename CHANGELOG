@@ -1,6 +1,8 @@
 0.54.0
  - fix: partial workaround for #238
  - fix: hash HDF5 Datasets that refer to files not in the file system
+ - enh: delayed computation of measurement identifiers for basins
+ - enh: allow to specify which features are served by a basin
  - enh: improve speed of S3 file format by increasing chunk size
  - enh: do not immediately raise an exception when metadata are missing
  - enh: lazy initialization of .RTDCBase.filters

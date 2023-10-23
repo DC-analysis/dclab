@@ -120,6 +120,35 @@ def test_basin_not_available(url):
         _ = bn.ds
 
 
+def test_create_basin_file_non_matching_identifier(tmp_path):
+    h5path = tmp_path / "test_basin_s3.rtdc"
+
+    with h5py.File(h5path, "a") as dst, new_dataset(s3_url) as src:
+        # Store non-existent basin information
+        bdat = {
+            "type": "remote",
+            "format": "s3",
+            "urls": [s3_url],
+            "features": ["deform"],
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = dst.require_group("basins")
+        with RTDCWriter(dst, mode="append") as hw:
+            hw.write_text(basins, "my_basin", blines)
+            meta = src.config.as_dict(pop_filtering=True)
+            meta["experiment"]["run identifier"] = "hoolahoop"
+            hw.store_metadata(meta)
+
+    with new_dataset(h5path) as ds:
+        assert ds.basins
+        # The feature shows up as available...
+        assert ds.features_basin == ["deform"]
+        # ...but it is actually not, since the run identifier does not match
+        # and therefore dclab does not allow the user to access it.
+        with pytest.raises(KeyError, match="deform"):
+            _ = ds["deform"]
+
+
 def test_create_basin_file_with_no_data(tmp_path):
     h5path = tmp_path / "test_basin_s3.rtdc"
 
@@ -140,5 +169,34 @@ def test_create_basin_file_with_no_data(tmp_path):
     with new_dataset(h5path) as ds:
         assert ds.features_basin
         assert len(ds) == 5000
+        assert np.allclose(ds["deform"][0], 0.009741939,
+                           atol=0, rtol=1e-5)
+
+
+def test_create_basin_file_with_one_feature(tmp_path):
+    h5path = tmp_path / "test_basin_s3.rtdc"
+
+    with h5py.File(h5path, "a") as dst, new_dataset(s3_url) as src:
+        # Store non-existent basin information
+        bdat = {
+            "type": "remote",
+            "format": "s3",
+            "urls": [s3_url],
+            "features": ["deform"],
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = dst.require_group("basins")
+        with RTDCWriter(dst, mode="append") as hw:
+            hw.write_text(basins, "my_basin", blines)
+            meta = src.config.as_dict(pop_filtering=True)
+            hw.store_metadata(meta)
+
+    with new_dataset(h5path) as ds:
+        assert ds.features_basin
+        assert len(ds) == 5000
+        assert "deform" in ds.features_basin
+        assert "area_um" not in ds.features_basin
+        assert "deform" in ds
+        assert "area_um" not in ds
         assert np.allclose(ds["deform"][0], 0.009741939,
                            atol=0, rtol=1e-5)

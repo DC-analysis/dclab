@@ -162,6 +162,7 @@ class RTDCWriter:
                     basin_format: str,
                     basin_locs: List[str | pathlib.Path],
                     basin_descr: str | None = None,
+                    basin_feats: List[str] = None,
                     verify: bool = True,
                     ):
         """Write basin information
@@ -182,6 +183,9 @@ class RTDCWriter:
             a ``pathlib.Path``
         basin_descr: str
             optional string describing the basin
+        basin_feats: list of str
+            list of features this basin provides; You may use this to
+            restrict access to features for a specific basin.
         verify: bool
             whether to verify the basin before storing it; You might have
             set this to False if you would like to write a basin that is
@@ -202,11 +206,17 @@ class RTDCWriter:
                             raise ValueError(
                                 f"Measurement identifier mismatch between "
                                 f"{self.path} ({cur_id}) and {loc} ({ds_id})!")
+            if basin_feats:
+                for feat in basin_feats:
+                    if not dfn.feature_exists(feat):
+                        raise ValueError(f"Invalid feature: '{feat}'")
+
         bdat = {
             "description": basin_descr,
             "format": basin_format,
             "name": basin_name,
             "type": basin_type,
+            "features": basin_feats,
         }
         if basin_type == "file":
             flocs = []

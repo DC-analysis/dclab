@@ -128,16 +128,17 @@ def obj2bytes(obj):
         # reproducible in the future (if the need arises).
         return obj2bytes(obj.identifier)
     elif isinstance(obj, h5py.Dataset):
-        return obj2bytes([
-            # path in the HDF5 file
-            obj.name,
-            # filename
-            obj.file.filename,
+        # path within the HDF5 file
+        o_name = obj.name
+        # filename
+        o_filename = obj.file.filename
+        _data = [o_name, o_filename]
+        if pathlib.Path(o_filename).exists():
             # when the file was changed
-            pathlib.Path(obj.file.filename).stat().st_mtime,
+            _data.append(pathlib.Path(obj.file.filename).stat().st_mtime)
             # size of the file
-            pathlib.Path(obj.file.filename).stat().st_size,
-            ])
+            _data.append(pathlib.Path(obj.file.filename).stat().st_size)
+        return obj2bytes(_data)
     elif isinstance(obj, Configuration):
         return obj2bytes(obj.tostring())
     elif isinstance(obj, ConfigurationDict):

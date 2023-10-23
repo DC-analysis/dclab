@@ -1,3 +1,5 @@
+0.54.2
+ - fix: availability checks for basins
 0.54.1
  - fix: properly check for basin availability before getting features
 0.54.0

@@ -244,19 +244,22 @@ class RTDCBase(abc.ABC):
                 if basin_type is not None and basin_type != bn.basin_type:
                     # User asked for specific basin type
                     continue
-                if feat in bn.features:
+                try:
                     # There are all kinds of errors that may happen here.
+                    # Note that `bn.features` can already trigger an
+                    # availability check that may raise a ValueError.
                     # TODO:
                     #  Introduce some kind of callback so the user knows
                     #  why the data are not available. The current solution
                     #  (fail silently) is not sufficiently transparent,
                     #  especially when considering networking issues.
-                    try:
+                    if feat in bn.features:
                         data = bn.get_feature_data(feat)
-                    except BaseException:
-                        # Basin data not available
-                        pass
-                    break
+                        # The data are available, we may abort the search.
+                        break
+                except BaseException:
+                    # Basin data not available
+                    pass
         return data
 
     @staticmethod

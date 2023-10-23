@@ -112,6 +112,9 @@ def test_basin_not_available(url):
     # Open the dataset and check whether basin is missing
     with new_dataset(h5path) as ds:
         assert not ds.features_basin
+        # This is a very subtle test for checking whether invalid basins
+        # are just ignored:
+        _ = ds["index"]
 
     # Also test that on a lower level
     bn = S3Basin("https://example.com/nonexistentbucket/nonexistentkey")

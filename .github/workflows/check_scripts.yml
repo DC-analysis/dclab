@@ -26,8 +26,8 @@ jobs:
         python -m pip install coverage flake8 pytest
     - name: Install dependencies
       run: |
-        pip install .
         pip install -r scripts/requirements.txt
+        pip install .
     - name: List installed packages
       run: |
         pip freeze

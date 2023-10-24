@@ -7,6 +7,9 @@ class DCORTables:
     def __init__(self, api):
         self.api = api
 
+    def __contains__(self, key):
+        return key in self.keys()
+
     def __getitem__(self, key):
         return self._tables[key]
 

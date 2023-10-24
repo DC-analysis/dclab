@@ -1,5 +1,6 @@
 0.54.3
  - enh: faster computation of contour length for DCOR format
+ - fix: implement `__contains__` for DCOR logs and tables
  - enh: use dcserv version 2 in DCOR format (fast S3 access)
  - setup: pin s3fs>=2023.10.0
 0.54.2

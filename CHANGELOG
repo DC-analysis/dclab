@@ -1,4 +1,5 @@
 0.54.3
+ - enh: more caching of event size and shape for HDF5 format
  - enh: faster computation of contour length for DCOR format
  - fix: implement `__contains__` for DCOR logs and tables
  - enh: use dcserv version 2 in DCOR format (fast S3 access)

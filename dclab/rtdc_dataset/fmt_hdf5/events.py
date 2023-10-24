@@ -38,7 +38,6 @@ class H5ContourEvent:
 
     def __len__(self):
         if self._length is None:
-            assert False
             # computing the length of an H5Group is slow
             self._length = len(self.h5group)
         return self._length
@@ -207,6 +206,8 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
 class H5TraceEvent:
     def __init__(self, h5group):
         self.h5group = h5group
+        self._num_traces = None
+        self._shape = None
 
     def __getitem__(self, idx):
         return self.h5group[idx]
@@ -215,7 +216,9 @@ class H5TraceEvent:
         return item in self.h5group
 
     def __len__(self):
-        return len(self.h5group)
+        if self._num_traces is None:
+            self._num_traces = len(self.h5group)
+        return self._num_traces
 
     def __iter__(self):
         for key in sorted(self.h5group.keys()):
@@ -226,5 +229,8 @@ class H5TraceEvent:
 
     @property
     def shape(self):
-        atrace = list(self.h5group.keys())[0]
-        return tuple([len(self.h5group)] + list(self.h5group[atrace].shape))
+        if self._shape is None:
+            atrace = list(self.h5group.keys())[0]
+            self._shape = tuple([len(self)] + list(self.h5group[atrace].shape))
+        return self._shape
+

@@ -12,7 +12,8 @@ from . import feat_defect
 
 
 class H5ContourEvent:
-    def __init__(self, h5group):
+    def __init__(self, h5group, length=None):
+        self._length = length
         self.h5group = h5group
         # for hashing in util.obj2bytes
         self.identifier = (h5group.file.filename, h5group["0"].name)
@@ -35,10 +36,12 @@ class H5ContourEvent:
         for idx in range(len(self)):
             yield self[idx]
 
-    @functools.lru_cache()
     def __len__(self):
-        # computing the length of an H5Group is slow
-        return len(self.h5group)
+        if self._length is None:
+            assert False
+            # computing the length of an H5Group is slow
+            self._length = len(self.h5group)
+        return self._length
 
     @property
     def shape(self):
@@ -75,7 +78,8 @@ class H5Events:
             assert dfn.feature_exists(key), f"Feature '{key}' does not exist!"
             data = self.h5file["events"][key]
             if key == "contour":
-                fdata = H5ContourEvent(data)
+                length = self.h5file.attrs.get("experiment:event count")
+                fdata = H5ContourEvent(data, length=length)
             elif key == "mask":
                 fdata = H5MaskEvent(data)
             elif key == "trace":

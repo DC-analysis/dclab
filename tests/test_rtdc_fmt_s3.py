@@ -29,7 +29,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 @pytest.fixture(autouse=True)
 def s3fs_cleanup():
-    # Clear the cache so we get a clean slate every time we instantiate
+    # Clear the cache, so we get a clean slate every time we instantiate
     # an S3FileSystem.
     yield
     S3FileSystem.cachable = False

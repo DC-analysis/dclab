@@ -35,7 +35,7 @@ def new_dataset(data, identifier=None, **kwargs):
     identifier: str
         A unique identifier for this dataset. If set to `None`
         an identifier is generated.
-    kwargs: dict
+    kwargs:
         Additional parameters passed to the RTDCBase subclass
 
     Returns

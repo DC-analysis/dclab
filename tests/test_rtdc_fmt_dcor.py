@@ -10,7 +10,15 @@ import pytest
 from helper_methods import retrieve_data
 
 
+try:
+    from s3fs import S3FileSystem
+except ImportError:
+    S3FileSystem = None
+
+
 pytest.importorskip("requests")
+pytest.importorskip("s3fs")
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     try:
@@ -18,6 +26,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     except (socket.gaierror, OSError):
         pytest.skip("No connection to DCOR",
                     allow_module_level=True)
+
+
+@pytest.fixture(autouse=True)
+def s3fs_cleanup():
+    # Clear the cache, so we get a clean slate every time we instantiate
+    # an S3FileSystem.
+    yield
+    S3FileSystem.cachable = False
 
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):
@@ -77,8 +93,10 @@ def test_dcor_base(monkeypatch):
 
 
 def test_dcor_cache_scalar():
+    # Testing the cache is only relevant for api version 1
     # calibration beads
-    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
+                           dcserv_api_version=1) as ds:
         # sanity checks
         assert len(ds) == 5000
         assert "area_um" in ds
@@ -91,8 +109,10 @@ def test_dcor_cache_scalar():
 
 
 def test_dcor_cache_trace():
+    # Testing the cache is only relevant for api version 1
     # calibration beads
-    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
+                           dcserv_api_version=1) as ds:
         # sanity checks
         assert len(ds) == 5000
         assert "trace" in ds
@@ -135,9 +155,10 @@ def test_dcor_hierarchy(monkeypatch):
 
 def test_dcor_logs():
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
-        assert len(ds.logs) == 1
+        assert len(ds.logs) >= 2  # there might be others
         assert ds.logs["log"][0] \
                == "[LOG] number of written datasets 0  10:04:05.893"
+        assert "dclab-condense" in ds.logs
 
 
 def test_dcor_shape_contour():
@@ -185,6 +206,7 @@ def test_dcor_slicing_contour(idxs):
     """Test slicing of contour data"""
     # reticulocytes.rtdc contains contour data
     ds = dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a")
+
     data_ref = [
         ds["contour"][0],
         ds["contour"][2],

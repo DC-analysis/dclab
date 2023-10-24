@@ -27,7 +27,8 @@ REGEXP_DCOR_URL = re.compile(
 
 class RTDC_DCOR(RTDCBase):
     def __init__(self, url, host="dcor.mpl.mpg.de", api_key="",
-                 use_ssl=None, cert_path=None, *args, **kwargs):
+                 use_ssl=None, cert_path=None, dcserv_api_version=2,
+                 *args, **kwargs):
         """Wrap around the DCOR API
 
         Parameters
@@ -52,6 +53,10 @@ class RTDC_DCOR(RTDCBase):
             The (optional) path to a server CA bundle; this should only
             be necessary for DCOR instances in the intranet with a custom
             CA or for certificate pinning.
+        dcserv_api_version: int
+            Version of the dcserv API to use. In version 0.13.2 of
+            ckanext-dc_serve, version 2 was introduced which entails
+            serving an S3-basin-only dataset.
         *args:
             Arguments for `RTDCBase`
         **kwargs:
@@ -74,8 +79,10 @@ class RTDC_DCOR(RTDCBase):
         if cert_path is None:
             cert_path = get_server_cert_path(get_host_from_url(self.path))
 
-        self.api = api.APIHandler(url=self.path, api_key=api_key,
-                                  cert_path=cert_path)
+        self.api = api.APIHandler(url=self.path,
+                                  api_key=api_key,
+                                  cert_path=cert_path,
+                                  dcserv_api_version=dcserv_api_version)
 
         # Parse configuration
         self.config = Configuration(cfg=self.api.get(query="metadata"))

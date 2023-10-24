@@ -233,4 +233,3 @@ class H5TraceEvent:
             atrace = list(self.h5group.keys())[0]
             self._shape = tuple([len(self)] + list(self.h5group[atrace].shape))
         return self._shape
-

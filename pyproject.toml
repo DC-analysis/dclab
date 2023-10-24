@@ -44,7 +44,9 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 all = ["dclab[dcor,export,lme4,ml,s3,tdms]"]
-dcor = ["requests>=2.31.0"]  # CVE-2023-32681
+dcor = ["requests>=2.31.0",  # CVE-2023-32681
+        "dclab[s3]"  # fast access via basins
+]
 export = ["fcswrite>=0.5.0",  # fcs export
           "imageio[ffmpeg]",  # avi export
 ]

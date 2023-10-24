@@ -38,7 +38,6 @@ class DCORNonScalarFeature:
     def __len__(self):
         return self._size
 
-    @lru_cache(maxsize=100)
     def _get_item(self, event):
         data = self.api.get(query="feature", feat=self.feat, event=event)
         return np.asarray(data)

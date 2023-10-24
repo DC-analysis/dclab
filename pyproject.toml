@@ -50,7 +50,7 @@ export = ["fcswrite>=0.5.0",  # fcs export
 ]
 lme4 = ["rpy2>=2.9.4"]
 ml = ["tensorflow>=2.0"]
-s3 = ["s3fs"]
+s3 = ["s3fs>=2023.10.0"]
 tdms = ["imageio[ffmpeg]", "nptdms>=0.23.0"]
 
 

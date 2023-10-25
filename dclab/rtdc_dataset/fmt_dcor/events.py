@@ -1,5 +1,5 @@
 """DCOR feature handling"""
-from functools import lru_cache
+import collections
 import numbers
 
 import numpy as np
@@ -80,12 +80,18 @@ class DCORTraceItem(DCORNonScalarFeature):
     def __init__(self, feat, api, size, samples_per_event):
         super(DCORTraceItem, self).__init__(feat, api, size)
         self.shape = (size, samples_per_event)
+        self._trace_cache = collections.OrderedDict()
 
-    @lru_cache(maxsize=100)
     def _get_item(self, event):
-        data = self.api.get(query="feature", feat="trace",
-                            trace=self.feat, event=event)
-        return np.asarray(data)
+        if event not in self._trace_cache:
+            self._trace_cache[event] = np.asarray(
+                self.api.get(query="feature",
+                             feat="trace",
+                             trace=self.feat,
+                             event=event))
+            if len(self._trace_cache) > 500:
+                self._trace_cache.popitem(last=False)
+        return self._trace_cache[event]
 
 
 class DCORTraceFeature:

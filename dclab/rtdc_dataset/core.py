@@ -144,10 +144,10 @@ class RTDCBase(abc.ABC):
     def _get_length(self):
         # Try to get length from metadata.
         length = self.config["experiment"].get("event count")
-        if length is None:
+        if length is not None:
             return length
         # Try to get the length from the feature sizes
-        keys = list(self._events.keys()) + self.features_basin
+        keys = list(self._events.keys()) or self.features_basin
         keys.sort()
         for kk in keys:
             length = len(self[kk])

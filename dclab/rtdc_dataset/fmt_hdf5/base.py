@@ -1,7 +1,6 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
-import functools
 import json
 import pathlib
 from typing import Any, BinaryIO, Dict

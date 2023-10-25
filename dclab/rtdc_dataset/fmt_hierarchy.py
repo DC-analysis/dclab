@@ -1,6 +1,5 @@
 """RT-DC hierarchy format"""
 import collections
-import functools
 
 import numpy as np
 

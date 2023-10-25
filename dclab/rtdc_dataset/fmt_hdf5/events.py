@@ -1,7 +1,6 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
-import functools
 import numbers
 import numpy as np
 
@@ -103,7 +102,8 @@ class H5Events:
         """Whether the stored feature is defective"""
         if feat not in self._defective_features:
             defective = False
-            if feat in feat_defect.DEFECTIVE_FEATURES and feat in self._features:
+            if (feat in feat_defect.DEFECTIVE_FEATURES
+                    and feat in self._features):
                 # feature exists in the HDF5 file
                 # workaround machinery for sorting out defective features
                 defective = feat_defect.DEFECTIVE_FEATURES[feat](self.h5file)

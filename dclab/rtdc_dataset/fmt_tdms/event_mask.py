@@ -1,5 +1,4 @@
 """Class for on-the-fly conversion of contours to masks"""
-import functools
 import numbers
 
 import numpy as np

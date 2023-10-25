@@ -1,5 +1,4 @@
 """Class for efficiently handling contour data"""
-import functools
 import numbers
 import sys
 import warnings

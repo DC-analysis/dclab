@@ -1,7 +1,6 @@
 """
 Class for efficiently handling image/video data
 """
-import functools
 import numbers
 import pathlib
 import sys

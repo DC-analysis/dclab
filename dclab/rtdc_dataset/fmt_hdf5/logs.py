@@ -1,6 +1,3 @@
-import functools
-
-
 class H5Logs:
     def __init__(self, h5):
         self.h5file = h5

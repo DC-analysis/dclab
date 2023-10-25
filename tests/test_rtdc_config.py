@@ -315,6 +315,8 @@ def test_user_section_set_save_reload_fmt_dict():
         assert ds2.config["user"] == metadata
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 @pytest.mark.skipif(not REQUESTS_AVAILABLE, reason="requests not available")
 def test_user_section_set_save_reload_fmt_dcor():

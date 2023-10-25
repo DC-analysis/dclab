@@ -35,7 +35,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     allow_module_level=True)
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def s3fs_cleanup():
     # Clear the cache, so we get a clean slate every time we instantiate
     # an S3FileSystem.

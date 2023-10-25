@@ -122,6 +122,8 @@ def test_dcor_cache_trace():
         assert ds["trace"]["fl1_raw"][1] is not trace0, "Check proper caching"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_data():
     # reticulocytes.rtdc contains contour data
     ds = dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a")
@@ -135,6 +137,8 @@ def test_dcor_data():
     assert np.sum(ds["trace"]["fl1_median"][2167]) == 183045
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_hash():
     ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
     # hash includes the full URL (path)
@@ -153,6 +157,8 @@ def test_dcor_hierarchy(monkeypatch):
     assert np.all(dso["area_um"] == dsh["area_um"])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_logs():
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
         assert len(ds.logs) >= 2  # there might be others
@@ -161,6 +167,8 @@ def test_dcor_logs():
         assert "dclab-condense" in ds.logs
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_shape_contour():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -168,6 +176,8 @@ def test_dcor_shape_contour():
         assert ds["contour"].shape == (5000, np.nan, 2)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_shape_image():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -177,6 +187,8 @@ def test_dcor_shape_image():
         assert ds["image"][0][0].shape == (250,)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_shape_mask():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -186,6 +198,8 @@ def test_dcor_shape_mask():
         assert ds["mask"][0][0].shape == (250,)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_shape_trace():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -198,6 +212,8 @@ def test_dcor_shape_trace():
         assert ds["trace"]["fl1_raw"][0].shape == (177,)
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("idxs", [slice(0, 5, 2),
                                   np.array([0, 2, 4]),
                                   [0, 2, 4]
@@ -220,6 +236,8 @@ def test_dcor_slicing_contour(idxs):
     assert np.all(data_sliced[2] == data_ref[2])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("feat", ["image", "mask"])
 @pytest.mark.parametrize("idxs", [slice(0, 5, 2),
                                   np.array([0, 2, 4]),
@@ -241,6 +259,8 @@ def test_dcor_slicing_image_mask(feat, idxs):
     assert np.all(data_sliced[2] == data_ref[2])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("idxs", [slice(0, 5, 2),
                                   np.array([0, 2, 4]),
                                   [0, 2, 4]

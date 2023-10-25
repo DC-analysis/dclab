@@ -71,7 +71,7 @@ class APIHandler:
             req = requests.get(apicall,
                                headers={"Authorization": api_key},
                                verify=self.verify,
-                               timeout=3.1,
+                               timeout=9.1,
                                )
             try:
                 jreq = req.json()
@@ -83,6 +83,9 @@ class APIHandler:
                 fail_reasons.append("connection problem")
                 time.sleep(5)  # wait a bit, maybe the server is overloaded
                 continue
+            except requests.urllib3.exceptions.ReadTimeoutError:
+                fail_reasons.append("timeout")
+                time.sleep(5)  # wait a bit, maybe the server is overloaded
             else:
                 break
         else:

@@ -58,6 +58,7 @@ class ContourColumn(object):
                 self.pxfeat[key] = rtdc_dataset[key] / px_size
 
         self.event_offset = 0
+        self._length = None
 
     def __getitem__(self, idx):
         if not isinstance(idx, numbers.Integral):
@@ -127,14 +128,15 @@ class ContourColumn(object):
             )
         return cdata
 
-    @functools.lru_cache(maxsize=1)
     def __len__(self):
-        length = len(self._contour_data)
-        if length:
-            if not self._initialized:
-                self.determine_offset()
-            length += self.event_offset
-        return length
+        if self._length is None:
+            length = len(self._contour_data)
+            if length:
+                if not self._initialized:
+                    self.determine_offset()
+                length += self.event_offset
+            self._length = length
+        return self._length
 
     @property
     def shape(self):
@@ -209,6 +211,7 @@ class ContourData(object):
         """
         self._initialized = False
         self.filename = fname
+        self._length = None
 
     def __getitem__(self, idx):
         cont = self.data[idx]
@@ -225,9 +228,10 @@ class ContourData(object):
             data = np.fromstring(cont, sep=",", dtype=np.uint16).reshape(-1, 2)
             return data
 
-    @functools.lru_cache(maxsize=1)
     def __len__(self):
-        return len(self.data)
+        if self._length is None:
+            self._length = len(self.data)
+        return self._length
 
     def _index_file(self):
         """Open and index the contour file

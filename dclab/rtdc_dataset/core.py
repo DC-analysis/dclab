@@ -142,25 +142,19 @@ class RTDCBase(abc.ABC):
         return self._length
 
     def _get_length(self):
-        """ implement here what is currently in __len__ + caching attribute (_length) """
-        """ and child-classes can override """
         # Try to get length from metadata.
         length = self.config["experiment"].get("event count")
-        if length:
+        if length is None:
             return length
         # Try to get the length from the feature sizes
-        keys = list(self._events.keys())
+        keys = list(self._events.keys()) + self.features_basin
         keys.sort()
         for kk in keys:
-            length = len(self._events[kk])
+            length = len(self[kk])
             if length:
                 return length
         else:
             raise ValueError(f"Could not determine size of dataset '{self}'.")
-
-    @abstractmethod
-    def my_function(self):
-        pass
 
     def __repr__(self):
         repre = "<{} '{}' at {}".format(self.__class__.__name__,

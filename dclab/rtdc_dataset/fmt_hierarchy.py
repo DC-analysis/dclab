@@ -310,6 +310,8 @@ class RTDC_Hierarchy(RTDCBase):
             # This will also populate all event attributes
             self.apply_filter()
 
+        self._length = None
+
     def __contains__(self, key):
         return self.hparent.__contains__(key)
 
@@ -336,9 +338,10 @@ class RTDC_Hierarchy(RTDCBase):
                 + "root parent of this hierarchy child).")
         return data
 
-    @functools.lru_cache()
     def __len__(self):
-        return np.sum(self.hparent.filter.all)
+        if self._length is None:
+            self._length = np.sum(self.hparent.filter.all)
+        return self._length
 
     def _assert_filter(self):
         """Make sure filters exists
@@ -426,7 +429,6 @@ class RTDC_Hierarchy(RTDCBase):
         self.hparent.apply_filter(*args, **kwargs)
 
         # Clear anything that has been cached until now
-#        self.__len__.cache_clear()
         self._length = None
 
         # update event index

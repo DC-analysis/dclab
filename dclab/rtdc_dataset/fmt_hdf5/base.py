@@ -118,14 +118,6 @@ class RTDC_HDF5(RTDCBase):
                 if b._ds is not None:
                     b._ds.close()
 
-    @functools.lru_cache()
-    def __len__(self):
-        ec = self.h5file.get("experiment:event count")
-        if ec is not None:
-            return ec
-        else:
-            return super(RTDC_HDF5, self).__len__()
-
     @property
     def _h5(self):
         warnings.warn("Access to the underlying HDF5 file is now public. "

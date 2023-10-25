@@ -13,6 +13,8 @@ class MaskColumn(object):
         self.image = rtdc_dataset["image"]
         self.identifier = self.contour.identifier
         self.config = rtdc_dataset.config
+        self._shape = None
+        self._img_shape_cache = None
 
     def __getitem__(self, idx):
         if not isinstance(idx, numbers.Integral):
@@ -35,24 +37,26 @@ class MaskColumn(object):
         return lc
 
     @property
-    @functools.lru_cache()
     def _img_shape(self):
-        """Shape of one event image"""
-        cfgim = self.config["imaging"]
-        if self.image:
-            # get shape from image column
-            event_image_shape = self.image.shape[1:]
-        elif "roi size x" in cfgim and "roi size y" in cfgim:
-            # get shape from config (this is less reliable than getting
-            # the shape from the image; there were measurements with
-            # wrong config keys)
-            event_image_shape = (cfgim["roi size y"], cfgim["roi size x"])
-        else:
-            # no shape available
-            event_image_shape = (0, 0)
-        return event_image_shape
+        if self._img_shape_cache is None:
+            """Shape of one event image"""
+            cfgim = self.config["imaging"]
+            if self.image:
+                # get shape from image column
+                event_image_shape = self.image.shape[1:]
+            elif "roi size x" in cfgim and "roi size y" in cfgim:
+                # get shape from config (this is less reliable than getting
+                # the shape from the image; there were measurements with
+                # wrong config keys)
+                event_image_shape = (cfgim["roi size y"], cfgim["roi size x"])
+            else:
+                # no shape available
+                event_image_shape = (0, 0)
+            self._img_shape_cache = event_image_shape
+        return self._img_shape_cache
 
     @property
-    @functools.lru_cache()
     def shape(self):
-        return len(self), self._img_shape[0], self._img_shape[1]
+        if self._shape is None:
+            self._shape = len(self), self._img_shape[0], self._img_shape[1]
+        return self._shape

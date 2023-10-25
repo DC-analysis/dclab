@@ -16,7 +16,6 @@ class H5ContourEvent:
         self.h5group = h5group
         # for hashing in util.obj2bytes
         self.identifier = (h5group.file.filename, h5group["0"].name)
-        self._length = None
 
     def __getitem__(self, key):
         if not isinstance(key, numbers.Integral):

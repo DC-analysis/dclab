@@ -1,7 +1,6 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
-import functools
 import json
 import pathlib
 from typing import Any, BinaryIO, Dict
@@ -117,14 +116,6 @@ class RTDC_HDF5(RTDCBase):
             for b in self._basins:
                 if b._ds is not None:
                     b._ds.close()
-
-    @functools.lru_cache()
-    def __len__(self):
-        ec = self.h5file.get("experiment:event count")
-        if ec is not None:
-            return ec
-        else:
-            return super(RTDC_HDF5, self).__len__()
 
     @property
     def _h5(self):

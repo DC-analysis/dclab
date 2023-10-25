@@ -1,7 +1,6 @@
 """
 Class for efficiently handling image/video data
 """
-import functools
 import numbers
 import pathlib
 import sys
@@ -34,6 +33,7 @@ class ImageColumn(object):
         conf = rtdc_dataset.config
         self.event_offset = int(conf["fmt_tdms"]["video frame offset"])
         self.video_file = fname
+        self._shape = None
 
     def __getitem__(self, idx):
         if not isinstance(idx, numbers.Integral):
@@ -79,10 +79,11 @@ class ImageColumn(object):
         return cdata
 
     @property
-    @functools.lru_cache()
     def shape(self):
-        f0 = self._image_data[0].shape
-        return len(self), f0[0], f0[1]
+        if self._shape is None:
+            f0 = self._image_data[0].shape
+            self._shape = len(self), f0[0], f0[1]
+        return self._shape
 
     @staticmethod
     def find_video_file(rtdc_dataset):

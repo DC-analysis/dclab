@@ -1,9 +1,7 @@
-import functools
-
-
 class DCORLogs:
     def __init__(self, api):
         self.api = api
+        self._logs_cache = None
 
     def __contains__(self, key):
         return key in self.keys()
@@ -18,6 +16,7 @@ class DCORLogs:
         return self._logs.keys()
 
     @property
-    @functools.lru_cache()
     def _logs(self):
-        return self.api.get(query="logs")
+        if self._logs_cache is None:
+            self._logs_cache = self.api.get(query="logs")
+        return self._logs_cache

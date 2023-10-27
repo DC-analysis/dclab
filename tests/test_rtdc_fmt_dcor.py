@@ -10,12 +10,6 @@ import pytest
 from helper_methods import retrieve_data
 
 
-try:
-    from s3fs import S3FileSystem
-except ImportError:
-    S3FileSystem = None
-
-
 pytest.importorskip("requests")
 pytest.importorskip("s3fs")
 
@@ -26,14 +20,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     except (socket.gaierror, OSError):
         pytest.skip("No connection to DCOR",
                     allow_module_level=True)
-
-
-@pytest.fixture(autouse=True)
-def s3fs_cleanup():
-    # Clear the cache, so we get a clean slate every time we instantiate
-    # an S3FileSystem.
-    yield
-    S3FileSystem.cachable = False
 
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):

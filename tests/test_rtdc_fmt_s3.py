@@ -10,11 +10,6 @@ import pytest
 
 from dclab.rtdc_dataset.fmt_s3 import is_s3_url, is_s3_object_available
 
-try:
-    from s3fs import S3FileSystem
-except ImportError:
-    S3FileSystem = None
-
 
 pytest.importorskip("s3fs")
 
@@ -25,14 +20,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     except (socket.gaierror, OSError):
         pytest.skip("No connection to DCOR",
                     allow_module_level=True)
-
-
-@pytest.fixture(autouse=True)
-def s3fs_cleanup():
-    # Clear the cache, so we get a clean slate every time we instantiate
-    # an S3FileSystem.
-    yield
-    S3FileSystem.cachable = False
 
 
 def test_cache_features():

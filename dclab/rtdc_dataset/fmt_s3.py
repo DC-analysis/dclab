@@ -117,6 +117,11 @@ def get_s3fs_kwargs(url: str,
         "endpoint_url": s3_endpoint,
         # A large block size makes loading metadata really slow.
         "default_block_size": 2**18,
+        # We are only ever opening one file per FS instance, so it does
+        # not make sense to cache the instances.
+        "skip_instance_cache": True,
+        # We are not doing any FS directory listings
+        "use_listings_cache": False,
     }
     if secret_id and secret_key:
         # We have an id-key pair.

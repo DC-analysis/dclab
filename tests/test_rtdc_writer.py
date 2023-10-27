@@ -170,9 +170,6 @@ def test_basin_file_identifier_mismatch():
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 @pytest.mark.skipif(not S3FS_AVAILABLE, reason="s3fs not available!")
 def test_basin_url(tmp_path):
-    # prevent this test from hanging
-    from s3fs import S3FileSystem
-    S3FileSystem.cachable = False
     # Create an empty dataset that links to an S3 instance
     # This is the calibration beads measurement.
     # https://dcor.mpl.mpg.de/dataset/figshare-7771184-v2/

@@ -58,7 +58,7 @@ jobs:
     - name: install lme4
       if: matrix.extras == 'all'
       run: |
-         R -e "install.packages('lme4', repos='http://cran.r-project.org')
+         R -e "install.packages('lme4', repos='http://cran.r-project.org')"
 #      uses: r-lib/actions/setup-r-dependencies@v2
 #      with:
 #        cache-version: 2

@@ -82,7 +82,13 @@ class S3Basin(Basin):
         super(S3Basin, self).__init__(*args, **kwargs)
 
     def load_dataset(self, location, **kwargs):
-        return RTDC_S3(location, enable_basins=False, **kwargs)
+        h5file = RTDC_S3(location, enable_basins=False, **kwargs)
+        # If the user specified the events of the basin, then store it
+        # directly in the .H5Events class of .RTDC_HDF5. This saves us
+        # approximately 2 seconds of listing the members of the "events"
+        # group in the S3 object.
+        h5file._events._features_list = self._features
+        return h5file
 
     def is_available(self):
         """Check for s3fs and object availability

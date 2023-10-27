@@ -23,6 +23,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):
+    def __init__(self, *args, **kwargs):
+        super(MockAPIHandler, self).__init__(*args, **kwargs)
+        # We are mocking only API version 1
+        self.dcserv_api_version = 1
+
     def get(self, query, feat=None, trace=None, event=None):
         """Mocks communication with the DCOR API"""
         h5path = retrieve_data("fmt-hdf5_fl_2018.zip")

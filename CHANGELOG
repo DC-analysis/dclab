@@ -2,6 +2,7 @@
  - fix: replace lru_cache on instance methods to fix memory leak (#214)
  - fix: remove lru_cache in DCOR format (#226)
  - fix: implement `__contains__` for DCOR logs and tables
+ - enh: speed-up of initialization of DCOR data
  - enh: add requests timeout for DCOR data
  - enh: more caching of event size and shape for HDF5 format
  - enh: faster computation of contour length for DCOR format

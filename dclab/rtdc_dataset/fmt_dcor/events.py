@@ -135,7 +135,12 @@ class FeatureCache:
 
     def __init__(self, api, size):
         self.api = api
-        self._features = self.api.get(query="feature_list")
+        if self.api.dcserv_api_version == 1:
+            self._features = self.api.get(query="feature_list")
+        else:
+            # Version 2 of the API only returns basins, so feature_list
+            # is empty anyway. Save us the 200ms.
+            self._features = []
         self._size = size
         self._scalar_cache = {}
         self._nonsc_features = {}
@@ -145,9 +150,10 @@ class FeatureCache:
 
     def __getitem__(self, key):
         # user-level checking is done in core.py
-        assert dfn.feature_exists(key)
         if key not in self._features:
             raise KeyError(f"Feature '{key}' not found!")
+
+        assert dfn.feature_exists(key)
 
         if key in self._scalar_cache:
             return self._scalar_cache[key]

@@ -94,7 +94,10 @@ class RTDC_DCOR(RTDCBase):
         self.tables = DCORTables(self.api)
 
         # Get size
-        self._size = int(self.api.get(query="size"))
+        size = self.config["experiment"].get("event count")
+        if size is None:
+            size = int(self.api.get(query="size"))
+        self._size = size
 
         # Setup events
         self._events = FeatureCache(self.api, size=self._size)

@@ -14,10 +14,11 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
         exclude:
-          # probably due to dependency issues, s3 tests keep hanging here
+          # urllib3>=2 is required, dependency conflict
           - python-version: '3.8'
-            os: windows-latest
             extras: 'all'
+          - python-version: '3.8'
+            extras: 'dcor-s3'
       fail-fast: false
     timeout-minutes: 30
 

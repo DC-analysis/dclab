@@ -8,6 +8,7 @@
  - enh: faster computation of contour length for DCOR format
  - enh: use dcserv version 2 in DCOR format (fast S3 access)
  - setup: pin s3fs>=2023.10.0
+ - setup: pin upper bounds of dependencies
 0.54.2
  - fix: availability checks for basins
 0.54.1

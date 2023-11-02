@@ -312,6 +312,49 @@ def test_hdf5_filtered_index():
     assert ds2.config["experiment"]["event count"] == n - 1
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_identifier_different():
+    """Make sure the identifier is changed upon export"""
+    pin = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    pout = pin.with_name("exported.rtdc")
+    with new_dataset(pin) as din:
+        mid_in = din.get_measurement_identifier()
+        assert len(din) == 5
+        assert mid_in
+        din.config["filtering"]["deform min"] = np.mean(din["deform"])
+        din.config["filtering"]["deform max"] = np.max(din["deform"])
+        din.apply_filter()
+        din.export.hdf5(pout, ["area_um", "deform"], filtered=True)
+
+    with new_dataset(pout) as dout:
+        mid_out = dout.get_measurement_identifier()
+        assert mid_out.startswith(mid_in)
+        assert mid_out != mid_in
+        assert len(dout) == 3
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_identifier_same_unfiltered():
+    """Make sure the identifier is changed upon export"""
+    pin = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    pout = pin.with_name("exported.rtdc")
+    with new_dataset(pin) as din:
+        mid_in = din.get_measurement_identifier()
+        assert len(din) == 5
+        assert mid_in
+        din.config["filtering"]["deform min"] = np.mean(din["deform"])
+        din.config["filtering"]["deform max"] = np.max(din["deform"])
+        din.apply_filter()
+        din.export.hdf5(pout, ["area_um", "deform"], filtered=False)
+
+    with new_dataset(pout) as dout:
+        mid_out = dout.get_measurement_identifier()
+        assert mid_out == mid_in
+        assert len(dout) == 5
+
+
 def test_hdf5_image_bg():
     n = 65
     keys = ["image", "image_bg"]
@@ -618,11 +661,3 @@ def test_tsv_not_filtered():
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
     ds.export.tsv(f1, keys, filtered=False)
-
-
-if __name__ == "__main__":
-    # Run all tests
-    _loc = locals()
-    for _key in list(_loc.keys()):
-        if _key.startswith("test_") and hasattr(_loc[_key], "__call__"):
-            _loc[_key]()

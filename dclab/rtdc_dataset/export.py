@@ -532,7 +532,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
 
 
 def hdf5_autocomplete_config(path_or_h5obj):
-    """"Autocomplete the configuration of the RTDC-measurement
+    """Autocomplete the configuration of the RTDC-measurement
 
     The following configuration keys are updated:
 

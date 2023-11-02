@@ -58,7 +58,7 @@ jobs:
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor-s3'
       run: |
-        pip install -e .[dcor,s3]
+        pip install -e .[dcor,http,s3]
     - name: Install dclab with minimal dependencies
       if: matrix.extras == 'none'
       run: |

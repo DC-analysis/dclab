@@ -7,11 +7,12 @@ import numpy as np
 import pytest
 
 
-from dclab.rtdc_dataset.fmt_s3 import (
-    is_s3_url, is_s3_object_available, RTDC_S3)
+from dclab.rtdc_dataset.fmt_http import (
+    is_http_url, is_url_available, RTDC_HTTP)
 
 
-pytest.importorskip("s3fs")
+pytest.importorskip("fsspec")
+pytest.importorskip("requests")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -30,7 +31,7 @@ def test_cache_features():
               "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
               "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
 
-    with RTDC_S3(s3_url) as ds:
+    with RTDC_HTTP(s3_url) as ds:
         t0 = time.perf_counter()
         _ = ds["deform"][:]
         t1 = time.perf_counter()
@@ -55,7 +56,7 @@ def test_cache_features():
     (f"https://{uuid.uuid4()}.com/bucket/resource", False),
 ])
 def test_object_available(url, avail):
-    act = is_s3_object_available(url)
+    act = is_url_available(url)
     assert act == avail
 
 
@@ -67,7 +68,7 @@ def test_open_public_s3_dataset():
               "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
               "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
 
-    with RTDC_S3(s3_url) as ds:
+    with RTDC_HTTP(s3_url) as ds:
         assert ds.config["experiment"]["sample"] == "calibration_beads"
         assert len(ds) == 5000
         assert np.allclose(ds["deform"][100], 0.013640802,
@@ -78,12 +79,10 @@ def test_open_public_s3_dataset():
 @pytest.mark.parametrize("url", [
     "ftp://example.com/bucket/key",  # wrong scheme
     "example.com/bucket/key",  # missing scheme
-    "https://example.com/bucket",  # missing key
-    "https://example.com/bucket/",  # missing key
-    "example.com:80",  # missing key and bucket
+    "example.com:80",  # missing key
     ])
 def test_regexp_s3_url_invalid(url):
-    assert not is_s3_url(url)
+    assert not is_http_url(url)
 
 
 @pytest.mark.parametrize("url", [
@@ -93,6 +92,8 @@ def test_regexp_s3_url_invalid(url):
     "https://example.com:443/bucket/key",
     "http://example.com:80/bucket/key",
     "http://example.com/bucket/key",
-    ])
+    "https://example.com/bucket",
+    "https://example.com/bucket/",
+])
 def test_regexp_s3_url_valid(url):
-    assert is_s3_url(url)
+    assert is_http_url(url)

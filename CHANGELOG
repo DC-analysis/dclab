@@ -1,4 +1,5 @@
-0.54.3
+0.55.0
+ - feat: implement HDF5-based HTTP file format and basin
  - fix: replace lru_cache on instance methods to fix memory leak (#214)
  - fix: remove lru_cache in DCOR format (#226)
  - fix: implement `__contains__` for DCOR logs and tables

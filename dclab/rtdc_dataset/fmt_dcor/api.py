@@ -42,6 +42,8 @@ class APIHandler:
         self.api_key = api_key
         #: ckanext-dc_serve dcserv API version
         self.dcserv_api_version = dcserv_api_version
+        #: create a session
+        self.session = requests.Session()
         self._cache = {}
 
     @classmethod
@@ -55,7 +57,7 @@ class APIHandler:
             APIHandler.api_keys.append(api_key)
 
     def _get(self, query, feat=None, trace=None, event=None, api_key="",
-             retries=3):
+             retries=13):
         # "version=2" introduced in dclab 0.54.3
         # (supported since ckanext.dc_serve 0.13.2)
         qstr = f"&version={self.dcserv_api_version}&query={query}"
@@ -68,24 +70,24 @@ class APIHandler:
         apicall = self.url + qstr
         fail_reasons = []
         for _ in range(retries):
-            req = requests.get(apicall,
-                               headers={"Authorization": api_key},
-                               verify=self.verify,
-                               timeout=9.1,
-                               )
             try:
+                # try-except both requests and json conversion
+                req = self.session.get(apicall,
+                                       headers={"Authorization": api_key},
+                                       verify=self.verify,
+                                       timeout=1,
+                                       )
                 jreq = req.json()
-            except json.decoder.JSONDecodeError:
-                fail_reasons.append("invalid json")
-                time.sleep(0.1)  # wait a bit, maybe the server is overloaded
-                continue
-            except requests.urllib3.exceptions.ConnectionError:
+            except requests.urllib3.exceptions.ConnectionError:  # requests
                 fail_reasons.append("connection problem")
-                time.sleep(5)  # wait a bit, maybe the server is overloaded
                 continue
-            except requests.urllib3.exceptions.ReadTimeoutError:
+            except (requests.urllib3.exceptions.ReadTimeoutError,
+                    requests.exceptions.ConnectTimeout):  # requests
                 fail_reasons.append("timeout")
-                time.sleep(5)  # wait a bit, maybe the server is overloaded
+            except json.decoder.JSONDecodeError:  # json
+                fail_reasons.append("invalid json")
+                time.sleep(1)  # wait a bit, maybe the server is overloaded
+                continue
             else:
                 break
         else:

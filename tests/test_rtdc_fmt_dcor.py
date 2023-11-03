@@ -11,7 +11,7 @@ from helper_methods import retrieve_data
 
 
 pytest.importorskip("requests")
-pytest.importorskip("s3fs")
+pytest.importorskip("fsspec")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -118,7 +118,9 @@ def test_dcor_cache_trace():
 def test_dcor_data():
     # reticulocytes.rtdc contains contour data
     with dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a") as ds:
-        assert np.allclose(ds["circ"][0], 0.7309052348136902, rtol=0, atol=1e-5)
+        assert np.allclose(ds["circ"][0],
+                           0.7309052348136902,
+                           rtol=0, atol=1e-5)
         assert np.allclose(ds["area_um"][391], 37.5122, rtol=0, atol=1e-5)
         assert np.all(ds["contour"][24][22] == np.array([87, 61]))
         assert np.median(ds["image"][1]) == 58

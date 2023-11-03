@@ -72,6 +72,10 @@ class RTDC_S3(RTDC_HDF5):
         # Override self.path with the actual S3 URL
         self.path = url
 
+    def close(self):
+        super(RTDC_S3, self).close()
+        self._f3d.close()
+
 
 class S3Basin(Basin):
     basin_format = "s3"

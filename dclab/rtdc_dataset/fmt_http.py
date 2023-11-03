@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 
 try:
-    from fsspec.implementations.http import HTTPFileSystem
+    import fsspec
     import requests
 except ModuleNotFoundError:
     FSSPEC_AVAILABLE = False
@@ -52,8 +52,10 @@ class RTDC_HTTP(RTDC_HDF5):
             raise ModuleNotFoundError(
                 "Package `fsspec[http]` required for http format!")
 
-        HTTPFileSystem.cachable = False
-        self._fs = HTTPFileSystem()
+        self._fs = fsspec.filesystem("http",
+                                     skip_instance_cache=True,
+                                     use_listings_cache=False,
+                                     )
         self._fhttp = self._fs.open(url,
                                     block_size=2**18,
                                     cache_type="readahead")
@@ -64,6 +66,10 @@ class RTDC_HTTP(RTDC_HDF5):
             **kwargs)
         # Override self.path with the actual HTTP URL
         self.path = url
+
+    def close(self):
+        super(RTDC_HTTP, self).close()
+        self._fhttp.close()
 
 
 class HTTPBasin(Basin):

@@ -1,3 +1,6 @@
+0.55.2
+ - fix: fmt_dcor did not properly retry failed connections
+ - enh: minor optimizations for fmt_http and fmt_s3
 0.55.1
  - fix: disable instance cache fsspec.HTTPFileSystem (fmt_http)
 0.55.0

@@ -315,6 +315,11 @@ def test_get_full_url():
             "b1404eb5-f661-4920-be79-5ff4e85915d5",
         use_ssl=None,
         host="example.com") == target2
+    assert RTDC_DCOR.get_full_url(
+        url="b1404eb5-f661-4920-be79-5ff4e85915d5",
+        use_ssl=None,
+        # sneak in a scheme into host
+        host="https://example.com") == target
 
 
 def test_is_dcor_url():

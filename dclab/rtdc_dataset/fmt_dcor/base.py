@@ -123,7 +123,7 @@ class RTDC_DCOR(RTDCBase):
         return self._hash
 
     @staticmethod
-    def get_full_url(url, use_ssl, host):
+    def get_full_url(url, use_ssl, host=None):
         """Return the full URL to a DCOR resource
 
         Parameters
@@ -146,22 +146,29 @@ class RTDC_DCOR(RTDCBase):
         if use_ssl is None:
             if url.startswith("http://"):
                 # user wanted it that way
-                web = "http"
+                scheme = "http"
             else:
-                web = "https"
+                scheme = "https"
         elif use_ssl:
-            web = "https"
+            scheme = "https"
         else:
-            web = "http"
+            scheme = "http"
         if url.count("://"):
             base = url.split("://", 1)[1]
         else:
             base = url
+        # determine the api_path and the netloc
         if base.count("/"):
-            host, api_path = base.split("/", 1)
+            netloc, api_path = base.split("/", 1)
         else:
+            netloc = "dcor.mpl.mpg.de"  # default fallback
             api_path = "api/3/action/dcserv?id=" + base
-        new_url = f"{web}://{host}/{api_path}"
+        # remove https from host string (user convenience)
+        if host is not None:
+            host = host.split("://")[-1]
+        netloc = netloc if host is None else host
+
+        new_url = f"{scheme}://{netloc}/{api_path}"
         return new_url
 
     def basins_get_dicts(self):

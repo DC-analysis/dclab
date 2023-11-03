@@ -52,6 +52,7 @@ class RTDC_HTTP(RTDC_HDF5):
             raise ModuleNotFoundError(
                 "Package `fsspec[http]` required for http format!")
 
+        HTTPFileSystem.cachable = False
         self._fs = HTTPFileSystem()
         self._fhttp = self._fs.open(url,
                                     block_size=2**18,

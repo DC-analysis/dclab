@@ -1,3 +1,5 @@
+0.55.1
+ - fix: disable instance cache fsspec.HTTPFileSystem (fmt_http)
 0.55.0
  - feat: implement HDF5-based HTTP file format and basin
  - fix: replace lru_cache on instance methods to fix memory leak (#214)

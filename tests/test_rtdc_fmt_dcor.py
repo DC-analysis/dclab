@@ -117,23 +117,23 @@ def test_dcor_cache_trace():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_data():
     # reticulocytes.rtdc contains contour data
-    ds = dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a")
-    assert np.allclose(ds["circ"][0], 0.7309052348136902, rtol=0, atol=1e-5)
-    assert np.allclose(ds["area_um"][391], 37.5122, rtol=0, atol=1e-5)
-    assert np.all(ds["contour"][24][22] == np.array([87, 61]))
-    assert np.median(ds["image"][1]) == 58
-    assert np.sum(ds["mask"][11]) == 332
-    assert np.sum(ds["mask"][11]) == 332
-    assert np.median(ds["trace"]["fl1_raw"][200]) == 183.0
-    assert np.sum(ds["trace"]["fl1_median"][2167]) == 183045
+    with dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a") as ds:
+        assert np.allclose(ds["circ"][0], 0.7309052348136902, rtol=0, atol=1e-5)
+        assert np.allclose(ds["area_um"][391], 37.5122, rtol=0, atol=1e-5)
+        assert np.all(ds["contour"][24][22] == np.array([87, 61]))
+        assert np.median(ds["image"][1]) == 58
+        assert np.sum(ds["mask"][11]) == 332
+        assert np.sum(ds["mask"][11]) == 332
+        assert np.median(ds["trace"]["fl1_raw"][200]) == 183.0
+        assert np.sum(ds["trace"]["fl1_median"][2167]) == 183045
 
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dcor_hash():
-    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
-    # hash includes the full URL (path)
-    assert ds.hash == "7250277b41b757cbe09647a58e8ca4ce"
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        # hash includes the full URL (path)
+        assert ds.hash == "7250277b41b757cbe09647a58e8ca4ce"
 
 
 @pytest.mark.filterwarnings(
@@ -212,19 +212,19 @@ def test_dcor_shape_trace():
 def test_dcor_slicing_contour(idxs):
     """Test slicing of contour data"""
     # reticulocytes.rtdc contains contour data
-    ds = dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a")
+    with dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a") as ds:
 
-    data_ref = [
-        ds["contour"][0],
-        ds["contour"][2],
-        ds["contour"][4],
-    ]
+        data_ref = [
+            ds["contour"][0],
+            ds["contour"][2],
+            ds["contour"][4],
+        ]
 
-    data_sliced = ds["contour"][idxs]
+        data_sliced = ds["contour"][idxs]
 
-    assert np.all(data_sliced[0] == data_ref[0])
-    assert np.all(data_sliced[1] == data_ref[1])
-    assert np.all(data_sliced[2] == data_ref[2])
+        assert np.all(data_sliced[0] == data_ref[0])
+        assert np.all(data_sliced[1] == data_ref[1])
+        assert np.all(data_sliced[2] == data_ref[2])
 
 
 @pytest.mark.filterwarnings(
@@ -236,18 +236,18 @@ def test_dcor_slicing_contour(idxs):
                                   ])
 def test_dcor_slicing_image_mask(feat, idxs):
     """Test slicing of image/mask data"""
-    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
-    data_ref = [
-        ds[feat][0],
-        ds[feat][2],
-        ds[feat][4],
-    ]
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        data_ref = [
+            ds[feat][0],
+            ds[feat][2],
+            ds[feat][4],
+        ]
 
-    data_sliced = ds[feat][idxs]
+        data_sliced = ds[feat][idxs]
 
-    assert np.all(data_sliced[0] == data_ref[0])
-    assert np.all(data_sliced[1] == data_ref[1])
-    assert np.all(data_sliced[2] == data_ref[2])
+        assert np.all(data_sliced[0] == data_ref[0])
+        assert np.all(data_sliced[1] == data_ref[1])
+        assert np.all(data_sliced[2] == data_ref[2])
 
 
 @pytest.mark.filterwarnings(
@@ -258,18 +258,18 @@ def test_dcor_slicing_image_mask(feat, idxs):
                                   ])
 def test_dcor_slicing_trace(idxs):
     """Test slicing of trace data"""
-    ds = dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0")
-    data_ref = [
-        ds["trace"]["fl1_raw"][0],
-        ds["trace"]["fl1_raw"][2],
-        ds["trace"]["fl1_raw"][4],
-    ]
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        data_ref = [
+            ds["trace"]["fl1_raw"][0],
+            ds["trace"]["fl1_raw"][2],
+            ds["trace"]["fl1_raw"][4],
+        ]
 
-    data_sliced = ds["trace"]["fl1_raw"][idxs]
+        data_sliced = ds["trace"]["fl1_raw"][idxs]
 
-    assert np.all(data_sliced[0] == data_ref[0])
-    assert np.all(data_sliced[1] == data_ref[1])
-    assert np.all(data_sliced[2] == data_ref[2])
+        assert np.all(data_sliced[0] == data_ref[0])
+        assert np.all(data_sliced[1] == data_ref[1])
+        assert np.all(data_sliced[2] == data_ref[2])
 
 
 def test_get_full_url():

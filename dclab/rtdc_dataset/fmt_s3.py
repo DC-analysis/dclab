@@ -143,7 +143,6 @@ def get_s3fs_kwargs(url: str,
     return s3fskw
 
 
-@functools.lru_cache()
 def is_s3_object_available(url: str,
                            secret_id: str = "",
                            secret_key: str = "",

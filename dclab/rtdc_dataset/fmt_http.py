@@ -94,7 +94,6 @@ class HTTPBasin(Basin):
         return self._available_verified
 
 
-@functools.lru_cache()
 def is_url_available(url: str):
     """Check whether a URL is available
 

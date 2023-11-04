@@ -14,7 +14,6 @@ from dclab.rtdc_dataset.fmt_http import HTTPBasin, RTDC_HTTP
 from helper_methods import retrieve_data
 
 
-pytest.importorskip("fsspec")
 pytest.importorskip("requests")
 
 

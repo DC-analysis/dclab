@@ -1,6 +1,7 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
+import io
 import json
 import pathlib
 from typing import Any, BinaryIO, Dict
@@ -32,7 +33,7 @@ class UnknownKeyWarning(UserWarning):
 
 class RTDC_HDF5(RTDCBase):
     def __init__(self,
-                 h5path: str | pathlib.Path | BinaryIO,
+                 h5path: str | pathlib.Path | BinaryIO | io.IOBase,
                  h5kwargs: Dict[str, Any] = None,
                  *args,
                  **kwargs):

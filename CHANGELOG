@@ -1,3 +1,5 @@
+0.55.3
+ - enh: migrate to purely requests-based HTTP file for fmt_http
 0.55.2
  - fix: fmt_dcor did not properly retry failed connections
  - enh: minor optimizations for fmt_http and fmt_s3

@@ -1,4 +1,4 @@
-"""Test S3 format"""
+"""Test HTTP format"""
 import socket
 import time
 import uuid
@@ -11,7 +11,6 @@ from dclab.rtdc_dataset.fmt_http import (
     is_http_url, is_url_available, RTDC_HTTP)
 
 
-pytest.importorskip("fsspec")
 pytest.importorskip("requests")
 
 
@@ -34,11 +33,25 @@ def test_cache_features():
     with RTDC_HTTP(s3_url) as ds:
         t0 = time.perf_counter()
         _ = ds["deform"][:]
+        _ = ds["image"][10]
         t1 = time.perf_counter()
         for ii in range(50):
             _ = ds["deform"][:]
+            _ = ds["image"][10]
         t2 = time.perf_counter()
         assert t2 - t1 < t1 - t0
+
+
+def test_identifier():
+    s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
+              "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+              "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+
+    with RTDC_HTTP(s3_url) as ds:
+        # This is the HTTP ETag (https://en.wikipedia.org/wiki/HTTP_ETag)
+        # given to this resource by the object store. If the file is
+        # re-uploaded, the ETag may change and this test will fail.
+        assert ds.identifier == "f0104b0ca2e7d6960189c60fc8b4b986-14"
 
 
 @pytest.mark.parametrize("url, avail", [

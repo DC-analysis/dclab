@@ -277,7 +277,7 @@ class HTTPBasin(Basin):
             # don't even bother
             self._available_verified = False
         if self._available_verified is None:
-            avail, reason = is_url_available(self.location)
+            avail, reason = is_url_available(self.location, ret_reason=True)
             if reason in ["forbidden", "not found"]:
                 # we cannot access the URL in the near future
                 self._available_verified = False
@@ -286,13 +286,15 @@ class HTTPBasin(Basin):
         return self._available_verified
 
 
-def is_url_available(url: str):
+def is_url_available(url: str, ret_reason=False):
     """Check whether a URL is available
 
     Parameters
     ----------
     url: str
         full URL to the object
+    ret_reason: bool
+        whether to return reason for unavailability
 
     Returns
     -------
@@ -325,7 +327,12 @@ def is_url_available(url: str):
                 except OSError:
                     reason = "oserror"
                     pass
-    return avail, reason
+    else:
+        reason = "invalid"
+    if ret_reason:
+        return avail, reason
+    else:
+        return avail
 
 
 @functools.lru_cache()

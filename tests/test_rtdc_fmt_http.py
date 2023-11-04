@@ -57,16 +57,16 @@ def test_identifier():
 @pytest.mark.parametrize("url, avail", [
     ("https://objectstore.hpccloud.mpcdf.mpg.de/"
      "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-     "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0", True),
+     "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0", (True, "none")),
     # "noexisting"
     ("https://objectstore.hpccloud.mpcdf.mpg.de/"
      "noexisting-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-     "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0", False),
+     "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0", (False, "not found")),
     # invalid URL
-    ("https://example.com", False),
+    ("https://example.com", (False, "invalid")),
     # nonexistent host
-    (f"http://{uuid.uuid4()}.com/bucket/resource", False),
-    (f"https://{uuid.uuid4()}.com/bucket/resource", False),
+    (f"http://{uuid.uuid4()}.com/bucket/resource", (False, "no connection")),
+    (f"https://{uuid.uuid4()}.com/bucket/resource", (False, "no connection")),
 ])
 def test_object_available(url, avail):
     act = is_url_available(url)

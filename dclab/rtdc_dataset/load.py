@@ -51,7 +51,7 @@ def new_dataset(data, identifier=None, **kwargs):
     elif fmt_dcor.is_dcor_url(data):
         return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
     elif fmt_http.is_http_url(data):
-        if fmt_http.is_url_available(data):
+        if fmt_http.is_url_available(data, ret_reason=False):
             return fmt_http.RTDC_HTTP(data, identifier=identifier)
         elif fmt_s3.is_s3_url(data):
             return fmt_s3.RTDC_S3(data, identifier=identifier, **kwargs)

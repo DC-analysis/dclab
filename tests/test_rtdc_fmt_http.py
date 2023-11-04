@@ -69,7 +69,7 @@ def test_identifier():
     (f"https://{uuid.uuid4()}.com/bucket/resource", (False, "no connection")),
 ])
 def test_object_available(url, avail):
-    act = is_url_available(url)
+    act = is_url_available(url, ret_reason=True)
     assert act == avail
 
 

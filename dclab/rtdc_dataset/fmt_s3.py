@@ -168,6 +168,7 @@ def is_s3_object_available(url: str,
         # default to https if no scheme or port is specified
         port = urlp.port or (80 if urlp.scheme == "http" else 443)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)
             # Try to connect to the host
             try:
                 s.connect((urlp.netloc, port))

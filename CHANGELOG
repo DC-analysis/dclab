@@ -1,3 +1,5 @@
+0.55.4
+ - enh: improve timeout and availability check for fmt_http
 0.55.3
  - enh: migrate to purely requests-based HTTP file for fmt_http
 0.55.2

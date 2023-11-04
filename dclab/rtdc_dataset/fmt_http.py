@@ -5,6 +5,7 @@ import os
 import re
 import socket
 from urllib.parse import urlparse
+import warnings
 
 import numpy as np
 
@@ -41,7 +42,8 @@ class ResoluteRequestsSession(requests.Session):
                     requests.exceptions.ReadTimeout,
                     requests.exceptions.ConnectTimeout,
                     requests.urllib3.exceptions.ConnectionError,
-                    requests.urllib3.exceptions.ReadTimeoutError):
+                    requests.urllib3.exceptions.ReadTimeoutError) as e:
+                warnings.warn(f"Encountered {e} for {args} {kwargs}")
                 continue
             else:
                 break
@@ -253,7 +255,7 @@ class HTTPBasin(Basin):
     basin_type = "remote"
 
     def __init__(self, *args, **kwargs):
-        self._available_verified = False
+        self._available_verified = None
         super(HTTPBasin, self).__init__(*args, **kwargs)
 
     def load_dataset(self, location, **kwargs):
@@ -271,9 +273,16 @@ class HTTPBasin(Basin):
         Caching policy: Once this method returns True, it will always
         return True.
         """
-        if not self._available_verified:
-            self._available_verified = (
-                    REQUESTS_AVAILABLE and is_url_available(self.location))
+        if not REQUESTS_AVAILABLE:
+            # don't even bother
+            self._available_verified = False
+        if self._available_verified is None:
+            avail, reason = is_url_available(self.location)
+            if reason in ["forbidden", "not found"]:
+                # we cannot access the URL in the near future
+                self._available_verified = False
+            elif avail:
+                self._available_verified = True
         return self._available_verified
 
 
@@ -284,26 +293,39 @@ def is_url_available(url: str):
     ----------
     url: str
         full URL to the object
+
+    Returns
+    -------
+    available: bool
+        whether the URL is available
+    reason: str
+        reason for the URL not being available is `available` is False
     """
     avail = False
+    reason = "none"
     if is_http_url(url):
         urlp = urlparse(url)
         # default to https if no scheme or port is specified
         port = urlp.port or (80 if urlp.scheme == "http" else 443)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)
             # Try to connect to the host
             try:
                 s.connect((urlp.netloc, port))
             except (socket.gaierror, OSError):
-                pass
+                reason = "no connection"
             else:
                 # Try to access the url
                 try:
-                    req = requests.get(url, stream=True)
+                    ses = ResoluteRequestsSession()
+                    req = ses.get(url, stream=True, timeout=1)
                     avail = req.ok
+                    if not avail:
+                        reason = req.reason.lower()
                 except OSError:
+                    reason = "oserror"
                     pass
-    return avail
+    return avail, reason
 
 
 @functools.lru_cache()

@@ -1,5 +1,6 @@
 import functools
 import io
+from unittest import mock
 import os
 import re
 import socket
@@ -10,6 +11,7 @@ import numpy as np
 try:
     import requests
 except ModuleNotFoundError:
+    requests = mock.Mock()
     REQUESTS_AVAILABLE = False
 else:
     REQUESTS_AVAILABLE = True

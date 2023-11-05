@@ -48,9 +48,9 @@ jobs:
         r-version: '3.6.3'
     - name: install lme4
       if: matrix.extras == 'all'
-      uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        extra-packages: any::lme4
+      shell: bash
+      run: |
+        R -e "install.packages('lme4', repos='http://cran.rstudio.org')"
     - name: Install dclab with all possible dependencies
       if: matrix.extras == 'all'
       run: |

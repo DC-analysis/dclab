@@ -118,6 +118,13 @@ FEATURES_SCALAR = [
     # Fun fact: If we had decided to compute it from the convex contour,
     # then we would have close to none pixelation effects ¯\_(ツ)_/¯.
     ["volume", "Volume [µm³]"],
+    ["area_um_raw", "Area [µm²] from a raw contour"],
+    ["per_um_raw", "Perimeter [µm] from a raw contour"],
+    ["deform_raw", "Deformation from a raw contour"],
+    ["eccentr_prnc", "Eccentricity from a raw contour"],
+    ["per_ratio", "Ratio of raw and cvx perimeters (inversed convexity)"],
+    ["s_x", "Simmetry ratio left-right"],
+    ["s_y", "Simmetry ratio up-down"],
 ]
 # Add userdef features
 for _i in range(10):

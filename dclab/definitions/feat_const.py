@@ -9,6 +9,7 @@ FEATURES_SCALAR = [
     ["area_ratio", "Porosity (convex to measured area ratio)"],
     # area_um is the convex area per definition
     ["area_um", "Area [µm²]"],
+    ["area_um_raw", "Area [µm²] of raw contour"],
     ["aspect", "Aspect ratio of bounding box"],
     # The background brightness of the frame (not of the mask)
     ["bg_med", "Median frame background brightness [a.u.]"],
@@ -22,6 +23,8 @@ FEATURES_SCALAR = [
     ["circ", "Circularity"],
     # deform is computed from the convex contour
     ["deform", "Deformation"],
+    ["deform_raw", "Deformation of raw contour"],
+    ["eccentr_prnc", "Eccentricity of raw contour"],
     ["emodulus", "Young's modulus [kPa]"],
     # fl*_area, fl*_pos, and fl*_width values correspond to the
     # object for which the contour was found. For high concentrations,
@@ -69,6 +72,8 @@ FEATURES_SCALAR = [
     ["nevents", "Number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
+    ["per_ratio", "Ratio of raw and cvx perimeters (inversed convexity)"],
+    ["per_um_raw", "Perimeter [µm] of raw contour"],
     # pos_x and pos_y are computed from the contour moments
     # "m10"/"m00" and "m01"/"m00" of the convex hull of "contour"
     ["pos_x", "Position along channel axis [µm]"],
@@ -86,6 +91,8 @@ FEATURES_SCALAR = [
     # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
+    ["s_x", "Simmetry ratio left-right"],
+    ["s_y", "Simmetry ratio up-down"],
     ["temp", "Chip temperature [°C]"],
     ["temp_amb", "Ambient temperature [°C]"],
     # Haralick texture features can be computed using the mahotas package
@@ -118,13 +125,6 @@ FEATURES_SCALAR = [
     # Fun fact: If we had decided to compute it from the convex contour,
     # then we would have close to none pixelation effects ¯\_(ツ)_/¯.
     ["volume", "Volume [µm³]"],
-    ["area_um_raw", "Area [µm²] from a raw contour"],
-    ["per_um_raw", "Perimeter [µm] from a raw contour"],
-    ["deform_raw", "Deformation from a raw contour"],
-    ["eccentr_prnc", "Eccentricity from a raw contour"],
-    ["per_ratio", "Ratio of raw and cvx perimeters (inversed convexity)"],
-    ["s_x", "Simmetry ratio left-right"],
-    ["s_y", "Simmetry ratio up-down"],
 ]
 # Add userdef features
 for _i in range(10):

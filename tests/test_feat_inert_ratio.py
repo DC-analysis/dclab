@@ -254,5 +254,6 @@ def test_tilt():
 
         th = np.mod(theta, np.pi)
         if th > np.pi/2:
-            th = np.pi - th
+            th -= np.pi
+        th = np.abs(th)
         assert np.allclose(tilt, th)

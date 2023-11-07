@@ -72,7 +72,10 @@ FEATURES_SCALAR = [
     ["nevents", "Number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
-    ["per_ratio", "Ratio of raw and cvx perimeters (inversed convexity)"],
+    # object inversed convexity following a definition of convexity as
+    # ratio of convex hull perimeter and object perimeter. Example:
+    # http://www.cyto.purdue.edu/cdroms/micro2/content/education/wirth10.pdf
+    ["per_ratio", "Inversed Convexity (ratio of raw and cvx perimeters)"],
     ["per_um_raw", "Perimeter [µm] of raw contour"],
     # pos_x and pos_y are computed from the contour moments
     # "m10"/"m00" and "m01"/"m00" of the convex hull of "contour"
@@ -91,6 +94,8 @@ FEATURES_SCALAR = [
     # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
+    # symmetry ratio over the x and y axis as defined in
+    # Herbig et al.Biomicrofluidics 12, 042214 (2018)
     ["s_x", "Simmetry ratio left-right"],
     ["s_y", "Simmetry ratio up-down"],
     ["temp", "Chip temperature [°C]"],

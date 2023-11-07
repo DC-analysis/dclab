@@ -75,7 +75,7 @@ FEATURES_SCALAR = [
     # object inversed convexity following a definition of convexity as
     # ratio of convex hull perimeter and object perimeter. Example:
     # http://www.cyto.purdue.edu/cdroms/micro2/content/education/wirth10.pdf
-    ["per_ratio", "Inversed Convexity (ratio of raw and cvx perimeters)"],
+    ["per_ratio", "Inversed Convexity (convex to measured perimeter ratio)"],
     ["per_um_raw", "Perimeter [µm] of raw contour"],
     # pos_x and pos_y are computed from the contour moments
     # "m10"/"m00" and "m01"/"m00" of the convex hull of "contour"

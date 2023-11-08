@@ -7,7 +7,7 @@ FEATURES_SCALAR = [
     # area_msd is the contour moment M00
     ["area_msd", "Measured area [px]"],
     ["area_ratio", "Porosity (convex to measured area ratio)"],
-    # area_um is the convex area per definition
+    # area_um is computed from the convex contour
     ["area_um", "Area [µm²]"],
     ["area_um_raw", "Area [µm²] of raw contour"],
     ["aspect", "Aspect ratio of bounding box"],
@@ -72,10 +72,10 @@ FEATURES_SCALAR = [
     ["nevents", "Number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
-    # object inversed convexity following a definition of convexity as
-    # ratio of convex hull perimeter and object perimeter. Example:
-    # http://www.cyto.purdue.edu/cdroms/micro2/content/education/wirth10.pdf
-    ["per_ratio", "Inversed Convexity (convex to measured perimeter ratio)"],
+    # Convexity is defined by the ratio of convex contour length
+    # versus raw contour length. We use inverse convexity as it is
+    # more convenient to work with numbers >1.
+    ["per_ratio", "Inverse Convexity (raw to convex perimeter ratio)"],
     ["per_um_raw", "Perimeter [µm] of raw contour"],
     # pos_x and pos_y are computed from the contour moments
     # "m10"/"m00" and "m01"/"m00" of the convex hull of "contour"
@@ -94,10 +94,9 @@ FEATURES_SCALAR = [
     # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
-    # symmetry ratio over the x and y axis as defined in
-    # Herbig et al.Biomicrofluidics 12, 042214 (2018)
-    ["s_x", "Symmetry ratio left-right"],
-    ["s_y", "Symmetry ratio up-down"],
+    # Ratio between two halves of a mask
+    ["sym_x", "Symmetry ratio left-right"],
+    ["sym_y", "Symmetry ratio top-bottom"],
     ["temp", "Chip temperature [°C]"],
     ["temp_amb", "Ambient temperature [°C]"],
     # Haralick texture features can be computed using the mahotas package

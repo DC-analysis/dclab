@@ -245,7 +245,7 @@ def test_tilt():
     phi = np.arctan2(y1, x1)
     rho = np.sqrt(x1**2 + y1**2)
 
-    for theta in np.linspace(-.3, 2.2*np.pi, 32):  # arbitrary rotation
+    for theta in np.linspace(-.3, 2.2*np.pi, 89):  # arbitrary rotation
         x2 = rho * np.cos(phi + theta)
         y2 = rho * np.sin(phi + theta)
 

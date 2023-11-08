@@ -363,19 +363,13 @@ def get_tilt(cont):
         moments = cont_moments_cv(cont[ii])
         if moments is not None:
             # orientation of the contour
-            oii = 0.5 * np.arctan2(2 * moments['mu11'],
-                                   moments['mu02'] - moments['mu20'])
-            # +PI/2 because relative to channel axis
-            tilt[ii] = oii + np.pi/2
+            tilt[ii] = 0.5 * np.arctan2(-2 * moments['mu11'],
+                                        moments['mu20'] - moments['mu02'])
 
-    # restrict to interval [0,PI/2]
-    tilt = np.mod(tilt, np.pi)
-    # avoid nans
-    valid = ~np.isnan(tilt)
-    wrap = tilt[valid]
-    wrap[wrap > np.pi/2] -= np.pi
-    tilt[valid] = wrap
     tilt = np.abs(tilt)
+
+    # sanity check
+    assert np.all(tilt) <= np.pi/2
 
     if not ret_list:
         tilt = tilt[0]

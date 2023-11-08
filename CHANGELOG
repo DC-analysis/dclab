@@ -1,6 +1,7 @@
 0.55.5
  - enh: register new features area_um_raw, deform_raw, eccentr_prnc,
    per_ratio, per_um_raw, sym_x, sym_y
+ - ref: simplify/cleanup computation of tilt feature
 0.55.4
  - enh: improve timeout and availability check for fmt_http
 0.55.3

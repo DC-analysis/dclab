@@ -96,8 +96,8 @@ FEATURES_SCALAR = [
     ["size_y", "Bounding box size y [µm]"],
     # symmetry ratio over the x and y axis as defined in
     # Herbig et al.Biomicrofluidics 12, 042214 (2018)
-    ["s_x", "Simmetry ratio left-right"],
-    ["s_y", "Simmetry ratio up-down"],
+    ["s_x", "Symmetry ratio left-right"],
+    ["s_y", "Symmetry ratio up-down"],
     ["temp", "Chip temperature [°C]"],
     ["temp_amb", "Ambient temperature [°C]"],
     # Haralick texture features can be computed using the mahotas package

@@ -1,5 +1,5 @@
 """DCOR feature handling"""
-from functools import lru_cache
+import collections
 import numbers
 
 import numpy as np
@@ -38,7 +38,6 @@ class DCORNonScalarFeature:
     def __len__(self):
         return self._size
 
-    @lru_cache(maxsize=100)
     def _get_item(self, event):
         data = self.api.get(query="feature", feat=self.feat, event=event)
         return np.asarray(data)
@@ -81,12 +80,18 @@ class DCORTraceItem(DCORNonScalarFeature):
     def __init__(self, feat, api, size, samples_per_event):
         super(DCORTraceItem, self).__init__(feat, api, size)
         self.shape = (size, samples_per_event)
+        self._trace_cache = collections.OrderedDict()
 
-    @lru_cache(maxsize=100)
     def _get_item(self, event):
-        data = self.api.get(query="feature", feat="trace",
-                            trace=self.feat, event=event)
-        return np.asarray(data)
+        if event not in self._trace_cache:
+            self._trace_cache[event] = np.asarray(
+                self.api.get(query="feature",
+                             feat="trace",
+                             trace=self.feat,
+                             event=event))
+            if len(self._trace_cache) > 500:
+                self._trace_cache.popitem(last=False)
+        return self._trace_cache[event]
 
 
 class DCORTraceFeature:
@@ -130,7 +135,12 @@ class FeatureCache:
 
     def __init__(self, api, size):
         self.api = api
-        self._features = self.api.get(query="feature_list")
+        if self.api.dcserv_api_version == 1:
+            self._features = self.api.get(query="feature_list")
+        else:
+            # Version 2 of the API only returns basins, so feature_list
+            # is empty anyway. Save us the 200ms.
+            self._features = []
         self._size = size
         self._scalar_cache = {}
         self._nonsc_features = {}
@@ -140,9 +150,10 @@ class FeatureCache:
 
     def __getitem__(self, key):
         # user-level checking is done in core.py
-        assert dfn.feature_exists(key)
         if key not in self._features:
             raise KeyError(f"Feature '{key}' not found!")
+
+        assert dfn.feature_exists(key)
 
         if key in self._scalar_cache:
             return self._scalar_cache[key]

@@ -62,10 +62,9 @@ class RTDC_S3(RTDC_HDF5):
                                  secret_id=secret_id,
                                  secret_key=secret_key)
         _, s3_path = parse_s3_url(url)
-
         self._fs = s3fs.S3FileSystem(**s3fskw)
         self._f3d = self._fs.open(s3_path, mode='rb')
-        # This also takes care of `_finalize_init`
+        # Initialize the HDF5 dataset
         super(RTDC_S3, self).__init__(
             h5path=self._f3d,
             *args,
@@ -73,16 +72,38 @@ class RTDC_S3(RTDC_HDF5):
         # Override self.path with the actual S3 URL
         self.path = url
 
+    def close(self):
+        super(RTDC_S3, self).close()
+        self._f3d.close()
+
 
 class S3Basin(Basin):
     basin_format = "s3"
     basin_type = "remote"
 
+    def __init__(self, *args, **kwargs):
+        self._available_verified = False
+        super(S3Basin, self).__init__(*args, **kwargs)
+
     def load_dataset(self, location, **kwargs):
-        return RTDC_S3(location, enable_basins=False, **kwargs)
+        h5file = RTDC_S3(location, enable_basins=False, **kwargs)
+        # If the user specified the events of the basin, then store it
+        # directly in the .H5Events class of .RTDC_HDF5. This saves us
+        # approximately 2 seconds of listing the members of the "events"
+        # group in the S3 object.
+        h5file._events._features_list = self._features
+        return h5file
 
     def is_available(self):
-        return S3FS_AVAILABLE and is_s3_object_available(self.location)
+        """Check for s3fs and object availability
+
+        Caching policy: Once this method returns True, it will always
+        return True.
+        """
+        if not self._available_verified:
+            self._available_verified = (
+                    S3FS_AVAILABLE and is_s3_object_available(self.location))
+        return self._available_verified
 
 
 @functools.lru_cache()
@@ -101,12 +122,16 @@ def get_s3fs_kwargs(url: str,
     secret_key: str
         Secret S3 access key
     """
-    s3_endpoint, s3_path = parse_s3_url(url)
+    s3_endpoint, _ = parse_s3_url(url)
     s3fskw = {
-        "client_kwargs": {
-            "endpoint_url": s3_endpoint},
+        "endpoint_url": s3_endpoint,
         # A large block size makes loading metadata really slow.
-        "default_block_size": 2048,
+        "default_block_size": 2**18,
+        # We are only ever opening one file per FS instance, so it does
+        # not make sense to cache the instances.
+        "skip_instance_cache": True,
+        # We are not doing any FS directory listings
+        "use_listings_cache": False,
     }
     if secret_id and secret_key:
         # We have an id-key pair.
@@ -143,6 +168,7 @@ def is_s3_object_available(url: str,
         # default to https if no scheme or port is specified
         port = urlp.port or (80 if urlp.scheme == "http" else 443)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)
             # Try to connect to the host
             try:
                 s.connect((urlp.netloc, port))

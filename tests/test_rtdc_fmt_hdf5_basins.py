@@ -105,6 +105,41 @@ def test_basin_not_available():
         _ = bn.ds
 
 
+def test_basin_nothing_available():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, h5py.File(h5path_small, "w") as dst:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=dst,
+                               features="scalar")
+        # Next, store the basin information in the new dataset
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "paths": [
+                "fake.rtdc",  # fake path
+            ]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = dst.require_group("basins")
+        with RTDCWriter(dst, mode="append") as hw:
+            hw.write_text(basins, "my_basin", blines)
+        # sanity checks
+        assert "deform" in dst["events"]
+        assert "image" not in dst["events"]
+
+    h5path.unlink()
+
+    # Now open the scalar dataset and check whether basins missing
+    with new_dataset(h5path_small) as ds:
+        assert "image" not in ds
+        assert not ds.features_basin
+        _ = ds["index"]
+
+
 def test_basin_features_path_absolute():
     """Create a dataset that refers to a basin in a relative path"""
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")

@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import atexit
+from contextlib import ExitStack
 import copy
+import functools
 import json
 import pathlib
-from pkg_resources import resource_filename
+# replace this import when dropping support for Python 3.8
+# from importlib import resources as importlib_resources
+import importlib_resources
 import warnings
 
 import numpy as np
@@ -11,15 +16,22 @@ import numpy as np
 from ... import definitions as dfn
 
 
-_lut_path = pathlib.Path(resource_filename("dclab.features", "emodulus"))
-
-#: Dictionary of look-up tables shipped with dclab.
-INTERNAL_LUTS = {}
-for _p in sorted(_lut_path.glob("lut_*.txt")):
-    INTERNAL_LUTS[_p.name[4:-4]] = _p.name
+_file_manager = ExitStack()
+atexit.register(_file_manager.close)
 
 #: Dictionary of look-up tables that the user added via :func:`register_lut`.
 EXTERNAL_LUTS = {}
+
+
+@functools.lru_cache()
+def get_internal_lut_names_dict():
+    """Return list of internal lut names"""
+    lutfiles = {}
+    for pp in importlib_resources.files('dclab.features.emodulus').iterdir():
+        name = pp.name
+        if name.startswith("lut_") and name.endswith(".txt"):
+            lutfiles[name[4:-4]] = name
+    return lutfiles
 
 
 def get_lut_path(path_or_id):
@@ -28,8 +40,9 @@ def get_lut_path(path_or_id):
     path_or_id: str or pathlib.Path
         Identifier of a LUT. This can be either an existing path
         (checked first), or an internal identifier (see
-        :const:`INTERNAL_LUTS`).
+        :func:`get_internal_lut_names_dict`).
     """
+    internal_dict = get_internal_lut_names_dict()
     if path_or_id == "FEM-2Daxis":
         # backwards compatibility
         warnings.warn("'FEM-2Daxis' is deprecated. Please use 'LE-2D-FEM-19'!",
@@ -37,9 +50,11 @@ def get_lut_path(path_or_id):
         path_or_id = "LE-2D-FEM-19"
     if pathlib.Path(path_or_id).exists():
         lut_path = pathlib.Path(path_or_id)
-    elif path_or_id in INTERNAL_LUTS:
-        lut_path = resource_filename("dclab.features.emodulus",
-                                     INTERNAL_LUTS[path_or_id])
+    elif path_or_id in internal_dict:
+        ref = importlib_resources.files(
+            "dclab.features.emodulus") / internal_dict[path_or_id]
+        lut_path = _file_manager.enter_context(
+            importlib_resources.as_file(ref))
     elif path_or_id in EXTERNAL_LUTS:
         lut_path = EXTERNAL_LUTS[path_or_id]
     else:
@@ -54,9 +69,9 @@ def load_lut(lut_data: str | pathlib.Path | np.ndarray = "LE-2D-FEM-19"):
     Parameters
     ----------
     lut_data: path, str, or tuple of (np.ndarray of shape (N, 3), dict)
-        The LUT data to use. If it is a key in :const:`INTERNAL_LUTS`,
+        The LUT data to use. If it is in :func:`get_internal_lut_names_dict()`,
         then the respective LUT will be used. Otherwise, a path to a
-        file on disk or a tuple (LUT array, meta data) is possible.
+        file on disk or a tuple (LUT array, metadata) is possible.
 
     Returns
     -------
@@ -231,7 +246,7 @@ def register_lut(path, identifier=None):
     if identifier in EXTERNAL_LUTS:
         raise ValueError("A LUT with an identifier '{}' ".format(identifier)
                          + "has already been registered!")
-    elif identifier in INTERNAL_LUTS:
+    elif identifier in get_internal_lut_names_dict():
         raise ValueError("The identifier '{}' is already ".format(identifier)
                          + "in use by an internal LUT!")
     EXTERNAL_LUTS[identifier] = path

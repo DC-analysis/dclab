@@ -8,13 +8,13 @@ import numpy as np
 import pytest
 
 from dclab import new_dataset, RTDCWriter
-from dclab.rtdc_dataset.fmt_s3 import S3Basin, RTDC_S3
+from dclab.rtdc_dataset.fmt_http import HTTPBasin, RTDC_HTTP
 
 
 from helper_methods import retrieve_data
 
 
-pytest.importorskip("s3fs")
+pytest.importorskip("requests")
 
 
 s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
@@ -34,7 +34,7 @@ def test_basin_as_dict(tmp_path):
     tmp_path = tmp_path.resolve()
     h5path = tmp_path / "test_basin_s3.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_S3(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
         # Store non-existent basin information
         with RTDCWriter(dst, mode="append") as hw:
             meta = src.config.as_dict(pop_filtering=True)
@@ -104,7 +104,7 @@ def test_basin_not_available(url):
         _ = ds["index"]
 
     # Also test that on a lower level
-    bn = S3Basin("https://example.com/nonexistentbucket/nonexistentkey")
+    bn = HTTPBasin("https://example.com/nonexistentbucket/nonexistentkey")
     assert not bn.is_available()
     with pytest.raises(ValueError, match="is not available"):
         _ = bn.ds
@@ -113,7 +113,7 @@ def test_basin_not_available(url):
 def test_create_basin_file_non_matching_identifier(tmp_path):
     h5path = tmp_path / "test_basin_s3.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_S3(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",
@@ -142,7 +142,7 @@ def test_create_basin_file_non_matching_identifier(tmp_path):
 def test_create_basin_file_with_no_data(tmp_path):
     h5path = tmp_path / "test_basin_s3.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_S3(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",
@@ -166,7 +166,7 @@ def test_create_basin_file_with_no_data(tmp_path):
 def test_create_basin_file_with_one_feature(tmp_path):
     h5path = tmp_path / "test_basin_s3.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_S3(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",

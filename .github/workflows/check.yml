@@ -10,9 +10,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.8', '3.10', '3.11']
+        python-version: ['3.8', '3.11']
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
+        exclude:
+          # urllib3>=2 is required, dependency conflict
+          - python-version: '3.8'
+            extras: 'all'
+          - python-version: '3.8'
+            extras: 'dcor-s3'
+      fail-fast: false
+    timeout-minutes: 30
 
     steps:
     - uses: actions/checkout@v3
@@ -22,42 +30,35 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Symlink gfortran (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        # make sure gfortran is available
-        # https://github.com/actions/virtual-environments/issues/2524
-        # https://github.com/cbg-ethz/dce/blob/master/.github/workflows/pkgdown.yaml
-        sudo ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
-        sudo mkdir /usr/local/gfortran
-        sudo ln -s /usr/local/Cellar/gcc@11/*/lib/gcc/11 /usr/local/gfortran/lib
-        gfortran --version
-    - name: Perform modifications (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        # make R lib location writable
-        sudo chmod -R 777 /usr/local/lib/R/site-library
     - name: Install dependencies
       run: |
         # prerequisites
         python -m pip install --upgrade pip wheel
         python -m pip install coverage flake8 pytest
+    - name: install R
+      if: matrix.extras == 'all'
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: '3.6.3'
     - name: Downgrade rpy2 (Windows)
-      if: runner.os == 'Windows'
+      if: runner.os == 'Windows' && matrix.extras == 'all'
       run: |
         # Force installation of rpy2 3.5.12
         # https://github.com/rpy2/rpy2/issues/1044
         python -m pip install rpy2==3.5.12
+    - name: install lme4 (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        R -e "install.packages('lme4', repos='http://cran.rstudio.org', type='binary')"
     - name: Install dclab with all possible dependencies
       if: matrix.extras == 'all'
       run: |
         pip install -e .[all]
-        # Install required R packages
-        python -c "import dclab; dclab.lme4.install_lme4()"
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor-s3'
       run: |
-        pip install -e .[dcor,s3]
+        pip install -e .[dcor,http,s3]
     - name: Install dclab with minimal dependencies
       if: matrix.extras == 'none'
       run: |

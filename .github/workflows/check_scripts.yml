@@ -10,8 +10,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.11']
+        python-version: ['3.x']
         os: [macos-latest, ubuntu-latest, windows-latest]
+    timeout-minutes: 30
 
     steps:
     - uses: actions/checkout@v3
@@ -26,8 +27,8 @@ jobs:
         python -m pip install coverage flake8 pytest
     - name: Install dependencies
       run: |
-        pip install .
         pip install -r scripts/requirements.txt
+        pip install .
     - name: List installed packages
       run: |
         pip freeze

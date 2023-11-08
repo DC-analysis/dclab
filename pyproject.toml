@@ -34,22 +34,24 @@ classifiers = [
 ]
 license = {text = "GPL version 2.0 or later"}
 dependencies = [
-    "h5py>=3.0.0",
-    "hdf5plugin>=3.3.1",
-    "numpy>=1.21",  # CVE-2021-33430
-    "scipy>=1.10.0",  # CVE-2023-25399
+    "h5py>=3.0.0, <4",
+    "hdf5plugin>=3.3.1, <5",
+    "importlib-resources>=6.0",  # remove when dropping support for Python 3.8
+    "numpy>=1.21, <2",  # CVE-2021-33430
+    "scipy>=1.10.0, <2",  # CVE-2023-25399
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-all = ["dclab[dcor,export,lme4,ml,s3,tdms]"]
-dcor = ["requests>=2.31.0"]  # CVE-2023-32681
+all = ["dclab[dcor,export,http,lme4,ml,s3,tdms]"]
+dcor = ["requests>=2.31.0, <3"]  # CVE-2023-32681
 export = ["fcswrite>=0.5.0",  # fcs export
           "imageio[ffmpeg]",  # avi export
 ]
+http = ["requests>=2.31.0, <3"]  # CVE-2023-32681
 lme4 = ["rpy2>=2.9.4"]
 ml = ["tensorflow>=2.0"]
-s3 = ["s3fs"]
+s3 = ["s3fs>=2023.10.0", "urllib3>=2"]
 tdms = ["imageio[ffmpeg]", "nptdms>=0.23.0"]
 
 

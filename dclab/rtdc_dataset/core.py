@@ -1,7 +1,6 @@
 """RT-DC dataset core classes and methods"""
 import abc
 import hashlib
-import itertools
 import pathlib
 from typing import Literal
 import uuid
@@ -39,6 +38,8 @@ class RTDCBase(abc.ABC):
         #: Dataset format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
 
+        # Cache attribute used for __len__()-function
+        self._length = None
         self._polygon_filter_ids = []
         # Events have the feature name as keys and contain nD ndarrays.
         self._events = {}
@@ -48,16 +49,15 @@ class RTDCBase(abc.ABC):
         # Temporary features are defined by the user ad hoc at runtime.
         self._usertemp = {}
         # List of :class:`.Basin` for external features
-        self.basins = []
+        self._basins = None
         #: Configuration of the measurement
         self.config = None
         #: Export functionalities; instance of
         #: :class:`dclab.rtdc_dataset.export.Export`.
         self.export = Export(self)
-        # The filtering class is initialized with self._finalize_init_filters
-        #: Filtering functionalities; instance of
-        #: :class:`dclab.rtdc_dataset.filter.Filter`.
-        self.filter = None
+        # Filtering functionalities; instance of
+        # :class:`dclab.rtdc_dataset.filter.Filter`.
+        self._ds_filter = None
         #: Dictionary of log files. Each log file is a list of strings
         #: (one string per line).
         self.logs = {}
@@ -77,7 +77,7 @@ class RTDCBase(abc.ABC):
         else:
             self._identifier = identifier
 
-        # Basins are initialized with _finalize_init_basins
+        # Basins are initialized in the "basins" property function
         self._enable_basins = enable_basins
 
     def __contains__(self, feat):
@@ -137,15 +137,20 @@ class RTDCBase(abc.ABC):
             yield col
 
     def __len__(self):
+        if self._length is None:
+            self._length = self._get_length()
+        return self._length
+
+    def _get_length(self):
         # Try to get length from metadata.
         length = self.config["experiment"].get("event count")
-        if length:
+        if length is not None:
             return length
         # Try to get the length from the feature sizes
-        keys = list(self._events.keys())
+        keys = list(self._events.keys()) or self.features_basin
         keys.sort()
         for kk in keys:
-            length = len(self._events[kk])
+            length = len(self[kk])
             if length:
                 return length
         else:
@@ -159,22 +164,25 @@ class RTDCBase(abc.ABC):
             repre += " ({})>".format(self.path)
         return repre
 
-    def _finalize_init(self):
-        """Subclasses must call this method at the end of `__init__`"""
-        self._finalize_init_basins()
-        self._finalize_init_filters()
+    @property
+    def basins(self):
+        """Basins containing upstream features from other datasets"""
+        if self._basins is None:
+            if self._enable_basins:
+                self._basins = self.basins_retrieve()
+            else:
+                self._basins = []
+        return self._basins
 
-    def _finalize_init_basins(self):
-        """Initialize basins"""
-        if self._enable_basins:
-            self.basins_enable()
+    @property
+    def filter(self):
+        """Filtering functionalities; instance of :class:`.Filter`"""
+        self._assert_filter()
+        return self._ds_filter
 
-    def _finalize_init_filters(self):
-        """Initialize filtering"""
-        #: Filtering functionalities (this is an instance of
-        #: :class:`dclab.rtdc_dataset.filter.Filter`.
-        self.filter = Filter(self)
-        self.reset_filter()
+    def _assert_filter(self):
+        if self._ds_filter is None:
+            self._ds_filter = Filter(self)
 
     def _get_ancillary_feature_data(self,
                                     feat: str,
@@ -243,9 +251,22 @@ class RTDCBase(abc.ABC):
                 if basin_type is not None and basin_type != bn.basin_type:
                     # User asked for specific basin type
                     continue
-                if feat in bn.features:
-                    data = bn.get_feature_data(feat)
-                    break
+                try:
+                    # There are all kinds of errors that may happen here.
+                    # Note that `bn.features` can already trigger an
+                    # availability check that may raise a ValueError.
+                    # TODO:
+                    #  Introduce some kind of callback so the user knows
+                    #  why the data are not available. The current solution
+                    #  (fail silently) is not sufficiently transparent,
+                    #  especially when considering networking issues.
+                    if feat in bn.features:
+                        data = bn.get_feature_data(feat)
+                        # The data are available, we may abort the search.
+                        break
+                except BaseException:
+                    # Basin data not available
+                    pass
         return data
 
     @staticmethod
@@ -307,7 +328,7 @@ class RTDCBase(abc.ABC):
         feat: str
             feature name for debugging
         ret_scaled: bool
-            whether or not to return the scaled array of `a`
+            whether to return the scaled array of `a`
         """
         if method_kw is None:
             method_kw = {}
@@ -330,9 +351,9 @@ class RTDCBase(abc.ABC):
         feats = list(self._events.keys())
         feats += list(self._usertemp.keys())
         feats += list(AncillaryFeature.feature_names)
-        if self.basins:
-            feats += list(
-                itertools.chain(*[bn.features for bn in self.basins]))
+        for bn in self.basins:
+            if bn.is_available():
+                feats += bn.features
         feats = sorted(set(feats))
         # exclude non-standard features
         featsv = [ff for ff in feats if dfn.feature_exists(ff)]
@@ -372,8 +393,11 @@ class RTDCBase(abc.ABC):
     def features_basin(self):
         """All features accessed via upstream basins from other locations"""
         if self.basins:
-            return sorted(set(list(
-                itertools.chain(*[bn.features for bn in self.basins]))))
+            features = []
+            for bn in self.basins:
+                if bn.is_available():
+                    features += bn.features
+            return sorted(set(features))
         else:
             return []
 
@@ -658,10 +682,10 @@ class RTDCBase(abc.ABC):
         # Only implement this for classes that support this
         return []
 
-    def basins_enable(self):
-        """Load all basins defined in the
+    def basins_retrieve(self):
+        """Load all basins available
 
-        .. versionadded:: 0.51.0
+        .. versionadded:: 0.54.0
 
         In dclab 0.51.0, we introduced basins, a simple way of combining
         HDF5-based datasets (including the :class:`.HDF5_S3` format).
@@ -672,12 +696,20 @@ class RTDCBase(abc.ABC):
         If an RT-DC file has "basins" defined, then these are sought out and
         made available via the `features_basin` property.
         """
+        basins = []
         bc = feat_basin.get_basin_classes()
         muid = self.get_measurement_identifier()
         for bdict in self.basins_get_dicts():
             # Check whether this basin is supported and exists
-            kwargs = {"name": bdict.get("name"),
-                      "description": bdict.get("description")}
+            kwargs = {
+                "name": bdict.get("name"),
+                "description": bdict.get("description"),
+                # Honor features intended by basin creator.
+                "features": bdict.get("features"),
+                # Make sure the measurement identifier is checked.
+                "measurement_identifier": self.get_measurement_identifier(),
+                }
+
             if bdict["type"] == "file":
                 for pp in bdict["paths"]:
                     pp = pathlib.Path(pp)
@@ -687,7 +719,7 @@ class RTDCBase(abc.ABC):
                     bna = bcls(pp, **kwargs)
                     if (bna.is_available()
                             and bna.get_measurement_identifier() == muid):
-                        self.basins.append(bna)
+                        basins.append(bna)
                         break
                     # Try relative path
                     thispath = pathlib.Path(self.path)
@@ -696,20 +728,24 @@ class RTDCBase(abc.ABC):
                         bnr = bcls(thispath.parent / pp, **kwargs)
                         if (bnr.is_available()
                                 and bnr.get_measurement_identifier() == muid):
-                            self.basins.append(bnr)
+                            basins.append(bnr)
                             break
             elif bdict["type"] == "remote":
                 for url in bdict["urls"]:
                     # Instantiate the proper basin class
                     bcls = bc[bdict["format"]]
                     bna = bcls(url, **kwargs)
-                    if (bna.is_available()
-                            and bna.get_measurement_identifier() == muid):
-                        self.basins.append(bna)
-                        break
+                    # In contrast to file-type basins, we just add all remote
+                    # basins without checking first. We do not check for
+                    # the availability of remote basins, because they could
+                    # be temporarily inaccessible (unstable network connection)
+                    # and because checking the availability of remote basins
+                    # normally takes a lot of time.
+                    basins.append(bna)
             else:
                 warnings.warn(
                     f"Encountered unsupported basin type '{bdict['type']}'!")
+        return basins
 
     def get_measurement_identifier(self):
         """Return a unique measurement identifier
@@ -743,6 +779,7 @@ class RTDCBase(abc.ABC):
         filt: int or instance of `PolygonFilter`
             The polygon filter to add
         """
+        self._assert_filter()  # [sic] initialize the filter if not done yet
         if not isinstance(filt, (PolygonFilter, int, float)):
             msg = "`filt` must be a number or instance of PolygonFilter!"
             raise ValueError(msg)

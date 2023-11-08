@@ -44,6 +44,51 @@ def test_basin_file():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_feature_restriction():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_test = path.parent / "test.h5"
+    # We basically create a file that consists only of the metadata.
+    with RTDCWriter(path_test) as hw, new_dataset(path) as dsorig:
+        hw.store_basin(basin_name="get-out",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path],
+                       basin_descr="My very first basin-only dataset",
+                       basin_feats=["deform"],
+                       verify=True,
+                       )
+        meta = dsorig.config.as_dict(pop_filtering=True)
+        hw.store_metadata(meta)
+        # sanity check
+        assert "area_um" in dsorig
+
+    # Make sure *only* derorm is in the basin
+    with dclab.new_dataset(path_test) as ds:
+        assert "deform" in ds.features
+        assert "area_um" not in ds.features
+        assert "deform" in ds.features_basin
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_feature_restriction_verify():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_test = path.parent / "test.h5"
+    # We basically create a file that consists only of the metadata.
+    with RTDCWriter(path_test) as hw:
+        with pytest.raises(ValueError, match="blablabla"):
+            hw.store_basin(basin_name="get-out",
+                           basin_type="file",
+                           basin_format="hdf5",
+                           basin_locs=[path],
+                           basin_descr="My very first basin-only dataset",
+                           basin_feats=["blablabla"],
+                           verify=True,
+                           )
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_basin_file_relative():
     """Test whether storing the relative path works"""
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")

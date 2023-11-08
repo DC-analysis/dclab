@@ -27,7 +27,8 @@ REGEXP_DCOR_URL = re.compile(
 
 class RTDC_DCOR(RTDCBase):
     def __init__(self, url, host="dcor.mpl.mpg.de", api_key="",
-                 use_ssl=None, cert_path=None, *args, **kwargs):
+                 use_ssl=None, cert_path=None, dcserv_api_version=2,
+                 *args, **kwargs):
         """Wrap around the DCOR API
 
         Parameters
@@ -52,6 +53,10 @@ class RTDC_DCOR(RTDCBase):
             The (optional) path to a server CA bundle; this should only
             be necessary for DCOR instances in the intranet with a custom
             CA or for certificate pinning.
+        dcserv_api_version: int
+            Version of the dcserv API to use. In version 0.13.2 of
+            ckanext-dc_serve, version 2 was introduced which entails
+            serving an S3-basin-only dataset.
         *args:
             Arguments for `RTDCBase`
         **kwargs:
@@ -74,8 +79,10 @@ class RTDC_DCOR(RTDCBase):
         if cert_path is None:
             cert_path = get_server_cert_path(get_host_from_url(self.path))
 
-        self.api = api.APIHandler(url=self.path, api_key=api_key,
-                                  cert_path=cert_path)
+        self.api = api.APIHandler(url=self.path,
+                                  api_key=api_key,
+                                  cert_path=cert_path,
+                                  dcserv_api_version=dcserv_api_version)
 
         # Parse configuration
         self.config = Configuration(cfg=self.api.get(query="metadata"))
@@ -87,16 +94,16 @@ class RTDC_DCOR(RTDCBase):
         self.tables = DCORTables(self.api)
 
         # Get size
-        self._size = int(self.api.get(query="size"))
+        size = self.config["experiment"].get("event count")
+        if size is None:
+            size = int(self.api.get(query="size"))
+        self._size = size
 
         # Setup events
         self._events = FeatureCache(self.api, size=self._size)
 
         self.title = f"{self.config['experiment']['sample']} - " \
             + f"M{self.config['experiment']['run index']}"
-
-        # Finalize initialization
-        self._finalize_init()
 
     def __enter__(self):
         return self
@@ -116,7 +123,7 @@ class RTDC_DCOR(RTDCBase):
         return self._hash
 
     @staticmethod
-    def get_full_url(url, use_ssl, host):
+    def get_full_url(url, use_ssl, host=None):
         """Return the full URL to a DCOR resource
 
         Parameters
@@ -139,22 +146,29 @@ class RTDC_DCOR(RTDCBase):
         if use_ssl is None:
             if url.startswith("http://"):
                 # user wanted it that way
-                web = "http"
+                scheme = "http"
             else:
-                web = "https"
+                scheme = "https"
         elif use_ssl:
-            web = "https"
+            scheme = "https"
         else:
-            web = "http"
+            scheme = "http"
         if url.count("://"):
             base = url.split("://", 1)[1]
         else:
             base = url
+        # determine the api_path and the netloc
         if base.count("/"):
-            host, api_path = base.split("/", 1)
+            netloc, api_path = base.split("/", 1)
         else:
+            netloc = "dcor.mpl.mpg.de"  # default fallback
             api_path = "api/3/action/dcserv?id=" + base
-        new_url = f"{web}://{host}/{api_path}"
+        # remove https from host string (user convenience)
+        if host is not None:
+            host = host.split("://")[-1]
+        netloc = netloc if host is None else host
+
+        new_url = f"{scheme}://{netloc}/{api_path}"
         return new_url
 
     def basins_get_dicts(self):

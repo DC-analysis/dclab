@@ -1,20 +1,16 @@
 """Isoelastics management"""
 import collections
+from contextlib import ExitStack
 import functools
-import pathlib
-from pkg_resources import resource_filename
+# replace this import when dropping support for Python 3.8
+# from importlib import resources as importlib_resources
+import importlib_resources
 import warnings
 
 import numpy as np
 
 from .. import definitions as dfn
 from ..features import emodulus as feat_emod
-
-
-_iso_path = pathlib.Path(resource_filename("dclab", "isoelastics"))
-
-#: List of isoelasticity lines in dclab
-ISOFILES = sorted(_iso_path.glob("iso_*.txt"))
 
 
 class IsoelasticsEmodulusMeaninglessWarning(UserWarning):
@@ -29,7 +25,6 @@ class Isoelastics(object):
         ----------
         paths: list of pathlib.Path or list of str
             list of paths to files containing isoelasticity lines
-            (see e.g. :const:`ISOFILES`)
 
         .. versionchanged:: 0.24.0
             The isoelasticity lines of the analytical model
@@ -436,13 +431,38 @@ def check_lut_identifier(lut_identifier, method):
 @functools.lru_cache()
 def get_available_identifiers():
     """Return a list of available LUT identifiers"""
+    isofiles = get_available_files()
     ids = []
-    for ff in ISOFILES:
-        _, meta = feat_emod.load_mtext(ff)
+    for pp in isofiles:
+        _, meta = feat_emod.load_mtext(pp)
         ids.append(meta["lut identifier"])
     return sorted(set(ids))
 
 
+@functools.lru_cache()
+def get_available_files():
+    """Return list of available isoelasticity line files in dclab"""
+    isofiles = []
+    for pp in importlib_resources.files('dclab.isoelastics').iterdir():
+        name = pp.name
+        if name.startswith("iso") and name.endswith(".txt"):
+            isofiles.append(name)
+    return sorted(isofiles)
+
+
 def get_default():
     """Return default isoelasticity lines"""
-    return Isoelastics(ISOFILES)
+    # name of the isoelastics files
+    isofiles = get_available_files()
+    # file manager to temporarily work with the package files
+    file_manager = ExitStack()
+    paths = []
+    for name in isofiles:
+        ref = importlib_resources.files('dclab.isoelastics') / name
+        path = file_manager.enter_context(importlib_resources.as_file(ref))
+        paths.append(path)
+    # this loads the data into memory, so we don't need the files afterward
+    isoels = Isoelastics(paths=paths)
+    # close the file manager, deleting all files
+    file_manager.close()
+    return isoels

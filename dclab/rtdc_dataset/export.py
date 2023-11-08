@@ -1,6 +1,7 @@
 """Export RT-DC measurement data"""
 import codecs
 import pathlib
+import uuid
 import warnings
 
 import h5py
@@ -240,6 +241,12 @@ class Export(object):
         # add user-defined metadata
         if "user" in self.rtdc_ds.config:
             meta["user"] = self.rtdc_ds.config["user"].copy()
+        if filtered:
+            # Define a new measurement identifier, so that we are not running
+            # into any problems with basins being defined for filtered data.
+            ds_run_id = self.rtdc_ds.get_measurement_identifier()
+            random_ap = str(uuid.uuid4())[:4]
+            meta["experiment"]["run identifier"] = f"{ds_run_id}-{random_ap}"
 
         if filtered:
             filtarr = self.rtdc_ds.filter.all
@@ -525,7 +532,7 @@ def hdf5_append(h5obj, rtdc_ds, feat, compression, filtarr=None,
 
 
 def hdf5_autocomplete_config(path_or_h5obj):
-    """"Autocomplete the configuration of the RTDC-measurement
+    """Autocomplete the configuration of the RTDC-measurement
 
     The following configuration keys are updated:
 

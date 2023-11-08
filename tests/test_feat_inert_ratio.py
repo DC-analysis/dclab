@@ -156,7 +156,7 @@ def test_inert_ratio_raw_with_old_shapein_issue_224():
 
 
 @pytest.mark.parametrize("si_string", ["ShapeIn 2.0.5", "2.3.1"])
-def test_inert_raio_with_new_shapein_issue_224(si_string):
+def test_inert_ratio_with_new_shapein_issue_224(si_string):
     path = retrieve_data("fmt-hdf5_wide-channel_2023.zip")
 
     # make the file look like it has been created with an old Shape-In version
@@ -254,5 +254,6 @@ def test_tilt():
 
         th = np.mod(theta, np.pi)
         if th > np.pi/2:
-            th = np.pi - th
+            th -= np.pi
+        th = np.abs(th)
         assert np.allclose(tilt, th)

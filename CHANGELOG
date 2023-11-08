@@ -1,3 +1,43 @@
+0.55.4
+ - enh: improve timeout and availability check for fmt_http
+0.55.3
+ - enh: migrate to purely requests-based HTTP file for fmt_http
+0.55.2
+ - fix: fmt_dcor did not properly retry failed connections
+ - enh: minor optimizations for fmt_http and fmt_s3
+0.55.1
+ - fix: disable instance cache fsspec.HTTPFileSystem (fmt_http)
+0.55.0
+ - feat: implement HDF5-based HTTP file format and basin
+ - fix: replace lru_cache on instance methods to fix memory leak (#214)
+ - fix: remove lru_cache in DCOR format (#226)
+ - fix: implement `__contains__` for DCOR logs and tables
+ - enh: improve parsing of DCOR URLs (scheme in host)
+ - enh: speed-up of initialization of DCOR data
+ - enh: add requests timeout for DCOR data
+ - enh: more caching of event size and shape for HDF5 format
+ - enh: faster computation of contour length for DCOR format
+ - enh: use dcserv version 2 in DCOR format (fast S3 access)
+ - enh: change measurement identifier upon filtered export
+ - setup: pin s3fs>=2023.10.0
+ - setup: pin upper bounds of dependencies
+0.54.2
+ - fix: availability checks for basins
+0.54.1
+ - fix: properly check for basin availability before getting features
+0.54.0
+ - fix: partial workaround for #238
+ - fix: hash alias for HDF5 Datasets in files not in the file system
+ - enh: delayed computation of measurement identifiers for basins
+ - enh: allow to specify which features are served by a basin
+ - enh: improve speed of S3 file format by increasing chunk size
+ - enh: do not immediately raise an exception when metadata are missing
+ - enh: lazy initialization of .RTDCBase.filters
+ - enh: lazy initialization of .RTDCBase.basins
+ - enh: lazy loading of feature list for HDF5 data
+ - setup: migrate from pkg_resources to importlib_resources
+ - ref: remove the dclab.isoelastics.ISOFILES constant
+ - ref: remove the dclab.features.emodulus.INTERNAL_LUTS constant
 0.53.3
  - fix: bad hdf5 basin check
 0.53.2

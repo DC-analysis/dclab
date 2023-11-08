@@ -588,6 +588,17 @@ def test_online_polygon_filters():
             pf_points)
 
 
+def test_open_simple_file(tmp_path):
+    path = tmp_path / "test.rtdc"
+    with h5py.File(path, "w") as h5:
+        h5["events/time"] = np.arange(100)
+        h5["events/deform"] = np.linspace(0.1, 0.2, 100)
+
+    with dclab.new_dataset(path) as ds:
+        assert "software version" not in ds.config["setup"]
+        assert ds.title == "undefined sample - M0"
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_open_with_invalid_feature_names():

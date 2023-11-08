@@ -20,7 +20,7 @@ class APIHandler:
     #: DCOR API Keys/Tokens in the current session
     api_keys = []
 
-    def __init__(self, url, api_key="", cert_path=None):
+    def __init__(self, url, api_key="", cert_path=None, dcserv_api_version=2):
         """
 
         Parameters
@@ -40,6 +40,10 @@ class APIHandler:
         self.verify = cert_path or True
         #: DCOR API Token
         self.api_key = api_key
+        #: ckanext-dc_serve dcserv API version
+        self.dcserv_api_version = dcserv_api_version
+        #: create a session
+        self.session = requests.Session()
         self._cache = {}
 
     @classmethod
@@ -53,8 +57,10 @@ class APIHandler:
             APIHandler.api_keys.append(api_key)
 
     def _get(self, query, feat=None, trace=None, event=None, api_key="",
-             retries=3):
-        qstr = f"&query={query}"
+             retries=13):
+        # "version=2" introduced in dclab 0.54.3
+        # (supported since ckanext.dc_serve 0.13.2)
+        qstr = f"&version={self.dcserv_api_version}&query={query}"
         if feat is not None:
             qstr += f"&feature={feat}"
         if trace is not None:
@@ -62,22 +68,32 @@ class APIHandler:
         if event is not None:
             qstr += f"&event={event}"
         apicall = self.url + qstr
+        fail_reasons = []
         for _ in range(retries):
-            req = requests.get(apicall,
-                               headers={"Authorization": api_key},
-                               verify=self.verify)
             try:
+                # try-except both requests and json conversion
+                req = self.session.get(apicall,
+                                       headers={"Authorization": api_key},
+                                       verify=self.verify,
+                                       timeout=1,
+                                       )
                 jreq = req.json()
-            except json.decoder.JSONDecodeError:
-                time.sleep(0.1)  # wait a bit, maybe the server is overloaded
+            except requests.urllib3.exceptions.ConnectionError:  # requests
+                fail_reasons.append("connection problem")
+                continue
+            except (requests.urllib3.exceptions.ReadTimeoutError,
+                    requests.exceptions.ConnectTimeout):  # requests
+                fail_reasons.append("timeout")
+            except json.decoder.JSONDecodeError:  # json
+                fail_reasons.append("invalid json")
+                time.sleep(1)  # wait a bit, maybe the server is overloaded
                 continue
             else:
                 break
         else:
-            raise DCORAccessError(f"Could not complete query '{apicall}', "
-                                  "because the response did not contain any "
-                                  f"JSON-parseable data. Retried {retries} "
-                                  "times.")
+            raise DCORAccessError(f"Could not complete query '{apicall}'. "
+                                  f"I retried {retries} times. "
+                                  f"Messages: {fail_reasons}")
         return jreq
 
     def get(self, query, feat=None, trace=None, event=None):

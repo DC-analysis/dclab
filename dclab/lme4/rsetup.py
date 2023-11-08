@@ -152,7 +152,7 @@ def import_lme4():
             "The R package 'lme4' is not installed, please install it via "
             + "`dclab.lme4.rsetup.install_lme4()` or by executing "
             + "in a shell: R -e " + '"install.packages(' + "'lme4', "
-            + "repos='http://cran.r-project.org')" + '"')
+            + "repos='http://cran.rstudio.org')" + '"')
     return lme4pkg
 
 

@@ -1,7 +1,6 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
-import functools
 import numbers
 import numpy as np
 
@@ -12,7 +11,8 @@ from . import feat_defect
 
 
 class H5ContourEvent:
-    def __init__(self, h5group):
+    def __init__(self, h5group, length=None):
+        self._length = length
         self.h5group = h5group
         # for hashing in util.obj2bytes
         self.identifier = (h5group.file.filename, h5group["0"].name)
@@ -35,10 +35,11 @@ class H5ContourEvent:
         for idx in range(len(self)):
             yield self[idx]
 
-    @functools.lru_cache()
     def __len__(self):
-        # computing the length of an H5Group is slow
-        return len(self.h5group)
+        if self._length is None:
+            # computing the length of an H5Group is slow
+            self._length = len(self.h5group)
+        return self._length
 
     @property
     def shape(self):
@@ -54,11 +55,18 @@ class H5Events:
         # datasets, we cache the wrapping classes in the `self._cached_events`
         # dictionary.
         self._cached_events = {}
-        self._features = sorted(self.h5file["events"].keys())
-        # make sure that "trace" is not empty
-        if ("trace" in self._features
-                and len(self.h5file["events"]["trace"]) == 0):
-            self._features.remove("trace")
+        self._defective_features = {}
+        self._features_list = None
+
+    @property
+    def _features(self):
+        if self._features_list is None:
+            self._features_list = sorted(self.h5file["events"].keys())
+            # make sure that "trace" is not empty
+            if ("trace" in self._features
+                    and len(self.h5file["events"]["trace"]) == 0):
+                self._features_list.remove("trace")
+        return self._features_list
 
     def __contains__(self, key):
         return key in self.keys()
@@ -69,7 +77,8 @@ class H5Events:
             assert dfn.feature_exists(key), f"Feature '{key}' does not exist!"
             data = self.h5file["events"][key]
             if key == "contour":
-                fdata = H5ContourEvent(data)
+                length = self.h5file.attrs.get("experiment:event count")
+                fdata = H5ContourEvent(data, length=length)
             elif key == "mask":
                 fdata = H5MaskEvent(data)
             elif key == "trace":
@@ -88,15 +97,17 @@ class H5Events:
         for key in self.keys():
             yield key
 
-    @functools.lru_cache()
     def _is_defective_feature(self, feat):
         """Whether the stored feature is defective"""
-        defective = False
-        if feat in feat_defect.DEFECTIVE_FEATURES and feat in self._features:
-            # feature exists in the HDF5 file
-            # workaround machinery for sorting out defective features
-            defective = feat_defect.DEFECTIVE_FEATURES[feat](self.h5file)
-        return defective
+        if feat not in self._defective_features:
+            defective = False
+            if (feat in feat_defect.DEFECTIVE_FEATURES
+                    and feat in self._features):
+                # feature exists in the HDF5 file
+                # workaround machinery for sorting out defective features
+                defective = feat_defect.DEFECTIVE_FEATURES[feat](self.h5file)
+            self._defective_features[feat] = defective
+        return self._defective_features[feat]
 
     def keys(self):
         """Returns list of valid features
@@ -197,6 +208,8 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
 class H5TraceEvent:
     def __init__(self, h5group):
         self.h5group = h5group
+        self._num_traces = None
+        self._shape = None
 
     def __getitem__(self, idx):
         return self.h5group[idx]
@@ -205,7 +218,9 @@ class H5TraceEvent:
         return item in self.h5group
 
     def __len__(self):
-        return len(self.h5group)
+        if self._num_traces is None:
+            self._num_traces = len(self.h5group)
+        return self._num_traces
 
     def __iter__(self):
         for key in sorted(self.h5group.keys()):
@@ -216,5 +231,7 @@ class H5TraceEvent:
 
     @property
     def shape(self):
-        atrace = list(self.h5group.keys())[0]
-        return tuple([len(self.h5group)] + list(self.h5group[atrace].shape))
+        if self._shape is None:
+            atrace = list(self.h5group.keys())[0]
+            self._shape = tuple([len(self)] + list(self.h5group[atrace].shape))
+        return self._shape

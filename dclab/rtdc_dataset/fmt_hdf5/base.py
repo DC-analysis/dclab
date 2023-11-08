@@ -1,7 +1,7 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
-import functools
+import io
 import json
 import pathlib
 from typing import Any, BinaryIO, Dict
@@ -19,7 +19,6 @@ from . import events
 from . import logs
 from . import tables
 
-
 #: rtdc files exported with dclab prior to this version are not supported
 MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 
@@ -34,7 +33,7 @@ class UnknownKeyWarning(UserWarning):
 
 class RTDC_HDF5(RTDCBase):
     def __init__(self,
-                 h5path: str | pathlib.Path | BinaryIO,
+                 h5path: str | pathlib.Path | BinaryIO | io.IOBase,
                  h5kwargs: Dict[str, Any] = None,
                  *args,
                  **kwargs):
@@ -79,7 +78,7 @@ class RTDC_HDF5(RTDCBase):
         self._events = events.H5Events(self.h5file)
 
         # Parse configuration
-        self.config = RTDC_HDF5.parse_config(h5path)
+        self.config = RTDC_HDF5.parse_config(self.h5file)
 
         # Override logs property with HDF5 data
         self.logs = logs.H5Logs(self.h5file)
@@ -88,7 +87,7 @@ class RTDC_HDF5(RTDCBase):
         self.tables = tables.H5Tables(self.h5file)
 
         # check version
-        rtdc_soft = self.config["setup"]["software version"]
+        rtdc_soft = self.config["setup"].get("software version", "unknown")
         if rtdc_soft.startswith("dclab "):
             rtdc_ver = parse_version(rtdc_soft.split(" ")[1])
             if rtdc_ver < parse_version(MIN_DCLAB_EXPORT_VERSION):
@@ -98,26 +97,26 @@ class RTDC_HDF5(RTDCBase):
                       + "dclab-tdms2rtdc / export the data again."
                 raise OldFormatNotSupportedError(msg)
 
-        self.title = "{} - M{}".format(self.config["experiment"]["sample"],
-                                       self.config["experiment"]["run index"])
-
-        # Finalize initialization
-        self._finalize_init()
+        self.title = "{} - M{}".format(
+            self.config["experiment"].get("sample", "undefined sample"),
+            self.config["experiment"].get("run index", "0"))
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, tb):
-        # close the HDF5 file
-        self.h5file.close()
+        self.close()
 
-    @functools.lru_cache()
-    def __len__(self):
-        ec = self.h5file.get("experiment:event count")
-        if ec is not None:
-            return ec
-        else:
-            return super(RTDC_HDF5, self).__len__()
+    def close(self):
+        """Close the underlying HDF5 file"""
+        # This is a partial workaround for issue #238
+        # https://github.com/DC-analysis/dclab/issues/238
+        # TODO: Refactor .RTDCBase with context managers that call `close`.
+        self.h5file.close()
+        if self._basins:
+            for b in self._basins:
+                if b._ds is not None:
+                    b._ds.close()
 
     @property
     def _h5(self):
@@ -149,9 +148,15 @@ class RTDC_HDF5(RTDCBase):
 
     @staticmethod
     def parse_config(h5path):
-        """Parse the RT-DC configuration of an HDF5 file"""
-        with h5py.File(h5path, mode="r") as fh5:
-            h5attrs = dict(fh5.attrs)
+        """Parse the RT-DC configuration of an HDF5 file
+
+        `h5path` may be a h5py.File object or an actual path
+        """
+        if not isinstance(h5path, h5py.File):
+            with h5py.File(h5path, mode="r") as fh5:
+                h5attrs = dict(fh5.attrs)
+        else:
+            h5attrs = dict(h5path.attrs)
 
         # Convert byte strings to unicode strings
         # https://github.com/h5py/h5py/issues/379

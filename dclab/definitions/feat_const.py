@@ -7,8 +7,9 @@ FEATURES_SCALAR = [
     # area_msd is the contour moment M00
     ["area_msd", "Measured area [px]"],
     ["area_ratio", "Porosity (convex to measured area ratio)"],
-    # area_um is the convex area per definition
+    # area_um is computed from the convex contour
     ["area_um", "Area [µm²]"],
+    ["area_um_raw", "Area [µm²] of raw contour"],
     ["aspect", "Aspect ratio of bounding box"],
     # The background brightness of the frame (not of the mask)
     ["bg_med", "Median frame background brightness [a.u.]"],
@@ -22,6 +23,8 @@ FEATURES_SCALAR = [
     ["circ", "Circularity"],
     # deform is computed from the convex contour
     ["deform", "Deformation"],
+    ["deform_raw", "Deformation of raw contour"],
+    ["eccentr_prnc", "Eccentricity of raw contour"],
     ["emodulus", "Young's modulus [kPa]"],
     # fl*_area, fl*_pos, and fl*_width values correspond to the
     # object for which the contour was found. For high concentrations,
@@ -69,6 +72,11 @@ FEATURES_SCALAR = [
     ["nevents", "Number of events in the same image"],
     ["pc1", "Principal component 1"],
     ["pc2", "Principal component 2"],
+    # Convexity is defined by the ratio of convex contour length
+    # versus raw contour length. We use inverse convexity as it is
+    # more convenient to work with numbers >1.
+    ["per_ratio", "Inverse Convexity (raw to convex perimeter ratio)"],
+    ["per_um_raw", "Perimeter [µm] of raw contour"],
     # pos_x and pos_y are computed from the contour moments
     # "m10"/"m00" and "m01"/"m00" of the convex hull of "contour"
     ["pos_x", "Position along channel axis [µm]"],
@@ -86,6 +94,9 @@ FEATURES_SCALAR = [
     # Size features
     ["size_x", "Bounding box size x [µm]"],
     ["size_y", "Bounding box size y [µm]"],
+    # Ratio between two halves of a mask
+    ["sym_x", "Symmetry ratio left-right"],
+    ["sym_y", "Symmetry ratio top-bottom"],
     ["temp", "Chip temperature [°C]"],
     ["temp_amb", "Ambient temperature [°C]"],
     # Haralick texture features can be computed using the mahotas package

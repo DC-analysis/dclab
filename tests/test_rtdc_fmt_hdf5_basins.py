@@ -141,7 +141,7 @@ def test_basin_nothing_available():
 
 
 def test_basin_features_path_absolute():
-    """Create a dataset that refers to a basin in a relative path"""
+    """Create a dataset that refers to a basin in an absolute path"""
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
     h5path_small = h5path.with_name("smaller.rtdc")
 

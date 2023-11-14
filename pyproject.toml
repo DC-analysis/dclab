@@ -4,7 +4,7 @@ requires = [
     # for building Cython extensions
     "cython", "numpy", "setuptools", "wheel",
     # for version management
-    "setuptools>=45", "setuptools_scm[toml]>=6.2"
+    "setuptools>=46", "setuptools_scm[toml]>=6.2"
 ]
 build-backend = "setuptools.build_meta"
 

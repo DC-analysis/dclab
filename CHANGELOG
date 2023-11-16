@@ -1,3 +1,5 @@
+0.55.6
+ - fix: default `host` was overriding URL host in fmt_dcor
 0.55.5
  - enh: register new features area_um_raw, deform_raw, eccentr_prnc,
    per_ratio, per_um_raw, sym_x, sym_y

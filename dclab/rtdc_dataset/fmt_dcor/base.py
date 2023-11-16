@@ -42,7 +42,7 @@ class RTDC_DCOR(RTDCBase):
               661-4920-be79-5ff4e85915d5
             - b1404eb5-f661-4920-be79-5ff4e85915d5
         host: str
-            The host machine (used if the host is not given in `url`)
+            The default host machine used if the host is not given in `url`
         api_key: str
             API key to access private resources
         use_ssl: bool
@@ -161,13 +161,13 @@ class RTDC_DCOR(RTDCBase):
         if base.count("/"):
             netloc, api_path = base.split("/", 1)
         else:
-            netloc = "dcor.mpl.mpg.de"  # default fallback
+            netloc = None  # default to `host`
             api_path = "api/3/action/dcserv?id=" + base
         # remove https from host string (user convenience)
         if host is not None:
             host = host.split("://")[-1]
-        netloc = netloc if host is None else host
 
+        netloc = host if netloc is None else netloc
         new_url = f"{scheme}://{netloc}/{api_path}"
         return new_url
 

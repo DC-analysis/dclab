@@ -274,54 +274,95 @@ def test_dcor_slicing_trace(idxs):
         assert np.all(data_sliced[2] == data_ref[2])
 
 
-def test_get_full_url():
-    target = "https://example.com/api/3/action/dcserv?id=" \
-             "b1404eb5-f661-4920-be79-5ff4e85915d5"
-    assert RTDC_DCOR.get_full_url(
-        url="b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=True,
-        host="example.com") == target
-    assert RTDC_DCOR.get_full_url(
-        url="http://example.com/api/3/action/dcserv?id="
-            "b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=True,
-        host="example.com") == target
-    assert RTDC_DCOR.get_full_url(
-        url="example.com/api/3/action/dcserv?id="
-            "b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=True,
-        host="example.com") == target
-    assert RTDC_DCOR.get_full_url(
-        url="https://example.com/api/3/action/dcserv?id="
-            "b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=None,
-        host="example.com") == target
-    assert RTDC_DCOR.get_full_url(
-        url="b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=None,
-        host="example.com") == target
-    target2 = "http://example.com/api/3/action/dcserv?id=" \
-              "b1404eb5-f661-4920-be79-5ff4e85915d5"
-    assert RTDC_DCOR.get_full_url(
-        url="example.com/api/3/action/dcserv?id="
-            "b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=False,
-        host="example.com") == target2
-    assert RTDC_DCOR.get_full_url(
-        url="https://example.com/api/3/action/dcserv?id="
-            "b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=False,
-        host="example.com") == target2
-    assert RTDC_DCOR.get_full_url(
-        url="http://example.com/api/3/action/dcserv?id="
-            "b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=None,
-        host="example.com") == target2
-    assert RTDC_DCOR.get_full_url(
-        url="b1404eb5-f661-4920-be79-5ff4e85915d5",
-        use_ssl=None,
-        # sneak in a scheme into host
-        host="https://example.com") == target
+@pytest.mark.parametrize("target,kwargs", [
+    # HTTPS
+    ("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": True,
+      "host": "example.com"}
+     ),
+    ("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "example.com/api/3/action/dcserv?id="
+             "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": True,
+      "host": "example.com"}
+     ),
+    ("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "example.com/api/3/action/dcserv?id="
+             "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": None,
+      "host": "example.com"}
+     ),
+    ("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": None,
+      "host": "example.com"}
+     ),
+    ("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": None,
+      # sneak in a scheme into host
+      "host": "https://example.com"}
+     ),
+    ("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "https://example.com/api/3/action/dcserv?id="
+             "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": None,
+      # `host` does not override things
+      "host": "example2.com"}
+     ),
+    # HTTP
+    ("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "example.com/api/3/action/dcserv?id="
+             "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": False,
+      "host": "example.com"}
+     ),
+    ("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "https://example.com/api/3/action/dcserv?id="
+             "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": False,
+      "host": "example.com"}
+     ),
+    ("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": False,
+      "host": "example.com"}
+     ),
+    ("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "http://example.com/api/3/action/dcserv?id="
+             "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": None,
+      "host": "example.com"}
+     ),
+    ("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": False,
+      # sneak in a scheme into host
+      "host": "https://example.com"}
+     ),
+    ("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+     {"url": "http://example.com/api/3/action/dcserv?id="
+             "b1404eb5-f661-4920-be79-5ff4e85915d5",
+      "use_ssl": False,
+      # `host` does not override things
+      "host": "example2.com"}
+     ),
+])
+def test_get_full_url(target, kwargs):
+    assert target == RTDC_DCOR.get_full_url(**kwargs)
 
 
 def test_is_dcor_url():

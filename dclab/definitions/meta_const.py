@@ -139,7 +139,7 @@ CFG_METADATA = {
         ["dcnum segmenter", str, "Segmenter ID"],
         # The event yield the number of events the pipeline produced and
         # helps identify files that were e.g. exported from original files.
-        ["dcnum yield", str, "Event yield"],
+        ["dcnum yield", fint, "Event yield"],
     ],
     # All qpi-related keywords
     "qpi": [

@@ -1,5 +1,6 @@
 0.55.7
  - test: tested rtdc_dataset.config.Configuration is pickable (#190)
+ - enh: add dcnum pipeline identifier metadata constants
 0.55.6
  - fix: default `host` was overriding URL host in fmt_dcor
 0.55.5

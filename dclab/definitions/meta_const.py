@@ -125,6 +125,22 @@ CFG_METADATA = {
         ["target duration", float, "Target measurement duration [min]"],
         ["target event count", fint, "Target event count for online gating"],
     ],
+    # Data processing pipeline
+    "pipeline": [
+        ["dcnum background", str, "Background ID"],
+        ["dcnum data", str, "Data ID"],
+        ["dcnum feature", str, "Feature extractor ID"],
+        ["dcnum gate", str, "Gating ID"],
+        ["dcnum generation", str, "Generation ID"],
+        # The hash is computed by joining the other pipeline identifiers with
+        # the "|" character in this order: generation, data, background,
+        # segmenter, feature, gate.
+        ["dcnum hash", str, "Hash"],
+        ["dcnum segmenter", str, "Segmenter ID"],
+        # The event yield the number of events the pipeline produced and
+        # helps identify files that were e.g. exported from original files.
+        ["dcnum yield", fint, "Event yield"],
+    ],
     # All qpi-related keywords
     "qpi": [
         # experiment-related qpi metadata, see qpretrieve for details

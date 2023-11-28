@@ -1,6 +1,7 @@
 """Test functions for RT-DC configuration metadata"""
 import os
 import pathlib
+import pickle
 import tempfile
 import warnings
 
@@ -31,6 +32,8 @@ def equals(a, b):
             assert np.isnan(b)
         else:
             assert np.allclose(a, b), "a={} vs b={}".format(a, b)
+    elif isinstance(a, np.ndarray):
+        assert np.all(a == b), f"{a=} vs {b=}"
     else:
         assert a == b, "a={} vs b={}".format(a, b)
     return True
@@ -58,6 +61,18 @@ def test_config_invalid_key():
         assert len(w) == 1
         assert issubclass(w[-1].category, dccfg.UnknownConfigurationKeyWarning)
         assert "invalid_key" in str(w[-1].message)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
+@pytest.mark.parametrize("path", list(data_path.glob("fmt-hdf5_*.zip")))
+def test_config_pickle(path):
+    ds = new_dataset(retrieve_data(path.name))
+    cfg_pkl = pickle.dumps(ds.config)
+    cfg_unpkl = pickle.loads(cfg_pkl)
+    assert equals(ds.config, cfg_unpkl)
 
 
 def test_config_save_load():

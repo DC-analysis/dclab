@@ -89,3 +89,4 @@ pip-wheel-metadata
 
 .idea
 .Rhistory
+_develop_*

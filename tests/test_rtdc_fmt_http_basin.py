@@ -17,9 +17,9 @@ from helper_methods import retrieve_data
 pytest.importorskip("requests")
 
 
-s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
-          "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-          "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+http_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
+            "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+            "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -32,18 +32,18 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 def test_basin_as_dict(tmp_path):
     tmp_path = tmp_path.resolve()
-    h5path = tmp_path / "test_basin_s3.rtdc"
+    h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
         # Store non-existent basin information
         with RTDCWriter(dst, mode="append") as hw:
             meta = src.config.as_dict(pop_filtering=True)
             hw.store_metadata(meta)
             hw.store_basin(basin_name="example basin",
                            basin_type="remote",
-                           basin_format="s3",
-                           basin_locs=[s3_url],
-                           basin_descr="an example S3 test basin",
+                           basin_format="http",
+                           basin_locs=[http_url],
+                           basin_descr="an example http test basin",
                            )
 
     with new_dataset(h5path) as ds:
@@ -51,9 +51,9 @@ def test_basin_as_dict(tmp_path):
         bdict = ds.basins[0].as_dict()
         assert bdict["basin_name"] == "example basin"
         assert bdict["basin_type"] == "remote"
-        assert bdict["basin_format"] == "s3"
-        assert bdict["basin_locs"] == [s3_url]
-        assert bdict["basin_descr"] == "an example S3 test basin"
+        assert bdict["basin_format"] == "http"
+        assert bdict["basin_locs"] == [http_url]
+        assert bdict["basin_descr"] == "an example http test basin"
 
     # Now use the data from `bdict` to create a new basin
     h5path_two = h5path.with_name("smaller_two.rtdc")
@@ -68,9 +68,9 @@ def test_basin_as_dict(tmp_path):
         bdict2 = ds2.basins[0].as_dict()
         assert bdict2["basin_name"] == "example basin"
         assert bdict2["basin_type"] == "remote"
-        assert bdict2["basin_format"] == "s3"
-        assert bdict2["basin_locs"] == [s3_url]
-        assert bdict2["basin_descr"] == "an example S3 test basin"
+        assert bdict2["basin_format"] == "http"
+        assert bdict2["basin_locs"] == [http_url]
+        assert bdict2["basin_descr"] == "an example http test basin"
 
 
 @pytest.mark.parametrize("url", [
@@ -85,7 +85,7 @@ def test_basin_not_available(url):
         # Store non-existent basin information
         bdat = {
             "type": "remote",
-            "format": "s3",
+            "format": "http",
             "urls": [
                 # does not exist
                 url
@@ -111,14 +111,14 @@ def test_basin_not_available(url):
 
 
 def test_create_basin_file_non_matching_identifier(tmp_path):
-    h5path = tmp_path / "test_basin_s3.rtdc"
+    h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",
-            "format": "s3",
-            "urls": [s3_url],
+            "format": "http",
+            "urls": [http_url],
             "features": ["deform"],
         }
         blines = json.dumps(bdat, indent=2).split("\n")
@@ -140,14 +140,14 @@ def test_create_basin_file_non_matching_identifier(tmp_path):
 
 
 def test_create_basin_file_with_no_data(tmp_path):
-    h5path = tmp_path / "test_basin_s3.rtdc"
+    h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",
-            "format": "s3",
-            "urls": [s3_url]
+            "format": "http",
+            "urls": [http_url]
         }
         blines = json.dumps(bdat, indent=2).split("\n")
         basins = dst.require_group("basins")
@@ -164,14 +164,14 @@ def test_create_basin_file_with_no_data(tmp_path):
 
 
 def test_create_basin_file_with_one_feature(tmp_path):
-    h5path = tmp_path / "test_basin_s3.rtdc"
+    h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(s3_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",
-            "format": "s3",
-            "urls": [s3_url],
+            "format": "http",
+            "urls": [http_url],
             "features": ["deform"],
         }
         blines = json.dumps(bdat, indent=2).split("\n")

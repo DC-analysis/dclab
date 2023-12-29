@@ -59,7 +59,7 @@ def test_basin_as_dict(tmp_path):
     h5path_two = h5path.with_name("smaller_two.rtdc")
 
     # Dataset creation
-    with h5py.File(h5path) as src, RTDCWriter(h5path_two) as hw:
+    with RTDCWriter(h5path_two) as hw:
         # first, copy all the scalar features to the new file
         hw.store_metadata(meta)
         hw.store_basin(**bdict)

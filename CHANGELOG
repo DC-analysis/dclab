@@ -1,6 +1,6 @@
 0.55.8
  - fix: make sure basins are always closed on context exit (#238)
- - enh: requests session pooling for fmt_http
+ - enh: requests session pooling for fmt_http and fmt_dcor
  - enh: implement context manager for RTDCBase
 0.55.7
  - test: tested rtdc_dataset.config.Configuration is pickable (#190)

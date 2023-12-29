@@ -1,16 +1,15 @@
 import json
 import time
 
-try:
-    import requests
-except ModuleNotFoundError:
-    REQUESTS_AVAILABLE = False
-else:
-    REQUESTS_AVAILABLE = True
+from ..fmt_http import REQUESTS_AVAILABLE  # noqa: F401
+from ..fmt_http import requests, ResoluteRequestsSessionCache
 
 
 class DCORAccessError(BaseException):
     pass
+
+
+session_cache = ResoluteRequestsSessionCache()
 
 
 class APIHandler:
@@ -43,7 +42,7 @@ class APIHandler:
         #: ckanext-dc_serve dcserv API version
         self.dcserv_api_version = dcserv_api_version
         #: create a session
-        self.session = requests.Session()
+        self.session = session_cache.get_session(url)
         self._cache = {}
 
     @classmethod

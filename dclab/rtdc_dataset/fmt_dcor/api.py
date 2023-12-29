@@ -1,15 +1,12 @@
 import json
 import time
 
-from ..fmt_http import REQUESTS_AVAILABLE  # noqa: F401
-from ..fmt_http import requests, ResoluteRequestsSessionCache
+from ...http_utils import REQUESTS_AVAILABLE  # noqa: F401
+from ...http_utils import requests, session_cache
 
 
 class DCORAccessError(BaseException):
     pass
-
-
-session_cache = ResoluteRequestsSessionCache()
 
 
 class APIHandler:

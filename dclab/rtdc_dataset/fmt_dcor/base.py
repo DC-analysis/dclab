@@ -105,12 +105,6 @@ class RTDC_DCOR(RTDCBase):
         self.title = f"{self.config['experiment']['sample']} - " \
             + f"M{self.config['experiment']['run index']}"
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, tb):
-        pass
-
     def __len__(self):
         return self._size
 

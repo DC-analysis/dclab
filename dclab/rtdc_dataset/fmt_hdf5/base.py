@@ -101,22 +101,10 @@ class RTDC_HDF5(RTDCBase):
             self.config["experiment"].get("sample", "undefined sample"),
             self.config["experiment"].get("run index", "0"))
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, tb):
-        self.close()
-
     def close(self):
         """Close the underlying HDF5 file"""
-        # This is a partial workaround for issue #238
-        # https://github.com/DC-analysis/dclab/issues/238
-        # TODO: Refactor .RTDCBase with context managers that call `close`.
+        super(RTDC_HDF5, self).close()
         self.h5file.close()
-        if self._basins:
-            for b in self._basins:
-                if b._ds is not None:
-                    b._ds.close()
 
     @property
     def _h5(self):

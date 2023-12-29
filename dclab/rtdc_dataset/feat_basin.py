@@ -126,6 +126,11 @@ class Basin(abc.ABC):
             "basin_feats": self.features,
         }
 
+    def close(self):
+        """Close any open file handles or connections"""
+        if self._ds is not None:
+            self._ds.close()
+
     def get_feature_data(self, feat):
         """Return an object representing feature data of the basin"""
         self._assert_measurement_identifier()

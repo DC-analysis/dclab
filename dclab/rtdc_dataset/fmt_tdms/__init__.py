@@ -93,12 +93,6 @@ class RTDC_TDMS(RTDCBase):
             ct = super(RTDC_TDMS, self).__contains__(key)
         return ct
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, tb):
-        del self._events["image"]._image_data
-
     @staticmethod
     def extract_tdms_config(path,
                             features_available=None,
@@ -401,6 +395,10 @@ class RTDC_TDMS(RTDCBase):
             tohash.append(hashfile(self.path, blocksize=65536, count=20))
             self._hash = hashobj(tohash)
         return self._hash
+
+    def close(self):
+        super(RTDC_TDMS, self).close()
+        del self._events["image"]._image_data
 
 
 def get_project_name_from_path(path, append_mx=False):

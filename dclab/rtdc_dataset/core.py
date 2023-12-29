@@ -102,6 +102,12 @@ class RTDCBase(abc.ABC):
                         break
         return ct
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.close()
+
     def __getitem__(self, feat):
         if feat in self._events:
             return self._events[feat]
@@ -448,6 +454,17 @@ class RTDCBase(abc.ABC):
         if force is None:
             force = []
         self.filter.update(rtdc_ds=self, force=force)
+
+    def close(self):
+        """Close any open files or connections, including basins
+
+        If implemented in a subclass, the subclass must call this
+        method via `super`, otherwise basins are not closed. The
+        subclass is responsible for closing its specific file handles.
+        """
+        if self._basins:
+            for bn in self._basins:
+                bn.close()
 
     def get_downsampled_scatter(self, xax="area_um", yax="deform",
                                 downsample=0, xscale="linear",

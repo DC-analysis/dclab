@@ -1,4 +1,5 @@
 from ..http_utils import HTTPFile, REQUESTS_AVAILABLE, is_url_available
+from ..http_utils import is_http_url  # noqa: F401
 
 from .feat_basin import Basin
 from .fmt_hdf5 import RTDC_HDF5

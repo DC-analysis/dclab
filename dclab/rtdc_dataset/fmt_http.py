@@ -30,6 +30,43 @@ REGEXP_HTTP_URL = re.compile(
 )
 
 
+class ResoluteRequestsSessionCache:
+    def __init__(self):
+        """A multiprocessing-safe cache for requests session objects
+
+        This class implements empty `__getstate__` and `__setstate__`
+        methods, so that when used in a multiprocessing context, sessions
+        are never mirrored to the subprocesses. Each subprocess creates
+        its own sessions.
+
+        Note that only :class:`ResoluteRequestsSession` objects are used,
+        which is ideal for the use-case of unstable internet connections.
+        """
+        #: This dictionary holds all sessions in use by the current process.
+        #: Sessions are stored with the host name / netloc as the key.
+        self.sessions = {}
+
+    def __getstate__(self):
+        """Returns None, so sessions are not pickled into subrpocesses"""
+        pass
+
+    def __setstate__(self, state):
+        """Does nothing (see `__getstate__`)"""
+        pass
+
+    def get_session(self, url: str):
+        """Return a requests session for the specified URL
+
+        For each hostname, a different session is returned,
+        but for identical hostnames, cached sessions are used.
+        """
+        urlp = urlparse(url)
+        key = urlp.netloc
+        if key not in self.sessions:
+            self.sessions[key] = ResoluteRequestsSession()
+        return self.sessions[key]
+
+
 class ResoluteRequestsSession(requests.Session):
     """A session with built-in retry for `get`"""
     def get(self, *args, **kwargs):
@@ -83,7 +120,7 @@ class HTTPFile(io.IOBase):
         self.url = url
         self._chunk_size = chunk_size
         self._keep_chunks = keep_chunks
-        self.session = ResoluteRequestsSession()
+        self.session = session_cache.get_session(url)
         self._len = None
         self._etag = None
         self._pos = 0
@@ -319,7 +356,7 @@ def is_url_available(url: str, ret_reason=False):
             else:
                 # Try to access the url
                 try:
-                    ses = ResoluteRequestsSession()
+                    ses = session_cache.get_session(url)
                     req = ses.get(url, stream=True, timeout=1)
                     avail = req.ok
                     if not avail:
@@ -342,3 +379,7 @@ def is_http_url(string):
         return False
     else:
         return REGEXP_HTTP_URL.match(string.strip())
+
+
+#: cache of requests sessions
+session_cache = ResoluteRequestsSessionCache()

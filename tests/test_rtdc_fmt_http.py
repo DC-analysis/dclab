@@ -52,6 +52,20 @@ def test_identifier():
         assert ds.identifier == "f0104b0ca2e7d6960189c60fc8b4b986-14"
 
 
+@pytest.mark.parametrize("netloc", [
+    "objectstore.hpccloud.mpcdf.mpg.de",
+    "objectstore.hpccloud.mpcdf.mpg.de:443"
+])
+def test_netloc_vs_hostname(netloc):
+    s3_url = (f"https://{netloc}/"
+              f"circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+              f"resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+    with RTDC_HTTP(s3_url) as ds:
+        assert len(ds) == 5000
+        assert np.allclose(ds["deform"][0], 0.009741939,
+                           rtol=0, atol=1e-7)
+
+
 def test_open_public_s3_dataset():
     # This is the calibration beads measurement.
     # https://dcor.mpl.mpg.de/dataset/figshare-7771184-v2/

@@ -171,7 +171,9 @@ def is_s3_object_available(url: str,
             s.settimeout(1)
             # Try to connect to the host
             try:
-                s.connect((urlp.netloc, port))
+                # Use `hostname`, not `netloc`, because `netloc` contains
+                # the port number which we do not want here.
+                s.connect((urlp.hostname, port))
             except (socket.gaierror, OSError):
                 pass
             else:

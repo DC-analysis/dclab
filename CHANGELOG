@@ -2,6 +2,7 @@
  - feat: allow nested basins
  - feat: implement DCOR basins
  - fix: make sure basins are always closed on context exit (#238)
+ - fix: failed to load basin data when port was specified in location
  - enh: requests session pooling for fmt_http and fmt_dcor
  - enh: implement context manager for RTDCBase
  - ref: new http_utils submodule for managing HTTP connections

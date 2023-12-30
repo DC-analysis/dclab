@@ -73,6 +73,36 @@ def test_basin_as_dict(tmp_path):
         assert bdict2["basin_descr"] == "an example http test basin"
 
 
+def test_basin_as_dict_netloc_vs_hostname(tmp_path):
+    tmp_path = tmp_path.resolve()
+    h5path = tmp_path / "test_basin_http.rtdc"
+
+    # note the port is included here
+    http_url_netloc = ("https://objectstore.hpccloud.mpcdf.mpg.de:443/"
+                       "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+                       "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
+        # Store non-existent basin information
+        with RTDCWriter(dst, mode="append") as hw:
+            meta = src.config.as_dict(pop_filtering=True)
+            hw.store_metadata(meta)
+            hw.store_basin(basin_name="example basin",
+                           basin_type="remote",
+                           basin_format="http",
+                           basin_locs=[http_url_netloc],
+                           basin_descr="an example http test basin",
+                           )
+
+    with new_dataset(h5path) as ds:
+        assert len(ds) == 5000
+        # This failed in <0.56.0, because `netloc` was used instead of
+        # `hostname` when connecting to the socket to check whether the
+        # server is available.
+        assert np.allclose(ds["deform"][0], 0.009741939,
+                           rtol=0, atol=1e-7)
+
+
 @pytest.mark.parametrize("url", [
     "https://example.com/nonexistentbucket/nonexistentkey",
     f"https://objectstore.hpccloud.mpcdf.mpg.de/noexist-{uuid.uuid4()}/key",

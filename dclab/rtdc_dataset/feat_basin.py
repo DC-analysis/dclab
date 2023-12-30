@@ -102,9 +102,18 @@ class Basin(abc.ABC):
 
     @property
     def features(self):
-        """Features made available by the basin"""
+        """Features made available by the basin
+
+        .. versionchanged: 0.56.0
+
+           Return nested basin features
+        """
         if self._features is None:
-            self._features = self.ds.features_innate
+            # If features are not specified already, either by previous call
+            # to this method or during initialization from basin definition,
+            # then make the innate and *all* the basin features available.
+            self._features = sorted(set(self.ds.features_innate
+                                        + self.ds.features_basin))
         return self._features
 
     def as_dict(self):

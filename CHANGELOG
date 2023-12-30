@@ -1,4 +1,5 @@
-0.55.8
+0.56.0
+ - feat: allow nested basins
  - fix: make sure basins are always closed on context exit (#238)
  - enh: requests session pooling for fmt_http and fmt_dcor
  - enh: implement context manager for RTDCBase

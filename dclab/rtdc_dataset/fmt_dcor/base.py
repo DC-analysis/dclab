@@ -20,7 +20,7 @@ DCOR_CERTS_SEARCH_PATHS = []
 
 #: Regular expression for matching a DCOR resource URL
 REGEXP_DCOR_URL = re.compile(
-    r"^(https?:\/\/)?"  # protocol
+    r"^(https?:\/\/)?"  # scheme
     r"([a-z0-9-\.]*\/?api\/3\/action\/dcserv\?id=)?"  # host with API
     r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$")  # id
 

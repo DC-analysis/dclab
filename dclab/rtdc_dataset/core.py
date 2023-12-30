@@ -717,6 +717,10 @@ class RTDCBase(abc.ABC):
         bc = feat_basin.get_basin_classes()
         muid = self.get_measurement_identifier()
         for bdict in self.basins_get_dicts():
+            if bdict["format"] not in bc:
+                warnings.warn(f"Encountered unsupported basin "
+                              f"format '{bdict['format']}'!")
+                continue
             # Check whether this basin is supported and exists
             kwargs = {
                 "name": bdict.get("name"),

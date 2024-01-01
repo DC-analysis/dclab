@@ -126,9 +126,10 @@ class Basin(abc.ABC):
         """
         if self._features is None:
             if self.is_available():
-                # If features are not specified already, either by previous call
-                # to this method or during initialization from basin definition,
-                # then make the innate and *all* the basin features available.
+                # If features are not specified already, either by previous
+                # call to this method or during initialization from basin
+                # definition, then make the innate and *all* the basin
+                # features available.
                 self._features = sorted(set(self.ds.features_innate
                                             + self.ds.features_basin))
             else:

@@ -125,11 +125,14 @@ class Basin(abc.ABC):
            Return nested basin features
         """
         if self._features is None:
-            # If features are not specified already, either by previous call
-            # to this method or during initialization from basin definition,
-            # then make the innate and *all* the basin features available.
-            self._features = sorted(set(self.ds.features_innate
-                                        + self.ds.features_basin))
+            if self.is_available():
+                # If features are not specified already, either by previous call
+                # to this method or during initialization from basin definition,
+                # then make the innate and *all* the basin features available.
+                self._features = sorted(set(self.ds.features_innate
+                                            + self.ds.features_basin))
+            else:
+                self._features = []
         return self._features
 
     def as_dict(self):

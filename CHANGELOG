@@ -1,3 +1,5 @@
+0.56.3
+ - fix: regression missing check for basin availability
 0.56.2
  - enh: perform basin availability checks in daemon thread
 0.56.1

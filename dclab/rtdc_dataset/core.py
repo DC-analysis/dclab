@@ -716,7 +716,10 @@ class RTDCBase(abc.ABC):
         basins = []
         bc = feat_basin.get_basin_classes()
         muid = self.get_measurement_identifier()
-        for bdict in self.basins_get_dicts():
+        # Sort basins according to priority
+        bdicts_srt = sorted(self.basins_get_dicts(),
+                            key=feat_basin.basin_priority_sorted_key)
+        for bdict in bdicts_srt:
             if bdict["format"] not in bc:
                 warnings.warn(f"Encountered unsupported basin "
                               f"format '{bdict['format']}'!")

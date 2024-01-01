@@ -5,9 +5,41 @@ import h5py
 import pytest
 
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
+from dclab.rtdc_dataset import feat_basin
 
 
 from helper_methods import retrieve_data
+
+
+def test_basin_sorting_basic():
+    bnlist = [
+        {"type": "remote", "format": "dcor", "ident": 0},
+        {"type": "file", "format": "hdf5", "ident": 1},
+        {"type": "hans", "format": "hdf5", "ident": 2},
+        {"type": "remote", "format": "http", "ident": 3},
+    ]
+    sorted_list = sorted(bnlist, key=feat_basin.basin_priority_sorted_key)
+    assert sorted_list[0]["ident"] == 1
+    assert sorted_list[1]["ident"] == 3
+    assert sorted_list[2]["ident"] == 0
+    assert sorted_list[3]["ident"] == 2
+
+
+@pytest.mark.parametrize("btype,bformat,sortval", [
+    ["file", "hdf5", "aa"],
+    ["remote", "http", "bb"],
+    ["remote", "s3", "bc"],
+    ["remote", "dcor", "bd"],
+    ["peter", "hdf5", "za"],
+    ["remote", "hans", "bz"],
+    ["hans", "peter", "zz"],
+]
+                         )
+def test_basin_sorting_key(btype, bformat, sortval):
+    bdict = {"type": btype,
+             "format": bformat,
+             }
+    assert feat_basin.basin_priority_sorted_key(bdict) == sortval
 
 
 def test_basin_unsupported_basin_format():

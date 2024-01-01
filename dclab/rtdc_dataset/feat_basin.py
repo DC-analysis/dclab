@@ -15,6 +15,7 @@ other basins via the ``features_basin`` property of an
 from __future__ import annotations
 
 import abc
+from typing import Dict
 
 
 class Basin(abc.ABC):
@@ -156,6 +157,30 @@ class Basin(abc.ABC):
     @abc.abstractmethod
     def load_dataset(self, location, **kwargs):
         """Subclasses should return an instance of :class:`.RTDCBase`"""
+
+
+def basin_priority_sorted_key(bdict: Dict):
+    """Yield a sorting value for a given basin that can be used with `sorted`
+
+    Basins are normally stored in random order in a dataset. This method
+    brings them into correct order, prioritizing:
+
+    - type "file" over "remote"
+    - format "HTTP" over "S3" over "dcor"
+    """
+    srt_type = {
+        "file": "a",
+        "remote": "b",
+    }.get(bdict.get("type"), "z")
+
+    srt_format = {
+        "hdf5": "a",
+        "http": "b",
+        "s3": "c",
+        "dcor": "d",
+    }.get(bdict.get("format"), "z")
+
+    return srt_type + srt_format
 
 
 def get_basin_classes():

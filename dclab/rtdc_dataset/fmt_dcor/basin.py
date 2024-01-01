@@ -50,18 +50,19 @@ class DCORBasin(Basin):
           :class:`.APIHandler`. You can add tokens with
           :func:`.APIHandler.add_api_key`.
         """
-        if not REQUESTS_AVAILABLE:
-            # don't even bother
-            self._available_verified = False
-        elif not is_full_dcor_url(self.location):
-            # not a full DCOR URL
-            self._available_verified = False
-        if self._available_verified is None:
-            api = APIHandler(self.location)
-            try:
-                self._available_verified = api.get("valid")
-            except DCORAccessError:
+        with self._av_check_lock:
+            if not REQUESTS_AVAILABLE:
+                # don't even bother
                 self._available_verified = False
+            elif not is_full_dcor_url(self.location):
+                # not a full DCOR URL
+                self._available_verified = False
+            if self._available_verified is None:
+                api = APIHandler(self.location)
+                try:
+                    self._available_verified = api.get("valid")
+                except DCORAccessError:
+                    self._available_verified = False
         return self._available_verified
 
 

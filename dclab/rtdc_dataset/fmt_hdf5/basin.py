@@ -16,9 +16,10 @@ class HDF5Basin(feat_basin.Basin):
         return RTDC_HDF5(location, enable_basins=False, **kwargs)
 
     def is_available(self):
-        avail = False
-        try:
-            avail = pathlib.Path(self.location).exists()
-        except OSError:
-            pass
+        with self._av_check_lock:
+            avail = False
+            try:
+                avail = pathlib.Path(self.location).exists()
+            except OSError:
+                pass
         return avail

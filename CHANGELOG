@@ -1,3 +1,5 @@
+0.56.2
+ - enh: perform basin availability checks in daemon thread
 0.56.1
  - enh: priority-based basin sorting (file over remote, http over dcor)
 0.56.0

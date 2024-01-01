@@ -15,7 +15,18 @@ other basins via the ``features_basin`` property of an
 from __future__ import annotations
 
 import abc
+import threading
 from typing import Dict
+
+
+class BasinAvailabilityChecker(threading.Thread):
+    def __init__(self, basin, *args, **kwargs):
+        super(BasinAvailabilityChecker, self).__init__(*args, daemon=True,
+                                                       **kwargs)
+        self.basin = basin
+
+    def run(self):
+        self.basin.is_available()
 
 
 class Basin(abc.ABC):
@@ -61,6 +72,10 @@ class Basin(abc.ABC):
         #: additional keyword arguments passed to the basin
         self.kwargs = kwargs
         self._ds = None
+        # perform availability check in separate thread
+        self._av_check_lock = threading.Lock()
+        self._av_check = BasinAvailabilityChecker(self)
+        self._av_check.start()
 
     def _assert_measurement_identifier(self):
         """Make sure the basin matches the measurement identifier
@@ -140,6 +155,7 @@ class Basin(abc.ABC):
         """Close any open file handles or connections"""
         if self._ds is not None:
             self._ds.close()
+        self._av_check.join(0.5)
 
     def get_feature_data(self, feat):
         """Return an object representing feature data of the basin"""

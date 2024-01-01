@@ -357,9 +357,7 @@ class RTDCBase(abc.ABC):
         feats = list(self._events.keys())
         feats += list(self._usertemp.keys())
         feats += list(AncillaryFeature.feature_names)
-        for bn in self.basins:
-            if bn.is_available():
-                feats += bn.features
+        feats += self.features_basin
         feats = sorted(set(feats))
         # exclude non-standard features
         featsv = [ff for ff in feats if dfn.feature_exists(ff)]
@@ -401,6 +399,11 @@ class RTDCBase(abc.ABC):
         if self.basins:
             features = []
             for bn in self.basins:
+                if bn.features and set(bn.features) <= set(features):
+                    # We already have the features from a different basin.
+                    # There might be a basin availability check going on
+                    # somewhere, but we are not interested in it.
+                    continue
                 if bn.is_available():
                     features += bn.features
             return sorted(set(features))
@@ -429,8 +432,8 @@ class RTDCBase(abc.ABC):
         features_loaded = []
         for feat in self.features:
             if (feat in features_innate
-                or feat in FEATURES_RAPID
-                or feat in self._usertemp
+                    or feat in FEATURES_RAPID
+                    or feat in self._usertemp
                     or feat in self._ancillaries):
                 # Note that there is no hash checking here for
                 # ancillary features. This might be interesting
@@ -732,7 +735,7 @@ class RTDCBase(abc.ABC):
                 "features": bdict.get("features"),
                 # Make sure the measurement identifier is checked.
                 "measurement_identifier": self.get_measurement_identifier(),
-                }
+            }
 
             if bdict["type"] == "file":
                 for pp in bdict["paths"]:

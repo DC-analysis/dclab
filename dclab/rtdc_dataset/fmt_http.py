@@ -73,14 +73,16 @@ class HTTPBasin(Basin):
         Caching policy: Once this method returns True, it will always
         return True.
         """
-        if not REQUESTS_AVAILABLE:
-            # don't even bother
-            self._available_verified = False
-        if self._available_verified is None:
-            avail, reason = is_url_available(self.location, ret_reason=True)
-            if reason in ["forbidden", "not found"]:
-                # we cannot access the URL in the near future
+        with self._av_check_lock:
+            if not REQUESTS_AVAILABLE:
+                # don't even bother
                 self._available_verified = False
-            elif avail:
-                self._available_verified = True
+            if self._available_verified is None:
+                avail, reason = is_url_available(self.location,
+                                                 ret_reason=True)
+                if reason in ["forbidden", "not found"]:
+                    # we cannot access the URL in the near future
+                    self._available_verified = False
+                elif avail:
+                    self._available_verified = True
         return self._available_verified

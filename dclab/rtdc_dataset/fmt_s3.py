@@ -100,8 +100,9 @@ class S3Basin(Basin):
         Caching policy: Once this method returns True, it will always
         return True.
         """
-        if not self._available_verified:
-            self._available_verified = (
+        with self._av_check_lock:
+            if not self._available_verified:
+                self._available_verified = (
                     S3FS_AVAILABLE and is_s3_object_available(self.location))
         return self._available_verified
 

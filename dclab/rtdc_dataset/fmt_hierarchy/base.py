@@ -180,7 +180,7 @@ class RTDC_Hierarchy(RTDCBase):
 
     def apply_filter(self, *args, **kwargs):
         """Overridden `apply_filter` to perform tasks for hierarchy child"""
-        if self.filter is not None:
+        if self._ds_filter is not None:
             # make sure self.filter knows about root manual indices
             # (stored in self.filter._man_root_ids)
             self.filter.retrieve_manual_indices(self)

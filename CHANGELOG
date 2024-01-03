@@ -1,5 +1,6 @@
 0.56.4
  - fix: integer overflow in downsample_grid
+ - fix: removed unnecessary computation of hierarchy filter instance
  - enh: cythonize downsample_grid (~10x speed-up)
  - enh: got rid of for-loop in map_indices_parent2child (~100x speed-up)
  - ref: new submodule for hierarchy format

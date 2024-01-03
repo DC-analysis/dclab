@@ -3,6 +3,7 @@
  - fix: removed unnecessary computation of hierarchy filter instance
  - enh: cythonize downsample_grid (~10x speed-up)
  - enh: got rid of for-loop in map_indices_parent2child (~100x speed-up)
+ - enh: slight improvement of managing manual indices in hierarchy children
  - ref: new submodule for hierarchy format
 0.56.3
  - fix: regression missing check for basin availability

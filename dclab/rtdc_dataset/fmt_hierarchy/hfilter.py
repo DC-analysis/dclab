@@ -31,11 +31,11 @@ class HierarchyFilter(Filter):
         - the parent is a hierarchy child as well, or
         - the excluded event is filtered out in the parent.
         """
+        self._man_root_ids = []
         super(HierarchyFilter, self).__init__(rtdc_ds)
         self._parent_rtdc_ds = None
         self._parent_hash = None
         self.update_parent(rtdc_ds.hparent)
-        self._man_root_ids = []
 
     @property
     def parent_changed(self):
@@ -70,7 +70,7 @@ class HierarchyFilter(Filter):
 
     def reset(self):
         super(HierarchyFilter, self).reset()
-        self._man_root_ids = []
+        self._man_root_ids.clear()
 
     def retrieve_manual_indices(self, rtdc_ds):
         """Read from self.manual
@@ -97,6 +97,8 @@ class HierarchyFilter(Filter):
         if self.parent_changed:
             # ignore
             pass
+        elif np.all(self.manual):
+            self._man_root_ids.clear()
         else:
             # indices from boolean array
             pbool = map_indices_child2root(

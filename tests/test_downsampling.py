@@ -41,12 +41,13 @@ def test_grid_nan():
     b = np.arange(50, 150, dtype=float)
     ads, bds, idx = downsampling.downsample_grid(a=a,
                                                  b=b,
-                                                 samples=50,
+                                                 samples=52,
                                                  ret_idx=True,
                                                  remove_invalid=False)
+    assert np.sum(idx) == 52
     assert np.allclose(a[idx], ads, atol=1e-14, rtol=0, equal_nan=True)
     assert np.allclose(b[idx], bds, atol=1e-14, rtol=0, equal_nan=True)
-    assert np.sum(np.isnan(ads)) == 1, "depends on random state"
+    assert np.sum(np.isnan(ads)) == 2, "2 more samples requested than non-nan"
 
     ads2, bds2 = downsampling.downsample_grid(a=a,
                                               b=b,
@@ -66,6 +67,33 @@ def test_grid_nan():
     assert ads3.size == 50, "only 50 valid values"
     assert np.all(ads3 == a[idx3])
     assert np.all(bds3 == b[idx3])
+    assert np.all(bds3 == b[:50])
+
+
+def test_grid_nan_keep_all():
+    a = np.arange(100, dtype=float)
+    a[50:] = np.nan
+    b = np.arange(50, 150, dtype=float)
+    ads, bds, idx = downsampling.downsample_grid(a=a,
+                                                 b=b,
+                                                 samples=0,
+                                                 ret_idx=True,
+                                                 remove_invalid=False)
+    assert np.allclose(a, ads, equal_nan=True)
+    assert np.allclose(b, bds, equal_nan=True)
+
+
+def test_grid_nan_keep_all_except_invalid():
+    a = np.arange(100, dtype=float)
+    a[50:] = np.nan
+    b = np.arange(50, 150, dtype=float)
+    ads, bds, idx = downsampling.downsample_grid(a=a,
+                                                 b=b,
+                                                 samples=0,
+                                                 ret_idx=True,
+                                                 remove_invalid=True)
+    assert np.allclose(a[:50], ads, equal_nan=True)
+    assert np.allclose(b[:50], bds, equal_nan=True)
 
 
 def test_rand_nan():

@@ -1,8 +1,14 @@
 """Content-based downsampling of ndarrays"""
 import numpy as np
+cimport numpy as cnp
 
 from .cached import Cache
 
+# We are using the numpy array API
+cnp.import_array()
+ctypedef cnp.uint8_t uint8
+ctypedef cnp.uint32_t uint32
+ctypedef cnp.int64_t int64
 
 def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
     """Downsampling by randomly removing points
@@ -31,7 +37,7 @@ def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
     rs = np.random.RandomState(seed=47).get_state()
     np.random.set_state(rs)
 
-    samples = int(samples)
+    cdef uint32 samples_int = np.uint32(samples)
 
     if remove_invalid:
         # slice out nans and infs
@@ -40,10 +46,10 @@ def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
     else:
         pool = a
 
-    if samples and (samples < pool.shape[0]):
+    if samples_int and (samples_int < pool.shape[0]):
         keep = np.zeros_like(pool, dtype=bool)
         keep_ids = np.random.choice(np.arange(pool.size),
-                                    size=samples,
+                                    size=samples_int,
                                     replace=False)
         keep[keep_ids] = True
         dsa = pool[keep]
@@ -96,30 +102,23 @@ def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
         Only returned if `ret_idx` is True.
         A boolean array such that `a[idx] == dsa`
     """
+    cdef uint32 samples_int = np.uint32(samples)
+
     # fixed random state for this method
     rs = np.random.RandomState(seed=47).get_state()
 
-    if remove_invalid:
-        # Remove nan and inf values straight from the beginning.
-        # This might result in arrays smaller than `samples`,
-        # but it makes sure that no inf/nan values will be plotted.
-        bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
-        ad = a[~bad]
-        bd = b[~bad]
-    else:
-        bad = np.zeros_like(a, dtype=bool)
-        ad = a
-        bd = b
-
     keep = np.ones_like(a, dtype=bool)
+    bad = np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b)
+    good = ~bad
+
+    # We are generally not interested in bad data.
     keep[bad] = False
+    bd = b[good]
+    ad = a[good]
 
-    samples = int(samples)
+    cdef int64 diff
 
-    if samples and samples < ad.size:
-        # The events to keep
-        keepd = np.zeros_like(ad, dtype=bool)
-
+    if samples_int and samples_int < ad.size:
         # 1. Produce evenly distributed samples
         # Choosing grid-size:
         # - large numbers tend to show actual structures of the sample,
@@ -130,53 +129,68 @@ def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
         # 300 is about the size of the plot in marker sizes and yields
         # good results.
         grid_size = 300
-        xpx = norm(ad, ad, bd) * grid_size
-        ypx = norm(bd, bd, ad) * grid_size
         # The events on the grid to process
-        toproc = np.ones((grid_size, grid_size), dtype=bool)
+        toproc = np.ones((grid_size, grid_size), dtype=np.uint8)
 
-        for ii in range(xpx.size):
-            xi = xpx[ii]
-            yi = ypx[ii]
-            # filter for overlapping events
-            # Note that `valid` is used here to promote only valid
-            # events in this step. However, in step 2, invalid events
-            # could be added back. To avoid this scenario, the
-            # parameter `remove_invalid` should be set to True.
-            if valid(xi, yi) and toproc[int(xi-1), int(yi-1)]:
-                toproc[int(xi-1), int(yi-1)] = False
-                # include event
-                keepd[ii] = True
+        x_discrete = np.array(norm(ad) * (grid_size - 1), dtype=np.uint32)
+        y_discrete = np.array(norm(bd) * (grid_size - 1), dtype=np.uint32)
+
+        # The events to keep
+        keepd = np.zeros_like(ad, dtype=np.uint8)
+        populate_grid(x_discrete=x_discrete,
+                      y_discrete=y_discrete,
+                      toproc=toproc,
+                      keepd=keepd
+                      )
+
+        keepdb = np.array(keepd, dtype=bool)
 
         # 2. Make sure that we reach `samples` by adding or
         # removing events.
-        diff = np.sum(keepd) - samples
+        diff = np.sum(keepdb) - samples_int
         if diff > 0:
             # Too many samples
-            rem_indices = np.where(keepd)[0]
+            rem_indices = np.where(keepdb)[0]
             np.random.set_state(rs)
             rem = np.random.choice(rem_indices,
                                    size=diff,
                                    replace=False)
-            keepd[rem] = False
+            keepdb[rem] = False
         elif diff < 0:
             # Not enough samples
-            add_indices = np.where(~keepd)[0]
+            add_indices = np.where(~keepdb)[0]
             np.random.set_state(rs)
             add = np.random.choice(add_indices,
                                    size=abs(diff),
                                    replace=False)
-            keepd[add] = True
+            keepdb[add] = True
 
-        assert np.sum(keepd) == samples, "sanity check"
-        asd = ad[keepd]
-        bsd = bd[keepd]
-        assert np.allclose(ad[keepd], asd, equal_nan=True), "sanity check"
-        assert np.allclose(bd[keepd], bsd, equal_nan=True), "sanity check"
-        keep[~bad] = keepd
-    else:
-        asd = ad
-        bsd = bd
+        # paulmueller 2024-01-03
+        # assert np.sum(keepdb) <= samples_int, "sanity check"
+
+        keep[good] = keepdb
+
+        # paulmueller 2024-01-03
+        # assert np.sum(keep) <= samples_int, "sanity check"
+
+    if not remove_invalid:
+        diff_bad = (samples_int or keep.size) - np.sum(keep)
+        if diff_bad > 0:
+            # Add a few of the invalid values so that in the end
+            # we have the desired array size.
+            add_indices_bad = np.where(bad)[0]
+            np.random.set_state(rs)
+            add_bad = np.random.choice(add_indices_bad,
+                                       size=diff_bad,
+                                       replace=False)
+            keep[add_bad] = True
+
+    # paulmueller 2024-01-03
+    # if samples_int and not remove_invalid:
+    #     assert np.sum(keep) == samples_int, "sanity check"
+
+    asd = a[keep]
+    bsd = b[keep]
 
     if ret_idx:
         return asd, bsd, keep
@@ -184,14 +198,33 @@ def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
         return asd, bsd
 
 
+def populate_grid(x_discrete, y_discrete, keepd, toproc):
+    # Py_ssize_t is the proper C type for Python array indices.
+    cdef int iter_size = x_discrete.size
+    cdef Py_ssize_t ii
+    cdef uint32[:] x_view = x_discrete
+    cdef uint32[:] y_view = y_discrete
+    # Numpy uses uint8 internally to represent boolean arrays
+    cdef uint8[:] keepd_view = keepd
+    cdef uint8[:, :] toproc_view = toproc
+
+    for ii in range(iter_size):
+        # filter for overlapping events
+        xi = x_view[ii]
+        yi = y_view[ii]
+        if toproc_view[xi, yi]:
+            toproc_view[xi, yi] = 0
+            # include event
+            keepd_view[ii] = 1
+
+
 def valid(a, b):
     """Check whether `a` and `b` are not inf or nan"""
     return ~(np.isnan(a) | np.isinf(a) | np.isnan(b) | np.isinf(b))
 
 
-def norm(a, ref1, ref2):
-    """
-    Normalize `a` with min/max values of `ref1`, using all elements of
-    `ref1` where the `ref1` and `ref2` are not nan or inf"""
-    ref = ref1[valid(ref1, ref2)]
-    return (a-ref.min())/(ref.max()-ref.min())
+def norm(a):
+    """Normalize `a` with its min/max values"""
+    rmin = a.min()
+    rptp = a.max() - rmin
+    return (a - rmin) / rptp

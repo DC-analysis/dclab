@@ -5,6 +5,10 @@ import numpy as np
 
 setup(
     ext_modules=[
+        Extension("dclab.downsampling",
+                  sources=["dclab/downsampling.pyx"],
+                  include_dirs=[np.get_include(), "_shared"]
+                  ),
         Extension("dclab.external.skimage._shared.geometry",
                   sources=["dclab/external/skimage/_shared/geometry.pyx"],
                   include_dirs=[np.get_include()]

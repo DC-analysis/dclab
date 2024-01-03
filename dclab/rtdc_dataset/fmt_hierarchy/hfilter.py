@@ -98,7 +98,9 @@ class HierarchyFilter(Filter):
             # ignore
             pass
         elif np.all(self.manual):
-            self._man_root_ids.clear()
+            # Do not do anything and remember the events we manually
+            # excluded in case the parent reinserts them.
+            pass
         else:
             # indices from boolean array
             pbool = map_indices_child2root(

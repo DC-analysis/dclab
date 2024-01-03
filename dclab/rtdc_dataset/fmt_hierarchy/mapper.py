@@ -54,36 +54,29 @@ def map_indices_child2root(child, child_indices):
 
 
 def map_indices_parent2child(child, parent_indices):
-    """Map parent RTDCBase event indices to RTDC_Hierarchy
+    """Map parent RTDCBase event indices to RTDC_Hierarchy child
 
     Parameters
     ----------
     child: RTDC_Hierarchy
         hierarchy child
     parent_indices: 1d ndarray
-        hierarchy parent (`child.hparent`) indices to map
+        hierarchy parent (`child.hparent`) indices to map to child
 
     Returns
     -------
     child_indices: 1d ndarray
-        child indices
+        equivalent of `parent_indices` in `child` dataset
     """
     parent = child.hparent
-    # filters
+    # this boolean array defines `child` in the parent
     pf = parent.filter.all
-    # indices in child
-    child_indices = []
-    count = 0
-    for ii in range(len(pf)):
-        if pf[ii]:
-            # only append indices if they exist in child
-            if ii in parent_indices:
-                # current child event count is the child index
-                child_indices.append(count)
-            # increment child event count
-            count += 1
-
-    return np.array(child_indices)
+    # all event indices in parent that define `child`
+    pf_loc = np.where(pf)[0]
+    # boolean array with size `len(child)` indicating where the
+    # `parent_indices` are set.
+    same = np.in1d(pf_loc, parent_indices)
+    return np.where(same)[0]
 
 
 def map_indices_root2child(child, root_indices):

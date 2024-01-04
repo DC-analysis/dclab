@@ -58,6 +58,7 @@ class ContourColumn(object):
 
         self.event_offset = 0
         self._length = None
+        self.dtype = np.int16
 
     def __getitem__(self, idx):
         if not isinstance(idx, numbers.Integral):

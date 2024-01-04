@@ -78,6 +78,9 @@ class RTDC_Dict(RTDCBase):
                     data = DictContourEvent(ddict[feat])
                 elif feat == "trace":
                     data = DictTraceEvent(ddict[feat])
+                elif isinstance(ddict[feat], list):
+                    # convert e.g. image data to arrays
+                    data = np.array(ddict[feat])
                 else:
                     data = ddict[feat]
             else:

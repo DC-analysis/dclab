@@ -34,6 +34,7 @@ class ImageColumn(object):
         self.event_offset = int(conf["fmt_tdms"]["video frame offset"])
         self.video_file = fname
         self._shape = None
+        self.dtype = np.uint8
 
     def __getitem__(self, idx):
         if not isinstance(idx, numbers.Integral):

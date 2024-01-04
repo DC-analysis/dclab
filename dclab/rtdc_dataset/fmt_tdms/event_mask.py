@@ -14,6 +14,7 @@ class MaskColumn(object):
         self.config = rtdc_dataset.config
         self._shape = None
         self._img_shape_cache = None
+        self.dtype = np.bool_
 
     def __getitem__(self, idx):
         if not isinstance(idx, numbers.Integral):

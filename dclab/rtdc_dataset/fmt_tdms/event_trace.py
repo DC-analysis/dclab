@@ -22,6 +22,7 @@ class TraceColumn(object):
         self._trace = None
         self.mname = rtdc_dataset.path
         self.identifier = self.mname
+        self.dtype = np.int16
 
     def __getitem__(self, trace_key):
         if trace_key not in dfn.FLUOR_TRACES:

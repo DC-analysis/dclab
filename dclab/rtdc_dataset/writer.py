@@ -18,8 +18,11 @@ from .._version import version
 
 from .feat_anc_plugin import PlugInFeature
 
-#: Chunk size for storing HDF5 data
+#: DEPRECATED (use `CHUNK_SIZE_BYTES` instead)
 CHUNK_SIZE = 100
+
+#: Chunks size in bytes for storing HDF5 datasets
+CHUNK_SIZE_BYTES = 1024**2  # 1MiB
 
 
 class RTDCWriter:
@@ -99,6 +102,24 @@ class RTDCWriter:
         finally:
             # This is guaranteed to run if any exception is raised.
             self.close()
+
+    @staticmethod
+    def get_best_nd_chunks(item_shape, item_dtype=np.float64):
+        """Return best chunks for HDF5 datasets
+
+        Chunking has performance implications. It’s recommended to keep the
+        total size of dataset chunks between 10 KiB and 1 MiB. This number
+        defines the maximum chunk size as well as half the maximum cache
+        size for each dataset.
+        """
+        # Note that `np.prod(()) == 1`
+        event_size = np.prod(item_shape) * np.dtype(item_dtype).itemsize
+
+        chunk_size = CHUNK_SIZE_BYTES / event_size
+        # Set minimum chunk size to 10 so that we can have at least some
+        # compression performance.
+        chunk_size_int = max(10, int(np.floor(chunk_size)))
+        return tuple([chunk_size_int] + list(item_shape))
 
     def close(self):
         """Close the underlying HDF5 file if a path was given during init"""
@@ -629,12 +650,9 @@ class RTDCWriter:
             (defaults to `data.dtype`)
         """
         if name not in group:
+            chunks = self.get_best_nd_chunks(item_shape=data.shape[1:],
+                                             item_dtype=data.dtype)
             maxshape = tuple([None] + list(data.shape)[1:])
-            if len(data.shape) == 1:
-                # no (or minimal) chunking for scalar data
-                chunks = max(len(data), CHUNK_SIZE)
-            else:
-                chunks = tuple([CHUNK_SIZE] + list(data.shape)[1:])
             dset = group.create_dataset(
                 name,
                 shape=data.shape,
@@ -672,17 +690,18 @@ class RTDCWriter:
                 mean = np.nanmean(dset)
             dset.attrs["mean"] = mean
         else:
+            chunk_size = dset.chunks[0]
             # populate higher-dimensional data in chunks
             # (reduces file size, memory usage, and saves time)
-            num_chunks = len(data) // CHUNK_SIZE
+            num_chunks = len(data) // chunk_size
             for ii in range(num_chunks):
-                start = ii * CHUNK_SIZE
-                stop = start + CHUNK_SIZE
+                start = ii * chunk_size
+                stop = start + chunk_size
                 dset[offset+start:offset+stop] = data[start:stop]
             # write remainder (if applicable)
-            num_remain = len(data) % CHUNK_SIZE
+            num_remain = len(data) % chunk_size
             if num_remain:
-                start_e = num_chunks*CHUNK_SIZE
+                start_e = num_chunks * chunk_size
                 stop_e = start_e + num_remain
                 dset[offset+start_e:offset+stop_e] = data[start_e:stop_e]
         return dset

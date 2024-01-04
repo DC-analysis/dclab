@@ -25,7 +25,7 @@ import numpy as np
 
 from .. import definitions as dfn
 from .._version import version
-from .writer import RTDCWriter, CHUNK_SIZE
+from .writer import RTDCWriter
 
 
 class LimitingExportSizeWarning(UserWarning):
@@ -411,14 +411,16 @@ def yield_filtered_array_stacks(data, indices):
     The dtype of the returned chunks is determined by the first
     item in `data`.
     """
+    chunk_shape = RTDCWriter.get_best_nd_chunks(item_shape=data.shape[1:],
+                                                item_dtype=data.dtype)
+    chunk_size = chunk_shape[0]
     # assemble filtered image stacks
-    data0 = data[0]
-    chunk_shape = tuple([CHUNK_SIZE] + list(data0.shape))
-    chunk = np.zeros(chunk_shape, dtype=data0.dtype)
+    chunk = np.zeros(chunk_shape, dtype=data.dtype)
+
     jj = 0
     for ii in indices:
         chunk[jj] = data[ii]
-        if (jj + 1) % CHUNK_SIZE == 0:
+        if (jj + 1) % chunk_size == 0:
             jj = 0
             yield chunk
         else:

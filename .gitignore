@@ -90,3 +90,5 @@ pip-wheel-metadata
 .idea
 .Rhistory
 _develop_*
+
+*.lprof

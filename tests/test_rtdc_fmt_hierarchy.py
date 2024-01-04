@@ -90,10 +90,31 @@ def test_hierarchy_logs():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_dtype_contour():
+    ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
+    assert ds["contour"].dtype == np.uint16
+    ds2 = new_dataset(ds)
+    assert ds2["contour"].dtype == np.uint16
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dtype_mask_image():
     ds = new_dataset(retrieve_data("fmt-hdf5_image-bg_2020.zip"))
     assert ds["mask"].dtype == bool
     assert ds["image"].dtype == np.uint8
+    ds2 = new_dataset(ds)
+    assert ds2["mask"].dtype == bool
+    assert ds2["image"].dtype == np.uint8
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_dtype_trace():
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl-no-contour_2019.zip"))
+    assert ds["trace"]["fl1_raw"].dtype == np.int16
+    ds2 = new_dataset(ds)
+    assert ds2["trace"]["fl1_raw"].dtype == np.int16
 
 
 @pytest.mark.filterwarnings(

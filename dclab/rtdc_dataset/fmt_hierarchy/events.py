@@ -24,6 +24,10 @@ class ChildContour(ChildBase):
         hp = self.child.hparent
         return hp["contour"][pidx]
 
+    @property
+    def dtype(self):
+        return self.child.hparent["contour"].dtype
+
 
 class ChildNDArray(ChildBase):
     def __init__(self, child, feat):
@@ -112,6 +116,11 @@ class ChildTraceItem(ChildBase):
                                         child_indices=idx)
         hp = self.child.hparent
         return hp["trace"][self.flname][pidx]
+
+    @property
+    def dtype(self):
+        hp = self.child.hparent
+        return hp["trace"][self.flname].dtype
 
     @property
     def shape(self):

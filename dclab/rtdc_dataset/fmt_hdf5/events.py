@@ -42,6 +42,10 @@ class H5ContourEvent:
         return self._length
 
     @property
+    def dtype(self):
+        return self.h5group["0"].dtype
+
+    @property
     def shape(self):
         return len(self), np.nan, 2
 

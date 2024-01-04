@@ -444,7 +444,7 @@ def store_filtered_feature(rtdc_writer, feat, data, filtarr):
 
     Notes
     -----
-    This code is somewhat redundant the code of RTDCWriter.
+    This code is somewhat redundant to the code of RTDCWriter.
     """
     indices = np.where(filtarr)[0]
     hw = rtdc_writer

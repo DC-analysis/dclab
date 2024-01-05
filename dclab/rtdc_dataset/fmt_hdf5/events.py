@@ -1,6 +1,8 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
+import warnings
+
 import numbers
 import numpy as np
 
@@ -137,6 +139,16 @@ class H5MaskEvent:
         # of ancillary feature "contour".
         self.identifier = (self.h5dataset.file.filename, self.h5dataset.name)
         self.dtype = np.dtype(bool)
+
+    def __array__(self, dtype=np.bool_):
+        if dtype is not np.uint8:
+            warnings.warn("Please avoid calling the `__array__` method of the "
+                          "`H5MaskEvent`. It may consume a lot of memory.",
+                          UserWarning)
+        # One of the reasons why we implement __array__ is such that
+        # the data exporter knows this object is sliceable
+        # (see yield_filtered_array_stacks).
+        return self.h5dataset.__array__(dtype=dtype)
 
     def __getitem__(self, idx):
         return np.asarray(self.h5dataset[idx], dtype=bool)

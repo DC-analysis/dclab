@@ -10,6 +10,7 @@
    (minor speedup since previously a chunk size of 100 events was used
    for images and scalar features were written in one big chunk)
  - enh: favor array operations in `yield_filtered_array_stacks` (~4x speed-up)
+ - enh: increase verbosity for unreachable remote basin features
  - ref: implement `__array__` methods for hierarchy event classes
  - ref: implement `__array__` method for `H5MaskEvent`
  - ref: new submodule for hierarchy format

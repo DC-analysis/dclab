@@ -129,6 +129,12 @@ class RTDCBase(abc.ABC):
         data = self._get_ancillary_feature_data(feat)
         if data is not None:
             return data
+        if feat in self:
+            warnings.warn(f"The feature {feat} is supposedly defined in "
+                          f"{self}, but I cannot get its data. Please "
+                          f"make sure you have not defined any unreachable "
+                          f"remote basins.",
+                          UserWarning)
         # Not here ¯\_(ツ)_/¯
         raise KeyError(f"Feature '{feat}' does not exist in {self}!")
 

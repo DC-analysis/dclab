@@ -137,7 +137,13 @@ def test_create_basin_file_non_matching_identifier(tmp_path):
         assert ds.features_basin == ["deform"]
         # ...but it is actually not, since the run identifier does not match
         # and therefore dclab does not allow the user to access it.
-        with pytest.raises(KeyError, match="deform"):
+        #
+        # Until a workaround is found for invalid basin URLs that return a
+        # status code of 200, do this test which should raise a warning,
+        # because `__contains__` returns True for "trace", but the trace data
+        # are nowhere to find.
+        with (pytest.warns(UserWarning, match="but I cannot get its data"),
+              pytest.raises(KeyError, match="deform")):
             _ = ds["deform"]
 
 

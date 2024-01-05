@@ -245,3 +245,35 @@ def test_trace_availability(tmp_path):
     ds.filter.manual[0] = False
     ds2 = dclab.new_dataset(ds)
     assert "trace" in ds2
+
+
+def test_trace_availability_invalid(tmp_path):
+    h5path = tmp_path / "test_basin_http.rtdc"
+
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
+        # Store non-existent basin information
+        bdat = {
+            "type": "remote",
+            "format": "http",
+            "urls": ["https://dcor.mpl.mpg.de/api/3/action/site_read"],
+            "features": ["trace"],
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = dst.require_group("basins")
+        with RTDCWriter(dst, mode="append") as hw:
+            hw.write_text(basins, "my_basin", blines)
+            meta = src.config.as_dict(pop_filtering=True)
+            hw.store_metadata(meta)
+
+    ds = dclab.new_dataset(h5path)
+    ds.filter.manual[:] = False
+    ds.filter.manual[:2] = True
+    ds.apply_filter()
+    assert "trace" in ds
+    # Until a workaround is found for invalid basin URLs that return a
+    # status code of 200, do this test which should raise a warning,
+    # because `__contains__` returns True for "trace", but the trace data
+    # are nowhere to find.
+    with (pytest.warns(UserWarning, match="but I cannot get its data"),
+          pytest.raises(KeyError, match="trace")):
+        dclab.new_dataset(ds)

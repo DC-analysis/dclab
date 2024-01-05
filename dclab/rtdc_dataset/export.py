@@ -397,10 +397,12 @@ def yield_filtered_array_stacks(data, indices):
     Parameters
     ----------
     data: np.ndarray or h5py.Dataset
-        The full, unfiltered input feature data.
+        The full, unfiltered input feature data. Must implement
+        the `shape` and `dtype` properties. If it implements the
+        `__array__` method, fast slicing is used.
     indices: np.ndarray or list
-        The indices in data (first axis) that should be written
-        to the chunks returned by this generator.
+        The indices (integer values) for `data` (first axis), indicating
+        which elements should be returned by this generator.
 
     Notes
     -----
@@ -410,24 +412,48 @@ def yield_filtered_array_stacks(data, indices):
     and that the events in `data` all have the same shape.
     The dtype of the returned chunks is determined by the first
     item in `data`.
+
+    This method works with sliceable (e.g. np.ndarray) and
+    non-sliceable (e.g. tdms-format-based images) input data. If the
+    input data is sliceable (which is determined by the availability
+    of the `__array__` method, then fast numpy sclicing is used. If the
+    input data does not support slicing (`__array__` not defined), then
+    a slow iteration over `indices` is done.
+
+    In the slow iteration case, the returned array data are overridden
+    in-place. If you need to retain a copy of the `yield`ed chunks,
+    apply `np.array(.., copy=True)` to the returned chunks.
     """
     chunk_shape = RTDCWriter.get_best_nd_chunks(item_shape=data.shape[1:],
                                                 item_dtype=data.dtype)
     chunk_size = chunk_shape[0]
-    # assemble filtered image stacks
-    chunk = np.zeros(chunk_shape, dtype=data.dtype)
 
-    jj = 0
-    for ii in indices:
-        chunk[jj] = data[ii]
-        if (jj + 1) % chunk_size == 0:
-            jj = 0
-            yield chunk
-        else:
-            jj += 1
-    # yield remainder
-    if jj:
-        yield chunk[:jj]
+    if hasattr(data, "__array__"):
+        # We have an array-like object and can do slicing with the indexing
+        # array. This speeds up chunk creation for e.g. the HDF5 file format
+        # where all data are present in an array-like fashion.
+        indices = np.array(indices)
+        stop = 0
+        for kk in range(len(indices) // chunk_size):
+            start = chunk_size * kk
+            stop = chunk_size * (kk + 1)
+            yield data[indices[start:stop]]
+        if stop < len(indices):
+            yield data[indices[stop:]]
+    else:
+        # assemble filtered image stacks
+        chunk = np.zeros(chunk_shape, dtype=data.dtype)
+        jj = 0
+        for ii in indices:
+            chunk[jj] = data[ii]
+            if (jj + 1) % chunk_size == 0:
+                jj = 0
+                yield chunk
+            else:
+                jj += 1
+        # yield remainder
+        if jj:
+            yield chunk[:jj]
 
 
 def store_filtered_feature(rtdc_writer, feat, data, filtarr):

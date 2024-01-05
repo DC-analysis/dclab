@@ -1,4 +1,4 @@
-0.56.4
+0.57.0
  - fix: integer overflow in downsample_grid
  - fix: removed unnecessary computation of hierarchy filter instance
  - enh: cythonize downsample_grid (~10x speed-up)
@@ -9,6 +9,7 @@
  - enh: globally use chunk sizes of ~1MiB when writing HDF5 data
    (minor speedup since previously a chunk size of 100 events was used
    for images and scalar features were written in one big chunk)
+ - enh: favor array operations in `yield_filtered_array_stacks` (~4x speed-up)
  - ref: implement `__array__` methods for hierarchy event classes
  - ref: implement `__array__` method for `H5MaskEvent`
  - ref: new submodule for hierarchy format

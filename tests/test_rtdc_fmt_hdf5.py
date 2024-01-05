@@ -306,7 +306,7 @@ def test_defective_feature_volume():
 def test_discouraged_array_dunder_childndarray():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip"))
     with pytest.warns(UserWarning, match="It may consume a lot of memory"):
-        maskbool = ds["mask"].__array__()
+        ds["mask"].__array__()
 
 
 @pytest.mark.filterwarnings(

@@ -1,3 +1,4 @@
+import socket
 import uuid
 
 import pytest
@@ -8,6 +9,13 @@ from dclab.http_utils import (
 
 
 pytest.importorskip("requests")
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    try:
+        s.connect(("dcor.mpl.mpg.de", 443))
+    except (socket.gaierror, OSError):
+        pytest.skip("No connection to DCOR",
+                    allow_module_level=True)
 
 
 def test_http_file_basic():

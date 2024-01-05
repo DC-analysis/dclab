@@ -88,6 +88,24 @@ def test_hierarchy_logs():
     assert ch.logs["dclab-compress"][0] == "{"
 
 
+def test_discouraged_array_dunder_childndarray():
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip"))
+    ds2 = new_dataset(ds)
+    with pytest.warns(UserWarning, match="It may consume a lot of memory"):
+        ds2["image"].__array__()
+    with pytest.warns(UserWarning, match="It may consume a lot of memory"):
+        np.array(ds2["image"])
+
+
+def test_discouraged_array_dunder_chiltraceitem():
+    ds = new_dataset(retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip"))
+    ds2 = new_dataset(ds)
+    with pytest.warns(UserWarning, match="It may consume a lot of memory"):
+        ds2["trace"]["fl1_raw"].__array__()
+    with pytest.warns(UserWarning, match="It may consume a lot of memory"):
+        np.array(ds2["trace"]["fl1_raw"])
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_dtype_contour():

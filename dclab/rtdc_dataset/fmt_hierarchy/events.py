@@ -1,4 +1,5 @@
 import collections
+import warnings
 
 import numpy as np
 
@@ -17,6 +18,8 @@ class ChildContour(ChildBase):
     def __init__(self, child):
         super(ChildContour, self).__init__(child)
         self.shape = (len(child), np.nan, 2)
+        # Note that since the contour has variable lengths, we cannot
+        # implement an __array__ method here.
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
@@ -33,6 +36,13 @@ class ChildNDArray(ChildBase):
     def __init__(self, child, feat):
         super(ChildNDArray, self).__init__(child)
         self.feat = feat
+
+    def __array__(self):
+        warnings.warn("Please avoid calling the `__array__` method of the "
+                      "`ChildNDArray`. It may consume a lot of memory. "
+                      "Consider using a generator instead.",
+                      UserWarning)
+        return self[:]
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
@@ -110,6 +120,13 @@ class ChildTraceItem(ChildBase):
     def __init__(self, child, flname):
         super(ChildTraceItem, self).__init__(child)
         self.flname = flname
+
+    def __array__(self):
+        warnings.warn("Please avoid calling the `__array__` method of the "
+                      "`ChildTraceItem`. It may consume a lot of memory. "
+                      "Consider using a generator instead.",
+                      UserWarning)
+        return self[:]
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,

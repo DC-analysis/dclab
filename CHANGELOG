@@ -9,6 +9,7 @@
  - enh: globally use chunk sizes of ~1MiB when writing HDF5 data
    (minor speedup since previously a chunk size of 100 events was used
    for images and scalar features were written in one big chunk)
+ - ref: implement `__array__` methods for hierarchy event classes
  - ref: new submodule for hierarchy format
 0.56.3
  - fix: regression missing check for basin availability

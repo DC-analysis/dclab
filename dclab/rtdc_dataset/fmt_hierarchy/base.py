@@ -91,7 +91,7 @@ class RTDC_Hierarchy(RTDCBase):
             self._events[feat] = data
         else:
             raise KeyError(
-                f"The dataset {self} does not contain the feature '{feat}'!"
+                f"The dataset {self} does not contain the feature '{feat}'! "
                 + "If you are attempting to access an ancillary feature "
                 + "(e.g. emodulus), please make sure that the feature "
                 + f"data are computed for {self.get_root_parent()} (the "

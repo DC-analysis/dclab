@@ -6,7 +6,7 @@
  - enh: slight improvement of managing manual indices in hierarchy children
  - enh: added dtype properties for contour and trace events
  - enh: ensure all feature data objects have the dtype property
- - enh: globally use chunk sizes of ~1MiB when writing HDF5 data
+ - enh: globally use chunk sizes of ~1MiB when writing HDF5 data (#217)
    (minor speedup since previously a chunk size of 100 events was used
    for images and scalar features were written in one big chunk)
  - enh: favor array operations in `yield_filtered_array_stacks` (~4x speed-up)

@@ -1,9 +1,11 @@
 import json
 
 import h5py
+import numpy as np
 
 import pytest
 
+import dclab
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
 from dclab.rtdc_dataset import feat_basin
 
@@ -40,6 +42,75 @@ def test_basin_sorting_key(btype, bformat, sortval):
              "format": bformat,
              }
     assert feat_basin.basin_priority_sorted_key(bdict) == sortval
+
+
+def test_basin_hierarchy_trace():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["trace"],
+            "paths": [
+                str(h5path),  # absolute path name
+            ]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "invalid_format_basin", blines)
+
+    ds = dclab.new_dataset(h5path_small)
+    assert "trace" not in ds.features_innate
+    ds2 = dclab.new_dataset(ds)
+    assert "trace" in ds
+    assert "trace" in ds2
+    assert "fl1_raw" in ds["trace"]
+    assert np.allclose(
+        np.mean(ds2["trace"]["fl1_raw"][0]),
+        24.5785536159601,
+        atol=0, rtol=1e-5
+    )
+
+
+def test_basin_hierarchy_trace_missing():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["trace"],
+            "paths": [
+                str(h5path),  # absolute path name
+            ]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "invalid_format_basin", blines)
+
+    h5path.unlink()
+
+    ds = dclab.new_dataset(h5path_small)
+    ds2 = dclab.new_dataset(ds)
+    ds2.apply_filter()
+    assert "trace" not in ds2
+    with pytest.raises(KeyError, match="does not contain the feature"):
+        ds2["trace"]
 
 
 def test_basin_unsupported_basin_format():

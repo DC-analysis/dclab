@@ -7,6 +7,7 @@ import numpy as np
 
 import pytest
 
+import dclab
 from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_http import HTTPBasin, RTDC_HTTP
 
@@ -220,3 +221,27 @@ def test_create_basin_file_with_one_feature(tmp_path):
         assert "area_um" not in ds
         assert np.allclose(ds["deform"][0], 0.009741939,
                            atol=0, rtol=1e-5)
+
+
+def test_trace_availability(tmp_path):
+    h5path = tmp_path / "test_basin_http.rtdc"
+
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
+        # Store non-existent basin information
+        bdat = {
+            "type": "remote",
+            "format": "http",
+            "urls": [http_url],
+            "features": ["trace"],
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = dst.require_group("basins")
+        with RTDCWriter(dst, mode="append") as hw:
+            hw.write_text(basins, "my_basin", blines)
+            meta = src.config.as_dict(pop_filtering=True)
+            hw.store_metadata(meta)
+
+    ds = dclab.new_dataset(h5path)
+    ds.filter.manual[0] = False
+    ds2 = dclab.new_dataset(ds)
+    assert "trace" in ds2

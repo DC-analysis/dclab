@@ -135,7 +135,8 @@ def test_create_basin_file_non_matching_identifier(tmp_path):
         assert ds.features_basin == ["deform"]
         # ...but it is actually not, since the run identifier does not match
         # and therefore dclab does not allow the user to access it.
-        with pytest.raises(KeyError, match="deform"):
+        with (pytest.warns(UserWarning, match="but I cannot get its data"),
+              pytest.raises(KeyError, match="deform")):
             _ = ds["deform"]
 
 

@@ -1,3 +1,5 @@
+0.57.1
+ - docs: improve documentation of hierarchy child mapper
 0.57.0
  - fix: integer overflow in downsample_grid
  - fix: removed unnecessary computation of hierarchy filter instance

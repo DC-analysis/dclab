@@ -675,6 +675,25 @@ def test_real_time_single():
         assert len(logs["log1"]) == n
 
 
+def test_rectify_metadata_ignore_empty_image():
+    # test introduced in 0.39.7
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_")
+    with h5py.File(rtdc_file, "a") as h5:
+        h5.require_group("events")
+        h5["events"].require_dataset(name="image",
+                                     shape=(0, 80, 100),
+                                     dtype=np.uint8)
+        h5["events/deform"] = np.linspace(.1, .12, 7)
+
+        # Initialize writer
+        hw = RTDCWriter(h5, mode="append")
+        # in previous versions, this did not work, because of the empty trace
+        hw.rectify_metadata()
+        # make sure that something happened
+        assert h5.attrs["experiment:event count"] == 7
+
+
 def test_rectify_metadata_ignore_empty_trace():
     # test introduced in 0.39.7
     rtdc_file = tempfile.mktemp(suffix=".rtdc",

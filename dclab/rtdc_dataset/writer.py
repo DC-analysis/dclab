@@ -148,9 +148,12 @@ class RTDCWriter:
         else:
             raise ValueError(f"No features in '{self.path}'!")
 
-        # make sure that "trace" is not empty
-        if "trace" in feats and len(self.h5file["events"]["trace"]) == 0:
-            feats.remove("trace")
+        # ignore empty features in the checks further below
+        for feat in feats[:]:  # iterate over a copy of the list
+            obj = self.h5file["events"][feat]
+            if ((isinstance(feat, h5py.Group) and len(obj) == 0)  # groups
+                    or obj.shape[0] == 0):  # datasets
+                feats.remove(feat)
 
         # set samples per event
         if "trace" in feats:
@@ -166,9 +169,9 @@ class RTDCWriter:
                 self.h5file.attrs["fluorescence:channel count"] = chcount
 
         # set roi size x/y
-        if "image" in self.h5file["events"]:
+        if "image" in feats:
             shape = self.h5file["events"]["image"][0].shape
-        elif "mask" in self.h5file["events"]:
+        elif "mask" in feats:
             shape = self.h5file["events"]["mask"][0].shape
         else:
             shape = None

@@ -151,8 +151,8 @@ class RTDCWriter:
         # ignore empty features in the checks further below
         for feat in feats[:]:  # iterate over a copy of the list
             obj = self.h5file["events"][feat]
-            if ((isinstance(feat, h5py.Group) and len(obj) == 0)  # groups
-                    or obj.shape[0] == 0):  # datasets
+            if ((isinstance(feat, h5py.Dataset) and obj.shape[0] == 0)  # ds
+                    or len(obj) == 0):  # groups
                 feats.remove(feat)
 
         # set samples per event

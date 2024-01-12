@@ -568,6 +568,19 @@ def test_mode():
         assert len(events2["area_um"]) == len(data["area_um"])
 
 
+def test_nan_array():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_")
+    with RTDCWriter(rtdc_file) as hw:
+        with pytest.warns(RuntimeWarning) as record:
+            hw.store_feature("deform", np.full(100, np.nan))
+
+    assert len(record) == 3
+    assert record[0].message.args[0] == "All-NaN axis encountered"
+    assert record[1].message.args[0] == "All-NaN axis encountered"
+    assert record[2].message.args[0] == "Mean of empty slice"
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_non_scalar_bad_shape():

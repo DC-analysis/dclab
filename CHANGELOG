@@ -1,5 +1,6 @@
 0.57.1
  - fix: RTDCWriter.rectify_metadata fails when image feature is empty
+ - fix: Handle empty write requests in export.hdf5 and RTDCWriter (#242)
  - docs: improve documentation of hierarchy child mapper
 0.57.0
  - fix: integer overflow in downsample_grid

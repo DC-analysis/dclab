@@ -652,6 +652,9 @@ class RTDCWriter:
             the dtype to use for storing the data
             (defaults to `data.dtype`)
         """
+        if len(data) == 0:
+            raise ValueError(f"Empty data object for '{name}'")
+
         if name not in group:
             chunks = self.get_best_nd_chunks(item_shape=data.shape[1:],
                                              item_dtype=data.dtype)

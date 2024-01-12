@@ -225,6 +225,27 @@ def test_hdf5_filtered():
     assert np.all(ds2["image"][2] != ds1["image"][2])
 
 
+def test_hdf5_filtered_empty():
+    n = 10
+    keys = ["area_um", "image"]
+    ddict = example_data_dict(size=n, keys=keys)
+
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    # Remove all events
+    ds1.filter.manual[:] = False
+    ds1.apply_filter()
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_filtered.rtdc")
+    with pytest.warns(UserWarning, match="No data to export to"):
+        ds1.export.hdf5(f1, keys)
+
+    with h5py.File(f1) as h5:
+        assert len(h5["events"].keys()) == 0
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("dataset", ["fmt-hdf5_mask-contour_2018.zip",

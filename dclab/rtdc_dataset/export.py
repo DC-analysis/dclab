@@ -475,6 +475,10 @@ def store_filtered_feature(rtdc_writer, feat, data, filtarr):
     This code is somewhat redundant to the code of RTDCWriter.
     """
     indices = np.where(filtarr)[0]
+    if indices.size == 0:
+        warnings.warn(f"No data to export to '{rtdc_writer.path}'")
+        return
+
     hw = rtdc_writer
     if not hw.mode == "append":
         raise ValueError("The `rtdc_writer` object must be created with"

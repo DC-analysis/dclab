@@ -367,6 +367,14 @@ def test_contour_from_hdf5():
     assert ds2["contour"].shape == (5, np.nan, 2)
 
 
+def test_empty_array():
+    rtdc_file = tempfile.mktemp(suffix=".rtdc",
+                                prefix="dclab_test_error_")
+    with RTDCWriter(rtdc_file) as hw:
+        with pytest.raises(ValueError, match="Empty data object for 'deform'"):
+            hw.store_feature("deform", [])
+
+
 def test_index_increment():
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_error_")

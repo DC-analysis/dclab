@@ -83,7 +83,5 @@ version_scheme = "post-release"
 [tool.cibuildwheel]
 # Only build for cpython
 build = "cp*"
-# Skip musllinux, because dclab users won't be using it
-skip = "*musllinux*"
 # Only build for 64bit
 archs = "auto64"

@@ -1,7 +1,7 @@
 """Helper methods for copying .rtdc data"""
 from __future__ import annotations
 
-from typing import Literal
+from typing import List, Literal
 
 import h5py
 import h5py.h5o
@@ -15,11 +15,30 @@ from .fmt_hdf5 import DEFECTIVE_FEATURES
 
 def rtdc_copy(src_h5file: h5py.Group,
               dst_h5file: h5py.Group,
-              features: Literal['all', 'scalar', 'none'] = "all",
+              features: List[str] | Literal['all', 'scalar', 'none'] = "all",
               include_logs: bool = True,
               include_tables: bool = True,
               meta_prefix: str = ""):
-    """Create a compressed copy of an RT-DC file"""
+    """Create a compressed copy of an RT-DC file
+
+    Parameters
+    ----------
+    src_h5file: h5py.Group
+        Input HDF5 file
+    dst_h5file: h5py.Group
+        Output HDF5 file
+    features: list of strings or one of ['all', 'scalar', 'none']
+        If this is a list then it specifies the features that are copied from
+        `src_h5file` to `dst_h5file`. Alternatively, you may specify 'all'
+        (copy all features), 'scalar' (copy only scalar features), or 'none'
+        (don't copy any features).
+    include_logs: bool
+        Copy the logs from `src_h5file` to `dst_h5file`.
+    include_tables: bool
+        Copy the tables from `src_h5file` to `dst_h5file`.
+    meta_prefix: str
+        Add this prefix to the name of the logs and tables in `dst_h5file`.
+    """
     # metadata
     for akey in src_h5file.attrs:
         dst_h5file.attrs[akey] = src_h5file.attrs[akey]
@@ -55,11 +74,24 @@ def rtdc_copy(src_h5file: h5py.Group,
                 **hdf5plugin.Zstd(clevel=5))
 
     # events
-    if features != "none":
-        scalar_only = features == "scalar"
+    if isinstance(features, list):
+        feature_iter = features
+    elif features == "all":
+        feature_iter = list(src_h5file["events"])
+    elif features == "scalar":
+        feature_iter = [feat for feat in features
+                        if feature_exists(feat, scalar_only=True)]
+    elif features == "none":
+        feature_iter = []
+    else:
+        raise ValueError(f"`features` must be either a list of feature names "
+                         f"or one of 'all', 'scalar' or 'none', got "
+                         f"'{features}'")
+
+    if feature_iter:
         dst_h5file.require_group("events")
-        for feat in src_h5file["events"]:
-            if feature_exists(feat, scalar_only=scalar_only):
+        for feat in feature_iter:
+            if feature_exists(feat):
                 # Skip all defective features. These are features that
                 # are known to be invalid (e.g. ancillary features that
                 # were computed falsely) and must be recomputed by dclab.

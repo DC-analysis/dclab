@@ -113,7 +113,7 @@ def test_copy_tables():
     tab_data = np.zeros((10, len(columns)))
     tab_data[:, 0] = np.arange(10)
     tab_data[:, 1] = 1000
-    tab_data[:, 2] = np.linspace(np.pi, 2*np.pi, 10)
+    tab_data[:, 2] = np.linspace(np.pi, 2 * np.pi, 10)
     rec_arr = np.rec.array(tab_data, dtype=ds_dt)
     # sanity check
     assert np.all(rec_arr["bread"][:].flatten() == np.arange(10))
@@ -140,7 +140,7 @@ def test_copy_tables():
         assert np.all(tab_data["bread"][:].flatten() == np.arange(10))
         assert np.all(tab_data["beer"][:].flatten() == 1000)
         assert np.all(tab_data["chocolate"][:].flatten() == np.linspace(
-            np.pi, 2*np.pi, 10))
+            np.pi, 2 * np.pi, 10))
 
 
 def test_copy_tables_hdf5_issue_3214():
@@ -208,4 +208,25 @@ def test_copy_scalar_features_only():
     # Make sure this worked
     with h5py.File(path_copy) as hc:
         assert "image" not in hc["events"]
+        assert "deform" in hc["events"]
+
+
+def test_copy_specified_feature_list():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        # make sure image data is there
+        assert "image" in h5["events"]
+        assert "area_um" in h5["events"]
+        assert "deform" in h5["events"]
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc,
+                  features=["image", "area_um", "deform"])
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert "image" in hc["events"]
+        assert "area_um" in hc["events"]
         assert "deform" in hc["events"]

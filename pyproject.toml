@@ -18,6 +18,7 @@ authors = [
     {name = "Maximilian Schlögel"},
     {name = "Paul Müller"},
     {name = "Philipp Rosendahl"},
+    {name = "Raghava Alajangi"},
 ]
 maintainers = [
     {name = "Paul Müller", email="dev@craban.de"},

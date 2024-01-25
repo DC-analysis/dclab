@@ -79,7 +79,7 @@ def rtdc_copy(src_h5file: h5py.Group,
     elif features == "all":
         feature_iter = list(src_h5file["events"])
     elif features == "scalar":
-        feature_iter = [feat for feat in features
+        feature_iter = [feat for feat in src_h5file["events"]
                         if feature_exists(feat, scalar_only=True)]
     elif features == "none":
         feature_iter = []

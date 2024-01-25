@@ -223,10 +223,10 @@ def test_copy_specified_feature_list():
         assert "deform" in h5["events"]
         rtdc_copy(src_h5file=h5,
                   dst_h5file=hc,
-                  features=["image", "area_um", "deform"])
+                  features=["image", "deform"])
 
     # Make sure this worked
     with h5py.File(path_copy) as hc:
         assert "image" in hc["events"]
-        assert "area_um" in hc["events"]
+        assert "area_um" not in hc["events"]
         assert "deform" in hc["events"]

@@ -230,3 +230,38 @@ def test_copy_specified_feature_list():
         assert "image" in hc["events"]
         assert "area_um" not in hc["events"]
         assert "deform" in hc["events"]
+
+
+def test_do_not_copy_features():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        # make sure image data is there
+        assert "image" in h5["events"]
+        assert "deform" in h5["events"]
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc,
+                  features="none")
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert "events" not in hc
+
+
+def test_copier_with_wrong_feature():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        # make sure image data is there
+        assert "image" in h5["events"]
+        assert "deform" in h5["events"]
+        with pytest.raises(ValueError,
+                           match="must be either a list of feature names"):
+            rtdc_copy(src_h5file=h5,
+                      dst_h5file=hc,
+                      features="invalid")
+        assert "events" not in hc

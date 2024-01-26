@@ -254,12 +254,14 @@ def test_copier_with_wrong_feature():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")
 
-    with pytest.raises(ValueError):
-        # copy
-        with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
-            # make sure image data is there
-            assert "image" in h5["events"]
-            assert "deform" in h5["events"]
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        # make sure image data is there
+        assert "image" in h5["events"]
+        assert "deform" in h5["events"]
+        with pytest.raises(ValueError,
+                           match="must be either a list of feature names"):
             rtdc_copy(src_h5file=h5,
                       dst_h5file=hc,
                       features="invalid")
+        assert "events" not in hc

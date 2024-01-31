@@ -2,6 +2,7 @@
  - enh: allow to specify list of features for data copier
  - ref: migrate from s3fs to boto3 for fmt_s3
  - test: data copier with `none` and invalid features
+ - docs: remove pin for sphinx
  - build: make musllinux builds for e.g. docker images
 0.57.1
  - fix: RTDCWriter.rectify_metadata fails when image feature is empty

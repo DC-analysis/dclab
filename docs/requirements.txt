@@ -6,7 +6,7 @@ numpy
 # Don't forget to set the environment variable RPY2_CFFI_MODE=ABI on rtd!
 rpy2
 scipy
-sphinx==4.2.0
-sphinxcontrib.bibtex>=2.0
-sphinx_rtd_theme==1.0
+sphinx
+sphinxcontrib.bibtex
+sphinx_rtd_theme
 tensorflow

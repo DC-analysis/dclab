@@ -149,7 +149,7 @@ class S3Basin(Basin):
     basin_type = "remote"
 
     def __init__(self, *args, **kwargs):
-        self._available_verified = False
+        self._available_verified = None
         super(S3Basin, self).__init__(*args, **kwargs)
 
     def load_dataset(self, location, **kwargs):
@@ -168,9 +168,11 @@ class S3Basin(Basin):
         return True.
         """
         with self._av_check_lock:
-            if not self._available_verified:
-                self._available_verified = (
-                    BOTO3_AVAILABLE and is_s3_object_available(self.location))
+            if not BOTO3_AVAILABLE:
+                self._available_verified = False
+            if self._available_verified is None:
+                self._available_verified = \
+                    is_s3_object_available(self.location)
         return self._available_verified
 
 

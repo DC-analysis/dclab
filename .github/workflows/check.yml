@@ -13,6 +13,13 @@ jobs:
         python-version: ['3.8', '3.11']
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
+        exclude:
+          # pytest on Python 3.8 cannot handle raises and warns together in
+          # a context.
+          - python-version: '3.8'
+            extras: 'all'
+          - python-version: '3.8'
+            extras: 'dcor-s3'
       fail-fast: false
     timeout-minutes: 30
 

@@ -204,9 +204,9 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "python": ('https://docs.python.org/', None),
+    "boto3": ('https://boto3.amazonaws.com/v1/documentation/api/latest', None),
     "h5py": ('https://h5py.readthedocs.io/en/stable/', None),
     "numpy": ('https://docs.scipy.org/doc/numpy/', None),
-    "s3fs": ('https://s3fs.readthedocs.io/en/stable/', None),
     "skimage": ('https://scikit-image.org/docs/stable/', None),
     "scipy": ('https://docs.scipy.org/doc/scipy/reference/', None),
     "shapeout2": ('https://shapeout2.readthedocs.io/en/stable/', None),

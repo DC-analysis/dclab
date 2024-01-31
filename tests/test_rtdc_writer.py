@@ -12,7 +12,7 @@ from dclab.rtdc_dataset import RTDCWriter, new_dataset
 from dclab.rtdc_dataset.feat_temp import (
     register_temporary_feature, deregister_temporary_feature)
 
-from helper_methods import retrieve_data, DCOR_AVAILABLE, S3FS_AVAILABLE
+from helper_methods import retrieve_data, DCOR_AVAILABLE, BOTO3_AVAILABLE
 
 
 @pytest.mark.filterwarnings(
@@ -168,7 +168,7 @@ def test_basin_file_identifier_mismatch():
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
-@pytest.mark.skipif(not S3FS_AVAILABLE, reason="s3fs not available!")
+@pytest.mark.skipif(not BOTO3_AVAILABLE, reason="boto3 not available!")
 def test_basin_url(tmp_path):
     # Create an empty dataset that links to an S3 instance
     # This is the calibration beads measurement.

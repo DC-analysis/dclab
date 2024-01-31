@@ -1,16 +1,24 @@
 import functools
+# import multiprocessing BaseManager here, because there is some kind
+# of circular dependency issue with s3transfer.compat and multiprocessing.
+from multiprocessing.managers import BaseManager  # noqa: F401
 import re
 import socket
 from urllib.parse import urlparse
 
 
 try:
-    import s3fs
+    import boto3
+    import botocore
+    import botocore.client
+    import botocore.exceptions
+    import botocore.session
 except ModuleNotFoundError:
-    S3FS_AVAILABLE = False
+    BOTO3_AVAILABLE = False
 else:
-    S3FS_AVAILABLE = True
+    BOTO3_AVAILABLE = True
 
+from ..http_utils import HTTPFile
 
 from .feat_basin import Basin
 
@@ -26,16 +34,73 @@ REGEXP_S3_URL = re.compile(
 )
 
 
+class S3File(HTTPFile):
+    """Monkeypatched `HTTPFile` to support authenticated access to S3"""
+    def __init__(self, url, access_key_id="", secret_access_key="",
+                 use_ssl=True, verify_ssl=True):
+        # Extract the bucket and object names
+        s3_endpoint, s3_path = parse_s3_url(url)
+        self.botocore_session = botocore.session.get_session()
+        self.s3_session = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key,
+            botocore_session=self.botocore_session)
+        self.s3_client = self.s3_session.client(
+            service_name='s3',
+            use_ssl=use_ssl,
+            verify=verify_ssl,
+            endpoint_url=s3_endpoint,
+            )
+        # Use a configuration that allows anonymous access
+        # https://stackoverflow.com/a/34866092
+        if not secret_access_key:
+            config = botocore.client.Config(
+                signature_version=botocore.UNSIGNED,
+                region_name='us-east-1')
+        else:
+            config = None
+        self.s3_resource = self.s3_session.resource(
+            service_name="s3",
+            use_ssl=use_ssl,
+            verify=verify_ssl,
+            endpoint_url=s3_endpoint,
+            config=config)
+
+        bucket_name, object_name = s3_path.strip("/").split("/", 1)
+        self.s3_object = self.s3_resource.Object(
+            bucket_name=bucket_name,
+            key=object_name)
+        super(S3File, self).__init__(url)
+
+    def _parse_header(self):
+        if self._len is None:
+            self._len = self.s3_object.content_length
+            self._etag = self.s3_object.e_tag
+
+    def close(self):
+        super(S3File, self).close()
+        self.s3_client.close()
+
+    def download_range(self, start, stop):
+        """Download bytes given by the range (`start`, `stop`)
+
+        `stop` is not inclusive (In the HTTP range request it normally is).
+        """
+        stream = self.s3_object.get(Range=f"bytes={start}-{stop-1}")['Body']
+        return stream.read()
+
+
 class RTDC_S3(RTDC_HDF5):
     def __init__(self,
                  url: str,
                  secret_id: str = "",
                  secret_key: str = "",
+                 use_ssl: bool = True,
                  *args, **kwargs):
         """Access RT-DC measurements in an S3-compatible object store
 
         This is essentially just a wrapper around :class:`.RTDC_HDF5`
-        with `s3fs` passing a file object to h5py.
+        with :mod:`boto3` and :class:`.HTTPFile` passing a file object to h5py.
 
         Parameters
         ----------
@@ -45,6 +110,8 @@ class RTDC_S3(RTDC_HDF5):
             S3 access identifier
         secret_key: str
             Secret S3 access key
+        use_ssl: bool
+            Whether to enforce SSL (defaults to True)
         *args:
             Arguments for `RTDCBase`
         **kwargs:
@@ -55,18 +122,18 @@ class RTDC_S3(RTDC_HDF5):
         path: str
             The URL to the object
         """
-        if not S3FS_AVAILABLE:
+        if not BOTO3_AVAILABLE:
             raise ModuleNotFoundError(
-                "Package `s3fs` required for S3 format!")
-        s3fskw = get_s3fs_kwargs(url=url,
-                                 secret_id=secret_id,
-                                 secret_key=secret_key)
-        _, s3_path = parse_s3_url(url)
-        self._fs = s3fs.S3FileSystem(**s3fskw)
-        self._f3d = self._fs.open(s3_path, mode='rb')
+                "Package `boto3` required for S3 format!")
+        self._s3file = S3File(url,
+                              access_key_id=secret_id,
+                              secret_access_key=secret_key,
+                              use_ssl=use_ssl,
+                              verify_ssl=use_ssl,
+                              )
         # Initialize the HDF5 dataset
         super(RTDC_S3, self).__init__(
-            h5path=self._f3d,
+            h5path=self._s3file,
             *args,
             **kwargs)
         # Override self.path with the actual S3 URL
@@ -74,7 +141,7 @@ class RTDC_S3(RTDC_HDF5):
 
     def close(self):
         super(RTDC_S3, self).close()
-        self._f3d.close()
+        self._s3file.close()
 
 
 class S3Basin(Basin):
@@ -95,7 +162,7 @@ class S3Basin(Basin):
         return h5file
 
     def is_available(self):
-        """Check for s3fs and object availability
+        """Check for boto3 and object availability
 
         Caching policy: Once this method returns True, it will always
         return True.
@@ -103,49 +170,8 @@ class S3Basin(Basin):
         with self._av_check_lock:
             if not self._available_verified:
                 self._available_verified = (
-                    S3FS_AVAILABLE and is_s3_object_available(self.location))
+                    BOTO3_AVAILABLE and is_s3_object_available(self.location))
         return self._available_verified
-
-
-@functools.lru_cache()
-def get_s3fs_kwargs(url: str,
-                    secret_id: str = "",
-                    secret_key: str = "",
-                    ):
-    """Return keyword arguments for s3fs
-
-    Parameters
-    ----------
-    url: str
-        full URL to the object
-    secret_id: str
-        S3 access identifier
-    secret_key: str
-        Secret S3 access key
-    """
-    s3_endpoint, _ = parse_s3_url(url)
-    s3fskw = {
-        "endpoint_url": s3_endpoint,
-        # A large block size makes loading metadata really slow.
-        "default_block_size": 2**18,
-        # We are only ever opening one file per FS instance, so it does
-        # not make sense to cache the instances.
-        "skip_instance_cache": True,
-        # We are not doing any FS directory listings
-        "use_listings_cache": False,
-    }
-    if secret_id and secret_key:
-        # We have an id-key pair.
-        s3fskw["key"] = secret_id
-        s3fskw["secret"] = secret_key
-        s3fskw["anon"] = False  # this is the default
-    else:
-        # Anonymous access has to be enabled explicitly.
-        # Normally, s3fs would check for credentials in
-        # environment variables and does not fall back to
-        # anonymous use.
-        s3fskw["anon"] = True
-    return s3fskw
 
 
 def is_s3_object_available(url: str,
@@ -179,15 +205,15 @@ def is_s3_object_available(url: str,
                 pass
             else:
                 # Try to access the object
-                s3fskw = get_s3fs_kwargs(url=url,
-                                         secret_id=secret_id,
-                                         secret_key=secret_key)
-                _, s3_path = parse_s3_url(url)
-                fs = s3fs.S3FileSystem(**s3fskw)
+                s3file = S3File(url=url,
+                                access_key_id=secret_id,
+                                secret_access_key=secret_key)
                 try:
-                    avail = fs.exists(s3_path)
-                except OSError:
-                    pass
+                    s3file.s3_object.load()
+                except botocore.exceptions.ClientError:
+                    avail = False
+                else:
+                    avail = True
     return avail
 
 

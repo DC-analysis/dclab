@@ -14,7 +14,7 @@ from dclab.rtdc_dataset.fmt_s3 import S3Basin, RTDC_S3
 from helper_methods import retrieve_data
 
 
-pytest.importorskip("s3fs")
+pytest.importorskip("boto3")
 
 
 s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"

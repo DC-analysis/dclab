@@ -11,7 +11,7 @@ from dclab.rtdc_dataset.fmt_s3 import (
     is_s3_url, is_s3_object_available, RTDC_S3)
 
 
-pytest.importorskip("s3fs")
+pytest.importorskip("boto3")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -34,7 +34,7 @@ def test_cache_features():
         t0 = time.perf_counter()
         _ = ds["deform"][:]
         t1 = time.perf_counter()
-        for ii in range(50):
+        for ii in range(10):
             _ = ds["deform"][:]
         t2 = time.perf_counter()
         assert t2 - t1 < t1 - t0

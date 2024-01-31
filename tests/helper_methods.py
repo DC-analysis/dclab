@@ -8,7 +8,7 @@ import numpy as np
 from dclab.rtdc_dataset import fmt_tdms
 from dclab import definitions as dfn
 from dclab.rtdc_dataset.fmt_dcor import REQUESTS_AVAILABLE  # noqa: F401
-from dclab.rtdc_dataset.fmt_s3 import S3FS_AVAILABLE  # noqa: F401
+from dclab.rtdc_dataset.fmt_s3 import BOTO3_AVAILABLE  # noqa: F401
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

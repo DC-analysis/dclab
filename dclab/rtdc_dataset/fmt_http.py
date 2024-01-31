@@ -12,7 +12,7 @@ class RTDC_HTTP(RTDC_HDF5):
         """Access RT-DC measurements via HTTP
 
         This is essentially just a wrapper around :class:`.RTDC_HDF5`
-        with `fsspec` passing a file object to h5py.
+        with :class:`.HTTPFile` passing a file object to h5py.
 
         Parameters
         ----------
@@ -68,7 +68,7 @@ class HTTPBasin(Basin):
         return h5file
 
     def is_available(self):
-        """Check for fsspec and object availability
+        """Check for `requests` and object availability
 
         Caching policy: Once this method returns True, it will always
         return True.

@@ -11,7 +11,6 @@ from helper_methods import retrieve_data
 
 
 pytest.importorskip("requests")
-pytest.importorskip("fsspec")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

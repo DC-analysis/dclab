@@ -58,7 +58,8 @@ FEATURES_SCALAR = [
     ["g_force", "Gravitational force in multiples of g"],
     # index starts with 1
     ["index", "Index (Dataset)"],
-    # index_online may have missing values (#71)
+    # index_online enumerates the events found by Shape-In and may have
+    # missing values in case of a writer-overrun with recovery (#71)
     ["index_online", "Index (Online)"],
     # The inertia ratios of the event contours are defined by the
     # central second order moments of area (sqrt(m20/m02).

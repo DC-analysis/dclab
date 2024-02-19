@@ -1,3 +1,5 @@
+0.57.4
+ - fix: catch zero-valued contour accuracy for KDE plot (#249)
 0.57.3
  - setup: the s3 extra does not require a specific version of urllib3
  - ci: use main branch of GH Actions actions to reduce maintenance burden

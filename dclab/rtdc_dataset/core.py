@@ -604,10 +604,10 @@ class RTDCBase(abc.ABC):
             method=kde_methods.bin_width_doane,
             ret_scaled=True)
 
-        if xacc is None:
+        if xacc is None or xacc == 0:
             xacc = xacc_sc / 5
 
-        if yacc is None:
+        if yacc is None or yacc == 0:
             yacc = yacc_sc / 5
 
         # Ignore infs and nans

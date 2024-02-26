@@ -36,6 +36,8 @@ class DictTraceEvent(collections.UserDict):
 
 
 class RTDC_Dict(RTDCBase):
+    _local_basins_allowed = True
+
     def __init__(self, ddict, *args, **kwargs):
         """Dictionary-based RT-DC dataset
 

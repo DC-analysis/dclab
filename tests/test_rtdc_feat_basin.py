@@ -7,7 +7,7 @@ import pytest
 
 import dclab
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
-from dclab.rtdc_dataset import feat_basin
+from dclab.rtdc_dataset import feat_basin, fmt_http
 
 
 from helper_methods import retrieve_data
@@ -111,6 +111,61 @@ def test_basin_hierarchy_trace_missing():
     assert "trace" not in ds2
     with pytest.raises(KeyError, match="does not contain the feature"):
         ds2["trace"]
+
+
+def test_basin_not_allowed_to_have_local_basin_in_remote_basin():
+    """Since version 0.57.5 we do forbid remote datasets with local basins
+
+    This type of basin-inception would allow an attacker to access files
+    on the local file system if the instance was passed on to him via a
+    script or service. In addition, defining a local basin in a remote
+    dataset does not have a sensible use case.
+    """
+    # sanity check
+    s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
+              "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+              "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+    with fmt_http.RTDC_HTTP(s3_url) as dss3:
+        assert not dss3._local_basins_allowed, "sanity check"
+
+    # Because wo do not have the resources to upload anything and access
+    # it via HTTP to test this, we simply modify the `_local_basins_allowed`
+    # property of an `RTDC_HDF5` instance. This is a hacky workaround but
+    # it should be fine.
+
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["image"],
+            "paths": [
+                str(h5path),  # absolute path name
+            ]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "image_based_local_basin", blines)
+
+    # sanity check
+    with dclab.new_dataset(h5path_small) as ds:
+        assert ds._local_basins_allowed, "sanity check"
+        assert "image" in ds
+
+    with dclab.new_dataset(h5path_small) as ds2:
+        ds2._local_basins_allowed = False
+        with pytest.warns(
+            UserWarning,
+                match="Basin type 'file' not allowed for format 'hdf5"):
+            assert "image" not in ds2, "not there, local basins are forbidden"
 
 
 def test_basin_unsupported_basin_format():

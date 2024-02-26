@@ -35,6 +35,14 @@ class RTDCBase(abc.ABC):
         by the user - a boolean value of ``False`` means that the event is
         excluded from all computations.
         """
+        #: Local basins are basins that are defined on the user's file system.
+        #: For reasons of data security (leaking data from a server or from a
+        #: user's file system), dclab only allows remote basins (see
+        #: :func:`basins_retrieve`) by default. This variable is set to True
+        #: for the RTDC_HDF5 file format, because it implies the data are
+        #: located on the user's computer.
+        self._local_basins_allowed = False
+
         #: Dataset format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
 
@@ -721,6 +729,11 @@ class RTDCBase(abc.ABC):
 
         If an RT-DC file has "basins" defined, then these are sought out and
         made available via the `features_basin` property.
+
+        .. versionchanged:: 0.57.5
+
+            "file"-type basins are only available for subclasses that
+            set the `_local_basins_allowed` attribute to True.
         """
         basins = []
         bc = feat_basin.get_basin_classes()
@@ -744,6 +757,11 @@ class RTDCBase(abc.ABC):
             }
 
             if bdict["type"] == "file":
+                if not self._local_basins_allowed:
+                    warnings.warn(f"Basin type 'file' not allowed for format "
+                                  f"'{self.format}'")
+                    # stop processing this basin
+                    continue
                 for pp in bdict["paths"]:
                     pp = pathlib.Path(pp)
                     # Instantiate the proper basin class

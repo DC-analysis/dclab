@@ -57,6 +57,11 @@ class RTDC_HDF5(RTDCBase):
         """
         super(RTDC_HDF5, self).__init__(*args, **kwargs)
 
+        # Any subclass from RTDC_HDF5 is probably a remote-type and should
+        # not be able to access local basins. If you do not agree, please
+        # enable this in the definition of the subclass.
+        self._local_basins_allowed = True if self.format == "hdf5" else False
+
         if isinstance(h5path, (str, pathlib.Path)):
             h5path = pathlib.Path(h5path)
         else:

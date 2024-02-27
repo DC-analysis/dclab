@@ -121,6 +121,7 @@ def test_basin_not_allowed_to_have_local_basin_in_remote_basin():
     script or service. In addition, defining a local basin in a remote
     dataset does not have a sensible use case.
     """
+    pytest.importorskip("requests")
     # sanity check
     s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
               "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"

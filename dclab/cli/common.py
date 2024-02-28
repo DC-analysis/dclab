@@ -75,13 +75,18 @@ def get_command_log(paths, custom_dict=None):
     data = get_job_info()
     data["files"] = []
     for ii, pp in enumerate(paths):
-        fdict = {"name": pathlib.Path(pp).name,
-                 # Hash only 5 MB of the input file
-                 "md5-5M": util.hashfile(pp,
-                                         count=80,
-                                         constructor=hashlib.md5),
-                 "index": ii+1
-                 }
+        if pathlib.Path(pp).exists():
+            fdict = {"name": pathlib.Path(pp).name,
+                     # Hash only 5 MB of the input file
+                     "md5-5M": util.hashfile(pp,
+                                             count=80,
+                                             constructor=hashlib.md5),
+                     "index": ii+1
+                     }
+        else:
+            fdict = {"name": f"{pp}",
+                     "index": ii + 1
+                     }
         data["files"].append(fdict)
     final_data = {}
     final_data.update(custom_dict)

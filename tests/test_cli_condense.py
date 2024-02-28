@@ -72,6 +72,29 @@ def test_condense_defective_feature():
         assert np.allclose(dso["volume"], volume, atol=0, rtol=1e-10)
 
 
+def test_condense_from_s3(tmp_path):
+    """
+    dclab 0.57.6 supports condensing any class of dataset. Here
+    we just test whether we can condense a resource on DCOR
+    """
+    # TODO: Upload a smaller test dataset to DCOR to speed-up this test
+    pytest.importorskip("requests")
+    s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
+              "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+              "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+
+    path_cond = tmp_path / "condensed.rtdc"
+    with new_dataset(s3_url) as ds, h5py.File(path_cond, "w") as h5_cond:
+        cli.condense_dataset(ds=ds,
+                             h5_cond=h5_cond,
+                             ancillaries=True)
+
+    with new_dataset(path_cond) as dsc:
+        assert "volume" in dsc
+        assert np.allclose(dsc["deform"][1000], 0.0148279015,
+                           atol=0, rtol=1e-7)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_condense_no_ancillary_features():

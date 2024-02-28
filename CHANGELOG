@@ -1,3 +1,8 @@
+0.57.6
+ - ref: factor out `cli.task_condense.condense_dataset` for condensing
+   an open dataset without the knowledge of its path
+ - ref: when condensing a dataset, instead of the MD5-5M, the hash of its
+   configuration is used as an suffix for previous condense logs
 0.57.5
  - fix: do not allow local basins for network-based subclasses of `RTDCBase`
 0.57.4

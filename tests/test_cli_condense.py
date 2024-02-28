@@ -1,6 +1,6 @@
 """Test command-line interface dclab-condense"""
 import dclab
-from dclab import cli, new_dataset
+from dclab import cli, new_dataset, util
 
 import h5py
 import numpy as np
@@ -112,6 +112,28 @@ def test_condense_no_ancillary_features_control():
         assert "area_um" not in ds0.features_innate, "sanity check"
         assert "area_um" in ds0.features
         assert "area_um" in dsj.features_innate
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_condense_triple_logs():
+    """In version 0.57.6, we introduced log renaming"""
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("condensed.rtdc")
+    path_out_2 = path_in.with_name("condensed2.rtdc")
+    path_out_3 = path_in.with_name("condensed3.rtdc")
+
+    cli.condense(path_out=path_out, path_in=path_in)
+    cli.condense(path_out=path_out_2, path_in=path_out)
+    cli.condense(path_out=path_out_3, path_in=path_out_2)
+
+    with (dclab.new_dataset(path_out) as ds,
+          dclab.new_dataset(path_out_2) as ds2,
+          dclab.new_dataset(path_out_3) as ds3):
+        md5_meta_1 = util.hashobj(ds.config)
+        assert f"dclab-condense_{md5_meta_1}" in list(ds2.logs)
+        assert f"dclab-condense_{md5_meta_1}" in list(ds3.logs)
 
 
 @pytest.mark.filterwarnings(

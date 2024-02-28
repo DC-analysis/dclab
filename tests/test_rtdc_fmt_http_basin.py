@@ -1,6 +1,5 @@
 import json
 import uuid
-import socket
 
 import h5py
 import numpy as np
@@ -12,23 +11,18 @@ from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_http import HTTPBasin, RTDC_HTTP
 
 
-from helper_methods import retrieve_data
+from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 pytest.importorskip("requests")
+
+if not DCOR_AVAILABLE:
+    pytest.skip("No connection to DCOR", allow_module_level=True)
 
 
 http_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
             "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
             "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
-
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    try:
-        s.connect(("dcor.mpl.mpg.de", 443))
-    except (socket.gaierror, OSError):
-        pytest.skip("No connection to DCOR",
-                    allow_module_level=True)
 
 
 def test_basin_as_dict(tmp_path):

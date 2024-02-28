@@ -6,7 +6,7 @@ import h5py
 import numpy as np
 import pytest
 
-from helper_methods import retrieve_data
+from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 def test_check_suffix_disabled_condense():
@@ -72,13 +72,14 @@ def test_condense_defective_feature():
         assert np.allclose(dso["volume"], volume, atol=0, rtol=1e-10)
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
 def test_condense_from_s3(tmp_path):
     """
     dclab 0.57.6 supports condensing any class of dataset. Here
     we just test whether we can condense a resource on DCOR
     """
-    # TODO: Upload a smaller test dataset to DCOR to speed-up this test
     pytest.importorskip("requests")
+    # TODO: Upload a smaller test dataset to DCOR to speed-up this test
     s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
               "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
               "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")

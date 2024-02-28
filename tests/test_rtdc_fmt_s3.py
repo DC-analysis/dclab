@@ -1,5 +1,4 @@
 """Test S3 format"""
-import socket
 import time
 import uuid
 
@@ -10,16 +9,14 @@ import pytest
 from dclab.rtdc_dataset.fmt_s3 import (
     is_s3_url, is_s3_object_available, RTDC_S3)
 
+from helper_methods import DCOR_AVAILABLE
+
 
 pytest.importorskip("boto3")
 
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    try:
-        s.connect(("dcor.mpl.mpg.de", 443))
-    except (socket.gaierror, OSError):
-        pytest.skip("No connection to DCOR",
-                    allow_module_level=True)
+if not DCOR_AVAILABLE:
+    pytest.skip("No connection to DCOR", allow_module_level=True)
 
 
 def test_cache_features():

@@ -1,24 +1,18 @@
 """Test DCOR format"""
 import pathlib
-import socket
 
 import dclab
 from dclab.rtdc_dataset.fmt_dcor import RTDC_DCOR, is_dcor_url
 import numpy as np
 import pytest
 
-from helper_methods import retrieve_data
+from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 pytest.importorskip("requests")
 
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    try:
-        s.connect(("dcor.mpl.mpg.de", 443))
-    except (socket.gaierror, OSError):
-        pytest.skip("No connection to DCOR",
-                    allow_module_level=True)
+if not DCOR_AVAILABLE:
+    pytest.skip("No connection to DCOR", allow_module_level=True)
 
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):

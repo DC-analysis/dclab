@@ -10,7 +10,7 @@ from dclab import new_dataset, rtdc_dataset, RTDCWriter
 from dclab.rtdc_dataset import feat_basin, fmt_http
 
 
-from helper_methods import retrieve_data
+from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 def test_basin_sorting_basic():
@@ -113,6 +113,7 @@ def test_basin_hierarchy_trace_missing():
         ds2["trace"]
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
 def test_basin_not_allowed_to_have_local_basin_in_remote_basin():
     """Since version 0.57.5 we do forbid remote datasets with local basins
 

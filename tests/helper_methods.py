@@ -20,6 +20,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         DCOR_AVAILABLE = True
 
 
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    try:
+        s.connect(("objectstore.hpccloud.mpcdf.mpg.de", 443))
+    except (socket.gaierror, OSError):
+        DCOR_AVAILABLE = False
+
+
 def calltracker(func):
     """Decorator to track how many times a function is called"""
     def wrapped(*args, **kwargs):

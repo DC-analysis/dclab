@@ -1,5 +1,4 @@
 """Test HTTP format"""
-import socket
 import time
 
 import numpy as np
@@ -8,16 +7,13 @@ import pytest
 
 from dclab.rtdc_dataset.fmt_http import RTDC_HTTP
 
+from helper_methods import DCOR_AVAILABLE
+
 
 pytest.importorskip("requests")
 
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    try:
-        s.connect(("dcor.mpl.mpg.de", 443))
-    except (socket.gaierror, OSError):
-        pytest.skip("No connection to DCOR",
-                    allow_module_level=True)
+if not DCOR_AVAILABLE:
+    pytest.skip("No connection to DCOR", allow_module_level=True)
 
 
 def test_cache_features():

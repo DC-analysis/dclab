@@ -1,6 +1,5 @@
 import json
 import uuid
-import socket
 
 import h5py
 import numpy as np
@@ -11,22 +10,16 @@ from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_dcor import DCORBasin, RTDC_DCOR
 
 
-from helper_methods import retrieve_data
+from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 pytest.importorskip("requests")
 
+if not DCOR_AVAILABLE:
+    pytest.skip("No connection to DCOR", allow_module_level=True)
 
 dcor_url = ("https://dcor.mpl.mpg.de/api/3/action/dcserv?id="
             "fb719fb2-bd9f-817a-7d70-f4002af916f0")
-
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    try:
-        s.connect(("dcor.mpl.mpg.de", 443))
-    except (socket.gaierror, OSError):
-        pytest.skip("No connection to DCOR",
-                    allow_module_level=True)
 
 
 @pytest.mark.filterwarnings(

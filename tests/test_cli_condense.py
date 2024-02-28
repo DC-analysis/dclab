@@ -1,4 +1,5 @@
 """Test command-line interface dclab-condense"""
+import dclab
 from dclab import cli, new_dataset
 
 import h5py
@@ -36,6 +37,39 @@ def test_condense():
         assert len(dsj) == len(ds0)
         for feat in dsj.features:
             assert np.all(dsj[feat] == ds0[feat])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_condense_defective_feature():
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+
+    # The input file has an invalid volume
+    with h5py.File(path_in, "a") as h5:
+        bad_volume = h5["events/volume"][:]
+
+    # compute correct volume with dclab
+    with dclab.new_dataset(path_in) as ds:
+        volume = ds["volume"][:]
+
+    # dclab computes the correct volume, identifying the volume in the
+    # file as defective.
+    assert not np.allclose(volume, bad_volume, atol=0, rtol=1e-3), "sanity"
+
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("condensed.rtdc")
+
+    cli.condense(path_out=path_out, path_in=path_in)
+
+    with h5py.File(path_out) as h5o:
+        volume_out = h5o["events/volume"][:]
+
+    # The output volume should be identical to the correct volume
+    assert np.allclose(volume_out, volume, atol=0, rtol=1e-10)
+
+    # Once again with dclab
+    with dclab.new_dataset(path_out) as dso:
+        assert np.allclose(dso["volume"], volume, atol=0, rtol=1e-10)
 
 
 @pytest.mark.filterwarnings(

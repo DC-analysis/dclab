@@ -2,7 +2,7 @@
 """command line interface"""
 from .common import get_command_log, get_job_info
 from .task_compress import compress, compress_parser
-from .task_condense import condense, condense_parser
+from .task_condense import condense, condense_dataset, condense_parser
 from .task_join import join, join_parser
 from .task_repack import repack, repack_parser
 from .task_split import split, split_parser

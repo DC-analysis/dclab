@@ -32,8 +32,8 @@ def condense(path_out=None, path_in=None, ancillaries=True,
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        with (new_dataset(path_in) as ds,
-              h5py.File(path_temp, "w") as h5_cond):
+        with new_dataset(path_in) as ds, \
+                h5py.File(path_temp, "w") as h5_cond:
             condense_dataset(ds=ds,
                              h5_cond=h5_cond,
                              ancillaries=ancillaries,

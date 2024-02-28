@@ -128,9 +128,9 @@ def test_condense_triple_logs():
     cli.condense(path_out=path_out_2, path_in=path_out)
     cli.condense(path_out=path_out_3, path_in=path_out_2)
 
-    with (dclab.new_dataset(path_out) as ds,
-          dclab.new_dataset(path_out_2) as ds2,
-          dclab.new_dataset(path_out_3) as ds3):
+    with dclab.new_dataset(path_out) as ds, \
+        dclab.new_dataset(path_out_2) as ds2, \
+            dclab.new_dataset(path_out_3) as ds3:
         md5_meta_1 = util.hashobj(ds.config)
         assert f"dclab-condense_{md5_meta_1}" in list(ds2.logs)
         assert f"dclab-condense_{md5_meta_1}" in list(ds3.logs)

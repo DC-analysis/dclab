@@ -1,5 +1,5 @@
 0.57.7
- - fix: raise a ValueError HTTPFile when the server does not return
+ - fix: raise a ValueError in HTTPFile when the server does not return
    the status code 200
  - enh: properly handle missing ETag in HTTPFile
  - enh: compute fallback identifier using hash of first chunk in RTDC_HTTP

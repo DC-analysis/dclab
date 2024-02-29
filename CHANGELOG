@@ -1,3 +1,8 @@
+0.57.7
+ - fix: raise a ValueError HTTPFile when the server does not return
+   the status code 200
+ - enh: properly handel missing ETag in HTTPFile
+ - enh: compute identifier using hash of first chunk in RTDC_HTTP
 0.57.6
  - enh: allow non-existent paths in `common.get_command_log`
  - ref: factor out `cli.task_condense.condense_dataset` for condensing

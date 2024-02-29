@@ -15,7 +15,7 @@ if not DCOR_AVAILABLE:
 
 
 def test_http_file_basic():
-    """The is a basic seek and read test
+    """This is a basic seek and read test
 
     It checks whether seeking to a position, reading things and then
     seeking to the same position yields the same result. Since HTTPFile
@@ -36,6 +36,16 @@ def test_http_file_basic():
     f2.seek(5000000)
     d2 = f2.read(200)
     assert d1 == d2
+
+
+def test_http_file_does_not_exist():
+    bad_s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
+                  "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+                  "resource/fb7/19f/ef-ffff-ffff-ffff-f4002af916f0")
+    f1 = HTTPFile(bad_s3_url)
+    with pytest.raises(ValueError,
+                       match="Server replied with status code 403 Forbidden"):
+        f1._parse_header()
 
 
 @pytest.mark.parametrize("url, avail", [

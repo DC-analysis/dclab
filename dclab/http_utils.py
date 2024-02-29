@@ -69,8 +69,17 @@ class HTTPFile(io.IOBase):
             # Do not use `self.session.head`, because it might return a
             # wrong content-length for pre-signed S3 URLS.
             resp = self.session.get(self.url, stream=True, timeout=0.5)
+            if resp.status_code != 200:
+                raise ValueError(
+                    f"Server replied with status code {resp.status_code} "
+                    f"{resp.reason} for '{self.url}'")
             self._len = int(resp.headers["content-length"])
-            self._etag = resp.headers.get("etag").strip("'").strip('"')
+            # Try to determine the etag of the file.
+            etag = resp.headers.get("etag", "").strip("'").strip('"')
+            if len(etag) < 5:
+                etag = None
+                warnings.warn(f"Got empty ETag header for {self.url}")
+            self._etag = etag
 
     @property
     def etag(self):

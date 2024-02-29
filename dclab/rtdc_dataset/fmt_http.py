@@ -1,3 +1,5 @@
+import hashlib
+
 from ..http_utils import HTTPFile, REQUESTS_AVAILABLE, is_url_available
 from ..http_utils import is_http_url  # noqa: F401
 
@@ -34,9 +36,15 @@ class RTDC_HTTP(RTDC_HDF5):
 
         self._fhttp = HTTPFile(url)
         if kwargs.get("identifier") is None:
-            # Set the HTTP ETag as the identifier, it doesn't get more unique
-            # than that!
-            kwargs["identifier"] = self._fhttp.etag
+            if self._fhttp.etag is not None:
+                # Set the HTTP ETag as the identifier, it doesn't get
+                # more unique than that!
+                kwargs["identifier"] = self._fhttp.etag
+            else:
+                # Compute a hash of the first data chunk
+                kwargs["identifier"] = hashlib.md5(
+                    self._fhttp.get_cache_chunk(0)).hexdigest()
+
         # Initialize the HDF5 dataset
         super(RTDC_HTTP, self).__init__(
             h5path=self._fhttp,

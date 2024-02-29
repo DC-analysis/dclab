@@ -11,36 +11,41 @@ from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 pytest.importorskip("requests")
 
-if not DCOR_AVAILABLE:
-    pytest.skip("No connection to DCOR", allow_module_level=True)
-
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):
     def __init__(self, *args, **kwargs):
         super(MockAPIHandler, self).__init__(*args, **kwargs)
-        # We are mocking only API version 1
-        self.dcserv_api_version = 1
+        # We are mocking only API version 2
+        self.dcserv_api_version = 2
 
     def get(self, query, feat=None, trace=None, event=None):
         """Mocks communication with the DCOR API"""
         h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
         with dclab.new_dataset(h5path) as ds:
-            if query == "size":
+            if query == "valid":
+                return True
+            elif query == "metadata":
+                return dict(ds.config)
+            elif query == "feature_list":
+                return []
+            elif query == "logs":
+                return ds.logs
+            elif query == "size":
                 return len(ds)
             elif query == "basins":
-                return []
-            elif query == "metadata":
-                return ds.config
-            elif query == "feature_list":
-                return ds.features
-            elif query == "feature" and dclab.dfn.scalar_feature_exists(feat):
-                return ds[feat]
-            elif query == "feature" and feat == "trace":
-                return ds["trace"][trace][event]
+                return [{
+                    "description": "mock basin",
+                    "format": "hdf5",
+                    "name": "fmt-hdf5_fl_2018",
+                    "type": "file",
+                    "paths": [str(h5path)],
+                }]
+            elif query == "tables":
+                return ds.tables
             elif query == "trace_list":
                 return sorted(ds["trace"].keys())
             else:
-                return ds[feat][event]
+                raise ValueError(f"Invalid query '{query}'")
 
 
 @pytest.mark.filterwarnings(
@@ -53,6 +58,9 @@ def test_dcor_base(monkeypatch):
         dso = dclab.new_dataset(
             "https://example.com/api/3/action/dcserv?id="
             "b1404eb5-f661-4920-be79-5ff4e85915d1")
+        # Trick fmt_dcor into accepting file-based basins
+        dso._local_basins_allowed = True
+
         assert len(dso) == len(ds)
         assert dso.config["setup"]["channel width"] == \
             ds.config["setup"]["channel width"]
@@ -76,38 +84,9 @@ def test_dcor_base(monkeypatch):
             assert np.all(t1 == t2)
 
 
-def test_dcor_cache_scalar():
-    # Testing the cache is only relevant for api version 1
-    # calibration beads
-    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
-                           dcserv_api_version=1) as ds:
-        # sanity checks
-        assert len(ds) == 5000
-        assert "area_um" in ds
-
-        area_um = ds["area_um"]
-        assert ds["area_um"] is area_um, "Check proper caching"
-        # provoke cache deletion
-        ds._events._scalar_cache.pop("area_um")
-        assert ds["area_um"] is not area_um, "test removal from cache"
-
-
-def test_dcor_cache_trace():
-    # Testing the cache is only relevant for api version 1
-    # calibration beads
-    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0",
-                           dcserv_api_version=1) as ds:
-        # sanity checks
-        assert len(ds) == 5000
-        assert "trace" in ds
-
-        trace0 = ds["trace"]["fl1_raw"][0]
-        assert ds["trace"]["fl1_raw"][0] is trace0, "Check proper caching"
-        assert ds["trace"]["fl1_raw"][1] is not trace0, "Check proper caching"
-
-
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_data():
     # reticulocytes.rtdc contains contour data
     with dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a") as ds:
@@ -125,6 +104,7 @@ def test_dcor_data():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_hash():
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
         # hash includes the full URL (path)
@@ -139,12 +119,16 @@ def test_dcor_hierarchy(monkeypatch):
                         MockAPIHandler)
     dso = dclab.new_dataset("https://example.com/api/3/action/dcserv?id="
                             "b1404eb5-f661-4920-be79-5ff4e85915d5")
+    # Trick fmt_dcor into accepting file-based basins
+    dso._local_basins_allowed = True
+
     dsh = dclab.new_dataset(dso)
     assert np.all(dso["area_um"] == dsh["area_um"])
 
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_logs():
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
         assert len(ds.logs) >= 2  # there might be others
@@ -155,6 +139,7 @@ def test_dcor_logs():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_shape_contour():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -164,6 +149,7 @@ def test_dcor_shape_contour():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_shape_image():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -175,6 +161,7 @@ def test_dcor_shape_image():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_shape_mask():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -186,6 +173,7 @@ def test_dcor_shape_mask():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_shape_trace():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -204,6 +192,7 @@ def test_dcor_shape_trace():
                                   np.array([0, 2, 4]),
                                   [0, 2, 4]
                                   ])
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_slicing_contour(idxs):
     """Test slicing of contour data"""
     # reticulocytes.rtdc contains contour data
@@ -229,6 +218,7 @@ def test_dcor_slicing_contour(idxs):
                                   np.array([0, 2, 4]),
                                   [0, 2, 4]
                                   ])
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_slicing_image_mask(feat, idxs):
     """Test slicing of image/mask data"""
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -251,6 +241,7 @@ def test_dcor_slicing_image_mask(feat, idxs):
                                   np.array([0, 2, 4]),
                                   [0, 2, 4]
                                   ])
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_slicing_trace(idxs):
     """Test slicing of trace data"""
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
@@ -354,10 +345,12 @@ def test_dcor_slicing_trace(idxs):
       "host": "example2.com"}
      ),
 ])
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_get_full_url(target, kwargs):
     assert target == RTDC_DCOR.get_full_url(**kwargs)
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_is_dcor_url():
     assert is_dcor_url("2cea205f-2d9d-26d0-b44c-0a11d5379152")
     assert not is_dcor_url("2cea205f-2d9d")
@@ -376,6 +369,7 @@ def test_is_dcor_url():
                            "2cea205f-2d9d-26d0-b44c-")
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_load_nonexistent_file_issue81():
     """https://github.com/DC-analysis/dclab/issues/81"""
     try:

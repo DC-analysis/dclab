@@ -8,7 +8,6 @@ from ..config import Configuration
 from ..core import RTDCBase
 
 from . import api
-from .events import FeatureCache
 from .logs import DCORLogs
 from .tables import DCORTables
 
@@ -98,9 +97,6 @@ class RTDC_DCOR(RTDCBase):
         if size is None:
             size = int(self.api.get(query="size"))
         self._size = size
-
-        # Setup events
-        self._events = FeatureCache(self.api, size=self._size)
 
         self.title = f"{self.config['experiment']['sample']} - " \
             + f"M{self.config['experiment']['run index']}"

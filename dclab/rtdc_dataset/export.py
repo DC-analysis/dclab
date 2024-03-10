@@ -161,7 +161,7 @@ class Export(object):
                            )
 
     def hdf5(self, path, features=None, filtered=True,
-             logs=False, tables=False, meta_prefix="src_",
+             logs=False, tables=False, basins=False, meta_prefix="src_",
              override=False, compression_kwargs=None,
              compression="deprecated", skip_checks=False):
         """Export the data of the current instance to an HDF5 file
@@ -185,6 +185,10 @@ class Export(object):
         tables: bool
             Whether to store the tables of the original file prefixed with
             `source_` to the output file.
+        basins: bool
+            Whether to export basins. If filtering is disabled, basins
+            are copied directly to the output file. If filtering is enabled,
+            then mapped basins are exported.
         meta_prefix: str
             Prefix for log and table names in the exported file
         override: bool
@@ -319,6 +323,28 @@ class Export(object):
                                            feat=feat,
                                            data=self.rtdc_ds[feat],
                                            filtarr=filtarr)
+
+            if basins:
+                # We have to store basins. There are three options:
+                # - filtering disabled: just copy basins
+                # - filtering enabled
+                #   - basins with "same" mapping: create new mapping
+                #   - mapped basins: correct nested mapping
+                if filtered:
+                    basinmap = np.where(filtarr)[0]
+                for bn in self.rtdc_ds.basins:
+                    bn_dict = bn.as_dict()
+                    if not filtered:
+                        # filtering disabled: just copy basins
+                        pass
+                    elif bn.mapping == "same":
+                        # basins with "same" mapping: create new mapping
+                        bn_dict["basin_map"] = basinmap
+                    else:
+                        # mapped basins: correct nested mapping
+                        bn_dict["basin_map"] = bn_dict["basin_map"][basinmap]
+
+                    hw.store_basin(**bn_dict)
 
     def tsv(self, path, features, meta_data=None, filtered=True,
             override=False):

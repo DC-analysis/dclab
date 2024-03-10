@@ -5,7 +5,7 @@ import copy
 import json
 import os
 import pathlib
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Tuple
 import warnings
 
 import h5py
@@ -187,6 +187,7 @@ class RTDCWriter:
                     basin_locs: List[str | pathlib.Path],
                     basin_descr: str | None = None,
                     basin_feats: List[str] = None,
+                    basin_map: np.ndarray | Tuple[str, np.ndarray] = None,
                     verify: bool = True,
                     ):
         """Write basin information
@@ -210,11 +211,28 @@ class RTDCWriter:
         basin_feats: list of str
             list of features this basin provides; You may use this to
             restrict access to features for a specific basin.
+        basin_map: np.ndarray or tuple of (str, np.ndarray)
+            If this is an integer numpy array, it defines the mapping
+            of event indices from the basin dataset to the referring dataset
+            (the dataset being written to disk). Normally, the basinmap
+            feature used for the storing the mapping information is inferred
+            from the currently defined basinmap features. However, if you
+            are incepting basins, then this might not be sufficient, and you
+            have to specify explicitly which basinmap feature to use. In such
+            a case, you may specify a tuple `(feature_name, mapping_array)`
+            where `feature_name` is the explicit mapping name, e.g.
+            `"basinmap3"`.
         verify: bool
             whether to verify the basin before storing it; You might have
             set this to False if you would like to write a basin that is
             e.g. temporarily not available
         """
+        # Expand optional tuple for basin_map
+        if isinstance(basin_map, (list, tuple)) and len(basin_map) == 2:
+            basin_map_name, basin_map = basin_map
+        else:
+            basin_map_name = None
+
         if verify:
             # We have to import this here to avoid circular imports
             from .load import new_dataset
@@ -234,13 +252,67 @@ class RTDCWriter:
                 for feat in basin_feats:
                     if not dfn.feature_exists(feat):
                         raise ValueError(f"Invalid feature: '{feat}'")
+            if basin_map is not None:
+                if (not isinstance(basin_map, np.ndarray)
+                        and basin_map.dtype != np.uint64):
+                    raise ValueError(
+                        "The array specified in `basin_map` argument must be "
+                        "a numpy array with the dtype `np.uint64`!")
 
-        bdat = {
+        # determine the basinmap to use
+        if basin_map is not None:
+            self.h5file.require_group("events")
+            if basin_map_name is None:
+                # We have to determine the basin_map_name to use for this
+                # mapped basin.
+                for ii in range(10):  # basinmap0 to basinmap9
+                    bm_cand = f"basinmap{ii}"
+                    if bm_cand in self.h5file["events"]:
+                        # There is a basin mapping defined in the file. Check
+                        # whether it is identical to ours.
+                        if np.all(self.h5file["events"][bm_cand] == basin_map):
+                            # Great, we are done here.
+                            basin_map_name = bm_cand
+                            break
+                        else:
+                            # This mapping belongs to a different basin,
+                            # try the next mapping.
+                            continue
+                    else:
+                        # The mapping is not defined in the dataset, and we may
+                        # write it to a new feature.
+                        basin_map_name = bm_cand
+                        self.store_feature(feat=basin_map_name, data=basin_map)
+                        break
+                else:
+                    raise ValueError(
+                        "You have exhausted the usage of mapped basins for "
+                        "the current dataset. Please revise your analysis "
+                        "pipeline.")
+            else:
+                if basin_map_name not in self.h5file["events"]:
+                    # Write the explicit basin mapping into the file.
+                    self.store_feature(feat=basin_map_name, data=basin_map)
+                elif not np.all(
+                        self.h5file["events"][basin_map_name] == basin_map):
+                    # This is a sanity check that we have to perform.
+                    raise ValueError(
+                        f"The basin mapping feature {basin_map_name} you "
+                        f"specified explicitly already exists in "
+                        f"{self.h5file} and they do not match. I assume "
+                        f"you are trying explicitly write to a basinmap that "
+                        f"is already used elsewhere.")
+        else:
+            # Classic, simple case
+            basin_map_name = "same"
+
+        b_data = {
             "description": basin_descr,
             "format": basin_format,
             "name": basin_name,
             "type": basin_type,
             "features": basin_feats,
+            "mapping": basin_map_name,
         }
         if basin_type == "file":
             flocs = []
@@ -261,14 +333,14 @@ class RTDCWriter:
                     # We already did (or did not upon user request) verify
                     # the path. Just pass it on to the list.
                     flocs.append(str(pp))
-            bdat["paths"] = flocs
+            b_data["paths"] = flocs
         else:
-            bdat["urls"] = [str(p) for p in basin_locs]
-        blines = json.dumps(bdat, indent=2).split("\n")
+            b_data["urls"] = [str(p) for p in basin_locs]
+        b_lines = json.dumps(b_data, indent=2).split("\n")
         basins = self.h5file.require_group("basins")
-        key = hashobj(blines)
+        key = hashobj(b_lines)
         if key not in basins:
-            self.write_text(basins, key, blines)
+            self.write_text(basins, key, b_lines)
 
     def store_feature(self, feat, data, shape=None):
         """Write feature data

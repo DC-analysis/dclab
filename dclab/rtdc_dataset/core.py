@@ -737,7 +737,6 @@ class RTDCBase(abc.ABC):
         """
         basins = []
         bc = feat_basin.get_basin_classes()
-        muid = self.get_measurement_identifier()
         # Sort basins according to priority
         bdicts_srt = sorted(self.basins_get_dicts(),
                             key=feat_basin.basin_priority_sorted_key)
@@ -746,16 +745,23 @@ class RTDCBase(abc.ABC):
                 warnings.warn(f"Encountered unsupported basin "
                               f"format '{bdict['format']}'!")
                 continue
-            # Check whether this basin is supported and exists
+
+            # Basin initialization keyword arguments
             kwargs = {
                 "name": bdict.get("name"),
                 "description": bdict.get("description"),
                 # Honor features intended by basin creator.
                 "features": bdict.get("features"),
+                # Which mapping we are using ("same", "basinmap1", ...)
+                "mapping": bdict.get("mapping", "same"),
+                # For non-identical mapping ("basinmap1", etc.), we
+                # need the referring dataset.
+                "mapping_referrer": self,
                 # Make sure the measurement identifier is checked.
                 "measurement_identifier": self.get_measurement_identifier(),
             }
 
+            # Check whether this basin is supported and exists
             if bdict["type"] == "file":
                 if not self._local_basins_allowed:
                     warnings.warn(f"Basin type 'file' not allowed for format "
@@ -765,27 +771,25 @@ class RTDCBase(abc.ABC):
                 for pp in bdict["paths"]:
                     pp = pathlib.Path(pp)
                     # Instantiate the proper basin class
-                    bcls = bc[bdict["format"]]
+                    b_cls = bc[bdict["format"]]
                     # Try absolute path
-                    bna = bcls(pp, **kwargs)
-                    if (bna.is_available()
-                            and bna.get_measurement_identifier() == muid):
+                    bna = b_cls(pp, **kwargs)
+                    if bna.verify_basin():
                         basins.append(bna)
                         break
                     # Try relative path
-                    thispath = pathlib.Path(self.path)
-                    if thispath.exists():
+                    this_path = pathlib.Path(self.path)
+                    if this_path.exists():
                         # Insert relative path
-                        bnr = bcls(thispath.parent / pp, **kwargs)
-                        if (bnr.is_available()
-                                and bnr.get_measurement_identifier() == muid):
+                        bnr = b_cls(this_path.parent / pp, **kwargs)
+                        if bnr.verify_basin():
                             basins.append(bnr)
                             break
             elif bdict["type"] == "remote":
                 for url in bdict["urls"]:
                     # Instantiate the proper basin class
-                    bcls = bc[bdict["format"]]
-                    bna = bcls(url, **kwargs)
+                    b_cls = bc[bdict["format"]]
+                    bna = b_cls(url, **kwargs)
                     # In contrast to file-type basins, we just add all remote
                     # basins without checking first. We do not check for
                     # the availability of remote basins, because they could

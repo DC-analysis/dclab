@@ -28,13 +28,13 @@ def test_basin_sorting_basic():
 
 
 @pytest.mark.parametrize("btype,bformat,sortval", [
-    ["file", "hdf5", "aa"],
-    ["remote", "http", "bb"],
-    ["remote", "s3", "bc"],
-    ["remote", "dcor", "bd"],
-    ["peter", "hdf5", "za"],
-    ["remote", "hans", "bz"],
-    ["hans", "peter", "zz"],
+    ["file", "hdf5", "aaa"],
+    ["remote", "http", "bba"],
+    ["remote", "s3", "bca"],
+    ["remote", "dcor", "bda"],
+    ["peter", "hdf5", "zaa"],
+    ["remote", "hans", "bza"],
+    ["hans", "peter", "zza"],
 ]
                          )
 def test_basin_sorting_key(btype, bformat, sortval):

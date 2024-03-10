@@ -16,10 +16,13 @@ from __future__ import annotations
 
 import abc
 import threading
-from typing import Dict
+from typing import Dict, List, Literal
+
+import numpy as np
 
 
 class BasinAvailabilityChecker(threading.Thread):
+    """Helper thread for checking basin availability in the background"""
     def __init__(self, basin, *args, **kwargs):
         super(BasinAvailabilityChecker, self).__init__(*args, daemon=True,
                                                        **kwargs)
@@ -35,10 +38,43 @@ class Basin(abc.ABC):
     The external data must be a valid RT-DC dataset, subclasses
     should ensure that the corresponding API is available.
     """
+    # TODO: TESTS
+    #  - when exporting data and `basins` is set to True, copy all
+    #    basins but create a basinmap feature for it. Re-use the
+    #    basinmap feature and don't create a new one for every basin
+    #    in the original file.
+    #  - Test for KeyError including error message when no basinmap is
+    #    defined in the referring dataset (no possible ancillary features).
+    #  - Test for measurement identifier with exported data.
+    #  - Test sorting the priority of basins ("same" has highest)
+    #  - Three cases of data export with basins:
+    #    - original dataset has "same" basins, filtering disabled
+    #    - original dataset has mapped basins, filtering disabled
+    #    - original dataset has "same" basins, filtering enabled
+    #    - original dataset has mapped basins, filtering enabled
+
     id_getters = {}
 
-    def __init__(self, location, name=None, description=None,
-                 features=None, measurement_identifier=None, **kwargs):
+    def __init__(self,
+                 location: str,
+                 name: str = None,
+                 description: str = None,
+                 features: List[str] = None,
+                 measurement_identifier: str = None,
+                 mapping: Literal["same",
+                                  "basinmap0",
+                                  "basinmap1",
+                                  "basinmap2",
+                                  "basinmap3",
+                                  "basinmap4",
+                                  "basinmap5",
+                                  "basinmap6",
+                                  "basinmap7",
+                                  "basinmap8",
+                                  "basinmap9",
+                                  ] = "same",
+                 mapping_referrer: Dict = None,
+                 **kwargs):
         """
 
         Parameters
@@ -49,7 +85,7 @@ class Basin(abc.ABC):
         name: str
             Human-readable name of the basin
         description: str
-            Lengthy descrition of the basin
+            Lengthy description of the basin
         features: list of str
             List of features this basin provides; This list is enforced,
             even if the basin actually contains more features.
@@ -57,6 +93,28 @@ class Basin(abc.ABC):
             A measurement identifier against which to check the basin.
             If this is set to None (default), there is no certainty
             that the downstream dataset is from the same measurement.
+        mapping: str
+            Which type of mapping to use. This can be either "same"
+            when the event list of the basin is identical to that
+            of the dataset defining the basin, or one of the "basinmap"
+            features (e.g. "basinmap1") in cases where the dataset consists
+            of a subset of the events of the basin dataset. In the latter
+            case, the feature defined by `mapping` must be present in the
+            dataset and consist of integer-valued indices (starting at 0)
+            for the basin dataset.
+        mapping_referrer: dict-like
+            Dict-like object from which "basinmap" features can be obtained
+            in situations where `mapping != "same"`. This can be a simple
+            dictionary of numpy arrays or e.g. an instance of
+            :class:`.RTDCBase`.
+        kwargs:
+            Additional keyword arguments passed to the `load_dataset`
+            method of the `Basin` subclass.
+
+        .. versionchanged: 0.56.0
+
+            Added the `mapping` keyword argument to support basins
+            with a superset of events.
         """
         #: location of the basin (e.g. path or URL)
         self.location = location
@@ -71,26 +129,57 @@ class Basin(abc.ABC):
         self._measurement_identifier_verified = False
         #: additional keyword arguments passed to the basin
         self.kwargs = kwargs
+        #: Event mapping strategy. If this is "same", it means that the
+        #: referring dataset and the basin dataset have identical event
+        #: indices. If `mapping` is e.g. `basinmap1` then the mapping of the
+        #: indices from the basin to the referring dataset is defined in
+        #: `self.basinmap` (copied during initialization of this class from
+        #: the array in the key `basinmap1` from the dict-like object
+        #: `mapping_referrer`).
+        self.mapping = mapping or "same"
+        if self.mapping != "same":
+            try:
+                basinmap = mapping_referrer[self.mapping]
+            except RecursionError:
+                raise RecursionError(f"Feature '{self.mapping}' not defined!")
+            except KeyError:
+                bl = [f for f in mapping_referrer if f.startswith("basinmap")]
+                raise KeyError(
+                    f"For the basin you are trying to initialize, the "
+                    f"feature {self.mapping} must be defined in the "
+                    f"`mapping_referrer` object. List of `basinmap` "
+                    f"features defined: {bl}")
+            #: `basinmap` is an integer array that maps the events from the
+            #: basin to the events of the referring dataset.
+            self.basinmap = np.array(basinmap,
+                                     dtype=np.uint64,
+                                     copy=True)
+        else:
+            self.basinmap = None
         self._ds = None
         # perform availability check in separate thread
         self._av_check_lock = threading.Lock()
         self._av_check = BasinAvailabilityChecker(self)
         self._av_check.start()
 
+    def __repr__(self):
+        options = [
+            self.name,
+            f"mapped {self.mapping}" if self.mapping != "same" else "",
+            f"features {self._features}" if self.features else "full-featured",
+            f"location {self.location}",
+        ]
+        opt_str = ", ".join([o for o in options if o])
+
+        return f"<{self.__class__.__name__} ({opt_str}) at {hex(id(self))}>"
+
     def _assert_measurement_identifier(self):
         """Make sure the basin matches the measurement identifier
 
         This method caches its result, i.e. only the first call is slow.
         """
-        if not self._measurement_identifier_verified:
-            if self.measurement_identifier is None:
-                self._measurement_identifier_verified = True
-            else:
-                self._measurement_identifier_verified = (
-                    self.get_measurement_identifier()
-                    == self.measurement_identifier)
-        if not self._measurement_identifier_verified:
-            raise KeyError(f"Measurement identifier of {self.ds} "
+        if not self.verify_basin(run_identifier=True, availability=False):
+            raise KeyError(f"Measurement identifier of basin {self.ds} "
                            f"({self.get_measurement_identifier()}) does "
                            f"not match {self.measurement_identifier}!")
 
@@ -153,6 +242,7 @@ class Basin(abc.ABC):
             "basin_locs": [self.location],
             "basin_descr": self.description,
             "basin_feats": self.features,
+            "basin_map": self.basinmap,
         }
 
     def close(self):
@@ -167,7 +257,7 @@ class Basin(abc.ABC):
         return self.ds[feat]
 
     def get_measurement_identifier(self):
-        """Return the identifier of the dataset"""
+        """Return the identifier of the basin dataset"""
         return self.ds.get_measurement_identifier()
 
     @abc.abstractmethod
@@ -175,8 +265,61 @@ class Basin(abc.ABC):
         """Return True if the basin is available"""
 
     @abc.abstractmethod
-    def load_dataset(self, location, **kwargs):
+    def _load_dataset(self, location, **kwargs):
         """Subclasses should return an instance of :class:`.RTDCBase`"""
+
+    def load_dataset(self, location, **kwargs):
+        """Return an instance of :class:`.RTDCBase` for this basin
+
+        If the basin mapping (`self.mapping`) is not the same as
+        the referencing dataset
+        """
+        ds = self._load_dataset(location, **kwargs)
+        if self.mapping != "same":
+            # apply filter
+            ds.filter.manual[:] = False
+            ds.filter.manual[self.basinmap] = True
+            ds.apply_filter()
+            # return hierarchy child
+            from .fmt_hierarchy import RTDC_Hierarchy  # avoid circular imports
+            ds_bn = RTDC_Hierarchy(ds)
+        else:
+            ds_bn = ds
+        return ds_bn
+
+    def verify_basin(self, availability=True, run_identifier=True):
+        if availability:
+            check_avail = self.is_available()
+        else:
+            check_avail = True
+
+        # Only check for run identifier if requested and if the availability
+        # check did not fail.
+        if run_identifier and check_avail:
+            if not self._measurement_identifier_verified:
+                if self.measurement_identifier is None:
+                    # No measurement identifier was presented by the
+                    # referencing dataset. Don't perform any checks.
+                    self._measurement_identifier_verified = True
+                else:
+                    if self.mapping == "same":
+                        # When we have identical mapping, then the measurement
+                        # identifier has to match exactly.
+                        verifier = str.__eq__
+                    else:
+                        # When we have non-identical mapping (e.g. exported
+                        # data), then the measurement identifier has to
+                        # partially match.
+                        verifier = str.startswith
+                    self._measurement_identifier_verified = verifier(
+                        self.measurement_identifier,
+                        self.get_measurement_identifier()
+                    )
+            check_rid = self._measurement_identifier_verified
+        else:
+            check_rid = True
+
+        return check_rid and check_avail
 
 
 def basin_priority_sorted_key(bdict: Dict):
@@ -185,8 +328,9 @@ def basin_priority_sorted_key(bdict: Dict):
     Basins are normally stored in random order in a dataset. This method
     brings them into correct order, prioritizing:
 
-    - type "file" over "remote"
-    - format "HTTP" over "S3" over "dcor"
+    - type: "file" over "remote"
+    - format: "HTTP" over "S3" over "dcor"
+    - mapping: "same" over anything else
     """
     srt_type = {
         "file": "a",
@@ -200,12 +344,15 @@ def basin_priority_sorted_key(bdict: Dict):
         "dcor": "d",
     }.get(bdict.get("format"), "z")
 
-    return srt_type + srt_format
+    mapping = bdict.get("mapping", "same")  # old dicts don't have "mapping"
+    srt_map = "a" if mapping == "same" else mapping
+
+    return srt_type + srt_format + srt_map
 
 
 def get_basin_classes():
     bc = {}
-    for bcls in Basin.__subclasses__():
-        if hasattr(bcls, "basin_format"):
-            bc[bcls.basin_format] = bcls
+    for b_cls in Basin.__subclasses__():
+        if hasattr(b_cls, "basin_format"):
+            bc[b_cls.basin_format] = b_cls
     return bc

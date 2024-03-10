@@ -131,11 +131,22 @@ FEATURES_SCALAR = [
     # then we would have close to none pixelation effects ¯\_(ツ)_/¯.
     ["volume", "Volume [µm³]"],
 ]
-# Add userdef features
+
+#: User-defined features: They are not reserved for anything specific
+#: and can be used by the user for e.g. prototyping.
 for _i in range(10):
-    FEATURES_SCALAR.append(["userdef{}".format(_i),
-                            "User-defined {}".format(_i)
-                            ])
+    FEATURES_SCALAR.append([f"userdef{_i}", f"User-defined {_i}"])
+
+#: Basin mapping features: These are used for datasets that are derived from a
+#: subset of events of another dataset. For instance, if a dataset consists
+#: of every second event from another dataset, the feature `basinmap1` would
+#: consist of the integer array `[1, 3, 5, 7, ...]` (indexing starts at zero).
+#: The `basinmap1` feature must then be referenced in the corresponding basin
+#: definition. These features should not be presented explicitly to the
+#: normal user (e.g. in Shape-Out) to avoid ambiguities, and they should
+#: always be exported alongside basins that refer to them.
+for _j in range(10):
+    FEATURES_SCALAR.append([f"basinmap{_j}", f"Basin mapping {_j}"])
 
 #: list of non-scalar features
 FEATURES_NON_SCALAR = [

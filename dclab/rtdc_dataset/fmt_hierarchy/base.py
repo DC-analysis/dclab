@@ -1,8 +1,9 @@
 """RT-DC hierarchy format"""
+from __future__ import annotations
+
 import numpy as np
 
 from ... import definitions as dfn
-
 from ...util import hashobj
 
 from ..config import Configuration
@@ -154,8 +155,16 @@ class RTDC_Hierarchy(RTDCBase):
                 self.hparent.config["calculation"])
 
     @property
+    def basins(self):
+        return self.hparent.basins
+
+    @property
     def features(self):
         return self.hparent.features
+
+    @property
+    def features_basin(self):
+        return self.hparent.features_basin
 
     @property
     def features_innate(self):

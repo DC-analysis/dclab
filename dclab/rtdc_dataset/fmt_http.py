@@ -66,8 +66,8 @@ class HTTPBasin(Basin):
         self._available_verified = None
         super(HTTPBasin, self).__init__(*args, **kwargs)
 
-    def load_dataset(self, location, **kwargs):
-        h5file = RTDC_HTTP(location, enable_basins=False, **kwargs)
+    def _load_dataset(self, location, **kwargs):
+        h5file = RTDC_HTTP(location, **kwargs)
         # If the user specified the events of the basin, then store it
         # directly in the .H5Events class of .RTDC_HDF5. This saves us
         # approximately 2 seconds of listing the members of the "events"

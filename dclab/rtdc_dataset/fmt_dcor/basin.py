@@ -38,8 +38,8 @@ class DCORBasin(Basin):
         self._available_verified = None
         super(DCORBasin, self).__init__(*args, **kwargs)
 
-    def load_dataset(self, location, **kwargs):
-        return RTDC_DCOR(location, enable_basins=True, **kwargs)
+    def _load_dataset(self, location, **kwargs):
+        return RTDC_DCOR(location, **kwargs)
 
     def is_available(self):
         """Check whether a DCOR resource is available

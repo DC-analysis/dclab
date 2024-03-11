@@ -17,8 +17,14 @@ from __future__ import annotations
 import abc
 import threading
 from typing import Dict, List, Literal
+import weakref
 
 import numpy as np
+
+
+class BasinmapFeatureMissingError(KeyError):
+    """Used when one of the `basinmap` features is not defined"""
+    pass
 
 
 class BasinAvailabilityChecker(threading.Thread):
@@ -43,8 +49,6 @@ class Basin(abc.ABC):
     #    basins but create a basinmap feature for it. Re-use the
     #    basinmap feature and don't create a new one for every basin
     #    in the original file.
-    #  - Test for KeyError including error message when no basinmap is
-    #    defined in the referring dataset (no possible ancillary features).
     #  - Test for measurement identifier with exported data.
     #  - Test sorting the priority of basins ("same" has highest)
     #  - Three cases of data export with basins:
@@ -137,25 +141,11 @@ class Basin(abc.ABC):
         #: the array in the key `basinmap1` from the dict-like object
         #: `mapping_referrer`).
         self.mapping = mapping or "same"
-        if self.mapping != "same":
-            try:
-                basinmap = mapping_referrer[self.mapping]
-            except RecursionError:
-                raise RecursionError(f"Feature '{self.mapping}' not defined!")
-            except KeyError:
-                bl = [f for f in mapping_referrer if f.startswith("basinmap")]
-                raise KeyError(
-                    f"For the basin you are trying to initialize, the "
-                    f"feature {self.mapping} must be defined in the "
-                    f"`mapping_referrer` object. List of `basinmap` "
-                    f"features defined: {bl}")
-            #: `basinmap` is an integer array that maps the events from the
-            #: basin to the events of the referring dataset.
-            self.basinmap = np.array(basinmap,
-                                     dtype=np.uint64,
-                                     copy=True)
-        else:
-            self.basinmap = None
+        self._basinmap = None  # see `basinmap` property
+        # Create a weakref to the original referrer: If it is an instance
+        # of RTDCBase, then garbage collection can clean up properly and
+        # the basin instance has no reason to exist without the referrer.
+        self._basinmap_referrer = weakref.ref(mapping_referrer)
         self._ds = None
         # perform availability check in separate thread
         self._av_check_lock = threading.Lock()
@@ -182,6 +172,28 @@ class Basin(abc.ABC):
             raise KeyError(f"Measurement identifier of basin {self.ds} "
                            f"({self.get_measurement_identifier()}) does "
                            f"not match {self.measurement_identifier}!")
+
+    @property
+    def basinmap(self):
+        """Contains the indexing array in case of a mapped basin"""
+        if self._basinmap is None:
+            if self.mapping != "same":
+                try:
+                    basinmap = self._basinmap_referrer()[self.mapping]
+                except (KeyError, RecursionError):
+                    raise BasinmapFeatureMissingError(
+                        f"Could not find the feature '{self.mapping}' in the "
+                        f"dataset or any of its basins. This suggests that "
+                        f"this feature was never saved anywhere. Please check "
+                        f"the input files.")
+                #: `basinmap` is an integer array that maps the events from the
+                #: basin to the events of the referring dataset.
+                self._basinmap = np.array(basinmap,
+                                          dtype=np.uint64,
+                                          copy=True)
+            else:
+                self._basinmap = None
+        return self._basinmap
 
     @property
     @abc.abstractmethod

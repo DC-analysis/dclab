@@ -15,6 +15,7 @@ import pytest
 
 import dclab
 from dclab import new_dataset, RTDCWriter
+from dclab.rtdc_dataset.feat_basin import BasinmapFeatureMissingError
 
 
 from helper_methods import retrieve_data
@@ -117,10 +118,11 @@ def test_basin_inception():
             )
 
 
-def test_key_error_when_basinmap_not_given():
+def test_error_when_basinmap_not_given():
     """This is a test for when the basinmap feature for mapping is missing
 
-    A KeyError should be raised in this case.
+    A RecursionError is raised by dclab if the basinmap feature
+    cannot be found in the data.
     """
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     # create a file-based basin with mapped content
@@ -163,8 +165,8 @@ def test_key_error_when_basinmap_not_given():
         # because the `basinmap0` feature is missing. Internally, dclab
         # locks up in a deep recursion involving ancillary features.
         with recursionlimit(100):  # speeds up this test
-            with pytest.raises(RecursionError,
-                               match="Feature 'basinmap0' not defined!"):
+            with pytest.raises(BasinmapFeatureMissingError,
+                               match="Could not find the feature 'basinmap0'"):
                 dss["area_um"]
 
 

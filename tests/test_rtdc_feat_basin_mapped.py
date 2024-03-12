@@ -76,6 +76,7 @@ def test_basin_basic_inception():
         assert np.all(ds1["basinmap0"] == basin_map1)
         assert len(ds1.basins) == 1
         assert ds1.basins[0].verify_basin()
+        assert "mapped" in str(ds1.basins[0])
         assert "deform" in ds1.basins[0].features
         assert np.all(ds1["deform"] == ds0["deform"][basin_map1])
 
@@ -172,6 +173,62 @@ def test_error_when_basinmap_not_given():
                 dss["area_um"]
 
 
+@pytest.mark.parametrize("filter1,filter2,offset", [
+    # original dataset has "same" basins, filtering disabled
+    [0, 0, 15],
+    # original dataset has mapped basins, filtering disabled
+    [10, 0, 5],
+    # original dataset has "same" basins, filtering enabled
+    [0, 10, 5],
+    # original dataset has mapped basins, filtering enabled
+    [5, 5, 5],
+    [3, 7, 5],
+])
+def test_export_to_hdf5_inception(filter1, filter2, offset):
+    """original dataset has "same" basins, filtering enabled"""
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp1 = h5path.with_name("exported.rtdc")
+    path_exp2 = h5path.with_name("exported_inception.rtdc")
+
+    with dclab.new_dataset(h5path) as ds:
+        nevents = len(ds)
+        ds.filter.manual[:filter1] = False
+        ds.apply_filter()
+        ds.export.hdf5(
+            path=path_exp1,
+            features=["deform"],
+            filtered=bool(filter1),
+            basins=True,
+        )
+
+    with dclab.new_dataset(path_exp1) as ds1:
+        # sanity check
+        assert len(ds1) == nevents - filter1
+        ds1.filter.manual[:filter2] = False
+        ds1.apply_filter()
+        ds1.export.hdf5(
+            path=path_exp2,
+            features=["deform"],
+            filtered=bool(filter2),
+            basins=True,
+        )
+
+    with dclab.new_dataset(path_exp2) as ds2:
+        # sanity check
+        assert len(ds2) == nevents - filter1 - filter2
+        assert "deform" in ds2
+        assert "area_um" in ds2
+        assert np.allclose(ds2["deform"][offset], 0.057975024,
+                           atol=1e-8, rtol=0)
+        assert np.allclose(ds2["area_um"][offset], 79.0126,
+                           atol=1e-3, rtol=0)
+        # cross-check with the original dataset
+        with dclab.new_dataset(h5path) as ds0:
+            fsum = filter1 + filter2
+            assert np.allclose(ds2["deform"], ds0["deform"][fsum:])
+            assert np.allclose(ds2["area_um"], ds0["area_um"][fsum:])
+
+
 def test_export_to_hdf5_mapped_basin():
     """When exporting filtered data to HDF5, a mapped basin is added"""
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
@@ -198,7 +255,7 @@ def test_export_to_hdf5_mapped_basin():
                            atol=1e-8, rtol=0)
         assert np.allclose(dse["area_um"][10], 79.0126,
                            atol=1e-3, rtol=0)
-
+        assert "mapped" in str(dse.basins[0])
         # cross-check with the original dataset
         with dclab.new_dataset(h5path) as ds0:
             assert np.allclose(dse["deform"], ds0["deform"][5:])
@@ -225,6 +282,7 @@ def test_export_to_hdf5_from_dcor_dataset(tmp_path):
     with dclab.new_dataset(path_exp) as dse:
         # exported feature
         assert "deform" in dse
+        assert "mapped" not in str(dse.basins[0])
         assert np.allclose(dse["deform"][0], 0.009741939,
                            atol=1e-8, rtol=0)
         # basin feature
@@ -253,6 +311,7 @@ def test_export_to_hdf5_no_mapped_basin_filters_disabled():
     with dclab.new_dataset(path_exp) as dse:
         assert "deform" in dse
         assert "area_um" in dse
+        assert "mapped" not in str(dse.basins[0])
         assert np.allclose(dse["deform"][15], 0.057975024,
                            atol=1e-8, rtol=0)
         assert np.allclose(dse["area_um"][15], 79.0126,

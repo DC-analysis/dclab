@@ -49,11 +49,6 @@ class Basin(abc.ABC):
     #    basins but create a basinmap feature for it. Re-use the
     #    basinmap feature and don't create a new one for every basin
     #    in the original file.
-    #  - Three cases of data export with basins:
-    #    - original dataset has "same" basins, filtering disabled
-    #    - original dataset has mapped basins, filtering disabled
-    #    - original dataset has "same" basins, filtering enabled
-    #    - original dataset has mapped basins, filtering enabled
 
     id_getters = {}
 

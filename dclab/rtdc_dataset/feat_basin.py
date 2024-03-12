@@ -49,7 +49,6 @@ class Basin(abc.ABC):
     #    basins but create a basinmap feature for it. Re-use the
     #    basinmap feature and don't create a new one for every basin
     #    in the original file.
-    #  - Test sorting the priority of basins ("same" has highest)
     #  - Three cases of data export with basins:
     #    - original dataset has "same" basins, filtering disabled
     #    - original dataset has mapped basins, filtering disabled

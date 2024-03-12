@@ -15,7 +15,9 @@ import pytest
 
 import dclab
 from dclab import new_dataset, RTDCWriter
-from dclab.rtdc_dataset.feat_basin import BasinmapFeatureMissingError
+from dclab.rtdc_dataset.feat_basin import (
+    BasinmapFeatureMissingError, basin_priority_sorted_key
+)
 
 
 from helper_methods import DCOR_AVAILABLE, retrieve_data
@@ -206,6 +208,7 @@ def test_export_to_hdf5_mapped_basin():
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not available")
 def test_export_to_hdf5_from_dcor_dataset(tmp_path):
     """Exporting from DCOR with mapped basin should make basin available"""
+    # TODO: Implement this test with a new, smaller DCOR dataset
     dcor_url = ("https://dcor.mpl.mpg.de/api/3/action/dcserv?id="
                 "fb719fb2-bd9f-817a-7d70-f4002af916f0")
     path_exp = tmp_path / "exported_from_dcor.rtdc"
@@ -270,6 +273,32 @@ def test_export_to_hdf5_no_mapped_basin_filters_disabled():
         assert "area_um" not in dse2  # sic
         assert np.allclose(dse2["deform"][15], 0.057975024,
                            atol=1e-8, rtol=0)
+
+
+def test_sorting_priority_for_mapped_basins():
+    """Basins are sorted by dclab
+
+    Mapped basins should get lower priority.
+    """
+    mapper = "basinmap0"
+    bnlist = [
+        {"type": "remote", "format": "dcor", "mapping": "same", "ident": 0},
+        {"type": "remote", "format": "dcor", "mapping": mapper, "ident": 1},
+        {"type": "file", "format": "hdf5", "mapping": "same", "ident": 2},
+        {"type": "file", "format": "hdf5", "mapping": mapper, "ident": 3},
+        {"type": "hans", "format": "hdf5", "ident": 4},
+        {"type": "remote", "format": "http", "ident": 5},
+        {"type": "remote", "format": "http", "mapping": mapper, "ident": 6},
+
+    ]
+    sorted_list = sorted(bnlist, key=basin_priority_sorted_key)
+    assert sorted_list[0]["ident"] == 2
+    assert sorted_list[1]["ident"] == 3
+    assert sorted_list[2]["ident"] == 5
+    assert sorted_list[3]["ident"] == 6
+    assert sorted_list[4]["ident"] == 0
+    assert sorted_list[5]["ident"] == 1
+    assert sorted_list[6]["ident"] == 4
 
 
 def test_verify_basin_identifier():

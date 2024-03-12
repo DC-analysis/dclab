@@ -244,7 +244,9 @@ class RTDCWriter:
                     if cur_id:
                         # Compare the IDs.
                         ds_id = ds.get_measurement_identifier()
-                        if ds_id != cur_id:
+                        if not (ds_id == cur_id
+                                or (basin_map is not None
+                                    and cur_id.startswith(ds_id))):
                             raise ValueError(
                                 f"Measurement identifier mismatch between "
                                 f"{self.path} ({cur_id}) and {loc} ({ds_id})!")

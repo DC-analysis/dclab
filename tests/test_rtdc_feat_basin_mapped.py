@@ -170,6 +170,83 @@ def test_error_when_basinmap_not_given():
                 dss["area_um"]
 
 
+def test_export_to_hdf5_mapped_basin():
+    """When exporting filtered data to HDF5, a mapped basin is added"""
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp = h5path.with_name("exported.rtdc")
+    with dclab.new_dataset(h5path) as ds:
+        ds.filter.manual[:5] = False
+        ds.apply_filter()
+        ds.export.hdf5(
+            path=path_exp,
+            features=["deform"],
+            filtered=True,
+            basins=True,
+            )
+
+    # Sanity check: Only the "deform" feature is in the dataset alongside
+    # the basinmap feature, because this is a mapped basin.
+    with h5py.File(path_exp) as h5:
+        assert sorted(h5["events"].keys()) == ["basinmap0", "deform"]
+
+    with dclab.new_dataset(path_exp) as dse:
+        assert "deform" in dse
+        assert "area_um" in dse
+        assert np.allclose(dse["deform"][10], 0.057975024,
+                           atol=1e-8, rtol=0)
+        assert np.allclose(dse["area_um"][10], 79.0126,
+                           atol=1e-3, rtol=0)
+
+        # cross-check with the original dataset
+        with dclab.new_dataset(h5path) as ds0:
+            assert np.allclose(dse["deform"], ds0["deform"][5:])
+            assert np.allclose(dse["area_um"], ds0["area_um"][5:])
+
+
+def test_export_to_hdf5_no_mapped_basin_filters_disabled():
+    """When exporting data without filters to HDF5, a normal basin is added"""
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["experiment:run identifier"] = str(uuid.uuid4())
+
+    path_exp = h5path.with_name("exported.rtdc")
+    with dclab.new_dataset(h5path) as ds:
+        ds.export.hdf5(
+            path=path_exp,
+            features=["deform"],
+            filtered=False,
+            basins=True,
+            )
+
+    # Sanity check: Only the "deform" feature is in the dataset.
+    with h5py.File(path_exp) as h5:
+        assert sorted(h5["events"].keys()) == ["deform"]
+
+    with dclab.new_dataset(path_exp) as dse:
+        assert "deform" in dse
+        assert "area_um" in dse
+        assert np.allclose(dse["deform"][15], 0.057975024,
+                           atol=1e-8, rtol=0)
+        assert np.allclose(dse["area_um"][15], 79.0126,
+                           atol=1e-3, rtol=0)
+
+        # cross-check with the original dataset
+        with dclab.new_dataset(h5path) as ds0:
+            assert np.allclose(dse["deform"], ds0["deform"])
+            assert np.allclose(dse["area_um"], ds0["area_um"])
+
+    # And now a negative check with a modified basin identifier.
+    with h5py.File(path_exp, "a") as h5e:
+        h5e.attrs["experiment:run identifier"] = \
+            h5e.attrs["experiment:run identifier"] + "-some-string"
+
+    with dclab.new_dataset(path_exp) as dse2:
+        assert "deform" in dse2
+        assert "area_um" not in dse2  # sic
+        assert np.allclose(dse2["deform"][15], 0.057975024,
+                           atol=1e-8, rtol=0)
+
+
 def test_verify_basin_identifier():
     """The basin identifier for mapped basins must not match fully"""
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")

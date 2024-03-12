@@ -1,6 +1,9 @@
 """Export RT-DC measurement data"""
+from __future__ import annotations
+
 import codecs
 import pathlib
+from typing import Dict, List
 import uuid
 import warnings
 
@@ -25,6 +28,8 @@ import numpy as np
 
 from .. import definitions as dfn
 from .._version import version
+
+from .feat_basin import get_basin_classes
 from .writer import RTDCWriter
 
 
@@ -160,10 +165,18 @@ class Export(object):
                            text_kw_pr=meta_data,
                            )
 
-    def hdf5(self, path, features=None, filtered=True,
-             logs=False, tables=False, basins=False, meta_prefix="src_",
-             override=False, compression_kwargs=None,
-             compression="deprecated", skip_checks=False):
+    def hdf5(self,
+             path: str | pathlib.Path,
+             features: List[str] = None,
+             filtered: bool = True,
+             logs: bool = False,
+             tables: bool = False,
+             basins: bool = False,
+             meta_prefix: str = "src_",
+             override: bool = False,
+             compression_kwargs: Dict = None,
+             compression: str = "deprecated",
+             skip_checks: bool = False):
         """Export the data of the current instance to an HDF5 file
 
         Parameters
@@ -332,19 +345,37 @@ class Export(object):
                 #   - mapped basins: correct nested mapping
                 if filtered:
                     basinmap = np.where(filtarr)[0]
-                for bn in self.rtdc_ds.basins:
-                    bn_dict = bn.as_dict()
+                basin_list = [bn.as_dict() for bn in self.rtdc_ds.basins]
+                # In addition to the upstream basins, also store a reference
+                # to the original file from which the export was done.
+                if self.rtdc_ds.format in get_basin_classes():
+                    basin_is_local = self.rtdc_ds.format == "hdf5"
+                    basin_locs = [self.rtdc_ds.path]
+                    if basin_is_local:
+                        # So the user can put them into the same directory.
+                        basin_locs.append(self.rtdc_ds.path.name)
+                    basin_list.append({
+                        "basin_name": "Exported data",
+                        "basin_type": "file" if basin_is_local else "remote",
+                        "basin_format": self.rtdc_ds.format,
+                        "basin_locs": basin_locs,
+                        "basin_descr": f"Exported with dclab {version}"
+                    })
+
+                for bn_dict in basin_list:
+                    basinmap_orig = bn_dict.get("basin_map")
                     if not filtered:
                         # filtering disabled: just copy basins
                         pass
-                    elif bn.mapping == "same":
+                    elif basinmap_orig is None:
                         # basins with "same" mapping: create new mapping
                         bn_dict["basin_map"] = basinmap
                     else:
                         # mapped basins: correct nested mapping
-                        bn_dict["basin_map"] = bn_dict["basin_map"][basinmap]
+                        bn_dict["basin_map"] = basinmap_orig[basinmap]
 
-                    hw.store_basin(**bn_dict)
+                    # Do not verify basins, it takes too long.
+                    hw.store_basin(**bn_dict, verify=False)
 
     def tsv(self, path, features, meta_data=None, filtered=True,
             override=False):

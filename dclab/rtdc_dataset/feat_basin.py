@@ -44,12 +44,6 @@ class Basin(abc.ABC):
     The external data must be a valid RT-DC dataset, subclasses
     should ensure that the corresponding API is available.
     """
-    # TODO: TESTS
-    #  - when exporting data and `basins` is set to True, copy all
-    #    basins but create a basinmap feature for it. Re-use the
-    #    basinmap feature and don't create a new one for every basin
-    #    in the original file.
-
     id_getters = {}
 
     def __init__(self,

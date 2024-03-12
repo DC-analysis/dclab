@@ -160,8 +160,8 @@ def test_error_when_basinmap_not_given():
         basins = hw.h5file.require_group("basins")
         hw.write_text(basins, "invalid_format_basin", blines)
 
-    with (dclab.new_dataset(h5path) as ds0,
-          dclab.new_dataset(h5path_small) as dss):
+    with dclab.new_dataset(h5path) as ds0, \
+            dclab.new_dataset(h5path_small) as dss:
         # This is the feature that is in the small file
         assert np.all(ds0["deform"][mapping_array] == dss["deform"])
         # The area_um feature cannot be retrieved from the original file,
@@ -212,6 +212,15 @@ def test_export_to_hdf5_inception(filter1, filter2, offset):
             filtered=bool(filter2),
             basins=True,
         )
+
+    # Test presence of basinmap features
+    with h5py.File(path_exp2) as h5:
+        feature_list = ["deform"]
+        if filter1 or filter2:
+            feature_list.append("basinmap0")
+        if filter1 and filter2:
+            feature_list.append("basinmap1")
+        assert sorted(h5["events"].keys()) == sorted(feature_list)
 
     with dclab.new_dataset(path_exp2) as ds2:
         # sanity check
@@ -401,6 +410,40 @@ def test_verify_basin_identifier():
         assert len(dsb.basins) == 1
         assert np.all(ds0["area_um"][mapping_array] == dsb["area_um"])
         assert np.all(ds0["deform"][mapping_array] == dsb["deform"])
+
+
+def test_writer_reuse_basinmap_feature():
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    # create a file-based basin with mapped content
+    h5path_small = h5path.with_name("smaller.rtdc")
+    mapping_array = np.array([1, 7, 10, 14], dtype=np.uint64)
+
+    with h5py.File(h5path, "a") as src, RTDCWriter(h5path_small) as hw:
+        # write experiment identifiers
+        hw.h5file.attrs.update(src.attrs)
+        # store the basin once
+        hw.store_basin(
+            basin_name="exported with writer",
+            basin_map=mapping_array,
+            basin_locs=[h5path],
+            basin_format="hdf5",
+            basin_type="file",
+            verify=False,
+        )
+        # store basin again, same mapping array
+        hw.store_basin(
+            basin_name="exported with writer",
+            basin_map=mapping_array,
+            basin_locs=["unknown.rtdc"],
+            basin_format="hdf5",
+            basin_type="file",
+            verify=False,
+        )
+
+    # The essence of the test is to check that, even though two basins
+    # were written, both use the same `mapping_array`.
+    with h5py.File(h5path_small, "r") as h5:
+        assert list(h5["events"].keys()) == ["basinmap0"]
 
 
 def test_writer_verify_dataset_with_mapped_basin():

@@ -116,8 +116,6 @@ def obj2bytes(obj):
         return b"none"
     elif isinstance(obj, np.ndarray):
         return obj.tobytes()
-    elif hasattr(obj, "__array__"):
-        return obj2bytes(obj.__array__())
     elif isinstance(obj, tuple):
         return obj2bytes(list(obj))
     elif isinstance(obj, list):
@@ -141,6 +139,8 @@ def obj2bytes(obj):
             # size of the file
             _data.append(pathlib.Path(obj.file.filename).stat().st_size)
         return obj2bytes(_data)
+    elif hasattr(obj, "__array__"):  # must come after h5py.Dataset
+        return obj2bytes(obj.__array__())
     elif isinstance(obj, Configuration):
         return obj2bytes(obj.tostring())
     elif isinstance(obj, ConfigurationDict):

@@ -132,7 +132,10 @@ class Basin(abc.ABC):
         # Create a weakref to the original referrer: If it is an instance
         # of RTDCBase, then garbage collection can clean up properly and
         # the basin instance has no reason to exist without the referrer.
-        self._basinmap_referrer = weakref.ref(mapping_referrer)
+        if self.mapping != "same":
+            self._basinmap_referrer = weakref.ref(mapping_referrer)
+        else:
+            self._basinmap_referrer = None
         self._ds = None
         # perform availability check in separate thread
         self._av_check_lock = threading.Lock()

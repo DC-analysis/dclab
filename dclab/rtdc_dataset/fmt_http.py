@@ -13,6 +13,10 @@ class RTDC_HTTP(RTDC_HDF5):
                  *args, **kwargs):
         """Access RT-DC measurements via HTTP
 
+        This class allows you to open .rtdc files accessible via an
+        HTTP URL, for instance files on an S3 object storage or
+        figshare download links.
+
         This is essentially just a wrapper around :class:`.RTDC_HDF5`
         with :class:`.HTTPFile` passing a file object to h5py.
 
@@ -29,6 +33,12 @@ class RTDC_HTTP(RTDC_HDF5):
         ----------
         path: str
             The URL to the object
+
+        Notes
+        -----
+        Since this format still requires random access to the file online,
+        i.e. not the entire file is downloaded, only parts of it, the
+        web server must support range requests.
         """
         if not REQUESTS_AVAILABLE:
             raise ModuleNotFoundError(

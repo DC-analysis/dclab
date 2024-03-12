@@ -125,6 +125,12 @@ DCOR (online) format
     :members:
 
 
+HTTP (online) file format
+-------------------------
+.. automodule:: dclab.rtdc_dataset.fmt_http
+    :members:
+
+
 .. _sec_ref_rtdc_dataset_s3:
 
 S3 (online) file format
@@ -164,7 +170,7 @@ TDMS format
 
 Basin features
 --------------
-.. autoclass:: dclab.rtdc_dataset.feat_basin.Basin
+.. automodule:: dclab.rtdc_dataset.feat_basin
     :members:
 
 

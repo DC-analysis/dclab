@@ -291,7 +291,7 @@ def test_export_to_hdf5_from_dcor_dataset(tmp_path):
     with dclab.new_dataset(path_exp) as dse:
         # exported feature
         assert "deform" in dse
-        assert "mapped" not in str(dse.basins[0])
+        assert "mapped" in str(dse.basins[0])
         assert np.allclose(dse["deform"][0], 0.009741939,
                            atol=1e-8, rtol=0)
         # basin feature

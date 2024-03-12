@@ -49,9 +49,6 @@ class Basin(abc.ABC):
     #    basins but create a basinmap feature for it. Re-use the
     #    basinmap feature and don't create a new one for every basin
     #    in the original file.
-    #  - for export from DCOR or S3, test that basins are defined and
-    #    accessible.
-    #  - Make sure verify_dataset works with mapped basins
     #  - Test sorting the priority of basins ("same" has highest)
     #  - Three cases of data export with basins:
     #    - original dataset has "same" basins, filtering disabled

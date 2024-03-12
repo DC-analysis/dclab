@@ -18,7 +18,7 @@ from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.feat_basin import BasinmapFeatureMissingError
 
 
-from helper_methods import retrieve_data
+from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 class recursionlimit:
@@ -203,6 +203,31 @@ def test_export_to_hdf5_mapped_basin():
             assert np.allclose(dse["area_um"], ds0["area_um"][5:])
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not available")
+def test_export_to_hdf5_from_dcor_dataset(tmp_path):
+    """Exporting from DCOR with mapped basin should make basin available"""
+    dcor_url = ("https://dcor.mpl.mpg.de/api/3/action/dcserv?id="
+                "fb719fb2-bd9f-817a-7d70-f4002af916f0")
+    path_exp = tmp_path / "exported_from_dcor.rtdc"
+    with dclab.new_dataset(dcor_url) as ds:
+        ds.filter.manual[5:] = False
+        ds.apply_filter()
+        ds.export.hdf5(
+            path=path_exp,
+            features=["deform"],
+            filtered=True,
+            basins=True,
+            )
+
+    with dclab.new_dataset(path_exp) as dse:
+        # exported feature
+        assert "deform" in dse
+        assert np.allclose(dse["deform"][0], 0.009741939,
+                           atol=1e-8, rtol=0)
+        # basin feature
+        assert dse["image"][2][10, 10] == 54
+
+
 def test_export_to_hdf5_no_mapped_basin_filters_disabled():
     """When exporting data without filters to HDF5, a normal basin is added"""
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
@@ -288,3 +313,40 @@ def test_verify_basin_identifier():
         assert len(dsb.basins) == 1
         assert np.all(ds0["area_um"][mapping_array] == dsb["area_um"])
         assert np.all(ds0["deform"][mapping_array] == dsb["deform"])
+
+
+def test_writer_verify_dataset_with_mapped_basin():
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    # create a file-based basin with mapped content
+    h5path_small = h5path.with_name("smaller.rtdc")
+    mapping_array = np.array([1, 7, 10, 14], dtype=np.uint64)
+
+    # Dataset creation
+    with h5py.File(h5path, "a") as src, RTDCWriter(h5path_small) as hw:
+        # write experiment identifiers
+        hw.h5file.attrs.update(src.attrs)
+        unique_id = f"unique_id_{uuid.uuid4()}"
+        src.attrs["experiment:run identifier"] = unique_id
+        hw.h5file.attrs["experiment:run identifier"] = unique_id + "-hans"
+
+        assert src["events/deform"].size == 18, "sanity check"
+        assert "area_um" in src["events"]
+
+        # first, copy parts of the scalar features to the new file
+        hw.store_feature("deform", src["events/deform"][mapping_array])
+
+        # Write the mapped basin
+        hw.store_basin(
+            basin_name="exported with writer",
+            basin_map=mapping_array,
+            basin_locs=[h5path],
+            basin_format="hdf5",
+            basin_type="file",
+            verify=True,  # this is the test
+        )
+
+    # Make sure this worked
+    with dclab.new_dataset(h5path_small) as dse:
+        assert "deform" in dse
+        assert "area_um" in dse
+        assert dse["image"][0][10, 10] == 73

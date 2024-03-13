@@ -220,6 +220,13 @@ class Export(object):
                 Use `compression_kwargs` instead.
         skip_checks: bool
             Disable checking whether all features have the same length.
+
+        .. versionchanged:: 0.58.0
+
+           The ``basins`` keyword argument was added, and it is now possible
+           to pass an empty list to ``features``. This combination results
+           in a very small file consisting of metadata and a mapped basin
+           referring to the original dataset.
         """
         if compression != "deprecated":
             warnings.warn("The `compression` kwarg is deprecated in favor of "
@@ -270,7 +277,7 @@ class Export(object):
         else:
             filtarr = None
 
-        if not skip_checks:
+        if not skip_checks and features:
             # check that all features have same length and use the smallest
             # common length
             lengths = []

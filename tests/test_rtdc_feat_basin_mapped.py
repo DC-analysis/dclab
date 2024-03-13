@@ -173,6 +173,35 @@ def test_error_when_basinmap_not_given():
                 dss["area_um"]
 
 
+def test_export_to_hdf5_empty_features_mapped_basin():
+    """Do not export any features, only the mapped basin information"""
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp = h5path.with_name("exported.rtdc")
+    with dclab.new_dataset(h5path) as ds:
+        ds.filter.manual[:5] = False
+        ds.apply_filter()
+        ds.export.hdf5(
+            path=path_exp,
+            features=[],
+            filtered=True,
+            basins=True,
+            )
+
+    # Sanity check: Only the "deform" feature is in the dataset alongside
+    # the basinmap feature, because this is a mapped basin.
+    with h5py.File(path_exp) as h5:
+        assert sorted(h5["events"].keys()) == ["basinmap0"]
+
+    with dclab.new_dataset(path_exp) as dse:
+        assert "deform" in dse
+        assert "area_um" in dse
+        assert np.allclose(dse["deform"][10], 0.057975024,
+                           atol=1e-8, rtol=0)
+        assert np.allclose(dse["area_um"][10], 79.0126,
+                           atol=1e-3, rtol=0)
+        assert "mapped" in str(dse.basins[0])
+
+
 @pytest.mark.parametrize("filter1,filter2,offset", [
     # original dataset has "same" basins, filtering disabled
     [0, 0, 15],

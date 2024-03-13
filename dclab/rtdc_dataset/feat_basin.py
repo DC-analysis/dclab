@@ -1,16 +1,7 @@
 """
-Basins are other .rtdc files on disk or online (DCOR, S3) which originate
-from the same dataset but (potentially) contain more features. Basins
-are useful if you would like to have a small copy of selected
-features in a separate file while still being able to access
-all features from the original file. E.g. you could load a small
-.rtdc file from your local disk and access the larger "image"
-feature data from an S3 basin. Basins are active by default, which
-means that if you load a dataset that defines basins and these
-basins are available, they will be integrated seamlessly into your
-analysis pipeline. You can find out which features originate from
-other basins via the ``features_basin`` property of an
-:class:`.RTDCBase` instance.
+With basins, you can create analysis pipelines that result in output files
+which, when opened in dclab, can access features stored in the input file
+(without having to write those features to the output file).
 """
 from __future__ import annotations
 

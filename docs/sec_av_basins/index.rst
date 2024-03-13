@@ -84,7 +84,10 @@ there are three major properties that define the nature of a basin:
   the output file only contains a subset of the events from the input file,
   then we call the basin a **mapped basin**. These mapped basins allow
   you to minimize data redundancy for analysis pipelines that produce
-  output files with a subset of the events from the input file.
+  output files with a subset of the events from the input file. To be
+  able to map from the input file to the output file, dclab stores the
+  mapping information as integer indices in dedicated features enumerated
+  ``basinmap0``, ``basinmap1``, etc.
 - **features** defined by a basin: You may define basins and explicitly state
    the features this basin provides. In combination with mapping, you
    could e.g. realize your own event segmentation pipeline, storing only the
@@ -154,3 +157,84 @@ achieving the same result as above (a very small output file).
    with (dclab.new_dataset("input.rtdc") as ds_in,
          dclab.new_dataset("output.rtdc") as ds_out):
        assert np.allclose(ds_in["deform"][::2], ds_out["deform"])
+
+
+Basin internals
+===============
+
+Storing the basin information
+-----------------------------
+In the ``output.rtdc`` file, the basin is stored json-encoded in an
+HDF5 dataset in the ``"/basins"`` group. For the HDF5 export example above,
+the json data looks like this:
+
+.. code-blcck:: json
+
+   {
+     "description": "Exported with dclab 0.58.0",
+     "format": "hdf5",
+     "name": "Exported data",
+     "type": "file",
+     "features": null,
+     "mapping": "basinmap0",
+     "paths": [
+       "/absolute/path/to/input.rtdc",
+       "input.rtdc"
+     ]
+   }
+
+The description and name are filled automatically by dclab here. As expected,
+the type of the basin is *file* and the format of the basin is *hdf5*. There
+are a few things to notice:
+
+- The features are set to ``null`` which means ``None``, i.e. **all** features
+  from the input file are allowed.
+- The *mapping* key reads *basinmap0*. This is the name of the feature
+  in which to find the mapping information from the input file to the
+  output file. The information can be found in the HDF5 dataset
+  ``/events/basinmap0`` in the output file.
+- There are two *paths* defined, an absolute path (from the root of the file
+  system) and a relative path (relative to the directory of the output file).
+  This relative path makes it possible to copy-paste these two files to other
+  locations. You will always be able to open the output file and see the
+  basin features defined in the input file. Internally, dclab also checks
+  the :func:`measurement identifier <.RTDCBase.get_measurement_identifier>`
+  of the output file against that of the input file to avoid loading basin
+  features from the wrong file.
+
+For the sake of completeness, let's see how the basin information looks
+like when you derive the output file from a DCOR resource:
+
+.. code-block:: python
+
+   import dclab
+   import numpy as np
+
+   with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+       ds.filter.manual[1::2] = False
+       ds.apply_filter()
+       ds.export.hdf5(path="output.rtdc",
+                      features=[],
+                      filtered=True,
+                      basins=True)
+
+The corresponding json data:
+
+.. code-block:: json
+
+
+As you can see, *paths* is replaced by *urls* and the *format* and *type*
+keys changed. The rest remains the same.
+
+
+Basin loading procedure
+-----------------------
+When dclab opens a dataset the defines a basin, the basin features are
+retrieved only when they are needed (i.e. when the user tries to access
+them and they are not defined as innate features). Internally, dclab
+instantiates an :class:`.RTDCBase` subclass as defined by the *format*
+key. For mapped basins, dclab additionally creates a hierarchy child by
+applying the mapping information as a manual filter. To see which features
+are defined in basins, you can check the :func:`.RTDCBase.features_basin`
+property. The basins are directly accessible via :func:`.RTDCBase.basins`
+(and the basin datasets via :func:`.RTDCBase.basins.ds`).

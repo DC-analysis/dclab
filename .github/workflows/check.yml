@@ -51,7 +51,7 @@ jobs:
       if: runner.os == 'Windows'
       shell: bash
       run: |
-        R -e "install.packages('lme4', repos='http://cran.rstudio.org', type='binary')"
+        R -e "install.packages('lme4', repos='http://cran-archive.r-project.org', type='binary')"
     - name: Install dclab with all possible dependencies
       if: matrix.extras == 'all'
       run: |

@@ -6,6 +6,7 @@
  - fix: when joining datasets, the name of the log holding the configuration
    of the source datasets should be src-#{i}_cfg instead of cfg_src-#{i}
  - docs: add an advanced usage section on basins
+ - setup: pin nptdms<1.9, because tests started to fail
  - ref: modify basin `load_dataset` methods to support mapped basins
 0.57.7
  - fix: raise a ValueError in HTTPFile when the server does not return

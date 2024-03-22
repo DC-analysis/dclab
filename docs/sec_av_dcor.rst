@@ -35,6 +35,8 @@ and copy the value from the **id** (**not** *package id* or *revision id*)
 field in (*Additional Information*). The DCOR format is documented in
 :ref:`sec_ref_rtdc_dataset_dcor`.
 
+.. _sec_av_dcor_private_access:
+
 Private data
 ============
 

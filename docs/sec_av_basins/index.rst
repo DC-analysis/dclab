@@ -15,11 +15,12 @@ file to the input file.
 For instance, let's say your pipeline is designed to compute a new feature
 ``userdef1`` and you would like to open the output file in Shape-Out, visualizing
 this feature in combination with other features defined in the input file (e.g.
-```deform``). What you *could* do is writing ``userdef1`` directly to the
-input file or creating a copy of your input file and writing ``userdef1``
-to that copy. However, this might make make you feel insecure, because you
+``deform``). What you *could* do is to write the ``userdef1`` feature directly to
+the input file or to create a copy of your input file and write ``userdef1``
+to that copy. However, this might make you feel uneasy, because you
 would like to avoid editing your original raw data (possible data loss) and
-copying an entire file seems like unnecessary overhead.
+copying an entire file seems like unnecessary overhead (redundant data, high
+disk usage).
 With basin features, you can create an empty output file, write your
 new feature ``userdef1`` to it, define a basin that links to your input file,
 and you are done. Without ever modifying your input file. And it is even
@@ -39,6 +40,7 @@ could have been done differently.
 
    with (dclab.new_dataset("input.rtdc") as ds,
          dclab.RTDCWriter("output.rtdc") as hw):
+
        # First of all, we have to copy the metadata from the input file
        # to the output file. If we forget to do this, then dclab will
        # not be able to open the output file.
@@ -70,8 +72,9 @@ file. We opened the output file and verified that it transparently gives us
 access to the features stored in the (basin) input file.
 
 What could we have done differently? Take a look at the options that
-:func:`.RTDCWriter.store_basin` allows you to set. You will notice that
-there are three major properties that define the nature of a basin:
+:func:`RTDCWriter.store_basin <dclab.rtdc_dataset.writer.RTDCWriter.store_basin>`
+allows you to set. You will notice that there are three major properties that
+define the nature of a basin:
 
 - **type** of a basin: A basin can be a local *file* (including files on a
   network share), or a *remote* which means that it is accessible via a
@@ -89,13 +92,13 @@ there are three major properties that define the nature of a basin:
   mapping information as integer indices in dedicated features enumerated
   ``basinmap0``, ``basinmap1``, etc.
 - **features** defined by a basin: You may define basins and explicitly state
-   the features this basin provides. In combination with mapping, you
-   could e.g. realize your own event segmentation pipeline, storing only the
-   ``mask`` feature and extracted scalar features in you output file, while
-   you define the ``image`` feature via the input file basin. If you
-   combine this approach with the `dcor <https://dc.readthedocs.io>`_ basin
-   format, you can distribute all of your data (raw and processed) in a
-   very efficient and transparent manner.
+  the features this basin provides. In combination with mapping, you
+  could e.g. realize your own event segmentation pipeline, storing only the
+  ``mask`` feature and extracted scalar features in you output file, while
+  you define the ``image`` feature via the input file basin. If you
+  combine this approach with the `dcor <https://dc.readthedocs.io>`_ basin
+  format, you can distribute all of your data (raw and processed) in a
+  very efficient and transparent manner.
 
 
 Examples
@@ -103,8 +106,9 @@ Examples
 
 Mapped basin via RTDCWriter
 ---------------------------
-You can explicitly define a mapped basin via the :func:`.RTDCBase.store_basin`
-method (see also the example below).
+You can explicitly define a mapped basin via the :func:`RTDCWriter.store_basin
+<dclab.rtdc_dataset.writer.RTDCWriter.store_basin>`
+method (see also the example after this one).
 
 .. code-block:: python
 
@@ -113,14 +117,14 @@ method (see also the example below).
 
    with (dclab.new_dataset("input.rtdc") as ds,
          dclab.RTDCWriter("output.rtdc") as hw):
+
        # metadata
        hw.store_metadata(ds.config.as_dict(pop_filtering=True))
 
-       # define which events we need in the output file
-       # take every second event
+       # take every second event from the input file
        event_mapping = np.arange(len(ds), None, 2, dtype=np.uint64)
 
-       # basin information
+       # write the basin
        hw.store_basin(
            basin_name="raw data",
            basin_type="file",
@@ -146,8 +150,10 @@ achieving the same result as above (a very small output file).
    import numpy as np
 
    with dclab.new_dataset("input.rtdc") as ds:
+       # remove every second event
        ds.filter.manual[1::2] = False
        ds.apply_filter()
+       # export the dataset with the mapped basin
        ds.export.hdf5(path="output.rtdc",
                       features=[],
                       filtered=True,
@@ -164,11 +170,11 @@ Basin internals
 
 Storing the basin information
 -----------------------------
-In the ``output.rtdc`` file, the basin is stored json-encoded in an
+In the ``output.rtdc`` file, the basin is stored as a json-encoded string in an
 HDF5 dataset in the ``"/basins"`` group. For the HDF5 export example above,
 the json data looks like this:
 
-.. code-blcck:: json
+.. code-block:: json
 
    {
      "description": "Exported with dclab 0.58.0",
@@ -192,11 +198,13 @@ are a few things to notice:
 - The *mapping* key reads *basinmap0*. This is the name of the feature
   in which to find the mapping information from the input file to the
   output file. The information can be found in the HDF5 dataset
-  ``/events/basinmap0`` in the output file.
+  ``/events/basinmap0`` in the output file. Note that the fact that this mapping
+  information is stored *as a feature* means that it is also properly
+  gated when you define basins iteratively.
 - There are two *paths* defined, an absolute path (from the root of the file
   system) and a relative path (relative to the directory of the output file).
-  This relative path makes it possible to copy-paste these two files to other
-  locations. You will always be able to open the output file and see the
+  This relative path makes it possible to copy-paste these two files *together* to
+  other locations. You will always be able to open the output file and see the
   basin features defined in the input file. Internally, dclab also checks
   the :func:`measurement identifier <.RTDCBase.get_measurement_identifier>`
   of the output file against that of the input file to avoid loading basin
@@ -222,9 +230,23 @@ The corresponding json data:
 
 .. code-block:: json
 
+   {
+     "description": "Exported with dclab 0.58.0",
+     "format": "dcor",
+     "name": "Exported data",
+     "type": "remote",
+     "features": null,
+     "mapping": "basinmap0",
+     "urls": [
+       "https://dcor.mpl.mpg.de/api/3/action/dcserv?id=fb719fb2-bd9f-817a-7d70-f4002af916f0"
+     ]
+   }
+
 
 As you can see, *paths* is replaced by *urls* and the *format* and *type*
-keys changed. The rest remains the same.
+keys changed. The rest remains the same. This also works with private DCOR
+resources, given that you have globally set your API token as described in
+the :ref:`DCOR section <sec_av_dcor_private_access>`.
 
 
 Basin loading procedure
@@ -233,8 +255,10 @@ When dclab opens a dataset the defines a basin, the basin features are
 retrieved only when they are needed (i.e. when the user tries to access
 them and they are not defined as innate features). Internally, dclab
 instantiates an :class:`.RTDCBase` subclass as defined by the *format*
-key. For mapped basins, dclab additionally creates a hierarchy child by
-applying the mapping information as a manual filter. To see which features
-are defined in basins, you can check the :func:`.RTDCBase.features_basin`
-property. The basins are directly accessible via :func:`.RTDCBase.basins`
-(and the basin datasets via :func:`.RTDCBase.basins.ds`).
+key. For mapped basins, dclab additionally creates a hierarchy child from the
+original dataset by filling the manual filtering array with the mapping information.
+To see which features are defined in basins, you can check the
+:func:`RTDCBase.features_basin <dclab.rtdc_dataset.RTDCBase.features_basin>`
+property. The basins are directly accessible via :func:`RTDCBase.basins
+<dclab.rtdc_dataset.RTDCBase.basins>` (and the basin datasets via
+``RTDCBase.basins[index].ds``).

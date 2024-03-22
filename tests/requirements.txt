@@ -1,1 +1,7 @@
 pytest
+# keras 3 stopped support for opening old test model files that we are using
+# in the tests. We are planning to strip ML support from dclab, so this is
+# a temporary pin.
+# https://github.com/DC-analysis/dclab/issues/236
+keras<3
+tensorflow==2.15.1

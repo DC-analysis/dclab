@@ -6,6 +6,7 @@ import pathlib
 import shutil
 import tempfile
 import time
+import traceback
 import traceback as tb
 import warnings
 
@@ -141,11 +142,13 @@ def load_modc(path, from_format=None):
 
     assert meta["model count"] == len(meta["models"])
     supported_formats = BaseModel.all_formats()
+    given_formats = []
     dc_models = []
     for model_dict in meta["models"]:
         mpath = t_dir / model_dict["path"]
 
         formats = list(model_dict["formats"].keys())
+        given_formats += formats
         if from_format:
             formats = [from_format] + formats
 
@@ -159,6 +162,10 @@ def load_modc(path, from_format=None):
                     if from_format and fmt == from_format:
                         # user requested this format explicitly
                         raise
+                    warnings.warn(
+                        f"Could not load model with {fmt}, you may "
+                        f"ignore this message if loading the model succeeded "
+                        f"with a different format: {traceback.format_exc()}")
                 else:
                     # load `bare_model` into BaseModel
                     model = cls(bare_model=bare_model,
@@ -171,7 +178,10 @@ def load_modc(path, from_format=None):
                 raise ValueError("The format specified via `from_format` "
                                  + " '{}' is not supported!".format(fmt))
         else:
-            raise ValueError("No compatible model file format found!")
+            raise ValueError(
+                f"No compatible model file format found! Supported formats "
+                f"are {sorted(supported_formats.keys())}; formats in input "
+                f"file are {given_formats}")
         dc_models.append(model)
 
     # We are nice and do the cleanup before exit

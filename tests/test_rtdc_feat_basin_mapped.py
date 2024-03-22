@@ -303,6 +303,7 @@ def test_export_to_hdf5_mapped_basin():
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not available")
 def test_export_to_hdf5_from_dcor_dataset(tmp_path):
     """Exporting from DCOR with mapped basin should make basin available"""
+    pytest.importorskip("requests")
     # TODO: Implement this test with a new, smaller DCOR dataset
     dcor_url = ("https://dcor.mpl.mpg.de/api/3/action/dcserv?id="
                 "fb719fb2-bd9f-817a-7d70-f4002af916f0")

@@ -39,9 +39,9 @@ def test_join_tdms_logs():
 
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert "dclab-join" in dsj.logs
-        assert "cfg_src-#1" in dsj.logs
-        assert "software version = ShapeIn 2.0.1" in dsj.logs["cfg_src-#1"]
-        assert "software version = ShapeIn 2.0.1" in dsj.logs["cfg_src-#2"]
+        assert "src-#1_cfg" in dsj.logs
+        assert "software version = ShapeIn 2.0.1" in dsj.logs["src-#1_cfg"]
+        assert "software version = ShapeIn 2.0.1" in dsj.logs["src-#2_cfg"]
         assert "src-#1_M1_camera.ini" in dsj.logs
         assert "src-#2_M1_camera.ini" in dsj.logs
         assert ds0.logs
@@ -65,8 +65,8 @@ def test_join_rtdc():
         assert np.all(dsj["circ"][:len(ds0)] == ds0["circ"])
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
-        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg_src-#1"]
-        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["cfg_src-#2"]
+        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["src-#1_cfg"]
+        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["src-#2_cfg"]
 
 
 @pytest.mark.filterwarnings(

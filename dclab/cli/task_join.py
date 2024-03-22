@@ -121,7 +121,7 @@ def join(path_out=None, paths_in=None, metadata=None):
 
     with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
         # store configuration of first dataset
-        hw.store_log(name="cfg_src-#1", lines=cfg0)
+        hw.store_log(name="src-#1_cfg", lines=cfg0)
         ii = 1
         # Append data from other files
         for pi, ti in zip(sorted_paths[1:], toffsets[1:]):
@@ -161,7 +161,7 @@ def join(path_out=None, paths_in=None, metadata=None):
                     # store configuration
                     cfg = dsi.config.tostring(
                         sections=dfn.CFG_METADATA).split("\n")
-                    hw.store_log(name="cfg_" + meta_key,
+                    hw.store_log(name=f"{meta_key}_cfg",
                                  lines=cfg)
                 if w:
                     hw.store_log(name=f"dclab-join-warnings-#{ii}",

@@ -400,12 +400,31 @@ class RTDCBase(abc.ABC):
     @property
     def features(self):
         """All available features"""
-        mycols = []
+        features = []
         for col in self._feature_candidates:
             if col in self:
-                mycols.append(col)
-        mycols.sort()
-        return mycols
+                features.append(col)
+        features.sort()
+        return features
+
+    @property
+    def features_ancillary(self):
+        """All available ancillary features
+
+        This includes all ancillary features, excluding the features
+        that are already in `self.features_innate`. This means that
+        there may be overlap between `features_ancillary` and e.g.
+        `self.features_basin`.
+
+        .. versionadded:: 0.58.0
+
+        """
+        features_innate = self.features_innate
+        features_ancillary = []
+        for feat in AncillaryFeature.feature_names:
+            if feat not in features_innate and feat in self:
+                features_ancillary.append(feat)
+        return sorted(features_ancillary)
 
     @property
     def features_basin(self):
@@ -426,7 +445,7 @@ class RTDCBase(abc.ABC):
 
     @property
     def features_innate(self):
-        """All features excluding ancillary or temporary features"""
+        """All features excluding ancillary, basin, or temporary features"""
         innate = [ft for ft in self.features if ft in self._events]
         return innate
 
@@ -438,7 +457,7 @@ class RTDCBase(abc.ABC):
 
         Notes
         -----
-        Features that are computationally cheap to compute are
+        Ancillary features that are computationally cheap to compute are
         always included. They are defined in
         :const:`dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID`.
         """

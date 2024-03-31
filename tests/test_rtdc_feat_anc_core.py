@@ -10,7 +10,7 @@ from helper_methods import example_data_dict, retrieve_data, calltracker
 
 @pytest.fixture
 def fake_af_cleanup_fixture():
-    """Fixture used to setup and cleanup some fake ancillary features"""
+    """Fixture used to set up and cleanup some fake ancillary features"""
     # code run before the test
     # set the method calls of our shared method to zero (just in case)
     shared_fake_af_method.calls = 0
@@ -221,3 +221,24 @@ def test_af_warning_from_check_data_size():
         data_dict = {"name1": data}
         with pytest.warns(BadFeatureSizeWarning):
             AncillaryFeature.check_data_size(ds, data_dict)
+
+
+def test_af_feature_property_core():
+    ddict = example_data_dict(size=67, keys=["area_um", "circ"])
+    ds = dclab.new_dataset(ddict)
+    assert "deform" in ds.features_ancillary
+    assert ds.features_ancillary == ["deform", "index"]
+    assert ds.features == ["area_um", "circ", "deform", "index"]
+    # trigger computation of deformation
+    assert np.allclose(ds["circ"], 1 - ds["deform"])
+    # check again
+    assert ds.features_ancillary == ["deform", "index"]
+
+
+def test_af_feature_property_core_control():
+    # Here, deformation is already an innate feature
+    ddict = example_data_dict(size=67, keys=["area_um", "circ", "deform"])
+    ds = dclab.new_dataset(ddict)
+    assert "deform" not in ds.features_ancillary
+    assert ds.features_ancillary == ["index"]
+    assert ds.features == ["area_um", "circ", "deform", "index"]

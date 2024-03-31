@@ -1,6 +1,8 @@
 0.58.0
  - feat: implement "mapped basins" that have a superset of events
  - feat: allow to export basin-only HDF5 files
+ - enh: introduce `RTDCBase.features_ancillary`, a list of all ancillary
+   features (computed on-the-fly) for a dataset
  - fix: enable nested basins for the HDF5, S3, and HTTP basins,
    because we have the `_local_basins_allowed` property since 0.57.6
  - fix: when joining datasets, the name of the log holding the configuration

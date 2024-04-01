@@ -1,4 +1,6 @@
 """Compress .rtdc files"""
+from __future__ import annotations
+
 import argparse
 import pathlib
 import warnings
@@ -13,8 +15,29 @@ from .._version import version
 from . import common
 
 
-def compress(path_out=None, path_in=None, force=False, check_suffix=True):
-    """Create a new dataset with all features compressed losslessly"""
+def compress(
+        path_in: str | pathlib.Path = None,
+        path_out: str | pathlib.Path = None,
+        force: bool = False,
+        check_suffix: bool = True):
+    """Create a new dataset with all features compressed lossless
+
+    Parameters
+    ----------
+    path_in: str or pathlib.Path
+        file to compress
+    path_out: str or pathlib
+        output file path
+    force: bool
+        DEPRECATED
+    check_suffix: bool
+        check suffixes for input and output files
+
+    Returns
+    -------
+    path_out: pathlib.Path
+        output path (with possibly corrected suffix)
+    """
     cmp_kw = hdf5plugin.Zstd(clevel=5)
     if path_out is None or path_in is None:
         parser = compress_parser()
@@ -46,6 +69,7 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
             rtdc_copy(src_h5file=h5,
                       dst_h5file=hc,
                       features="all",
+                      include_basins=True,
                       include_logs=True,
                       include_tables=True,
                       meta_prefix="",
@@ -74,6 +98,7 @@ def compress(path_out=None, path_in=None, force=False, check_suffix=True):
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
+    return path_out
 
 
 def compress_parser():

@@ -47,6 +47,12 @@ def rtdc_copy(src_h5file: h5py.Group,
     for akey in src_h5file.attrs:
         dst_h5file.attrs[akey] = src_h5file.attrs[akey]
 
+    # events in source file
+    if "events" in src_h5file:
+        events_src = sorted(src_h5file["events"].keys())
+    else:
+        events_src = []
+
     # basins
     if include_basins and "basins" in src_h5file:
         dst_h5file.require_group("basins")
@@ -94,9 +100,9 @@ def rtdc_copy(src_h5file: h5py.Group,
     if isinstance(features, list):
         feature_iter = features
     elif features == "all":
-        feature_iter = list(src_h5file["events"])
+        feature_iter = list(events_src)
     elif features == "scalar":
-        feature_iter = [feat for feat in src_h5file["events"]
+        feature_iter = [feat for feat in events_src
                         if feature_exists(feat, scalar_only=True)]
     elif features == "none":
         feature_iter = []
@@ -107,7 +113,7 @@ def rtdc_copy(src_h5file: h5py.Group,
 
     # Additional check for basin features.
     bn_regexp = re.compile("^basinmap[0-9]*$")  # future-proof regexp
-    src_basin_feats = [f for f in src_h5file["events"] if bn_regexp.match(f)]
+    src_basin_feats = [f for f in events_src if bn_regexp.match(f)]
     if include_basins:
         # Make sure all mapped basin features are included in the output file.
         for feat in src_basin_feats:

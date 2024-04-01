@@ -10,13 +10,38 @@ from .._version import version
 from . import common
 
 
-def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
-    """Repack/recreate an .rtdc file, optionally stripping the logs"""
+def repack(
+        path_in: str | pathlib.Path = None,
+        path_out: str | pathlib.Path = None,
+        strip_basins: bool = False,
+        strip_logs: bool = False,
+        check_suffix: bool = True):
+    """Repack/recreate an .rtdc file, optionally stripping the logs
+
+    Parameters
+    ----------
+    path_in: str or pathlib.Path
+        file to compress
+    path_out: str or pathlib
+        output file path
+    strip_basins: bool
+        do not write basin information to the output file
+    strip_logs: bool
+        do not write logs to the output file
+    check_suffix: bool
+        check suffixes for input and output files
+
+    Returns
+    -------
+    path_out: pathlib.Path
+        output path (with possibly corrected suffix)
+    """
     if path_in is None and path_out is None:
         parser = repack_parser()
         args = parser.parse_args()
         path_in = args.input
         path_out = args.output
+        strip_basins = args.strip_basins
         strip_logs = args.strip_logs
 
     allowed_input_suffixes = [".rtdc"]
@@ -30,12 +55,14 @@ def repack(path_in=None, path_out=None, strip_logs=False, check_suffix=True):
         rtdc_copy(src_h5file=h5,
                   dst_h5file=hc,
                   features="all",
+                  include_basins=not strip_basins,
                   include_logs=not strip_logs,
                   include_tables=True,
                   meta_prefix="")
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
+    return path_out
 
 
 def repack_parser():
@@ -48,6 +75,12 @@ def repack_parser():
                         help='Input path (.rtdc file)')
     parser.add_argument('output',  metavar="OUTPUT", type=str,
                         help='Output path (.rtdc file)')
+    parser.add_argument('--strip-basins',
+                        dest='strip_basins',
+                        action='store_true',
+                        help='Do not copy any basin information to the '
+                             'output file.')
+    parser.set_defaults(strip_basins=False)
     parser.add_argument('--strip-logs',
                         dest='strip_logs',
                         action='store_true',

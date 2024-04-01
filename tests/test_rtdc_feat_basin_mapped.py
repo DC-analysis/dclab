@@ -301,6 +301,8 @@ def test_export_to_hdf5_mapped_basin():
 
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not available")
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_export_to_hdf5_from_dcor_dataset(tmp_path):
     """Exporting from DCOR with mapped basin should make basin available"""
     pytest.importorskip("requests")

@@ -1,6 +1,10 @@
 """Concatenate .rtdc files"""
+from __future__ import annotations
+
 import argparse
+import pathlib
 import time
+from typing import Dict, List
 import warnings
 
 import hdf5plugin
@@ -17,8 +21,33 @@ class FeatureSetNotIdenticalJoinWarning(UserWarning):
     pass
 
 
-def join(path_out=None, paths_in=None, metadata=None):
-    """Join multiple RT-DC measurements into a single .rtdc file"""
+def join(
+        paths_in: List[str | pathlib.Path] = None,
+        path_out: str | pathlib.Path = None,
+        metadata: Dict = None):
+    """Join multiple RT-DC measurements into a single .rtdc file
+
+    Parameters
+    ----------
+    paths_in: list of paths
+        input paths to join
+    path_out: str or pathlib.Path
+        output path
+    metadata: dict
+        optional metadata dictionary (configuration dict) to store
+        in the output file
+
+    Returns
+    -------
+    path_out: pathlib.Path
+        output path (with corrected path suffix if applicable)
+
+    Notes
+    -----
+    The first input file defines the metadata written to the output
+    file. Only features that are present in all input files are written
+    to the output file.
+    """
     cmp_kw = hdf5plugin.Zstd(clevel=5)
     if metadata is None:
         metadata = {"experiment": {"run index": 1}}
@@ -49,18 +78,18 @@ def join(path_out=None, paths_in=None, metadata=None):
     logs = {"dclab-join": common.get_command_log(paths=sorted_paths)}
 
     # Determine temporal offsets
-    toffsets = np.zeros(len(sorted_paths), dtype=np.float64)
+    t_offsets = np.zeros(len(sorted_paths), dtype=np.float64)
     for ii, pp in enumerate(sorted_paths):
         with new_dataset(pp) as dsb:
             etime = dsb.config["experiment"]["time"]
             st = time.strptime(dsb.config["experiment"]["date"]
                                + etime[:8],
                                "%Y-%m-%d%H:%M:%S")
-            toffsets[ii] = time.mktime(st)
+            t_offsets[ii] = time.mktime(st)
             if len(etime) > 8:
                 # floating point time stored as well (HH:MM:SS.SS)
-                toffsets[ii] += float(etime[8:])
-    toffsets -= toffsets[0]
+                t_offsets[ii] += float(etime[8:])
+    t_offsets -= t_offsets[0]
 
     # Determine features to export (based on first file)
     with warnings.catch_warnings(record=True) as w:
@@ -111,6 +140,7 @@ def join(path_out=None, paths_in=None, metadata=None):
                             override=True,
                             logs=True,
                             tables=True,
+                            basins=False,
                             meta_prefix="src-#1_",
                             compression_kwargs=cmp_kw)
             # store configuration
@@ -124,7 +154,7 @@ def join(path_out=None, paths_in=None, metadata=None):
         hw.store_log(name="src-#1_cfg", lines=cfg0)
         ii = 1
         # Append data from other files
-        for pi, ti in zip(sorted_paths[1:], toffsets[1:]):
+        for pi, ti in zip(sorted_paths[1:], t_offsets[1:]):
             ii += 1  # we start with the second dataset
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
@@ -174,6 +204,7 @@ def join(path_out=None, paths_in=None, metadata=None):
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
+    return path_out
 
 
 def join_parser():

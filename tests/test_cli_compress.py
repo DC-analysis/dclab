@@ -93,7 +93,7 @@ def test_compress_already_compressed():
     assert h1 != h3
 
 
-def test_compress_no_data_from_basins():
+def test_compress_basin_no_data_from_basins():
     """
     When compressing a dataset, feature data from the basin should not be
     written to the output file.
@@ -125,6 +125,45 @@ def test_compress_no_data_from_basins():
     with h5py.File(h5path_out) as h5:
         assert "deform" in h5["events"], "sanity check"
         assert "image" not in h5["events"], "Arrgh, basin feature was copied"
+
+    with new_dataset(h5path_out) as ds:
+        assert "image" in ds.features_basin
+
+
+def test_compress_basin_preserved_compress():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    # Empty, basin-based dataset creation
+    with RTDCWriter(h5path_small) as hw:
+        bn_hash = hw.store_basin(basin_name="example basin",
+                                 basin_type="file",
+                                 basin_format="hdf5",
+                                 basin_locs=[h5path],
+                                 basin_descr="an example test basin",
+                                 )
+        h5path_out = h5path_small.with_name("compressed.rtdc")
+        cli.compress(path_in=h5path_small,
+                     path_out=h5path_out,
+                     )
+
+    with h5py.File(h5path_out) as h5_out, h5py.File(h5path_small) as h5_in:
+        # check if h5path_out is empty
+        if 'events' in h5_out:
+            assert len(h5_out['events']) == 0
+        # check if h5path_small basin is same as h5path_out basin
+        assert 'basins' in h5_in
+        assert 'basins' in h5_out
+        assert np.all(
+            h5_in['basins'][bn_hash][:] == h5_out['basins'][bn_hash][:]
+        )
+
+    with new_dataset(h5path) as ds, new_dataset(h5path_out) as ds_out:
+        # check if all features of h5path are preserved in h5path_out
+        assert len(ds.features_innate) == 32
+        assert len(ds_out.features_innate) == 0
+        for feat in ds.features_innate:
+            assert feat in ds_out.features_basin
 
 
 @pytest.mark.filterwarnings(

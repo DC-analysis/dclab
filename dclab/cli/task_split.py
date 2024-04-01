@@ -19,19 +19,19 @@ def split(path_in=None, path_out=None, split_events=10000,
     Parameters
     ----------
     path_in: str or pathlib.Path
-        Path of input measurement file
+        path of input measurement file
     path_out: str or pathlib.Path
-        Path to output directory (optional)
+        path to output directory (optional)
     split_events: int
-        Maximum number of events in each output file
+        maximum number of events in each output file
     skip_initial_empty_image: bool
-        Remove the first event of the dataset if the image is zero.
+        remove the first event of the dataset if the image is zero
     skip_final_empty_image: bool
-        Remove the final event of the dataset if the image is zero.
+        remove the final event of the dataset if the image is zero
     ret_out_paths:
-        If True, return the list of output file paths.
+        if True, return the list of output file paths
     verbose: bool
-        If `True`, print messages to stdout
+        if True, print messages to stdout
 
     Returns
     -------
@@ -97,6 +97,7 @@ def split(path_in=None, path_out=None, split_events=10000,
                                features=ds.features_innate,
                                logs=True,
                                tables=True,
+                               basins=True,
                                filtered=True,
                                compression_kwargs=cmp_kw,
                                )

@@ -1,27 +1,67 @@
 """Create .rtdc files with scalar-only features"""
+from __future__ import annotations
+
 import argparse
 import pathlib
+from typing import List
 import warnings
 
 import h5py
 import hdf5plugin
 
-from ..rtdc_dataset import fmt_hdf5, new_dataset, rtdc_copy, RTDCWriter
+from ..rtdc_dataset import (
+    fmt_hdf5, new_dataset, rtdc_copy, RTDCWriter, RTDCBase
+)
 from .. import util
 from .._version import version
 
 from . import common
 
 
-def condense(path_out=None, path_in=None, ancillaries=True,
-             check_suffix=True):
-    """Create a new dataset with all (ancillary) scalar-only features"""
+def condense(
+        path_in: str | pathlib.Path = None,
+        path_out: str | pathlib.Path = None,
+        ancillaries: bool = None,
+        store_ancillary_features: bool = True,
+        store_basin_features: bool = True,
+        check_suffix: bool = True):
+    """Create a new dataset with all available scalar-only features
+
+    Besides the innate scalar features, this also includes all
+    fast-to-compute ancillary and all basin features (`features_loaded`).
+
+    Parameters
+    ----------
+    path_in: str or pathlib.Path
+        file to compress
+    path_out: str or pathlib
+        output file path
+    ancillaries: bool
+        DEPRECATED, use `store_ancillary_features` instead
+    store_ancillary_features: bool
+        compute and store ancillary features in the output file
+    store_basin_features: bool
+        copy basin features from the input path to the output file
+    check_suffix: bool
+        check suffixes for input and output files
+
+    Returns
+    -------
+    path_out: pathlib.Path
+        output path (with possibly corrected suffix)
+    """
+    if ancillaries is not None:
+        warnings.warn("Please use `store_ancillary_features` instead of "
+                      "`ancillaries`", DeprecationWarning)
+        store_ancillary_features = ancillaries
+
     if path_out is None or path_in is None:
         parser = condense_parser()
         args = parser.parse_args()
         path_in = args.input
         path_out = args.output
-        ancillaries = not args.no_ancillaries
+        store_ancillary_features = not args.no_ancillaries
+        store_basin_features = not args.no_basins
 
     allowed_input_suffixes = [".rtdc", ".tdms"]
     if not check_suffix:
@@ -32,19 +72,38 @@ def condense(path_out=None, path_in=None, ancillaries=True,
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        with new_dataset(path_in) as ds, \
+        # We use `store_basin_features` during initialization (to avoid
+        # conflicts with ancillary features) and in the actual function
+        # as well, to correctly determine which features to use.
+        with new_dataset(path_in, enable_basins=store_basin_features) as ds, \
                 h5py.File(path_temp, "w") as h5_cond:
             condense_dataset(ds=ds,
                              h5_cond=h5_cond,
-                             ancillaries=ancillaries,
+                             store_ancillary_features=store_ancillary_features,
+                             store_basin_features=store_basin_features,
                              warnings_list=w)
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
+    return path_out
 
 
-def condense_dataset(ds, h5_cond, ancillaries=True, warnings_list=None):
-    """Condense a dataset using low-level HDF5 methods"""
+def condense_dataset(
+        ds: RTDCBase,
+        h5_cond: h5py.File,
+        ancillaries: bool = None,
+        store_ancillary_features: bool = True,
+        store_basin_features: bool = True,
+        warnings_list: List = None):
+    """Condense a dataset using low-level HDF5 methods
+
+    For ancillary and basin features, high-level dclab methods are used.
+    """
+    if ancillaries is not None:
+        warnings.warn("Please use `store_ancillary_features` instead of "
+                      "`ancillaries`", DeprecationWarning)
+        store_ancillary_features = ancillaries
+
     cmp_kw = hdf5plugin.Zstd(clevel=5)
     cmd_dict = {}
 
@@ -55,6 +114,7 @@ def condense_dataset(ds, h5_cond, ancillaries=True, warnings_list=None):
         rtdc_copy(src_h5file=ds.h5file,
                   dst_h5file=h5_cond,
                   features="scalar",
+                  include_basins=True,
                   include_logs=True,
                   include_tables=True,
                   meta_prefix="")
@@ -65,40 +125,44 @@ def condense_dataset(ds, h5_cond, ancillaries=True, warnings_list=None):
     feats_sc = ds.features_scalar
     # loaded (computationally cheap) scalar features
     feats_sc_in = [f for f in ds.features_loaded if f in feats_sc]
-    # ancillary features
-    feats_sc_anc = list(set(feats_sc) - set(feats_sc_in))
 
     cmd_dict["features_original_innate"] = ds.features_innate
 
-    if ancillaries:
-        features = feats_sc
-        cmd_dict["features_computed"] = feats_sc_anc
+    features = set(feats_sc_in)
+    if store_basin_features:
+        feats_sc_basin = [f for f in ds.features_basin if
+                          (f in feats_sc and f not in feats_sc_in)]
+        cmd_dict["features_basin"] = feats_sc_basin
+        if feats_sc_basin:
+            print(f"Using basin features {feats_sc_basin}")
+            features |= set(feats_sc_basin)
+
+    if store_ancillary_features:
+        feats_sc_anc = [f for f in ds.features_ancillary if
+                        (f in feats_sc and f not in feats_sc_in)]
+        cmd_dict["features_ancillary"] = feats_sc_anc
         if feats_sc_anc:
-            print("Computing ancillary features:",
-                  " ".join(feats_sc_anc))
-        else:
-            print("No ancillary features to compute.")
-    else:
-        features = feats_sc_in
+            features |= set(feats_sc_anc)
+            print(f"Using ancillary features {feats_sc_anc}")
 
     # command log
     logs = {"dclab-condense": common.get_command_log(
         paths=[ds.path], custom_dict=cmd_dict)}
 
     # rename old dclab-condense logs
-    for lkey in ["dclab-condense", "dclab-condense-warnings"]:
-        if lkey in h5_cond["logs"]:
+    for l_key in ["dclab-condense", "dclab-condense-warnings"]:
+        if l_key in h5_cond["logs"]:
             # This is cached, so no worry calling it multiple times.
             md5_cfg = util.hashobj(ds.config)
             # rename
-            new_log_name = f"{lkey}_{md5_cfg}"
+            new_log_name = f"{l_key}_{md5_cfg}"
             if new_log_name not in h5_cond["logs"]:
                 # If the user repeatedly condensed one file, then there is
                 # no benefit in storing the log under a different name (the
                 # metadata did not change). Only write the log if it does
                 # not already exist.
-                h5_cond["logs"][f"{lkey}_{md5_cfg}"] = h5_cond["logs"][lkey]
-            del h5_cond["logs"][lkey]
+                h5_cond["logs"][f"{l_key}_{md5_cfg}"] = h5_cond["logs"][l_key]
+            del h5_cond["logs"][l_key]
 
     with RTDCWriter(h5_cond,
                     mode="append",
@@ -135,6 +199,14 @@ def condense_parser():
                         help='Do not compute expensive ancillary features '
                              'such as volume'
                         )
+    parser.set_defaults(no_ancillaries=False)
+    parser.add_argument('--no-basin-features',
+                        dest='no_basins',
+                        action='store_true',
+                        help='Do not store basin-based feature data from the '
+                             'input file in the output file'
+                        )
+    parser.set_defaults(no_basins=False)
     parser.add_argument('--version', action='version',
                         version=f'dclab-condense {version}')
     return parser

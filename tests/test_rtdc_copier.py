@@ -41,20 +41,6 @@ def test_copy_already_compressed():
         assert is_properly_compressed(hc["events/image"])
 
 
-def test_copy_with_compression():
-    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
-    path_copy = path.with_name("test_copy.rtdc")
-
-    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
-        rtdc_copy(src_h5file=h5,
-                  dst_h5file=hc)
-
-    # Make sure this worked
-    with h5py.File(path_copy) as hc:
-        assert is_properly_compressed(hc["events/deform"])
-        assert is_properly_compressed(hc["events/image"])
-
-
 def test_copy_basins():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")
@@ -96,7 +82,7 @@ def test_copy_basins_mapped():
             verify=False
         )
         assert not is_properly_compressed(hw.h5file[f"basins/{bn_hash}"])
-        assert not is_properly_compressed(hw.h5file[f"events/basinmap0"])
+        assert not is_properly_compressed(hw.h5file["events/basinmap0"])
 
     # copy
     with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
@@ -125,7 +111,7 @@ def test_copy_basins_no_basin():
             verify=False
         )
         assert not is_properly_compressed(hw.h5file[f"basins/{bn_hash}"])
-        assert not is_properly_compressed(hw.h5file[f"events/basinmap0"])
+        assert not is_properly_compressed(hw.h5file["events/basinmap0"])
 
     # copy
     with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
@@ -187,6 +173,104 @@ def test_copy_logs_variable_length_string():
         assert hc["logs/var_log"].dtype.str == "|S100"
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_copy_metadata_config():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    with dclab.new_dataset(path_copy) as ds:
+        assert ds.config["experiment"]["sample"] == "background image example"
+
+
+def test_copy_metadata_of_datasets():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # add log to source file
+    with RTDCWriter(path, mode="append") as hw:
+        hw.store_log("test_log", ["hans", "peter", "und", "zapadust"])
+        hw.h5file["logs/test_log"].attrs["saint"] = "germain"
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["logs/test_log"])
+        assert hc["logs/test_log"].attrs["saint"] == "germain"
+
+
+def test_copy_no_events():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_in = path.with_name("input.rtdc")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    with RTDCWriter(path_in, mode="append") as hw, h5py.File(path) as h5:
+        hw.h5file.attrs.update(h5.attrs)
+        hw.store_log("test_log", ["hans", "peter", "und", "zapadust"])
+
+    # copy
+    with h5py.File(path_in) as h5, h5py.File(path_copy, "w") as hc:
+        # make sure no events are there
+        if "events" in h5:
+            assert len(h5["events"]) == 0
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        if "events" in hc:
+            assert len(hc["events"]) == 0
+        assert "test_log" in hc["logs"]
+
+
+def test_copy_scalar_features_only():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        # make sure image data is there
+        assert "image" in h5["events"]
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc,
+                  features="scalar")
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert "image" not in hc["events"]
+        assert "deform" in hc["events"]
+
+
+def test_copy_specified_feature_list():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        # make sure image data is there
+        assert "image" in h5["events"]
+        assert "area_um" in h5["events"]
+        assert "deform" in h5["events"]
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc,
+                  features=["image", "deform"])
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert "image" in hc["events"]
+        assert "area_um" not in hc["events"]
+        assert "deform" in hc["events"]
+
+
 def test_copy_tables():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")
@@ -243,78 +327,18 @@ def test_copy_tables_hdf5_issue_3214():
                   dst_h5file=hc)
 
 
-@pytest.mark.filterwarnings(
-    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_copy_metadata_config():
+def test_copy_with_compression():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")
 
-    # copy
-    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
-        rtdc_copy(src_h5file=h5,
-                  dst_h5file=hc)
-
-    with dclab.new_dataset(path_copy) as ds:
-        assert ds.config["experiment"]["sample"] == "background image example"
-
-
-def test_copy_metadata_of_datasets():
-    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
-    path_copy = path.with_name("test_copy.rtdc")
-
-    # add log to source file
-    with RTDCWriter(path, mode="append") as hw:
-        hw.store_log("test_log", ["hans", "peter", "und", "zapadust"])
-        hw.h5file["logs/test_log"].attrs["saint"] = "germain"
-
-    # copy
     with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
         rtdc_copy(src_h5file=h5,
                   dst_h5file=hc)
 
     # Make sure this worked
     with h5py.File(path_copy) as hc:
-        assert is_properly_compressed(hc["logs/test_log"])
-        assert hc["logs/test_log"].attrs["saint"] == "germain"
-
-
-def test_copy_scalar_features_only():
-    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
-    path_copy = path.with_name("test_copy.rtdc")
-
-    # copy
-    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
-        # make sure image data is there
-        assert "image" in h5["events"]
-        rtdc_copy(src_h5file=h5,
-                  dst_h5file=hc,
-                  features="scalar")
-
-    # Make sure this worked
-    with h5py.File(path_copy) as hc:
-        assert "image" not in hc["events"]
-        assert "deform" in hc["events"]
-
-
-def test_copy_specified_feature_list():
-    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
-    path_copy = path.with_name("test_copy.rtdc")
-
-    # copy
-    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
-        # make sure image data is there
-        assert "image" in h5["events"]
-        assert "area_um" in h5["events"]
-        assert "deform" in h5["events"]
-        rtdc_copy(src_h5file=h5,
-                  dst_h5file=hc,
-                  features=["image", "deform"])
-
-    # Make sure this worked
-    with h5py.File(path_copy) as hc:
-        assert "image" in hc["events"]
-        assert "area_um" not in hc["events"]
-        assert "deform" in hc["events"]
+        assert is_properly_compressed(hc["events/deform"])
+        assert is_properly_compressed(hc["events/image"])
 
 
 def test_do_not_copy_features():

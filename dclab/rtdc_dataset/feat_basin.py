@@ -93,7 +93,7 @@ class Basin(abc.ABC):
             Additional keyword arguments passed to the `load_dataset`
             method of the `Basin` subclass.
 
-        .. versionchanged: 0.56.0
+        .. versionchanged: 0.58.0
 
             Added the `mapping` keyword argument to support basins
             with a superset of events.

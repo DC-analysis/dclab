@@ -2,7 +2,7 @@
 import shutil
 
 import dclab
-from dclab import cli, new_dataset
+from dclab import cli, new_dataset, rtdc_dataset, RTDCWriter
 
 import h5py
 import numpy as np
@@ -17,7 +17,7 @@ def test_join_tdms():
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
-    cli.join(path_out=path_out, paths_in=[path_in, path_in])
+    cli.join(paths_in=[path_in, path_in], path_out=path_out)
 
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert len(dsj)
@@ -35,7 +35,7 @@ def test_join_tdms_logs():
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
-    cli.join(path_out=path_out, paths_in=[path_in, path_in])
+    cli.join(paths_in=[path_in, path_in], path_out=path_out)
 
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert "dclab-join" in dsj.logs
@@ -57,7 +57,7 @@ def test_join_rtdc():
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
-    cli.join(path_out=path_out, paths_in=[path_in, path_in])
+    cli.join(paths_in=[path_in, path_in], path_out=path_out)
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert "dclab-join" in dsj.logs
         assert len(dsj)
@@ -67,6 +67,74 @@ def test_join_rtdc():
         assert set(dsj.features) == set(ds0.features)
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["src-#1_cfg"]
         assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["src-#2_cfg"]
+
+
+def test_join_rtdc_basin_data_not_written():
+    """When joining data, basin features should not be written"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    h5path_out = h5path.with_name("compressed.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features=["deform", "area_um"])
+        hw.store_basin(basin_name="example basin",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[h5path],
+                       basin_descr="an example test basin",
+                       )
+
+    # sanity check
+    with new_dataset(h5path_small) as ds:
+        assert "image" in ds.features
+
+    # compress the basin-based dataset
+    cli.join(paths_in=[h5path_small, h5path_small], path_out=h5path_out)
+
+    with h5py.File(h5path_out) as h5:
+        assert "basins" not in h5
+
+    with new_dataset(h5path_out) as ds:
+        assert "image" not in ds
+        assert "aspect" not in ds
+        assert "deform" in ds
+
+
+def test_join_rtdc_basin_information_lost():
+    """When joining .rtdc files, the basin information is lost
+
+    Or at least this is not implemented in dclab 0.58.0.
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    h5path_out = h5path.with_name("compressed.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(basin_name="example basin",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[h5path],
+                       basin_descr="an example test basin",
+                       )
+
+    # sanity check
+    with new_dataset(h5path_small) as ds:
+        assert "image" in ds.features
+
+    # compress the basin-based dataset
+    cli.join(paths_in=[h5path_small, h5path_small], path_out=h5path_out)
+
+    with h5py.File(h5path_out) as h5:
+        assert "basins" not in h5
 
 
 @pytest.mark.filterwarnings(
@@ -86,7 +154,7 @@ def test_join_rtdc_logs():
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
-    cli.join(path_out=path_out, paths_in=[path_in, path_in_2])
+    cli.join(paths_in=[path_in, path_in_2], path_out=path_out)
 
     with h5py.File(path_out) as h5:
         assert "src-#2_Dummy" in h5["logs"]
@@ -101,7 +169,7 @@ def test_join_rtdc_index_online_issue_158():
     path_out_a = path1.with_name("outa.rtdc")
 
     # this did not work
-    cli.join(path_out=path_out_a, paths_in=[path1, path2])
+    cli.join(paths_in=[path1, path2], path_out=path_out_a)
 
     # verification
     with dclab.new_dataset(path_out_a) as ds:
@@ -137,7 +205,7 @@ def test_join_rtdc_unequal_features_issue_157():
     # First test
     # There should be no warning here, because for path2 volume can be
     # computed.
-    cli.join(path_out=path_out_a, paths_in=[path1, path2])
+    cli.join(paths_in=[path1, path2], path_out=path_out_a)
     with dclab.new_dataset(path_out_a) as ds:
         # Volume is in this file, because it can be computed for path2
         assert "volume" in ds.features_innate
@@ -145,7 +213,7 @@ def test_join_rtdc_unequal_features_issue_157():
     # Second test: Now do the same thing with reversed dates
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-    cli.join(path_out=path_out_b, paths_in=[path1, path2])
+    cli.join(paths_in=[path1, path2], path_out=path_out_b)
     with dclab.new_dataset(path_out_b) as ds:
         assert "volume" not in ds.features_innate
         assert "dclab-join-feature-warnings" in ds.logs
@@ -155,7 +223,7 @@ def test_join_rtdc_unequal_features_issue_157():
     # Third test: we flip around paths_in to also test sorting
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-    cli.join(path_out=path_out_c, paths_in=[path2, path1])
+    cli.join(paths_in=[path2, path1], path_out=path_out_c)
     with dclab.new_dataset(path_out_c) as ds:
         assert "volume" not in ds.features_innate
         assert "dclab-join-feature-warnings" in ds.logs
@@ -186,7 +254,7 @@ def test_join_rtdc_unequal_features_issue_157_2():
         assert "ml_score_abc" not in ds.features_innate
 
     # First test
-    cli.join(path_out=path_out_a, paths_in=[path1, path2])
+    cli.join(paths_in=[path1, path2], path_out=path_out_a)
     with dclab.new_dataset(path_out_a) as ds:
         # Score cannot be computed for path2
         assert "ml_score_abc" not in ds.features_innate
@@ -197,7 +265,7 @@ def test_join_rtdc_unequal_features_issue_157_2():
     # Second test: Now do the same thing with reversed dates
     with h5py.File(path2, "a") as h51:
         h51.attrs["experiment:date"] = "2019-01-01"
-    cli.join(path_out=path_out_b, paths_in=[path1, path2])
+    cli.join(paths_in=[path1, path2], path_out=path_out_b)
     with dclab.new_dataset(path_out_b) as ds:
         assert "ml_score_abc" not in ds.features_innate
         assert "dclab-join-feature-warnings" in ds.logs
@@ -224,7 +292,7 @@ def test_join_frame():
 
     offset = 24 * 60 * 60 + 60 * 60 + 1 * 60 + 15 + .05
 
-    cli.join(path_out=path_out, paths_in=[path_in1, path_in2])
+    cli.join(paths_in=[path_in1, path_in2], path_out=path_out)
     with new_dataset(path_out) as dsj, new_dataset(path_in1) as ds0:
         fr = ds0.config["imaging"]["frame rate"]
         assert np.allclose(dsj["frame"],
@@ -261,7 +329,7 @@ def test_join_times():
 
     offset = 24 * 60 * 60 + 60 * 60 + 1 * 60 + 15 + .05
 
-    cli.join(path_out=path_out, paths_in=[path_in1, path_in2])
+    cli.join(paths_in=[path_in1, path_in2], path_out=path_out)
     with new_dataset(path_out) as dsj, new_dataset(path_in1) as ds0:
         assert np.allclose(dsj["time"],
                            np.concatenate((ds0["time"], ds0["time"] + offset)),

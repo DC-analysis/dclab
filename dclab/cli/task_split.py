@@ -1,4 +1,6 @@
 """Split an .rtdc file into smaller .rtdc files"""
+from __future__ import annotations
+
 import argparse
 import pathlib
 import warnings
@@ -11,9 +13,14 @@ from .._version import version
 from . import common
 
 
-def split(path_in=None, path_out=None, split_events=10000,
-          skip_initial_empty_image=True, skip_final_empty_image=True,
-          ret_out_paths=False, verbose=False):
+def split(
+        path_in: str | pathlib.Path = None,
+        path_out: str | pathlib.Path = None,
+        split_events: int = 10000,
+        skip_initial_empty_image: bool = True,
+        skip_final_empty_image: bool = True,
+        ret_out_paths: bool = False,
+        verbose: bool = False):
     """Split a measurement file
 
     Parameters

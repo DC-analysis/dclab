@@ -1,4 +1,6 @@
 """Repack (similar to h5repack) .rtdc files"""
+from __future__ import annotations
+
 import argparse
 import pathlib
 

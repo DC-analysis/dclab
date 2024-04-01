@@ -226,6 +226,14 @@ class RTDCWriter:
             whether to verify the basin before storing it; You might have
             set this to False if you would like to write a basin that is
             e.g. temporarily not available
+
+        Returns
+        -------
+        basin_hash: str
+            hash of the basin which serves as the name of the HDF5 dataset
+            stored in the output file
+
+            .. versionadded:: 0.58.0
         """
         # Expand optional tuple for basin_map
         if isinstance(basin_map, (list, tuple)) and len(basin_map) == 2:
@@ -343,6 +351,7 @@ class RTDCWriter:
         key = hashobj(b_lines)
         if key not in basins:
             self.write_text(basins, key, b_lines)
+        return key
 
     def store_feature(self, feat, data, shape=None):
         """Write feature data

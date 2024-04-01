@@ -142,10 +142,11 @@ def test_compress_basin_preserved_compress():
                                  basin_locs=[h5path],
                                  basin_descr="an example test basin",
                                  )
-        h5path_out = h5path_small.with_name("compressed.rtdc")
-        cli.compress(path_in=h5path_small,
-                     path_out=h5path_out,
-                     )
+    # compress the data
+    h5path_out = h5path_small.with_name("compressed.rtdc")
+    cli.compress(path_in=h5path_small,
+                 path_out=h5path_out,
+                 )
 
     with h5py.File(h5path_out) as h5_out, h5py.File(h5path_small) as h5_in:
         # check if h5path_out is empty

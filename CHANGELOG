@@ -13,6 +13,8 @@
  - setup: pin nptdms<1.9, because tests started to fail
  - ci: install lme4 from archive
  - ref: modify basin `load_dataset` methods to support mapped basins
+ - tests: make sure basin features are not written automatically in
+   CLI methods (#246)
 0.57.7
  - fix: raise a ValueError in HTTPFile when the server does not return
    the status code 200

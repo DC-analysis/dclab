@@ -6,7 +6,7 @@ import sys
 import time
 
 import dclab
-from dclab import cli, new_dataset
+from dclab import cli, new_dataset, rtdc_dataset, RTDCWriter
 
 import h5py
 import numpy as np
@@ -36,7 +36,7 @@ def test_compress():
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("compressed.rtdc")
 
-    cli.compress(path_out=path_out, path_in=path_in)
+    cli.compress(path_in=path_in, path_out=path_out)
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert "dclab-compress" in dsj.logs
         assert len(dsj)
@@ -58,7 +58,7 @@ def test_compress_wo_logs():
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("compressed.rtdc")
 
-    cli.compress(path_out=path_out, path_in=path_in)
+    cli.compress(path_in=path_in, path_out=path_out)
     with new_dataset(path_out) as ds:
         assert len(ds.logs) == 1
 
@@ -91,6 +91,40 @@ def test_compress_already_compressed():
     # copy single HDF5 Datasets without having to redo the compression.
     # assert h1 == h3
     assert h1 != h3
+
+
+def test_compress_no_data_from_basins():
+    """
+    When compressing a dataset, feature data from the basin should not be
+    written to the output file.
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    h5path_out = h5path.with_name("compressed.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(basin_name="example basin",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[h5path],
+                       basin_descr="an example test basin",
+                       )
+
+    # sanity check
+    with new_dataset(h5path_small) as ds:
+        assert "image" in ds.features
+
+    # compress the basin-based dataset
+    cli.compress(path_in=h5path_small, path_out=h5path_out)
+
+    with h5py.File(h5path_out) as h5:
+        assert "deform" in h5["events"], "sanity check"
+        assert "image" not in h5["events"], "Arrgh, basin feature was copied"
 
 
 @pytest.mark.filterwarnings(

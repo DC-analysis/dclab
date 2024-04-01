@@ -1,6 +1,7 @@
 """Helper methods for copying .rtdc data"""
 from __future__ import annotations
 
+import re
 from typing import List, Literal
 
 import h5py
@@ -16,6 +17,7 @@ from .fmt_hdf5 import DEFECTIVE_FEATURES
 def rtdc_copy(src_h5file: h5py.Group,
               dst_h5file: h5py.Group,
               features: List[str] | Literal['all', 'scalar', 'none'] = "all",
+              include_basins: bool = True,
               include_logs: bool = True,
               include_tables: bool = True,
               meta_prefix: str = ""):
@@ -32,6 +34,8 @@ def rtdc_copy(src_h5file: h5py.Group,
         `src_h5file` to `dst_h5file`. Alternatively, you may specify 'all'
         (copy all features), 'scalar' (copy only scalar features), or 'none'
         (don't copy any features).
+    include_basins: bool
+        Copy the basin information from `src_h5file` to `dst_h5file`.
     include_logs: bool
         Copy the logs from `src_h5file` to `dst_h5file`.
     include_tables: bool
@@ -43,14 +47,27 @@ def rtdc_copy(src_h5file: h5py.Group,
     for akey in src_h5file.attrs:
         dst_h5file.attrs[akey] = src_h5file.attrs[akey]
 
+    # basins
+    if include_basins and "basins" in src_h5file:
+        dst_h5file.require_group("basins")
+        for b_key in src_h5file["basins"]:
+            if b_key in dst_h5file["basins"]:
+                # This basin already exists.
+                continue
+            h5ds_copy(src_loc=src_h5file["basins"],
+                      src_name=b_key,
+                      dst_loc=dst_h5file["basins"],
+                      dst_name=b_key,
+                      recursive=False)
+
     # logs
     if include_logs and "logs" in src_h5file:
         dst_h5file.require_group("logs")
-        for lkey in src_h5file["logs"]:
+        for l_key in src_h5file["logs"]:
             h5ds_copy(src_loc=src_h5file["logs"],
-                      src_name=lkey,
+                      src_name=l_key,
                       dst_loc=dst_h5file["logs"],
-                      dst_name=meta_prefix + lkey,
+                      dst_name=meta_prefix + l_key,
                       recursive=False)
 
     # tables
@@ -87,6 +104,21 @@ def rtdc_copy(src_h5file: h5py.Group,
         raise ValueError(f"`features` must be either a list of feature names "
                          f"or one of 'all', 'scalar' or 'none', got "
                          f"'{features}'")
+
+    # Additional check for basin features.
+    bn_regexp = re.compile("^basinmap[0-9]*$")  # future-proof regexp
+    src_basin_feats = [f for f in src_h5file["events"] if bn_regexp.match(f)]
+    if include_basins:
+        # Make sure all mapped basin features are included in the output file.
+        for feat in src_basin_feats:
+            if feat not in feature_iter:
+                feature_iter.append(feat)
+    else:
+        # We do not need the basinmap features, because basins are
+        # stripped from the output file.
+        for feat in src_basin_feats:
+            if feat in feature_iter:
+                feature_iter.remove(feat)
 
     if feature_iter:
         dst_h5file.require_group("events")

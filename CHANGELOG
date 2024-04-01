@@ -3,6 +3,8 @@
  - feat: allow to export basin-only HDF5 files
  - enh: introduce `RTDCBase.features_ancillary`, a list of all ancillary
    features (computed on-the-fly) for a dataset
+ - enh: add `include_basins` keyword argument for `rtdc_copy`
+ - enh: `RTDCWriter.store_basin` now returns the basin hash/identifier
  - fix: enable nested basins for the HDF5, S3, and HTTP basins,
    because we have the `_local_basins_allowed` property since 0.57.6
  - fix: when joining datasets, the name of the log holding the configuration

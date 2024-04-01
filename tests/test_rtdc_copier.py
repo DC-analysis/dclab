@@ -55,6 +55,91 @@ def test_copy_with_compression():
         assert is_properly_compressed(hc["events/image"])
 
 
+def test_copy_basins():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # add log to source file
+    with RTDCWriter(path, mode="append") as hw:
+        bn_hash = hw.store_basin(
+            basin_type="file",
+            basin_format="hdf5",
+            basin_name="test_basin",
+            basin_locs=["does-not-exist-but-does-not-matter.rtdc"],
+            verify=False
+        )
+        assert not is_properly_compressed(hw.h5file[f"basins/{bn_hash}"])
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["events/deform"])
+        assert is_properly_compressed(hc[f"basins/{bn_hash}"])
+
+
+def test_copy_basins_mapped():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # add log to source file
+    with RTDCWriter(path, mode="append") as hw:
+        bn_hash = hw.store_basin(
+            basin_type="file",
+            basin_format="hdf5",
+            basin_name="test_basin",
+            basin_locs=["does-not-exist-but-does-not-matter.rtdc"],
+            basin_map=np.arange(len(hw.h5file["events/deform"])),
+            verify=False
+        )
+        assert not is_properly_compressed(hw.h5file[f"basins/{bn_hash}"])
+        assert not is_properly_compressed(hw.h5file[f"events/basinmap0"])
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["events/deform"])
+        assert is_properly_compressed(hc[f"basins/{bn_hash}"])
+        assert is_properly_compressed(hc["events/basinmap0"])
+
+
+def test_copy_basins_no_basin():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # add log to source file
+    with RTDCWriter(path, mode="append") as hw:
+        bn_hash = hw.store_basin(
+            basin_type="file",
+            basin_format="hdf5",
+            basin_name="test_basin",
+            basin_locs=["does-not-exist-but-does-not-matter.rtdc"],
+            basin_map=np.arange(len(hw.h5file["events/deform"])),
+            verify=False
+        )
+        assert not is_properly_compressed(hw.h5file[f"basins/{bn_hash}"])
+        assert not is_properly_compressed(hw.h5file[f"events/basinmap0"])
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc,
+                  include_basins=False)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["events/deform"])
+        assert "basins" not in hc
+        assert "basinmap0" not in hc["events"]
+
+
 def test_copy_logs():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")

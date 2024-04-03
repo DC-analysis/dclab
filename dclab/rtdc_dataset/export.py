@@ -253,29 +253,32 @@ class Export(object):
         # make sure the parent directory exists
         path.parent.mkdir(parents=True, exist_ok=True)
 
+        # for convenience
+        ds = self.rtdc_ds
+
         if features is None:
-            features = self.rtdc_ds.features_innate
+            features = ds.features_innate
 
         # decide which metadata to export
         meta = {}
         # only cfg metadata (no analysis metadata)
         for sec in dfn.CFG_METADATA:
-            if sec in self.rtdc_ds.config:
-                meta[sec] = self.rtdc_ds.config[sec].copy()
+            if sec in ds.config:
+                meta[sec] = ds.config[sec].copy()
         # add user-defined metadata
-        if "user" in self.rtdc_ds.config:
-            meta["user"] = self.rtdc_ds.config["user"].copy()
+        if "user" in ds.config:
+            meta["user"] = ds.config["user"].copy()
         if filtered:
             # Define a new measurement identifier, so that we are not running
             # into any problems with basins being defined for filtered data.
-            ds_run_id = self.rtdc_ds.get_measurement_identifier()
+            ds_run_id = ds.get_measurement_identifier()
             random_ap = str(uuid.uuid4())[:4]
             meta["experiment"]["run identifier"] = f"{ds_run_id}-{random_ap}"
 
         if filtered:
-            filtarr = self.rtdc_ds.filter.all
+            filter_arr = ds.filter.all
         else:
-            filtarr = None
+            filter_arr = None
 
         if not skip_checks and features:
             # check that all features have same length and use the smallest
@@ -283,23 +286,23 @@ class Export(object):
             lengths = []
             for feat in features:
                 if feat == "trace":
-                    for tr in list(self.rtdc_ds["trace"].keys()):
-                        lengths.append(len(self.rtdc_ds["trace"][tr]))
+                    for tr in list(ds["trace"].keys()):
+                        lengths.append(len(ds["trace"][tr]))
                 else:
-                    lengths.append(len(self.rtdc_ds[feat]))
-            lmin = np.min(lengths)
-            lmax = np.max(lengths)
-            if lmin != lmax:
-                if filtarr is None:
+                    lengths.append(len(ds[feat]))
+            l_min = np.min(lengths)
+            l_max = np.max(lengths)
+            if l_min != l_max:
+                if filter_arr is None:
                     # we are forced to do filtering
-                    filtarr = np.ones(len(self.rtdc_ds), dtype=bool)
+                    filter_arr = np.ones(len(ds), dtype=bool)
                 else:
                     # have to create a copy, because rtdc_ds.filter.all is ro!
-                    filtarr = np.copy(filtarr)
-                filtarr[lmin:] = False
+                    filter_arr = np.copy(filter_arr)
+                filter_arr[l_min:] = False
                 warnings.warn(
                     "Not all features have the same length! Limiting output "
-                    + f"event count to {lmin} (max {lmax}) in '{lmin}'.",
+                    + f"event count to {l_min} (max {l_max}) in '{l_min}'.",
                     LimitingExportSizeWarning)
 
         # Perform actual export
@@ -310,22 +313,22 @@ class Export(object):
             hw.store_metadata(meta)
             if logs:
                 # write logs
-                for log in self.rtdc_ds.logs:
+                for log in ds.logs:
                     hw.store_log(f"{meta_prefix}{log}",
-                                 self.rtdc_ds.logs[log])
+                                 ds.logs[log])
 
             if tables:
                 # write tables
-                for tab in self.rtdc_ds.tables:
+                for tab in ds.tables:
                     hw.store_table(f"{meta_prefix}{tab}",
-                                   self.rtdc_ds.tables[tab])
+                                   ds.tables[tab])
 
             # write each feature individually
             for feat in features:
-                if (filtarr is None or
+                if (filter_arr is None or
                         # This does not work for the .tdms file format
                         # (and probably also not for DCOR).
-                        (np.all(filtarr) and self.rtdc_ds.format == "hdf5")):
+                        (np.all(filter_arr) and ds.format == "hdf5")):
                     # We do not have to filter and can be fast
                     if dfn.scalar_feature_exists(feat):
                         shape = (1,)
@@ -333,16 +336,16 @@ class Export(object):
                         # known shape
                         shape = None
                     else:
-                        shape = np.array(self.rtdc_ds[feat][0]).shape
+                        shape = np.array(ds[feat][0]).shape
                     hw.store_feature(feat=feat,
-                                     data=self.rtdc_ds[feat],
+                                     data=ds[feat],
                                      shape=shape)
                 else:
                     # We have to filter and will be slower
                     store_filtered_feature(rtdc_writer=hw,
                                            feat=feat,
-                                           data=self.rtdc_ds[feat],
-                                           filtarr=filtarr)
+                                           data=ds[feat],
+                                           filtarr=filter_arr)
 
             if basins:
                 # We have to store basins. There are three options:
@@ -350,23 +353,59 @@ class Export(object):
                 # - filtering enabled
                 #   - basins with "same" mapping: create new mapping
                 #   - mapped basins: correct nested mapping
-                if filtered:
-                    basinmap = np.where(filtarr)[0]
-                basin_list = [bn.as_dict() for bn in self.rtdc_ds.basins]
+                # In addition to the basins that we copy from the
+                # original dataset, we also create a new basin that
+                # refers to the original dataset itself.
+                basin_list = [bn.as_dict() for bn in ds.basins]
                 # In addition to the upstream basins, also store a reference
                 # to the original file from which the export was done.
-                if self.rtdc_ds.format in get_basin_classes():
-                    basin_is_local = self.rtdc_ds.format == "hdf5"
-                    basin_locs = [self.rtdc_ds.path]
+                if ds.format in get_basin_classes():
+                    # The dataset has a format that matches a basin format
+                    # directly.
+                    basin_is_local = ds.format == "hdf5"
+                    basin_locs = [ds.path]
                     if basin_is_local:
                         # So the user can put them into the same directory.
-                        basin_locs.append(self.rtdc_ds.path.name)
+                        basin_locs.append(ds.path.name)
                     basin_list.append({
                         "basin_name": "Exported data",
                         "basin_type": "file" if basin_is_local else "remote",
-                        "basin_format": self.rtdc_ds.format,
+                        "basin_format": ds.format,
                         "basin_locs": basin_locs,
                         "basin_descr": f"Exported with dclab {version}"
+                    })
+                elif (ds.format == "hierarchy"
+                      and ds.get_root_parent().format in get_basin_classes()):
+                    # avoid circular imports
+                    from .fmt_hierarchy import map_indices_child2root
+                    # The dataset is a hierarchy child, and it is derived
+                    # from a dataset that has a matching basin format.
+                    # We have to add the indices of the root parent, which
+                    # identify the child, to the basin dictionary. Note
+                    # that additional basin filtering is applied below
+                    # this case for all basins.
+                    # For the sake of clarity I wrote this as a separate case,
+                    # even if that means duplicating code from the previous
+                    # case.
+                    ds_root = ds.get_root_parent()
+                    basin_is_local = ds_root.format == "hdf5"
+                    basin_locs = [ds_root.path]
+                    if basin_is_local:
+                        # So the user can put them into the same directory.
+                        basin_locs.append(ds_root.path.name)
+                    basin_list.append({
+                        "basin_name": "Exported data (hierarchy)",
+                        "basin_type": "file" if basin_is_local else "remote",
+                        "basin_format": ds_root.format,
+                        "basin_locs": basin_locs,
+                        "basin_descr": f"Exported with dclab {version} from a "
+                                       f"hierarchy dataset",
+                        # This is where this basin differs from the basin
+                        # definition in the previous case.
+                        "basin_map": map_indices_child2root(
+                            child=ds,
+                            child_indices=np.arange(len(ds))
+                            ),
                     })
 
                 for bn_dict in basin_list:
@@ -376,10 +415,10 @@ class Export(object):
                         pass
                     elif basinmap_orig is None:
                         # basins with "same" mapping: create new mapping
-                        bn_dict["basin_map"] = basinmap
+                        bn_dict["basin_map"] = np.where(filter_arr)[0]
                     else:
                         # mapped basins: correct nested mapping
-                        bn_dict["basin_map"] = basinmap_orig[basinmap]
+                        bn_dict["basin_map"] = basinmap_orig[filter_arr]
 
                     # Do not verify basins, it takes too long.
                     hw.store_basin(**bn_dict, verify=False)

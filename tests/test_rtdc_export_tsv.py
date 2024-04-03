@@ -15,10 +15,10 @@ def test_tsv_export(tmp_path):
     ds.export.tsv(f2, [u"area_um", u"deform", u"time",
                        u"frame", u"fl3_width"], override=True)
 
-    with f1.open("r") as fd:
+    with f1.open("r", encoding="utf-8") as fd:
         a1 = fd.read()
 
-    with f2.open("r") as fd:
+    with f2.open("r", encoding="utf-8") as fd:
         a2 = fd.read()
 
     assert a1 == a2

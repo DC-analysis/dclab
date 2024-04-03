@@ -1,4 +1,6 @@
 0.58.1
+ - fix: exporting with basins from a hierarchy child did not write a
+   basin derived from the hierarchy root parent
  - docs: add example for `map_indices_child2parent` in `fmt_hierarchy`
  - ref: explicitly define ancillary features in `RTDC_Hierarchy`
 0.58.0

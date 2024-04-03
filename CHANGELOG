@@ -1,4 +1,5 @@
 0.58.1
+ - docs: add example for `map_indices_child2parent` in `fmt_hierarchy`
  - ref: explicitly define ancillary features in `RTDC_Hierarchy`
 0.58.0
  - feat: implement "mapped basins" that have a superset of events

@@ -7,6 +7,13 @@ def map_indices_child2parent(child, child_indices):
     Given a hierarchy child and indices defined for that child,
     return the corresponding indices for its parent.
 
+    For instance, a child is defined in such a way that it
+    has every second event of its parent (`parent.filter.all[::2]=False`
+    i.e. the filtering array is `[False, True, False, ...]`). When passing
+    `child_indices=[2,3,4]`, the return value of this method would be
+    `parent_indices=[5,7,9]` (indexing starts at 0)`. Index 5 in the
+    parent dataset corresponds to index 2 in the child dataset.
+
     Parameters
     ----------
     child: RTDC_Hierarchy

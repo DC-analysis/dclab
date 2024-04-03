@@ -163,6 +163,10 @@ class RTDC_Hierarchy(RTDCBase):
         return self.hparent.features
 
     @property
+    def features_ancillary(self):
+        return self.hparent.features_ancillary
+
+    @property
     def features_basin(self):
         return self.hparent.features_basin
 

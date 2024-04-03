@@ -1,3 +1,5 @@
+0.58.1
+ - ref: explicitly define ancillary features in `RTDC_Hierarchy`
 0.58.0
  - feat: implement "mapped basins" that have a superset of events
  - feat: allow to export basin-only HDF5 files

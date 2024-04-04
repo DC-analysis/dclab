@@ -372,7 +372,7 @@ class Export(object):
                         "basin_type": "file" if basin_is_local else "remote",
                         "basin_format": ds.format,
                         "basin_locs": basin_locs,
-                        "basin_descr": f"Exported with dclab {version}"
+                        "basin_descr": f"Exported with dclab {version}",
                     })
                 elif (ds.format == "hierarchy"
                       and ds.get_root_parent().format in get_basin_classes()):

@@ -55,8 +55,8 @@ class RTDC_Hierarchy(RTDCBase):
 
         self.path = hparent.path
         self.title = hparent.title + "_child"
-        self.logs = hparent.logs
-        self.tables = hparent.tables
+        self._logs = None  # lazily-loaded
+        self._tables = None  # lazily-loaded
 
         self._events = {}
 
@@ -190,6 +190,32 @@ class RTDC_Hierarchy(RTDCBase):
         hpfilt = hashobj(self.hparent.filter.all)
         dhash = hashobj(hph + hpfilt)
         return dhash
+
+    @property
+    def logs(self):
+        if self._logs is None:
+            self._logs = self.hparent.logs
+        return self._logs
+
+    @logs.setter
+    def logs(self, value):
+        # to support setting `self.logs = {}` in RTDCBase
+        if value:
+            raise ValueError(
+                "Setting actual logs not supported for RTDC_Hierarchy")
+
+    @property
+    def tables(self):
+        if self._tables is None:
+            self._tables = self.hparent.tables
+        return self._tables
+
+    @tables.setter
+    def tables(self, value):
+        # to support setting `self.tables = {}` in RTDCBase
+        if value:
+            raise ValueError(
+                "Setting actual tables not supported for RTDC_Hierarchy")
 
     def apply_filter(self, *args, **kwargs):
         """Overridden `apply_filter` to perform tasks for hierarchy child"""

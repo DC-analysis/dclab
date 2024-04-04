@@ -13,37 +13,6 @@ from dclab.rtdc_dataset import feat_basin, fmt_http
 from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
-def test_basin_sorting_basic():
-    bnlist = [
-        {"type": "remote", "format": "dcor", "ident": 0},
-        {"type": "file", "format": "hdf5", "ident": 1},
-        {"type": "hans", "format": "hdf5", "ident": 2},
-        {"type": "remote", "format": "http", "ident": 3},
-    ]
-    sorted_list = sorted(bnlist, key=feat_basin.basin_priority_sorted_key)
-    assert sorted_list[0]["ident"] == 1
-    assert sorted_list[1]["ident"] == 3
-    assert sorted_list[2]["ident"] == 0
-    assert sorted_list[3]["ident"] == 2
-
-
-@pytest.mark.parametrize("btype,bformat,sortval", [
-    ["file", "hdf5", "aaa"],
-    ["remote", "http", "bba"],
-    ["remote", "s3", "bca"],
-    ["remote", "dcor", "bda"],
-    ["peter", "hdf5", "zaa"],
-    ["remote", "hans", "bza"],
-    ["hans", "peter", "zza"],
-]
-                         )
-def test_basin_sorting_key(btype, bformat, sortval):
-    bdict = {"type": btype,
-             "format": bformat,
-             }
-    assert feat_basin.basin_priority_sorted_key(bdict) == sortval
-
-
 def test_basin_hierarchy_trace():
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
     h5path_small = h5path.with_name("smaller.rtdc")
@@ -168,6 +137,37 @@ def test_basin_not_allowed_to_have_local_basin_in_remote_basin():
             UserWarning,
                 match="Basin type 'file' not allowed for format 'hdf5"):
             assert "image" not in ds2, "not there, local basins are forbidden"
+
+
+def test_basin_sorting_basic():
+    bnlist = [
+        {"type": "remote", "format": "dcor", "ident": 0},
+        {"type": "file", "format": "hdf5", "ident": 1},
+        {"type": "hans", "format": "hdf5", "ident": 2},
+        {"type": "remote", "format": "http", "ident": 3},
+    ]
+    sorted_list = sorted(bnlist, key=feat_basin.basin_priority_sorted_key)
+    assert sorted_list[0]["ident"] == 1
+    assert sorted_list[1]["ident"] == 3
+    assert sorted_list[2]["ident"] == 0
+    assert sorted_list[3]["ident"] == 2
+
+
+@pytest.mark.parametrize("btype,bformat,sortval", [
+    ["file", "hdf5", "aaa"],
+    ["remote", "http", "bba"],
+    ["remote", "s3", "bca"],
+    ["remote", "dcor", "bda"],
+    ["peter", "hdf5", "zaa"],
+    ["remote", "hans", "bza"],
+    ["hans", "peter", "zza"],
+]
+                         )
+def test_basin_sorting_key(btype, bformat, sortval):
+    bdict = {"type": btype,
+             "format": bformat,
+             }
+    assert feat_basin.basin_priority_sorted_key(bdict) == sortval
 
 
 def test_basin_unsupported_basin_format():

@@ -1,3 +1,5 @@
+0.58.2
+ - fix: KeyError when iteration over DCOR logs or tables
 0.58.1
  - fix: exporting with basins from a hierarchy child did not write a
    basin derived from the hierarchy root parent

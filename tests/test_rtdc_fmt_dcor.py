@@ -140,6 +140,16 @@ def test_dcor_logs():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_logs_iter():
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert len(ds.logs) >= 2  # there might be others
+        for key in ds.logs:
+            assert key
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_shape_contour():
     # calibration beads
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:

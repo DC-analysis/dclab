@@ -12,6 +12,10 @@ class DCORTables:
     def __getitem__(self, key):
         return self._tables[key]
 
+    def __iter__(self):
+        for key in self.keys():
+            yield key
+
     def __len__(self):
         return len(self._tables)
 

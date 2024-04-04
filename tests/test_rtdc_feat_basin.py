@@ -13,6 +13,32 @@ from dclab.rtdc_dataset import feat_basin, fmt_http
 from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
+@pytest.mark.parametrize("filtered", [True, False])
+def test_basin_feature_nested_image_exported_available(tmp_path, filtered):
+    epath = tmp_path / "exported.rtdc"
+    # Load data from DCOR and export basin-only dataset
+    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+        assert "image" in ds
+        ds.export.hdf5(path=epath,
+                       features=[],
+                       basins=True,
+                       filtered=filtered,
+                       )
+    # Open the exported dataset and attempt to access the image feature
+    with dclab.new_dataset(epath) as ds:
+        assert "image" in ds
+        assert np.any(ds["image"][0])
+        imcount = 0
+        for bn in ds.basins:
+            if "image" in bn.ds:
+                assert np.any(bn.ds["image"][0])
+                imcount += 1
+        assert imcount > 0, "image should be *some*-where"
+
+
 def test_basin_hierarchy_trace():
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
     h5path_small = h5path.with_name("smaller.rtdc")

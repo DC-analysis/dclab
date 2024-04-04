@@ -1,5 +1,6 @@
 0.58.2
  - fix: KeyError when iteration over DCOR logs or tables
+ - fix: remove hack that populates feature names for basins unreliably
  - enh: lazily load logs and tables in `fmt_hierarchy`
 0.58.1
  - fix: exporting with basins from a hierarchy child did not write a

@@ -18,6 +18,7 @@ from helper_methods import DCOR_AVAILABLE, retrieve_data
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
 @pytest.mark.parametrize("filtered", [True, False])
 def test_basin_feature_nested_image_exported_available(tmp_path, filtered):
+    pytest.importorskip("requests")
     epath = tmp_path / "exported.rtdc"
     # Load data from DCOR and export basin-only dataset
     with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:

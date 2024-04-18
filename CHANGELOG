@@ -1,3 +1,6 @@
+0.58.3
+ - fix: keep only 1000 contours in LazyContourList, because keeping
+   all contours causes the memory to fill up for large input files
 0.58.2
  - fix: KeyError when iteration over DCOR logs or tables
  - fix: remove hack that populates feature names for basins unreliably

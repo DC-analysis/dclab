@@ -1,4 +1,5 @@
 """Computation of event contour from event mask"""
+from collections import deque
 import numbers
 
 import numpy as np
@@ -13,10 +14,21 @@ class NoValidContourFoundError(BaseException):
 
 
 class LazyContourList(object):
-    def __init__(self, masks):
-        """A list-like object that computes contours upon indexing"""
+    def __init__(self, masks, max_events=1000):
+        """A list-like object that computes contours upon indexing
+
+        Parameters
+        ----------
+        masks: array-like
+            3D array of masks, may be an HDF5 dataset or any other
+            structure that supports indexing
+        max_events: int
+            maximum number of contours to keep in the contour list;
+            set to 0/False/None to cache all contours
+        """
         self.masks = masks
-        self.contours = [None] * len(masks)
+        self.contours = deque(maxlen=max_events or None)
+        self.indices = deque(maxlen=max_events or None)
         #: used for hashing in ancillary features
         self.identifier = str(masks[0][:].tobytes())
         self.shape = len(masks), np.nan, 2
@@ -32,13 +44,24 @@ class LazyContourList(object):
                 output.append(self.__getitem__(evid))
             return output
         else:
-            if self.contours[idx] is None:
+            try:
+                # Is the contour already available?
+                idx_q = self.indices.index(idx)
+            except ValueError:
+                # The contour is not there. Compute it.
                 try:
-                    self.contours[idx] = get_contour(self.masks[idx])
+                    cont = get_contour(self.masks[idx])
                 except BaseException as e:
-                    e.args = ("Event {}, {}".format(idx, e.args[0]),)
+                    e.args = (f"Event {idx}, {e.args[0]}",)
                     raise
-            return self.contours[idx]
+            else:
+                # Get the contour from deque
+                cont = self.contours[idx_q]
+            # If we got here, it means that we have computed a contour
+            # successfully. Store it in the deque.
+            self.contours.append(cont)
+            self.indices.append(idx)
+            return cont
 
     def __len__(self):
         return len(self.masks)

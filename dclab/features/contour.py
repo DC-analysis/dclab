@@ -25,6 +25,13 @@ class LazyContourList(object):
         max_events: int
             maximum number of contours to keep in the contour list;
             set to 0/False/None to cache all contours
+
+        .. versionchanged:: 0.58.3
+
+            Added the `max_events` parameter which now makes this class
+            a lazy, least-recently-used contour list. To achieve the
+            old behavior (which may fill up your memory), set
+            `max_events=None`.
         """
         self.masks = masks
         self.contours = deque(maxlen=max_events or None)

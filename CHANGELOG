@@ -1,4 +1,6 @@
 0.58.4
+ - fix: support relative paths in basins with both nt `\\` and
+   posix `/` path separators
  - enh: store original metadata in .tsv export (#255)
 0.58.3
  - fix: keep only 1000 contours in LazyContourList, because keeping

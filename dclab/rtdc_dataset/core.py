@@ -1,6 +1,7 @@
 """RT-DC dataset core classes and methods"""
 import abc
 import hashlib
+import os.path
 import pathlib
 from typing import Literal
 import uuid
@@ -787,7 +788,18 @@ class RTDCBase(abc.ABC):
                                   f"'{self.format}'")
                     # stop processing this basin
                     continue
-                for pp in bdict["paths"]:
+                p_paths = list(bdict["paths"])
+                # translate Windows and Unix relative paths
+                for pi in list(p_paths):  # [sic] create a copy of the list
+                    if pi.count(".."):
+                        if pi[2:].count("/") and os.path.sep == r"\\":
+                            # Windows
+                            p_paths.append(pi.replace("/", r"\\"))
+                        elif pi[2:].count(r"\\") and os.path.sep == "/":
+                            # Unix
+                            p_paths.append(pi.replace(r"\\", "/"))
+                # perform the actual check
+                for pp in p_paths:
                     pp = pathlib.Path(pp)
                     # Instantiate the proper basin class
                     b_cls = bc[bdict["format"]]

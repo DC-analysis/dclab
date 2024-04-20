@@ -37,7 +37,7 @@ def test_tsv_export_ds_metadata(tmp_path):
 
     ds.export.tsv(f1, ["area_um", "bright_avg"], override=True)
 
-    lines = f1.read_text().split("\n")
+    lines = f1.read_text(encoding="utf-8").split("\n")
 
     for ll in [
         "# dc:experiment:date = 2020-10-23",

@@ -1,3 +1,5 @@
+0.58.4
+ - enh: store original metadata in .tsv export (#255)
 0.58.3
  - fix: keep only 1000 contours in LazyContourList, because keeping
    all contours causes the memory to fill up for large input files

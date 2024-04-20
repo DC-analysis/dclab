@@ -472,7 +472,13 @@ class Export(object):
         with path.open("a", encoding="utf-8") as fd:
             # write meta data
             for key in sorted(meta_data.keys()):
-                fd.write("# {}: {}\n".format(key, meta_data[key]))
+                fd.write(f"# {key}: {meta_data[key]}\n")
+            fd.write("#\n")
+            fd.write("# Original dataset configuration:\n")
+            cfg = self.rtdc_ds.config.as_dict()
+            for sec in sorted(cfg.keys()):
+                for key in sorted(cfg[sec].keys()):
+                    fd.write(f"# dc:{sec}:{key} = {cfg[sec][key]}\n")
             fd.write("#\n")
             # write header
             header1 = "\t".join([c for c in features])

@@ -24,7 +24,9 @@ def condense(
         ancillaries: bool = None,
         store_ancillary_features: bool = True,
         store_basin_features: bool = True,
-        check_suffix: bool = True):
+        check_suffix: bool = True,
+        ret_path: bool = False
+        ):
     """Create a new dataset with all available scalar-only features
 
     Besides the innate scalar features, this also includes all
@@ -44,10 +46,12 @@ def condense(
         copy basin features from the input path to the output file
     check_suffix: bool
         check suffixes for input and output files
+    ret_path: bool
+        whether to return the output path
 
     Returns
     -------
-    path_out: pathlib.Path
+    path_out: pathlib.Path (optional)
         output path (with possibly corrected suffix)
     """
     if ancillaries is not None:
@@ -85,7 +89,8 @@ def condense(
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
-    return path_out
+    if ret_path:
+        return path_out
 
 
 def condense_dataset(

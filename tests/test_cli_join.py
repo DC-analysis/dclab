@@ -57,7 +57,8 @@ def test_join_rtdc():
     # same directory (will be cleaned up with path_in)
     path_out = path_in.with_name("out.rtdc")
 
-    cli.join(paths_in=[path_in, path_in], path_out=path_out)
+    ret = cli.join(paths_in=[path_in, path_in], path_out=path_out)
+    assert ret is None, "by default, this method should return 0 (exit 0)"
     with new_dataset(path_out) as dsj, new_dataset(path_in) as ds0:
         assert "dclab-join" in dsj.logs
         assert len(dsj)

@@ -19,7 +19,9 @@ def compress(
         path_in: str | pathlib.Path = None,
         path_out: str | pathlib.Path = None,
         force: bool = False,
-        check_suffix: bool = True):
+        check_suffix: bool = True,
+        ret_path: bool = False,
+        ):
     """Create a new dataset with all features compressed lossless
 
     Parameters
@@ -32,10 +34,12 @@ def compress(
         DEPRECATED
     check_suffix: bool
         check suffixes for input and output files
+    ret_path: bool
+        whether to return the output path
 
     Returns
     -------
-    path_out: pathlib.Path
+    path_out: pathlib.Path (optional)
         output path (with possibly corrected suffix)
     """
     cmp_kw = hdf5plugin.Zstd(clevel=5)
@@ -98,7 +102,9 @@ def compress(
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
-    return path_out
+
+    if ret_path:
+        return path_out
 
 
 def compress_parser():

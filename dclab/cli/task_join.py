@@ -24,7 +24,9 @@ class FeatureSetNotIdenticalJoinWarning(UserWarning):
 def join(
         paths_in: List[str | pathlib.Path] = None,
         path_out: str | pathlib.Path = None,
-        metadata: Dict = None):
+        metadata: Dict = None,
+        ret_path: bool = False,
+        ):
     """Join multiple RT-DC measurements into a single .rtdc file
 
     Parameters
@@ -36,10 +38,12 @@ def join(
     metadata: dict
         optional metadata dictionary (configuration dict) to store
         in the output file
+    ret_path: bool
+        whether to return the output path
 
     Returns
     -------
-    path_out: pathlib.Path
+    path_out: pathlib.Path (optional)
         output path (with corrected path suffix if applicable)
 
     Notes
@@ -204,7 +208,8 @@ def join(
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
-    return path_out
+    if ret_path:
+        return path_out
 
 
 def join_parser():

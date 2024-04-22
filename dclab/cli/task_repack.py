@@ -17,7 +17,9 @@ def repack(
         path_out: str | pathlib.Path = None,
         strip_basins: bool = False,
         strip_logs: bool = False,
-        check_suffix: bool = True):
+        check_suffix: bool = True,
+        ret_path: bool = False,
+        ):
     """Repack/recreate an .rtdc file, optionally stripping the logs
 
     Parameters
@@ -32,6 +34,8 @@ def repack(
         do not write logs to the output file
     check_suffix: bool
         check suffixes for input and output files
+    ret_path: bool
+        whether to return the output path
 
     Returns
     -------
@@ -64,7 +68,8 @@ def repack(
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
-    return path_out
+    if ret_path:
+        return path_out
 
 
 def repack_parser():

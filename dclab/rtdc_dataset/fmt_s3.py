@@ -7,6 +7,7 @@ import pathlib
 import re
 import socket
 from urllib.parse import urlparse
+import warnings
 
 
 try:
@@ -67,6 +68,11 @@ class S3File(HTTPFile):
         verify_ssl: bool
             make sure the SSL certificate is sound, only used for testing
         """
+        if endpoint_url is None:
+            raise ValueError(
+                "The S3 endpoint URL is empty. This could mean that you did "
+                "not specify the full S3 URL or that you forgot to set "
+                "the `S3_ENDPOINT_URL` environment variable.")
         endpoint_url = endpoint_url.strip().rstrip("/")
         self.botocore_session = botocore.session.get_session()
         self.s3_session = boto3.Session(
@@ -230,6 +236,11 @@ def is_s3_object_available(url: str,
     avail = False
     if is_s3_url(url):
         endpoint_url = get_endpoint_url(url) or S3_ENDPOINT_URL
+        if not endpoint_url:
+            warnings.warn(
+                f"Could not determine endpoint from URL '{url}'. Please "
+                f"set the `S3_ENDPOINT_URL` environment variable or pass "
+                f"a full object URL.")
         # default to https if no scheme or port is specified
         urlp = urlparse(endpoint_url)
         port = urlp.port or (80 if urlp.scheme == "http" else 443)

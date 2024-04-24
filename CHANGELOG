@@ -1,3 +1,8 @@
+0.58.6
+ - enh: for access to private S3 data, introduce the environment
+   variables `DCLAB_S3_ENDPOINT_URL`, `DCLAB_S3_ACCESS_KEY_ID`,
+   and `DCLAB_S3_SECRET_ACCESS_KEY`
+ - ref: reorganize the `fmt_s3` module
 0.58.5
  - fix: CLI methods returned exit status 1 since paths were returned
 0.58.4

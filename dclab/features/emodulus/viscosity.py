@@ -16,6 +16,7 @@ SAME_MEDIA = {
                      "0.50% MC-PBS",
                      "CellCarrier",
                      ],
+    # 6g MC in 1010g PBS [!sic]
     "0.59% MC-PBS": ["0.59% MC-PBS",
                      "0.6% MC-PBS",
                      "0.60% MC-PBS",

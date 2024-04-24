@@ -24,6 +24,8 @@ need to know the URL of the object:
     print(ds.config)
 
 
+.. _sec_av_s3_private:
+
 Private data
 ============
 
@@ -37,3 +39,20 @@ access secret like so:
     ds = dclab.new_dataset(s3_url,
                            secret_id="YOUR-S3-KEY-ID",
                            secret_key="YOUR-S3-ACCESS-SECRET")
+
+
+Alternatively, you can also set the environment variables
+``DCLAB_S3_ACCESS_KEY_ID`` and ``DCLAB_S3_SECRET_ACCESS_KEY``, and
+optionally the ``DCLAB_S3_ENDPOINT_URL``. If you cannot edit environment
+variables, you can also modify the environment before importing dclab like
+so:
+
+.. code:: python
+
+    import os
+    os.environ["DCLAB_S3_ACCESS_KEY_ID"] = "4f4bf368365967466be9baf07028a5f3"
+    os.environ["DCLAB_S3_ACCESS_KEY_ID"] = "12cd2fe004bc0f17fe9cd76dae412e0d"
+    os.environ["DCLAB_S3_ENDPOINT_URL"] = "https://objectstore.hpccloud.mpcdf.mpg.de"
+
+    import dclab
+    dclab.new_dataset(...)

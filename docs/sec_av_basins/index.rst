@@ -165,6 +165,23 @@ achieving the same result as above (a very small output file).
        assert np.allclose(ds_in["deform"][::2], ds_out["deform"])
 
 
+Accessing private basin data
+============================
+
+DCOR
+----
+If you have basins defined that point to private data on DCOR, you have to
+register your DCOR access token in dclab via the static method
+:func:`dclab.rtdc_dataset.fmt_dcor.api.APIHandler.add_api_key`.
+
+S3
+--
+For basins that point to files on S3, you have to specify the environment
+variables ``DCLAB_S3_ACCESS_KEY_ID`` and ``DCLAB_S3_SECRET_ACCESS_KEY``, and
+optionally the ``DCLAB_S3_ENDPOINT_URL`` as described in the
+:ref:`S3 access section <sec_av_s3_private>`.
+
+
 Basin internals
 ===============
 

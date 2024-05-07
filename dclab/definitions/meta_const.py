@@ -136,6 +136,7 @@ CFG_METADATA = {
         # the "|" character in this order: generation, data, background,
         # segmenter, feature, gate.
         ["dcnum hash", str, "Hash"],
+        ["dcnum mapping", str, "Event mapping from original dataset"],
         ["dcnum segmenter", str, "Segmenter ID"],
         # The event yield the number of events the pipeline produced and
         # helps identify files that were e.g. exported from original files.

@@ -5,7 +5,7 @@ RT-DC event image mask with background-correction taken into account.
 import numpy as np
 
 
-def get_bright_perc(mask, image, image_bg):
+def get_bright_perc(mask, image, image_bg, bg_off=None):
     """Compute 10th and 90th percentile of the bg-corrected event brightness
 
     The background-corrected event brightness is defined by the
@@ -21,6 +21,9 @@ def get_bright_perc(mask, image, image_bg):
         of an event.
     image_bg: ndarray or list of ndarrays of shape (M,N)
         A 2D array that holds the background image for the same event.
+    bg_off: float or 1D ndarray
+        Additional offset value that is added to `image_bg` before
+        background correction
 
     Returns
     -------
@@ -49,6 +52,10 @@ def get_bright_perc(mask, image, image_bg):
         mski = mask[ii]
         # Assign results
         p10[ii], p90[ii] = np.percentile(imgi[mski], q=[10, 90])
+
+    if bg_off:
+        p10 -= bg_off
+        p90 -= bg_off
 
     if ret_list:
         return p10, p90

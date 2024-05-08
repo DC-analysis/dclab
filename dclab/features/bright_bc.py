@@ -5,7 +5,7 @@ RT-DC event image mask with background-correction taken into account.
 import numpy as np
 
 
-def get_bright_bc(mask, image, image_bg, ret_data="avg,sd"):
+def get_bright_bc(mask, image, image_bg, bg_off=None, ret_data="avg,sd"):
     """Compute avg and/or std of the background-corrected event brightness
 
     The background-corrected event brightness is defined by the
@@ -21,6 +21,9 @@ def get_bright_bc(mask, image, image_bg, ret_data="avg,sd"):
         of an event.
     image_bg: ndarray or list of ndarrays of shape (M,N)
         A 2D array that holds the background image for the same event.
+    bg_off: float or 1D ndarray
+        Additional offset value that is added to `image_bg` before
+        background correction
     ret_data: str
         A comma-separated list of metrices to compute
         - "avg": compute the average
@@ -46,6 +49,8 @@ def get_bright_bc(mask, image, image_bg, ret_data="avg,sd"):
         image_bg = [image_bg]
         image = [image]
         mask = [mask]
+        if bg_off is not None:
+            bg_off = np.atleast_1d(bg_off)
         ret_list = False
     else:
         ret_list = True
@@ -71,6 +76,8 @@ def get_bright_bc(mask, image, image_bg, ret_data="avg,sd"):
     results = []
     # Keep alphabetical order
     if ret_avg:
+        if bg_off is not None:
+            avg -= bg_off
         results.append(avg)
     if ret_std:
         results.append(std)

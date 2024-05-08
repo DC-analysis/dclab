@@ -8,27 +8,32 @@ def compute_contour(mm):
 
 
 def compute_bright(mm):
-    bavg, bsd = features.bright.get_bright(mask=mm["mask"],
-                                           image=mm["image"],
-                                           ret_data="avg,sd",
-                                           )
+    bavg, bsd = features.bright.get_bright(
+        mask=mm["mask"],
+        image=mm["image"],
+        ret_data="avg,sd",
+        )
     return {"bright_avg": bavg, "bright_sd": bsd}
 
 
 def compute_bright_bc(mm):
-    bavg, bsd = features.bright_bc.get_bright_bc(mask=mm["mask"],
-                                                 image=mm["image"],
-                                                 image_bg=mm["image_bg"],
-                                                 ret_data="avg,sd",
-                                                 )
+    bavg, bsd = features.bright_bc.get_bright_bc(
+        mask=mm["mask"],
+        image=mm["image"],
+        image_bg=mm["image_bg"],
+        bg_off=mm["bg_off"] if "bg_off" in mm else None,
+        ret_data="avg,sd",
+        )
     return {"bright_bc_avg": bavg, "bright_bc_sd": bsd}
 
 
 def compute_bright_perc(mm):
-    p10, p90 = features.bright_perc.get_bright_perc(mask=mm["mask"],
-                                                    image=mm["image"],
-                                                    image_bg=mm["image_bg"],
-                                                    )
+    p10, p90 = features.bright_perc.get_bright_perc(
+        mask=mm["mask"],
+        image=mm["image"],
+        image_bg=mm["image_bg"],
+        bg_off=mm["bg_off"] if "bg_off" in mm else None,
+        )
     return {"bright_perc_10": p10, "bright_perc_90": p90}
 
 

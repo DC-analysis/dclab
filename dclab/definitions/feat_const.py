@@ -13,6 +13,12 @@ FEATURES_SCALAR = [
     ["aspect", "Aspect ratio of bounding box"],
     # The background brightness of the frame (not of the mask)
     ["bg_med", "Median frame background brightness [a.u.]"],
+    # Background image offset which should be added to "image_bg" before
+    # performing background correction. This is used in cases where the
+    # background stored in "image_bg" is not accurate enough, e.g.
+    # because the image_bg is a median image for multiple events and
+    # the imaging system exhibits flickering.
+    ["bg_off", "Background offset [a.u.]"],
     # Brightness values are computed only for pixels inside the mask
     ["bright_avg", "Brightness average [a.u.]"],
     ["bright_sd", "Brightness SD [a.u.]"],

@@ -1,8 +1,10 @@
 0.58.7
- - docs: document S3 environment variables
+ - enh: introduce new feature "bg_off", a float-valued feature for
+   event-wise background offset correction
  - enh: warn user about missing endpoint URLs in S3 format and raise an
    exception when push comes to shove
  - enh: add "pipeline:dcnum mapping" metadata
+ - docs: document S3 environment variables
 0.58.6
  - enh: for access to private S3 data, introduce the environment
    variables `DCLAB_S3_ENDPOINT_URL`, `DCLAB_S3_ACCESS_KEY_ID`,

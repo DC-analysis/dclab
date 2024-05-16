@@ -60,6 +60,7 @@ def test_features_local_basin():
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not accessible")
 def test_features_local_remote():
     """Open a remote dataset and see whether local features are empty"""
+    pytest.importorskip("requests")
     with RTDC_HTTP(http_url) as ds:
         assert not ds.features_local
         assert ds.features_loaded
@@ -69,6 +70,7 @@ def test_features_local_remote():
 
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not accessible")
 def test_features_local_remote_basin(tmp_path):
+    pytest.importorskip("requests")
     tmp_path = tmp_path.resolve()
     h5path = tmp_path / "test_basin_http.rtdc"
 

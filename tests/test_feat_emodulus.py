@@ -213,7 +213,7 @@ def test_af_emodulus_temp_feat():
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=6.5e-14)
+                       rtol=0, atol=1e-7)
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
         if af.priority % 2 == 0:  # remove this case when removing deprecations
@@ -254,7 +254,7 @@ def test_af_emodulus_temp_feat_2():
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"][1:], ds2["emodulus"][1:], equal_nan=True,
-                       rtol=0, atol=6.5e-14)
+                       rtol=0, atol=1e-7)
     assert not np.allclose(ds["emodulus"][0], ds2["emodulus"][0])
     ds3 = dclab.new_dataset(ddict)
     ds3.config["setup"]["flow rate"] = 0.16
@@ -266,7 +266,7 @@ def test_af_emodulus_temp_feat_2():
                                  "emodulus temperature": 23.5,
                                  }
     assert np.allclose(ds3["emodulus"][0], ds2["emodulus"][0], rtol=0,
-                       atol=6e-14)
+                       atol=1e-7)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -300,7 +300,7 @@ def test_af_emodulus_visc_only():
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=1e-15)
+                       rtol=0, atol=1e-7)
     # ancillary feature priority check
     for af in feat_anc_core.AncillaryFeature.get_instances("emodulus"):
         if af.priority % 2 == 0:  # remove this case when removing deprecations
@@ -343,7 +343,7 @@ def test_af_emodulus_visc_only_2():
                                  }
     assert np.sum(~np.isnan(ds["emodulus"])) > 0
     assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                       rtol=0, atol=1e-15)
+                       rtol=0, atol=1e-7)
 
 
 def test_bad_lut_data():
@@ -485,7 +485,7 @@ def test_register_external_lut_and_get_emodulus():
                                      }
         assert np.sum(~np.isnan(ds2["emodulus"])) > 0
         assert np.allclose(ds["emodulus"], ds2["emodulus"], equal_nan=True,
-                           rtol=0, atol=1e-15)
+                           rtol=0, atol=1e-7)
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'

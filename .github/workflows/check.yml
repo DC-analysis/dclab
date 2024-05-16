@@ -56,16 +56,16 @@ jobs:
     - name: Install dclab with all possible dependencies
       if: matrix.extras == 'all'
       run: |
-        pip install .[all]
+        pip install -e .[all]
         pip install -r tests/requirements.txt
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor-s3'
       run: |
-        pip install .[dcor,http,s3]
+        pip install -e .[dcor,http,s3]
     - name: Install dclab with minimal dependencies
       if: matrix.extras == 'none'
       run: |
-        pip install .
+        pip install -e .
     - name: List installed packages
       run: |
         pip freeze

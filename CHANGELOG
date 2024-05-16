@@ -1,4 +1,8 @@
 0.58.7
+ - enh: introduce `RTDCBase.features_local` for accessing features
+   that are exclusively local and not in remote locations
+ - enh: prevent `RTDCBase._get_ancillary_feature_data` from
+   unnecessarily accessing feature data for hashing
  - enh: introduce new feature "bg_off", a float-valued feature for
    event-wise background offset correction
  - enh: warn user about missing endpoint URLs in S3 format and raise an

@@ -225,18 +225,24 @@ class RTDCBase(abc.ABC):
             be found or was not computed.
         """
         data = None
+        anhash = None
         # Try to find the feature in the ancillary features
         # (see feat_anc_core submodule for more information).
         # These features are cached in `self._ancillaries`.
         ancol = AncillaryFeature.available_features(self)
         if feat in ancol:
-            # The feature is available.
-            anhash = ancol[feat].hash(self)
-            if (feat in self._ancillaries and
-                    self._ancillaries[feat][0] == anhash):
-                # Use cached value
-                data = self._ancillaries[feat][1]
-            elif not no_compute:
+            # The feature is generally available.
+            if feat in self._ancillaries:
+                # We have already computed the feature. Make sure that we
+                # have the updated one by checking the hash.
+                anhash = ancol[feat].hash(self)
+                if self._ancillaries[feat][0] == anhash:
+                    # Use cached value
+                    data = self._ancillaries[feat][1]
+            # We either already have the ancillary feature or have to
+            # compute it. We only compute it if we are asked to.
+            if data is None and not no_compute:
+                anhash = anhash or ancol[feat].hash(self)
                 # Compute new value
                 data_dict = ancol[feat].compute(self)
                 for okey in data_dict:
@@ -462,18 +468,44 @@ class RTDCBase(abc.ABC):
         always included. They are defined in
         :const:`dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID`.
         """
-        features_innate = self.features_innate
-        features_loaded = []
-        for feat in self.features:
-            if (feat in features_innate
-                    or feat in FEATURES_RAPID
-                    or feat in self._usertemp
-                    or feat in self._ancillaries):
-                # Note that there is no hash checking here for
-                # ancillary features. This might be interesting
-                # only in rare cases.
-                features_loaded.append(feat)
-        return features_loaded
+        features_loaded = self.features_local + self.features_innate
+        features_loaded += [f for f in self.features if f in FEATURES_RAPID]
+        return sorted(set(features_loaded))
+
+    @property
+    def features_local(self):
+        """All features that are, with certainty, really fast to access
+
+        Local features is a slimmed down version of `features_loaded`.
+        Nothing needs to be computed, not even rapid features
+        (:const:`dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID`).
+        And features from remote sources that have not been downloaded
+        already are excluded. Ancillary and temporary features that are
+        available are included.
+        """
+        features_local = []
+        # Note that the hierarchy format just calls its hparent's
+        # `features_local`.
+        if hasattr(self._events, "_cached_events"):
+            features_local += list(self._events._cached_events.keys())
+
+        if self.format == "hdf5":
+            features_local += list(self._events.keys())
+
+        # Get into the basins.
+        for bn in self.basins:
+            if (bn.basin_format == "hdf5"
+                    and bn.basin_type == "file"
+                    and bn.is_available()):
+                features_local += bn.ds.features_local
+            elif bn._ds is not None:
+                features_local += bn.ds.features_local
+
+        # If they are here, then we use them:
+        features_local += list(self._ancillaries.keys())
+        features_local += list(self._usertemp.keys())
+
+        return sorted(set(features_local))
 
     @property
     def features_scalar(self):

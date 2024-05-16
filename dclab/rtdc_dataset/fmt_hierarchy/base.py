@@ -179,6 +179,10 @@ class RTDC_Hierarchy(RTDCBase):
         return self.hparent.features_loaded
 
     @property
+    def features_local(self):
+        return self.hparent.features_local
+
+    @property
     def features_scalar(self):
         return self.hparent.features_scalar
 

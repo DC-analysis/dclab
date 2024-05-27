@@ -1,3 +1,5 @@
+0.58.8
+ - enh: existence of "index_online" section is no longer required
 0.58.7
  - enh: introduce `RTDCBase.features_local` for accessing features
    that are exclusively local and not in remote locations

@@ -215,7 +215,7 @@ class RTDCWriter:
             If this is an integer numpy array, it defines the mapping
             of event indices from the basin dataset to the referring dataset
             (the dataset being written to disk). Normally, the basinmap
-            feature used for the storing the mapping information is inferred
+            feature used for storing the mapping information is inferred
             from the currently defined basinmap features. However, if you
             are incepting basins, then this might not be sufficient, and you
             have to specify explicitly which basinmap feature to use. In such

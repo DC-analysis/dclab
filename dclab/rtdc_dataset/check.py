@@ -18,7 +18,6 @@ from .. import definitions as dfn
 DESIRABLE_SECTIONS = {
     "experiment",
     "imaging",
-    "online_contour",
     "setup",
 }
 
@@ -97,10 +96,6 @@ OPTIONAL_KEYS = {
     "setup": [
         "temperature",
         "chip identifier",
-    ],
-    "online_contour": [
-        # introduced in 0.34.0
-        "bg empty",
     ],
 }
 

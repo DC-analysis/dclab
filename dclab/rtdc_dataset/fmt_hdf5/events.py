@@ -217,6 +217,10 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
         return self._fetch_ufunc_attr("min", np.nanmin)
 
     @property
+    def dtype(self):
+        return self.h5ds.dtype
+
+    @property
     def shape(self):
         return self.h5ds.shape
 

@@ -3,6 +3,7 @@ import abc
 import hashlib
 import os.path
 import pathlib
+import traceback
 from typing import Literal
 import uuid
 import random
@@ -291,8 +292,12 @@ class RTDCBase(abc.ABC):
                         data = bn.get_feature_data(feat)
                         # The data are available, we may abort the search.
                         break
-                except BaseException:
+                except (KeyError, OSError, PermissionError, RecursionError):
                     # Basin data not available
+                    pass
+                except BaseException:
+                    warnings.warn(f"Could not access {feat} in {self}:\n"
+                                  f"{traceback.format_exc()}")
                     pass
         return data
 

@@ -37,13 +37,12 @@ def test_basic():
     # "Metadata: Missing key [fluorescence] 'channel 2 name'",
     # "Metadata: Missing key [fluorescence] 'channel 3 name'",
     # "Metadata: Missing key [setup] 'identifier'",
-    # "Metadata: Missing section 'online_contour'"
     # "UnknownConfigurationKeyWarning: Unknown key 'exposure time' ...",
     # "UnknownConfigurationKeyWarning: Unknown key 'flash current' ...",
     # "UserWarning: Type of confguration key [fluorescence]: sample rate ...",
     # "UserWarning: Type of confguration key [imaging]: roi position x ...",
     # "UserWarning: Type of confguration key [imaging]: roi position y ..."]
-    assert len(aler) == 16
+    assert len(aler) == 15
     assert "Data file format: hdf5" in info
     assert "Fluorescence: True" in info
     assert "Compression: None" in info
@@ -97,7 +96,6 @@ def test_exact():
     known_aler = [
         "Metadata: Missing key [fluorescence] 'channel 1 name'",
         "Metadata: Missing key [fluorescence] 'channel 2 name'",
-        "Metadata: Missing key [online_contour] 'no absdiff'",
         "Metadata: Missing key [setup] 'identifier'",
         "Metadata: Missing key [setup] 'module composition'",
         "Negative value for feature(s): fl2_max",

@@ -1,3 +1,4 @@
+import json
 from os.path import join
 import pathlib
 import tempfile
@@ -490,6 +491,29 @@ def test_hdf5_logs(logs):
             assert "src_iratrax" in h5.get("logs", {})
         else:
             assert "src_iratrax" not in h5.get("logs", {})
+
+
+def test_hdf5_logs_meta():
+    """Test export of export log #251"""
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=127, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5.rtdc")
+    ds1.export.hdf5(f1, keys)
+
+    ds2 = dclab.new_dataset(f1)
+    for name in ds2.logs:
+        if name.startswith("dclab-export_"):
+            kwargs = json.loads("\n".join(ds2.logs[name]))
+            assert kwargs.features == keys
+            break
+    else:
+        assert False
 
 
 def test_hdf5_ml_score():

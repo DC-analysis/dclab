@@ -157,6 +157,47 @@ def test_basin_mapped(basinmap):
         assert np.all(ds1["mask"] == ds0["mask"][:][basinmap])
 
 
+@pytest.mark.parametrize("basinmap", [
+    [1, 3, 4],  # very simple case
+    [1, 1, 1, 2],  # not trivial, not realizable with hierarchy children
+])
+def test_basin_mapped_export(basinmap):
+    path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    with h5py.File(path, "a") as h5:
+        # delete circularity to avoid ancillary feature computation in this
+        # test.
+        del h5["events"]["circ"]
+
+    path_out = path.with_name("level1.rtdc")
+    basinmap = np.array(basinmap, dtype=np.uint64)
+
+    # create basin
+    with dclab.new_dataset(path) as ds0, dclab.RTDCWriter(path_out) as hw1:
+        hw1.store_metadata(ds0.config.as_dict(pop_filtering=True))
+        hw1.store_basin(basin_name="level1",
+                        basin_type="file",
+                        basin_format="hdf5",
+                        basin_locs=[path],
+                        basin_map=basinmap
+                        )
+
+    path_export = path.with_name("export.rtdc")
+    with dclab.new_dataset(path_out) as ds1:
+        ds1.filter.manual[:] = False
+        ds1.filter.manual[:2] = True
+        ds1.apply_filter()
+        ds1.export.hdf5(
+            path_export,
+            features=["deform", "image", "mask"]
+        )
+
+    # Export data
+    with dclab.new_dataset(path) as ds0, dclab.new_dataset(path_export) as ds1:
+        assert np.all(ds1["deform"] == ds0["deform"][basinmap[:2]])
+        assert np.all(ds1["image"] == ds0["image"][:][basinmap[:2]])
+        assert np.all(ds1["mask"] == ds0["mask"][:][basinmap[:2]])
+
+
 def test_error_when_basinmap_not_given():
     """This is a test for when the basinmap feature for mapping is missing
 

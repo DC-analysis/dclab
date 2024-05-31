@@ -414,7 +414,7 @@ class BasinProxyFeature:
             return self.feat_obj[self.basinmap[index]]
         elif not self.is_scalar:
             # image, mask, etc
-            if index == slice(None):
+            if isinstance(index, slice) and index == slice(None):
                 indices = self.basinmap
             else:
                 indices = self.basinmap[index]

@@ -9,6 +9,7 @@ import abc
 import numbers
 import threading
 from typing import Dict, List, Literal
+import warnings
 import weakref
 
 import numpy as np
@@ -16,6 +17,11 @@ import numpy as np
 
 class BasinmapFeatureMissingError(KeyError):
     """Used when one of the `basinmap` features is not defined"""
+    pass
+
+
+class BasinNotAvailableError(BaseException):
+    """Used to identify situations where the basin data is not available"""
     pass
 
 
@@ -147,10 +153,8 @@ class Basin(abc.ABC):
 
     def _assert_measurement_identifier(self):
         """Make sure the basin matches the measurement identifier
-
-        This method caches its result, i.e. only the first call is slow.
         """
-        if not self.verify_basin(run_identifier=True, availability=False):
+        if not self.verify_basin(run_identifier=True):
             raise KeyError(f"Measurement identifier of basin {self.ds} "
                            f"({self.get_measurement_identifier()}) does "
                            f"not match {self.measurement_identifier}!")
@@ -195,7 +199,7 @@ class Basin(abc.ABC):
         """The :class:`.RTDCBase` instance represented by the basin"""
         if self._ds is None:
             if not self.is_available():
-                raise ValueError(f"Basin {self} is not available!")
+                raise BasinNotAvailableError(f"Basin {self} is not available!")
             self._ds = self.load_dataset(self.location, **self.kwargs)
         return self._ds
 
@@ -278,7 +282,12 @@ class Basin(abc.ABC):
             ds_bn = ds
         return ds_bn
 
-    def verify_basin(self, availability=True, run_identifier=True):
+    def verify_basin(self, run_identifier=True, availability=True):
+        if not availability:
+            warnings.warn("The keyword argument 'availability' is "
+                          "deprecated, because it can lead to long waiting "
+                          "times with many unavailable basins.",
+                          DeprecationWarning)
         if availability:
             check_avail = self.is_available()
         else:

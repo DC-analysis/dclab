@@ -275,7 +275,7 @@ class RTDCBase(abc.ABC):
         """
         data = None
         if self.basins:
-            for bn in self.basins:
+            for bn in list(self.basins):
                 if basin_type is not None and basin_type != bn.basin_type:
                     # User asked for specific basin type
                     continue
@@ -295,6 +295,16 @@ class RTDCBase(abc.ABC):
                 except (KeyError, OSError, PermissionError, RecursionError):
                     # Basin data not available
                     pass
+                except feat_basin.BasinNotAvailableError:
+                    # remove the basin from the list
+                    # TODO:
+                    #  Check whether this has an actual effect. It could be
+                    #  that due to some iterative process `self`
+                    #  gets re-initialized and we have to go through this
+                    #  again.
+                    self._basins.remove(bn)
+                    warnings.warn(
+                        f"Removed unavailable basin {bn} from {self}")
                 except BaseException:
                     warnings.warn(f"Could not access {feat} in {self}:\n"
                                   f"{traceback.format_exc()}")

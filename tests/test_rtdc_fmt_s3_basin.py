@@ -8,6 +8,8 @@ import pytest
 
 from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_s3 import S3Basin, RTDC_S3
+from dclab.rtdc_dataset.feat_basin import BasinNotAvailableError
+
 
 from helper_methods import DCOR_AVAILABLE, retrieve_data
 
@@ -98,7 +100,7 @@ def test_basin_not_available(url):
     # Also test that on a lower level
     bn = S3Basin("https://example.com/nonexistentbucket/nonexistentkey")
     assert not bn.is_available()
-    with pytest.raises(ValueError, match="is not available"):
+    with pytest.raises(BasinNotAvailableError, match="is not available"):
         _ = bn.ds
 
 

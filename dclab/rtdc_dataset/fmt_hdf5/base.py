@@ -182,5 +182,6 @@ class RTDC_HDF5(RTDCBase):
             if isinstance(bdat[0], bytes):
                 bdat = [bi.decode("utf") for bi in bdat]
             bdict = json.loads(" ".join(bdat))
+            bdict["key"] = bk
             basins.append(bdict)
         return basins

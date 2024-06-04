@@ -60,6 +60,9 @@ class RTDCBase(abc.ABC):
         self._usertemp = {}
         # List of :class:`.Basin` for external features
         self._basins = None
+        # List of basin identifiers that should be ignored, used to
+        # avoid circular basin dependencies
+        self._basins_ignored = []
         #: Configuration of the measurement
         self.config = None
         #: Export functionalities; instance of
@@ -292,7 +295,7 @@ class RTDCBase(abc.ABC):
                         data = bn.get_feature_data(feat)
                         # The data are available, we may abort the search.
                         break
-                except (KeyError, OSError, PermissionError, RecursionError):
+                except (KeyError, OSError, PermissionError):
                     # Basin data not available
                     pass
                 except feat_basin.BasinNotAvailableError:
@@ -532,6 +535,13 @@ class RTDCBase(abc.ABC):
     @abc.abstractmethod
     def hash(self):
         """Reproducible dataset hash (defined by derived classes)"""
+
+    def ignore_basins(self, basin_identifiers):
+        """Ignore these basin identifiers when looking for features
+
+        This is used to avoid circular basin dependencies.
+        """
+        self._basins_ignored += basin_identifiers
 
     def apply_filter(self, force=None):
         """Compute the filters for the dataset"""
@@ -807,10 +817,17 @@ class RTDCBase(abc.ABC):
         # Sort basins according to priority
         bdicts_srt = sorted(self.basins_get_dicts(),
                             key=feat_basin.basin_priority_sorted_key)
+        bd_keys = [bd["key"] for bd in bdicts_srt if "key" in bd]
+        bd_keys += self._basins_ignored
         for bdict in bdicts_srt:
             if bdict["format"] not in bc:
                 warnings.warn(f"Encountered unsupported basin "
                               f"format '{bdict['format']}'!")
+                continue
+            if "key" in bdict and bdict["key"] in self._basins_ignored:
+                warnings.warn(
+                    f"Encountered cyclic basin dependency '{bdict['key']}'",
+                    feat_basin.CyclicBasinDependencyFoundWarning)
                 continue
 
             # Basin initialization keyword arguments
@@ -826,6 +843,8 @@ class RTDCBase(abc.ABC):
                 "mapping_referrer": self,
                 # Make sure the measurement identifier is checked.
                 "measurement_identifier": self.get_measurement_identifier(),
+                # allow to ignore basins
+                "ignored_basins": bd_keys,
             }
 
             # Check whether this basin is supported and exists

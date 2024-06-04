@@ -13,6 +13,124 @@ from dclab.rtdc_dataset import feat_basin, fmt_http
 from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
+def test_basin_cyclic_dependency_found():
+    """A basin can be defined in one of its sub-basins
+
+    This is something dclab identifies and then
+    raises a CyclicBasinDependencyFoundWarning
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    paths_list = [
+        h5path.with_name("level1.rtdc"),
+        h5path.with_name("level2.rtdc"),
+        h5path.with_name("level3.rtdc"),
+    ]
+
+    paths_list_rolled = np.roll(paths_list, 1)
+    basins_list = []
+    for pp in paths_list_rolled:
+        basins_list.append({
+            "basin_name": "user-defined basin",
+            "basin_type": "file",
+            "basin_format": "hdf5",
+            "basin_feats": ["userdef1"],
+            "basin_locs": [str(pp)],
+            "verify": False,
+        })
+
+    for bdict, pp in zip(basins_list, paths_list):
+        with h5py.File(h5path) as src, RTDCWriter(pp) as hw:
+            # copy all the scalar features to the new file
+            rtdc_dataset.rtdc_copy(src_h5file=src,
+                                   dst_h5file=hw.h5file,
+                                   features="scalar")
+            hw.store_basin(**bdict)
+
+    # Open the dataset
+    with dclab.new_dataset(paths_list[0]) as ds:
+        assert np.allclose(ds["deform"][0], 0.02494624), "sanity check"
+        with pytest.warns(feat_basin.CyclicBasinDependencyFoundWarning,
+                          match="Encountered cyclic basin dependency"):
+            with pytest.raises(KeyError):
+                _ = ds["userdef1"]
+
+
+def test_basin_cyclic_dependency_found_2():
+    """A basin can be defined in one of its sub-basins
+
+    This is something dclab identifies and then
+    raises a CyclicBasinDependencyFoundWarning
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    # Those are the files with a cyclic dependency
+    p1 = h5path.with_name("level1.rtdc")
+    p2 = h5path.with_name("level2.rtdc")
+    p3 = h5path.with_name("level3.rtdc")
+    # This is the file that will contain the userdef1 feature
+    pz = h5path.with_name("final.rtdc")
+
+    # Initialize datasets
+    for pp in [p1, p2, p3, pz]:
+        with h5py.File(h5path) as src, RTDCWriter(pp) as hw:
+            # copy all the scalar features to the new file
+            rtdc_dataset.rtdc_copy(src_h5file=src,
+                                   dst_h5file=hw.h5file,
+                                   features="scalar")
+
+    with RTDCWriter(pz) as hw:
+        hw.store_feature("userdef1", hw.h5file["events/deform"][:])
+
+    bn_kwargs = {
+            "basin_type": "file",
+            "basin_format": "hdf5",
+            "basin_feats": ["userdef1"],
+            "verify": False,
+        }
+
+    with RTDCWriter(p1) as hw:
+        hw.store_basin(
+            basin_name="link to path 2",
+            basin_locs=[str(p2)],
+            **bn_kwargs
+        )
+
+        # store a basin with a key that is sorted after the basin above
+        bdat = {
+            "name": "user-defined data",
+            "type": "file",
+            "format": "hdf5",
+            "features": ["userdef1"],
+            "paths": [str(pz)]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "zzzz99999zzzzz99999", blines)
+
+    with RTDCWriter(p2) as hw:
+        hw.store_basin(
+            basin_name="link to path 3",
+            basin_locs=[str(p3)],
+            **bn_kwargs
+        )
+
+    with RTDCWriter(p3) as hw:
+        hw.store_basin(
+            basin_name="link to path 1, completing the circle",
+            basin_locs=[str(p1)],
+            **bn_kwargs
+        )
+
+    # Open the dataset
+    with dclab.new_dataset(p1) as ds:
+        assert np.allclose(ds["deform"][0], 0.02494624), "sanity check"
+        assert "userdef1" in ds
+        assert ds.basins[0].name == "link to path 2", "order matters"
+        assert ds.basins[1].name == "user-defined data", "order matters"
+        with pytest.warns(feat_basin.CyclicBasinDependencyFoundWarning,
+                          match="Encountered cyclic basin dependency"):
+            _ = ds["userdef1"]
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")

@@ -1,4 +1,5 @@
 0.59.1
+ - fix: protection against cyclic basin dependencies
  - fix: ValueError when exporting data from basin-mapped dataset
  - fix: Check for basin availability when checking run identifier
 0.59.0

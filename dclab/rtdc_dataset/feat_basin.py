@@ -15,6 +15,10 @@ import weakref
 import numpy as np
 
 
+class CyclicBasinDependencyFoundWarning(UserWarning):
+    """Used when a basin is defined in one of its sub-basins"""
+
+
 class BasinmapFeatureMissingError(KeyError):
     """Used when one of the `basinmap` features is not defined"""
     pass
@@ -63,6 +67,7 @@ class Basin(abc.ABC):
                                   "basinmap9",
                                   ] = "same",
                  mapping_referrer: Dict = None,
+                 ignored_basins: List[str] = None,
                  **kwargs):
         """
 
@@ -96,6 +101,8 @@ class Basin(abc.ABC):
             in situations where `mapping != "same"`. This can be a simple
             dictionary of numpy arrays or e.g. an instance of
             :class:`.RTDCBase`.
+        ignored_basins: list of str
+            List of basins to ignore in subsequent basin instantiations
         kwargs:
             Additional keyword arguments passed to the `load_dataset`
             method of the `Basin` subclass.
@@ -116,6 +123,8 @@ class Basin(abc.ABC):
         #: measurement identifier of the referencing dataset
         self.measurement_identifier = measurement_identifier
         self._measurement_identifier_verified = False
+        #: ignored basins
+        self.ignored_basins = ignored_basins or []
         #: additional keyword arguments passed to the basin
         self.kwargs = kwargs
         #: Event mapping strategy. If this is "same", it means that the
@@ -201,6 +210,7 @@ class Basin(abc.ABC):
             if not self.is_available():
                 raise BasinNotAvailableError(f"Basin {self} is not available!")
             self._ds = self.load_dataset(self.location, **self.kwargs)
+            self._ds.ignore_basins(self.ignored_basins)
         return self._ds
 
     @property
@@ -369,6 +379,7 @@ class BasinProxy:
             "features_local",
             "features_scalar",
             "get_measurement_identifier",
+            "ignore_basins",
         ]:
             return getattr(self.ds, item)
         else:

@@ -9,6 +9,7 @@ import pytest
 import dclab
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_hdf5.basin import HDF5Basin
+from dclab.rtdc_dataset.feat_basin import BasinNotAvailableError
 
 
 from helper_methods import retrieve_data
@@ -101,7 +102,7 @@ def test_basin_not_available():
     # Also test that on a lower level
     bn = HDF5Basin(h5path)
     assert not bn.is_available()
-    with pytest.raises(ValueError, match="is not available"):
+    with pytest.raises(BasinNotAvailableError, match="is not available"):
         _ = bn.ds
 
 

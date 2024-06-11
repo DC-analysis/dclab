@@ -9,13 +9,23 @@ import abc
 import numbers
 import threading
 from typing import Dict, List, Literal
+import warnings
 import weakref
 
 import numpy as np
 
 
+class CyclicBasinDependencyFoundWarning(UserWarning):
+    """Used when a basin is defined in one of its sub-basins"""
+
+
 class BasinmapFeatureMissingError(KeyError):
     """Used when one of the `basinmap` features is not defined"""
+    pass
+
+
+class BasinNotAvailableError(BaseException):
+    """Used to identify situations where the basin data is not available"""
     pass
 
 
@@ -57,6 +67,7 @@ class Basin(abc.ABC):
                                   "basinmap9",
                                   ] = "same",
                  mapping_referrer: Dict = None,
+                 ignored_basins: List[str] = None,
                  **kwargs):
         """
 
@@ -90,6 +101,8 @@ class Basin(abc.ABC):
             in situations where `mapping != "same"`. This can be a simple
             dictionary of numpy arrays or e.g. an instance of
             :class:`.RTDCBase`.
+        ignored_basins: list of str
+            List of basins to ignore in subsequent basin instantiations
         kwargs:
             Additional keyword arguments passed to the `load_dataset`
             method of the `Basin` subclass.
@@ -110,6 +123,8 @@ class Basin(abc.ABC):
         #: measurement identifier of the referencing dataset
         self.measurement_identifier = measurement_identifier
         self._measurement_identifier_verified = False
+        #: ignored basins
+        self.ignored_basins = ignored_basins or []
         #: additional keyword arguments passed to the basin
         self.kwargs = kwargs
         #: Event mapping strategy. If this is "same", it means that the
@@ -147,10 +162,8 @@ class Basin(abc.ABC):
 
     def _assert_measurement_identifier(self):
         """Make sure the basin matches the measurement identifier
-
-        This method caches its result, i.e. only the first call is slow.
         """
-        if not self.verify_basin(run_identifier=True, availability=False):
+        if not self.verify_basin(run_identifier=True):
             raise KeyError(f"Measurement identifier of basin {self.ds} "
                            f"({self.get_measurement_identifier()}) does "
                            f"not match {self.measurement_identifier}!")
@@ -195,8 +208,9 @@ class Basin(abc.ABC):
         """The :class:`.RTDCBase` instance represented by the basin"""
         if self._ds is None:
             if not self.is_available():
-                raise ValueError(f"Basin {self} is not available!")
+                raise BasinNotAvailableError(f"Basin {self} is not available!")
             self._ds = self.load_dataset(self.location, **self.kwargs)
+            self._ds.ignore_basins(self.ignored_basins)
         return self._ds
 
     @property
@@ -278,7 +292,12 @@ class Basin(abc.ABC):
             ds_bn = ds
         return ds_bn
 
-    def verify_basin(self, availability=True, run_identifier=True):
+    def verify_basin(self, run_identifier=True, availability=True):
+        if not availability:
+            warnings.warn("The keyword argument 'availability' is "
+                          "deprecated, because it can lead to long waiting "
+                          "times with many unavailable basins.",
+                          DeprecationWarning)
         if availability:
             check_avail = self.is_available()
         else:
@@ -360,6 +379,7 @@ class BasinProxy:
             "features_local",
             "features_scalar",
             "get_measurement_identifier",
+            "ignore_basins",
         ]:
             return getattr(self.ds, item)
         else:
@@ -414,7 +434,7 @@ class BasinProxyFeature:
             return self.feat_obj[self.basinmap[index]]
         elif not self.is_scalar:
             # image, mask, etc
-            if index == slice(None):
+            if isinstance(index, slice) and index == slice(None):
                 indices = self.basinmap
             else:
                 indices = self.basinmap[index]

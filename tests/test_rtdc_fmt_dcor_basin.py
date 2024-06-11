@@ -8,7 +8,7 @@ import pytest
 
 from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_dcor import DCORBasin, RTDC_DCOR
-
+from dclab.rtdc_dataset.feat_basin import BasinNotAvailableError
 
 from helper_methods import DCOR_AVAILABLE, retrieve_data
 
@@ -101,7 +101,7 @@ def test_basin_not_available(url):
     bn = DCORBasin("https://dcor.mpl.mpg.de/api/3/action/dcserv?id="
                    "00000000-0000-0000-0000-000000000000")
     assert not bn.is_available()
-    with pytest.raises(ValueError, match="is not available"):
+    with pytest.raises(BasinNotAvailableError, match="is not available"):
         _ = bn.ds
 
 

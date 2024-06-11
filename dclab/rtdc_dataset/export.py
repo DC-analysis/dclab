@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import codecs
+import json
 import pathlib
+import time
 from typing import Dict, List
 import uuid
 import warnings
@@ -27,7 +29,7 @@ else:
 import numpy as np
 
 from .. import definitions as dfn
-from .._version import version
+from .._version import version, version_tuple
 
 from .feat_basin import get_basin_classes
 from .writer import RTDCWriter
@@ -311,6 +313,22 @@ class Export(object):
                         compression_kwargs=compression_kwargs) as hw:
             # write meta data
             hw.store_metadata(meta)
+
+            # write export log
+            hw.store_log(time.strftime("dclab-export_%Y-%m-%d_%H.%M.%S"),
+                         json.dumps({
+                             "dclab version": version_tuple,
+                             "kwargs": {
+                                 "features": features,
+                                 "filtered": filtered,
+                                 "logs": logs,
+                                 "tables": tables,
+                                 "basins": basins,
+                                 "meta_prefix": meta_prefix,
+                                 "skip_checks": skip_checks
+                             }
+                         }).split("\n"))
+
             if logs:
                 # write logs
                 for log in ds.logs:

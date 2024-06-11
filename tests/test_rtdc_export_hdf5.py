@@ -510,7 +510,7 @@ def test_hdf5_logs_meta():
     for name in ds2.logs:
         if name.startswith("dclab-export_"):
             kwargs = json.loads("\n".join(ds2.logs[name]))
-            assert kwargs.features == keys
+            assert kwargs["features"] == keys
             break
     else:
         assert False

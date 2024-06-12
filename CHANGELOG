@@ -1,5 +1,5 @@
 0.59.2
- - enh: add log entry to the output file when exporting data
+ - enh: add log entry to the output file when exporting data (#251)
 0.59.1
  - fix: protection against cyclic basin dependencies
  - fix: ValueError when exporting data from basin-mapped dataset

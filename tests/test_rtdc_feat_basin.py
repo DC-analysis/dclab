@@ -334,12 +334,13 @@ def test_basin_sorting_basic():
 
 
 @pytest.mark.parametrize("btype,bformat,sortval", [
-    ["file", "hdf5", "aaa"],
-    ["remote", "http", "bba"],
-    ["remote", "s3", "bca"],
-    ["remote", "dcor", "bda"],
-    ["peter", "hdf5", "zaa"],
-    ["remote", "hans", "bza"],
+    ["internal", "h5dataset", "aaa"],
+    ["file", "hdf5", "bba"],
+    ["remote", "http", "cca"],
+    ["remote", "s3", "cda"],
+    ["remote", "dcor", "cea"],
+    ["peter", "hdf5", "zba"],
+    ["remote", "hans", "cza"],
     ["hans", "peter", "zza"],
 ]
                          )

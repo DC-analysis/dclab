@@ -48,6 +48,54 @@ def test_basic():
     assert "Compression: None" in info
 
 
+def test_basin_features_internal_missing_feature():
+    path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    with RTDCWriter(path) as hw:
+        size = hw.h5file["events/deform"].shape[0]
+        hw.store_basin(
+            basin_name="test",
+            basin_map=np.zeros(size),
+            basin_feats=["userdef1"],
+            basin_type="internal",
+            basin_format="h5dataset",
+            basin_locs=["basin_events"],
+            internal_data={"userdef1": np.arange(2)},
+        )
+        del hw.h5file["basin_events/userdef1"]
+
+    # see if we can open the file without any error
+    with check.IntegrityChecker(path) as ic:
+        cues = [cc for cc in ic.check() if cc.level != "info"]
+        assert len(cues) == 1
+        assert cues[0].level == "violation"
+        assert cues[0].msg.count("Missing internal basin")
+
+
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_basin_features_internal_uncommon_location():
+    path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    with RTDCWriter(path) as hw:
+        size = hw.h5file["events/deform"].shape[0]
+        igroup = hw.h5file.require_group("uncommon_loc")
+        igroup["userdef1"] = np.arange(2)
+        hw.store_basin(
+            basin_name="test",
+            basin_map=np.zeros(size),
+            basin_feats=["userdef1"],
+            basin_type="internal",
+            basin_format="h5dataset",
+            basin_locs=["uncommon_loc"],
+            internal_data=igroup,
+        )
+
+    # see if we can open the file without any error
+    with check.IntegrityChecker(path) as ic:
+        cues = [cc for cc in ic.check() if cc.level != "info"]
+        assert len(cues) == 1
+        assert cues[0].level == "alert"
+        assert cues[0].msg.count("Uncommon internal basin path")
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_complete():

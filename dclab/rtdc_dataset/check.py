@@ -246,6 +246,28 @@ class IntegrityChecker(object):
                 cues += funcs[ff](self, **kwargs)
         return sorted(self.warn_cues + cues)
 
+    def check_badin_features_internal(self, **kwargs):
+        """Check whether internal basin features are properly defined"""
+        cues = []
+        basins = self.ds.basins_get_dicts()
+        for bn in basins:
+            if bn["type"] == "internal":
+                bpaths = bn["paths"]
+                if bpaths != ["basin_events"]:
+                    cues.append(
+                        ICue(msg=f"Uncommon internal basin path: {bpaths}",
+                             level="alert",
+                             category="basin data",
+                             ))
+                for feat in bn["features"]:
+                    if feat not in self.ds.h5file[bpaths[0]]:
+                        cues.append(
+                            ICue(msg=f"Missing internal basin feature {feat}",
+                                 level="violation",
+                                 category="basin data",
+                                 ))
+        return cues
+
     def check_compression(self, **kwargs):
         cues = []
         if self.ds.format == "tdms":

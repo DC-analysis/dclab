@@ -462,15 +462,17 @@ def basin_priority_sorted_key(bdict: Dict):
     - mapping: "same" over anything else
     """
     srt_type = {
-        "file": "a",
-        "remote": "b",
+        "internal": "a",
+        "file": "b",
+        "remote": "c",
     }.get(bdict.get("type"), "z")
 
     srt_format = {
-        "hdf5": "a",
-        "http": "b",
-        "s3": "c",
-        "dcor": "d",
+        "h5dataset": "a",
+        "hdf5": "b",
+        "http": "c",
+        "s3": "d",
+        "dcor": "e",
     }.get(bdict.get("format"), "z")
 
     mapping = bdict.get("mapping", "same")  # old dicts don't have "mapping"

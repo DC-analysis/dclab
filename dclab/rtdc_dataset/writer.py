@@ -182,12 +182,13 @@ class RTDCWriter:
 
     def store_basin(self,
                     basin_name: str,
-                    basin_type: Literal['file', 'remote'],
+                    basin_type: Literal['file', 'internal', 'remote'],
                     basin_format: str,
                     basin_locs: List[str | pathlib.Path],
                     basin_descr: str | None = None,
                     basin_feats: List[str] = None,
                     basin_map: np.ndarray | Tuple[str, np.ndarray] = None,
+                    internal_data: Dict | h5py.Group = None,
                     verify: bool = True,
                     ):
         """Write basin information
@@ -222,6 +223,12 @@ class RTDCWriter:
             a case, you may specify a tuple `(feature_name, mapping_array)`
             where `feature_name` is the explicit mapping name, e.g.
             `"basinmap3"`.
+        internal_data: dict or instance of h5py.Group
+            A dictionary or an `h5py.Group` containing the basin data.
+            The data are copied to the "basin_events" group, if
+            `internal_data` is not an `h5py.Group` in the current HDF5 file.
+            This must be specified when storing internal basins, and it
+            must not be specified for any other basin type.
         verify: bool
             whether to verify the basin before storing it; You might have
             set this to False if you would like to write a basin that is
@@ -235,13 +242,45 @@ class RTDCWriter:
 
             .. versionadded:: 0.58.0
         """
+        if basin_type == "internal":
+            if internal_data is None:
+                raise ValueError(
+                    "When writing an internal basin, you must specify "
+                    "`internal_data` which is either a dictionary of numpy "
+                    "arrays or an `h5py.Group` containing the relevant "
+                    "datasets.")
+            if (isinstance(internal_data, dict)
+                    or (isinstance(internal_data, h5py.Group)
+                        and internal_data.file != self.h5file)):
+                # The data are not yet stored in this HDF5 file
+                for feat in basin_feats:
+                    igroup = self.h5file.require_group("basin_events")
+                    if feat in igroup:
+                        raise ValueError(f"The feature '{feat}' already "
+                                         f"exists in the 'basin_events' group")
+                    self.write_ndarray(group=igroup,
+                                       name=feat,
+                                       data=internal_data[feat])
+                # just override it with the default
+                basin_locs = ["basin_events"]
+            elif verify:
+                # Verify the existence of the data inside this HDF5 file
+                if basin_locs != ["basin_events"]:
+                    warnings.warn("You specified an uncommon location for "
+                                  f"your internal basins: {basin_locs}. "
+                                  f"Please use 'basin_events' instead.")
+                for feat in basin_feats:
+                    if feat not in self.h5file[basin_locs[0]]:
+                        raise ValueError(f"Could not find feature '{feat}' in "
+                                         f"the group [{basin_locs[0]}]")
+
         # Expand optional tuple for basin_map
         if isinstance(basin_map, (list, tuple)) and len(basin_map) == 2:
             basin_map_name, basin_map = basin_map
         else:
             basin_map_name = None
 
-        if verify:
+        if verify and basin_type in ["file", "remote"]:
             # We have to import this here to avoid circular imports
             from .load import new_dataset
             # Make sure the basin can be opened by dclab, verify its ID
@@ -321,7 +360,7 @@ class RTDCWriter:
             "format": basin_format,
             "name": basin_name,
             "type": basin_type,
-            "features": basin_feats,
+            "features": None if basin_feats is None else sorted(basin_feats),
             "mapping": basin_map_name,
         }
         if basin_type == "file":
@@ -344,8 +383,13 @@ class RTDCWriter:
                     # the path. Just pass it on to the list.
                     flocs.append(str(pp))
             b_data["paths"] = flocs
-        else:
+        elif basin_type == "internal":
+            b_data["paths"] = basin_locs
+        elif basin_type == "remote":
             b_data["urls"] = [str(p) for p in basin_locs]
+        else:
+            raise ValueError(f"Unknown basin type '{basin_type}'")
+
         b_lines = json.dumps(b_data, indent=2).split("\n")
         basins = self.h5file.require_group("basins")
         key = hashobj(b_lines)

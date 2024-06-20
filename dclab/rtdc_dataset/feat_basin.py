@@ -479,6 +479,39 @@ def basin_priority_sorted_key(bdict: Dict):
     return srt_type + srt_format + srt_map
 
 
+class InternalH5DatasetBasin(Basin):
+    basin_format = "h5dataset"
+    basin_type = "internal"
+
+    def __init__(self, *args, **kwargs):
+        super(InternalH5DatasetBasin, self).__init__(*args, **kwargs)
+        if self.mapping == "same":
+            raise ValueError(
+                "'internal' basins must be instantiated with `mapping`. "
+                "If you are not doing that, then you probably don't need "
+                "them.")
+        if self._features is None:
+            raise ValueError("You must specify features when defining "
+                             "internal basins.")
+
+    def _load_dataset(self, location, **kwargs):
+        from .fmt_dict import RTDC_Dict
+        # get the h5file object
+        h5root = self._basinmap_referrer().h5file
+        ds_dict = {}
+        for feat in self.features:
+            ds_dict[feat] = h5root[self.location][feat]
+        return RTDC_Dict(ds_dict)
+
+    def is_available(self):
+        h5root = self._basinmap_referrer().h5file
+        return self.location in h5root
+
+    def verify_basin(self, *args, **kwargs):
+        """It's not necessary to verify internal basins"""
+        return True
+
+
 def get_basin_classes():
     bc = {}
     for b_cls in Basin.__subclasses__():

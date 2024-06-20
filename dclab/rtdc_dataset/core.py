@@ -130,15 +130,13 @@ class RTDCBase(abc.ABC):
         data = self._get_ancillary_feature_data(feat, no_compute=True)
         if data is not None:
             return data
-        # 2. Check for file-based basin data
-        data = self._get_basin_feature_data(feat, basin_type="file")
-        if data is not None:
-            return data
-        # 3. Check for other basin data
-        data = self._get_basin_feature_data(feat)
-        if data is not None:
-            return data
-        # 4. Check for ancillary features that can be computed
+        # 2. Check for h5dataset-based, file-based, or other basin data,
+        #    in that order.
+        for basin_type in ["internal", "file", None]:
+            data = self._get_basin_feature_data(feat, basin_type=basin_type)
+            if data is not None:
+                return data
+        # 3. Check for ancillary features that can be computed
         data = self._get_ancillary_feature_data(feat)
         if data is not None:
             return data
@@ -258,7 +256,7 @@ class RTDCBase(abc.ABC):
     def _get_basin_feature_data(
             self,
             feat: str,
-            basin_type: Literal["file", "remote", None] = None):
+            basin_type: Literal["file", "internal", "remote", None] = None):
         """Return feature data from basins
 
         Parameters
@@ -267,8 +265,9 @@ class RTDCBase(abc.ABC):
             Name of the feature
         basin_type: str or bool
             The basin type to look at, which is either "file"-based
-            (e.g. local on disk), "remote"-based (e.g. S3) all
-            basins (None, default).
+            (e.g. local on disk), "remote"-based (e.g. S3), or
+            "internal"-type (e.g. h5py.Dataset inside the current HDF5 file).
+            Defaults to `None` which means no preference.
 
         Returns
         -------
@@ -848,7 +847,17 @@ class RTDCBase(abc.ABC):
             }
 
             # Check whether this basin is supported and exists
-            if bdict["type"] == "file":
+            if bdict["type"] == "internal":
+                b_cls = bc[bdict["format"]]
+                bna = b_cls(bdict["paths"][0], **kwargs)
+                # In contrast to file-type basins, we just add all remote
+                # basins without checking first. We do not check for
+                # the availability of remote basins, because they could
+                # be temporarily inaccessible (unstable network connection)
+                # and because checking the availability of remote basins
+                # normally takes a lot of time.
+                basins.append(bna)
+            elif bdict["type"] == "file":
                 if not self._local_basins_allowed:
                     warnings.warn(f"Basin type 'file' not allowed for format "
                                   f"'{self.format}'")

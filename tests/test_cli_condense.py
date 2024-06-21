@@ -131,6 +131,61 @@ def test_condense_basins_include_no_data_from_basins():
         assert "deform" in ds.features_innate, "sanity check"
 
 
+@pytest.mark.parametrize("store_basins", [True, False])
+def test_condense_basins_internal(store_basins):
+    """
+    Internal basins should just be copied to the new file
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    h5path_out = h5path.with_name("condensed.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(basin_name="example basin",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data={"userdef1": np.arange(2),
+                                      "image_bg": np.zeros((2, 80, 320)),
+                                      },
+                       basin_map=np.zeros(src["events/deform"].shape[0]),
+                       basin_feats=["image_bg", "userdef1"],
+                       )
+
+    # sanity check
+    with new_dataset(h5path_small) as ds:
+        assert "userdef1" in ds.features_basin
+        assert "userdef1" not in ds.features_innate
+        assert "image_bg" in ds.features_basin
+        assert "image_bg" not in ds.features_innate
+
+    # compress the basin-based dataset
+    cli.condense(path_in=h5path_small, path_out=h5path_out,
+                 store_basin_features=store_basins)
+
+    with h5py.File(h5path_out) as h5:
+        assert "deform" in h5["events"], "sanity check"
+        # The userdef1 feature should, in any case, not be in "events",
+        # because the condense step always copies basin information,
+        # including any internal basins.
+        assert "userdef1" not in h5["events"]
+        assert "userdef1" in h5["basin_events"]
+        assert np.all(h5["basin_events"]["userdef1"] == np.arange(2))
+        # The image_bg feature is not scalar, so it should not be here
+        assert "image_bg" not in h5["events"]
+        assert "image_bg" not in h5["basin_events"]
+
+    with new_dataset(h5path_out) as ds:
+        assert "userdef1" in ds.features_basin
+        assert "image_bg" in ds.features_basin
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_condense_defective_feature():

@@ -246,7 +246,7 @@ class IntegrityChecker(object):
                 cues += funcs[ff](self, **kwargs)
         return sorted(self.warn_cues + cues)
 
-    def check_badin_features_internal(self, **kwargs):
+    def check_basin_features_internal(self, **kwargs):
         """Check whether internal basin features are properly defined"""
         cues = []
         basins = self.ds.basins_get_dicts()

@@ -43,7 +43,9 @@ def condense(
     store_ancillary_features: bool
         compute and store ancillary features in the output file
     store_basin_features: bool
-        copy basin features from the input path to the output file
+        copy basin features from the input path to the output file;
+        Note that the basin information (including any internal
+        basin dataset) are always copied over to the new dataset.
     check_suffix: bool
         check suffixes for input and output files
     ret_path: bool
@@ -129,14 +131,18 @@ def condense_dataset(
     # scalar features
     feats_sc = ds.features_scalar
     # loaded (computationally cheap) scalar features
-    feats_sc_in = [f for f in ds.features_loaded if f in feats_sc]
+    feats_sc_loaded = [f for f in ds.features_loaded if f in feats_sc]
+    # internal basin features that have already been copied with `rtdc_copy`
+    feats_sc_basint = sorted(h5_cond.get("basin_events", {}).keys())
+    # features that are excluded, because we already copied them
+    feats_exclude = feats_sc_loaded + feats_sc_basint
 
     cmd_dict["features_original_innate"] = ds.features_innate
 
-    features = set(feats_sc_in)
+    features = set(feats_sc_loaded)
     if store_basin_features:
         feats_sc_basin = [f for f in ds.features_basin if
-                          (f in feats_sc and f not in feats_sc_in)]
+                          (f in feats_sc and f not in feats_exclude)]
         cmd_dict["features_basin"] = feats_sc_basin
         if feats_sc_basin:
             print(f"Using basin features {feats_sc_basin}")
@@ -144,7 +150,7 @@ def condense_dataset(
 
     if store_ancillary_features:
         feats_sc_anc = [f for f in ds.features_ancillary if
-                        (f in feats_sc and f not in feats_sc_in)]
+                        (f in feats_sc and f not in feats_exclude)]
         cmd_dict["features_ancillary"] = feats_sc_anc
         if feats_sc_anc:
             features |= set(feats_sc_anc)

@@ -29,6 +29,57 @@ def test_repack_basic():
             assert np.all(dsj["mask"][ii] == ds0["mask"][ii])
 
 
+@pytest.mark.parametrize("use_basins", [True, False])
+def test_repack_basin_internal(use_basins):
+    """
+    Internal basins should just be copied to the new file
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    h5path_out = h5path.with_name("repacked.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(basin_name="example basin",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data={"userdef1": np.arange(2)},
+                       basin_map=np.zeros(src["events/deform"].shape[0]),
+                       basin_feats=["userdef1"],
+                       )
+
+    # sanity check
+    with new_dataset(h5path_small) as ds:
+        assert "userdef1" in ds.features_basin
+        assert "userdef1" not in ds.features_innate
+
+    # compress the basin-based dataset
+    cli.repack(path_in=h5path_small, path_out=h5path_out,
+               strip_basins=not use_basins)
+
+    with h5py.File(h5path_out) as h5:
+        assert "deform" in h5["events"], "sanity check"
+        # userdef1 should not be in "events" in any case
+        assert "userdef1" not in h5["events"]
+        if use_basins:
+            assert "userdef1" in h5["basin_events"]
+            assert np.all(h5["basin_events"]["userdef1"] == np.arange(2))
+        else:
+            assert "basin_events" not in h5
+
+    with new_dataset(h5path_out) as ds:
+        if use_basins:
+            assert "userdef1" in ds.features_basin
+        else:
+            assert "userdef1" not in ds.features_basin
+
+
 def test_repack_no_data_from_basins_written():
     """
     When repacking a dataset, feature data from the basin should not be

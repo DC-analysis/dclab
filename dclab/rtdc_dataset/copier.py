@@ -49,9 +49,13 @@ def rtdc_copy(src_h5file: h5py.Group,
 
     # events in source file
     if "events" in src_h5file:
-        events_src = sorted(src_h5file["events"].keys())
+        events_src = list(src_h5file["events"].keys())
     else:
         events_src = []
+
+    if include_basins and "basin_events" in src_h5file:
+        events_src += list(src_h5file["basin_events"].keys())
+        events_src = sorted(set(events_src))
 
     # basins
     if include_basins and "basins" in src_h5file:
@@ -100,7 +104,7 @@ def rtdc_copy(src_h5file: h5py.Group,
     if isinstance(features, list):
         feature_iter = features
     elif features == "all":
-        feature_iter = list(events_src)
+        feature_iter = events_src
     elif features == "scalar":
         feature_iter = [feat for feat in events_src
                         if feature_exists(feat, scalar_only=True)]
@@ -115,7 +119,7 @@ def rtdc_copy(src_h5file: h5py.Group,
     bn_regexp = re.compile("^basinmap[0-9]*$")  # future-proof regexp
     src_basin_feats = [f for f in events_src if bn_regexp.match(f)]
     if include_basins:
-        # Make sure all mapped basin features are included in the output file.
+        # Make sure all 'basinmap?' features are included in the output file.
         for feat in src_basin_feats:
             if feat not in feature_iter:
                 feature_iter.append(feat)
@@ -129,7 +133,9 @@ def rtdc_copy(src_h5file: h5py.Group,
     if feature_iter:
         dst_h5file.require_group("events")
         for feat in feature_iter:
-            if feature_exists(feat):
+            if not feature_exists(feat):
+                continue
+            elif feat in src_h5file["events"]:
                 # Skip all defective features. These are features that
                 # are known to be invalid (e.g. ancillary features that
                 # were computed falsely) and must be recomputed by dclab.
@@ -150,6 +156,18 @@ def rtdc_copy(src_h5file: h5py.Group,
                                         ]:
                         if attr not in dst.attrs:
                             dst.attrs[attr] = ufunc(dst)
+
+            elif (include_basins
+                    and "basin_events" in src_h5file
+                    and feat in src_h5file["basin_events"]):
+                # Also copy internal basins which should have been defined
+                # in the "basin_events" group.
+                if feat in src_h5file["basin_events"]:
+                    h5ds_copy(src_loc=src_h5file["basin_events"],
+                              src_name=feat,
+                              dst_loc=dst_h5file.require_group("basin_events"),
+                              dst_name=feat
+                              )
 
 
 def h5ds_copy(src_loc, src_name, dst_loc, dst_name=None,

@@ -13,7 +13,8 @@ from dclab.rtdc_dataset.fmt_s3 import BOTO3_AVAILABLE  # noqa: F401
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     try:
-        s.connect(("dcor.mpl.mpg.de", 443))
+        # dcor.mpl.mpg.de
+        s.connect(("130.183.206.45", 443))
     except (socket.gaierror, OSError):
         DCOR_AVAILABLE = False
     else:
@@ -22,7 +23,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     try:
-        s.connect(("objectstore.hpccloud.mpcdf.mpg.de", 443))
+        # objectstore.hpccloud.mpcdf.mpg.de
+        s.connect(("130.183.12.74", 443))
     except (socket.gaierror, OSError):
         DCOR_AVAILABLE = False
 

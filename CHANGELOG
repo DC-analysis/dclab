@@ -1,3 +1,5 @@
+0.60.1
+ - fix: subclass `BasinProxyFeature` from `NDArrayOperatorsMixin`
 0.60.0
  - feat: support (mapped) internal basins
  - enh: add log entry to the output file when exporting data (#251)

@@ -397,7 +397,7 @@ class BasinProxy:
         return len(self.basinmap)
 
 
-class BasinProxyFeature:
+class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
     def __init__(self, feat_obj, basinmap):
         """Wrap around a feature object, mapping it upon data access"""
         self.feat_obj = feat_obj

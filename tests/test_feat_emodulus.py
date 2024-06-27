@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 
+import h5py
 import numpy as np
 import pytest
 
@@ -13,7 +14,7 @@ import dclab
 from dclab.features import emodulus
 from dclab.rtdc_dataset import feat_anc_core
 
-from helper_methods import example_data_dict
+from helper_methods import example_data_dict, retrieve_data
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
@@ -267,6 +268,149 @@ def test_af_emodulus_temp_feat_2():
                                  }
     assert np.allclose(ds3["emodulus"][0], ds2["emodulus"][0], rtol=0,
                        atol=1e-7)
+
+
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
+def test_af_emodulus_temp_feat_with_basin():
+    """
+    In dclab 0.60.0 there was a bug: When the temperature feature was
+    in a mapped basin, then array operations did not work and the Young's
+    modulus could not be computed
+    """
+    path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_basin = path.with_name("basin.rtdc")
+
+    # Create a basin for temperature
+    with h5py.File(path, "a") as hin, \
+            h5py.File(path_basin, "w") as hbn:
+        assert "temp" not in hin
+        assert len(hin["events/image"]) == 18
+        hbn.attrs.update(hin.attrs)
+        hbn["events/temp"] = np.linspace(21, 22, 18, endpoint=True)
+
+        hw = dclab.RTDCWriter(hin)
+        hw.store_basin(
+            basin_name="temperature",
+            basin_locs=[path_basin],
+            basin_format="hdf5",
+            basin_type="file",
+        )
+
+    with dclab.new_dataset(path) as ds:
+
+        ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                    "emodulus viscosity model": "herold-2017",
+                                    "emodulus medium": "CellCarrier",
+                                    }
+
+        assert np.allclose(
+            ds["emodulus"],
+            np.array([0.88053377, 0.8585773, 0.92474311,
+                      np.nan, np.nan, np.nan,
+                      np.nan, 0.62051569, 0.85272409,
+                      0.74716945, 0.83060064, 0.79674873,
+                      0.85180626, 0.87352672, np.nan,
+                      0.82130422, 0.82563875, 0.66465965]),
+            atol=.2, rtol=0, equal_nan=True
+        )
+
+
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
+def test_af_emodulus_temp_feat_with_basin_mapped():
+    """
+    In dclab 0.60.0 there was a bug: When the temperature feature was
+    in a mapped basin, then array operations did not work and the Young's
+    modulus could not be computed
+    """
+    path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_basin = path.with_name("basin.rtdc")
+
+    # Create a basin for temperature
+    with h5py.File(path, "a") as hin, \
+            h5py.File(path_basin, "w") as hbn:
+        assert "temp" not in hin
+        assert len(hin["events/image"]) == 18
+        hbn.attrs.update(hin.attrs)
+        temp = np.full(22, 23)
+        temp[:18] = np.linspace(21, 22, 18, endpoint=True)
+        hbn["events/temp"] = temp
+
+        hw = dclab.RTDCWriter(hin)
+        hw.store_basin(
+            basin_name="temperature",
+            basin_locs=[path_basin],
+            basin_format="hdf5",
+            basin_type="file",
+            basin_map=np.arange(18),
+        )
+
+    with dclab.new_dataset(path) as ds:
+        ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                    "emodulus viscosity model": "herold-2017",
+                                    "emodulus medium": "CellCarrier",
+                                    }
+
+        assert np.allclose(
+            ds["emodulus"],
+            np.array([0.88053377, 0.8585773, 0.92474311,
+                      np.nan, np.nan, np.nan,
+                      np.nan, 0.62051569, 0.85272409,
+                      0.74716945, 0.83060064, 0.79674873,
+                      0.85180626, 0.87352672, np.nan,
+                      0.82130422, 0.82563875, 0.66465965]),
+            atol=.2, rtol=0, equal_nan=True
+        )
+
+
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
+def test_af_emodulus_temp_feat_with_basin_mapped_internal():
+    """
+    In dclab 0.60.0 there was a bug: When the temperature feature was
+    in a mapped basin, then array operations did not work and the Young's
+    modulus could not be computed
+    """
+    path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_basin = path.with_name("basin.rtdc")
+
+    # Create a basin for temperature
+    with h5py.File(path, "a") as hin, \
+            h5py.File(path_basin, "w") as hbn:
+        assert "temp" not in hin
+        assert len(hin["events/image"]) == 18
+        hbn.attrs.update(hin.attrs)
+        temp = np.full(22, 23)
+        temp[1:19] = np.linspace(21, 22, 18, endpoint=True)
+
+        hw = dclab.RTDCWriter(hin)
+        hw.store_basin(
+            basin_name="temperature",
+            basin_format="h5dataset",
+            basin_locs=["basin_events"],
+            basin_type="internal",
+            basin_map=np.arange(1, 19),
+            basin_feats=["temp"],
+            internal_data={"temp": temp}
+        )
+
+    with dclab.new_dataset(path) as ds:
+        ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                    "emodulus viscosity model": "herold-2017",
+                                    "emodulus medium": "CellCarrier",
+                                    }
+
+        assert np.allclose(
+            ds["emodulus"],
+            np.array([0.88053377, 0.8585773, 0.92474311,
+                      np.nan, np.nan, np.nan,
+                      np.nan, 0.62051569, 0.85272409,
+                      0.74716945, 0.83060064, 0.79674873,
+                      0.85180626, 0.87352672, np.nan,
+                      0.82130422, 0.82563875, 0.66465965]),
+            atol=.2, rtol=0, equal_nan=True
+        )
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'

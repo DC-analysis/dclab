@@ -77,6 +77,7 @@ LOG_MAX_LINE_LENGTH = 100
 OPTIONAL_KEYS = {
     "experiment": [
         "run identifier",
+        "timestamp",
     ],
     "fluorescence": [
         "baseline 1 offset",

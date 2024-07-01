@@ -40,6 +40,7 @@ CFG_METADATA = {
         ["run identifier", str, "Unique measurement identifier"],
         ["sample", str, "Measured sample or user-defined reference"],
         ["time", str, "Start time of measurement ('HH:MM:SS[.S]')"],
+        ["timestamp", float, "Start of measurement in unix time [s]"],
     ],
     # All special keywords related to RT-FDC
     # This section should not be present for regular RT-DC measurements.

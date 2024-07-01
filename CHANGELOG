@@ -1,3 +1,5 @@
+0.60.2
+ - enh: add [experiment]:timestamp (unix time) to configuration
 0.60.1
  - fix: subclass `BasinProxyFeature` from `NDArrayOperatorsMixin`
 0.60.0

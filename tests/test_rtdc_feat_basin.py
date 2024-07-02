@@ -133,6 +133,39 @@ def test_basin_cyclic_dependency_found_2():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
+    "ignore::UserWarning")
+def test_basin_feature_image_export_from_basin_with_hierarchy(tmp_path):
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    epath = tmp_path / "exported.rtdc"
+    epath2 = tmp_path / "exported2.rtdc"
+    # Create a basins-only dataset using the export functionality
+    with dclab.new_dataset(h5path) as ds:
+        assert "image" in ds
+        ds.export.hdf5(path=epath,
+                       features=[],
+                       basins=True,
+                       filtered=False,
+                       )
+    # Attempt to export image data from the exported dataset
+    with dclab.new_dataset(epath) as ds:
+        ds2 = dclab.new_dataset(ds)
+        assert "image" in ds2
+        assert "image" not in ds2.features_innate
+        ds2.export.hdf5(path=epath2,
+                        features=["mask", "image"],
+                        basins=False,
+                        filtered=False,
+                        )
+
+    # Open the exported dataset and attempt to access the image feature
+    with dclab.new_dataset(epath2) as ds:
+        assert "mask" in ds
+        assert np.any(ds["mask"][0])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
 @pytest.mark.parametrize("filtered", [True, False])
 def test_basin_feature_nested_image_exported_available(tmp_path, filtered):

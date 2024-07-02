@@ -1,3 +1,5 @@
+0.60.3
+ - fix: add args and kwargs to all __array__ methods
 0.60.2
  - enh: add [experiment]:timestamp (unix time) to configuration
 0.60.1

@@ -161,6 +161,8 @@ def test_basin_mapped(basinmap):
     [1, 3, 4],  # very simple case
     [1, 1, 1, 2],  # not trivial, not realizable with hierarchy children
 ])
+@pytest.mark.filterwarnings(
+    "ignore::UserWarning")
 def test_basin_mapped_export(basinmap):
     path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     with h5py.File(path, "a") as h5:

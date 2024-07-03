@@ -144,8 +144,13 @@ and implemented here in :func:`.get_viscosity_mc_pbs_buyukurganci_2022`.
 LUT selection
 =============
 When computing the Young's modulus, the user has to select a LUT via a
-keyword argument (see next section). The LUT initially implemented in dclab
-has the identifier "LE-2D-FEM-19".
+keyword argument (see next section). It is recommended to always use the latest LUT 
+version. Currently, the latest LUT has the identifier "HE-3D-FEM-22". 
+Each LUT only supports a limited range of Area and Deformation values (see images 
+below). For events outside of the region, no Young's modulus can be computed. 
+It is therefore recommended to adjust flow rate and channel width such that most 
+measured events fall into the region covered by the selected LUT. The LUT 
+initially implemented in dclab has the identifier "LE-2D-FEM-19". 
 
 
 LE-2D-FEM-19

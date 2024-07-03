@@ -1,3 +1,5 @@
+0.60.4
+ - docs: a few clarifications on Young's modulus computation
 0.60.3
  - fix: add args and kwargs to all __array__ methods
 0.60.2

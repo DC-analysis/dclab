@@ -41,7 +41,8 @@ with respect to the following correction terms:
 
 - **shear-thinning and temperature-dependence**: The viscosity of a medium
   usually is a function of temperature. In addition, complex media, such as
-  0.6\% methyl cellulose (CellCarrier B), may also exhibit
+  0.59\% methyl cellulose (CellCarrier B) which is used in standard blood
+  measurements, may also exhibit
   `shear-thinning <https://en.wikipedia.org/wiki/Shear_thinning>`_.
   The viscosity of such media decreases with increasing flow rates. Since the
   viscosity is required to apply the scaling laws (above), it must be
@@ -275,6 +276,10 @@ Description of the configuration keywords:
 - 'emodulus viscosity model': This is the viscosity model key to use
   (see :ref:`sec_emodulus_viscosity` above).
   This key was introduced in dclab 0.48.0.
+
+Below is a simple example for computing the Young's modulus for case (C).
+You can find additional examples in the
+:ref:`examples section <example_emodulus_dcor>`.
 
 
 .. plot::

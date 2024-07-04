@@ -145,6 +145,7 @@ class Export(object):
                 str(path).encode("ascii", "ignore")) +
                 "Please use the `override=True` option.")
         # Check that features are valid
+        features = sorted(list(set(features)))
         for c in features:
             if c not in ds.features_scalar:
                 msg = "Invalid feature name: {}".format(c)
@@ -282,6 +283,7 @@ class Export(object):
         else:
             filter_arr = None
 
+        features = sorted(list(set(features)))
         if not skip_checks and features:
             # check that all features have same length and use the smallest
             # common length
@@ -468,6 +470,7 @@ class Export(object):
         if meta_data is None:
             meta_data = {}
         features = [c.lower() for c in features]
+        features = sorted(list(set(features)))
         path = pathlib.Path(path)
         ds = self.rtdc_ds
         # Make sure that path ends with .tsv

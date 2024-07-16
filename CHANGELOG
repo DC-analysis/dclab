@@ -1,5 +1,6 @@
 0.60.4
  - fix: check feature list for export for duplicates (#257)
+ - enh: more verbose error message when loading data
  - docs: a few clarifications on Young's modulus computation
 0.60.3
  - fix: add args and kwargs to all __array__ methods

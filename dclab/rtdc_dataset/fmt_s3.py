@@ -162,7 +162,7 @@ class RTDC_S3(RTDC_HDF5):
         """
         if not BOTO3_AVAILABLE:
             raise ModuleNotFoundError(
-                "Package `boto3` required for S3 format!")
+                f"Package `boto3` required for loading S3 data '{url}'!")
 
         self._s3file = S3File(
             object_path=get_object_path(url),

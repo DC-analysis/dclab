@@ -42,7 +42,7 @@ class RTDC_HTTP(RTDC_HDF5):
         """
         if not REQUESTS_AVAILABLE:
             raise ModuleNotFoundError(
-                "Package `requests` required for http format!")
+                f"Package `requests` required for loading http data '{url}'!")
 
         self._fhttp = HTTPFile(url)
         if kwargs.get("identifier") is None:

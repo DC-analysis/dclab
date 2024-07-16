@@ -449,7 +449,7 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
             return self.__array__()[index]
 
     def __len__(self):
-        return len(self.feat_obj)
+        return len(self.basinmap)
 
 
 def basin_priority_sorted_key(bdict: Dict):

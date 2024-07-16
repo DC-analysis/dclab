@@ -1,5 +1,6 @@
 0.60.5
  - fix: return correct length for BasinProxyFeature
+ - fix: export from dataset with internal basins did not work (#262)
 0.60.4
  - fix: check feature list for export for duplicates (#257)
  - enh: more verbose error message when loading data

@@ -429,6 +429,11 @@ class Export(object):
                     })
 
                 for bn_dict in basin_list:
+                    if bn_dict.get("basin_type") == "internal":
+                        # Internal basins are only valid for files they were
+                        # defined in. Since we are exporting, it does not
+                        # make sense to store these basins in the output file.
+                        continue
                     basinmap_orig = bn_dict.get("basin_map")
                     if not filtered:
                         # filtering disabled: just copy basins

@@ -1,3 +1,5 @@
+0.60.7
+ - build: build with macos-13-large and macos-13-xlarge images
 0.60.6
  - build: build with macos-latest-large and macos-latest-xlarge images
 0.60.5

@@ -705,11 +705,11 @@ class RTDCWriter:
 
         # Create and Set image attributes:
         # HDFView recognizes this as a series of images.
-        # Use np.string_ as per
+        # Use np.bytes_ as per
         # https://docs.h5py.org/en/stable/strings.html#compatibility
-        dset.attrs.create('CLASS', np.string_('IMAGE'))
-        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
-        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
+        dset.attrs.create('CLASS', np.bytes_('IMAGE'))
+        dset.attrs.create('IMAGE_VERSION', np.bytes_('1.2'))
+        dset.attrs.create('IMAGE_SUBCLASS', np.bytes_('IMAGE_GRAYSCALE'))
 
     def write_image_grayscale(self, group, name, data, is_boolean):
         """Write grayscale image data to and HDF5 dataset
@@ -754,11 +754,11 @@ class RTDCWriter:
 
         # Create and Set image attributes:
         # HDFView recognizes this as a series of images.
-        # Use np.string_ as per
+        # Use np.bytes_ as per
         # https://docs.h5py.org/en/stable/strings.html#compatibility
-        dset.attrs.create('CLASS', np.string_('IMAGE'))
-        dset.attrs.create('IMAGE_VERSION', np.string_('1.2'))
-        dset.attrs.create('IMAGE_SUBCLASS', np.string_('IMAGE_GRAYSCALE'))
+        dset.attrs.create('CLASS', np.bytes_('IMAGE'))
+        dset.attrs.create('IMAGE_VERSION', np.bytes_('1.2'))
+        dset.attrs.create('IMAGE_SUBCLASS', np.bytes_('IMAGE_GRAYSCALE'))
 
     def write_ndarray(self, group, name, data, dtype=None):
         """Write n-dimensional array data to an HDF5 dataset

@@ -147,6 +147,7 @@ class AncillaryFeature:
             Dictionary with feature names as keys and instances
             of `AncillaryFeature` as values.
         """
+        # TODO: This is quite slow.
         cols = {}
         for inst in AncillaryFeature.features:
             if inst.is_available(rtdc_ds):

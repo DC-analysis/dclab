@@ -63,6 +63,8 @@ class RTDCBase(abc.ABC):
         # List of basin identifiers that should be ignored, used to
         # avoid circular basin dependencies
         self._basins_ignored = []
+        # List of all features available via basins
+        self._basins_features = None
         #: Configuration of the measurement
         self.config = None
         #: Export functionalities; instance of
@@ -228,29 +230,30 @@ class RTDCBase(abc.ABC):
         """
         data = None
         anhash = None
-        # Try to find the feature in the ancillary features
-        # (see feat_anc_core submodule for more information).
-        # These features are cached in `self._ancillaries`.
-        ancol = AncillaryFeature.available_features(self)
-        if feat in ancol:
-            # The feature is generally available.
-            if feat in self._ancillaries:
-                # We have already computed the feature. Make sure that we
-                # have the updated one by checking the hash.
-                anhash = ancol[feat].hash(self)
-                if self._ancillaries[feat][0] == anhash:
-                    # Use cached value
-                    data = self._ancillaries[feat][1]
-            # We either already have the ancillary feature or have to
-            # compute it. We only compute it if we are asked to.
-            if data is None and not no_compute:
-                anhash = anhash or ancol[feat].hash(self)
-                # Compute new value
-                data_dict = ancol[feat].compute(self)
-                for okey in data_dict:
-                    # Store computed value in `self._ancillaries`.
-                    self._ancillaries[okey] = (anhash, data_dict[okey])
-                data = data_dict[feat]
+        if feat in AncillaryFeature.feature_names:
+            # Try to find the feature in the ancillary features
+            # (see feat_anc_core submodule for more information).
+            # These features are cached in `self._ancillaries`.
+            ancol = AncillaryFeature.available_features(self)
+            if feat in ancol:
+                # The feature is generally available.
+                if feat in self._ancillaries:
+                    # We have already computed the feature. Make sure that we
+                    # have the updated one by checking the hash.
+                    anhash = ancol[feat].hash(self)
+                    if self._ancillaries[feat][0] == anhash:
+                        # Use cached value
+                        data = self._ancillaries[feat][1]
+                # We either already have the ancillary feature or have to
+                # compute it. We only compute it if we are asked to.
+                if data is None and not no_compute:
+                    anhash = anhash or ancol[feat].hash(self)
+                    # Compute new value
+                    data_dict = ancol[feat].compute(self)
+                    for okey in data_dict:
+                        # Store computed value in `self._ancillaries`.
+                        self._ancillaries[okey] = (anhash, data_dict[okey])
+                    data = data_dict[feat]
         return data
 
     def _get_basin_feature_data(
@@ -453,19 +456,21 @@ class RTDCBase(abc.ABC):
     @property
     def features_basin(self):
         """All features accessed via upstream basins from other locations"""
-        if self.basins:
-            features = []
-            for bn in self.basins:
-                if bn.features and set(bn.features) <= set(features):
-                    # We already have the features from a different basin.
-                    # There might be a basin availability check going on
-                    # somewhere, but we are not interested in it.
-                    continue
-                if bn.is_available():
-                    features += bn.features
-            return sorted(set(features))
-        else:
-            return []
+        if self._basins_features is None:
+            if self.basins:
+                features = []
+                for bn in self.basins:
+                    if bn.features and set(bn.features) <= set(features):
+                        # We already have the features from a different basin.
+                        # There might be a basin availability check going on
+                        # somewhere, but we are not interested in it.
+                        continue
+                    if bn.is_available():
+                        features += bn.features
+                self._basins_features = sorted(set(features))
+            else:
+                self._basins_features = []
+        return self._basins_features
 
     @property
     def features_innate(self):

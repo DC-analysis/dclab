@@ -3,6 +3,8 @@
  - enh: improve availability check for S3 basin data
  - enh: improve availability check for HTTP basin data
  - enh: improve availability check for HDF5 basin data
+ - enh: cache list of features available via all basins
+ - enh: speed up feature retrieval for non-ancillary features
  - ref: replace np.string_ with np.bytes_
 0.60.9
  - build: build with macos-latest and macos-13 images

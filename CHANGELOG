@@ -1,7 +1,8 @@
 0.60.10
  - fix: do not attempt to load S3 data when the endpoint seems wrong
- - enh: improve availability check for S3 data
- - enh: improve availability check for HTTP data
+ - enh: improve availability check for S3 basin data
+ - enh: improve availability check for HTTP basin data
+ - enh: improve availability check for HDF5 basin data
  - ref: replace np.string_ with np.bytes_
 0.60.9
  - build: build with macos-latest and macos-13 images

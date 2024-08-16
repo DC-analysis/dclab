@@ -23,7 +23,8 @@ class HDF5Basin(feat_basin.Basin):
         if self._available_verified is None:
             with self._av_check_lock:
                 try:
-                    self._available_verified = pathlib.Path(self.location).exists()
+                    self._available_verified = \
+                        pathlib.Path(self.location).exists()
                 except OSError:
                     pass
         return self._available_verified

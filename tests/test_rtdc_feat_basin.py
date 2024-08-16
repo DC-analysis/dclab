@@ -13,6 +13,8 @@ from dclab.rtdc_dataset import feat_basin, fmt_http
 from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.core.FeatureShouldExistButNotFoundWarning")
 def test_basin_cyclic_dependency_found():
     """A basin can be defined in one of its sub-basins
 
@@ -55,6 +57,8 @@ def test_basin_cyclic_dependency_found():
                 _ = ds["userdef1"]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.core.FeatureShouldExistButNotFoundWarning")
 def test_basin_cyclic_dependency_found_2():
     """A basin can be defined in one of its sub-basins
 

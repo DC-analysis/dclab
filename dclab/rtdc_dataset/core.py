@@ -22,6 +22,10 @@ from .export import Export
 from .filter import Filter
 
 
+class FeatureShouldExistButNotFoundWarning(UserWarning):
+    pass
+
+
 class LogTransformWarning(UserWarning):
     pass
 
@@ -147,7 +151,7 @@ class RTDCBase(abc.ABC):
                           f"{self}, but I cannot get its data. Please "
                           f"make sure you have not defined any unreachable "
                           f"remote basins.",
-                          UserWarning)
+                          FeatureShouldExistButNotFoundWarning)
         # Not here ¯\_(ツ)_/¯
         raise KeyError(f"Feature '{feat}' does not exist in {self}!")
 

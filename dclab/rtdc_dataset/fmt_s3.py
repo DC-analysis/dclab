@@ -209,12 +209,13 @@ class S3Basin(Basin):
         Caching policy: Once this method returns True, it will always
         return True.
         """
-        with self._av_check_lock:
-            if not BOTO3_AVAILABLE:
-                self._available_verified = False
-            if self._available_verified is None:
-                self._available_verified = \
-                    is_s3_object_available(self.location)
+        if self._available_verified is None:
+            with self._av_check_lock:
+                if not BOTO3_AVAILABLE:
+                    self._available_verified = False
+                else:
+                    self._available_verified = \
+                            is_s3_object_available(self.location)
         return self._available_verified
 
 
@@ -241,36 +242,37 @@ def is_s3_object_available(url: str,
                 f"Could not determine endpoint from URL '{url}'. Please "
                 f"set the `S3_ENDPOINT_URL` environment variable or pass "
                 f"a full object URL.")
-        # default to https if no scheme or port is specified
-        urlp = urlparse(endpoint_url)
-        port = urlp.port or (80 if urlp.scheme == "http" else 443)
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(1)
-            # Try to connect to the host
-            try:
-                # Use `hostname`, not `netloc`, because `netloc` contains
-                # the port number which we do not want here.
-                s.connect((urlp.hostname, port))
-            except (socket.gaierror, OSError):
-                pass
-            else:
-                # Try to access the object
-                s3file = S3File(
-                    object_path=get_object_path(url),
-                    endpoint_url=endpoint_url,
-                    access_key_id=(access_key_id
-                                   or S3_ACCESS_KEY_ID
-                                   or ""),
-                    secret_access_key=(secret_access_key
-                                       or S3_SECRET_ACCESS_KEY
-                                       or ""),
-                    )
+        else:
+            # default to https if no scheme or port is specified
+            urlp = urlparse(endpoint_url)
+            port = urlp.port or (80 if urlp.scheme == "http" else 443)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(1)
+                # Try to connect to the host
                 try:
-                    s3file.s3_object.load()
-                except botocore.exceptions.ClientError:
-                    avail = False
+                    # Use `hostname`, not `netloc`, because `netloc` contains
+                    # the port number which we do not want here.
+                    s.connect((urlp.hostname, port))
+                except (socket.gaierror, OSError):
+                    pass
                 else:
-                    avail = True
+                    # Try to access the object
+                    s3file = S3File(
+                        object_path=get_object_path(url),
+                        endpoint_url=endpoint_url,
+                        access_key_id=(access_key_id
+                                       or S3_ACCESS_KEY_ID
+                                       or ""),
+                        secret_access_key=(secret_access_key
+                                           or S3_SECRET_ACCESS_KEY
+                                           or ""),
+                        )
+                    try:
+                        s3file.s3_object.load()
+                    except botocore.exceptions.ClientError:
+                        avail = False
+                    else:
+                        avail = True
     return avail
 
 

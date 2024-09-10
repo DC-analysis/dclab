@@ -18,10 +18,6 @@ Examples
 
 .. fancy_include:: lme4_glmer_diff.py
 
-.. fancy_include:: ml_tensorflow.py
-
-.. fancy_include:: ml_builtin.py
-
 .. fancy_include:: isoelastics.py
 
 .. fancy_include:: isoelastics_custom.py

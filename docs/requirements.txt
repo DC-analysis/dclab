@@ -9,4 +9,3 @@ scipy
 sphinx
 sphinxcontrib.bibtex
 sphinx_rtd_theme
-tensorflow

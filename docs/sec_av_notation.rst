@@ -33,11 +33,12 @@ Scalar features
 
 In addition to these scalar features, it is possible to define
 a large number of features dedicated to machine-learning, the
-"ml_score\_???" features: The "?" can be a digit or a lower-case
+"ml_score\_???" features which are probability scores with values between
+0 and 1. The "?" can be a digit or a lower-case
 letter of the alphabet, e.g. "ml\_score\_rbc" or "ml\_score_3a3".
 If "ml_score\_???" features are defined, then the ancillary
 "ml_class" feature, which identifies the most-probable feature
-for each event, becomes available.  
+for each event, becomes available.
 
 .. _sec_features_non_scalar:
 

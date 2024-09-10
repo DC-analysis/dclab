@@ -1,30 +1,16 @@
 """Test machine learning tools"""
 import pathlib
-import tempfile
 
 import numpy as np
 import pytest
 
 import dclab
 from dclab import new_dataset
-from dclab.rtdc_dataset import feat_anc_ml
 
 from helper_methods import example_data_dict
 
 
 data_path = pathlib.Path(__file__).parent / "data"
-
-
-@pytest.fixture(autouse=True)
-def cleanup_plugin_features():
-    """Fixture used to cleanup plugin feature tests"""
-    # code run before the test
-    pass
-    # then the test is run
-    yield
-    # code run after the test
-    # remove our test plugin examples
-    feat_anc_ml.remove_all_ml_features()
 
 
 def make_data(add_feats=None, sizes=None):
@@ -126,14 +112,3 @@ def test_af_ml_score_label_fallback():
     label2 = dclab.dfn.get_feature_label("ml_score_hig")
     assert label1 == "ML score LOW"
     assert label2 == "ML score HIG"
-
-
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.feat_anc_ml.modc.'
-                            + 'ModelFormatExportFailedWarning')
-def test_modc_export_model_bad_model():
-    tmpdir = pathlib.Path(tempfile.mkdtemp(prefix="dclab_ml"))
-    with pytest.raises(ValueError,
-                       match="Export failed for all model formats!"):
-        feat_anc_ml.modc.export_model(path=tmpdir,
-                                      model=object()
-                                      )

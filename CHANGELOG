@@ -1,4 +1,6 @@
-0.60.10
+0.61.0
+ - BREAKING: removed the `feat_anc_ml` module and with it all functionalities
+   related to loading machine learning features from .modc files (#236)
  - fix: do not attempt to load S3 data when the endpoint seems wrong
  - enh: improve availability check for S3 basin data
  - enh: improve availability check for HTTP basin data

@@ -139,9 +139,12 @@ def test_pf_attribute_plugin_feature_info():
     # python versions (normally, the content of the plugin file would be used).
     if tuple(sys.version_info)[:3] < (3, 11, 0):
         identifier = "3a3e72c4cb015424ebbe6d4af63f2170"
-    else:
+    elif tuple(sys.version_info)[:3] < (3, 12, 0):
         # bytecode changed in Python 3.11
         identifier = "322e9a30665c8603ed2dd6fb9d7b18da"
+    else:
+        # bytecode changed in Python 3.12
+        identifier = "447e1ae998c716140f31614a4da2581f"
     # comparing lambda functions fails due to differing memory locations
     info.pop("method check required")
     pf = PlugInFeature("circ_per_area", info)

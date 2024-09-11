@@ -296,11 +296,12 @@ def test_join_frame():
     cli.join(paths_in=[path_in1, path_in2], path_out=path_out)
     with new_dataset(path_out) as dsj, new_dataset(path_in1) as ds0:
         fr = ds0.config["imaging"]["frame rate"]
+        frame0 = np.array(ds0["frame"], dtype=int)
         assert np.allclose(dsj["frame"],
-                           np.concatenate((ds0["frame"],
-                                           ds0["frame"] + offset * fr)),
+                           np.concatenate((frame0,
+                                           frame0 + int(round(offset * fr)))),
                            rtol=0,
-                           atol=.0001)
+                           atol=0)
 
 
 @pytest.mark.filterwarnings(

@@ -24,6 +24,20 @@ CHUNK_SIZE = 100
 #: Chunks size in bytes for storing HDF5 datasets
 CHUNK_SIZE_BYTES = 1024**2  # 1MiB
 
+#: features that should be written to the output file as int32 values
+FEATURES_UINT32 = [
+    "fl1_max",
+    "fl1_npeaks",
+    "fl2_max",
+    "fl2_npeaks",
+    "fl3_max",
+    "fl3_npeaks",
+    "frame",
+    "index",
+    "ml_class",
+    "nevents",
+]
+
 
 class RTDCWriter:
     def __init__(self,
@@ -429,6 +443,11 @@ class RTDCWriter:
             else:
                 del events[feat]
 
+        if feat in FEATURES_UINT32:
+            dtype = np.uint32
+        else:
+            dtype = None
+
         if feat == "index":
             # By design, the index must be a simple enumeration.
             # We enforce that by not trusting the user. If you need
@@ -441,11 +460,13 @@ class RTDCWriter:
                 nev0 = 0
             self.write_ndarray(group=events,
                                name="index",
-                               data=np.arange(nev0 + 1, nev0 + nev + 1))
+                               data=np.arange(nev0 + 1, nev0 + nev + 1),
+                               dtype=dtype)
         elif dfn.scalar_feature_exists(feat):
             self.write_ndarray(group=events,
                                name=feat,
-                               data=np.atleast_1d(data))
+                               data=np.atleast_1d(data),
+                               dtype=dtype)
         elif feat == "contour":
             self.write_ragged(group=events, name=feat, data=data)
         elif feat in ["image", "image_bg", "mask", "qpi_oah", "qpi_oah_bg"]:
@@ -465,7 +486,8 @@ class RTDCWriter:
                 # write trace
                 self.write_ndarray(group=events.require_group("trace"),
                                    name=tr_name,
-                                   data=np.atleast_2d(data[tr_name])
+                                   data=np.atleast_2d(data[tr_name]),
+                                   dtype=dtype
                                    )
         else:
             if not shape:
@@ -498,7 +520,7 @@ class RTDCWriter:
             else:
                 raise ValueError(f"Bad shape for {feat}! Expeted {shape}, "
                                  + f"but got {data.shape[1:]}!")
-            self.write_ndarray(group=events, name=feat, data=data)
+            self.write_ndarray(group=events, name=feat, data=data, dtype=dtype)
 
     def store_log(self, name, lines):
         """Write log data

@@ -172,8 +172,9 @@ def join(
                         elif feat == "frame":
                             # handle frame offset
                             fr = dsi.config["imaging"]["frame rate"]
-                            frame_offset = ti * fr
-                            fdata = dsi["frame"] + frame_offset
+                            frame_offset = int(round(ti * fr))
+                            fdata = np.array(dsi["frame"], dtype=int) \
+                                    + frame_offset
                         elif feat == "index_online":
                             if "events/index_online" in hw.h5file:
                                 # index_online is usually larger than index

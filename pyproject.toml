@@ -39,7 +39,7 @@ dependencies = [
     "h5py>=3.0.0, <4",
     "hdf5plugin>=3.3.1, <5",
     "importlib-resources>=6.0",  # remove when dropping support for Python 3.8
-    "numpy>=1.21, <2",  # CVE-2021-33430
+    "numpy>=1.21, <3",  # CVE-2021-33430
     "scipy>=1.10.0, <2",  # CVE-2023-25399
 ]
 dynamic = ["version"]

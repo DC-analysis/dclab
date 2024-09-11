@@ -37,12 +37,12 @@ class ChildNDArray(ChildBase):
         super(ChildNDArray, self).__init__(child)
         self.feat = feat
 
-    def __array__(self, *args, **kwargs):
+    def __array__(self, dtype=None, copy=False, *args, **kwargs):
         warnings.warn("Please avoid calling the `__array__` method of the "
                       "`ChildNDArray`. It may consume a lot of memory. "
                       "Consider using a generator instead.",
                       UserWarning)
-        return np.asarray(self[:], *args, **kwargs)
+        return np.asarray(self[:], dtype=dtype, *args, **kwargs)
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
@@ -69,12 +69,12 @@ class ChildScalar(np.lib.mixins.NDArrayOperatorsMixin):
         self._ufunc_attrs = {}
         self.ndim = 1  # matplotlib might expect this from an array
 
-    def __array__(self, *args, **kwargs):
+    def __array__(self, dtype=None, copy=False, *args, **kwargs):
         if self._array is None:
             hparent = self.child.hparent
             filt_arr = hparent.filter.all
             self._array = hparent[self.feat][filt_arr]
-        return np.asarray(self._array, *args, **kwargs)
+        return np.array(self._array, dtype=dtype, copy=copy, *args, **kwargs)
 
     def __getitem__(self, idx):
         return self.__array__()[idx]
@@ -121,12 +121,12 @@ class ChildTraceItem(ChildBase):
         super(ChildTraceItem, self).__init__(child)
         self.flname = flname
 
-    def __array__(self, *args, **kwargs):
+    def __array__(self, dtype=None, copy=False, *args, **kwargs):
         warnings.warn("Please avoid calling the `__array__` method of the "
                       "`ChildTraceItem`. It may consume a lot of memory. "
                       "Consider using a generator instead.",
                       UserWarning)
-        return np.asarray(self[:], *args, **kwargs)
+        return np.asarray(self[:], dtype=dtype, *args, **kwargs)
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,

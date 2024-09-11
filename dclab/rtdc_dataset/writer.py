@@ -42,6 +42,7 @@ FEATURES_UINT64 = [
     "frame",
 ]
 
+
 class RTDCWriter:
     def __init__(self,
                  path_or_h5file: str | pathlib.Path | h5py.File,

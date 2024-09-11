@@ -140,7 +140,7 @@ class H5MaskEvent:
         self.identifier = (self.h5dataset.file.filename, self.h5dataset.name)
         self.dtype = np.dtype(bool)
 
-    def __array__(self, dtype=np.bool_, *args, **kwargs):
+    def __array__(self, dtype=np.bool_, copy=False, *args, **kwargs):
         if dtype is not np.uint8:
             warnings.warn("Please avoid calling the `__array__` method of the "
                           "`H5MaskEvent`. It may consume a lot of memory.",
@@ -180,10 +180,10 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
         # attrs
         self._ufunc_attrs = dict(self.h5ds.attrs)
 
-    def __array__(self, *args, **kwargs):
+    def __array__(self, dtype=None, copy=False, *args, **kwargs):
         if self._array is None:
             self._array = np.asarray(self.h5ds, *args, **kwargs)
-        return self._array
+        return np.array(self._array, dtype=dtype, copy=copy)
 
     def __getitem__(self, idx):
         return self.__array__()[idx]

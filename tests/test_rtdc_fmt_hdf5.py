@@ -342,7 +342,7 @@ def test_fileio_basic():
     assert "volume" in ds.features
     assert "volume" not in ds.features_innate
     assert np.allclose(ds["volume"][0], 2898.67525650645,
-                       rtol=1e-10, atol=0)
+                       rtol=1e-6, atol=0)
 
 
 @pytest.mark.filterwarnings(

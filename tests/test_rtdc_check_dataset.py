@@ -295,7 +295,7 @@ def test_ic_fmt_hdf5_image1():
 def test_ic_fmt_hdf5_image2():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
-        h5["events/image"].attrs["CLASS"] = np.string_("bad")
+        h5["events/image"].attrs["CLASS"] = np.bytes_("bad")
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check_fmt_hdf5()
     assert cues[0].category == "format HDF5"

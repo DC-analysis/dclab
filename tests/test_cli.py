@@ -127,7 +127,8 @@ def test_tdms2rtdc_remove_nan_image():
     imageio = pytest.importorskip("imageio")
     path_in = retrieve_data("fmt-tdms_fl-image-bright_2017.zip")
     # same directory (will be cleaned up with path_in)
-    path_out = path_in.with_name("out.rtdc")
+    path_out_a = path_in.with_name("out_a.rtdc")
+    path_out_b = path_in.with_name("out_b.rtdc")
 
     # generate fake video
     with new_dataset(path_in) as ds:
@@ -137,29 +138,30 @@ def test_tdms2rtdc_remove_nan_image():
     path_in.with_name("M4_0.040000ul_s_contours.txt").unlink()
 
     imgs = imageio.mimread(vname)
-    with imageio.get_writer(vname) as writer:
+    with imageio.get_writer(vname, macro_block_size=1) as writer:
         for ii in range(video_length):
             writer.append_data(imgs[ii % len(imgs)])
 
     # without removal
     cli.tdms2rtdc(path_tdms=path_in,
-                  path_rtdc=path_out,
+                  path_rtdc=path_out_a,
                   compute_features=False,
                   skip_initial_empty_image=False)
 
-    with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
-        assert len(ds2) == len(ds1)
+    with new_dataset(path_out_a) as ds2, new_dataset(path_in) as ds1:
         assert np.all(ds2["image"][0] == 0)
+        assert len(ds2["image"]) == len(ds1)
+        assert len(ds2) == len(ds1)
 
     # with removal
     cli.tdms2rtdc(path_tdms=path_in,
-                  path_rtdc=path_out,
+                  path_rtdc=path_out_b,
                   compute_features=False,
                   skip_initial_empty_image=True)
 
-    with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
-        assert len(ds2) == video_length
+    with new_dataset(path_out_b) as ds2:
         assert not np.all(ds2["image"][0] == 0)
+        assert len(ds2) == video_length
         assert ds2.config["experiment"]["event count"] == video_length
 
 

@@ -92,7 +92,7 @@ def map_indices_parent2child(child, parent_indices):
     pf_loc = np.where(pf)[0]
     # boolean array with size `len(child)` indicating where the
     # `parent_indices` are set.
-    same = np.in1d(pf_loc, parent_indices)
+    same = np.isin(pf_loc, parent_indices)
     return np.where(same)[0]
 
 

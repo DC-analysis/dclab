@@ -1,7 +1,8 @@
 0.61.1
  - fix: properly catch warnings for determining bad event image for fmt_tdms
- - fix: make sure integer features are always written as uint32 and
-   for that introduce `dclab.rtdc_dataset.writer.FEATURES_UINT32`
+ - fix: make sure integer features are always written as uint,
+   and for that introduce `dclab.rtdc_dataset.writer.FEATURES_UINT32`
+   and `dclab.rtdc_dataset.writer.FEATURES_UINT64`
 0.61.0
  - BREAKING: removed the `feat_anc_ml` module and with it all functionalities
    related to loading machine learning features from .modc files (#236)

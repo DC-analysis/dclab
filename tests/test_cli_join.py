@@ -210,6 +210,8 @@ def test_join_rtdc_unequal_features_issue_157():
     with dclab.new_dataset(path_out_a) as ds:
         # Volume is in this file, because it can be computed for path2
         assert "volume" in ds.features_innate
+        # this can only be mapped with uint64
+        assert ds["frame"][-1] == 632448000038
 
     # Second test: Now do the same thing with reversed dates
     with h5py.File(path2, "a") as h51:
@@ -302,6 +304,7 @@ def test_join_frame():
                                            frame0 + int(round(offset * fr)))),
                            rtol=0,
                            atol=0)
+        assert dsj["frame"][-1] == 360302210
 
 
 @pytest.mark.filterwarnings(

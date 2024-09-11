@@ -24,7 +24,7 @@ CHUNK_SIZE = 100
 #: Chunks size in bytes for storing HDF5 datasets
 CHUNK_SIZE_BYTES = 1024**2  # 1MiB
 
-#: features that should be written to the output file as int32 values
+#: features that should be written to the output file as uint32 values
 FEATURES_UINT32 = [
     "fl1_max",
     "fl1_npeaks",
@@ -32,12 +32,15 @@ FEATURES_UINT32 = [
     "fl2_npeaks",
     "fl3_max",
     "fl3_npeaks",
-    "frame",
     "index",
     "ml_class",
     "nevents",
 ]
 
+#: features that should be written to the output file as uint64 values
+FEATURES_UINT64 = [
+    "frame",
+]
 
 class RTDCWriter:
     def __init__(self,
@@ -445,6 +448,8 @@ class RTDCWriter:
 
         if feat in FEATURES_UINT32:
             dtype = np.uint32
+        elif feat in FEATURES_UINT64:
+            dtype = np.uint64
         else:
             dtype = None
 

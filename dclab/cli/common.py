@@ -227,9 +227,11 @@ def skip_empty_image_events(ds, initial=True, final=True):
                         "always",
                         fmt_tdms.event_image.CorruptFrameWarning)
                     _ = ds["image"][idfin]  # provoke a warning
-                    if wfin:
+                for ww in wfin:
+                    if ww.category == fmt_tdms.event_image.CorruptFrameWarning:
                         ds.filter.manual[idfin] = False
                         ds.apply_filter()
+                        break
             elif np.all(ds["image"][idfin] == 0):
                 ds.filter.manual[idfin] = False
                 ds.apply_filter()

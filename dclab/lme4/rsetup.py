@@ -118,13 +118,9 @@ def require_lme4():
     """
     require_r()
     if not has_lme4():
-        run_command(
-            ("R", "-e",
-             '"'
-             + "install.packages(c('statmod','nloptr','lme4'),"
-               "repos='http://cran.rstudio.org')"
-             + '"')
-        )
+        run_command((
+            "R", "-e", "install.packages(c('statmod','nloptr','lme4'),"
+                       "repos='http://cran.rstudio.org')"))
 
 
 def require_r():

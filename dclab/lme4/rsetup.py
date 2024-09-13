@@ -1,184 +1,125 @@
 import logging
 import os
+import pathlib
 import subprocess as sp
+import sys
 
-from .rlibs import (
-    RUnavailableError, rpy2, rpy2_is_version_3, import_r_submodules)
-
-# Disable rpy2 logger because of unnecessary prints to stdout
-logging.getLogger("rpy2.rinterface_lib.callbacks").disabled = True
+logger = logging.getLogger(__name__)
 
 
 class RNotFoundError(BaseException):
     pass
 
 
-class AutoRConsole(object):
-    """Helper class for catching R console output"""
-    lock = False
-    perform_lock = rpy2_is_version_3
-
-    def __init__(self):
-        """
-        By default, this console always returns "yes" when asked a
-        question. If you need something different, you can subclass
-        and override `consoleread` fucntion. The console stream is
-        recorded in `self.stream`.
-        """
-        self.stream = [["init", "Starting RConsole class\n"]]
-        if AutoRConsole.perform_lock:
-            if AutoRConsole.lock:
-                raise ValueError("Only one RConsole instance allowed!")
-            AutoRConsole.lock = True
-            self.original_funcs = {
-                "consoleread": rpy2.rinterface_lib.callbacks.consoleread,
-                "consolewrite_print":
-                    rpy2.rinterface_lib.callbacks.consolewrite_print,
-                "consolewrite_warnerror":
-                    rpy2.rinterface_lib.callbacks.consolewrite_warnerror,
-            }
-            rpy2.rinterface_lib.callbacks.consoleread = self.consoleread
-            rpy2.rinterface_lib.callbacks.consolewrite_print = \
-                self.consolewrite_print
-            rpy2.rinterface_lib.callbacks.showmessage = \
-                self.consolewrite_print
-
-            rpy2.rinterface_lib.callbacks.consolewrite_warnerror = \
-                self.consolewrite_warnerror
-        # Set locale (to get always English messages)
-        rpy2.robjects.r('Sys.setlocale("LC_MESSAGES", "C")')
-        rpy2.robjects.r('Sys.setlocale("LC_CTYPE", "C")')
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        if AutoRConsole.perform_lock:
-            AutoRConsole.lock = False
-            rpy2.rinterface_lib.callbacks.consoleread = \
-                self.original_funcs["consoleread"]
-            rpy2.rinterface_lib.callbacks.consolewrite_print = \
-                self.original_funcs["consolewrite_print"]
-            rpy2.rinterface_lib.callbacks.consolewrite_warnerror = \
-                self.original_funcs["consolewrite_warnerror"]
-
-    def close(self):
-        """Remove the rpy2 monkeypatches"""
-        self.__exit__()
-
-    def consoleread(self, prompt):
-        """Read user input, returns "yes" by default"""
-        self.write_to_stream("consoleread", prompt + "YES")
-        return "yes"
-
-    def consolewrite_print(self, s):
-        self.write_to_stream("consolewrite_print", s)
-
-    def consolewrite_warnerror(self, s):
-        self.write_to_stream("consolewrite_warnerror", s)
-
-    def write_to_stream(self, topic, s):
-        prev_topic = self.stream[-1][0]
-        same_topic = prev_topic == topic
-        unfinished_line = self.stream[-1][1][-1] not in ["\n", "\r"]
-        if same_topic and unfinished_line:
-            # append to previous line
-            self.stream[-1][1] += s
-        else:
-            self.stream.append([topic, s])
-
-    def get_prints(self):
-        prints = []
-        for line in self.stream:
-            if line[0] == "consolewrite_print":
-                prints.append(line[1].strip())
-        return prints
-
-    def get_warnerrors(self):
-        warnerrors = []
-        for line in self.stream:
-            if line[0] == "consolewrite_warnerror":
-                warnerrors.append(line[1].strip())
-        return warnerrors
-
-
-def check_r():
-    """Make sure R is installed an R HOME is set"""
-    if not has_r():
-        raise RNotFoundError("Cannot find R, please set its path with the "
-                             + "`set_r_path` function.")
-
-
 def get_r_path():
-    """Get the path of the R executable/binary from rpy2"""
-    r_home = rpy2.situation.get_r_home()
-    return rpy2.situation.get_r_exec(r_home)
+    """Return the path of the R executable"""
+    # Maybe the user set the executable already?
+    r_exec = os.environ.get("R_EXEC")
+    if r_exec is not None:
+        r_exec = pathlib.Path(r_exec)
+        if r_exec.is_file():
+            return r_exec
+
+    # Try to determine the path to the executable from R_HOME
+    r_home = os.environ.get('R_HOME')
+    if r_home is None:
+        cmd = ('R', 'RHOME')
+        try:
+            tmp = sp.check_output(cmd, universal_newlines=True)
+            # may raise FileNotFoundError, WindowsError, etc
+            r_home = tmp.split(os.linesep)
+        except BaseException:
+            pass
+        else:
+            if r_home[0].startswith('WARNING'):
+                r_home = r_home[1].strip()
+            else:
+                r_home = r_home[0].strip()
+    if r_home is None:
+        raise RNotFoundError(
+            "Cannot find R, please set the `R_HOME` environment variable "
+            "or use `set_r_path`.")
+
+    r_home = pathlib.Path(r_home)
+
+    if sys.platform == 'win32' and '64 bit' in sys.version:
+        r_exec = r_home / 'bin' / 'x64' / 'R'
+    else:
+        r_exec = r_home / 'bin' / 'R'
+    if not r_exec.is_file():
+        raise RNotFoundError(
+            f"Expected R binary at '{r_exec}' does not exist!")
+    logger.info(f'R path: {r_exec}')
+    return r_exec
+
+
+def get_r_script_path():
+    """Return the path to the Rscript executable"""
+    return get_r_path().with_name("Rscript")
 
 
 def get_r_version():
-    check_r()
-    ver_string = rpy2.situation.r_version_from_subprocess().strip()
-    if ver_string:
-        # get the actual version string
-        if ver_string.startswith("R version "):
-            ver_string = ver_string.split(" ")[2]
-    return ver_string
+    """Return the full R version string"""
+    require_r()
+    cmd = ('R', '--version')
+    logger.debug(f'Looking for R version with: {cmd}')
+    tmp = sp.check_output(cmd, stderr=sp.STDOUT)
+    r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
+    if r_version[0].startswith('WARNING'):
+        r_version = r_version[1]
+    else:
+        r_version = r_version[0]
+    logger.info(f'R version found: {r_version}')
+    # get the actual version string
+    if r_version.startswith("R version "):
+        r_version = r_version.split(" ", 2)[2]
+    return r_version.strip()
 
 
 def has_lme4():
     """Return True if the lme4 package is installed"""
-    check_r()
-    lme4_there = rpy2.robjects.packages.isinstalled("lme4")
-    statmod_there = rpy2.robjects.packages.isinstalled("statmod")
-    nloptr_there = rpy2.robjects.packages.isinstalled("nloptr")
-    return lme4_there and statmod_there and nloptr_there
+    require_r()
+    ip = run_command(("R", "-e", "installed.packages()"))
+    return "lme4" in ip and "statmod" in ip and "nloptr" in ip
 
 
 def has_r():
     """Return True if R is available"""
     try:
-        hasr = rpy2.situation.get_r_home() is not None
-    except RUnavailableError:
+        hasr = bool(get_r_path())
+    except RNotFoundError:
         hasr = False
     return hasr
 
 
-def import_lme4():
-    check_r()
-    if has_lme4():
-        lme4pkg = rpy2.robjects.packages.importr("lme4")
-    else:
-        raise ValueError(
-            "The R package 'lme4' is not installed, please install it via "
-            + "`dclab.lme4.rsetup.install_lme4()` or by executing "
-            + "in a shell: R -e " + '"install.packages(' + "'lme4', "
-            + "repos='http://cran.rstudio.org')" + '"')
-    return lme4pkg
-
-
-def install_lme4():
+def require_lme4():
     """Install the lme4 package (if not already installed)
 
+    Besides ``lme4``, this also installs ``nloptr`` and ``statmod``.
     The packages are installed to the user data directory
-    given in :const:`lib_path`.
+    given in :const:`lib_path` from the http://cran.rstudio.org mirror.
     """
-    check_r()
+    require_r()
     if not has_lme4():
-        # import R's utility package
-        utils = rpy2.robjects.packages.importr('utils')
-        # select the first mirror in the list
-        utils.chooseCRANmirror(ind=1)
-        # install lme4 to user data directory (say yes to user dir install)
-        with AutoRConsole() as rc:
-            # install statmod and nloptr first
-            # (Doesn't R have package dependencies?!)
-            utils.install_packages(
-                rpy2.robjects.vectors.StrVector(["statmod", "nloptr", "lme4"]))
-        return rc
+        run_command(
+            ("R", "-e",
+             '"'
+             + "install.packages(c('statmod','nloptr','lme4'),"
+               "repos='http://cran.rstudio.org')"
+             + '"')
+        )
 
 
-def set_r_path(r_path):
-    """Set the path of the R executable/binary for rpy2"""
+def require_r():
+    """Make sure R is installed an R HOME is set"""
+    if not has_r():
+        raise RNotFoundError("Cannot find R, please set its path with the "
+                             "`set_r_path` function or set the `RHOME` "
+                             "environment variable.")
+
+
+def run_command(cmd):
+    """Run a command via subprocess"""
     if hasattr(sp, 'STARTUPINFO'):
         # On Windows, subprocess calls will pop up a command window by
         # default when run from Pyinstaller with the ``--noconsole``
@@ -192,11 +133,21 @@ def set_r_path(r_path):
         si = None
         env = None
 
-    tmp = sp.check_output((r_path, 'RHOME'),
+    # Convert paths to strings
+    cmd = [str(cc) for cc in cmd]
+
+    tmp = sp.check_output(cmd,
                           startupinfo=si,
                           env=env,
+                          stderr=sp.STDOUT,
                           text=True,
                           )
+    return tmp
+
+
+def set_r_path(r_path):
+    """Set the path of the R executable/binary"""
+    tmp = run_command((r_path, 'RHOME'))
 
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith('WARNING'):
@@ -204,4 +155,4 @@ def set_r_path(r_path):
     else:
         res = r_home[0].strip()
     os.environ["R_HOME"] = res
-    import_r_submodules()
+    os.environ["R_EXEC"] = str(pathlib.Path(r_path).resolve())

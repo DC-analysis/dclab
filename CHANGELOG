@@ -1,3 +1,6 @@
+0.61.2
+ - ref: migrate from rpy2 to custom wrapper around R and Rscript binary
+ - setup: remove extra [lme4] and rpy2 requirement
 0.61.1
  - fix: properly catch warnings for determining bad event image for fmt_tdms
  - fix: make sure integer features are always written as uint,

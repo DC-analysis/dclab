@@ -8,8 +8,6 @@ build:
   jobs:
     post_checkout:
       - git fetch --unshallow || true
-    pre_install:
-      - RPY2_CFFI_MODE=ABI
 python:
   install:
     - requirements: docs/requirements.txt

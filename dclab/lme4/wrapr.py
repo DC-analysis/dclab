@@ -1,13 +1,15 @@
 """R lme4 wrapper"""
 import numbers
+import pathlib
+import tempfile
 import warnings
 
+import importlib_resources
 import numpy as np
 
 from .. import definitions as dfn
 from ..rtdc_dataset.core import RTDCBase
 
-from .rlibs import rpy2
 from . import rsetup
 
 
@@ -38,19 +40,13 @@ class Rlme4(object):
         #: list of [RTDCBase, column, repetition, chip_region]
         self.data = []
 
-        #: model function
-        self.r_func_model = "feature ~ group + (1 + group | repetition)"
-        #: null model function
-        self.r_func_nullmodel = "feature ~ (1 + group | repetition)"
-
         self.set_options(model=model, feature=feature)
 
         # Make sure that lme4 is available
         if not rsetup.has_lme4():
             warnings.warn("Installing lme4, this may take a while!",
                           Lme4InstallWarning)
-            rsetup.install_lme4()
-        rsetup.import_lme4()
+            rsetup.require_lme4()
 
     def add_dataset(self, ds, group, repetition):
         """Add a dataset to the analysis list
@@ -67,8 +63,8 @@ class Rlme4(object):
 
         Notes
         -----
-        - For each repetition, there must be a "treatment" and a
-          "control" ``group``.
+        - For each repetition, there must be a "treatment" (``1``) and a
+          "control" (``0``) group.
         - If you would like to perform a differential feature analysis,
           then you need to pass at least a reservoir and a channel
           dataset (with same parameters for `group` and `repetition`).
@@ -102,10 +98,10 @@ class Rlme4(object):
         The response variable is modeled using two linear mixed effect
         models:
 
-        - model :const:`Rlme4.r_func_model` (random intercept +
-          random slope model)
-        - the null model :const:`Rlme4.r_func_nullmodel` (without
-          the fixed effect introduced by the "treatment" group).
+        - model: "feature ~ group + (1 + group | repetition)"
+          (random intercept + random slope model)
+        - the null model: "feature ~ (1 + group | repetition)"
+          (without the fixed effect introduced by the "treatment" group).
 
         Both models are compared in R using "anova" (from the
         R-package "stats" :cite:`Everitt1992`) which performs a
@@ -133,16 +129,16 @@ class Rlme4(object):
         results: dict
             Dictionary with the results of the fitting process:
 
-            - "anova p-value": Anova likelyhood ratio test (significance)
+            - "anova p-value": Anova likelihood ratio test (significance)
             - "feature": name of the feature used for the analysis
               ``self.feature``
             - "fixed effects intercept": Mean of ``self.feature`` for all
               controls; In the case of the "glmer+loglink" model, the intercept
-              is already backtransformed from log space.
+              is already back transformed from log space.
             - "fixed effects treatment": The fixed effect size between the mean
               of the controls and the mean of the treatments relative to
               "fixed effects intercept"; In the case of the "glmer+loglink"
-              model, the fixed effect is already backtransformed from log
+              model, the fixed effect is already back transformed from log
               space.
             - "fixed effects repetitions": The effects (intercept and
               treatment) for each repetition. The first axis defines
@@ -159,11 +155,10 @@ class Rlme4(object):
             - "model": model name used for the analysis ``self.model``
             - "model converged": boolean indicating whether the model
               converged
-            - "r anova": Anova model (exposed from R)
-            - "r model summary": Summary of the model (exposed from R)
-            - "r model coefficients": Model coefficient table (exposed from R)
-            - "r stderr": errors and warnings from R
-            - "r stdout": standard output from R
+            - "r model summary": Summary of the model
+            - "r model coefficients": Model coefficient table
+            - "r script": the R script used
+            - "r output": full output of the R script
         """
         self.set_options(model=model, feature=feature)
         self.check_data()
@@ -182,105 +177,38 @@ class Rlme4(object):
                 groups.append(dd[1])
                 repetitions.append(dd[2])
 
-        # Fire up R
-        with rsetup.AutoRConsole() as ac:
-            r = rpy2.robjects.r
+        # concatenate and populate arrays for R
+        features_c = np.concatenate(features)
+        groups_c = np.zeros(len(features_c), dtype=str)
+        repetitions_c = np.zeros(len(features_c), dtype=int)
+        pos = 0
+        for ii in range(len(features)):
+            size = len(features[ii])
+            groups_c[pos:pos+size] = groups[ii][0]
+            repetitions_c[pos:pos+size] = repetitions[ii]
+            pos += size
 
-            # Load lme4
-            rpy2.robjects.packages.importr("lme4")
+        # Run R with the given template script
+        rscript = importlib_resources.read_text("dclab.lme4",
+                                                "lme4_template.R")
+        _, script_path = tempfile.mkstemp(prefix="dclab_lme4_", suffix=".R",
+                                          text=True)
+        script_path = pathlib.Path(script_path)
+        rscript = rscript.replace("<MODEL_NAME>", self.model)
+        rscript = rscript.replace("<FEATURES>", arr2str(features_c))
+        rscript = rscript.replace("<REPETITIONS>", arr2str(repetitions_c))
+        rscript = rscript.replace("<GROUPS>", arr2str(groups_c))
+        script_path.write_text(rscript, encoding="utf-8")
 
-            # Concatenate huge arrays for R
-            r_features = rpy2.robjects.FloatVector(np.concatenate(features))
-            _groups = []
-            _repets = []
-            for ii in range(len(features)):
-                _groups.append(np.repeat(groups[ii], len(features[ii])))
-                _repets.append(np.repeat(repetitions[ii], len(features[ii])))
-            r_groups = rpy2.robjects.StrVector(np.concatenate(_groups))
-            r_repetitions = rpy2.robjects.IntVector(np.concatenate(_repets))
+        result = rsetup.run_command((rsetup.get_r_script_path(), script_path))
 
-            # Register groups and repetitions
-            rpy2.robjects.globalenv["feature"] = r_features
-            rpy2.robjects.globalenv["group"] = r_groups
-            rpy2.robjects.globalenv["repetition"] = r_repetitions
+        ret_dict = self.parse_result(result)
+        ret_dict["is differential"] = self.is_differential()
+        ret_dict["feature"] = self.feature
+        ret_dict["r script"] = rscript
+        ret_dict["r output"] = result
+        assert ret_dict["model"] == self.model
 
-            # Create a dataframe which contains all the data
-            r_data = r["data.frame"](r_features, r_groups, r_repetitions)
-
-            # Random intercept and random slope model
-            if self.model == 'glmer+loglink':
-                r_model = r["glmer"](self.r_func_model, r_data,
-                                     family=r["Gamma"](link='log'))
-                r_nullmodel = r["glmer"](self.r_func_nullmodel, r_data,
-                                         family=r["Gamma"](link='log'))
-            else:  # lmer
-                r_model = r["lmer"](self.r_func_model, r_data)
-                r_nullmodel = r["lmer"](self.r_func_nullmodel, r_data)
-
-            # Anova analysis (increase verbosity by making models global)
-            # Using anova is a very conservative way of determining
-            # p values.
-            rpy2.robjects.globalenv["Model"] = r_model
-            rpy2.robjects.globalenv["NullModel"] = r_nullmodel
-            r_anova = r("anova(Model, NullModel)")
-            try:
-                pvalue = r_anova.rx2["Pr(>Chisq)"][1]
-            except ValueError:  # rpy2 2.9.4
-                pvalue = r_anova[7][1]
-            r_model_summary = r["summary"](r_model)
-            r_model_coefficients = r["coef"](r_model)
-            try:
-                fe_reps = np.array(r_model_coefficients.rx2["repetition"])
-            except ValueError:  # rpy2 2.9.4
-                fe_reps = np.concatenate((
-                    np.array(r_model_coefficients[0][0]).reshape(1, -1),
-                    np.array(r_model_coefficients[0][1]).reshape(1, -1)),
-                    axis=0)
-
-            r_effects = r["data.frame"](r["coef"](r_model_summary))
-            try:
-                fe_icept = r_effects.rx2["Estimate"][0]
-                fe_treat = r_effects.rx2["Estimate"][1]
-            except ValueError:  # rpy2 2.9.4
-                fe_icept = r_effects[0][0]
-                fe_treat = r_effects[0][1]
-            if self.model == "glmer+loglink":
-                # transform back from log
-                fe_treat = np.exp(fe_icept + fe_treat) - np.exp(fe_icept)
-                fe_icept = np.exp(fe_icept)
-                fe_reps[:, 1] = np.exp(fe_reps[:, 0] + fe_reps[:, 1]) \
-                    - np.exp(fe_reps[:, 0])
-                fe_reps[:, 0] = np.exp(fe_reps[:, 0])
-
-            # convergence
-            try:
-                lme4l = r_model_summary.rx2["optinfo"].rx2["conv"].rx2["lme4"]
-            except ValueError:  # rpy2 2.9.4
-                lme4l = r_model_summary[17][3][1]
-
-            if lme4l and "code" in lme4l.names:
-                try:
-                    conv_code = lme4l.rx2["code"]
-                except ValueError:  # rpy2 2.9.4
-                    conv_code = lme4l[0]
-            else:
-                conv_code = 0
-
-        ret_dict = {
-            "anova p-value": pvalue,
-            "feature": self.feature,
-            "fixed effects intercept": fe_icept,
-            "fixed effects treatment": fe_treat,  # aka "fixed effect"
-            "fixed effects repetitions": fe_reps,
-            "is differential": self.is_differential(),
-            "model": self.model,
-            "model converged": conv_code == 0,
-            "r anova": r_anova,
-            "r model summary": r_model_summary,
-            "r model coefficients": r_model_coefficients,
-            "r stderr": ac.get_warnerrors(),
-            "r stdout": ac.get_prints(),
-        }
         return ret_dict
 
     def get_differential_dataset(self):
@@ -288,7 +216,7 @@ class Rlme4(object):
 
         The most famous use case is differential deformation. The idea
         is that you cannot tell what the difference in deformation
-        from channel to reservoir is, because you never measure the
+        from channel to reservoir, because you never measure the
         same object in the reservoir and the channel. You usually just
         have two distributions. Comparing distributions is possible
         via bootstrapping. And then, instead of running the lme4
@@ -362,6 +290,34 @@ class Rlme4(object):
         else:
             return False
 
+    def parse_result(self, result):
+        resd = result.split("OUTPUT")
+        ret_dict = {}
+        for item in resd:
+            string = item.split("#*#")[0]
+            key, value = string.split(":", 1)
+            key = key.strip()
+            value = value.strip().replace("\n\n", "\n")
+
+            if key == "fixed effects repetitions":
+                rows = value.split("\n")[1:]
+                reps = []
+                for row in rows:
+                    reps.append([float(vv) for vv in row.split()[1:]])
+                value = np.array(reps).transpose()
+            elif key == "model converged":
+                value = value == "TRUE"
+            elif value == "NA":
+                value = np.nan
+            else:
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
+
+            ret_dict[key] = value
+        return ret_dict
+
     def set_options(self, model=None, feature=None):
         """Set analysis options"""
         if model is not None:
@@ -370,6 +326,16 @@ class Rlme4(object):
         if feature is not None:
             assert dfn.scalar_feature_exists(feature)
             self.feature = feature
+
+
+def arr2str(a):
+    """Convert an array to a string"""
+    if isinstance(a.dtype.type, np.integer):
+        return ",".join(str(dd) for dd in a.tolist())
+    elif a.dtype.type == np.str_:
+        return ",".join(f"'{dd}'" for dd in a.tolist())
+    else:
+        return ",".join(f"{dd:.16g}" for dd in a.tolist())
 
 
 def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
@@ -381,7 +347,7 @@ def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
         Input data
     bs_iter: int
         Number of bootstrapping iterations to perform
-        (outtput size).
+        (output size).
     rs: int
         Random state seed for random number generator
 
@@ -396,7 +362,7 @@ def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
 
     Notes
     -----
-    From a programmatical point of view, it would have been better
+    From a programmatic point of view, it would have been better
     to implement this method for just one input array (because of
     redundant code). However, due to historical reasons (testing
     and comparability to Shape-Out 1), bootstrapping is done

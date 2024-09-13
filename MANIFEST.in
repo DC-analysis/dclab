@@ -3,7 +3,7 @@ include CREDITS
 include LICENSE
 include README.rst
 include pyproject.toml
-recursive-include dclab *.txt *.md *.pxd
+recursive-include dclab *.txt *.md *.pxd *.R
 recursive-include docs *.py *.md *.txt *.rst *.bib *.gif *.jpg
 recursive-include examples *.py *.jpg *.npy *.npz
 recursive-include tests *.zip *.md *.py *.txt

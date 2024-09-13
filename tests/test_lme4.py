@@ -1,16 +1,14 @@
-from importlib import import_module
 import os
-from unittest import mock
 
 import numpy as np
 import pytest
 
 import dclab
-from dclab.external.packaging import parse as parse_version
-from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup, rlibs
+from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup
 
 
-pytest.importorskip("rpy2")
+if not rsetup.has_r():
+    pytest.skip(allow_module_level=True)
 
 IS_ON_GITHUB_WINDOWS = os.environ.get("RUNNER_OS", "") == "Windows"
 
@@ -61,32 +59,8 @@ def test_differential():
                    reason="https://github.com/astamm/nloptr/issues/115")
 def test_basic_setup():
     assert rsetup.has_r()
-    rsetup.install_lme4()
+    rsetup.require_lme4()
     assert rsetup.has_lme4()
-
-
-def test_import_rpy2():
-    import rpy2
-    from rpy2 import situation
-    assert parse_version(rpy2.__version__) >= parse_version(
-        rlibs.RPY2_MIN_VERSION)
-    assert situation.get_r_home() is not None
-
-
-@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
-                   reason="https://github.com/astamm/nloptr/issues/115")
-def test_import_submodules_raise_r_unavailable_error():
-    import rpy2
-
-    def mocked_import_module(mod):
-        if mod == "rpy2.robjects.packages":
-            raise rpy2.rinterface_lib.openrlib.ffi.error("Testing")
-        else:
-            return import_module(mod)
-
-    with mock.patch("importlib.import_module", new=mocked_import_module):
-        with pytest.raises(rlibs.ROutdatedError, match="Testing"):
-            rlibs.import_r_submodules()
 
 
 @pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,

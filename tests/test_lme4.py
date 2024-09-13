@@ -7,7 +7,7 @@ import dclab
 from dclab.lme4 import Rlme4, bootstrapped_median_distributions, rsetup
 
 
-if not rsetup.has_r():
+if not (rsetup.has_r() and rsetup.has_lme4()):
     pytest.skip(allow_module_level=True)
 
 IS_ON_GITHUB_WINDOWS = os.environ.get("RUNNER_OS", "") == "Windows"

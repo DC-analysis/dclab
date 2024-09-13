@@ -1,3 +1,5 @@
+0.61.3
+ -  fix: TypeError when of R_HOME is not set
 0.61.2
  - ref: migrate from rpy2 to custom wrapper around R and Rscript binary
  - setup: remove extra [lme4] and rpy2 requirement

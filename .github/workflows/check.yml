@@ -23,9 +23,6 @@ jobs:
             extras: 'dcor-s3'
       fail-fast: false
     timeout-minutes: 30
-    env:
-      # Windows does not find R from rlibs action
-      R_HOME: C:\\R
 
     steps:
     - uses: actions/checkout@main

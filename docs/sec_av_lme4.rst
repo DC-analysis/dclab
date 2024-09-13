@@ -16,7 +16,9 @@ systematic bias in-between the measurement repetitions (random effect).
 
 dclab offers LMM analysis as described in :cite:`Herbig2018`.
 The LMM analysis is performed using the `lme4
-<https://github.com/lme4/lme4>`_ R package.
+<https://github.com/lme4/lme4>`_ R package. You can download R from
+e.g. https://cran.r-project.org or use an existing installation of
+`RStudio <https://posit.co/download/rstudio-desktop/>`_.
 
 
 Computing p-values with lme4 in dclab

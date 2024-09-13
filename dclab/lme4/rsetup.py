@@ -24,12 +24,12 @@ def get_r_path():
             return r_exec
 
     # Try to determine the path to the executable from R_HOME
-    r_home = os.environ.get('R_HOME')
+    r_home = os.environ.get("R_HOME")
     if not pathlib.Path(r_home).is_dir():
         logger.warning(f"R_HOME Directory does not exist: {r_home}")
         r_home = None
     if r_home is None:
-        cmd = ('R', 'RHOME')
+        cmd = ("R", "RHOME")
         try:
             tmp = sp.check_output(cmd, universal_newlines=True)
             # may raise FileNotFoundError, WindowsError, etc
@@ -37,7 +37,7 @@ def get_r_path():
         except BaseException:
             pass
         else:
-            if r_home[0].startswith('WARNING'):
+            if r_home[0].startswith("WARNING"):
                 r_home = r_home[1].strip()
             else:
                 r_home = r_home[0].strip()
@@ -48,14 +48,14 @@ def get_r_path():
 
     r_home = pathlib.Path(r_home)
 
-    if sys.platform == 'win32' and '64 bit' in sys.version:
-        r_exec = r_home / 'bin' / 'x64' / 'R'
+    if sys.platform == "win32" and "64 bit" in sys.version:
+        r_exec = r_home / "bin" / "x64" / "R.exe"
     else:
-        r_exec = r_home / 'bin' / 'R'
+        r_exec = r_home / "bin" / "R"
     if not r_exec.is_file():
         raise RNotFoundError(
             f"Expected R binary at '{r_exec}' does not exist!")
-    logger.info(f'R path: {r_exec}')
+    logger.info(f"R path: {r_exec}")
     return r_exec
 
 
@@ -67,15 +67,15 @@ def get_r_script_path():
 def get_r_version():
     """Return the full R version string"""
     require_r()
-    cmd = ('R', '--version')
-    logger.debug(f'Looking for R version with: {cmd}')
+    cmd = ("R", "--version")
+    logger.debug(f"Looking for R version with: {cmd}")
     tmp = sp.check_output(cmd, stderr=sp.STDOUT)
-    r_version = tmp.decode('ascii', 'ignore').split(os.linesep)
-    if r_version[0].startswith('WARNING'):
+    r_version = tmp.decode("ascii", "ignore").split(os.linesep)
+    if r_version[0].startswith("WARNING"):
         r_version = r_version[1]
     else:
         r_version = r_version[0]
-    logger.info(f'R version found: {r_version}')
+    logger.info(f"R version found: {r_version}")
     # get the actual version string
     if r_version.startswith("R version "):
         r_version = r_version.split(" ", 2)[2]
@@ -136,7 +136,7 @@ def require_r():
 
 def run_command(cmd):
     """Run a command via subprocess"""
-    if hasattr(sp, 'STARTUPINFO'):
+    if hasattr(sp, "STARTUPINFO"):
         # On Windows, subprocess calls will pop up a command window by
         # default when run from Pyinstaller with the ``--noconsole``
         # option. Avoid this distraction.
@@ -163,10 +163,10 @@ def run_command(cmd):
 
 def set_r_path(r_path):
     """Set the path of the R executable/binary"""
-    tmp = run_command((r_path, 'RHOME'))
+    tmp = run_command((r_path, "RHOME"))
 
     r_home = tmp.split(os.linesep)
-    if r_home[0].startswith('WARNING'):
+    if r_home[0].startswith("WARNING"):
         res = r_home[1]
     else:
         res = r_home[0].strip()

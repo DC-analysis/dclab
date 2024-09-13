@@ -25,7 +25,7 @@ def get_r_path():
 
     # Try to determine the path to the executable from R_HOME
     r_home = os.environ.get("R_HOME")
-    if not pathlib.Path(r_home).is_dir():
+    if r_home and not pathlib.Path(r_home).is_dir():
         logger.warning(f"R_HOME Directory does not exist: {r_home}")
         r_home = None
     if r_home is None:

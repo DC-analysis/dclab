@@ -47,6 +47,7 @@ jobs:
       run: |
         pip install -e .[all]
         pip install -r tests/requirements.txt
+        python -c "from dclab.lme4 import rsetup; rsetup.require_lme4()"
     - name: Install dclab with DCOR dependencies
       if: matrix.extras == 'dcor-s3'
       run: |

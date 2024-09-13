@@ -1,8 +1,8 @@
 """R lme4 wrapper"""
+import logging
 import numbers
 import pathlib
 import tempfile
-import warnings
 
 import importlib_resources
 import numpy as np
@@ -13,8 +13,7 @@ from ..rtdc_dataset.core import RTDCBase
 from . import rsetup
 
 
-class Lme4InstallWarning(UserWarning):
-    pass
+logger = logging.getLogger(__name__)
 
 
 class Rlme4(object):
@@ -44,8 +43,7 @@ class Rlme4(object):
 
         # Make sure that lme4 is available
         if not rsetup.has_lme4():
-            warnings.warn("Installing lme4, this may take a while!",
-                          Lme4InstallWarning)
+            logger.info("Installing lme4, this may take a while!")
             rsetup.require_lme4()
 
     def add_dataset(self, ds, group, repetition):

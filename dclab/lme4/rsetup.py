@@ -6,6 +6,9 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+_has_lme4 = None
+_has_r = None
+
 
 class RNotFoundError(BaseException):
     pass
@@ -78,17 +81,31 @@ def get_r_version():
 
 def has_lme4():
     """Return True if the lme4 package is installed"""
+    global _has_lme4
+    if _has_lme4:
+        return True
     require_r()
-    ip = run_command(("R", "-e", "installed.packages()"))
-    return "lme4" in ip and "statmod" in ip and "nloptr" in ip
+    for pkg in ["lme4", "statmod", "nloptr"]:
+        res = run_command(("R", "-q", "-e", f"system.file(package='{pkg}')"))
+        if not res.split("[1]")[1].count(pkg):
+            avail = False
+            break
+    else:
+        avail = _has_lme4 = True
+    return avail
 
 
 def has_r():
     """Return True if R is available"""
+    global _has_r
+    if _has_r:
+        return True
     try:
         hasr = bool(get_r_path())
     except RNotFoundError:
         hasr = False
+    if hasr:
+        _has_r = True
     return hasr
 
 

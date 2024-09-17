@@ -200,11 +200,11 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "python": ('https://docs.python.org/', None),
+    "python": ('https://docs.python.org/3/', None),
     "boto3": ('https://boto3.amazonaws.com/v1/documentation/api/latest', None),
     "h5py": ('https://h5py.readthedocs.io/en/stable/', None),
-    "numpy": ('https://docs.scipy.org/doc/numpy/', None),
+    "numpy": ('https://numpy.org/doc/stable/', None),
     "skimage": ('https://scikit-image.org/docs/stable/', None),
-    "scipy": ('https://docs.scipy.org/doc/scipy/reference/', None),
+    "scipy": ('https://docs.scipy.org/doc/scipy/', None),
     "shapeout2": ('https://shapeout2.readthedocs.io/en/stable/', None),
     }

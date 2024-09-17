@@ -60,7 +60,6 @@ class RTDC_Hierarchy(RTDCBase):
 
         self._events = {}
 
-        #: hierarchy parent
         self.hparent = hparent
 
         self.config = self._create_config()  # init config

@@ -382,11 +382,6 @@ R and lme4
 
 .. _sec_ref_lme4:
 
-.. automodule:: dclab.lme4.rlibs
-   :members:
-   :undoc-members:
-   :exclude-members: MockPackage
-
 .. automodule:: dclab.lme4.rsetup
    :members:
    :undoc-members:

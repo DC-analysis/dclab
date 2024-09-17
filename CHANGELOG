@@ -1,7 +1,8 @@
 0.61.4
  - docs: update basins section
+ - docs: cleanup build process
 0.61.3
- -  fix: TypeError when of R_HOME is not set
+ - fix: TypeError when of R_HOME is not set
 0.61.2
  - ref: migrate from rpy2 to custom wrapper around R and Rscript binary
  - setup: remove extra [lme4] and rpy2 requirement
@@ -20,7 +21,7 @@
  - enh: improve availability check for HDF5 basin data
  - enh: cache list of features available via all basins
  - enh: speed up feature retrieval for non-ancillary features
- - ref: replace np.string_ with np.bytes_
+ - ref: replace `np.string_` with `np.bytes_`
 0.60.9
  - build: build with macos-latest and macos-13 images
 0.60.8
@@ -252,7 +253,7 @@
  - ref: HDF5Basin gets its own submodule
  - setup: oldest-supported-numpy is not required anymore, since numpy
    is backwards-compatible now
- 0.52.3
+0.52.3
  - maintenance release
 0.52.2
  - maintenance release
@@ -377,7 +378,7 @@
 0.47.3
  - fix: np.histrogram2d does not expect broken normed argument
  - docs: fixed GH Actions badge
- - enh: implement RTDC_HDF5.__len__
+ - enh: implement `RTDC_HDF5.__len__`
 0.47.2
  - enh: add --version flag to CLI
 0.47.1

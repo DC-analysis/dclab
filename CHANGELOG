@@ -1,3 +1,5 @@
+0.61.4
+ - docs: update basins section
 0.61.3
  -  fix: TypeError when of R_HOME is not set
 0.61.2

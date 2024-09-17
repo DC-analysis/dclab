@@ -28,11 +28,97 @@ possible to create an output file that is gated (containing a subset of events
 from the input file).
 
 
+Definitions
+===========
+To clarify the notation, please read these definition of the terms used in
+dclab in the context of basins. They also serve as a complete introduction
+to the capabilities of basins:
+
+basin:
+    File or remote location containing additional feature data for another
+    dataset. Both the dataset and the basin must originate from the same
+    DC measurement. E.g. You can work with a local .rtdc file containing only
+    :ref:´scalar features <sec_features_scalar>` with the image data stored
+    on :ref:`DCOR <sec_av_dcor>` to keep your local disk usage low.
+referrer:
+    A dataset that defines a basin "refers" to that basin.
+mapped basin:
+    A mapped basin is a basin that does not share the same event indices
+    with its referrer. This means that either
+
+    - the basin is a superset of the referrer: This happens most often when you export
+      a subset of events to a file, resulting in a referrer that has less events
+      than the (mapped) basin file. This case is useful when you only need a subset
+      of features in the referrer, but don't want to (spend the time to) store all
+      feature data (e.g. image data) in the referrer to save disk space.
+    - the basin is a subset of the referrer: This can happen when you analyze
+      your data with `ChipStream <https://github.com/DC-Analysis/ChipStream>`_.
+      For every image in the basin, the referrer defines one or more events,
+      resulting in a referrer that has more events than the basin.
+    - both cases above at the same time: There is really no limit in
+      defining basins. You can have two referrer events map to one basin
+      event or the other way around. The only limiting factor is that both,
+      basin and referrer, must be derived from the same original measurement.
+
+    Mapped basins allow you to minimize data redundancy for analysis pipelines
+    that produce output files (referrers) with a subset of the events from the
+    input file (basin).
+
+    .. note::
+
+        To be able to map from the input file to the output file, dclab stores the
+        mapping information as integer indices in dedicated features enumerated
+        ``basinmap0``, ``basinmap1``, etc.
+internal basin:
+    This is a special basin type, developed to reduce disk usage for background
+    images (`image_bg`). An internal basin stores the basin data within the
+    referrer file. While unintuitive for regular feature data, using internal
+    basins to store background image data, with one background image per
+    second, can significantly reduce disk usage due to the many-to-one-mapping
+    nature of the problem.
+
+
+In addition, let's digest the following definitions, which are also keyword arguments to the
+:func:`RTDCWriter.store_basin <dclab.rtdc_dataset.writer.RTDCWriter.store_basin>`
+method used further below.
+
+basin type:
+    A basin can be a local *file* (including files on a network share),
+    an *internal* basin (see above), or a *remote* file which means that it is
+    accessible via a networking protocol. Local basins can be defined either
+    via absolute and/or relative paths. Remote basins can be simple links
+    (e.g. download links for a figshare resource), DCOR resource identifiers,
+    or links to an object in an S3-compatible object store (e.g. Amazon S3 or
+    OpenStack Swift).
+basin format:
+    This is the subclass of :class:`.RTDCBase` that
+    defines how the basin is accessed. For *file*-type basins, this is "hdf5"
+    and for *remote*-type basins, this is "dcor", "http", or "s3".
+basin mapping:
+  If the events enumerated in the referrer are identical to the events in
+  the basin, then we call the mapping "same". Otherwise, we call it a
+  **mapped basin** followin the definition above.
+basin features:
+    Feature information in a dataset as defined in the
+    :ref:`general feature section <sec_features>`. Basins are only ever defined
+    for features. There is no such thing as basins for metadata, tables, or logs.
+    You may define basins and explicitly state the features this basin provides.
+    In combination with mapping, you could e.g. realize your own event
+    segmentation pipeline, storing only the ``mask`` feature and extracted
+    scalar features in you output file, while you define the ``image`` feature
+    via the input file basin. If you combine this approach with the
+    `dcor <https://dc.readthedocs.io>`_ basin format, you can distribute all of
+    your data (raw and processed) in a very efficient and transparent manner.
+
+These definitions should already give you a good feeling about how you can
+employ basins in your workflow. As a final note, be aware that you can also
+define basins recursively. Basins can have basins. And dclab has a check for
+circular basin definitions so you don't have to worry about that as well.
+
 Defining Basins
 ===============
 Basins may have different properties depending on the use case. Let's
-dive into an example and afterwards explain what was done and how it
-could have been done differently.
+dive into an example:
 
 .. code-block:: python
 
@@ -40,6 +126,8 @@ could have been done differently.
 
    with (dclab.new_dataset("input.rtdc") as ds,
          dclab.RTDCWriter("output.rtdc") as hw):
+       # `ds` is the basin
+       # `hw` is the referrer
 
        # First of all, we have to copy the metadata from the input file
        # to the output file. If we forget to do this, then dclab will
@@ -65,40 +153,13 @@ could have been done differently.
        assert "userdef1" in ds_out.features_innate
        assert "image" in ds_out.features_basin
 
-What happened? We created an ``output.rtdc`` file that contains the metadata
-from the ``ìnput.rtdc`` file, a feature ``userdef1`` filled with random data,
-and the basin information referencing **all** features from the ``input.rtdc``
-file. We opened the output file and verified that it transparently gives us
-access to the features stored in the (basin) input file.
-
-What could we have done differently? Take a look at the options that
-:func:`RTDCWriter.store_basin <dclab.rtdc_dataset.writer.RTDCWriter.store_basin>`
-allows you to set. You will notice that there are three major properties that
-define the nature of a basin:
-
-- **type** of a basin: A basin can be a local *file* (including files on a
-  network share), or a *remote* which means that it is accessible via a
-  networking protocol (e.g. HTTP).
-- **format** of a basin: This is the subclass of :class:`.RTDCBase` that
-  defines how the basin is accessed. For *file*-type basins, this is "hdf5"
-  and for *remote*-type basins, this is "dcor", "http", or "s3".
-- **mapping** of a basin: If the output file has the same number of events
-  in the same order as the input file, then we call the mapping "same". If
-  the output file only contains a subset of the events from the input file,
-  then we call the basin a **mapped basin**. These mapped basins allow
-  you to minimize data redundancy for analysis pipelines that produce
-  output files with a subset of the events from the input file. To be
-  able to map from the input file to the output file, dclab stores the
-  mapping information as integer indices in dedicated features enumerated
-  ``basinmap0``, ``basinmap1``, etc.
-- **features** defined by a basin: You may define basins and explicitly state
-  the features this basin provides. In combination with mapping, you
-  could e.g. realize your own event segmentation pipeline, storing only the
-  ``mask`` feature and extracted scalar features in you output file, while
-  you define the ``image`` feature via the input file basin. If you
-  combine this approach with the `dcor <https://dc.readthedocs.io>`_ basin
-  format, you can distribute all of your data (raw and processed) in a
-  very efficient and transparent manner.
+What happened? First, we created an ``output.rtdc`` file that contains the metadata
+from the ``ìnput.rtdc`` file. This is important so that dclab can verify the basin
+when we open the referrer. Then, we wrote the feature ``userdef1``, filled with
+random data, to the referrer. Finally we stored the basin information referencing
+**all** features from the ``input.rtdc`` file.
+To make sure everything worked, we opened the output referrer file and saw that dclanb
+transparently gives us access to the features stored in the referrer and the basin.
 
 
 Examples

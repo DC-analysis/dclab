@@ -199,7 +199,6 @@ class IntegrityChecker(object):
                         level="alert",
                         category="warning"))
             self.finally_close = True
-        np.max(self.ds["index"])
 
     def __enter__(self):
         return self
@@ -319,8 +318,19 @@ class IntegrityChecker(object):
             data=data))
         return cues
 
+    def check_empty(self, **kwargs):
+        """The dataset should contain events"""
+        cues = []
+        lends = len(self.ds)
+        if lends == 0:
+            cues.append(ICue(
+                msg="The dataset does not contain any events",
+                level="alert",
+                category="feature data"))
+        return cues
+
     def check_feat_index(self, **kwargs):
-        """Up until"""
+        """The index of the dataset should be monotonous"""
         cues = []
         lends = len(self.ds)
         if "index" in self.ds:

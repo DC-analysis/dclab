@@ -175,6 +175,24 @@ def test_icue():
     assert cues[0].msg in cues[0].__repr__()
 
 
+def test_ic_empty():
+    """Identity checker should not fail for empty datasets"""
+    path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_empty = path.with_name("empty.rtdc")
+    with RTDCWriter(path_empty) as hw, dclab.new_dataset(path) as ds:
+        hw.h5file.attrs.update(ds.h5file.attrs)
+        hw.h5file.attrs["experiment:event count"] = 0
+    with check.IntegrityChecker(path_empty) as ic:
+        assert len(ic.ds) == 0
+        cues = ic.check_empty()
+
+    assert len(cues) == 1
+    cue = cues[0]
+    assert cue.level == "alert"
+    assert cue.category == "feature data"
+    assert cue.msg == "The dataset does not contain any events"
+
+
 def test_ic_expand_section():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ds1 = new_dataset(ddict)
@@ -714,11 +732,3 @@ def test_wrong_samples_per_event():
           + "(expected 10, got 566)"
     viol, _, _ = check_dataset(h5path)
     assert msg in viol
-
-
-if __name__ == "__main__":
-    # Run all tests
-    _loc = locals()
-    for _key in list(_loc.keys()):
-        if _key.startswith("test_") and hasattr(_loc[_key], "__call__"):
-            _loc[_key]()

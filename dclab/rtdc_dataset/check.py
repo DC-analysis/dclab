@@ -8,6 +8,7 @@ import numpy as np
 
 from .copier import is_properly_compressed
 from .core import RTDCBase
+from .fmt_hdf5 import RTDC_HDF5
 from .fmt_hierarchy import RTDC_Hierarchy
 from .load import load_file
 
@@ -327,6 +328,19 @@ class IntegrityChecker(object):
                 msg="The dataset does not contain any events",
                 level="alert",
                 category="feature data"))
+        return cues
+
+    def check_external_links(self, **kwargs):
+        """An HDF5 dataset should not contain external links"""
+        cues = []
+        if isinstance(self.ds, RTDC_HDF5):
+            has_external, h5object = hdf5_has_external(self.ds.h5file)
+            if has_external:
+                cues.append(ICue(
+                    msg=f"The HDF5 file contains at least one external "
+                        f"link: '{h5object}'",
+                    level="violation",
+                    category="format HDF5"))
         return cues
 
     def check_feat_index(self, **kwargs):
@@ -842,3 +856,36 @@ def check_dataset(path_or_ds):
             elif cue.level == "violation":
                 viol.append(cue.msg)
     return sorted(viol), sorted(aler), sorted(info)
+
+
+def hdf5_has_external(h5):
+    """Check recursively, whether an h5py object contains external data
+
+    External data includes binary data in external files, virtual
+    datasets, and external links.
+
+    Returns a tuple of either
+
+    - `(True, path_ext)` if the object contains external data
+    - `(False, None)` if this is not the case
+
+    where `path_ext` is the path to the group or dataset in `h5`.
+
+    .. versionadded:: 0.62.0
+
+    """
+    for key in h5:
+        obj = h5[key]
+        if (obj.file != h5.file  # not in same file
+                or (isinstance(obj, h5py.Dataset)
+                    and (obj.is_virtual  # virtual dataset
+                         or obj.external))):  # external dataset
+            # These are external data
+            return True, f"{h5.name}/{key}".replace("//", "/")
+        elif isinstance(obj, h5py.Group):
+            # Perform recursive check for external data
+            has_ext, path_ext = hdf5_has_external(obj)
+            if has_ext:
+                return True, path_ext
+    else:
+        return False, None

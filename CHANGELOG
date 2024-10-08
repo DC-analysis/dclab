@@ -1,3 +1,8 @@
+0.62.0
+ - BREAKING: removed the `rtdc_dataset.linker` module, because it is not
+   used by any other piece of software and because combining file-like
+   objects external links are quirky and their combination finally broke with h5py 3.12
+ - enh: added integrity check for external links
 0.61.5
  - fix: integrity check failed for empty datasets
 0.61.4

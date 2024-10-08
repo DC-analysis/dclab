@@ -204,6 +204,66 @@ def test_ic_expand_section():
     assert len(cues1) > len(cues2)
 
 
+def test_ic_external_links():
+    """An HDF5 dataset should not have external links"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_image = h5path.with_name("image.hdf5")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, \
+            h5py.File(h5path_image, "w") as h5:
+        # write image data to separate file
+        h5["image"] = src["/events/image"][:]
+
+    # turn image into an external link
+    with h5py.File(h5path, "a") as src:
+        del src["/events/image"]
+        src["/events/image"] = h5py.ExternalLink(
+            str(h5path_image), "image"
+        )
+
+    with check.IntegrityChecker(h5path) as ic:
+        cues1 = ic.check_external_links()
+
+    assert len(cues1) == 1
+    cue = cues1[0]
+    assert cue.level == "violation"
+    assert cue.category == "format HDF5"
+    assert cue.msg == ("The HDF5 file contains at least one external "
+                       "link: '/events/image'")
+
+
+def test_ic_external_links_logs():
+    """An HDF5 dataset should not have external links"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_logs = h5path.with_name("logs.hdf5")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, \
+            h5py.File(h5path_logs, "w") as h5:
+        # write logs to smaller file
+        h5logs = h5.require_group("logs")
+        for key in src["logs"]:
+            h5logs[key] = src["logs"][key][:]
+
+    # turn image into an external link
+    with h5py.File(h5path, "a") as src:
+        del src["/logs"]
+        src["/logs"] = h5py.ExternalLink(
+            str(h5path_logs), "/"
+        )
+
+    with check.IntegrityChecker(h5path) as ic:
+        cues1 = ic.check_external_links()
+
+    assert len(cues1) == 1
+    cue = cues1[0]
+    assert cue.level == "violation"
+    assert cue.category == "format HDF5"
+    assert cue.msg == ("The HDF5 file contains at least one external "
+                       "link: '/logs'")
+
+
 def test_ic_feature_size_scalar():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ddict["bright_sd"] = np.linspace(10, 20, 1000)

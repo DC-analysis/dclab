@@ -71,6 +71,8 @@ def test_basin_as_dict(tmp_path):
     "https://example.com/nonexistentbucket/nonexistentkey",
     f"https://objectstore.hpccloud.mpcdf.mpg.de/noexist-{uuid.uuid4()}/key",
 ])
+@pytest.mark.filterwarnings(
+    "ignore::dclab.http_utils.ConnectionTimeoutWarning")
 def test_basin_not_available(url):
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
 

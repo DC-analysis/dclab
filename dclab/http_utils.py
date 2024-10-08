@@ -31,6 +31,10 @@ class ETagNotInResponseHeaderWarning(UserWarning):
     """Used for cases where the requests.Response does not contain an ETag"""
 
 
+class ConnectionTimeoutWarning(UserWarning):
+    """Used when a connection fails or times out"""
+
+
 class HTTPFile(io.IOBase):
     def __init__(self, url, chunk_size=2**18, keep_chunks=200):
         """Chunk-cached access to a URL supporting range requests
@@ -243,7 +247,8 @@ class ResoluteRequestsSession(requests.Session):
                     requests.exceptions.ConnectTimeout,
                     requests.urllib3.exceptions.ConnectionError,
                     requests.urllib3.exceptions.ReadTimeoutError) as e:
-                warnings.warn(f"Encountered {e} for {args} {kwargs}")
+                warnings.warn(f"Encountered {e} for {args} {kwargs}",
+                              ConnectionTimeoutWarning)
                 continue
             else:
                 break

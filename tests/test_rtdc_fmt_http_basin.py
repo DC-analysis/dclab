@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import dclab
+from dclab.http_utils import ETagNotInResponseHeaderWarning
 from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.fmt_http import HTTPBasin, RTDC_HTTP
 from dclab.rtdc_dataset.feat_basin import BasinNotAvailableError
@@ -271,8 +272,12 @@ def test_trace_availability_invalid(tmp_path):
         # because `__contains__` returns True for "trace", but the trace data
         # are nowhere to find.
         with (pytest.warns(UserWarning, match="but I cannot get its data"),
+              pytest.warns(ETagNotInResponseHeaderWarning,
+                           match="Got empty ETag header"),
               pytest.raises(KeyError, match="trace")):
             _ = ds["trace"]
         with (pytest.warns(UserWarning, match="but I cannot get its data"),
+              pytest.warns(ETagNotInResponseHeaderWarning,
+                           match="Got empty ETag header"),
               pytest.raises(KeyError, match="trace")):
             dclab.new_dataset(ds)

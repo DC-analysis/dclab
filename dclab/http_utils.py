@@ -27,6 +27,10 @@ REGEXP_HTTP_URL = re.compile(
 )
 
 
+class ETagNotInResponseHeaderWarning(UserWarning):
+    """Used for cases where the requests.Response does not contain an ETag"""
+
+
 class HTTPFile(io.IOBase):
     def __init__(self, url, chunk_size=2**18, keep_chunks=200):
         """Chunk-cached access to a URL supporting range requests
@@ -78,7 +82,8 @@ class HTTPFile(io.IOBase):
             etag = resp.headers.get("etag", "").strip("'").strip('"')
             if len(etag) < 5:
                 etag = None
-                warnings.warn(f"Got empty ETag header for {self.url}")
+                warnings.warn(f"Got empty ETag header for {self.url}",
+                              ETagNotInResponseHeaderWarning)
             self._etag = etag
 
     @property

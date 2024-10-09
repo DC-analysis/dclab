@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 import dclab
@@ -5,6 +7,7 @@ from dclab import RTDCWriter
 from dclab.rtdc_dataset import rtdc_copy
 from dclab.rtdc_dataset.fmt_http import RTDC_HTTP
 import h5py
+import numpy as np
 
 from helper_methods import DCOR_AVAILABLE, retrieve_data
 
@@ -96,3 +99,26 @@ def test_features_local_remote_basin(tmp_path):
         assert "deform" not in ds.features_innate
         assert "deform" in ds.features_basin
         assert ds.basins[0].ds.features_local == ["deform"]
+
+
+def test_numpy2_copy_if_needed():
+    """Test numpy inconsistent copy keyword argument
+
+    This test did not pass with numpy>2,<2.1.
+    This test passed with numpy>=2.1 before introducing `copy_if_needed`
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path2 = h5path.with_name("test.rtdc")
+    shutil.copy2(h5path, h5path2)
+
+    ds1 = dclab.new_dataset(h5path)
+    ds2 = dclab.new_dataset(h5path2)
+    assert len(ds1) == len(ds2)
+
+    for feat in ds1.features_scalar:
+        # Accessing the __array__ method here failed because numpy 1 and 2
+        # expected different values for the copy keyword argument.
+        # https://numpy.org/devdocs/numpy_2_0_migration_guide.html#adapting-to-changes-in-the-copy-keyword.
+        assert np.allclose(ds1[feat][:], ds2[feat][:],
+                           atol=1e-6,
+                           rtol=0)

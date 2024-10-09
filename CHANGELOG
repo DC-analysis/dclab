@@ -1,3 +1,5 @@
+0.62.1
+ - fix: numpy-version-specific default for `copy` in `__array__()`
 0.62.0
  - BREAKING: removed the `rtdc_dataset.linker` module, because it is not
    used by any other piece of software and because combining file-like

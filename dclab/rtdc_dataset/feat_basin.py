@@ -14,6 +14,8 @@ import weakref
 
 import numpy as np
 
+from ..util import copy_if_needed
+
 
 class CyclicBasinDependencyFoundWarning(UserWarning):
     """Used when a basin is defined in one of its sub-basins"""
@@ -405,7 +407,7 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
         self._cache = None
         self.is_scalar = bool(len(self.feat_obj.shape) == 1)
 
-    def __array__(self, dtype=None, copy=False, *args, **kwargs):
+    def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
         if self._cache is None and self.is_scalar:
             self._cache = self.feat_obj[:][self.basinmap]
         else:

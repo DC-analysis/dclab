@@ -10,6 +10,12 @@ import numpy as np
 from .rtdc_dataset.config import Configuration, ConfigurationDict
 
 
+if np.lib.NumpyVersion(np.__version__) >= "2.0.0":
+    copy_if_needed = None
+else:
+    copy_if_needed = False
+
+
 class file_monitoring_lru_cache:
     """Decorator for caching data extracted from files
 

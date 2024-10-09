@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 
+from ...util import copy_if_needed
 from .mapper import map_indices_child2parent
 
 
@@ -37,7 +38,7 @@ class ChildNDArray(ChildBase):
         super(ChildNDArray, self).__init__(child)
         self.feat = feat
 
-    def __array__(self, dtype=None, copy=False, *args, **kwargs):
+    def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
         warnings.warn("Please avoid calling the `__array__` method of the "
                       "`ChildNDArray`. It may consume a lot of memory. "
                       "Consider using a generator instead.",
@@ -69,7 +70,7 @@ class ChildScalar(np.lib.mixins.NDArrayOperatorsMixin):
         self._ufunc_attrs = {}
         self.ndim = 1  # matplotlib might expect this from an array
 
-    def __array__(self, dtype=None, copy=False, *args, **kwargs):
+    def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
         if self._array is None:
             hparent = self.child.hparent
             filt_arr = hparent.filter.all
@@ -121,7 +122,7 @@ class ChildTraceItem(ChildBase):
         super(ChildTraceItem, self).__init__(child)
         self.flname = flname
 
-    def __array__(self, dtype=None, copy=False, *args, **kwargs):
+    def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
         warnings.warn("Please avoid calling the `__array__` method of the "
                       "`ChildTraceItem`. It may consume a lot of memory. "
                       "Consider using a generator instead.",

@@ -31,7 +31,7 @@ def get_r_path():
     if r_home is None:
         cmd = ("R", "RHOME")
         try:
-            tmp = sp.check_output(cmd, universal_newlines=True)
+            tmp = run_command(cmd)
             # may raise FileNotFoundError, WindowsError, etc
             r_home = tmp.split(os.linesep)
         except BaseException:
@@ -69,7 +69,7 @@ def get_r_version():
     require_r()
     cmd = ("R", "--version")
     logger.debug(f"Looking for R version with: {cmd}")
-    tmp = sp.check_output(cmd, stderr=sp.STDOUT)
+    tmp = run_command(cmd, stderr=sp.STDOUT)
     r_version = tmp.decode("ascii", "ignore").split(os.linesep)
     if r_version[0].startswith("WARNING"):
         r_version = r_version[1]
@@ -134,7 +134,7 @@ def require_r():
                              "environment variable.")
 
 
-def run_command(cmd):
+def run_command(cmd, **kwargs):
     """Run a command via subprocess"""
     if hasattr(sp, "STARTUPINFO"):
         # On Windows, subprocess calls will pop up a command window by
@@ -149,16 +149,19 @@ def run_command(cmd):
         si = None
         env = None
 
+    kwargs.setdefault("text", True)
+    kwargs.setdefault("stderr", sp.STDOUT)
+    if env is not None:
+        if "env" in kwargs:
+            env.update(kwargs.pop("env"))
+        kwargs["env"] = env
+    kwargs["startupinfo"] = si
+
     # Convert paths to strings
     cmd = [str(cc) for cc in cmd]
 
-    tmp = sp.check_output(cmd,
-                          startupinfo=si,
-                          env=env,
-                          stderr=sp.STDOUT,
-                          text=True,
-                          )
-    return tmp
+    tmp = sp.check_output(cmd, **kwargs)
+    return tmp.strip()
 
 
 def set_r_path(r_path):

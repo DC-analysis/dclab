@@ -107,6 +107,12 @@ def test_fail_get_non_existent_data():
 
 @pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
                    reason="https://github.com/astamm/nloptr/issues/115")
+def test_get_r_version():
+    assert rsetup.get_r_version()
+
+
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_glmer_basic_larger():
     """Original values in a generalized linear mixed model"""
     groups = ['treatment', 'control', 'treatment', 'control',

@@ -72,8 +72,8 @@ def get_r_version():
     require_r()
     cmd = (str(get_r_path()), "--version")
     logger.debug(f"Looking for R version with: {' '.join(cmd)}")
-    tmp = run_command(cmd, stderr=sp.STDOUT)
-    r_version = tmp.decode("ascii", "ignore").split(os.linesep)
+    r_version = run_command(cmd, stderr=sp.STDOUT)
+    r_version = r_version.split(os.linesep)
     if r_version[0].startswith("WARNING"):
         r_version = r_version[1]
     else:

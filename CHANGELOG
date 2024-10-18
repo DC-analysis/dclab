@@ -1,4 +1,5 @@
 0.62.2
+ - fix: use full path to R executable when running lme4 analysis in rsetup
  - enh: properly catch CalledProcessError in run_command
  - enh: improve search for R executable path
  - ref: replace sp.check_output with run_command in lme4 submodule

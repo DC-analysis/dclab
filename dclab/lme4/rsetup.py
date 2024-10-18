@@ -70,8 +70,8 @@ def get_r_script_path():
 def get_r_version():
     """Return the full R version string"""
     require_r()
-    cmd = ("R", "--version")
-    logger.debug(f"Looking for R version with: {cmd}")
+    cmd = (str(get_r_path()), "--version")
+    logger.debug(f"Looking for R version with: {' '.join(cmd)}")
     tmp = run_command(cmd, stderr=sp.STDOUT)
     r_version = tmp.decode("ascii", "ignore").split(os.linesep)
     if r_version[0].startswith("WARNING"):
@@ -92,7 +92,8 @@ def has_lme4():
         return True
     require_r()
     for pkg in ["lme4", "statmod", "nloptr"]:
-        res = run_command(("R", "-q", "-e", f"system.file(package='{pkg}')"))
+        res = run_command(
+            (str(get_r_path()), "-q", "-e", f"system.file(package='{pkg}')"))
         if not res.split("[1]")[1].count(pkg):
             avail = False
             break
@@ -107,7 +108,7 @@ def has_r():
     if _has_r:
         return True
     try:
-        hasr = bool(get_r_path())
+        hasr = get_r_path().is_file()
     except RNotFoundError:
         hasr = False
     if hasr:
@@ -125,8 +126,10 @@ def require_lme4():
     require_r()
     if not has_lme4():
         run_command((
-            "R", "-e", "install.packages(c('statmod','nloptr','lme4'),"
-                       "repos='http://cran.rstudio.org')"))
+            get_r_path(), "-e",
+            "install.packages(c('statmod','nloptr','lme4'),"
+                              "repos='http://cran.rstudio.org')"  # noqa: E131
+        ))
 
 
 def require_r():

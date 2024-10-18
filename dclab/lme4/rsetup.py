@@ -10,6 +10,11 @@ _has_lme4 = None
 _has_r = None
 
 
+class CommandFailedError(BaseException):
+    """Used when `run_command` encounters an error"""
+    pass
+
+
 class RNotFoundError(BaseException):
     pass
 
@@ -160,7 +165,12 @@ def run_command(cmd, **kwargs):
     # Convert paths to strings
     cmd = [str(cc) for cc in cmd]
 
-    tmp = sp.check_output(cmd, **kwargs)
+    try:
+        tmp = sp.check_output(cmd, **kwargs)
+    except sp.CalledProcessError as e:
+        raise CommandFailedError(f"The command '{' '.join(cmd)}' failed with "
+                                 f"exit code {e.returncode}: {e.output}")
+
     return tmp.strip()
 
 

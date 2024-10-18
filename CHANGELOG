@@ -1,3 +1,5 @@
+0.62.6
+ - enh: support passing pathlib.Path to lme4.rsetup.set_*_path methods
 0.62.5
  - enh: make set_r_lib_path available in lme4 submodule
 0.62.4

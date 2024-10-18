@@ -187,13 +187,13 @@ def set_r_lib_path(r_lib_path):
     """Add given directory to the R_LIBS_USER environment variable"""
     paths = os.environ.get("R_LIBS_USER", "").split(os.pathsep)
     paths = [p for p in paths if p]
-    paths.append(r_lib_path.strip())
+    paths.append(str(r_lib_path).strip())
     os.environ["R_LIBS_USER"] = os.pathsep.join(list(set(paths)))
 
 
 def set_r_path(r_path):
     """Set the path of the R executable/binary"""
-    tmp = run_command((r_path, "RHOME"))
+    tmp = run_command((str(r_path), "RHOME"))
 
     r_home = tmp.split(os.linesep)
     if r_home[0].startswith("WARNING"):

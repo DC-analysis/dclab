@@ -1,8 +1,8 @@
 import logging
 import os
 import pathlib
+import shutil
 import subprocess as sp
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -28,24 +28,18 @@ def get_r_path():
         if r_exec.is_file():
             return r_exec
 
+    # Try to get the executable using which
+    r_exec = shutil.which("R")
+    if r_exec is not None:
+        r_exec = pathlib.Path(r_exec)
+        return r_exec
+
     # Try to determine the path to the executable from R_HOME
     r_home = os.environ.get("R_HOME")
     if r_home and not pathlib.Path(r_home).is_dir():
         logger.warning(f"R_HOME Directory does not exist: {r_home}")
         r_home = None
-    if r_home is None:
-        cmd = ("R", "RHOME")
-        try:
-            tmp = run_command(cmd)
-            # may raise FileNotFoundError, WindowsError, etc
-            r_home = tmp.split(os.linesep)
-        except BaseException:
-            pass
-        else:
-            if r_home[0].startswith("WARNING"):
-                r_home = r_home[1].strip()
-            else:
-                r_home = r_home[0].strip()
+
     if r_home is None:
         raise RNotFoundError(
             "Cannot find R, please set the `R_HOME` environment variable "
@@ -53,15 +47,19 @@ def get_r_path():
 
     r_home = pathlib.Path(r_home)
 
-    if sys.platform == "win32" and "64 bit" in sys.version:
-        r_exec = r_home / "bin" / "x64" / "R.exe"
+    # search for the R executable
+    for rr in [
+        r_home / "bin" / "R",
+        r_home / "bin" / "x64" / "R",
+    ]:
+        if rr.is_file():
+            return rr
+        rr_win = rr.with_name("R.exe")
+        if rr_win.is_file():
+            return rr_win
     else:
-        r_exec = r_home / "bin" / "R"
-    if not r_exec.is_file():
         raise RNotFoundError(
-            f"Expected R binary at '{r_exec}' does not exist!")
-    logger.info(f"R path: {r_exec}")
-    return r_exec
+            f"Could not find R binary in '{r_home}'")
 
 
 def get_r_script_path():

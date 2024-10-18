@@ -1,5 +1,6 @@
 0.62.2
  - enh: properly catch CalledProcessError in run_command
+ - enh: improve search for R executable path
  - ref: replace sp.check_output with run_command in lme4 submodule
 0.62.1
  - fix: numpy-version-specific default for `copy` in `__array__()`

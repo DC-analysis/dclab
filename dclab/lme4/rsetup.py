@@ -72,7 +72,10 @@ def get_r_version():
     require_r()
     cmd = (str(get_r_path()), "--version")
     logger.debug(f"Looking for R version with: {' '.join(cmd)}")
-    r_version = run_command(cmd, stderr=sp.STDOUT)
+    r_version = run_command(
+        cmd,
+        env={"R_LIBS_USER": os.environ.get("R_LIBS_USER", "")},
+    )
     r_version = r_version.split(os.linesep)
     if r_version[0].startswith("WARNING"):
         r_version = r_version[1]
@@ -93,7 +96,9 @@ def has_lme4():
     require_r()
     for pkg in ["lme4", "statmod", "nloptr"]:
         res = run_command(
-            (str(get_r_path()), "-q", "-e", f"system.file(package='{pkg}')"))
+            (str(get_r_path()), "-q", "-e", f"system.file(package='{pkg}')"),
+            env={"R_LIBS_USER": os.environ.get("R_LIBS_USER", "")},
+            )
         if not res.split("[1]")[1].count(pkg):
             avail = False
             break
@@ -123,13 +128,16 @@ def require_lme4():
     The packages are installed to the user data directory
     given in :const:`lib_path` from the http://cran.rstudio.org mirror.
     """
+    install_command = ("install.packages("
+                       "c('statmod','nloptr','lme4'),"
+                       "repos='http://cran.rstudio.org'"
+                       ")"
+                       )
     require_r()
     if not has_lme4():
-        run_command((
-            get_r_path(), "-e",
-            "install.packages(c('statmod','nloptr','lme4'),"
-                              "repos='http://cran.rstudio.org')"  # noqa: E131
-        ))
+        run_command(cmd=(get_r_path(), "-e", install_command),
+                    env={"R_LIBS_USER": os.environ.get("R_LIBS_USER", "")},
+                    )
 
 
 def require_r():
@@ -173,6 +181,14 @@ def run_command(cmd, **kwargs):
                                  f"exit code {e.returncode}: {e.output}")
 
     return tmp.strip()
+
+
+def set_r_lib_path(r_lib_path):
+    """Add given directory to the R_LIBS_USER environment variable"""
+    paths = os.environ.get("R_LIBS_USER", "").split(os.pathsep)
+    paths = [p for p in paths if p]
+    paths.append(r_lib_path.strip())
+    os.environ["R_LIBS_USER"] = os.pathsep.join(paths)
 
 
 def set_r_path(r_path):

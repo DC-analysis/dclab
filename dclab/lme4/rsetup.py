@@ -188,7 +188,7 @@ def set_r_lib_path(r_lib_path):
     paths = os.environ.get("R_LIBS_USER", "").split(os.pathsep)
     paths = [p for p in paths if p]
     paths.append(r_lib_path.strip())
-    os.environ["R_LIBS_USER"] = os.pathsep.join(paths)
+    os.environ["R_LIBS_USER"] = os.pathsep.join(list(set(paths)))
 
 
 def set_r_path(r_path):

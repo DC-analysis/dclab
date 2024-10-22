@@ -37,8 +37,8 @@ access secret like so:
     import dclab
     s3_url = "..."
     ds = dclab.new_dataset(s3_url,
-                           secret_id="YOUR-S3-KEY-ID",
-                           secret_key="YOUR-S3-ACCESS-SECRET")
+                           access_key_id="YOUR-S3-KEY-ID",
+                           secret_access_key="YOUR-S3-ACCESS-SECRET")
 
 
 Alternatively, you can also set the environment variables

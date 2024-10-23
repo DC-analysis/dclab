@@ -1,5 +1,4 @@
 import pathlib
-import sys
 import tempfile
 import traceback
 
@@ -134,21 +133,15 @@ def test_pf_attribute_ancill_info():
 def test_pf_attribute_plugin_feature_info():
     """Check the plugin feature info attribute"""
     info = example_plugin_info_single_feature()
-    # The identifier is dependent on the compiled byte code of the
-    # function code (__code__.co_code), which can be different between
-    # python versions (normally, the content of the plugin file would be used).
-    if tuple(sys.version_info)[:3] < (3, 11, 0):
-        identifier = "3a3e72c4cb015424ebbe6d4af63f2170"
-    elif tuple(sys.version_info)[:3] < (3, 12, 0):
-        # bytecode changed in Python 3.11
-        identifier = "322e9a30665c8603ed2dd6fb9d7b18da"
-    else:
-        # bytecode changed in Python 3.12
-        identifier = "447e1ae998c716140f31614a4da2581f"
     # comparing lambda functions fails due to differing memory locations
     info.pop("method check required")
     pf = PlugInFeature("circ_per_area", info)
     pf.plugin_feature_info.pop("method check required")
+    # The identifier is dependent on the compiled byte code of the
+    # function code (__code__.co_code), which can be different between
+    # python versions and architectures.
+    identifier = pf.plugin_feature_info.pop("identifier")
+    assert len(identifier) == 32
     plugin_feature_info = {
         "method": compute_single_plugin_feature,
         "description": "This plugin will compute a feature",
@@ -162,8 +155,8 @@ def test_pf_attribute_plugin_feature_info():
         "scalar feature": True,
         "version": "0.1.0",
         "plugin path": None,
-        "identifier": identifier,
     }
+
     assert pf.plugin_feature_info == plugin_feature_info
 
 

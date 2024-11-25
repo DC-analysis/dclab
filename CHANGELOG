@@ -1,4 +1,5 @@
 0.62.7
+ - fix: IntegrityChecker must not load basins
  - tests: avoid architecture and Python-version dependent test
 0.62.6
  - enh: support passing pathlib.Path to lme4.rsetup.set_*_path methods

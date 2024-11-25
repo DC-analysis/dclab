@@ -193,7 +193,7 @@ class IntegrityChecker(object):
         else:
             with warnings.catch_warnings(record=True) as ws:
                 warnings.simplefilter("always")
-                self.ds = load_file(path_or_ds)
+                self.ds = load_file(path_or_ds, enable_basins=False)
                 for ww in ws:
                     self.warn_cues.append(ICue(
                         msg=f"{ww.category.__name__}: {ww.message}",

@@ -1,9 +1,13 @@
 """Crosstalk-correction for fluorescence data"""
+from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 
 
-def get_compensation_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
+def get_compensation_matrix(
+        ct21: float, ct31: float, ct12: float,
+        ct32: float, ct13: float, ct23: float) -> npt.NDArray:
     """Compute crosstalk inversion matrix
 
     The spillover matrix is
@@ -55,8 +59,13 @@ def get_compensation_matrix(ct21, ct31, ct12, ct32, ct13, ct23):
     return np.linalg.inv(crosstalk)
 
 
-def correct_crosstalk(fl1, fl2, fl3, fl_channel,
-                      ct21=0, ct31=0, ct12=0, ct32=0, ct13=0, ct23=0):
+def correct_crosstalk(
+        fl1: int | float | npt.NDArray,
+        fl2: int | float | npt.NDArray,
+        fl3: int | float | npt.NDArray,
+        fl_channel: int,
+        ct21: float = 0, ct31: float = 0, ct12: float = 0,
+        ct32: float = 0, ct13: float = 0, ct23: float = 0) -> npt.NDArray:
     """Perform crosstalk correction
 
     Parameters

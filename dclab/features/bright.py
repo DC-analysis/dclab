@@ -2,6 +2,8 @@
 Computation of mean and standard deviation of grayscale values inside the
 RT-DC event image mask.
 """
+from __future__ import annotations
+
 import numpy as np
 import numpy.typing as npt
 

@@ -1,8 +1,11 @@
 """Computation of event contour from event mask"""
+from __future__ import annotations
+
 from collections import deque
 import numbers
 
 import numpy as np
+import numpy.typing as npt
 
 # equivalent to
 # from skimage.measure import find_contours
@@ -14,15 +17,15 @@ class NoValidContourFoundError(BaseException):
 
 
 class LazyContourList(object):
-    def __init__(self, masks, max_events=1000):
+    def __init__(self, masks: npt.ArrayLike, max_events: int = 1000):
         """A list-like object that computes contours upon indexing
 
         Parameters
         ----------
-        masks: array-like
+        masks
             3D array of masks, may be an HDF5 dataset or any other
             structure that supports indexing
-        max_events: int
+        max_events
             maximum number of contours to keep in the contour list;
             set to 0/False/None to cache all contours
 

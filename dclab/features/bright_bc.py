@@ -2,10 +2,17 @@
 Computation of mean and standard deviation of grayscale values inside the
 RT-DC event image mask with background-correction taken into account.
 """
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 
 
-def get_bright_bc(mask, image, image_bg, bg_off=None, ret_data="avg,sd"):
+def get_bright_bc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
+                  image: npt.NDArray | list[npt.NDArray],
+                  image_bg: npt.NDArray | list[npt.NDArray],
+                  bg_off: float | npt.NDArray = None,
+                  ret_data: str = "avg,sd"):
     """Compute avg and/or std of the background-corrected event brightness
 
     The background-corrected event brightness is defined by the

@@ -2,6 +2,8 @@
 Computation of the 10th and 90th percentile of grayscale values inside the
 RT-DC event image mask with background-correction taken into account.
 """
+from __future__ import annotations
+
 import numpy as np
 import numpy.typing as npt
 

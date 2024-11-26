@@ -3,9 +3,13 @@ Computation of mean and standard deviation of grayscale values inside the
 RT-DC event image mask.
 """
 import numpy as np
+import numpy.typing as npt
 
 
-def get_bright(mask, image, ret_data="avg,sd"):
+def get_bright(
+        mask: npt.NDArray[np.bool] | list[npt.NDArray[np.bool]],
+        image: npt.NDArray | list[npt.NDArray],
+        ret_data: str = "avg,sd"):
     """Compute avg and/or std of the event brightness
 
     The event brightness is defined by the gray-scale values of the

@@ -1,8 +1,16 @@
 """Volume computation based on contour revolution"""
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 
 
-def get_volume(cont, pos_x, pos_y, pix, fix_orientation=False):
+def get_volume(
+        cont: npt.NDArray | list[npt.NDArray],
+        pos_x: float | npt.NDArray,
+        pos_y: float | npt.NDArray,
+        pix: float,
+        fix_orientation: bool = False) -> float | npt.NDArray:
     """Calculate the volume of a polygon revolved around an axis
 
     The volume estimation assumes rotational symmetry.
@@ -43,7 +51,7 @@ def get_volume(cont, pos_x, pos_y, pix, fix_orientation=False):
     upper and the lower halves of the contour from which the
     average is then used.
 
-    The volume is computed radially from the the center position
+    The volume is computed radially from the center position
     given by (`pos_x`, `pos_y`). For sufficiently smooth contours,
     such as densely sampled ellipses, the center position does not
     play an important role. For contours that are given on a coarse
@@ -125,7 +133,7 @@ def get_volume(cont, pos_x, pos_y, pix, fix_orientation=False):
     return v_avg
 
 
-def counter_clockwise(cx, cy):
+def counter_clockwise(cx: npt.NDArray, cy: npt.NDArray) -> float:
     """Put contour coordinates into counter-clockwise order
 
     Parameters
@@ -152,7 +160,7 @@ def counter_clockwise(cx, cy):
         return cx, cy
 
 
-def vol_revolve(r, z, point_scale=1.):
+def vol_revolve(r: npt.NDArray, z: npt.NDArray, point_scale: float = 1.):
     r"""Calculate the volume of a polygon revolved around the Z-axis
 
     This implementation yields the same results as the volRevolve
@@ -222,9 +230,9 @@ def vol_revolve(r, z, point_scale=1.):
     # dr = R - r and dz = h, then we get three terms for the volume
     # (as opposed to four terms in Olynyk's script). Those three terms
     # all resemble area slices multiplied by the z-distance dz.
-    a1 = 3 * rp**2
-    a2 = 3 * rp*dr
-    a3 = dr**2
+    a1 = 3 * rp ** 2
+    a2 = 3 * rp * dr
+    a3 = dr ** 2
 
     # Note that the formula for computing the volume is symmetric
     # with respect to r and R. This means that it does not matter

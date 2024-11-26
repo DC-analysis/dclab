@@ -12,7 +12,12 @@ def get_bright_bc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
                   image: npt.NDArray | list[npt.NDArray],
                   image_bg: npt.NDArray | list[npt.NDArray],
                   bg_off: float | npt.NDArray = None,
-                  ret_data: str = "avg,sd"):
+                  ret_data: str = "avg,sd") -> (
+        float |
+        npt.NDArray |
+        tuple[float, float] |
+        tuple[npt.NDArray, npt.NDArray]
+):
     """Compute avg and/or std of the background-corrected event brightness
 
     The background-corrected event brightness is defined by the

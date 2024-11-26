@@ -11,8 +11,10 @@ import numpy.typing as npt
 def get_bright_perc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
                     image: npt.NDArray | list[npt.NDArray],
                     image_bg: npt.NDArray | list[npt.NDArray],
-                    bg_off: float | npt.NDArray = None) -> \
-        tuple[float, float] | tuple[npt.NDArray, npt.NDArray]:
+                    bg_off: float | npt.NDArray = None) -> (
+        tuple[float, float] |
+        tuple[npt.NDArray, npt.NDArray]
+):
     """Compute 10th and 90th percentile of the bg-corrected event brightness
 
     The background-corrected event brightness is defined by the

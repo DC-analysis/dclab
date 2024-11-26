@@ -17,7 +17,7 @@ class NoValidContourFoundError(BaseException):
 
 
 class LazyContourList(object):
-    def __init__(self, masks: npt.ArrayLike, max_events: int = 1000):
+    def __init__(self, masks: npt.ArrayLike, max_events: int = 1000) -> None:
         """A list-like object that computes contours upon indexing
 
         Parameters
@@ -43,7 +43,7 @@ class LazyContourList(object):
         self.identifier = str(masks[0][:].tobytes())
         self.shape = len(masks), np.nan, 2
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> npt.NDArray:
         """Compute contour(s) if not already in self.contours"""
         if not isinstance(idx, numbers.Integral):
             # slicing!
@@ -77,7 +77,7 @@ class LazyContourList(object):
         return len(self.masks)
 
 
-def get_contour(mask):
+def get_contour(mask: npt.NDArray[bool]) -> npt.NDArray | list[npt.NDArray]:
     """Compute the image contour from a mask
 
     The contour is computed in a very inefficient way using scikit-image
@@ -130,7 +130,8 @@ def get_contour(mask):
         return contours[0]
 
 
-def get_contour_lazily(mask):
+def get_contour_lazily(mask: npt.NDArray[bool]) -> \
+        npt.NDArray | LazyContourList:
     """Like :func:`get_contour`, but computes contours on demand
 
     Parameters
@@ -156,7 +157,7 @@ def get_contour_lazily(mask):
     return cont
 
 
-def remove_duplicates(cont):
+def remove_duplicates(cont: npt.NDArray) -> npt.NDArray:
     """Remove duplicates in a circular contour"""
     x = np.resize(cont, (len(cont) + 1, 2))
     selection = np.ones(len(x), dtype=bool)

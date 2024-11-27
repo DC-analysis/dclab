@@ -22,12 +22,12 @@ def get_compensation_matrix(
 
     Parameters
     ----------
-    cij: float
+    cij
         Spill from channel i to channel j
 
     Returns
     -------
-    inv: np.ndarray
+    inv
         Compensation matrix (inverted spillover matrix)
     """
     ct11 = 1
@@ -70,12 +70,12 @@ def correct_crosstalk(
 
     Parameters
     ----------
-    fli: int, float, or np.ndarray
+    fli
         Measured fluorescence signals
-    fl_channel: int (1, 2, or 3)
-        The channel number for which the crosstalk-corrected signal
-        should be computed
-    cij: float
+    fl_channel
+        The channel number (1, 2, or 3) for which the crosstalk-corrected
+        signal should be computed
+    cij
         Spill (crosstalk or bleed-through) from channel i to channel j
         This spill is computed from the fluorescence signal of e.g.
         single-stained positive control cells; It is defined by the

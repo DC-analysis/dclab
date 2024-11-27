@@ -16,11 +16,11 @@ def cont_moments_cv(cont: npt.NDArray,
 
     Parameters
     ----------
-    cont: array of shape (N,2)
+    cont: shape (N,2)
         The contour for which to compute the moments.
-    flt_epsilon: float
+    flt_epsilon
         The value of ``FLT_EPSILON`` in OpenCV/gcc.
-    dbl_epsilon: float
+    dbl_epsilon
         The value of ``DBL_EPSILON`` in OpenCV/gcc.
 
     .. versionchanged:: 0.48.2
@@ -31,7 +31,7 @@ def cont_moments_cv(cont: npt.NDArray,
 
     Returns
     -------
-    moments: dict
+    moments
         A dictionary of moments. If the moment `m00` is smaller
         than half of `flt_epsilon`, `None` is returned.
     """

@@ -10,12 +10,11 @@ import numpy.typing as npt
 
 def get_bright(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
                image: npt.NDArray | list[npt.NDArray],
-               ret_data: str = "avg,sd") -> (
-        float |
-        npt.NDArray |
-        tuple[float, float] |
-        tuple[npt.NDArray, npt.NDArray]
-):
+               ret_data: str = "avg,sd"
+               ) -> (float |
+                     npt.NDArray |
+                     tuple[float, float] |
+                     tuple[npt.NDArray, npt.NDArray]):
     """Compute avg and/or std of the event brightness
 
     The event brightness is defined by the gray-scale values of the
@@ -28,7 +27,7 @@ def get_bright(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
     image: ndarray or list of ndarrays of shape (M,N)
         A 2D array that holds the image in form of grayscale values
         of an event.
-    ret_data: str
+    ret_data
         A comma-separated list of metrices to compute
         - "avg": compute the average
         - "sd": compute the standard deviation

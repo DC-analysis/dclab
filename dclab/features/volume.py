@@ -28,10 +28,10 @@ def get_volume(
     pos_y: float or ndarray of length N
         The y coordinate(s) of the centroid of the event(s) [µm]
         e.g. obtained using `mm.pos_y`
-    pix: float
+    pix
         The detector pixel size in µm.
         e.g. obtained using: `mm.config["imaging"]["pixel size"]`
-    fix_orientation: bool
+    fix_orientation
         If set to True, make sure that the orientation of the
         contour is counter-clockwise in the r-z plane
         (see :func:`vol_revolve`). This is False by default, because
@@ -42,7 +42,7 @@ def get_volume(
 
     Returns
     -------
-    volume: float or ndarray
+    volume
         volume in um^3
 
     Notes
@@ -133,17 +133,17 @@ def get_volume(
     return v_avg
 
 
-def counter_clockwise(cx: npt.NDArray, cy: npt.NDArray) -> float:
+def counter_clockwise(cx: npt.NDArray, cy: npt.NDArray) -> tuple[float, float]:
     """Put contour coordinates into counter-clockwise order
 
     Parameters
     ----------
-    cx, cy: 1d ndarrays
+    cx, cy
         The x- and y-coordinates of the contour
 
     Returns
     -------
-    cx_cc, cy_cc:
+    cx_cc, cy_cc
         The x- and y-coordinates of the contour in
         counter-clockwise orientation.
 
@@ -160,7 +160,9 @@ def counter_clockwise(cx: npt.NDArray, cy: npt.NDArray) -> float:
         return cx, cy
 
 
-def vol_revolve(r: npt.NDArray, z: npt.NDArray, point_scale: float = 1.):
+def vol_revolve(r: npt.NDArray,
+                z: npt.NDArray,
+                point_scale: float = 1.) -> float | npt.NDArray:
     r"""Calculate the volume of a polygon revolved around the Z-axis
 
     This implementation yields the same results as the volRevolve
@@ -191,11 +193,11 @@ def vol_revolve(r: npt.NDArray, z: npt.NDArray, point_scale: float = 1.):
 
     Parameters
     ----------
-    r: 1d np.ndarray
+    r
         radial coordinates (perpendicular to the z axis)
-    z: 1d np.ndarray
+    z
         coordinate along the axis of rotation
-    point_scale: float
+    point_scale
         point size in your preferred units; The volume is multiplied
         by a factor of `point_scale**3`.
 

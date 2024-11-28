@@ -1,4 +1,5 @@
 0.62.7
+ - docs: type hinted the features sub-module
  - fix: IntegrityChecker must not load basins
  - tests: avoid architecture and Python-version dependent test
 0.62.6

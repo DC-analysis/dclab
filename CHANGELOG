@@ -3,7 +3,7 @@
  - fix: KeyError in IntegrityChecker when "basin_events" group missing (#268)
  - fix: warn user about missing internal basin features while still loading
    those that are available (#268)
- - fix: do not copy internal basin definitions for non-existent features (#289)
+ - fix: do not copy internal basin definitions for non-existent features (#269)
  - docs: clarify interpretation of [qpi]: "filter size" metadata (#267)
  - tests: avoid architecture and Python-version dependent test
 0.62.6

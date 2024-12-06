@@ -175,10 +175,15 @@ class RTDC_HDF5(RTDCBase):
 
     def basins_get_dicts(self):
         """Return list of dicts for all basins defined in `self.h5file`"""
+        return self.basin_get_dicts_from_h5file(self.h5file)
+
+    @staticmethod
+    def basin_get_dicts_from_h5file(h5file):
+        """Return list of dicts for all basins defined in `h5file`"""
         basins = []
         # Do not sort anything here, sorting is done in `RTDCBase`.
-        for bk in self.h5file.get("basins", []):
-            bdat = list(self.h5file["basins"][bk])
+        for bk in h5file.get("basins", []):
+            bdat = list(h5file["basins"][bk])
             if isinstance(bdat[0], bytes):
                 bdat = [bi.decode("utf") for bi in bdat]
             bdict = json.loads(" ".join(bdat))

@@ -1,6 +1,7 @@
 """Helper methods for copying .rtdc data"""
 from __future__ import annotations
 
+import json
 import re
 from typing import List, Literal
 
@@ -10,8 +11,10 @@ import hdf5plugin
 import numpy as np
 
 from ..definitions import feature_exists, scalar_feature_exists
+from ..util import hashobj
 
-from .fmt_hdf5 import DEFECTIVE_FEATURES
+from .fmt_hdf5 import DEFECTIVE_FEATURES, RTDC_HDF5
+from .writer import RTDCWriter
 
 
 def rtdc_copy(src_h5file: h5py.Group,
@@ -56,19 +59,6 @@ def rtdc_copy(src_h5file: h5py.Group,
     if include_basins and "basin_events" in src_h5file:
         events_src += list(src_h5file["basin_events"].keys())
         events_src = sorted(set(events_src))
-
-    # basins
-    if include_basins and "basins" in src_h5file:
-        dst_h5file.require_group("basins")
-        for b_key in src_h5file["basins"]:
-            if b_key in dst_h5file["basins"]:
-                # This basin already exists.
-                continue
-            h5ds_copy(src_loc=src_h5file["basins"],
-                      src_name=b_key,
-                      dst_loc=dst_h5file["basins"],
-                      dst_name=b_key,
-                      recursive=False)
 
     # logs
     if include_logs and "logs" in src_h5file:
@@ -130,6 +120,12 @@ def rtdc_copy(src_h5file: h5py.Group,
             if feat in feature_iter:
                 feature_iter.remove(feat)
 
+    # copy basin definitions
+    if include_basins and "basins" in src_h5file:
+        basin_definition_copy(src_h5file=src_h5file,
+                              dst_h5file=dst_h5file,
+                              features_iter=feature_iter)
+
     if feature_iter:
         dst_h5file.require_group("events")
         for feat in feature_iter:
@@ -168,6 +164,56 @@ def rtdc_copy(src_h5file: h5py.Group,
                               dst_loc=dst_h5file.require_group("basin_events"),
                               dst_name=feat
                               )
+
+
+def basin_definition_copy(src_h5file, dst_h5file, features_iter):
+    """Copy basin definitions `src_h5file["basins"]` to the new file
+
+    Normally, we would just use :func:`h5ds_copy` to copy basins from
+    one dataset to another. However, if we are e.g. only copying scalar
+    features, and there are non-scalar features in the internal basin,
+    then we must rewrite the basin definition of the internal basin.
+
+    The `features_iter` list of features defines which features are
+    relevant for the internal basin.
+    """
+    dst_h5file.require_group("basins")
+    for b_key in src_h5file["basins"]:
+        if b_key in dst_h5file["basins"]:
+            # This basin already exists.
+            continue
+        # Load the basin information
+        basin_dicts = RTDC_HDF5.basin_get_dicts_from_h5file(src_h5file)
+        for bn in basin_dicts:
+            if bn["type"] == "internal":
+                # Make sure we define the internal features selected
+                feat_used = [f for f in bn["features"] if f in features_iter]
+                if len(feat_used) == 0:
+                    # We don't have any internal features, don't write anything
+                    continue
+                elif feat_used != bn["features"]:
+                    bn["features"] = feat_used
+                    rewrite = True
+                else:
+                    rewrite = False
+            else:
+                # We do not have an internal basin, just copy everything
+                rewrite = False
+
+            if rewrite:
+                # Convert edited `bn` to JSON and write feature data
+                b_lines = json.dumps(bn, indent=2).split("\n")
+                key = hashobj(b_lines)
+                if key not in dst_h5file["basins"]:
+                    with RTDCWriter(dst_h5file) as hw:
+                        hw.write_text(dst_h5file["basins"], key, b_lines)
+            else:
+                # copy only
+                h5ds_copy(src_loc=src_h5file["basins"],
+                          src_name=b_key,
+                          dst_loc=dst_h5file["basins"],
+                          dst_name=b_key,
+                          recursive=False)
 
 
 def h5ds_copy(src_loc, src_name, dst_loc, dst_name=None,

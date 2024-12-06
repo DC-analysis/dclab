@@ -67,6 +67,113 @@ def test_copy_basins():
         assert is_properly_compressed(hc[f"basins/{bn_hash}"])
 
 
+def test_copy_basins_internal_none():
+    """Store an internal basin and only export scalar features"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("input_file.rtdc")
+    h5path_out = h5path.with_name("condensed.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=hw.h5file,
+                  features="scalar")
+        assert "basins" not in hw.h5file, "no basins in input file"
+        # store scalar and non-scalar internal basins in the input file
+        hw.store_basin(basin_name="scalar and non-scalar basin data",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data={"image_bg": np.zeros((2, 80, 320))},
+                       basin_map=np.zeros(src["events/deform"].shape[0]),
+                       basin_feats=["image_bg"],
+                       )
+
+    # sanity check
+    with new_dataset(h5path_small) as ds:
+        assert "image_bg" in ds.features_basin
+        assert "image_bg" not in ds.features_innate
+
+    # Now the actual tests starts.
+    with h5py.File(h5path_small) as src, h5py.File(h5path_out, "a") as dst:
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=dst,
+                  features="scalar",
+                  include_basins=True,
+                  include_logs=True,
+                  include_tables=True,
+                  meta_prefix="")
+
+    with h5py.File(h5path_out) as h5:
+        # The output file should not contain the "image_bg" data.
+        assert "basin_events" not in h5
+
+    # When we load the basin data, "image_bg" should also not be there.
+    with dclab.new_dataset(h5path_out) as ds:
+        basin_dicts = ds.basins_get_dicts()
+        assert len(basin_dicts) == 0
+
+
+def test_copy_basins_internal_no_scalar():
+    """Store an internal basin and only export scalar features"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("input_file.rtdc")
+    h5path_out = h5path.with_name("condensed.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=hw.h5file,
+                  features="scalar")
+        assert "basins" not in hw.h5file, "no basins in input file"
+        # store scalar and non-scalar internal basins in the input file
+        hw.store_basin(basin_name="scalar and non-scalar basin data",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data={"userdef1": np.arange(2),
+                                      "image_bg": np.zeros((2, 80, 320)),
+                                      },
+                       basin_map=np.zeros(src["events/deform"].shape[0]),
+                       basin_feats=["image_bg", "userdef1"],
+                       )
+
+    # sanity check
+    with new_dataset(h5path_small) as ds:
+        assert "userdef1" in ds.features_basin
+        assert "userdef1" not in ds.features_innate
+        assert "image_bg" in ds.features_basin
+        assert "image_bg" not in ds.features_innate
+
+    # Now the actual tests starts.
+    with h5py.File(h5path_small) as src, h5py.File(h5path_out, "a") as dst:
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=dst,
+                  features="scalar",
+                  include_basins=True,
+                  include_logs=True,
+                  include_tables=True,
+                  meta_prefix="")
+
+    with h5py.File(h5path_out) as h5:
+        # The output file should not contain the "image_bg" data.
+        assert "userdef1" in h5["basin_events"]
+        assert "image_bg" not in h5["basin_events"]
+
+    # When we load the basin data, "image_bg" should also not be there.
+    with dclab.new_dataset(h5path_out) as ds:
+        basin_dicts = ds.basins_get_dicts()
+        assert len(basin_dicts) == 1
+        bn = basin_dicts[0]
+        assert bn["type"] == "internal"
+        assert bn["mapping"] != "same"
+        assert bn["features"] == ["userdef1"], "image_bg feature must be gone"
+
+
 def test_copy_basins_mapped():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")

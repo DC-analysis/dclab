@@ -250,9 +250,11 @@ def test_write_read_internal_basin_data_missing_issue_268(h5_obj_delete):
     with h5py.File(h5path_small, "a") as h5:
         del h5[h5_obj_delete]
 
-    # now try to open the dataset containing the internal basin
-    with new_dataset(h5path_small) as ds:
-        assert "userdef1" not in ds
+    with pytest.warns(feat_basin.BasinFeatureMissingWarning,
+                      match="userdef1"):
+        # now try to open the dataset containing the internal basin
+        with new_dataset(h5path_small) as ds:
+            assert "userdef1" not in ds
 
 
 def test_write_read_internal_basin_data_missing_partial_issue_268():

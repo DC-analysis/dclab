@@ -504,20 +504,17 @@ class InternalH5DatasetBasin(Basin):
                              "internal basins.")
         # Redefine the features if necessary
         h5root = self._basinmap_referrer().h5file
-        if self.location in h5root:
-            available_features = []
-            for feat in self._features:
-                if feat in h5root[self.location]:
-                    available_features.append(feat)
-                else:
-                    warnings.warn(
-                        f"Feature '{feat}' is defined as an internal basin, "
-                        f"but it cannot be found in '{self.location}'.",
-                        BasinFeatureMissingWarning)
-            self._features.clear()
-            self._features += available_features
-        else:
-            self._features = []
+        available_features = []
+        for feat in self._features:
+            if self.location in h5root and feat in h5root[self.location]:
+                available_features.append(feat)
+            else:
+                warnings.warn(
+                    f"Feature '{feat}' is defined as an internal basin, "
+                    f"but it cannot be found in '{self.location}'.",
+                    BasinFeatureMissingWarning)
+        self._features.clear()
+        self._features += available_features
 
     def _load_dataset(self, location, **kwargs):
         from .fmt_dict import RTDC_Dict

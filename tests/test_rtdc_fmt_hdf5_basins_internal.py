@@ -8,6 +8,7 @@ import h5py
 import numpy as np
 
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
+from dclab.rtdc_dataset import feat_basin
 
 import pytest
 
@@ -201,6 +202,108 @@ def test_writer_error_feature_exists():
                 basin_feats=["userdef1"],
                 internal_data={"userdef1": np.arange(2)},
                 )
+
+
+@pytest.mark.parametrize("h5_obj_delete", [
+    # delete the entire basin_events directory
+    "basin_events",
+    # delete only the feature data
+    "basin_events/userdef1"
+])
+def test_write_read_internal_basin_data_missing_issue_268(h5_obj_delete):
+    """dclab should not fail when the internal data are missing"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    mapping = np.array([1, 0, 2, 3, 0, 2, 0, 1, 3, 1])
+
+    internal_data = {
+        "userdef1": np.arange(4)
+    }
+
+    # sanity checks
+    with h5py.File(h5path) as h5:
+        assert len(h5["events/deform"]) == 10
+        assert len(h5["events/deform"]) == len(mapping)
+
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # second, define the internal basin
+        hw.store_basin(basin_name="example basin",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data=internal_data,
+                       basin_map=mapping,
+                       basin_feats=sorted(internal_data.keys()),
+                       )
+
+    # sanity check
+    with h5py.File(h5path_small) as h5:
+        assert np.all(h5["basin_events/userdef1"][:]
+                      == internal_data["userdef1"])
+
+    # remove the basin data from the output file
+    with h5py.File(h5path_small, "a") as h5:
+        del h5[h5_obj_delete]
+
+    # now try to open the dataset containing the internal basin
+    with new_dataset(h5path_small) as ds:
+        assert "userdef1" not in ds
+
+
+def test_write_read_internal_basin_data_missing_partial_issue_268():
+    """dclab should not fail when the internal data are missing"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    mapping = np.array([1, 0, 2, 3, 0, 2, 0, 1, 3, 1])
+
+    internal_data = {
+        "userdef1": np.arange(4),
+        "userdef2": np.arange(4)
+    }
+
+    # sanity checks
+    with h5py.File(h5path) as h5:
+        assert len(h5["events/deform"]) == 10
+        assert len(h5["events/deform"]) == len(mapping)
+
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # second, define the internal basin
+        hw.store_basin(basin_name="example basin",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data=internal_data,
+                       basin_map=mapping,
+                       basin_feats=sorted(internal_data.keys()),
+                       )
+
+    # sanity check
+    with h5py.File(h5path_small) as h5:
+        assert np.all(h5["basin_events/userdef1"][:]
+                      == internal_data["userdef1"])
+
+    # remove the basin data from the output file
+    with h5py.File(h5path_small, "a") as h5:
+        # Only delete one feature. The other one should still be there.
+        del h5["basin_events/userdef1"]
+
+    # now try to open the dataset containing the internal basin
+    with pytest.warns(feat_basin.BasinFeatureMissingWarning,
+                      match="userdef1"):
+        with new_dataset(h5path_small) as ds:
+            assert "userdef1" not in ds
+            assert "userdef2" in ds
+            assert "userdef2" in ds.features_basin
 
 
 def test_writer_warning_uncommon_location():

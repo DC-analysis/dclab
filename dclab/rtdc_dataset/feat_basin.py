@@ -17,6 +17,10 @@ import numpy as np
 from ..util import copy_if_needed
 
 
+class BasinFeatureMissingWarning(UserWarning):
+    """Used when a badin feature is defined but not stored"""
+
+
 class CyclicBasinDependencyFoundWarning(UserWarning):
     """Used when a basin is defined in one of its sub-basins"""
 
@@ -498,6 +502,22 @@ class InternalH5DatasetBasin(Basin):
         if self._features is None:
             raise ValueError("You must specify features when defining "
                              "internal basins.")
+        # Redefine the features if necessary
+        h5root = self._basinmap_referrer().h5file
+        if self.location in h5root:
+            available_features = []
+            for feat in self._features:
+                if feat in h5root[self.location]:
+                    available_features.append(feat)
+                else:
+                    warnings.warn(
+                        f"Feature '{feat}' is defined as an internal basin, "
+                        f"but it cannot be found in '{self.location}'.",
+                        BasinFeatureMissingWarning)
+            self._features.clear()
+            self._features += available_features
+        else:
+            self._features = []
 
     def _load_dataset(self, location, **kwargs):
         from .fmt_dict import RTDC_Dict
@@ -509,8 +529,7 @@ class InternalH5DatasetBasin(Basin):
         return RTDC_Dict(ds_dict)
 
     def is_available(self):
-        h5root = self._basinmap_referrer().h5file
-        return self.location in h5root
+        return bool(self._features)
 
     def verify_basin(self, *args, **kwargs):
         """It's not necessary to verify internal basins"""

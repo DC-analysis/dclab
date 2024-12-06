@@ -1,5 +1,6 @@
 0.62.7
  - fix: IntegrityChecker must not load basins
+ - fix: KeyError in IntegrityChecker when "basin_events" group missing (#268)
  - tests: avoid architecture and Python-version dependent test
 0.62.6
  - enh: support passing pathlib.Path to lme4.rsetup.set_*_path methods

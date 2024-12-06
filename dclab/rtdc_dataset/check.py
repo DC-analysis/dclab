@@ -260,13 +260,24 @@ class IntegrityChecker(object):
                              level="alert",
                              category="basin data",
                              ))
-                for feat in bn["features"]:
-                    if feat not in self.ds.h5file[bpaths[0]]:
+                else:
+                    if "basin_events" not in self.ds.h5file:
                         cues.append(
-                            ICue(msg=f"Missing internal basin feature {feat}",
+                            ICue(msg="Missing internal basin group "
+                                     "'basin_events', although an internal "
+                                     "basin is defined",
                                  level="violation",
                                  category="basin data",
                                  ))
+                    else:
+                        for feat in bn["features"]:
+                            if feat not in self.ds.h5file["basin_events"]:
+                                cues.append(
+                                    ICue(msg=f"Missing internal basin "
+                                             f"feature {feat}",
+                                         level="violation",
+                                         category="basin data",
+                                         ))
         return cues
 
     def check_compression(self, **kwargs):

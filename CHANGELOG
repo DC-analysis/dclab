@@ -1,3 +1,5 @@
+0.62.8
+ - docs: formatting typo (#270)
 0.62.7
  - fix: IntegrityChecker must not load basins
  - fix: KeyError in IntegrityChecker when "basin_events" group missing (#268)

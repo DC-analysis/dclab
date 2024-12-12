@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.8', '3.x']
-        # macos-latest (macOS 14): problems with ffmpeg (wait for imageio upgrade)
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
         exclude:

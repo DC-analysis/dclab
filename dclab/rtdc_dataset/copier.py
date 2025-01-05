@@ -47,8 +47,7 @@ def rtdc_copy(src_h5file: h5py.Group,
         Add this prefix to the name of the logs and tables in `dst_h5file`.
     """
     # metadata
-    for akey in src_h5file.attrs:
-        dst_h5file.attrs[akey] = src_h5file.attrs[akey]
+    dst_h5file.attrs.update(src_h5file.attrs)
 
     # events in source file
     if "events" in src_h5file:
@@ -84,11 +83,12 @@ def rtdc_copy(src_h5file: h5py.Group,
             #           dst_loc=dst_h5file["tables"],
             #           dst_name=meta_prefix + tkey,
             #           recursive=False)
-            dst_h5file["tables"].create_dataset(
+            copy_table = dst_h5file["tables"].create_dataset(
                 name=tkey,
                 data=src_h5file["tables"][tkey][:],
                 fletcher32=True,
                 **hdf5plugin.Zstd(clevel=5))
+            copy_table.attrs.update(src_h5file["tables"][tkey].attrs)
 
     # events
     if isinstance(features, list):
@@ -303,8 +303,7 @@ def h5ds_copy(src_loc, src_name, dst_loc, dst_name=None,
                 for chunk in src.iter_chunks():
                     dst[chunk] = src[chunk]
             # Also write all the attributes
-            for key in src.attrs:
-                dst.attrs[key] = src.attrs[key]
+            dst.attrs.update(src.attrs)
         else:
             # Copy the Dataset to the destination as-is.
             h5py.h5o.copy(src_loc=src_loc.id,

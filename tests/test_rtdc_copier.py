@@ -433,6 +433,11 @@ def test_copy_tables_hdf5_issue_3214():
         rtdc_copy(src_h5file=h5,
                   dst_h5file=hc)
 
+    # Also make sure metadata are copied
+    with h5py.File(path_copy) as hc:
+        assert hc["tables"]["cytoshot_monitor"].attrs["COLOR_shift"]\
+               == "#0e8f69"
+
 
 def test_copy_with_compression():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")

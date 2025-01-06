@@ -356,6 +356,63 @@ def test_basin_relative_paths(path_sep):
         assert "image" in ds
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_key_reproducible():
+    """Since 0.62.9 we sort basin keys"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.parent / "subdirectory" / "relative.rtdc"
+    h5path_small.parent.mkdir()
+    h5path_small_2 = h5path_small.with_name("from_writer.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset manually
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["image"],
+            "paths": [f"../{h5path.name}"]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "relative_paths_basin", blines)
+
+    # When loading a basin, dclab should use the existing key
+    # from the input file.
+    with dclab.new_dataset(h5path_small) as ds:
+        assert len(ds.basins) == 1
+        assert ds.basins[0].key == "relative_paths_basin"
+
+    # By default, dclab should store the basin with a key made from
+    # its hash.
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small_2) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset with dclab
+        hw.store_basin(
+            basin_name="relative_paths_basin",
+            basin_type="file",
+            basin_format="hdf5",
+            basin_feats=["image"],
+            basin_locs=[f"../{h5path.name}"],
+            verify=False,
+        )
+    # When loading a basin, dclab should use the existing key
+    # from the input file.
+    with dclab.new_dataset(h5path_small_2) as ds:
+        assert len(ds.basins) == 1
+        # dclab 0.62.9
+        assert ds.basins[0].key == "b8763fad05e17b58407875fe9c28d90b"
+
+
 def test_basin_sorting_basic():
     bnlist = [
         {"type": "remote", "format": "dcor", "ident": 0},

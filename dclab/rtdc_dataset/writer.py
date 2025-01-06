@@ -389,7 +389,7 @@ class RTDCWriter:
                     flocs.append(str(pp.resolve()))
                     # Also store the relative path for user convenience.
                     # Don't use pathlib.Path.relative_to, because that
-                    # is deprecated in Python 3.12.
+                    # only has `walk_up` since Python 3.12.
                     # Also, just look in subdirectories which simplifies
                     # path resolution.
                     this_parent = str(self.path.parent) + os.sep

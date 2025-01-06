@@ -410,7 +410,12 @@ def test_basin_key_reproducible():
     with dclab.new_dataset(h5path_small_2) as ds:
         assert len(ds.basins) == 1
         # dclab 0.62.9
-        assert ds.basins[0].key == "b8763fad05e17b58407875fe9c28d90b"
+        assert ds.basins[0].key in [
+            # posix linesep
+            "b8763fad05e17b58407875fe9c28d90b",
+            # win linesep
+            "a495fd2d495e0d991f3a4a313ec3a3fc",
+        ]
 
 
 def test_basin_sorting_basic():

@@ -408,7 +408,7 @@ class RTDCWriter:
         else:
             raise ValueError(f"Unknown basin type '{basin_type}'")
 
-        b_lines = json.dumps(b_data, indent=2).split("\n")
+        b_lines = json.dumps(b_data, indent=2, sort_keys=True).split("\n")
         basins = self.h5file.require_group("basins")
         key = hashobj(b_lines)
         if key not in basins:

@@ -1,6 +1,7 @@
 """RT-DC dataset core classes and methods"""
 import abc
 import hashlib
+import json
 import os.path
 import pathlib
 import traceback
@@ -15,6 +16,7 @@ from .. import definitions as dfn
 from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
+from ..util import hashobj
 
 from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
 from . import feat_basin
@@ -825,14 +827,20 @@ class RTDCBase(abc.ABC):
         # Sort basins according to priority
         bdicts_srt = sorted(self.basins_get_dicts(),
                             key=feat_basin.basin_priority_sorted_key)
-        bd_keys = [bd["key"] for bd in bdicts_srt if "key" in bd]
+        # complement basin "key"s (we do the same in writer)
+        for bdict in bdicts_srt:
+            if "key" not in bdict:
+                b_dat = json.dumps(bdict, indent=2, sort_keys=True).split("\n")
+                bdict["key"] = hashobj(b_dat)
+
+        bd_keys = [bd["key"] for bd in bdicts_srt]
         bd_keys += self._basins_ignored
         for bdict in bdicts_srt:
             if bdict["format"] not in bc:
                 warnings.warn(f"Encountered unsupported basin "
                               f"format '{bdict['format']}'!")
                 continue
-            if "key" in bdict and bdict["key"] in self._basins_ignored:
+            if bdict["key"] in self._basins_ignored:
                 warnings.warn(
                     f"Encountered cyclic basin dependency '{bdict['key']}'",
                     feat_basin.CyclicBasinDependencyFoundWarning)
@@ -853,6 +861,8 @@ class RTDCBase(abc.ABC):
                 "measurement_identifier": self.get_measurement_identifier(),
                 # allow to ignore basins
                 "ignored_basins": bd_keys,
+                # basin key
+                "key": bdict["key"],
             }
 
             # Check whether this basin is supported and exists

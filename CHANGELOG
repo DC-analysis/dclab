@@ -1,3 +1,10 @@
+0.62.9
+ - enh: sort basin definition before exporting to JSON; the side-effect
+   is that the unique key for a basin changes, possibly resulting in
+   duplicated basin definitions for existing datasets
+ - enh: make sure every basin can be identified with a key created from
+   its definition; important for connecting the basin dictionaries
+   with the instantiated basins
 0.62.8
  - fix: metadata of tables not copied by `copier.py`
  - docs: formatting typo (#270)

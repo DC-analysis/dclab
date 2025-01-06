@@ -9,6 +9,7 @@ import abc
 import numbers
 import threading
 from typing import Dict, List, Literal
+import uuid
 import warnings
 import weakref
 
@@ -74,6 +75,7 @@ class Basin(abc.ABC):
                                   ] = "same",
                  mapping_referrer: Dict = None,
                  ignored_basins: List[str] = None,
+                 key: str = None,
                  **kwargs):
         """
 
@@ -109,6 +111,10 @@ class Basin(abc.ABC):
             :class:`.RTDCBase`.
         ignored_basins: list of str
             List of basins to ignore in subsequent basin instantiations
+        key: str
+            Unique key to identify this basin; normally computed from
+            a JSON dump of the basin definition. A random string is used
+            if None is specified.
         kwargs:
             Additional keyword arguments passed to the `load_dataset`
             method of the `Basin` subclass.
@@ -124,6 +130,8 @@ class Basin(abc.ABC):
         self.name = name
         #: lengthy description of the basin
         self.description = description
+        # defining key of the basin
+        self.key = key or str(uuid.uuid4())
         # features this basin provides
         self._features = features
         #: measurement identifier of the referencing dataset
@@ -367,6 +375,7 @@ class BasinProxy:
             dataset to the downstream dataset
         """
         self.ds = ds
+        self.basins_get_dicts = ds.basins_get_dicts
         self.basinmap = basinmap
         self._features = {}
 

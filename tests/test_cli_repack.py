@@ -80,6 +80,43 @@ def test_repack_basin_internal(use_basins):
             assert "userdef1" not in ds.features_basin
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_repack_multiple_basins():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+    h5path_out = h5path.with_name("repacked.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(basin_name="example basin",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[h5path],
+                       basin_descr="an example test basin",
+                       )
+
+        hw.store_basin(basin_name="example basin",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[h5path],
+                       basin_descr="a different test basin",
+                       )
+
+        assert len(hw.h5file["basins"].keys()) == 2
+
+    # repack the basin-based dataset
+    cli.repack(path_in=h5path_small,
+               path_out=h5path_out)
+
+    with new_dataset(h5path_out) as ds:
+        assert len(ds.basins) == 2
+
+
 def test_repack_no_data_from_basins_written():
     """
     When repacking a dataset, feature data from the basin should not be

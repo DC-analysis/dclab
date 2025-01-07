@@ -1,4 +1,6 @@
 0.62.10
+ - fix: `basin_definition_copy` failed when more than one basins defined
+   due to redundant loop
  - fix: JSON logs during export were not sorted and indented
 0.62.9
  - enh: sort basin definition before exporting to JSON; the side-effect

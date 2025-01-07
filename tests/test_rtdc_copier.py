@@ -203,6 +203,44 @@ def test_copy_basins_mapped():
         assert is_properly_compressed(hc["events/basinmap0"])
 
 
+def test_copy_basins_multiple():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # add log to source file
+    with RTDCWriter(path, mode="append") as hw:
+        hw.store_basin(
+            basin_type="file",
+            basin_format="hdf5",
+            basin_name="test_basin",
+            basin_locs=["does-not-exist-but-does-not-matter.rtdc"],
+            basin_map=np.arange(len(hw.h5file["events/deform"])),
+            basin_descr="A first basin",
+            verify=False
+        )
+
+        hw.store_basin(
+            basin_type="file",
+            basin_format="hdf5",
+            basin_name="test_basin",
+            basin_locs=["does-not-exist-but-does-not-matter.rtdc"],
+            basin_map=np.arange(len(hw.h5file["events/deform"])),
+            basin_descr="A second basin",
+            verify=False
+        )
+
+        assert len(hw.h5file["basins"]) == 2
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert len(hc["basins"]) == 2
+
+
 def test_copy_basins_no_basin():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")

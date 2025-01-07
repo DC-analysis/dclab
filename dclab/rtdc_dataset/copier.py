@@ -178,42 +178,51 @@ def basin_definition_copy(src_h5file, dst_h5file, features_iter):
     relevant for the internal basin.
     """
     dst_h5file.require_group("basins")
-    for b_key in src_h5file["basins"]:
-        if b_key in dst_h5file["basins"]:
-            # This basin already exists.
-            continue
-        # Load the basin information
-        basin_dicts = RTDC_HDF5.basin_get_dicts_from_h5file(src_h5file)
-        for bn in basin_dicts:
-            if bn["type"] == "internal":
-                # Make sure we define the internal features selected
-                feat_used = [f for f in bn["features"] if f in features_iter]
-                if len(feat_used) == 0:
-                    # We don't have any internal features, don't write anything
-                    continue
-                elif feat_used != bn["features"]:
-                    bn["features"] = feat_used
-                    rewrite = True
-                else:
-                    rewrite = False
-            else:
-                # We do not have an internal basin, just copy everything
-                rewrite = False
+    # Load the basin information
+    basin_dicts = RTDC_HDF5.basin_get_dicts_from_h5file(src_h5file)
+    for bn in basin_dicts:
+        b_key = bn["key"]
 
-            if rewrite:
-                # Convert edited `bn` to JSON and write feature data
-                b_lines = json.dumps(bn, indent=2).split("\n")
-                key = hashobj(b_lines)
-                if key not in dst_h5file["basins"]:
-                    with RTDCWriter(dst_h5file) as hw:
-                        hw.write_text(dst_h5file["basins"], key, b_lines)
+        if b_key in dst_h5file["basins"]:
+            # already stored therein
+            continue
+
+        # sanity check
+        if b_key not in src_h5file["basins"]:
+            raise ValueError(
+                f"Failed to parse basin information correctly. Source file "
+                f"{src_h5file} does not contain basin {b_key} which I got "
+                f"from `RTDC_HDF5.basin_get_dicts_from_h5file`.")
+
+        if bn["type"] == "internal":
+            # Make sure we define the internal features selected
+            feat_used = [f for f in bn["features"] if f in features_iter]
+            if len(feat_used) == 0:
+                # We don't have any internal features, don't write anything
+                continue
+            elif feat_used != bn["features"]:
+                bn["features"] = feat_used
+                rewrite = True
             else:
-                # copy only
-                h5ds_copy(src_loc=src_h5file["basins"],
-                          src_name=b_key,
-                          dst_loc=dst_h5file["basins"],
-                          dst_name=b_key,
-                          recursive=False)
+                rewrite = False
+        else:
+            # We do not have an internal basin, just copy everything
+            rewrite = False
+
+        if rewrite:
+            # Convert edited `bn` to JSON and write feature data
+            b_lines = json.dumps(bn, indent=2).split("\n")
+            key = hashobj(b_lines)
+            if key not in dst_h5file["basins"]:
+                with RTDCWriter(dst_h5file) as hw:
+                    hw.write_text(dst_h5file["basins"], key, b_lines)
+        else:
+            # copy only
+            h5ds_copy(src_loc=src_h5file["basins"],
+                      src_name=b_key,
+                      dst_loc=dst_h5file["basins"],
+                      dst_name=b_key,
+                      recursive=False)
 
 
 def h5ds_copy(src_loc, src_name, dst_loc, dst_name=None,

@@ -1,3 +1,5 @@
+0.62.10
+ - fix: JSON logs during export were not sorted and indented
 0.62.9
  - enh: sort basin definition before exporting to JSON; the side-effect
    is that the unique key for a basin changes, possibly resulting in

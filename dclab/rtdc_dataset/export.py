@@ -319,18 +319,21 @@ class Export(object):
 
             # write export log
             hw.store_log(time.strftime("dclab-export_%Y-%m-%d_%H.%M.%S"),
-                         json.dumps({
-                             "dclab version": version_tuple,
-                             "kwargs": {
-                                 "features": features,
-                                 "filtered": filtered,
-                                 "logs": logs,
-                                 "tables": tables,
-                                 "basins": basins,
-                                 "meta_prefix": meta_prefix,
-                                 "skip_checks": skip_checks
-                             }
-                         }).split("\n"))
+                         json.dumps(
+                             {"dclab version": version_tuple,
+                              "kwargs": {
+                                  "features": features,
+                                  "filtered": filtered,
+                                  "logs": logs,
+                                  "tables": tables,
+                                  "basins": basins,
+                                  "meta_prefix": meta_prefix,
+                                  "skip_checks": skip_checks
+                                  }
+                              },
+                             indent=2,
+                             sort_keys=True,
+                         ).split("\n"))
 
             if logs:
                 # write logs

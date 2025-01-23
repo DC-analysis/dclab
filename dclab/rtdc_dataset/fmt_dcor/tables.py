@@ -30,11 +30,13 @@ class DCORTables:
             tables = {}
             for key in table_data:
                 columns, data = table_data[key]
-                ds_dt = np.dtype({'names': columns,
-                                  'formats': [np.float64] * len(columns)})
                 tab_data = np.asarray(data)
-                rec_arr = np.rec.array(tab_data, dtype=ds_dt)
-                tables[key] = rec_arr
+                if columns is not None:
+                    # We have a rec-array (named columns)
+                    ds_dt = np.dtype({'names': columns,
+                                      'formats': [np.float64] * len(columns)})
+                    tab_data = np.rec.array(tab_data, dtype=ds_dt)
+                tables[key] = tab_data
 
             self._tables_cache = tables
         return self._tables_cache

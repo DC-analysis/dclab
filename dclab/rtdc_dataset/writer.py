@@ -616,7 +616,7 @@ class RTDCWriter:
                     convfunc = dfn.get_config_value_func(sec, ck)
                     self.h5file.attrs[idk] = convfunc(value)
 
-    def store_table(self, name, cmp_array):
+    def store_table(self, name, cmp_array, h5_attrs=None):
         """Store a compound array table
 
         Tables are semi-metadata. They may contain information collected
@@ -629,16 +629,33 @@ class RTDCWriter:
         ----------
         name: str
             Name of the table
-        cmp_array: np.recarray, h5py.Dataset, or dict
+        cmp_array: np.recarray, h5py.Dataset, np.ndarray, or dict
             If a np.recarray or h5py.Dataset are provided, then they
             are written as-is to the file. If a dictionary is provided,
             then the dictionary is converted into a numpy recarray.
+            If a numpy array is provided, then the array is written
+            as a raw table (no column names) to the file.
+        h5_attrs: dict, optional
+            Attributes to store alongside the corresponding HDF5 dataset
         """
-        if isinstance(cmp_array, (np.recarray, h5py.Dataset)):
+        if h5_attrs is None:
+            h5_attrs = {}
+
+        if isinstance(cmp_array, np.recarray):
             # A table is a compound array (np.recarray). If we are here,
-            # this means that the user passed an instance of np.recarray
-            # or an instance h5py.Dataset (which we trust to be a proper
+            # this means that the user passed an instance of np.recarray.
+            pass
+        elif isinstance(cmp_array, h5py.Dataset):
+            # An instance of h5py.Dataset (which we trust to be a proper
             # compound dataset at this point). No additional steps needed.
+            h5_attrs.update(cmp_array.attrs)
+            pass
+        elif isinstance(cmp_array, np.ndarray):
+            # A numpy array was passed. This usually means we have something
+            # that we can look at, so we add image tags.
+            h5_attrs['CLASS'] = np.bytes_('IMAGE')
+            h5_attrs['IMAGE_VERSION'] = np.bytes_('1.2')
+            h5_attrs['IMAGE_SUBCLASS'] = np.bytes_('IMAGE_GRAYSCALE')
             pass
         elif isinstance(cmp_array, dict):
             # The user passed a dict which we now have to convert to a
@@ -659,16 +676,18 @@ class RTDCWriter:
         else:
             raise NotImplementedError(
                 f"Cannot convert {type(cmp_array)} to table!")
+
+        # data
         group = self.h5file.require_group("tables")
         tab = group.create_dataset(
             name,
             data=cmp_array,
             fletcher32=True,
             **self.compression_kwargs)
-        # Also store metadata
-        if hasattr(cmp_array, "attrs"):
-            for key in cmp_array.attrs:
-                tab.attrs[key] = cmp_array.attrs[key]
+
+        # metadata
+        if h5_attrs:
+            tab.attrs.update(h5_attrs)
 
     def version_brand(self, old_version=None, write_attribute=True):
         """Perform version branding

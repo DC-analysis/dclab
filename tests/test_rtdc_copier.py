@@ -457,6 +457,31 @@ def test_copy_tables():
             np.pi, 2 * np.pi, 10))
 
 
+def test_copy_tables_array_only():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # generate a table that consists of an array, not a dict-like object
+    tab_data = np.random.random((1000, 300))
+
+    # add table to source file
+    with h5py.File(path, "a") as h5:
+        h5tab = h5.require_group("tables")
+        h5tab.create_dataset(name="random_data",
+                             data=tab_data)
+        assert not is_properly_compressed(h5["tables/random_data"])
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["tables/random_data"])
+        assert np.all(tab_data == hc["tables/random_data"])
+
+
 def test_copy_tables_hdf5_issue_3214():
     """Checks for a bug in HDF5
 

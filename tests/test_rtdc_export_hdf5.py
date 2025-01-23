@@ -609,6 +609,27 @@ def test_hdf5_tables(tables):
             assert "src_iratrax" not in h5.get("tables", {})
 
 
+def test_hdf5_tables_array_only():
+    keys = ["area_um", "deform", "time", "frame", "index_online"]
+    ddict = example_data_dict(size=10, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+
+    # generate a table that consists of an array, not a dict-like object
+    tab_data = np.random.random((1000, 300))
+    ds1.tables["iratrax"] = tab_data
+
+    edest = pathlib.Path(tempfile.mkdtemp())
+    f1 = edest / "dclab_test_export_hdf5_1.rtdc"
+    ds1.export.hdf5(f1, keys, tables=True)
+    with h5py.File(f1, "r") as h5:
+        assert "src_iratrax" in h5.get("tables", {})
+        assert np.all(h5["tables"]["src_iratrax"] == tab_data)
+        assert h5["tables"]["src_iratrax"].attrs["CLASS"] == np.bytes_("IMAGE")
+
+
 def test_hdf5_trace_from_tdms():
     pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_2fl-no-image_2017.zip"))

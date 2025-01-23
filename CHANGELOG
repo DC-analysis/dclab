@@ -1,3 +1,5 @@
+0.62.11
+ - enh: support plain `numpy.array` tables
 0.62.10
  - fix: `basin_definition_copy` failed when more than one basins defined
    due to redundant loop

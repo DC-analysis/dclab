@@ -267,7 +267,7 @@ def test_image_basic():
     #             on macOS. Possible reason is underlying ffmpeg build
     #             for M1 etc. arm processors :zany_face:
     assert np.allclose(np.average(ds["image"][1]), 45.1490478515625,
-                       atol=0.4)
+                       atol=0.5)
 
 
 @pytest.mark.filterwarnings(

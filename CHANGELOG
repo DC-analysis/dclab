@@ -1,3 +1,5 @@
+0.62.12
+ - fix: viscosity computation for MP-PBS at zero flow rate should be NaN
 0.62.11
  - enh: support plain `numpy.array` tables
 0.62.10

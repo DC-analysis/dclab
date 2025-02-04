@@ -120,6 +120,10 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
     if medium == "water":
         # We ignore the `model`, because it's user convenient.
         eta = get_viscosity_water_kestin_1978(temperature=temperature)
+    elif not flow_rate:
+        # When flow rate is zero, we cannot compute the viscosity for
+        # anything other than water above.
+        eta = np.nan
     elif medium in ["0.49% MC-PBS", "0.59% MC-PBS", "0.83% MC-PBS"]:
         kwargs = {"medium": medium,
                   "temperature": temperature,

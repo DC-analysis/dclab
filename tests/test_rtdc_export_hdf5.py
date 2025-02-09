@@ -582,7 +582,7 @@ def test_hdf5_override():
 def test_hdf5_tables(tables):
     keys = ["area_um", "deform", "time", "frame", "index_online"]
     ddict = example_data_dict(size=10, keys=keys)
-    ds1 = dclab.new_dataset(ddict)
+    ds1 = new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
     ds1.config["experiment"]["run index"] = 1
     ds1.config["imaging"]["frame rate"] = 2000
@@ -608,11 +608,18 @@ def test_hdf5_tables(tables):
         else:
             assert "src_iratrax" not in h5.get("tables", {})
 
+    if tables:
+        # reading the file with dclab
+        with new_dataset(f1) as ds:
+            assert "src_iratrax" in ds.tables
+            assert ds.tables["src_iratrax"].has_graphs()
+            assert np.all(ds.tables["src_iratrax"] == rec_arr)
+
 
 def test_hdf5_tables_array_only():
     keys = ["area_um", "deform", "time", "frame", "index_online"]
     ddict = example_data_dict(size=10, keys=keys)
-    ds1 = dclab.new_dataset(ddict)
+    ds1 = new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
     ds1.config["experiment"]["run index"] = 1
     ds1.config["imaging"]["frame rate"] = 2000
@@ -628,6 +635,13 @@ def test_hdf5_tables_array_only():
         assert "src_iratrax" in h5.get("tables", {})
         assert np.all(h5["tables"]["src_iratrax"] == tab_data)
         assert h5["tables"]["src_iratrax"].attrs["CLASS"] == np.bytes_("IMAGE")
+
+    # reading the file with dclab
+    with new_dataset(f1) as ds:
+        assert "src_iratrax" in ds.tables
+        assert not ds.tables["src_iratrax"].has_graphs()
+        assert np.all(ds.tables["src_iratrax"] == tab_data)
+        assert ds.tables["src_iratrax"].meta["CLASS"] == np.bytes_("IMAGE")
 
 
 def test_hdf5_trace_from_tdms():

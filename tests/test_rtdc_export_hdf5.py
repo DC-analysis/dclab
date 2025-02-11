@@ -644,6 +644,56 @@ def test_hdf5_tables_array_only():
         assert ds.tables["src_iratrax"].meta["CLASS"] == np.bytes_("IMAGE")
 
 
+def test_hdf5_table_from_file(tmp_path):
+    ds = new_dataset(retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip"))
+
+    f1 = join(tmp_path, "test.rtdc")
+    ds.export.hdf5(f1, ["temp"], tables=True)
+
+    ds2 = new_dataset(f1)
+    tab = ds2.tables["src_so2exp_cytoshot_monitor"]
+
+    assert np.allclose(
+        tab["focus"][0],
+        6.241900073522602,
+        atol=1e-7, rtol=0)
+
+    assert tab.meta["COLOR_focus"] == "#a03000"
+
+
+def test_hdf5_table_from_file_with_unnamed_table(tmp_path):
+    path = retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip")
+    with RTDCWriter(path) as hw:
+        hw.store_table("just_an_array", np.ones((30, 50)),
+                       h5_attrs={"heinz": "kunz"})
+
+    # Make sure that worked with tables
+    with new_dataset(path) as ds:
+        tab = ds.tables["just_an_array"]
+        assert not tab.has_graphs()
+        assert np.array(tab).shape == (30, 50)
+        assert tab.meta["heinz"] == "kunz"
+
+    with new_dataset(path) as ds:
+        f1 = join(tmp_path, "test.rtdc")
+        ds.export.hdf5(f1, ["temp"], tables=True)
+
+    with new_dataset(f1) as ds2:
+        tab = ds2.tables["src_so2exp_cytoshot_monitor"]
+        assert tab.has_graphs()
+        assert np.allclose(
+            tab["focus"][0],
+            6.241900073522602,
+            atol=1e-7, rtol=0)
+
+        assert tab.meta["COLOR_focus"] == "#a03000"
+
+        tab2 = ds2.tables["src_just_an_array"]
+        assert not tab2.has_graphs()
+        assert np.array(tab2).shape == (30, 50)
+        assert tab2.meta["heinz"] == "kunz"
+
+
 def test_hdf5_trace_from_tdms():
     pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_2fl-no-image_2017.zip"))

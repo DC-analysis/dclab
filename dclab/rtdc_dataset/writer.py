@@ -17,6 +17,7 @@ from ..util import hashobj
 from .._version import version
 
 from .feat_anc_plugin import PlugInFeature
+from .meta_table import MetaTable
 
 #: DEPRECATED (use `CHUNK_SIZE_BYTES` instead)
 CHUNK_SIZE = 100
@@ -641,6 +642,12 @@ class RTDCWriter:
         if h5_attrs is None:
             h5_attrs = {}
 
+        # Convert MetaTable to numpy data
+        if isinstance(cmp_array, MetaTable):
+            h5_attrs.update(cmp_array.meta)
+            cmp_array = cmp_array.__array__()
+
+        # Handle individual cases
         if isinstance(cmp_array, np.recarray):
             # A table is a compound array (np.recarray). If we are here,
             # this means that the user passed an instance of np.recarray.

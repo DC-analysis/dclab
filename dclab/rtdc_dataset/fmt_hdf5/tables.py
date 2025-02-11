@@ -1,3 +1,6 @@
+from ..meta_table import MetaTable
+
+
 class H5Tables:
     def __init__(self, h5):
         self.h5file = h5
@@ -30,7 +33,7 @@ class H5Tables:
         return self._cache_keys
 
 
-class H5Table:
+class H5Table(MetaTable):
     def __init__(self, h5_ds):
         self._h5_ds = h5_ds
         self._keys = None

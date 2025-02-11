@@ -1,3 +1,6 @@
+0.62.14
+ - fix: exporting table data broken
+ - ref: introduce base class for tables `TableMeta`
 0.62.13
  - ref: add custom table class for `hdf5` and `dcor` formats
 0.62.12

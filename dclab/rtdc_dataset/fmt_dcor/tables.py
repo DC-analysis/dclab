@@ -1,5 +1,7 @@
 import numpy as np
 
+from ..meta_table import MetaTable
+
 
 class DCORTables:
     def __init__(self, api):
@@ -35,7 +37,7 @@ class DCORTables:
         return self._tables_cache
 
 
-class DCORTable:
+class DCORTable(MetaTable):
     def __init__(self, table_content):
         self._columns, data = table_content
         self._tab_data = np.asarray(data)

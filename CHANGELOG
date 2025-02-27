@@ -1,3 +1,5 @@
+0.62.15
+ - fix: support opening files on non-mounted network shares on Windows
 0.62.14
  - fix: exporting table data broken
  - ref: introduce base class for tables `TableMeta`

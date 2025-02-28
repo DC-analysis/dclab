@@ -168,15 +168,14 @@ def test_basin_feature_image_export_from_basin_with_hierarchy(tmp_path):
         assert np.any(ds["mask"][0])
 
 
-@pytest.mark.filterwarnings(
-    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
 @pytest.mark.parametrize("filtered", [True, False])
 def test_basin_feature_nested_image_exported_available(tmp_path, filtered):
     pytest.importorskip("requests")
     epath = tmp_path / "exported.rtdc"
     # Load data from DCOR and export basin-only dataset
-    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+    # 250209_Blood_2025-02-09_09.46_M003_Reference_dcn_export_28.rtdc
+    with dclab.new_dataset("57ecde5d-f896-4599-ba35-d1be7defc6fe") as ds:
         assert "image" in ds
         ds.export.hdf5(path=epath,
                        features=[],

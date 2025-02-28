@@ -84,20 +84,26 @@ def test_dcor_base(monkeypatch):
             assert np.all(t1 == t2)
 
 
+def test_dcor_data():
+    # reference data 2025-02-09_09.46_M003_Reference_dcn_export_28.rtdc
+    with dclab.new_dataset("57ecde5d-f896-4599-ba35-d1be7defc6fe") as ds:
+        assert np.allclose(ds["deform"][0],
+                           0.05335504858810891,
+                           rtol=0, atol=1e-5)
+        assert np.allclose(ds["area_um"][27], 30.411406250000002,
+                           rtol=0, atol=1e-5)
+        assert np.median(ds["image"][1]) == 145
+        assert np.sum(ds["mask"][11]) == 511
+        assert np.sum(ds["mask"][11]) == 511
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
-def test_dcor_data():
+def test_dcor_data_contour_fl():
     # reticulocytes.rtdc contains contour data
     with dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a") as ds:
-        assert np.allclose(ds["circ"][0],
-                           0.7309052348136902,
-                           rtol=0, atol=1e-5)
-        assert np.allclose(ds["area_um"][391], 37.5122, rtol=0, atol=1e-5)
         assert np.all(ds["contour"][24][22] == np.array([87, 61]))
-        assert np.median(ds["image"][1]) == 58
-        assert np.sum(ds["mask"][11]) == 332
-        assert np.sum(ds["mask"][11]) == 332
         assert np.median(ds["trace"]["fl1_raw"][200]) == 183.0
         assert np.sum(ds["trace"]["fl1_median"][2167]) == 183045
 

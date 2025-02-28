@@ -19,7 +19,7 @@ if not DCOR_AVAILABLE:
     pytest.skip("No connection to DCOR", allow_module_level=True)
 
 dcor_url = ("https://dcor.mpl.mpg.de/api/3/action/dcserv?id="
-            "fb719fb2-bd9f-817a-7d70-f4002af916f0")
+            "57ecde5d-f896-4599-ba35-d1be7defc6fe")
 
 
 @pytest.mark.filterwarnings(
@@ -169,8 +169,8 @@ def test_create_basin_file_with_no_data(tmp_path):
         bn = ds.basins[0]
         assert len(bn.ds.basins) == 2
         assert ds.features_basin
-        assert len(ds) == 5000
-        assert np.allclose(ds["deform"][0], 0.009741939,
+        assert len(ds) == 28
+        assert np.allclose(ds["deform"][0], 0.05335504858810891,
                            atol=0, rtol=1e-5)
 
 
@@ -196,10 +196,10 @@ def test_create_basin_file_with_one_feature(tmp_path):
 
     with new_dataset(h5path) as ds:
         assert ds.features_basin
-        assert len(ds) == 5000
+        assert len(ds) == 28
         assert "deform" in ds.features_basin
         assert "area_um" not in ds.features_basin
         assert "deform" in ds
         assert "area_um" not in ds
-        assert np.allclose(ds["deform"][0], 0.009741939,
+        assert np.allclose(ds["deform"][0], 0.05335504858810891,
                            atol=0, rtol=1e-5)

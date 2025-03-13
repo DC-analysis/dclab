@@ -1,4 +1,5 @@
 0.62.16
+ - docs: fix typo in S3 section (missing `DCLAB_S3_SECRET_ACCESS_KEY`)
  - tests: reduce test time by 35% from 400s to 250 (smaller S3 reference data)
 0.62.15
  - fix: support opening files on non-mounted network shares on Windows

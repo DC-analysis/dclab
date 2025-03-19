@@ -10,7 +10,8 @@ Basins are a powerful concept that allow you to save time, disk space,
 and network usage when processing DC data. The basic idea behind basins is
 that you avoid duplicating feature data by not copying all of the features
 from an input file to an output file, but by *linking* from the output
-file to the input file.
+file to the input file. Feature data "flows" from the basins to the
+files downstream.
 
 Due to the fact that basins are implemented in dclab, all software that relies
 on dclab for opening data files (e.g. Shape-Out or CytoPlot) automatically

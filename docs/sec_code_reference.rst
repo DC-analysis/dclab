@@ -353,11 +353,6 @@ HDF5 manipulation
    :undoc-members:
 
 
-.. automodule:: dclab.rtdc_dataset.linker
-   :members:
-   :undoc-members:
-
-
 
 Writing RT-DC files
 ===================

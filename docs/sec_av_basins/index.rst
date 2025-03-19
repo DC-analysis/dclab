@@ -6,26 +6,92 @@ Basins
 
 Motivation
 ==========
-Basins are a powerful concept that allow you to both save time, disk space,
+Basins are a powerful concept that allow you to save time, disk space,
 and network usage when processing DC data. The basic idea behind basins is
-that you avoid duplicating feature data, by not copying all of the features
+that you avoid duplicating feature data by not copying all of the features
 from an input file to an output file, but by *linking* from the output
 file to the input file.
 
-For instance, let's say your pipeline is designed to compute a new feature
-``userdef1`` and you would like to open the output file in Shape-Out, visualizing
-this feature in combination with other features defined in the input file (e.g.
-``deform``). What you *could* do is to write the ``userdef1`` feature directly to
-the input file or to create a copy of your input file and write ``userdef1``
-to that copy. However, this might make you feel uneasy, because you
-would like to avoid editing your original raw data (possible data loss) and
-copying an entire file seems like unnecessary overhead (redundant data, high
-disk usage).
-With basin features, you can create an empty output file, write your
-new feature ``userdef1`` to it, define a basin that links to your input file,
-and you are done. Without ever modifying your input file. And it is even
-possible to create an output file that is gated (containing a subset of events
-from the input file).
+Due to the fact that basins are implemented in dclab, all software that relies
+on dclab for opening data files (e.g. Shape-Out or CytoPlot) automatically
+supports basins as well.
+
+
+Use cases
+=========
+To illustrate how you can use basins in your analysis pipeline, let's consider
+the three examples shown in :numref:`fig_basins_example_workflow`.
+
+A. You have found a dataset on figshare.com that you would like to work with.
+   However, you are only interested in a fraction of the events in that file.
+   You decide to open the URL of that dataset with dclab, apply a few filters
+   and export the resulting subset to a 500 MB file on disk with ``basins=True``
+   (see :ref:`sec_av_basins_storing_basins` below for exporting with basins).
+   The original file on figshare.com is now a basin of the file on
+   your hard disk. If you e.g. decided not to export image data to your local
+   file, you will still be able to access the images through the basin that
+   is defined in the exported file as long as you have a working internet
+   connection.
+
+B. You have an automated data analysis pipeline that relies entirely on DCOR.
+   You are uploading your raw data to DCOR. A background job performs
+   segmentation and feature extraction and the resulting data are stored
+   on DCOR as well. To have fast scalar feature access, you download the
+   condensed dataset from DCOR to your computer. The raw image data as
+   well as the background image data and the event masks are accessed via
+   their respective basins when you open the condensed file with dclab.
+   In this use case, you are trading local disk space for slower access to
+   the image and mask features limited by the bandwidth of your internet
+   connection.
+
+C. Let's say your pipeline is designed to compute a new feature ``userdef1``
+   and you would like to open the output file in Shape-Out, visualizing
+   this feature in combination with other features defined in the input file
+   (e.g. ``deform``). What you *could* do is write the ``userdef1`` feature
+   directly to the input file or create a copy of your input file and write
+   ``userdef1`` to that copy. However, this might make you feel uneasy,
+   because you would like to avoid editing your original raw data (possible
+   data loss) and copying an entire file seems like unnecessary overhead
+   (redundant data, high disk usage). Furthermore, your raw data are located
+   on a network share in your institute and you want to avoid causing a lot of
+   traffic. The solution with basins is to open the raw input file, run your
+   analysis and store the scalar features created by your analysis on your local
+   computer. With basins, these local files know that the image data are
+   stored on the network share. You have saved yourself the trouble of copying
+   large files across the network.
+
+
+.. _fig_basins_example_workflow:
+
+.. figure:: basin_example_workflows.svg
+    :target: images/basin_example_workflows.svg
+
+    Three exemplary workflows where basins are used.
+    **(A)** There is one basin consisting of an .rtdc file uploaded to figshare.
+    The user exported partial feature data to their computer. Other feature
+    data are still accessible via the online basin.
+    **(B)** The user has a DCOR-based analysis pipeline where the raw and processed
+    data are stored on DCOR. The user downloads a condensed version of the data
+    and can access image data via basins.
+    **(C)** The raw image data are located on a network share at the user's
+    institute. The user writes one script to e.g. extract the relevant events
+    (processed 1) and a second script to e.g. compute additional features
+    (processed 2).
+
+To summarize the advantages of using basins:
+
+- **Avoid data redundancy**. Since basins defined in basins are also just basins,
+  you can design your analysis pipeline as a chain of basins. The raw file
+  contains the image data and subsequent steps in the pipeline only add features
+  or gate events. You never have to store the same feature twice on disk.
+- **Work with read-only datasets**. When you are computing new features, you
+  do not have to modify any existing files on disk and can instead link to them.
+  This means you can have your data on read-only file storage (e.g. online data)
+  and don't have to fear accidental data loss.
+- **Fast data access**. You do not have to download an entire dataset in order
+  to obtain a simple scatter plot for offline usage. Instead, you can download
+  only a few relevant scalar features, perform your analysis, and afterwards
+  you even have the option to look at the images in the basin.
 
 
 Definitions
@@ -245,6 +311,8 @@ optionally the ``DCLAB_S3_ENDPOINT_URL`` as described in the
 
 Basin internals
 ===============
+
+.. _sec_av_basins_storing_basins:
 
 Storing the basin information
 -----------------------------

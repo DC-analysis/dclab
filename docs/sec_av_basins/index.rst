@@ -99,16 +99,19 @@ Definitions
 ===========
 To clarify the notation, please read these definition of the terms used in
 dclab in the context of basins. They also serve as a complete introduction
-to the capabilities of basins:
+to the capabilities of basins.
 
+
+referrer:
+    A dataset that defines a basin "refers" to that basin. If a dataset
+    is a referrer, then the dataset has features stored in other datasets
+    (the basins).
 basin:
-    File or remote location containing additional feature data for another
-    dataset. Both the dataset and the basin must originate from the same
+    File or remote location containing feature data that are made accessible
+    to the referrer. Both the referrer and the basin must originate from the same
     DC measurement. E.g. You can work with a local .rtdc file containing only
     :ref:´scalar features <sec_features_scalar>` with the image data stored
-    on :ref:`DCOR <sec_av_dcor>` to keep your local disk usage low.
-referrer:
-    A dataset that defines a basin "refers" to that basin.
+    in a basin on :ref:`DCOR <sec_av_dcor>` to keep your local disk usage low.
 mapped basin:
     A mapped basin is a basin that does not share the same event indices
     with its referrer. This means that either
@@ -176,6 +179,19 @@ basin features:
     via the input file basin. If you combine this approach with the
     `dcor <https://dc.readthedocs.io>`_ basin format, you can distribute all of
     your data (raw and processed) in a very efficient and transparent manner.
+
+.. note::
+
+   Note that basins are locations *upstream* in your analysis pipeline.
+   Features *flow* from basins downstream to the referrers. When a dataset
+   has basins, this means that there are other files (the basins) that
+   contain additional feature data.
+
+.. note::
+
+   Basins can have basins. A referrer can refer to multiple basins. And
+   a referrer can be a basin as well. Basins of basins are passed down
+   to referrers downstream.
 
 These definitions should already give you a good feeling about how you can
 employ basins in your workflow. As a final note, be aware that you can also

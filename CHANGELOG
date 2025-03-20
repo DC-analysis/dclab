@@ -1,4 +1,5 @@
 0.62.16
+ - enh: allow editing S3 credentials via environment variables at runtime
  - docs: fix typo in S3 section (missing `DCLAB_S3_SECRET_ACCESS_KEY`)
  - docs: add more example use cases in the basin section
  - docs: add example script for rewriting paths of basins

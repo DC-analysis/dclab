@@ -168,13 +168,19 @@ class RTDC_S3(RTDC_HDF5):
             object_path=get_object_path(url),
             endpoint_url=(endpoint_url
                           or get_endpoint_url(url)
-                          or S3_ENDPOINT_URL),
+                          or S3_ENDPOINT_URL
+                          or os.environ.get("DCLAB_S3_ENDPOINT_URL")
+                          ),
             access_key_id=(access_key_id
                            or S3_ACCESS_KEY_ID
-                           or ""),
+                           or os.environ.get("DCLAB_S3_ACCESS_KEY_ID")
+                           or ""
+                           ),
             secret_access_key=(secret_access_key
                                or S3_SECRET_ACCESS_KEY
-                               or ""),
+                               or os.environ.get("DCLAB_S3_SECRET_ACCESS_KEY")
+                               or ""
+                               ),
             use_ssl=use_ssl,
             verify_ssl=use_ssl,
             )
@@ -236,7 +242,10 @@ def is_s3_object_available(url: str,
     """
     avail = False
     if is_s3_url(url):
-        endpoint_url = get_endpoint_url(url) or S3_ENDPOINT_URL
+        endpoint_url = (get_endpoint_url(url)
+                        or S3_ENDPOINT_URL
+                        or os.environ.get("DCLAB_S3_ENDPOINT_URL")
+                        )
         if not endpoint_url:
             warnings.warn(
                 f"Could not determine endpoint from URL '{url}'. Please "
@@ -260,12 +269,18 @@ def is_s3_object_available(url: str,
                     s3file = S3File(
                         object_path=get_object_path(url),
                         endpoint_url=endpoint_url,
-                        access_key_id=(access_key_id
-                                       or S3_ACCESS_KEY_ID
-                                       or ""),
-                        secret_access_key=(secret_access_key
-                                           or S3_SECRET_ACCESS_KEY
-                                           or ""),
+                        access_key_id=(
+                            access_key_id
+                            or S3_ACCESS_KEY_ID
+                            or os.environ.get("DCLAB_S3_ACCESS_KEY_ID")
+                            or ""
+                            ),
+                        secret_access_key=(
+                            secret_access_key
+                            or S3_SECRET_ACCESS_KEY
+                            or os.environ.get("DCLAB_S3_SECRET_ACCESS_KEY")
+                            or ""
+                            ),
                         )
                     try:
                         s3file.s3_object.load()

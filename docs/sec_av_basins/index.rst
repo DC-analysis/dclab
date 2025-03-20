@@ -309,6 +309,69 @@ achieving the same result as above (a very small output file).
        assert np.allclose(ds_in["deform"][::2], ds_out["deform"])
 
 
+Rewriting Basins
+================
+In some situations, you might have to modify the location of a basin, e.g.
+because you need to make the basins available on different operating systems
+or because the network share location changed. In those cases, the best
+approach is to read the basin information, update the basin location and
+write the updated basin information to that file.
+
+First, locate the basin you would like to modify by listing all basin
+locations.
+
+.. code-block:: python
+
+   with dclab.new_dataset("data_file.rtdc") as ds:
+       for ii, bn_dict in enumerate(ds.basins_get_dicts()):
+           print(ii, bn_dict["type"], bn_dict.get("paths"), bn_dict["features"])
+
+This will return something like this:
+
+.. code-block::
+
+    0 file ['/ptmp/data/RC/Reference/2025-02-09_09.46_M003_Reference_5000.rtdc'] ['image']
+    1 internal ['basin_events'] ["image_bg"]
+
+.. note::
+
+   The second basin in this example ("basin_events" location) is an internal
+   basin (see definitions above).
+
+As you can see, the basin containing the image data is located on a posix
+path ``/ptmp`` which is not accessible on Windows. Assuming you had the
+same network location mounted on drive ``P:\\``, you could add an additional
+basin to the file like so:
+
+.. code-block:: python
+
+
+   import json
+
+   from dclab.util import hashobj
+
+   with dclab.new_dataset("data_file.rtdc") as ds:
+       # we want to edit the first file-based basin dictionary containing the image data
+       bn_dict = ds.basins_get_dicts()[0]
+
+   # replace the path to the basin with the new path
+   bn_dict["paths"] = [r"P:\\data\RC\Reference\2025-02-09_09.46_M003_Reference_5000.rtdc"]
+   # remove the "key" from the dictionary (it is part of the old basin)
+   bn_dict.pop("key")
+   # convert the basin information to a JSON string
+   b_lines = json.dumps(bn_dict, indent=2, sort_keys=True).split("\n")
+   # compute the new basin key
+   key = hashobj(b_lines)
+
+   # write the new basin
+   with dclab.RTDCWriter("data_file.rtdc") as hw:
+       if key not in hw.h5file["basins"]:
+           hw.write_text(hw.h5file["basins"], key, b_lines)
+
+After that, you can open the dataset on Windows and access the information
+in the basin via the mounted network share on drive ``P:\\``.
+
+
 Accessing private basin data
 ============================
 

@@ -1,6 +1,7 @@
 0.62.16
  - docs: fix typo in S3 section (missing `DCLAB_S3_SECRET_ACCESS_KEY`)
  - docs: add more example use cases in the basin section
+ - docs: add example script for rewriting paths of basins
  - docs: remove broken reference to HDF5 `linker` module
  - tests: reduce test time by 35% from 400s to 250 (smaller S3 reference data)
 0.62.15

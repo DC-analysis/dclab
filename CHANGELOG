@@ -1,3 +1,5 @@
+0.62.17
+ - docs: properly employ license GPL-2.0-or-later
 0.62.16
  - enh: allow editing S3 credentials via environment variables at runtime
  - docs: fix typo in S3 section (missing `DCLAB_S3_SECRET_ACCESS_KEY`)

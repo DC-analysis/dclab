@@ -34,7 +34,7 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Visualization',
     'Intended Audience :: Science/Research',
 ]
-license = {text = "GPL version 2.0 or later"}
+license = "GPL-2.0-or-later"
 dependencies = [
     "h5py>=3.0.0, <4",
     "hdf5plugin>=3.3.1, <5",

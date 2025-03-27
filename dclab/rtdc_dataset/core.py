@@ -17,6 +17,7 @@ from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 from ..util import hashobj
+from ..kde import KernelDensityEtimator
 
 from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
 from . import feat_basin
@@ -100,6 +101,9 @@ class RTDCBase(abc.ABC):
 
         # Basins are initialized in the "basins" property function
         self._enable_basins = enable_basins
+
+        # Instantiate KDE with rtdc dataset
+        self.kde_instance = KernelDensityEtimator(rtdc_ds=self)
 
     def __contains__(self, feat):
         ct = False
@@ -645,156 +649,20 @@ class RTDCBase(abc.ABC):
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None,
                         yacc=None, kde_type="histogram", kde_kwargs=None,
                         xscale="linear", yscale="linear"):
-        """Evaluate the kernel density estimate for contour plots
-
-        Parameters
-        ----------
-        xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform")
-        yax: str
-            Identifier for Y axis
-        xacc: float
-            Contour accuracy in x direction
-        yacc: float
-            Contour accuracy in y direction
-        kde_type: str
-            The KDE method to use
-        kde_kwargs: dict
-            Additional keyword arguments to the KDE method
-        xscale: str
-            If set to "log", take the logarithm of the x-values before
-            computing the KDE. This is useful when data are
-            displayed on a log-scale. Defaults to "linear".
-        yscale: str
-            See `xscale`.
-
-        Returns
-        -------
-        X, Y, Z : coordinates
-            The kernel density Z evaluated on a rectangular grid (X,Y).
-        """
-        if kde_kwargs is None:
-            kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        if kde_type not in kde_methods.methods:
-            raise ValueError("Not a valid kde type: {}!".format(kde_type))
-
-        # Get data
-        x = self[xax][self.filter.all]
-        y = self[yax][self.filter.all]
-
-        xacc_sc, xs = RTDCBase.get_kde_spacing(
-            a=x,
-            feat=xax,
-            scale=xscale,
-            method=kde_methods.bin_width_doane,
-            ret_scaled=True)
-
-        yacc_sc, ys = RTDCBase.get_kde_spacing(
-            a=y,
-            feat=yax,
-            scale=yscale,
-            method=kde_methods.bin_width_doane,
-            ret_scaled=True)
-
-        if xacc is None or xacc == 0:
-            xacc = xacc_sc / 5
-
-        if yacc is None or yacc == 0:
-            yacc = yacc_sc / 5
-
-        # Ignore infs and nans
-        bad = kde_methods.get_bad_vals(xs, ys)
-        xc = xs[~bad]
-        yc = ys[~bad]
-
-        xnum = int(np.ceil((xc.max() - xc.min()) / xacc))
-        ynum = int(np.ceil((yc.max() - yc.min()) / yacc))
-
-        xlin = np.linspace(xc.min(), xc.max(), xnum, endpoint=True)
-        ylin = np.linspace(yc.min(), yc.max(), ynum, endpoint=True)
-
-        xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
-
-        kde_fct = kde_methods.methods[kde_type]
-        if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=xmesh, yout=ymesh,
-                              **kde_kwargs)
-        else:
-            density = np.array([])
-
-        # Convert mesh back to linear scale if applicable
-        if xscale == "log":
-            xmesh = np.exp(xmesh)
-        if yscale == "log":
-            ymesh = np.exp(ymesh)
+        xmesh, ymesh, density = self.kde_instance.get_contour(
+            xax=xax, yax=yax, xacc=xacc, yacc=yacc, kde_type=kde_type,
+            kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
+        )
 
         return xmesh, ymesh, density
 
     def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
                         kde_type="histogram", kde_kwargs=None, xscale="linear",
                         yscale="linear"):
-        """Evaluate the kernel density estimate for scatter plots
-
-        Parameters
-        ----------
-        xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform")
-        yax: str
-            Identifier for Y axis
-        positions: list of two 1d ndarrays or ndarray of shape (2, N)
-            The positions where the KDE will be computed. Note that
-            the KDE estimate is computed from the points that
-            are set in `self.filter.all`.
-        kde_type: str
-            The KDE method to use, see :const:`.kde_methods.methods`
-        kde_kwargs: dict
-            Additional keyword arguments to the KDE method
-        xscale: str
-            If set to "log", take the logarithm of the x-values before
-            computing the KDE. This is useful when data are are
-            displayed on a log-scale. Defaults to "linear".
-        yscale: str
-            See `xscale`.
-
-        Returns
-        -------
-        density : 1d ndarray
-            The kernel density evaluated for the filtered data points.
-        """
-        if kde_kwargs is None:
-            kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        if kde_type not in kde_methods.methods:
-            raise ValueError("Not a valid kde type: {}!".format(kde_type))
-
-        # Get data
-        x = self[xax][self.filter.all]
-        y = self[yax][self.filter.all]
-
-        # Apply scale (no change for linear scale)
-        xs = RTDCBase._apply_scale(x, xscale, xax)
-        ys = RTDCBase._apply_scale(y, yscale, yax)
-
-        if positions is None:
-            posx = None
-            posy = None
-        else:
-            posx = RTDCBase._apply_scale(positions[0], xscale, xax)
-            posy = RTDCBase._apply_scale(positions[1], yscale, yax)
-
-        kde_fct = kde_methods.methods[kde_type]
-        if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=posx, yout=posy,
-                              **kde_kwargs)
-        else:
-            density = np.array([])
+        density = self.kde_instance.get_scatter(
+            xax=xax, yax=yax, positions=positions, kde_type=kde_type,
+            kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
+        )
 
         return density
 

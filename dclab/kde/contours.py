@@ -143,8 +143,8 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
     return plev
 
 
-def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
-                         ret_err=False):
+def find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
+                        ret_err=False):
     """Find density level for a given data quantile by iteration
 
     Parameters

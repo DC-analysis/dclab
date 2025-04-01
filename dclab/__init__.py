@@ -17,6 +17,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 # flake8: noqa: F401
+import warnings
+
 from . import definitions as dfn
 from . import features
 from . import isoelastics
@@ -35,3 +37,11 @@ from .rtdc_dataset.feat_anc_plugin.plugin_feature import (
 from . import statistics
 
 from ._version import __version__, __version_tuple__
+
+warnings.warn("`dclab.kde_contours` is deptecated; please use "
+              " the dclab.kde.contours instead",
+                DeprecationWarning)
+
+warnings.warn("`dclab.kde_methods` is deptecated; please use "
+              " the dclab.kde.methods instead",
+                DeprecationWarning)

@@ -5,7 +5,7 @@ import numpy as np
 from .methods import bin_width_doane, get_bad_vals, methods_dict
 
 
-class KernelDensityEtimator:
+class KernelDensityEstimator:
     def __init__(self, rtdc_ds):
         self.rtdc_ds = rtdc_ds
 
@@ -73,7 +73,7 @@ class KernelDensityEtimator:
         if method_kw is None:
             method_kw = {}
         # Apply scale (no change for linear scale)
-        asc = KernelDensityEtimator._apply_scale(a, scale, feat)
+        asc = KernelDensityEstimator._apply_scale(a, scale, feat)
         # Apply multiplicator
         acc = method(asc, **method_kw)
         if ret_scaled:

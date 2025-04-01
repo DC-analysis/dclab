@@ -17,7 +17,7 @@ from .. import downsampling
 from ..polygon_filter import PolygonFilter
 from .. import kde_methods
 from ..util import hashobj
-from ..kde import KernelDensityEtimator
+from ..kde import KernelDensityEstimator
 
 from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
 from . import feat_basin
@@ -103,7 +103,7 @@ class RTDCBase(abc.ABC):
         self._enable_basins = enable_basins
 
         # Instantiate KDE with rtdc dataset
-        self.kde_instance = KernelDensityEtimator(rtdc_ds=self)
+        self.kde_instance = KernelDensityEstimator(rtdc_ds=self)
 
     def __contains__(self, feat):
         ct = False

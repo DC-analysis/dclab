@@ -102,9 +102,6 @@ class RTDCBase(abc.ABC):
         # Basins are initialized in the "basins" property function
         self._enable_basins = enable_basins
 
-        # Instantiate KDE with rtdc dataset
-        self.kde_instance = KernelDensityEstimator(rtdc_ds=self)
-
     def __contains__(self, feat):
         ct = False
         if (feat in self._events
@@ -649,7 +646,36 @@ class RTDCBase(abc.ABC):
     def get_kde_contour(self, xax="area_um", yax="deform", xacc=None,
                         yacc=None, kde_type="histogram", kde_kwargs=None,
                         xscale="linear", yscale="linear"):
-        xmesh, ymesh, density = self.kde_instance.get_contour(
+        """Evaluate the kernel density estimate for contour plots
+
+        Parameters
+        ----------
+        xax: str
+            Identifier for X axis (e.g. "area_um", "aspect", "deform")
+        yax: str
+            Identifier for Y axis
+        xacc: float
+            Contour accuracy in x direction
+        yacc: float
+            Contour accuracy in y direction
+        kde_type: str
+            The KDE method to use
+        kde_kwargs: dict
+            Additional keyword arguments to the KDE method
+        xscale: str
+            If set to "log", take the logarithm of the x-values before
+            computing the KDE. This is useful when data are
+            displayed on a log-scale. Defaults to "linear".
+        yscale: str
+            See `xscale`.
+
+        Returns
+        -------
+        X, Y, Z : coordinates
+            The kernel density Z evaluated on a rectangular grid (X,Y).
+        """
+        kde_instance = KernelDensityEstimator(rtdc_ds=self)
+        xmesh, ymesh, density = kde_instance.get_contour(
             xax=xax, yax=yax, xacc=xacc, yacc=yacc, kde_type=kde_type,
             kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
         )
@@ -659,7 +685,36 @@ class RTDCBase(abc.ABC):
     def get_kde_scatter(self, xax="area_um", yax="deform", positions=None,
                         kde_type="histogram", kde_kwargs=None, xscale="linear",
                         yscale="linear"):
-        density = self.kde_instance.get_scatter(
+        """Evaluate the kernel density estimate for scatter plots
+
+        Parameters
+        ----------
+        xax: str
+            Identifier for X axis (e.g. "area_um", "aspect", "deform")
+        yax: str
+            Identifier for Y axis
+        positions: list of two 1d ndarrays or ndarray of shape (2, N)
+            The positions where the KDE will be computed. Note that
+            the KDE estimate is computed from the points that
+            are set in `self.rtdc_ds.filter.all`.
+        kde_type: str
+            The KDE method to use, see :const:`.kde_methods.methods`
+        kde_kwargs: dict
+            Additional keyword arguments to the KDE method
+        xscale: str
+            If set to "log", take the logarithm of the x-values before
+            computing the KDE. This is useful when data are are
+            displayed on a log-scale. Defaults to "linear".
+        yscale: str
+            See `xscale`.
+
+        Returns
+        -------
+        density : 1d ndarray
+            The kernel density evaluated for the filtered data points.
+        """
+        kde_instance = KernelDensityEstimator(rtdc_ds=self)
+        density = kde_instance.get_scatter(
             xax=xax, yax=yax, positions=positions, kde_type=kde_type,
             kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
         )

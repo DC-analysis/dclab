@@ -10,7 +10,7 @@ class KernelDensityEstimator:
         self.rtdc_ds = rtdc_ds
 
     @staticmethod
-    def _apply_scale(a, scale, feat):
+    def apply_scale(a, scale, feat):
         """Helper function for transforming an aray to log-scale
 
         Parameters
@@ -73,7 +73,7 @@ class KernelDensityEstimator:
         if method_kw is None:
             method_kw = {}
         # Apply scale (no change for linear scale)
-        asc = KernelDensityEstimator._apply_scale(a, scale, feat)
+        asc = KernelDensityEstimator.apply_scale(a, scale, feat)
         # Apply multiplicator
         acc = method(asc, **method_kw)
         if ret_scaled:

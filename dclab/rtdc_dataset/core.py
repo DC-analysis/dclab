@@ -324,47 +324,6 @@ class RTDCBase(abc.ABC):
         return data
 
     @staticmethod
-    def _apply_scale(a, scale, feat):
-        """Helper function for transforming an aray to log-scale
-
-        Parameters
-        ----------
-        a: np.ndarray
-            Input array
-        scale: str
-            If set to "log", take the logarithm of `a`; if set to
-            "linear" return `a` unchanged.
-        feat: str
-            Feature name (required for debugging)
-
-        Returns
-        -------
-        b: np.ndarray
-            The scaled array
-
-        Notes
-        -----
-        If the scale is not "linear", then a new array is returned.
-        All warnings are suppressed when computing `np.log(a)`, as
-        `a` may have negative or nan values.
-        """
-        if scale == "linear":
-            b = a
-        elif scale == "log":
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                b = np.log(a)
-                if len(w):
-                    # Tell the user that the log-transformation issued
-                    # a warning.
-                    warnings.warn("Invalid values encounterd in np.log "
-                                  "while scaling feature '{}'!".format(feat))
-        else:
-            raise ValueError("`scale` must be either 'linear' or 'log', "
-                             + "got '{}'!".format(scale))
-        return b
-
-    @staticmethod
     def get_kde_spacing(a, scale="linear", method=kde_methods.bin_width_doane,
                         method_kw=None, feat="undefined", ret_scaled=False):
         """Convenience function for computing the contour spacing
@@ -387,7 +346,7 @@ class RTDCBase(abc.ABC):
         if method_kw is None:
             method_kw = {}
         # Apply scale (no change for linear scale)
-        asc = RTDCBase._apply_scale(a, scale, feat)
+        asc = KernelDensityEstimator.apply_scale(a, scale, feat)
         # Apply multiplicator
         acc = method(asc, **method_kw)
         if ret_scaled:
@@ -626,8 +585,8 @@ class RTDCBase(abc.ABC):
         y = self[yax][self.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = RTDCBase._apply_scale(x, xscale, xax)
-        ys = RTDCBase._apply_scale(y, yscale, yax)
+        xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
+        ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
 
         _, _, idx = downsampling.downsample_grid(xs, ys,
                                                  samples=downsample,

@@ -1,10 +1,10 @@
 
 import numpy as np
 
-from .external.skimage.measure import find_contours, points_in_poly
+from ..external.skimage.measure import find_contours, points_in_poly
 import scipy.interpolate as spint
 
-from .kde_methods import get_bad_vals
+from .methods import get_bad_vals
 
 
 def find_contours_level(density, x, y, level, closed=False):

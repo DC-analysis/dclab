@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-from .methods import bin_width_doane, get_bad_vals, methods_dict
+from .methods import bin_width_doane, get_bad_vals, methods
 
 
 class KernelDensityEstimator:
@@ -117,7 +117,7 @@ class KernelDensityEstimator:
         xax = xax.lower()
         yax = yax.lower()
         kde_type = kde_type.lower()
-        if kde_type not in methods_dict:
+        if kde_type not in methods:
             raise ValueError(f"Not a valid kde type: {kde_type}!")
 
         # Get data
@@ -157,7 +157,7 @@ class KernelDensityEstimator:
 
         xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
 
-        kde_fct = methods_dict[kde_type]
+        kde_fct = methods[kde_type]
         if len(x):
             density = kde_fct(events_x=xs, events_y=ys,
                               xout=xmesh, yout=ymesh,
@@ -209,7 +209,7 @@ class KernelDensityEstimator:
         xax = xax.lower()
         yax = yax.lower()
         kde_type = kde_type.lower()
-        if kde_type not in methods_dict:
+        if kde_type not in methods:
             raise ValueError(f"Not a valid kde type: {kde_type}!")
 
         # Get data
@@ -227,7 +227,7 @@ class KernelDensityEstimator:
             posx = self._apply_scale(positions[0], xscale, xax)
             posy = self._apply_scale(positions[1], yscale, yax)
 
-        kde_fct = methods_dict[kde_type]
+        kde_fct = methods[kde_type]
         if len(x):
             density = kde_fct(events_x=xs, events_y=ys,
                               xout=posx, yout=posy,

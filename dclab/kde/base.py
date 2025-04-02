@@ -217,15 +217,15 @@ class KernelDensityEstimator:
         y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = self._apply_scale(x, xscale, xax)
-        ys = self._apply_scale(y, yscale, yax)
+        xs = self.apply_scale(x, xscale, xax)
+        ys = self.apply_scale(y, yscale, yax)
 
         if positions is None:
             posx = None
             posy = None
         else:
-            posx = self._apply_scale(positions[0], xscale, xax)
-            posy = self._apply_scale(positions[1], yscale, yax)
+            posx = self.apply_scale(positions[0], xscale, xax)
+            posy = self.apply_scale(positions[1], yscale, yax)
 
         kde_fct = methods[kde_type]
         if len(x):

@@ -15,9 +15,9 @@ import numpy as np
 from .. import definitions as dfn
 from .. import downsampling
 from ..polygon_filter import PolygonFilter
-from .. import kde_methods
 from ..util import hashobj
 from ..kde import KernelDensityEstimator
+from ..kde import methods as kde_methods
 
 from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
 from . import feat_basin
@@ -343,16 +343,14 @@ class RTDCBase(abc.ABC):
         ret_scaled: bool
             whether to return the scaled array of `a`
         """
-        if method_kw is None:
-            method_kw = {}
-        # Apply scale (no change for linear scale)
-        asc = KernelDensityEstimator.apply_scale(a, scale, feat)
-        # Apply multiplicator
-        acc = method(asc, **method_kw)
-        if ret_scaled:
-            return acc, asc
-        else:
-            return acc
+        return KernelDensityEstimator.get_spacing(
+            a=a,
+            scale=scale,
+            method=method,
+            method_kw=method_kw,
+            feat=feat,
+            ret_scaled=ret_scaled,
+        )
 
     @property
     def _feature_candidates(self):

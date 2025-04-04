@@ -4,23 +4,23 @@ import hashlib
 import json
 import os.path
 import pathlib
+import random
 import traceback
 from typing import Literal
 import uuid
-import random
 import warnings
 
 import numpy as np
 
 from .. import definitions as dfn
 from .. import downsampling
+from ..kde import KernelDensityEstimator
+from ..kde import methods as kde_methods
 from ..polygon_filter import PolygonFilter
-from .. import kde_methods
 from ..util import hashobj
-
-from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
 from . import feat_basin
 from .export import Export
+from .feat_anc_core import FEATURES_RAPID, AncillaryFeature
 from .filter import Filter
 
 
@@ -323,47 +323,6 @@ class RTDCBase(abc.ABC):
         return data
 
     @staticmethod
-    def _apply_scale(a, scale, feat):
-        """Helper function for transforming an aray to log-scale
-
-        Parameters
-        ----------
-        a: np.ndarray
-            Input array
-        scale: str
-            If set to "log", take the logarithm of `a`; if set to
-            "linear" return `a` unchanged.
-        feat: str
-            Feature name (required for debugging)
-
-        Returns
-        -------
-        b: np.ndarray
-            The scaled array
-
-        Notes
-        -----
-        If the scale is not "linear", then a new array is returned.
-        All warnings are suppressed when computing `np.log(a)`, as
-        `a` may have negative or nan values.
-        """
-        if scale == "linear":
-            b = a
-        elif scale == "log":
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                b = np.log(a)
-                if len(w):
-                    # Tell the user that the log-transformation issued
-                    # a warning.
-                    warnings.warn("Invalid values encounterd in np.log "
-                                  "while scaling feature '{}'!".format(feat))
-        else:
-            raise ValueError("`scale` must be either 'linear' or 'log', "
-                             + "got '{}'!".format(scale))
-        return b
-
-    @staticmethod
     def get_kde_spacing(a, scale="linear", method=kde_methods.bin_width_doane,
                         method_kw=None, feat="undefined", ret_scaled=False):
         """Convenience function for computing the contour spacing
@@ -383,16 +342,14 @@ class RTDCBase(abc.ABC):
         ret_scaled: bool
             whether to return the scaled array of `a`
         """
-        if method_kw is None:
-            method_kw = {}
-        # Apply scale (no change for linear scale)
-        asc = RTDCBase._apply_scale(a, scale, feat)
-        # Apply multiplicator
-        acc = method(asc, **method_kw)
-        if ret_scaled:
-            return acc, asc
-        else:
-            return acc
+        return KernelDensityEstimator.get_spacing(
+            a=a,
+            scale=scale,
+            method=method,
+            method_kw=method_kw,
+            feat=feat,
+            ret_scaled=ret_scaled,
+        )
 
     @property
     def _feature_candidates(self):
@@ -625,8 +582,8 @@ class RTDCBase(abc.ABC):
         y = self[yax][self.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = RTDCBase._apply_scale(x, xscale, xax)
-        ys = RTDCBase._apply_scale(y, yscale, yax)
+        xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
+        ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
 
         _, _, idx = downsampling.downsample_grid(xs, ys,
                                                  samples=downsample,
@@ -673,64 +630,11 @@ class RTDCBase(abc.ABC):
         X, Y, Z : coordinates
             The kernel density Z evaluated on a rectangular grid (X,Y).
         """
-        if kde_kwargs is None:
-            kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        if kde_type not in kde_methods.methods:
-            raise ValueError("Not a valid kde type: {}!".format(kde_type))
-
-        # Get data
-        x = self[xax][self.filter.all]
-        y = self[yax][self.filter.all]
-
-        xacc_sc, xs = RTDCBase.get_kde_spacing(
-            a=x,
-            feat=xax,
-            scale=xscale,
-            method=kde_methods.bin_width_doane,
-            ret_scaled=True)
-
-        yacc_sc, ys = RTDCBase.get_kde_spacing(
-            a=y,
-            feat=yax,
-            scale=yscale,
-            method=kde_methods.bin_width_doane,
-            ret_scaled=True)
-
-        if xacc is None or xacc == 0:
-            xacc = xacc_sc / 5
-
-        if yacc is None or yacc == 0:
-            yacc = yacc_sc / 5
-
-        # Ignore infs and nans
-        bad = kde_methods.get_bad_vals(xs, ys)
-        xc = xs[~bad]
-        yc = ys[~bad]
-
-        xnum = int(np.ceil((xc.max() - xc.min()) / xacc))
-        ynum = int(np.ceil((yc.max() - yc.min()) / yacc))
-
-        xlin = np.linspace(xc.min(), xc.max(), xnum, endpoint=True)
-        ylin = np.linspace(yc.min(), yc.max(), ynum, endpoint=True)
-
-        xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
-
-        kde_fct = kde_methods.methods[kde_type]
-        if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=xmesh, yout=ymesh,
-                              **kde_kwargs)
-        else:
-            density = np.array([])
-
-        # Convert mesh back to linear scale if applicable
-        if xscale == "log":
-            xmesh = np.exp(xmesh)
-        if yscale == "log":
-            ymesh = np.exp(ymesh)
+        kde_instance = KernelDensityEstimator(rtdc_ds=self)
+        xmesh, ymesh, density = kde_instance.get_contour(
+            xax=xax, yax=yax, xacc=xacc, yacc=yacc, kde_type=kde_type,
+            kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
+        )
 
         return xmesh, ymesh, density
 
@@ -765,36 +669,11 @@ class RTDCBase(abc.ABC):
         density : 1d ndarray
             The kernel density evaluated for the filtered data points.
         """
-        if kde_kwargs is None:
-            kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        if kde_type not in kde_methods.methods:
-            raise ValueError("Not a valid kde type: {}!".format(kde_type))
-
-        # Get data
-        x = self[xax][self.filter.all]
-        y = self[yax][self.filter.all]
-
-        # Apply scale (no change for linear scale)
-        xs = RTDCBase._apply_scale(x, xscale, xax)
-        ys = RTDCBase._apply_scale(y, yscale, yax)
-
-        if positions is None:
-            posx = None
-            posy = None
-        else:
-            posx = RTDCBase._apply_scale(positions[0], xscale, xax)
-            posy = RTDCBase._apply_scale(positions[1], yscale, yax)
-
-        kde_fct = kde_methods.methods[kde_type]
-        if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=posx, yout=posy,
-                              **kde_kwargs)
-        else:
-            density = np.array([])
+        kde_instance = KernelDensityEstimator(rtdc_ds=self)
+        density = kde_instance.get_scatter(
+            xax=xax, yax=yax, positions=positions, kde_type=kde_type,
+            kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
+        )
 
         return density
 

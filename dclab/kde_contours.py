@@ -1,7 +1,7 @@
 import warnings
 
 from .kde.contours import (  # noqa: F401
-    find_contours, find_contours_level, _find_quantile_level
+    find_contours_level, _find_quantile_level, get_quantile_levels
 )
 
 

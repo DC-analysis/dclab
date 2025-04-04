@@ -4,24 +4,23 @@ import hashlib
 import json
 import os.path
 import pathlib
-import traceback
-from typing import Literal
-import uuid
 import random
+import traceback
+import uuid
 import warnings
+from typing import Literal
 
 import numpy as np
 
 from .. import definitions as dfn
 from .. import downsampling
-from ..polygon_filter import PolygonFilter
-from ..util import hashobj
 from ..kde import KernelDensityEstimator
 from ..kde import methods as kde_methods
-
-from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
+from ..polygon_filter import PolygonFilter
+from ..util import hashobj
 from . import feat_basin
 from .export import Export
+from .feat_anc_core import FEATURES_RAPID, AncillaryFeature
 from .filter import Filter
 
 
@@ -653,7 +652,7 @@ class RTDCBase(abc.ABC):
         positions: list of two 1d ndarrays or ndarray of shape (2, N)
             The positions where the KDE will be computed. Note that
             the KDE estimate is computed from the points that
-            are set in `self.rtdc_ds.filter.all`.
+            are set in `self.filter.all`.
         kde_type: str
             The KDE method to use, see :const:`.kde_methods.methods`
         kde_kwargs: dict

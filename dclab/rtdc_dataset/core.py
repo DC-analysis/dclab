@@ -6,9 +6,9 @@ import os.path
 import pathlib
 import random
 import traceback
+from typing import Literal
 import uuid
 import warnings
-from typing import Literal
 
 import numpy as np
 

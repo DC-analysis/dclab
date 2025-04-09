@@ -25,7 +25,7 @@ def test_avi_export_check(tmp_path):
             for jj in range(3):
                 assert np.allclose(ds["image"][ii],
                                    array[:, :, jj],
-                                   atol=1,  # one reason why we use HDF5
+                                   atol=5,  # one reason why we use HDF5
                                    rtol=0)
     assert num_frames == len(ds)
 

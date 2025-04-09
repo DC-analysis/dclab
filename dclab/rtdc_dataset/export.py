@@ -13,11 +13,11 @@ import h5py
 import hdf5plugin
 
 try:
-    import imageio
+    import av
 except ModuleNotFoundError:
-    IMAGEIO_AVAILABLE = False
+    PYAV_AVAILABLE = False
 else:
-    IMAGEIO_AVAILABLE = True
+    PYAV_AVAILABLE = True
 
 try:
     import fcswrite
@@ -45,12 +45,13 @@ class Export(object):
         self.rtdc_ds = rtdc_ds
 
     def avi(self, path, filtered=True, override=False):
-        """Exports filtered event images to an avi file
+        """Exports filtered event images to a video file
 
         Parameters
         ----------
         path: str
-            Path to a .avi file. The ending .avi is added automatically.
+            Path to a video file. The container is (.avi, .mkv, ...) is
+            deduced from the file suffix.
         filtered: bool
             If set to `True`, only the filtered data
             (index in ds.filter.all) are used.
@@ -62,14 +63,13 @@ class Export(object):
         -----
         Raises OSError if current dataset does not contain image data
         """
-        if not IMAGEIO_AVAILABLE:
+        if not PYAV_AVAILABLE:
             raise ModuleNotFoundError(
                 "Package `imageio` required for avi export!")
         path = pathlib.Path(path)
+        if len(path.suffix) != 4:
+            path = path.with_suffix(".avi")
         ds = self.rtdc_ds
-        # Make sure that path ends with .avi
-        if path.suffix != ".avi":
-            path = path.with_name(path.name + ".avi")
         # Check if file already exist
         if not override and path.exists():
             raise OSError("File already exists: {}\n".format(
@@ -78,23 +78,28 @@ class Export(object):
         # Start exporting
         if "image" in ds:
             # Open video for writing
-            vout = imageio.get_writer(uri=path,
-                                      format="FFMPEG",
-                                      fps=25,
-                                      codec="rawvideo",
-                                      pixelformat="yuv420p",
-                                      macro_block_size=None,
-                                      ffmpeg_log_level="error")
-            # write the filtered frames to avi file
-            for evid in np.arange(len(ds)):
-                # skip frames that were filtered out
-                if filtered and not ds.filter.all[evid]:
-                    continue
-                image = ds["image"][evid]
-                # Convert image to RGB
-                image = image.reshape(image.shape[0], image.shape[1], 1)
-                image = np.repeat(image, 3, axis=2)
-                vout.append_data(image)
+            with av.open(path, mode="w") as container:
+                stream = container.add_stream(codec_name="rawvideo",
+                                              rate=25)
+                stream.pix_fmt = "yuv420p"
+                stream.height = ds["image"].shape[1]
+                stream.width = ds["image"].shape[2]
+
+                # write the filtered frames to the video file
+                for evid in np.arange(len(ds)):
+                    # skip frames that were filtered out
+                    if filtered and not ds.filter.all[evid]:
+                        continue
+                    image = ds["image"][evid]
+                    # Convert to RGB
+                    image = image.reshape(image.shape[0], image.shape[1], 1)
+                    image = np.repeat(image, 3, axis=2)
+
+                    av_frame = av.VideoFrame.from_ndarray(image,
+                                                          format="rgb24")
+
+                    for packet in stream.encode(av_frame):
+                        container.mux(packet)
         else:
             msg = "No image data to export: dataset {} !".format(ds.title)
             raise OSError(msg)

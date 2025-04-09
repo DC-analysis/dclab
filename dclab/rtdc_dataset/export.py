@@ -44,7 +44,14 @@ class Export(object):
         """Export functionalities for RT-DC datasets"""
         self.rtdc_ds = rtdc_ds
 
-    def avi(self, path, filtered=True, override=False):
+    def avi(self,
+            path: str | pathlib.Path,
+            filtered: bool = True,
+            override: bool = False,
+            pixel_format: str = "yuv420p",
+            codec: str = "rawvideo",
+            codec_options: dict[str, str] = None,
+            ):
         """Exports filtered event images to a video file
 
         Parameters
@@ -58,6 +65,13 @@ class Export(object):
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
+        pixel_format: str
+            Which pixel format to give to ffmpeg.
+        codec: str
+            Codec name; e.g. "rawvideo" or "libx264"
+        codec_options:
+            Additional arguments to give to the codec using ffmpeg,
+            e.g. `{'preset': 'slow', 'crf': '0'}` for "libx264" codec.
 
         Notes
         -----
@@ -79,11 +93,13 @@ class Export(object):
         if "image" in ds:
             # Open video for writing
             with av.open(path, mode="w") as container:
-                stream = container.add_stream(codec_name="rawvideo",
+                stream = container.add_stream(codec_name=codec,
                                               rate=25)
-                stream.pix_fmt = "yuv420p"
+                stream.pix_fmt = pixel_format
                 stream.height = ds["image"].shape[1]
                 stream.width = ds["image"].shape[2]
+                if codec_options:
+                    stream.codec_context.options = codec_options
 
                 # write the filtered frames to the video file
                 for evid in np.arange(len(ds)):

@@ -20,8 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 from . import definitions as dfn
 from . import features
 from . import isoelastics
-from . import kde_contours
-from . import kde_methods
 from . import lme4
 from .polygon_filter import PolygonFilter
 from . import rtdc_dataset
@@ -33,5 +31,11 @@ from .rtdc_dataset.feat_anc_ml import (
 from .rtdc_dataset.feat_anc_plugin.plugin_feature import (
     PlugInFeature, load_plugin_feature)
 from . import statistics
+from . import util
 
 from ._version import __version__, __version_tuple__
+
+
+# Lazy-load deprecated kde modules 
+kde_contours = util.LazyLoader("dclab.kde_contours")
+kde_methods = util.LazyLoader("dclab.kde_methods")

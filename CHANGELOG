@@ -1,6 +1,7 @@
 0.62.17
  - docs: properly employ license GPL-2.0-or-later
  - ref: integrate KernelDensityEstimator class in RTDCBase
+ - ref: perform avi export with PyAV instead of imageio
  - ref: avoid kde module deprecation warnings during test runs
 0.62.16
  - enh: allow editing S3 credentials via environment variables at runtime

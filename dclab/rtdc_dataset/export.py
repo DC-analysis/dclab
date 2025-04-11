@@ -79,7 +79,7 @@ class Export(object):
         """
         if not PYAV_AVAILABLE:
             raise ModuleNotFoundError(
-                "Package `imageio` required for avi export!")
+                "Package `av` required for avi export!")
         path = pathlib.Path(path)
         if len(path.suffix) != 4:
             path = path.with_suffix(".avi")

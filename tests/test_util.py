@@ -1,3 +1,4 @@
+import importlib
 import pathlib
 import tempfile
 
@@ -105,3 +106,36 @@ def test_hash_configuration():
         hash3 = util.hashobj(ds.config)
 
     assert hash1 != hash3
+
+
+def test_lazyloader():
+    # Create a mock module
+    class MockModule:
+        def __init__(self):
+            self.attribute = "original value"
+
+    # Create a LazyLoader instance for the mock module
+    lazy_loader = util.LazyLoader("mock_module")
+
+    # Initially, the module should not be loaded
+    assert lazy_loader._mod is None
+
+    # Mock the importlib.import_module function
+    original_import_module = importlib.import_module
+
+    def mock_import_module(name):
+        if name == "mock_module":
+            return MockModule()
+        return original_import_module(name)
+
+    importlib.import_module = mock_import_module
+
+    # Access an attribute of the lazy loader, which should trigger module
+    # loading
+    assert lazy_loader.attribute == "original value"
+
+    # The module should now be loaded
+    assert isinstance(lazy_loader._mod, MockModule)
+
+    # Restore the original importlib.import_module function
+    importlib.import_module = original_import_module

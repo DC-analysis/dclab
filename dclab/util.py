@@ -1,6 +1,7 @@
 """Utility methods"""
 import functools
 import hashlib
+import importlib
 import numbers
 import pathlib
 import warnings
@@ -58,6 +59,25 @@ class file_monitoring_lru_cache:
         wrapper.cache_info = cached_wrapper.cache_info
 
         return wrapper
+
+
+class LazyLoader():
+    """Lazy load a module on first attribute access"""
+
+    def __init__(self, modname):
+        self._modname = modname
+        self._mod = None
+
+    def __getattr__(self, attr):
+        """Get attribute from module, load module if not loaded yet"""
+
+        if self._mod is None:
+            # module is unset, load it
+            self._mod = importlib.import_module(self._modname)
+
+        # retry getattr if module was just loaded for first time
+        # call this outside exception handler in case it raises new exception
+        return getattr(self._mod, attr)
 
 
 @file_monitoring_lru_cache(maxsize=100)

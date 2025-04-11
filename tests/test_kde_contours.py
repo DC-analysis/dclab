@@ -1,7 +1,7 @@
 import numpy as np
 import dclab
 from dclab.external import skimage
-from dclab import kde_contours
+from dclab.kde import contours as kde_contours
 from dclab import polygon_filter
 
 

@@ -1,5 +1,6 @@
 import numpy as np
 import dclab
+import dclab.kde
 
 from helper_methods import example_data_dict
 
@@ -20,7 +21,7 @@ def test_kde_general():
 
     dcont = []
     dscat = []
-    for kde_type in dclab.kde_methods.methods:
+    for kde_type in dclab.kde.methods.methods:
         dcont.append(ds.get_kde_contour(kde_type=kde_type))
         dscat.append(ds.get_kde_scatter(kde_type=kde_type))
 

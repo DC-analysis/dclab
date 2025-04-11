@@ -6,6 +6,6 @@ from .kde.methods import (  # noqa: F401
     methods
 )
 
-warnings.warn("`dclab.kde_methods` is deptecated; please use "
-              " the dclab.kde.methods instead",
+warnings.warn("`dclab.kde_methods` is deprecated; please use "
+              "the `dclab.kde.methods` instead",
               DeprecationWarning)

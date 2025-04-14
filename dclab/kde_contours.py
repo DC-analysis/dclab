@@ -5,6 +5,6 @@ from .kde.contours import (  # noqa: F401
 )
 
 
-warnings.warn("`dclab.kde_contours` is deptecated; please use "
-              " the dclab.kde.contours instead",
+warnings.warn("`dclab.kde_contours` is deprecated; please use "
+              "the `dclab.kde.contours` instead",
               DeprecationWarning)

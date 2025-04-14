@@ -28,6 +28,10 @@ class FeatureShouldExistButNotFoundWarning(UserWarning):
     pass
 
 
+class LocalBasinForbiddenWarning(UserWarning):
+    pass
+
+
 class LogTransformWarning(UserWarning):
     pass
 
@@ -758,7 +762,8 @@ class RTDCBase(abc.ABC):
             elif bdict["type"] == "file":
                 if not self._local_basins_allowed:
                     warnings.warn(f"Basin type 'file' not allowed for format "
-                                  f"'{self.format}'")
+                                  f"'{self.format}'",
+                                  LocalBasinForbiddenWarning)
                     # stop processing this basin
                     continue
                 p_paths = list(bdict["paths"])

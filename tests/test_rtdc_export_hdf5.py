@@ -618,6 +618,24 @@ def test_hdf5_progress_basins(tmp_path):
     callback.assert_any_call(1.0, "export complete")
 
 
+def test_hdf5_progress_basins_only(tmp_path):
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp = h5path.with_name("exported.rtdc")
+
+    callback = mock.MagicMock()
+
+    with dclab.new_dataset(h5path) as ds:
+        ds.export.hdf5(path_exp,
+                       features=[],
+                       basins=True,
+                       progress_callback=callback
+                       )
+
+    callback.assert_any_call(0.0, "writing metadata")
+    callback.assert_any_call(0.0, "writing basins")
+    callback.assert_any_call(1.0, "export complete")
+
+
 @pytest.mark.parametrize("tables", [True, False])
 def test_hdf5_tables(tables):
     keys = ["area_um", "deform", "time", "frame", "index_online"]

@@ -436,7 +436,8 @@ class Export(object):
 
             if basins:
                 if progress_callback:
-                    progress_callback(1 - 1 / len(features), "writing basins")
+                    progress_callback(1 - 1 / (len(features) or 1),
+                                      "writing basins")
 
                 # We have to store basins. There are three options:
                 # - filtering disabled: just copy basins

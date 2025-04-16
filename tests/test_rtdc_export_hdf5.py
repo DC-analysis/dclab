@@ -2,6 +2,7 @@ import json
 from os.path import join
 import pathlib
 import tempfile
+from unittest import mock
 
 import h5py
 import numpy as np
@@ -576,6 +577,45 @@ def test_hdf5_override():
         pass
     else:
         raise ValueError("Should append .rtdc and not override!")
+
+
+def test_hdf5_progress(tmp_path):
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=222, keys=keys)
+    ds = dclab.new_dataset(ddict)
+
+    f1 = tmp_path / "test.rtdc"
+
+    callback = mock.MagicMock()
+    ds.export.hdf5(f1, keys, progress_callback=callback)
+
+    callback.assert_any_call(0.0, "writing metadata")
+    callback.assert_any_call(0/5, "exporting area_um")
+    callback.assert_any_call(1/5, "exporting deform")
+    callback.assert_any_call(2/5, "exporting fl3_width")
+    callback.assert_any_call(3/5, "exporting frame")
+    callback.assert_any_call(4/5, "exporting time")
+    callback.assert_any_call(1.0, "export complete")
+
+
+def test_hdf5_progress_basins(tmp_path):
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp = h5path.with_name("exported.rtdc")
+
+    callback = mock.MagicMock()
+
+    with dclab.new_dataset(h5path) as ds:
+        ds.export.hdf5(path_exp,
+                       features=["deform", "image"],
+                       basins=True,
+                       progress_callback=callback
+                       )
+
+    callback.assert_any_call(0.0, "writing metadata")
+    callback.assert_any_call(0/2, "exporting deform")
+    callback.assert_any_call(1/2, "exporting image")
+    callback.assert_any_call(1/2, "writing basins")
+    callback.assert_any_call(1.0, "export complete")
 
 
 @pytest.mark.parametrize("tables", [True, False])

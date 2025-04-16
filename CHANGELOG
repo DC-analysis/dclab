@@ -1,3 +1,5 @@
+0.63.0
+ - feat: add `progress_callback` argument to all data export methods (#271)
 0.62.17
  - docs: properly employ license GPL-2.0-or-later
  - ref: add KernelDensityEstimator class

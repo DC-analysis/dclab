@@ -1,7 +1,9 @@
+from unittest import mock
+
 import pytest
 
 import dclab
-from dclab import new_dataset
+from dclab import new_dataset, RTDCWriter
 import numpy as np
 
 from helper_methods import example_data_dict, retrieve_data
@@ -24,6 +26,34 @@ def test_avi_export_check(tmp_path):
                                    atol=5,  # one reason why we use HDF5
                                    rtol=0)
     assert num_frames == len(ds)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_avi_export_progress(tmp_path):
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    # create an .rtdc file with more than 10_000 events
+    path_large = path.with_name("large.rtdc")
+    path_avi = path.with_name("export.avi")
+
+    with RTDCWriter(path_large) as hw, new_dataset(path) as ds:
+        hw.store_metadata(ds.config.as_dict(pop_filtering=True))
+        size = len(ds)
+        num_iters = 25_000 // size
+        for feat in ["time", "image", "deform"]:
+            feat_data = np.concatenate([ds[feat][:]] * num_iters)
+            hw.store_feature(feat, feat_data)
+
+    with dclab.new_dataset(path_large) as dse:
+        assert len(dse) > 20_000, "we need a large dataset"
+
+        callback = mock.MagicMock()
+        dse.export.avi(path=path_avi, progress_callback=callback)
+
+    callback.assert_any_call(0.0, "exporting video")
+    callback.assert_any_call(0.4, "exporting video")
+    callback.assert_any_call(0.8, "exporting video")
+    callback.assert_any_call(1.0, "video export complete")
 
 
 @pytest.mark.filterwarnings(

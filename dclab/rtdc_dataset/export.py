@@ -51,6 +51,7 @@ class Export(object):
             pixel_format: str = "yuv420p",
             codec: str = "rawvideo",
             codec_options: dict[str, str] = None,
+            progress_callback: callable = None,
             ):
         """Exports filtered event images to a video file
 
@@ -72,6 +73,10 @@ class Export(object):
         codec_options:
             Additional arguments to give to the codec using ffmpeg,
             e.g. `{'preset': 'slow', 'crf': '0'}` for "libx264" codec.
+        progress_callback: callable
+            Function that takes at least two arguments: float between 0 and
+            1 for monitoring progress and a string describing what is being
+            done.
 
         Notes
         -----
@@ -103,6 +108,10 @@ class Export(object):
 
                 # write the filtered frames to the video file
                 for evid in np.arange(len(ds)):
+
+                    if progress_callback is not None and evid % 10_000 == 0:
+                        progress_callback(evid / len(ds), "exporting video")
+
                     # skip frames that were filtered out
                     if filtered and not ds.filter.all[evid]:
                         continue
@@ -116,12 +125,22 @@ class Export(object):
 
                     for packet in stream.encode(av_frame):
                         container.mux(packet)
+
+            if progress_callback is not None:
+                progress_callback(1.0, "video export complete")
+
         else:
             msg = "No image data to export: dataset {} !".format(ds.title)
             raise OSError(msg)
 
-    def fcs(self, path, features, meta_data=None, filtered=True,
-            override=False):
+    def fcs(self,
+            path: pathlib.Path | str,
+            features: list[str],
+            meta_data: dict = None,
+            filtered: bool = True,
+            override: bool = False,
+            progress_callback: callable = None,
+            ):
         """Export the data of an RT-DC dataset to an .fcs file
 
         Parameters
@@ -142,6 +161,10 @@ class Export(object):
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
+        progress_callback: callable
+            Function that takes at least two arguments: float between 0 and
+            1 for monitoring progress and a string describing what is being
+            done.
 
         Notes
         -----
@@ -175,11 +198,17 @@ class Export(object):
         # Collect the header
         chn_names = [dfn.get_feature_label(c, rtdc_ds=ds) for c in features]
 
+        if progress_callback is not None:
+            progress_callback(0.0, "collecting data")
+
         # Collect the data
         if filtered:
             data = [ds[c][ds.filter.all] for c in features]
         else:
             data = [ds[c] for c in features]
+
+        if progress_callback is not None:
+            progress_callback(0.5, "exporting data")
 
         data = np.array(data).transpose()
         meta_data["dclab version"] = version
@@ -188,6 +217,9 @@ class Export(object):
                            data=data,
                            text_kw_pr=meta_data,
                            )
+
+        if progress_callback is not None:
+            progress_callback(1.0, "export complete")
 
     def hdf5(self,
              path: str | pathlib.Path,
@@ -200,7 +232,9 @@ class Export(object):
              override: bool = False,
              compression_kwargs: Dict = None,
              compression: str = "deprecated",
-             skip_checks: bool = False):
+             skip_checks: bool = False,
+             progress_callback: callable = None,
+             ):
         """Export the data of the current instance to an HDF5 file
 
         Parameters
@@ -244,7 +278,10 @@ class Export(object):
                 Use `compression_kwargs` instead.
         skip_checks: bool
             Disable checking whether all features have the same length.
-
+        progress_callback: callable
+            Function that takes at least two arguments: float between 0 and
+            1 for monitoring progress and a string describing what is being
+            done.
 
         .. versionchanged:: 0.58.0
 
@@ -335,6 +372,8 @@ class Export(object):
         with RTDCWriter(path,
                         mode="append",
                         compression_kwargs=compression_kwargs) as hw:
+            if progress_callback is not None:
+                progress_callback(0.0, "writing metadata")
             # write meta data
             hw.store_metadata(meta)
 
@@ -369,7 +408,10 @@ class Export(object):
                                    ds.tables[tab])
 
             # write each feature individually
-            for feat in features:
+            for ii, feat in enumerate(features):
+                if progress_callback is not None:
+                    progress_callback(ii / len(features), f"exporting {feat}")
+
                 if (filter_arr is None or
                         # This does not work for the .tdms file format
                         # (and probably also not for DCOR).
@@ -393,6 +435,9 @@ class Export(object):
                                            filtarr=filter_arr)
 
             if basins:
+                if progress_callback:
+                    progress_callback(1 - 1 / len(features), "writing basins")
+
                 # We have to store basins. There are three options:
                 # - filtering disabled: just copy basins
                 # - filtering enabled
@@ -472,9 +517,17 @@ class Export(object):
 
                     # Do not verify basins, it takes too long.
                     hw.store_basin(**bn_dict, verify=False)
+        if progress_callback is not None:
+            progress_callback(1.0, "export complete")
 
-    def tsv(self, path, features, meta_data=None, filtered=True,
-            override=False):
+    def tsv(self,
+            path: pathlib.Path | str,
+            features: list[str],
+            meta_data: dict = None,
+            filtered: bool = True,
+            override: bool = False,
+            progress_callback: callable = None,
+            ):
         """Export the data of the current instance to a .tsv file
 
         Parameters
@@ -496,6 +549,10 @@ class Export(object):
         override: bool
             If set to `True`, an existing file ``path`` will be overridden.
             If set to `False`, raises `OSError` if ``path`` exists.
+        progress_callback: callable
+            Function that takes at least two arguments: float between 0 and
+            1 for monitoring progress and a string describing what is being
+            done.
         """
         if meta_data is None:
             meta_data = {}
@@ -516,6 +573,10 @@ class Export(object):
             if c not in ds.features_scalar:
                 raise ValueError("Invalid feature name {}".format(c))
         meta_data["dclab version"] = version
+
+        if progress_callback is not None:
+            progress_callback(0.0, "writing metadata")
+
         # Write BOM header
         with path.open("wb") as fd:
             fd.write(codecs.BOM_UTF8)
@@ -539,16 +600,25 @@ class Export(object):
             fd.write("# "+header2+"\n")
 
         with path.open("ab") as fd:
-            # write data
+            if progress_callback is not None:
+                progress_callback(0.1, "collecting data")
+
+            # collect data
             if filtered:
                 data = [ds[c][ds.filter.all] for c in features]
             else:
                 data = [ds[c] for c in features]
 
+            if progress_callback is not None:
+                progress_callback(0.5, "writing data")
+
             np.savetxt(fd,
                        np.array(data).transpose(),
                        fmt=str("%.10e"),
                        delimiter="\t")
+
+        if progress_callback is not None:
+            progress_callback(1.0, "export complete")
 
 
 def yield_filtered_array_stacks(data, indices):

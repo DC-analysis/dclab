@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # macos-latest is arm, macos-13 is i386
-        os: [ubuntu-20.04, windows-2019, macos-latest, macos-13]
+        os: [ubuntu-22.04, windows-2019, macos-latest, macos-13]
     steps:
       - uses: actions/checkout@main
         with:

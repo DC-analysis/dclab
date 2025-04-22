@@ -302,22 +302,12 @@ isoelastics
 
 
 
-.. _sec_ref_kde_contours:
+.. _sec_ref_kde:
 
-kde_contours
+Kernel density estimation (KDE)
 ------------
 
-.. automodule:: dclab.kde.contours
-   :members:
-   :undoc-members:
-
-
-.. _sec_ref_kde_methods:
-
-kde_methods
------------
-
-.. automodule:: dclab.kde.methods
+.. automodule:: dclab.kde
    :members:
    :undoc-members:
 

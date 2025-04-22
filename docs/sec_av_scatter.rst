@@ -5,16 +5,16 @@ Scatter plots
 =============
 
 For data visualization, dclab comes with predefined 
-:ref:`kernel density estimators (KDEs) <sec_ref_kde_methods>` and
+:ref:`kernel density estimators (KDEs) <sec_ref_kde>` and
 an :ref:`event downsampling <sec_ref_downsampling>` module.
 The functionalities of both modules are made available directly via the
-:class:`KernelDensityEstimator <dclab.kde.KernelDensityEstimator>` class.
+:py:class:`dclab.kde.KernelDensityEstimator` class.
 
 KDE scatter plot
 ----------------
 The KDE of the events in a 2D scatter plot can be used to
 colorize events according to event density using the
-:func:`KernelDensityEstimator.get_scatter <dclab.kde.KernelDensityEstimator.get_scatter>`
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_scatter`
 function.
 
 .. plot::
@@ -69,8 +69,8 @@ Frequently, data is visualized on logarithmic scales. If the KDE
 is computed on a linear scale, then the result will look unaesthetic
 when plotted on a logarithmic scale. Therefore, the methods
 :func:`get_downsampled_scatter <dclab.rtdc_dataset.RTDCBase.get_downsampled_scatter>`,
-:func:`get_kde_contour <dclab.kde.KernelDensityEstimator.get_contour>`, and
-:func:`get_kde_scatter <dclab.kde.KernelDensityEstimator.get_scatter>`
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_contour`, and
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_scatter`
 offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
 "log" for prettier plots.
 
@@ -142,7 +142,7 @@ Contour plot with percentiles
 Contour plots are commonly used to compare the kernel density
 between measurements. Kernel density estimates (on a grid) for contour
 plots can be computed with the function
-:func:`KernelDensityEstimator.get_contour <dclab.kde.KernelDensityEstimator.get_contour>`.
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_contour`.
 In addition, it is possible to compute contours at data
 `percentiles <https://en.wikipedia.org/wiki/Percentile>`_
 using :func:`dclab.kde.contours.get_quantile_levels`.

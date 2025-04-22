@@ -309,7 +309,11 @@ kernel density estimators (KDEs)
 .. autoclass:: dclab.kde.KernelDensityEstimator
    :members:
 
-.. automodule:: dclab.kde
+.. automodule:: dclab.kde.methods
+   :members:
+   :undoc-members:
+
+.. automodule:: dclab.kde.contours
    :members:
    :undoc-members:
 

@@ -304,8 +304,10 @@ isoelastics
 
 .. _sec_ref_kde:
 
-Kernel density estimation (KDE)
-------------
+kernel density estimators (KDEs)
+-------------------------------
+.. autoclass:: dclab.kde.KernelDensityEstimator
+   :members:
 
 .. automodule:: dclab.kde
    :members:

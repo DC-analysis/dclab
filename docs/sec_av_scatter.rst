@@ -8,7 +8,7 @@ For data visualization, dclab comes with predefined
 :ref:`kernel density estimators (KDEs) <sec_ref_kde>` and
 an :ref:`event downsampling <sec_ref_downsampling>` module.
 The functionalities of both modules are made available directly via the
-:py:class:`dclab.kde.KernelDensityEstimator` class.
+:py:class:`dclab.kde.KernelDensityEstimator` class. 
 
 KDE scatter plot
 ----------------
@@ -21,7 +21,7 @@ function.
 
     import matplotlib.pylab as plt
     import dclab
-    from dclab import KernelDensityEstimator
+    from dclab.kde import KernelDensityEstimator
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     # create a kernel density estimator
@@ -69,8 +69,8 @@ Frequently, data is visualized on logarithmic scales. If the KDE
 is computed on a linear scale, then the result will look unaesthetic
 when plotted on a logarithmic scale. Therefore, the methods
 :func:`get_downsampled_scatter <dclab.rtdc_dataset.RTDCBase.get_downsampled_scatter>`,
-:py:meth:`~dclab.kde.KernelDensityEstimator.get_contour`, and
-:py:meth:`~dclab.kde.KernelDensityEstimator.get_scatter`
+:py:meth:`dclab.kde.KernelDensityEstimator.get_contour`, and
+:py:meth:`dclab.kde.KernelDensityEstimator.get_scatter`
 offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
 "log" for prettier plots.
 
@@ -78,13 +78,13 @@ offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
 
     import matplotlib.pylab as plt
     import dclab
-    from dclab import KernelDensityEstimator
+    from dclab.kde import KernelDensityEstimator
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     # create a kernel density estimator
     kde_instance = KernelDensityEstimator(ds)
     kde_lin = kde_instance.get_scatter(xax="area_um", yax="deform", yscale="linear")
-    kde_lin = kde_instance.get_scatter(xax="area_um", yax="deform", yscale="log")
+    kde_log = kde_instance.get_scatter(xax="area_um", yax="deform", yscale="log")
 
     ax1 = plt.subplot(121, title="KDE with linear y-scale")
     sc1 = ax1.scatter(ds["area_um"], ds["deform"], c=kde_lin, marker=".")
@@ -113,7 +113,7 @@ Isoelasticity lines are available via the
 
     import matplotlib.pylab as plt
     import dclab
-    from dclab import KernelDensityEstimator
+    from dclab.kde import KernelDensityEstimator
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     kde_instance = KernelDensityEstimator(ds)
@@ -151,7 +151,7 @@ using :func:`dclab.kde.contours.get_quantile_levels`.
 
     import matplotlib.pylab as plt
     import dclab
-    from dclab import KernelDensityEstimator
+    from dclab.kde import KernelDensityEstimator
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     kde_instance = KernelDensityEstimator(ds)
@@ -203,7 +203,7 @@ in Shape-Out and then import them in dclab.
 
     import matplotlib.pylab as plt
     import dclab
-    from dclab import KernelDensityEstimator
+    from dclab.kde import KernelDensityEstimator
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     kde_instance = KernelDensityEstimator(ds)

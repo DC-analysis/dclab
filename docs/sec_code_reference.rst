@@ -307,7 +307,7 @@ isoelastics
 kde_contours
 ------------
 
-.. automodule:: dclab.kde_contours
+.. automodule:: dclab.kde.contours
    :members:
    :undoc-members:
 
@@ -317,7 +317,7 @@ kde_contours
 kde_methods
 -----------
 
-.. automodule:: dclab.kde_methods
+.. automodule:: dclab.kde.methods
    :members:
    :undoc-members:
 

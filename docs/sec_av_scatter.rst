@@ -69,8 +69,8 @@ Frequently, data is visualized on logarithmic scales. If the KDE
 is computed on a linear scale, then the result will look unaesthetic
 when plotted on a logarithmic scale. Therefore, the methods
 :func:`get_downsampled_scatter <dclab.rtdc_dataset.RTDCBase.get_downsampled_scatter>`,
-:py:meth:`dclab.kde.KernelDensityEstimator.get_contour`, and
-:py:meth:`dclab.kde.KernelDensityEstimator.get_scatter`
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_contour`, and
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_scatter`
 offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
 "log" for prettier plots.
 
@@ -145,7 +145,7 @@ plots can be computed with the function
 :py:meth:`~dclab.kde.KernelDensityEstimator.get_contour`.
 In addition, it is possible to compute contours at data
 `percentiles <https://en.wikipedia.org/wiki/Percentile>`_
-using :func:`dclab.kde.contours.get_quantile_levels`.
+using :func:`~dclab.kde.contours.get_quantile_levels`.
 
 .. plot::
 
@@ -187,7 +187,7 @@ using :func:`dclab.kde.contours.get_quantile_levels`.
     plt.show()
 
 Note that you may compute (and plot) the contour lines directly
-yourself using the function :func:`dclab.kde.contours.find_contours_level`.
+yourself using the function :func:`~dclab.kde.contours.find_contours_level`.
 
 
 

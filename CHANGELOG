@@ -1,3 +1,5 @@
+0.63.2
+ - ref: deprecate get_contour and use bin_width_doane_div5 in kde submodule
 0.63.1
  - docs: update documentation and code references for kde submodule
  - enh: cache S3 sessions and clients (test suite duration reduced by 30%)

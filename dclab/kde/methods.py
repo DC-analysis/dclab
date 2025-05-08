@@ -56,6 +56,16 @@ def bin_width_doane(a):
     return acc
 
 
+def bin_width_doane_div5(a):
+    """Compute contour spacing based on Doane's formula divided by five
+
+    See Also
+    --------
+    bin_width_doane: method used to compute the bin width
+    """
+    return bin_width_doane(a) / 5
+
+
 def bin_width_percentile(a):
     """Compute contour spacing based on data percentiles
 

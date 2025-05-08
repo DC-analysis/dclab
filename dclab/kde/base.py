@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-from .methods import bin_width_doane, get_bad_vals, methods
+from .methods import bin_width_doane_div5, get_bad_vals, methods
 
 
 class KernelDensityEstimator:
@@ -112,6 +112,47 @@ class KernelDensityEstimator:
         X, Y, Z : coordinates
             The kernel density Z evaluated on a rectangular grid (X,Y).
         """
+        warnings.warn("`get_contour` is deprecated; please use "
+                      "`get_raster` instead", DeprecationWarning)
+        return self.get_raster(
+            xax=xax, yax=yax, xacc=xacc, yacc=yacc,
+            kde_type=kde_type, kde_kwargs=kde_kwargs,
+            xscale=xscale, yscale=yscale
+        )
+
+    def get_raster(self, xax="area_um", yax="deform", xacc=None, yacc=None,
+                   kde_type="histogram", kde_kwargs=None, xscale="linear",
+                   yscale="linear"):
+        """Evaluate the kernel density estimate on a grid
+
+        Parameters
+        ----------
+        xax: str
+            Identifier for X axis (e.g. "area_um", "aspect", "deform")
+        yax: str
+            Identifier for Y axis
+        xacc: float
+            Contour accuracy in x direction
+            if set to None, will use :func:`bin_width_doane_div5`
+        yacc: float
+            Contour accuracy in y direction
+            if set to None, will use :func:`bin_width_doane_div5`
+        kde_type: str
+            The KDE method to use
+        kde_kwargs: dict
+            Additional keyword arguments to the KDE method
+        xscale: str
+            If set to "log", take the logarithm of the x-values before
+            computing the KDE. This is useful when data are
+            displayed on a log-scale. Defaults to "linear".
+        yscale: str
+            See `xscale`.
+
+        Returns
+        -------
+        X, Y, Z : coordinates
+            The kernel density Z evaluated on a rectangular grid (X,Y).
+        """
         if kde_kwargs is None:
             kde_kwargs = {}
         xax = xax.lower()
@@ -128,21 +169,21 @@ class KernelDensityEstimator:
             a=x,
             feat=xax,
             scale=xscale,
-            method=bin_width_doane,
+            method=bin_width_doane_div5,
             ret_scaled=True)
 
         yacc_sc, ys = self.get_spacing(
             a=y,
             feat=yax,
             scale=yscale,
-            method=bin_width_doane,
+            method=bin_width_doane_div5,
             ret_scaled=True)
 
         if xacc is None or xacc == 0:
-            xacc = xacc_sc / 5
+            xacc = xacc_sc
 
         if yacc is None or yacc == 0:
-            yacc = yacc_sc / 5
+            yacc = yacc_sc
 
         # Ignore infs and nans
         bad = get_bad_vals(xs, ys)

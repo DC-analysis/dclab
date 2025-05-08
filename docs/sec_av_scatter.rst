@@ -69,7 +69,7 @@ Frequently, data is visualized on logarithmic scales. If the KDE
 is computed on a linear scale, then the result will look unaesthetic
 when plotted on a logarithmic scale. Therefore, the methods
 :func:`get_downsampled_scatter <dclab.rtdc_dataset.RTDCBase.get_downsampled_scatter>`,
-:py:meth:`~dclab.kde.KernelDensityEstimator.get_contour`, and
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_raster`, and
 :py:meth:`~dclab.kde.KernelDensityEstimator.get_scatter`
 offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
 "log" for prettier plots.
@@ -142,7 +142,7 @@ Contour plot with percentiles
 Contour plots are commonly used to compare the kernel density
 between measurements. Kernel density estimates (on a grid) for contour
 plots can be computed with the function
-:py:meth:`~dclab.kde.KernelDensityEstimator.get_contour`.
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_raster`.
 In addition, it is possible to compute contours at data
 `percentiles <https://en.wikipedia.org/wiki/Percentile>`_
 using :func:`~dclab.kde.contours.get_quantile_levels`.
@@ -155,7 +155,7 @@ using :func:`~dclab.kde.contours.get_quantile_levels`.
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     kde_instance = KernelDensityEstimator(ds)
-    X, Y, Z = kde_instance.get_contour(xax="area_um", yax="deform")
+    X, Y, Z = kde_instance.get_raster(xax="area_um", yax="deform")
     Z /= Z.max()
     quantiles = [.1, .5, .75]
     levels = dclab.kde.contours.get_quantile_levels(density=Z,

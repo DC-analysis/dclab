@@ -185,7 +185,7 @@ class Basin(abc.ABC):
                  mapping_referrer: Dict = None,
                  ignored_basins: List[str] = None,
                  key: str = None,
-                 perishable = False,  # TODO: type hint once we drop Python 3.8
+                 perishable=False,  # TODO: type hint once we drop Python 3.8
                  **kwargs):
         """
 

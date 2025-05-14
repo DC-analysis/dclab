@@ -154,7 +154,6 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
     from dclab.kde import KernelDensityEstimator
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
-    ds = dclab.new_dataset(p)
     kde_instance = KernelDensityEstimator(ds)
 
     quantiles = [.1, .5, .75]

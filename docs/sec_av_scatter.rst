@@ -137,7 +137,7 @@ Isoelasticity lines are available via the
     plt.show()
 
 
-Contour plot with percentiles
+Contour plot with quantiles
 -----------------------------
 Contour plots are commonly used to compare the kernel density
 between measurements. Kernel density estimates (on a grid) for contour
@@ -145,7 +145,7 @@ plots can be computed with the function
 :py:meth:`~dclab.kde.KernelDensityEstimator.get_raster`.
 In addition, it is possible to compute contours at data
 `percentiles <https://en.wikipedia.org/wiki/Percentile>`_
-using :func:`~dclab.kde.contours.get_quantile_levels`.
+using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
 
 .. plot::
 
@@ -155,35 +155,29 @@ using :func:`~dclab.kde.contours.get_quantile_levels`.
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     kde_instance = KernelDensityEstimator(ds)
-    X, Y, Z = kde_instance.get_raster(xax="area_um", yax="deform")
-    Z /= Z.max()
+
     quantiles = [.1, .5, .75]
-    levels = dclab.kde.contours.get_quantile_levels(density=Z,
-                                                    x=X,
-                                                    y=Y,
-                                                    xp=ds["area_um"],
-                                                    yp=ds["deform"],
-                                                    q=quantiles,
-                                                    )
+
+    contours, levels = kde_instance.get_contour_lines(xax="area_um",
+                                                      yax="deform",
+                                                      quantiles=quantiles)
+
+    linestyles = ["--", "--", "-"]
+    colors = ["b", "r", "g"]
 
     ax = plt.subplot(111, title="contour lines")
     sc = ax.scatter(ds["area_um"], ds["deform"], c="lightgray", marker=".", zorder=1)
-    cn = ax.contour(X, Y, Z,
-                    levels=levels,
-                    linestyles=["--", "-", "-"],
-                    colors=["blue", "blue", "darkblue"],
-                    linewidths=[2, 2, 3],
-                    zorder=2)
+
+    for i, (cnt, lvl, qnt) in enumerate(zip(contours, levels, quantiles)):
+        ax.plot(cnt[:, 0], cnt[:, 1],
+                linestyle=linestyles[i],
+                color=colors[i],
+                linewidth=2,
+                label=f"{qnt*100:.0f}th quantile")
 
     ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
     ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
-    ax.set_xlim(0, 150)
-    ax.set_ylim(0.01, 0.12)
-    # label contour lines with percentiles
-    fmt = {}
-    for l, q in zip(levels, quantiles):
-        fmt[l] = "{:.0f}th".format(q*100)
-    plt.clabel(cn, fmt=fmt)
+    ax.legend()
     plt.show()
 
 Note that you may compute (and plot) the contour lines directly

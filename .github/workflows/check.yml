@@ -13,11 +13,11 @@ jobs:
         python-version: ['3.9', '3.x']
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
-#        exclude:
-#          - python-version: '3.9'
-#            extras: 'all'
-#          - python-version: '3.9'
-#            extras: 'dcor-s3'
+        exclude:
+          # problems with compiling on arm64
+          - python-version: '3.9'
+            os: macos-latest
+            extras: 'all'
       fail-fast: false
     timeout-minutes: 30
 

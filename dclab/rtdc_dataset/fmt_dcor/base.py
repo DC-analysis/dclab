@@ -162,15 +162,25 @@ class RTDC_DCOR(RTDCBase):
         return new_url
 
     def basins_get_dicts(self):
-        """Return list of dicts for all basins defined in `self.h5file`"""
+        """Return list of dicts for all basins defined in `self.h5file`
+
+        The return value of this method is cached by the API.
+        """
         try:
-            basins = self.api.get(query="basins")
+            basin_dicts = self.api.get(query="basins")
         except api.DCORAccessError:
             # TODO: Do not catch this exception when all DCOR instances
             #       implement the 'basins' query.
             # This means that the server does not implement the 'basins' query.
-            basins = []
-        return basins
+            basin_dicts = []
+        return basin_dicts
+
+    def basins_retrieve(self):
+        """Fetch all basins and additionally """
+        basins = super(RTDC_DCOR, self).basins_retrieve()
+        for bn in basins:
+            if bn.perishable:
+
 
 
 def get_host_from_url(url):

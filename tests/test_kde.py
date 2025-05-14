@@ -26,12 +26,13 @@ def test_contour_lines():
                                                       quantiles=[0.89])
     nump = 0
     for p in zip(x0, y0):
-        nump += polygon_filter.PolygonFilter.point_in_poly(p, poly=contours[0])
+        nump += polygon_filter.PolygonFilter.point_in_poly(p,
+                                                           poly=contours[0][0])
 
     assert nump == 11, "there should be (1-q)*100 points in the contour"
 
     # added in dclab 0.24.1
     nump2 = skimage.measure.points_in_poly(
         np.concatenate((x0.reshape(-1, 1), y0.reshape(-1, 1)), axis=1),
-        contours[0])
+        contours[0][0])
     assert nump2.sum() == 11

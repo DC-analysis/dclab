@@ -168,12 +168,12 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
     ax = plt.subplot(111, title="contour lines")
     sc = ax.scatter(ds["area_um"], ds["deform"], c="lightgray", marker=".", zorder=1)
 
-    for i, (cnt, lvl, qnt) in enumerate(zip(contours, levels, quantiles)):
-        ax.plot(cnt[:, 0], cnt[:, 1],
+    for i, (cnt, lvl) in enumerate(zip(contours, levels)):
+        ax.plot(cnt[0][:, 0], cnt[0][:, 1],
                 linestyle=linestyles[i],
                 color=colors[i],
                 linewidth=2,
-                label=f"{qnt*100:.0f}th quantile")
+                label=f"{quantiles[i]*100:.0f}th quantile")
 
     ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
     ax.set_ylabel(dclab.dfn.get_feature_label("deform"))

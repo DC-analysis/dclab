@@ -158,13 +158,14 @@ class KernelDensityEstimator:
 
         Returns
         -------
-        contour_lines: list of arrays
-            The contour lines for the given quantile levels. Each contour line
-            is a 2D array of shape (N, 2), where N is the number of points in
-            the contour line.
-        qlevels: list of floats
-            The quantile levels for the contour lines. The values are
-            between 0 and 1.
+        contour_lines: list of lists of arrays
+            For every qualtile level, this list contains a list of
+            corresponding contour lines arrays. Each contour line is a 2D
+            array of shape (N, 2), where N is the number of points in the
+            contour line.
+        qlevel: list of floats
+            The quantile levels for the contour lines. The values
+            are between 0 and 1.
         """
         if not quantiles:
             quantiles = [0.5, 0.95]
@@ -186,7 +187,7 @@ class KernelDensityEstimator:
             warnings.warn("Contour not possible; spacing may be too large!",
                           ContourSpacingTooLarge)
             return []
-        qlevels = get_quantile_levels(
+        qlevel = get_quantile_levels(
             density=density,
             x=x,
             y=y,
@@ -195,14 +196,14 @@ class KernelDensityEstimator:
             q=np.array(quantiles),
             normalize=True)
         contours = []
-        for level in qlevels:
+        for level in qlevel:
             # make sure that the contour levels are not at the boundaries
             if not (np.allclose(level, 0, atol=1e-12, rtol=0)
                     or np.allclose(level, 1, atol=1e-12, rtol=0)):
                 cc = find_contours_level(
                     density, x=x, y=y, level=level)
-                contours.append(cc[0])
-        return contours, qlevels
+                contours.append(cc)
+        return contours, qlevel
 
     def get_raster(self, xax="area_um", yax="deform", xacc=None, yacc=None,
                    kde_type="histogram", kde_kwargs=None, xscale="linear",

@@ -155,33 +155,33 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
     # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
     ds = dclab.new_dataset(p)
-kde_instance = KernelDensityEstimator(ds)
+    kde_instance = KernelDensityEstimator(ds)
 
-quantiles = [.1, .5, .75]
+    quantiles = [.1, .5, .75]
 
-contours, levels = kde_instance.get_contour_lines(xax="area_um",
-                                                  yax="deform",
-                                                  quantiles=quantiles)
+    contours, levels = kde_instance.get_contour_lines(xax="area_um",
+                                                    yax="deform",
+                                                    quantiles=quantiles)
 
-linestyles = ["--", "--", "-"]
-colors = ["b", "r", "g"]
+    linestyles = ["--", "--", "-"]
+    colors = ["b", "r", "g"]
 
-ax = plt.subplot(111, title="contour lines")
-sc = ax.scatter(ds["area_um"], ds["deform"], c="lightgray", marker=".", zorder=1)
+    ax = plt.subplot(111, title="contour lines")
+    sc = ax.scatter(ds["area_um"], ds["deform"], c="lightgray", marker=".", zorder=1)
 
-for i, (cnt, lvl, qnt) in enumerate(zip(contours, levels, quantiles)):
-    ax.plot(cnt[:, 0], cnt[:, 1],
-            linestyle=linestyles[i],
-            color=colors[i],
-            linewidth=2,
-            label=f"{qnt*100:.0f}th quantile")
+    for i, (cnt, lvl, qnt) in enumerate(zip(contours, levels, quantiles)):
+        ax.plot(cnt[:, 0], cnt[:, 1],
+                linestyle=linestyles[i],
+                color=colors[i],
+                linewidth=2,
+                label=f"{qnt*100:.0f}th quantile")
 
-ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
-ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
-ax.set_xlim(0, 160)
-ax.set_ylim(0, 0.09)
-ax.legend()
-plt.show()
+    ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
+    ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
+    ax.set_xlim(0, 160)
+    ax.set_ylim(0, 0.09)
+    ax.legend()
+    plt.show()
 
 Note that you may compute (and plot) the contour lines directly
 yourself using the function :func:`~dclab.kde.contours.find_contours_level`.

@@ -15,24 +15,23 @@ def test_contour_lines():
 
     kde_instance = KernelDensityEstimator(ds)
 
-    contours = kde_instance.get_contour_lines(xax="area_um",
-                                              yax="deform",
-                                              xacc=.10,
-                                              yacc=.01,
-                                              kde_type="histogram",
-                                              kde_kwargs=None,
-                                              xscale="linear",
-                                              yscale="linear",
-                                              quantiles=[0.89])
+    contours, levels = kde_instance.get_contour_lines(xax="area_um",
+                                                      yax="deform",
+                                                      xacc=.10,
+                                                      yacc=.01,
+                                                      kde_type="histogram",
+                                                      kde_kwargs=None,
+                                                      xscale="linear",
+                                                      yscale="linear",
+                                                      quantiles=[0.89])
     nump = 0
     for p in zip(x0, y0):
-        nump += polygon_filter.PolygonFilter.point_in_poly(p,
-                                                           poly=contours[0][0])
+        nump += polygon_filter.PolygonFilter.point_in_poly(p, poly=contours[0])
 
     assert nump == 11, "there should be (1-q)*100 points in the contour"
 
     # added in dclab 0.24.1
     nump2 = skimage.measure.points_in_poly(
         np.concatenate((x0.reshape(-1, 1), y0.reshape(-1, 1)), axis=1),
-        contours[0][0])
+        contours[0])
     assert nump2.sum() == 11

@@ -9,7 +9,7 @@ import abc
 import logging
 import numbers
 import threading
-from typing import Dict, List, Literal
+from typing import Callable, Dict, List, Literal, Union
 import uuid
 import warnings
 import weakref
@@ -65,10 +65,10 @@ class PerishableRecord:
     """
     def __init__(self,
                  basin: "Basin",
-                 expiration_func: callable = None,
-                 expiration_kwargs: dict = None,
-                 refresh_func: callable = None,
-                 refresh_kwargs: dict = None,
+                 expiration_func: Callable = None,
+                 expiration_kwargs: Dict = None,
+                 refresh_func: Callable = None,
+                 refresh_kwargs: Dict = None,
                  ):
         """
         Parameters
@@ -100,7 +100,7 @@ class PerishableRecord:
         self.refresh_func = refresh_func
         self.refresh_kwargs = refresh_kwargs or {}
 
-    def perished(self) -> bool | None:
+    def perished(self) -> Union[bool, None]:
         """Determine whether the basin has perished
 
         Returns
@@ -185,7 +185,7 @@ class Basin(abc.ABC):
                  mapping_referrer: Dict = None,
                  ignored_basins: List[str] = None,
                  key: str = None,
-                 perishable: bool | "PerishableRecord" = False,
+                 perishable: Union[bool, "PerishableRecord"] = False,
                  **kwargs):
         """
 

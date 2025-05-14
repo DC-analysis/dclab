@@ -137,7 +137,7 @@ Isoelasticity lines are available via the
     plt.show()
 
 
-Contour plot with quantiles
+Contour plot with percentiles
 -----------------------------
 Contour plots are commonly used to compare the kernel density
 between measurements. Kernel density estimates (on a grid) for contour

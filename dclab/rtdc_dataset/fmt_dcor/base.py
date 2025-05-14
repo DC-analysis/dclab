@@ -175,13 +175,6 @@ class RTDC_DCOR(RTDCBase):
             basin_dicts = []
         return basin_dicts
 
-    def basins_retrieve(self):
-        """Fetch all basins and additionally """
-        basins = super(RTDC_DCOR, self).basins_retrieve()
-        for bn in basins:
-            if bn.perishable:
-
-
 
 def get_host_from_url(url):
     """Extract the hostname from a URL"""

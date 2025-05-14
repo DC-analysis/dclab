@@ -26,7 +26,7 @@ maintainers = [
 ]
 description = "Library for real-time deformability cytometry (RT-DC)"
 readme = "README.rst"
-requires-python = ">=3.8, <4"
+requires-python = ">=3.9, <4"
 keywords = ["RT-DC", "deformability", "cytometry"]
 classifiers = [
     'Operating System :: OS Independent',

@@ -64,7 +64,7 @@ class PerishableRecord:
     available again).
     """
     def __init__(self,
-                 basin,  # TODO: add type hint once we drop Python 3.8
+                 basin,
                  expiration_func: Callable = None,
                  expiration_kwargs: Dict = None,
                  refresh_func: Callable = None,
@@ -185,7 +185,7 @@ class Basin(abc.ABC):
                  mapping_referrer: Dict = None,
                  ignored_basins: List[str] = None,
                  key: str = None,
-                 perishable=False,  # TODO: type hint once we drop Python 3.8
+                 perishable=False,
                  **kwargs):
         """
 

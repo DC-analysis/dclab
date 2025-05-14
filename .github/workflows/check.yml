@@ -10,16 +10,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.8', '3.x']
+        python-version: ['3.9', '3.x']
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
-        exclude:
-          # pytest on Python 3.8 cannot handle raises and warns together in
-          # a context.
-          - python-version: '3.8'
-            extras: 'all'
-          - python-version: '3.8'
-            extras: 'dcor-s3'
+#        exclude:
+#          - python-version: '3.9'
+#            extras: 'all'
+#          - python-version: '3.9'
+#            extras: 'dcor-s3'
       fail-fast: false
     timeout-minutes: 30
 

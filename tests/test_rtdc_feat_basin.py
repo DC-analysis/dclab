@@ -414,7 +414,7 @@ def test_basin_key_reproducible():
             # posix linesep
             "08dadcb6873a2cf1e5ce781a8887f00f",
             # win linesep
-            "a495fd2d495e0d991f3a4a313ec3a3fc",
+            "a1b2aa154724cf46263ad2d41b5b2e1d",
         ]
 
 

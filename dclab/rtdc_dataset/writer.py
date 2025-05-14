@@ -209,6 +209,7 @@ class RTDCWriter:
                     basin_map: np.ndarray | Tuple[str, np.ndarray] = None,
                     internal_data: Dict | h5py.Group = None,
                     verify: bool = True,
+                    perishable: bool = False,
                     ):
         """Write basin information
 
@@ -249,9 +250,13 @@ class RTDCWriter:
             This must be specified when storing internal basins, and it
             must not be specified for any other basin type.
         verify: bool
-            whether to verify the basin before storing it; You might have
+            Whether to verify the basin before storing it; You might have
             set this to False if you would like to write a basin that is
             e.g. temporarily not available
+        perishable: bool
+            Whether the basin is perishable. If this is True, then a
+            warning will be issued, because perishable basins may not be
+            accessed (e.g. time-based URL for private S3 data).
 
         Returns
         -------
@@ -261,6 +266,8 @@ class RTDCWriter:
 
             .. versionadded:: 0.58.0
         """
+        if perishable:
+            warnings.warn(f"Storing perishable basin {basin_name}")
         if basin_type == "internal":
             if internal_data is None:
                 raise ValueError(
@@ -381,6 +388,7 @@ class RTDCWriter:
             "type": basin_type,
             "features": None if basin_feats is None else sorted(basin_feats),
             "mapping": basin_map_name,
+            "perishable": perishable,
         }
         if basin_type == "file":
             flocs = []

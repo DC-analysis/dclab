@@ -6,6 +6,7 @@ which, when opened in dclab, can access features stored in the input file
 from __future__ import annotations
 
 import abc
+import logging
 import numbers
 import threading
 from typing import Dict, List, Literal
@@ -18,12 +19,19 @@ import numpy as np
 from ..util import copy_if_needed
 
 
+logger = logging.getLogger(__name__)
+
+
 class BasinFeatureMissingWarning(UserWarning):
     """Used when a badin feature is defined but not stored"""
 
 
 class CyclicBasinDependencyFoundWarning(UserWarning):
     """Used when a basin is defined in one of its sub-basins"""
+
+
+class IgnoringPerishableBasinTTL(UserWarning):
+    """Used when refreshing a basin does not support TTL"""
 
 
 class BasinmapFeatureMissingError(KeyError):
@@ -45,6 +53,107 @@ class BasinAvailabilityChecker(threading.Thread):
 
     def run(self):
         self.basin.is_available()
+
+
+class PerishableRecord:
+    """A class containing information about perishable basins
+
+    Perishable basins are basins than may discontinue to work after
+    e.g. a specific amount of time (e.g. presigned S3 URLs). With the
+    `PerishableRecord`, these basins may be "refreshed" (made
+    available again).
+    """
+    def __init__(self,
+                 basin: "Basin",
+                 expiration_func: callable = None,
+                 expiration_kwargs: dict = None,
+                 refresh_func: callable = None,
+                 refresh_kwargs: dict = None,
+                 ):
+        """
+        Parameters
+        ----------
+        basin: Basin
+            Instance of the perishable basin
+        expiration_func: callable
+            A function that determines whether the basin has perished.
+            It must accept `basin` as the first argument. Calling this
+            function should be fast, as it is called every time a feature
+            is accessed.
+            Note that if you are implementing this in the time domain, then
+            you should not use UNIX time, but something relative to
+            :func:`time.monotonic()` instead. This allows the local clock
+            to change throughout the execution of the Python process.
+            If a remote machine dictates the expiration time, then that
+            remote machine should also transmit the creation time.
+        expiration_kwargs: dict
+            Additional kwargs for `expiration_func`.
+        refresh_func: callable
+            The function used to refresh the `basin`. It must accept
+            `basin` as the first argument.
+        refresh_kwargs: dict
+            Additional kwargs for `refresh_func`
+        """
+        self.basin = weakref.proxy(basin)
+        self.expiration_func = expiration_func
+        self.expiration_kwargs = expiration_kwargs or {}
+        self.refresh_func = refresh_func
+        self.refresh_kwargs = refresh_kwargs or {}
+
+    def perished(self) -> bool | None:
+        """Determine whether the basin has perished
+
+        Returns
+        -------
+        state: bool or None
+            True means the basin has perished, False means the basin
+            has not perished, and `None` means we don't know
+        """
+        if self.expiration_func is None:
+            return None
+        else:
+            return self.expiration_func(self.basin, **self.expiration_kwargs)
+
+    def refresh(self, extend_by: float = None) -> None:
+        """Extend the lifetime of the associated perishable basin
+
+        Parameters
+        ----------
+        extend_by: float
+            Custom argument for extending the life of the basin.
+            Normally, this would be a lifetime.
+
+        Returns
+        -------
+        basin: dict | None
+            Dictionary for instantiating a new basin
+        """
+        if self.refresh_func is None:
+            # The basins is a perishable basin, but we have no way of
+            # refreshing it.
+            logger.error(f"Cannot refresh basin '{self.basin}'")
+            return
+
+        if extend_by and "extend_by" not in self.refresh_kwargs:
+            warnings.warn(
+                "Parameter 'extend_by' ignored, because the basin "
+                "source does not support it",
+                IgnoringPerishableBasinTTL)
+            extend_by = None
+
+        rkw = {}
+        rkw.update(self.refresh_kwargs)
+
+        if extend_by is not None:
+            rkw["extend_by"] = extend_by
+
+        self.refresh_func(self.basin, **rkw)
+        logger.info(f"Refreshed basin '{self.basin}'")
+
+        # If everything went well, reset the current dataset of the basin
+        if self.basin._ds is not None:
+            self.basin._ds.close()
+            self.basin._ds = None
 
 
 class Basin(abc.ABC):
@@ -76,6 +185,7 @@ class Basin(abc.ABC):
                  mapping_referrer: Dict = None,
                  ignored_basins: List[str] = None,
                  key: str = None,
+                 perishable: bool | "PerishableRecord" = False,
                  **kwargs):
         """
 
@@ -115,6 +225,10 @@ class Basin(abc.ABC):
             Unique key to identify this basin; normally computed from
             a JSON dump of the basin definition. A random string is used
             if None is specified.
+        perishable: bool or PerishableRecord
+            If this is not False, then it must be a :class:`.PerishableRecord`
+            that holds the information about the expiration time, and that
+            comes with a method `refresh` to extend the lifetime of the basin.
         kwargs:
             Additional keyword arguments passed to the `load_dataset`
             method of the `Basin` subclass.
@@ -130,7 +244,12 @@ class Basin(abc.ABC):
         self.name = name
         #: lengthy description of the basin
         self.description = description
-        # defining key of the basin
+        # perishable record
+        if isinstance(perishable, bool) and perishable:
+            # Create an empty perishable record
+            perishable = PerishableRecord(self)
+        self.perishable = perishable
+        # define key of the basin
         self.key = key or str(uuid.uuid4())
         # features this basin provides
         self._features = features
@@ -164,10 +283,14 @@ class Basin(abc.ABC):
         self._av_check.start()
 
     def __repr__(self):
+        try:
+            feature_info = len(self.features)
+        except BaseException:
+            feature_info = "unknown"
         options = [
             self.name,
             f"mapped {self.mapping}" if self.mapping != "same" else "",
-            f"features {self._features}" if self.features else "full-featured",
+            f"{feature_info} features",
             f"location {self.location}",
         ]
         opt_str = ", ".join([o for o in options if o])
@@ -220,6 +343,10 @@ class Basin(abc.ABC):
     @property
     def ds(self):
         """The :class:`.RTDCBase` instance represented by the basin"""
+        if self.perishable and self.perishable.perished():
+            # We have perished. Ask the PerishableRecord to refresh this
+            # basin so we can access it again.
+            self.perishable.refresh()
         if self._ds is None:
             if not self.is_available():
                 raise BasinNotAvailableError(f"Basin {self} is not available!")
@@ -265,6 +392,7 @@ class Basin(abc.ABC):
             "basin_descr": self.description,
             "basin_feats": self.features,
             "basin_map": self.basinmap,
+            "perishable": bool(self.perishable),
         }
 
     def close(self):

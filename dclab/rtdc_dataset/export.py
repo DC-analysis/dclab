@@ -505,6 +505,11 @@ class Export(object):
                         # defined in. Since we are exporting, it does not
                         # make sense to store these basins in the output file.
                         continue
+                    elif bn_dict.get("perishable"):
+                        # Perishable basins require secret keys or complicated
+                        # logic to execute in order to refresh them. We do not
+                        # store them in the output file.
+                        continue
                     basinmap_orig = bn_dict.get("basin_map")
                     if not filtered:
                         # filtering disabled: just copy basins

@@ -746,6 +746,8 @@ class RTDCBase(abc.ABC):
                 "ignored_basins": bd_keys,
                 # basin key
                 "key": bdict["key"],
+                # whether the basin is perishable or not
+                "perishable": bdict.get("perishable", False),
             }
 
             # Check whether this basin is supported and exists
@@ -783,12 +785,19 @@ class RTDCBase(abc.ABC):
                     b_cls = bc[bdict["format"]]
                     # Try absolute path
                     bna = b_cls(pp, **kwargs)
-                    if bna.verify_basin():
-                        basins.append(bna)
-                        break
+
+                    try:
+                        absolute_exists = bna.verify_basin()
+                    except BaseException:
+                        pass
+                    else:
+                        if absolute_exists:
+                            basins.append(bna)
+                            break
                     # Try relative path
                     this_path = pathlib.Path(self.path)
                     if this_path.exists():
+
                         # Insert relative path
                         bnr = b_cls(this_path.parent / pp, **kwargs)
                         if bnr.verify_basin():

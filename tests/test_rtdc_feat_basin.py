@@ -403,6 +403,7 @@ def test_basin_key_reproducible():
             basin_feats=["image"],
             basin_locs=[f"../{h5path.name}"],
             verify=False,
+            perishable=False,
         )
     # When loading a basin, dclab should use the existing key
     # from the input file.
@@ -411,7 +412,7 @@ def test_basin_key_reproducible():
         # dclab 0.62.9
         assert ds.basins[0].key in [
             # posix linesep
-            "b8763fad05e17b58407875fe9c28d90b",
+            "08dadcb6873a2cf1e5ce781a8887f00f",
             # win linesep
             "a495fd2d495e0d991f3a4a313ec3a3fc",
         ]

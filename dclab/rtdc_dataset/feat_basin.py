@@ -94,11 +94,17 @@ class PerishableRecord:
         refresh_kwargs: dict
             Additional kwargs for `refresh_func`
         """
-        self.basin = weakref.proxy(basin)
+        if not isinstance(basin, weakref.ProxyType):
+            basin = weakref.proxy(basin)
+        self.basin = basin
         self.expiration_func = expiration_func
         self.expiration_kwargs = expiration_kwargs or {}
         self.refresh_func = refresh_func
         self.refresh_kwargs = refresh_kwargs or {}
+
+    def __repr__(self):
+        state = "perished" if self.perished() else "valid"
+        return f"<PerishableRecord ({state}) at {hex(id(self))}>"
 
     def perished(self) -> Union[bool, None]:
         """Determine whether the basin has perished

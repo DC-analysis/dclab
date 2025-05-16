@@ -179,13 +179,15 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
 
     ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
     ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
-    ax.set_xlim(0, 160)
-    ax.set_ylim(0, 0.09)
+    ax.set_xlim(0, 150)
+    ax.set_ylim(0.01, 0.12)
     ax.legend()
     plt.show()
 
-Note that you may compute (and plot) the contour lines directly
-yourself using the function :func:`~dclab.kde.contours.find_contours_level`.
+.. note::
+
+    The lower-level method for computing contours from a given density level
+    is :func:`~dclab.kde.contours.find_contours_level`.
 
 
 

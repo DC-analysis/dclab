@@ -171,18 +171,13 @@ class RTDC_DCOR(RTDCBase):
 
     def _basin_refresh(self, basin):
         """Refresh the specified basin"""
-        if not basin.perishable:
-            raise ValueError("Cannot refresh non-perishable basin")
         # Retrieve the basin dictionary from DCOR
         basin_dicts = self.basins_get_dicts()
         for bn_dict in basin_dicts:
             if bn_dict.get("name") == basin.name:
                 break
         else:
-            raise ValueError(f"Basin '{basin.name}' not found")
-
-        if bn_dict is None:
-            raise ValueError(f"Could not find basin {basin} in {self}")
+            raise ValueError(f"Basin '{basin.name}' not found in {self}")
 
         tre = bn_dict["time_request"]
         ttl = bn_dict["time_expiration"]

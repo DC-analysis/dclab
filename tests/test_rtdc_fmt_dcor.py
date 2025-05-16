@@ -394,3 +394,10 @@ def test_load_nonexistent_file_issue81():
         pass
     else:
         assert False, "Non-existent files should raise FileNotFoundError"
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_refresh_non_perishable_basin():
+    with dclab.new_dataset("a233aaf8-9998-4c44-8070-20fdba7cf3b2") as ds:
+        bn = ds.basins[0]
+        assert not bn.perishable

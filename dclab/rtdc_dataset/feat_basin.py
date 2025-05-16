@@ -136,7 +136,7 @@ class PerishableRecord:
             Dictionary for instantiating a new basin
         """
         if self.refresh_func is None:
-            # The basins is a perishable basin, but we have no way of
+            # The basin is a perishable basin, but we have no way of
             # refreshing it.
             logger.error(f"Cannot refresh basin '{self.basin}'")
             return

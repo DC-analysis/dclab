@@ -1,4 +1,5 @@
 import json
+import time
 import uuid
 
 import h5py
@@ -65,6 +66,17 @@ def test_basin_as_dict(tmp_path):
         assert bdict2["basin_format"] == "dcor"
         assert bdict2["basin_locs"] == [dcor_url]
         assert bdict2["basin_descr"] == "an example DCOR test basin"
+
+
+def test_basins_basins_get_dicts_update():
+    with RTDC_DCOR(dcor_url) as ds:
+        basin_dict1 = ds.basins_get_dicts()
+        basin_dict2 = ds.basins_get_dicts()
+        assert basin_dict1 is basin_dict2, "basin dict should be cached"
+        ds.cache_basin_dict_time = 0.1
+        time.sleep(0.2)
+        basin_dict3 = ds.basins_get_dicts()
+        assert basin_dict3 is not basin_dict1, "cache should be invalidated"
 
 
 @pytest.mark.parametrize("url", [

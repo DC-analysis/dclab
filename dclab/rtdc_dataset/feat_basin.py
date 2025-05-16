@@ -81,11 +81,12 @@ class PerishableRecord:
             function should be fast, as it is called every time a feature
             is accessed.
             Note that if you are implementing this in the time domain, then
-            you should not use UNIX time, but something relative to
-            :func:`time.monotonic()` instead. This allows the local clock
-            to change throughout the execution of the Python process.
-            If a remote machine dictates the expiration time, then that
-            remote machine should also transmit the creation time.
+            you should use `time.time()` (TSE), because you need an absolute
+            time measure. `time.monotonic()` for instance does not count up
+            when the system goes to sleep. However, keep in mind that if
+            a remote machine dictates the expiration time, then that
+            remote machine should also transmit the creation time (in case
+            there are time offsets).
         expiration_kwargs: dict
             Additional kwargs for `expiration_func`.
         refresh_func: callable
@@ -135,7 +136,7 @@ class PerishableRecord:
             Dictionary for instantiating a new basin
         """
         if self.refresh_func is None:
-            # The basins is a perishable basin, but we have no way of
+            # The basin is a perishable basin, but we have no way of
             # refreshing it.
             logger.error(f"Cannot refresh basin '{self.basin}'")
             return

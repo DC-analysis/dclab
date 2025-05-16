@@ -6,7 +6,15 @@ import time
 import dclab
 from dclab.rtdc_dataset.fmt_dcor import api
 
+from helper_methods import DCOR_AVAILABLE
+
 import pytest
+
+pytest.importorskip("requests")
+
+if not DCOR_AVAILABLE:
+    pytest.skip("No connection to DCOR", allow_module_level=True)
+
 
 # 250209_Blood_2025-02-09_09.46_M003_Reference_dcn_export_28_minimal.rtdc
 # a233aaf8-9998-4c44-8070-20fdba7cf3b2

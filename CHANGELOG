@@ -7,6 +7,7 @@
  - fix: fetching tables information from DCOR dataset could time out
  - fix: default to compression level 5 when exporting or writing (#272)
  - enh: increase timeout every time fetching data from DCOR API times out
+ - docs: update docs `RTDCWriter` I/O
  - setup: drop support for Python 3.8
  - tests: add tests for fetching tables from a DCOR dataset (#229)
  - ref: add `get_contour_lines` method to `KernelDensityEstimator` class

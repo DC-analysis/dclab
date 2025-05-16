@@ -202,8 +202,8 @@ class KernelDensityEstimator:
             normalize=False)
         contours = []
         # Normalize levels to [0, 1]
-        qlevels = np.array(levels) / density.max()
-        for level in qlevels:
+        qlev = np.array(levels) / density.max()
+        for level in qlev:
             # make sure that the contour levels are not at the boundaries
             if not (np.allclose(level, 0, atol=1e-12, rtol=0)
                     or np.allclose(level, 1, atol=1e-12, rtol=0)):

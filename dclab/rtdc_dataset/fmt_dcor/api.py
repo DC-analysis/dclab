@@ -11,8 +11,10 @@ class DCORAccessError(BaseException):
 
 class APIHandler:
     """Handles the DCOR api with caching for simple queries"""
-    #: these are cached to minimize network usage
-    cache_queries = ["basins", "metadata", "size", "feature_list", "valid"]
+    #: These are cached to minimize network usage
+    #: Note that we are not caching basins, since they may contain
+    #: expiring URLs.
+    cache_queries = ["metadata", "size", "feature_list", "valid"]
     #: DCOR API Keys/Tokens in the current session
     api_keys = []
 

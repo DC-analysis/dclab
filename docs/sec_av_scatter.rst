@@ -158,9 +158,9 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
 
     quantiles = [.1, .5, .75]
 
-    contours, levels = kde_instance.get_contour_lines(xax="area_um",
+    contours, levels = kde_instance.get_contour_lines(quantiles=quantiles,
+                                                      xax="area_um",
                                                       yax="deform",
-                                                      quantiles=quantiles,
                                                       ret_levels=True,)
 
     linestyles = ["--", "--", "-"]

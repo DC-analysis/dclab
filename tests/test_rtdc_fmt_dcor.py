@@ -109,6 +109,51 @@ def test_dcor_data_contour_fl():
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.core.LocalBasinForbiddenWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_export_logs(tmp_path):
+    exported = tmp_path / "exported.rtdc"
+    with dclab.new_dataset("de319c9c-8d4a-4e17-9ae1-4d57a42f4508") as ds0:
+        ds0.export.hdf5(exported, features=[], logs=True)
+
+    with dclab.new_dataset(exported) as ds:
+        assert len(ds.logs) == 7
+        assert "src_cskernel-acquisition" in ds.logs
+        ls = "09:46:49 INFO Main/Worker in CS.Control: Job project_name=Blood"
+        assert ls in ds.logs["src_cskernel-acquisition"]
+        # check for dclab-export log
+        for key in list(ds.logs.keys()):
+            if key.startswith("dclab-export"):
+                break
+        else:
+            assert False, "missing dclab-export log"
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.core.LocalBasinForbiddenWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_export_tables(tmp_path):
+    exported = tmp_path / "exported.rtdc"
+    with dclab.new_dataset("de319c9c-8d4a-4e17-9ae1-4d57a42f4508") as ds0:
+        ds0.export.hdf5(exported, features=[], tables=True)
+
+    with dclab.new_dataset(exported) as ds:
+        assert len(ds.tables) == 4
+        assert "src_cskernel_monitor" in ds.tables
+        mon = ds.tables["src_cskernel_monitor"]
+        assert mon.has_graphs()
+        assert "disk" in mon.keys()
+        assert np.allclose(mon["disk"][4], 0.49422805, rtol=0, atol=1e-4)
+
+        assert "src_profile-stack_lower" in ds.tables
+        prfl = ds.tables["src_profile-stack_lower"]
+        assert prfl.keys() is None
+        assert not prfl.has_graphs()
+        assert np.allclose(prfl[121, 126], 144.07798537774167,
+                           rtol=0, atol=1e-3)
+
+
+@pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
 def test_dcor_hash():

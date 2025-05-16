@@ -66,8 +66,8 @@ class RTDCWriter:
         compression_kwargs: dict-like
             Dictionary with the keys "compression" and "compression_opts"
             which are passed to :func:`h5py.H5File.create_dataset`. The
-            default is Zstandard compression with the lowest compression
-            level `hdf5plugin.Zstd(clevel=1)`. To disable compression, use
+            default is Zstandard compression with the compression
+            level 5 `hdf5plugin.Zstd(clevel=5)`. To disable compression, use
             `{"compression": None}`.
         compression: str or None
             Compression method used for data storage;
@@ -88,7 +88,7 @@ class RTDCWriter:
             # be backwards-compatible
             compression_kwargs = {"compression": compression}
         if compression_kwargs is None:
-            compression_kwargs = hdf5plugin.Zstd(clevel=1)
+            compression_kwargs = hdf5plugin.Zstd(clevel=5)
 
         self.mode = mode
         self.compression_kwargs = compression_kwargs

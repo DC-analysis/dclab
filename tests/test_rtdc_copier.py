@@ -46,7 +46,10 @@ def test_copy_basins():
     path_copy = path.with_name("test_copy.rtdc")
 
     # add log to source file
-    with RTDCWriter(path, mode="append") as hw:
+    with RTDCWriter(path,
+                    mode="append",
+                    compression_kwargs={"compression": None},
+                    ) as hw:
         bn_hash = hw.store_basin(
             basin_type="file",
             basin_format="hdf5",
@@ -179,7 +182,10 @@ def test_copy_basins_mapped():
     path_copy = path.with_name("test_copy.rtdc")
 
     # add log to source file
-    with RTDCWriter(path, mode="append") as hw:
+    with RTDCWriter(path,
+                    mode="append",
+                    compression_kwargs={"compression": None},
+                    ) as hw:
         bn_hash = hw.store_basin(
             basin_type="file",
             basin_format="hdf5",
@@ -246,7 +252,10 @@ def test_copy_basins_no_basin():
     path_copy = path.with_name("test_copy.rtdc")
 
     # add log to source file
-    with RTDCWriter(path, mode="append") as hw:
+    with RTDCWriter(path,
+                    mode="append",
+                    compression_kwargs={"compression": None},
+                    ) as hw:
         bn_hash = hw.store_basin(
             basin_type="file",
             basin_format="hdf5",
@@ -276,7 +285,10 @@ def test_copy_logs():
     path_copy = path.with_name("test_copy.rtdc")
 
     # add log to source file
-    with RTDCWriter(path, mode="append") as hw:
+    with RTDCWriter(path,
+                    mode="append",
+                    compression_kwargs={"compression": None},
+                    ) as hw:
         hw.store_log("test_log", ["hans", "peter", "und", "zapadust"])
         assert not is_properly_compressed(hw.h5file["logs/test_log"])
 

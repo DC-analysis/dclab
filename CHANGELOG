@@ -5,6 +5,7 @@
  - fix: allow `Basin.verify_basin` to fail
  - fix: `Basin.__repr__` failed when location did not exist
  - fix: fetching tables information from DCOR dataset could time out
+ - fix: default to compression level 5 when exporting or writing (#272)
  - enh: increase timeout every time fetching data from DCOR API times out
  - setup: drop support for Python 3.8
  - tests: add tests for fetching tables from a DCOR dataset (#229)

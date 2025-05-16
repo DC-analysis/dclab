@@ -11,6 +11,7 @@ import pytest
 import dclab
 from dclab import dfn, new_dataset, RTDCWriter
 from dclab.rtdc_dataset.export import store_filtered_feature
+from dclab.rtdc_dataset import check
 
 from helper_methods import example_data_dict, retrieve_data
 
@@ -34,6 +35,28 @@ def test_hdf5():
     assert np.allclose(ds2["time"], ds1["time"])
     assert np.allclose(ds2["frame"], ds1["frame"])
     assert np.allclose(ds2["fl3_width"], ds1["fl3_width"])
+
+
+def test_hdf5_compressed():
+    path = retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip")
+    path_exp = path.parent / "exported.rtdc"
+
+    with dclab.new_dataset(path) as ds:
+        # sanity checks
+        assert len(ds.tables) == 2
+        assert len(ds.logs) == 2
+        ds.export.hdf5(path_exp, tables=True, logs=True)
+
+    with dclab.new_dataset(path_exp) as ds:
+        assert len(ds.tables) == 2
+        assert len(ds.logs) == 3
+
+        # check compression
+        with check.IntegrityChecker(ds) as ic:
+            cues = ic.check_compression()
+            assert len(cues) == 1
+            cue = cues[0]
+            assert cue.msg == "Compression: All"
 
 
 def test_hdf5_duplicate_feature_for_export():

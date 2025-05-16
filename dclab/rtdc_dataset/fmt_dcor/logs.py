@@ -22,5 +22,5 @@ class DCORLogs:
     @property
     def _logs(self):
         if self._logs_cache is None:
-            self._logs_cache = self.api.get(query="logs")
+            self._logs_cache = self.api.get(query="logs", timeout=5)
         return self._logs_cache

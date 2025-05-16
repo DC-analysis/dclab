@@ -254,7 +254,7 @@ class ResoluteRequestsSession(requests.Session):
                 break
         else:
             raise requests.exceptions.ReadTimeout(
-                f"Resolut sesion failed for {args} and {kwargs}!")
+                f"Resolute session failed for {args} and {kwargs}!")
         return resp
 
 

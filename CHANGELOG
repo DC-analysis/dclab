@@ -1,11 +1,16 @@
 0.64.0
  - feat: introduce concept of perishable (e.g. temporally expiring) basins
+ - feat: add `PerishableRecord` to presigned URLs for DCOR basins (#244)
  - fix: do not export perishable basins (#254)
  - fix: allow `Basin.verify_basin` to fail
  - fix: `Basin.__repr__` failed when location did not exist
+ - fix: fetching tables information from DCOR dataset could time out
+ - enh: increase timeout every time fetching data from DCOR API times out
  - setup: drop support for Python 3.8
+ - tests: add tests for fetching tables from a DCOR dataset (#229)
  - ref: add `get_contour_lines` method to `KernelDensityEstimator` class
  - ref: deprecate get_contour and use bin_width_doane_div5 in kde submodule
+ - ref: cache "basins" in `RTDC_DCOR` instead of in `RTDC_DCOR.api`
 0.63.1
  - docs: update documentation and code references for kde submodule
  - enh: cache S3 sessions and clients (test suite duration reduced by 30%)

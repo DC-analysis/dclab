@@ -635,7 +635,7 @@ class RTDCBase(abc.ABC):
             The kernel density Z evaluated on a rectangular grid (X,Y).
         """
         kde_instance = KernelDensityEstimator(rtdc_ds=self)
-        xmesh, ymesh, density = kde_instance.get_contour(
+        xmesh, ymesh, density = kde_instance.get_raster(
             xax=xax, yax=yax, xacc=xacc, yacc=yacc, kde_type=kde_type,
             kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
         )

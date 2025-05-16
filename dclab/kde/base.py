@@ -134,8 +134,8 @@ class KernelDensityEstimator:
         Parameters
         ----------
         quantiles: list or array of floats
-            Define the contour levels based on quantiles of the KDE. The
-            values must be between 0 and 1. If set to None, will use
+            KDE Quantiles for which contour levels are computed. The
+            values must be between 0 and 1. If set to None, use
             [0.5, 0.95] as default.
         xax: str
             Identifier for X axis (e.g. "area_um", "aspect", "deform")
@@ -163,14 +163,14 @@ class KernelDensityEstimator:
 
         Returns
         -------
-        contour_lines: list of lists of arrays
-            For every qualtile level, this list contains a list of
-            corresponding contour lines arrays. Each contour line is a 2D
+        contour_lines: list of lists (of lists)
+            For every number in `quantiles`, this list contains a list of
+            corresponding contour lines. Each contour line is a 2D
             array of shape (N, 2), where N is the number of points in the
             contour line.
         levels: list of floats
-            The density levels corresponding to quantiles.
-            `levels` is only returned if `ret_levels` is set to True.
+            The density levels corresponding to each number in `quantiles`.
+            Only returned if `ret_levels` is set to True.
         """
         if not quantiles:
             quantiles = [0.5, 0.95]

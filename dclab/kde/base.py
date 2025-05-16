@@ -168,9 +168,9 @@ class KernelDensityEstimator:
             corresponding contour lines arrays. Each contour line is a 2D
             array of shape (N, 2), where N is the number of points in the
             contour line.
-        qlev: list of floats
+        levels: list of floats
             The density levels corresponding to quantiles.
-            `qlev` is only returned if `ret_levels` is set to True.
+            `levels` is only returned if `ret_levels` is set to True.
         """
         if not quantiles:
             quantiles = [0.5, 0.95]
@@ -192,7 +192,7 @@ class KernelDensityEstimator:
             warnings.warn("Contour not possible; spacing may be too large!",
                           ContourSpacingTooLarge)
             return []
-        qlev = get_quantile_levels(
+        levels = get_quantile_levels(
             density=density,
             x=x,
             y=y,
@@ -202,18 +202,18 @@ class KernelDensityEstimator:
             normalize=False)
         contours = []
         # Normalize levels to [0, 1]
-        qlevels = np.array(qlev) / density.max()
-        for level in qlevels:
+        nlevels = np.array(levels) / density.max()
+        for nlev in nlevels:
             # make sure that the contour levels are not at the boundaries
-            if not (np.allclose(level, 0, atol=1e-12, rtol=0)
-                    or np.allclose(level, 1, atol=1e-12, rtol=0)):
+            if not (np.allclose(nlev, 0, atol=1e-12, rtol=0)
+                    or np.allclose(nlev, 1, atol=1e-12, rtol=0)):
                 cc = find_contours_level(
-                    density, x=x, y=y, level=level)
+                    density, x=x, y=y, level=nlev)
                 contours.append(cc)
             else:
                 contours.append([])
         if ret_levels:
-            return contours, qlev
+            return contours, levels
         else:
             return contours
 

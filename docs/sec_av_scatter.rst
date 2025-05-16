@@ -170,7 +170,8 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
     sc = ax.scatter(ds["area_um"], ds["deform"], c="lightgray", marker=".", zorder=1)
 
     for i, (cnt, lvl) in enumerate(zip(contours, levels)):
-        ax.plot(cnt[0][:, 0], cnt[0][:, 1],
+        for c in cnt:
+            ax.plot(c[:, 0], c[:, 1],
                 linestyle=linestyles[i],
                 color=colors[i],
                 linewidth=2,

@@ -27,7 +27,7 @@ class DCORTables:
     @property
     def _tables(self):
         if self._tables_cache is None:
-            table_data = self.api.get(query="tables")
+            table_data = self.api.get(query="tables", timeout=13)
             # assemble the tables
             tables = {}
             for key in table_data:

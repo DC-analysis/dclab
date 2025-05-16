@@ -9,6 +9,7 @@
  - enh: increase timeout every time fetching data from DCOR API times out
  - setup: drop support for Python 3.8
  - tests: add tests for fetching tables from a DCOR dataset (#229)
+ - ref: add `get_contour_lines` method to `KernelDensityEstimator` class
  - ref: deprecate get_contour and use bin_width_doane_div5 in kde submodule
  - ref: cache "basins" in `RTDC_DCOR` instead of in `RTDC_DCOR.api`
 0.63.1

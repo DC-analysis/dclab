@@ -127,8 +127,8 @@ class KernelDensityEstimator:
 
     def get_contour_lines(self, xax="area_um", yax="deform", xacc=None,
                           yacc=None, kde_type="histogram", kde_kwargs=None,
-                          xscale="linear", yscale="linear", ret_levels=False,
-                          quantiles=None):
+                          xscale="linear", yscale="linear", quantiles=None,
+                          ret_levels=False):
         """Compute contour lines for a given kernel kensity estimate.
 
         Parameters
@@ -153,12 +153,13 @@ class KernelDensityEstimator:
             displayed on a log-scale. Defaults to "linear".
         yscale: str
             See `xscale`
+        quantiles: list or array of floats
+            Define the contour levels based on quantiles of the KDE. The
+            values must be between 0 and 1. If set to None, will use
+            [0.5, 0.95] as default.
         ret_levels: bool
             If set to True, return the levels of the contours
             (default: False)
-        quantiles: list or array of floats
-            Define the levels of the contours. The values must be between 0
-            and 1. If set to None, will use [0.5, 0.95] as default.
 
         Returns
         -------
@@ -169,6 +170,7 @@ class KernelDensityEstimator:
             contour line.
         levels: list of floats
             The interpolated density levels for corresponding quantiles levels.
+            Levels are only returned if `ret_levels` is set to True.
         """
         if not quantiles:
             quantiles = [0.5, 0.95]

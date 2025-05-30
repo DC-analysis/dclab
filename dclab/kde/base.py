@@ -359,22 +359,20 @@ class KernelDensityEstimator:
         xs = self.apply_scale(x, xscale, xax)
         ys = self.apply_scale(y, yscale, yax)
 
-        xr, yr, density_grid = self.get_raster(
-            xax=xax,
-            yax=yax,
-            kde_type=kde_type,
-            kde_kwargs=kde_kwargs,
-            xscale=xscale,
-            yscale=yscale
-        )
-        # 'scipy.interp2d' has been removed in SciPy 1.14.0
-        # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
-        interp_func = RGI((xr[:, 0], yr[0, :]),
-                          density_grid,
-                          method='linear',
-                          bounds_error=True,
-                          fill_value=0)
         if len(x):
+            xr, yr, density_grid = self.get_raster(xax=xax,
+                                                   yax=yax,
+                                                   kde_type=kde_type,
+                                                   kde_kwargs=kde_kwargs,
+                                                   xscale=xscale,
+                                                   yscale=yscale)
+            # 'scipy.interp2d' has been removed in SciPy 1.14.0
+            # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
+            interp_func = RGI((xr[:, 0], yr[0, :]),
+                              density_grid,
+                              method='linear',
+                              bounds_error=False,
+                              fill_value=0)
             density = interp_func((xs, ys))
         else:
             density = np.array([])

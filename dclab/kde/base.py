@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+from scipy.interpolate import RegularGridInterpolator as RGI
 
 from .methods import bin_width_doane_div5, get_bad_vals, methods
 from .contours import find_contours_level, get_quantile_levels
@@ -358,18 +359,23 @@ class KernelDensityEstimator:
         xs = self.apply_scale(x, xscale, xax)
         ys = self.apply_scale(y, yscale, yax)
 
-        if positions is None:
-            posx = None
-            posy = None
-        else:
-            posx = self.apply_scale(positions[0], xscale, xax)
-            posy = self.apply_scale(positions[1], yscale, yax)
-
-        kde_fct = methods[kde_type]
+        xr, yr, density_grid = self.get_raster(
+            xax=xax,
+            yax=yax,
+            kde_type=kde_type,
+            kde_kwargs=kde_kwargs,
+            xscale=xscale,
+            yscale=yscale
+        )
+        # 'scipy.interp2d' has been removed in SciPy 1.14.0
+        # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
+        interp_func = RGI((xr[:, 0], yr[0, :]),
+                          density_grid,
+                          method='linear',
+                          bounds_error=True,
+                          fill_value=0)
         if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=posx, yout=posy,
-                              **kde_kwargs)
+            density = interp_func((xs, ys))
         else:
             density = np.array([])
 

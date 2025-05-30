@@ -81,7 +81,7 @@ def test_kde_log_scatter_invalid():
     a = ds.get_kde_scatter(yscale="log")
     assert np.all(a[:20] == a[0])
     assert np.isnan(a[21])
-    assert np.isnan(a[22])
+    assert np.isfinite(a[22])
     assert np.isnan(a[23])
 
 

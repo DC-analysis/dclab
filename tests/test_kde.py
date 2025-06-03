@@ -5,6 +5,8 @@ from dclab.external import skimage
 from dclab.kde import KernelDensityEstimator
 from dclab import polygon_filter
 
+from helper_methods import example_data_dict
+
 
 def test_contour_lines():
     np.random.seed(47)
@@ -99,3 +101,39 @@ def test_contour_lines_data_with_too_much_space():
                                               yscale="linear",
                                               quantiles=[0.5])
     assert not contours, "there should be no contours with too much space"
+
+
+def test_kde_log_events():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ddict["deform"][:20] = .1
+    ddict["area_um"][:20] = .5
+    ds = dclab.new_dataset(ddict)
+    kde_instance = KernelDensityEstimator(ds)
+    a = kde_instance.get_events(xax="area_um", yax="deform", yscale="log")
+    assert np.all(a[:20] == a[0])
+
+
+def test_kde_log_event_points():
+    ddict = example_data_dict(size=300, keys=["area_um", "tilt"])
+    ds = dclab.new_dataset(ddict)
+    kde_instance = KernelDensityEstimator(ds)
+    a = kde_instance.get_events(yscale="log", xax="area_um", yax="tilt")
+    b = kde_instance.get_events(yscale="log", xax="area_um", yax="tilt")
+
+    assert np.all(a == b)
+
+
+def test_kde_log_events_invalid():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ddict["deform"][:20] = .1
+    ddict["area_um"][:20] = .5
+    ddict["deform"][21] = np.nan
+    ddict["deform"][22] = np.inf
+    ddict["deform"][23] = -.1
+    ds = dclab.new_dataset(ddict)
+    kde_instance = KernelDensityEstimator(ds)
+    a = kde_instance.get_events(xax="area_um", yax="deform", yscale="log")
+    assert np.all(a[:20] == a[0])
+    assert np.isnan(a[21])
+    assert np.isnan(a[22])
+    assert np.isnan(a[23])

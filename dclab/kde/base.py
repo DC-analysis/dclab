@@ -376,8 +376,9 @@ class KernelDensityEstimator:
 
         return density
 
-    def get_events(self, xax="area_um", yax="deform", kde_type="histogram",
-                   kde_kwargs=None, xscale="linear", yscale="linear"):
+    def get_at(self, xax="area_um", yax="deform", positions=None,
+               kde_type="histogram", kde_kwargs=None, xscale="linear",
+               yscale="linear"):
         """Evaluate the kernel density estimate for events
 
         Parameters
@@ -386,6 +387,10 @@ class KernelDensityEstimator:
             Identifier for X axis (e.g. "area_um", "aspect", "deform")
         yax: str
             Identifier for Y axis
+        positions: list of two 1d ndarrays or ndarray of shape (2, N)
+            The positions where the KDE will be computed. Note that
+            the KDE estimate is computed from the points that
+            are set in `self.rtdc_ds.filter.all`.
         kde_type: str
             The KDE method to use, see :const:`.kde_methods.methods`
         kde_kwargs: dict
@@ -418,6 +423,10 @@ class KernelDensityEstimator:
         xs = self.apply_scale(x, xscale, xax)
         ys = self.apply_scale(y, yscale, yax)
 
+        if positions:
+            xs = self.apply_scale(positions[0], xscale, xax)
+            ys = self.apply_scale(positions[1], yscale, yax)
+
         if len(x):
             xr, yr, density_grid = self.get_raster(xax=xax,
                                                    yax=yax,
@@ -437,6 +446,7 @@ class KernelDensityEstimator:
                               method="linear",
                               bounds_error=False)
             density = interp_func((xs, ys))
+
         else:
             density = np.array([])
 

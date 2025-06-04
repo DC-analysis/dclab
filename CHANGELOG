@@ -1,3 +1,6 @@
+0.64.1
+ - enh: add 10th, 25th, 75th, and 90th percentile statistics methods
+ - enh: new `ret_dict` arg in `get_statistics` returns dict instead of tuple
 0.64.0
  - feat: introduce concept of perishable (e.g. temporally expiring) basins
  - feat: add `PerishableRecord` to presigned URLs for DCOR basins (#244)

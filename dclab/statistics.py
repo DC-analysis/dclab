@@ -86,7 +86,7 @@ def flow_rate(ds):
         return np.nan
 
 
-def get_statistics(ds, methods=None, features=None):
+def get_statistics(ds, methods=None, features=None, ret_dict=False):
     """Compute statistics for an RT-DC dataset
 
     Parameters
@@ -96,13 +96,16 @@ def get_statistics(ds, methods=None, features=None):
     methods: list of str or None
         The methods wih which to compute the statistics.
         The list of available methods is given with
-        `dclab.statistics.Statistics.available_methods.keys()`
+        :func:`.available_methods.keys`
         If set to `None`, statistics for all methods are computed.
     features: list of str
         Feature name identifiers are defined by
-        `dclab.definitions.feature_exists`.
+        :func:`dclab.definitions.feature_exists`.
         If set to `None`, statistics for all scalar features
         available are computed.
+    ret_dict: bool
+        Instead of returning ``(header, values)``, return a dictionary
+        with headers as keys.
 
     Returns
     -------
@@ -148,7 +151,10 @@ def get_statistics(ds, methods=None, features=None):
                 label = dfn.get_feature_label(ft, rtdc_ds=ds)
                 header.append(" ".join([mt, label]))
 
-    return header, values
+    if ret_dict:
+        return dict(zip(header, values))
+    else:
+        return header, values
 
 
 def mode(data):
@@ -191,7 +197,24 @@ def mode(data):
 # Register all the methods
 # Methods that require an axis
 Statistics(name="Mean",   req_feature=True, method=np.average)
+# Premature-Optimization warning: `np.percentile` also accepts an array
+# of percentiles as the `q` argument, which I would expect to yield better
+# performance than computing percentiles individually. Implementing this
+# would break the way we are defining statistical methods here (One
+# `Statistics` instance per method) and thus requires a considerable
+# amount of work (much more work than writing this text here). It would
+# also make understanding the code more difficult. In addition, computing
+# statistics is not done often and is extremely fast anyway for a few
+# millions of events. Don't optimize this!
+Statistics(name="10th Percentile", req_feature=True,
+           method=lambda data: np.percentile(data, 10))
+Statistics(name="25th Percentile", req_feature=True,
+           method=lambda data: np.percentile(data, 25))
 Statistics(name="Median", req_feature=True, method=np.median)
+Statistics(name="75th Percentile", req_feature=True,
+           method=lambda data: np.percentile(data, 75))
+Statistics(name="90th Percentile", req_feature=True,
+           method=lambda data: np.percentile(data, 90))
 Statistics(name="Mode",   req_feature=True, method=mode)
 Statistics(name="SD",     req_feature=True, method=np.std)
 # Methods that work on RTDCBase

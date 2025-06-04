@@ -99,6 +99,21 @@ def test_false_method():
             break
 
 
+def test_percentiles():
+    ddict = example_data_dict(size=1_000, keys=["area_um", "deform"])
+    np.random.seed(42)
+    ddict["userdef1"] = np.random.random(1_000)
+    ds = dclab.new_dataset(ddict)
+    stats = dclab.statistics.get_statistics(ds, ret_dict=True)
+    for pp in [10, 25, 75, 90]:
+        # We have one thousand events in the userdef1 feature that are
+        # evenly distributed between 0 and 1. We allow an error of 5%
+        # relative to 1, which should be sufficient to capture the
+        # randomness.
+        assert np.allclose(stats[f"{pp}th Percentile User-defined 1"], pp/100,
+                           rtol=0, atol=0.05)
+
+
 def test_stats_without_features():
     ddict = example_data_dict(size=5085, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)

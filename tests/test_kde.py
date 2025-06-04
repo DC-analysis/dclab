@@ -103,27 +103,27 @@ def test_contour_lines_data_with_too_much_space():
     assert not contours, "there should be no contours with too much space"
 
 
-def test_kde_log_events():
+def test_kde_log_get_at():
     ddict = example_data_dict(size=300, keys=["area_um", "deform"])
     ddict["deform"][:20] = .1
     ddict["area_um"][:20] = .5
     ds = dclab.new_dataset(ddict)
     kde_instance = KernelDensityEstimator(ds)
-    a = kde_instance.get_events(xax="area_um", yax="deform", yscale="log")
+    a = kde_instance.get_at(xax="area_um", yax="deform", yscale="log")
     assert np.all(a[:20] == a[0])
 
 
-def test_kde_log_event_points():
+def test_kde_log_get_at_points():
     ddict = example_data_dict(size=300, keys=["area_um", "tilt"])
     ds = dclab.new_dataset(ddict)
     kde_instance = KernelDensityEstimator(ds)
-    a = kde_instance.get_events(yscale="log", xax="area_um", yax="tilt")
-    b = kde_instance.get_events(yscale="log", xax="area_um", yax="tilt")
+    a = kde_instance.get_at(yscale="log", xax="area_um", yax="tilt")
+    b = kde_instance.get_at(yscale="log", xax="area_um", yax="tilt")
 
     assert np.all(a == b)
 
 
-def test_kde_log_events_invalid():
+def test_kde_log_get_at_invalid():
     ddict = example_data_dict(size=300, keys=["area_um", "deform"])
     ddict["deform"][:20] = .1
     ddict["area_um"][:20] = .5
@@ -132,8 +132,21 @@ def test_kde_log_events_invalid():
     ddict["deform"][23] = -.1
     ds = dclab.new_dataset(ddict)
     kde_instance = KernelDensityEstimator(ds)
-    a = kde_instance.get_events(xax="area_um", yax="deform", yscale="log")
+    a = kde_instance.get_at(xax="area_um", yax="deform", yscale="log")
     assert np.all(a[:20] == a[0])
     assert np.isnan(a[21])
     assert np.isnan(a[22])
     assert np.isnan(a[23])
+
+
+def test_kde_get_at_positions():
+    ddict = example_data_dict()
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    ds.config["filtering"]["enable filters"] = False
+    sc = kde_instance.get_at(xax="area_um", yax="deform")
+    sc2 = kde_instance.get_at(xax="area_um", yax="deform",
+                              positions=(ds["area_um"], ds["deform"]))
+    assert np.all(sc == sc2)

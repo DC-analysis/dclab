@@ -333,7 +333,7 @@ class KernelDensityEstimator:
             Additional keyword arguments to the KDE method
         xscale: str
             If set to "log", take the logarithm of the x-values before
-            computing the KDE. This is useful when data are are
+            computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         yscale: str
             See `xscale`.
@@ -397,7 +397,7 @@ class KernelDensityEstimator:
             Additional keyword arguments to the KDE method
         xscale: str
             If set to "log", take the logarithm of the x-values before
-            computing the KDE. This is useful when data are are
+            computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         yscale: str
             See `xscale`.

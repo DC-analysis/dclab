@@ -444,7 +444,8 @@ class KernelDensityEstimator:
             interp_func = RGI((xrs[:, 0], yrs[0, :]),
                               density_grid,
                               method="linear",
-                              bounds_error=False)
+                              bounds_error=False,
+                              fill_value=np.nan)
             density = interp_func((xs, ys))
 
         else:

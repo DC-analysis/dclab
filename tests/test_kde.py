@@ -150,3 +150,22 @@ def test_kde_get_at_positions():
     sc2 = kde_instance.get_at(xax="area_um", yax="deform",
                               positions=(ds["area_um"], ds["deform"]))
     assert np.all(sc == sc2)
+
+
+def test_kde_log_get_at_out_of_bounds():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ds = dclab.new_dataset(ddict)
+    kde_instance = KernelDensityEstimator(ds)
+
+    # Define a positions that has values outside the typical data range
+    # `area_um` ([0.0, 400]) and `deform` ([0.0, 0.02])
+    positions = ([410, 300, 300, 300],
+                 [-1, -2, 0.01, 0.015])
+
+    # Get the density at the out-of-bounds position
+    a = kde_instance.get_at(xax="area_um", yax="deform",
+                            positions=positions, yscale="log")
+    assert np.isnan(a[0])
+    assert np.isnan(a[1])
+    assert np.isfinite(a[2])
+    assert np.isfinite(a[3])

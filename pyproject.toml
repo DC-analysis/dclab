@@ -34,7 +34,7 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Visualization',
     'Intended Audience :: Science/Research',
 ]
-license = {text = "GPL-2.0-or-later"}
+license = "GPL-2.0-or-later"
 # This is not supported in Python 3.8
 # license = "GPL-2.0-or-later"
 dependencies = [

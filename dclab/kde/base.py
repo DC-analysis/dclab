@@ -317,6 +317,8 @@ class KernelDensityEstimator:
                     yscale="linear"):
         """Evaluate the kernel density estimate for scatter plots
 
+        The KDE is evaluated with the `kde_type` function for every point.
+
         Parameters
         ----------
         xax: str
@@ -379,7 +381,10 @@ class KernelDensityEstimator:
     def get_at(self, xax="area_um", yax="deform", positions=None,
                kde_type="histogram", kde_kwargs=None, xscale="linear",
                yscale="linear"):
-        """Evaluate the kernel density estimate for events
+        """Evaluate the kernel density estimate for specific events
+
+        The KDE is computed via linear interpolation from the output
+        of `get_raster`.
 
         Parameters
         ----------

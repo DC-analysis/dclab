@@ -75,8 +75,8 @@ changelog = "https://dclab.readthedocs.io/en/stable/sec_changelog.html"
 # We need the following, because automatic package discovery does not work
 # when running cibuildwheel on GitHub Actions (there will be a "wheelhouse"
 # directory).
-[tool.setuptools]
-packages = ["dclab"]
+[tool.setuptools.packages.find]
+include = ["dclab"]
 
 [tool.setuptools_scm]
 write_to = "dclab/_version.py"

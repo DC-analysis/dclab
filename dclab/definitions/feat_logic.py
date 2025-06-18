@@ -156,22 +156,9 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
     TODO: extract feature label from ancillary information when an rtdc_ds is
     given.
     """
-    # TODO: Is there another way of avoiding this circular import?
-    from ..rtdc_dataset.feat_anc_core.ancillary_feature import AncillaryFeature
     assert feature_exists(name)
     if name in feat_const.feature_name2label:
         label = feat_const.feature_name2label[name]
-    else:
-        # First check whether an ancillary feature with that
-        # name exists.
-        for af in AncillaryFeature.features:
-            if af.feature_name == name:
-                labelid = af.data.outputs.index(name)
-                label = af.data.output_labels[labelid]
-                break
-        else:
-            # If that did not work, use a generic name.
-            label = "ML score {}".format(name[-3:].upper())
     if not with_unit:
         if label.endswith("]") and label.count("["):
             label = label.rsplit("[", 1)[0].strip()

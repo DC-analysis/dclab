@@ -17,11 +17,15 @@ def check_feature_shape(name, data):
         If the data's shape does not match its scalar description
     """
     if len(data.shape) == 1 and not scalar_feature_exists(name):
-        raise ValueError(f"Feature '{name}' is not a scalar feature, but "
-                         "a 1D array was given for `data`!")
+        raise ValueError(
+            f"Feature '{name}' is not a scalar feature, but "
+            "a 1D array was given for `data`!"
+        )
     elif len(data.shape) != 1 and scalar_feature_exists(name):
-        raise ValueError(f"Feature '{name}' is a scalar feature, but the "
-                         "`data` array is not 1D!")
+        raise ValueError(
+            f"Feature '{name}' is a scalar feature, but the "
+            "`data` array is not 1D!"
+        )
 
 
 def feature_exists(name, scalar_only=False):
@@ -59,11 +63,13 @@ def feature_exists(name, scalar_only=False):
     else:
         # check whether we have an `ml_score_???` feature
         valid_chars = "0123456789abcdefghijklmnopqrstuvwxyz"
-        if (name.startswith("ml_score_")
+        if (
+            name.startswith("ml_score_")
             and len(name) == len("ml_score_???")
             and name[-3] in valid_chars
             and name[-2] in valid_chars
-                and name[-1] in valid_chars):
+            and name[-1] in valid_chars
+        ):
             valid = True
     return valid
 
@@ -93,8 +99,10 @@ def feature_register(name, label=None, is_scalar=True):
     allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
     feat = "".join([f for f in name if f in allowed_chars])
     if feat != name:
-        raise ValueError("`feature` must only contain lower-case characters, "
-                         f"digits, and underscores; got '{name}'!")
+        raise ValueError(
+            "`feature` must only contain lower-case characters, "
+            f"digits, and underscores; got '{name}'!"
+        )
     if label is None:
         label = f"User-defined feature {name}"
     if feature_exists(name):
@@ -159,6 +167,9 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
     assert feature_exists(name)
     if name in feat_const.feature_name2label:
         label = feat_const.feature_name2label[name]
+    else:
+        # If that did not work, use a generic name.
+        label = "ML score {}".format(name[-3:].upper())
     if not with_unit:
         if label.endswith("]") and label.count("["):
             label = label.rsplit("[", 1)[0].strip()

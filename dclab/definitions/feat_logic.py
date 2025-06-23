@@ -161,14 +161,16 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
     TODO: extract feature label from ancillary information when an rtdc_ds is
     given.
     """
-    assert feature_exists(name)
     if name in feat_const.feature_name2label:
         label = feat_const.feature_name2label[name]
     elif ML_SCORE_REGEX.match(name):
         # use a generic name for machine-learning features
         label = f"ML score {name[-3:].upper()}"
     else:
-        raise ValueError(f"Feature {name} is not a valid feature name")
+        exists = feature_exists(name)
+        msg = f"Could not find label for '{name}'"
+        msg += " (feature does not exist)" if not exists else ""
+        raise ValueError(msg)
     if not with_unit:
         if label.endswith("]") and label.count("["):
             label = label.rsplit("[", 1)[0].strip()

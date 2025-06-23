@@ -1,5 +1,6 @@
 0.64.2
  - ref: remove zombie code for fetching ML model label from model instance
+ - ref: minor cleanup in feature definitions
 0.64.1
  - enh: introduce `KernelDensityEstimator.get_at`
  - enh: add 10th, 25th, 75th, and 90th percentile statistics methods

@@ -1,4 +1,9 @@
+import re
+
 from . import feat_const
+
+
+ML_SCORE_REGEX = re.compile(r"^ml_score_[a-z0-9]{3}$")
 
 
 def check_feature_shape(name, data):
@@ -60,17 +65,9 @@ def feature_exists(name, scalar_only=False):
     elif not scalar_only and name in feat_const.feature_names:
         # non-scalar feature
         valid = True
-    else:
-        # check whether we have an `ml_score_???` feature
-        valid_chars = "0123456789abcdefghijklmnopqrstuvwxyz"
-        if (
-            name.startswith("ml_score_")
-            and len(name) == len("ml_score_???")
-            and name[-3] in valid_chars
-            and name[-2] in valid_chars
-            and name[-1] in valid_chars
-        ):
-            valid = True
+    elif ML_SCORE_REGEX.match(name):
+        # machine-learning score feature ml_score_???
+        valid = True
     return valid
 
 
@@ -167,9 +164,11 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
     assert feature_exists(name)
     if name in feat_const.feature_name2label:
         label = feat_const.feature_name2label[name]
+    elif ML_SCORE_REGEX.match(name):
+        # use a generic name for machine-learning features
+        label = f"ML score {name[-3:].upper()}"
     else:
-        # If that did not work, use a generic name.
-        label = "ML score {}".format(name[-3:].upper())
+        raise ValueError(f"Feature {name} is not a valid feature name")
     if not with_unit:
         if label.endswith("]") and label.count("["):
             label = label.rsplit("[", 1)[0].strip()

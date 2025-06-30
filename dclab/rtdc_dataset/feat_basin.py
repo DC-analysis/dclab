@@ -538,8 +538,12 @@ class BasinProxy:
 
     def __getitem__(self, feat):
         if feat not in self._features:
-            feat_obj = BasinProxyFeature(feat_obj=self.ds[feat],
-                                         basinmap=self.basinmap)
+            if feat == "contour":
+                raise NotImplementedError("Feature 'contour' cannot be "
+                                          "handled by BasinProxy.")
+            else:
+                feat_obj = BasinProxyFeature(feat_obj=self.ds[feat],
+                                             basinmap=self.basinmap)
             self._features[feat] = feat_obj
         return self._features[feat]
 

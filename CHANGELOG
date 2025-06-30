@@ -2,6 +2,7 @@
  - enh: raise NotImplementedError when subsetting basin contour data
  - ref: remove zombie code for fetching ML model label from model instance
  - ref: minor cleanup in feature definitions
+ - docs: minor cleanup
 0.64.1
  - enh: introduce `KernelDensityEstimator.get_at`
  - enh: add 10th, 25th, 75th, and 90th percentile statistics methods

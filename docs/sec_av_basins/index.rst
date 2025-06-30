@@ -432,7 +432,7 @@ are a few things to notice:
   This relative path makes it possible to copy-paste these two files *together* to
   other locations. You will always be able to open the output file and see the
   basin features defined in the input file. Internally, dclab also checks
-  the :func:`measurement identifier <.RTDCBase.get_measurement_identifier>`
+  the :meth:`run identifier <dclab.rtdc_dataset.RTDCBase.get_measurement_identifier>`
   of the output file against that of the input file to avoid loading basin
   features from the wrong file.
 

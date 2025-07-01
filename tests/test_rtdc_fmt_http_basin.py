@@ -258,7 +258,7 @@ def test_trace_availability_invalid(tmp_path):
         bdat = {
             "type": "remote",
             "format": "http",
-            "urls": ["https://dcor.mpl.mpg.de/api/3/action/site_read"],
+            "urls": ["https://dcor.mpl.mpg.de/api/3/action/status_show"],
             "features": ["trace"],
         }
         blines = json.dumps(bdat, indent=2).split("\n")

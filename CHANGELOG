@@ -1,3 +1,5 @@
+0.64.3
+ - ci: use GitHub windows-latest runner for building wheel
 0.64.2
  - fix: string comparison TypeError when verifying basins, in niche cases
    when basin's run identifier was not specified or could not be computed

@@ -418,6 +418,48 @@ def test_basin_key_reproducible():
         ]
 
 
+def test_basin_run_identifier_unknown():
+    """
+    When the run identifier of a basin is unknown, the basin
+    should still be accepted.
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    with h5py.File(h5path, "a") as h5:
+        # remove run identifier and metadata from which run identifier
+        # can be computed.
+        for attr in [
+            "experiment:run identifier",
+            "experiment:time",
+            "experiment:date",
+            "setup:identifier",
+        ]:
+            if attr in h5.attrs:
+                del h5.attrs[attr]
+            assert attr not in h5.attrs
+
+    export_same = h5path.with_name("same.rtdc")
+    export_subs = h5path.with_name("subs.rtdc")
+
+    # Check whether that worked and export a subset with basins.
+    with dclab.new_dataset(h5path) as ds:
+        assert ds.get_measurement_identifier() is None
+        # export without filters
+        ds.export.hdf5(export_same, features=["deform"], basins=True)
+        # export with filters
+        ds.filter.manual[::2] = False
+        ds.apply_filter()
+        ds.export.hdf5(export_subs, features=["deform"], basins=True)
+
+    # Try to open the exported datasets (this raised an error before)
+    with dclab.new_dataset(export_same) as ds:
+        assert "image" in ds
+        assert ds["image"][0][0, 0] == 124
+
+    with dclab.new_dataset(export_subs) as ds:
+        assert "image" in ds
+        assert ds["image"][0][0, 0] == 126
+
+
 def test_basin_sorting_basic():
     bnlist = [
         {"type": "remote", "format": "dcor", "ident": 0},

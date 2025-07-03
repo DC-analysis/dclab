@@ -1,4 +1,6 @@
 0.64.2
+ - fix: string comparison TypeError when verifying basins, in niche cases
+   when basin's run identifier was not specified or could not be computed
  - enh: raise NotImplementedError when subsetting basin contour data
  - enh: make measurement identifier computation robust against empty strings
  - ref: remove zombie code for fetching ML model label from model instance

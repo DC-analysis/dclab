@@ -458,22 +458,30 @@ class Basin(abc.ABC):
             if not self._measurement_identifier_verified:
                 if self.measurement_identifier is None:
                     # No measurement identifier was presented by the
-                    # referencing dataset. Don't perform any checks.
+                    # referencing dataset. We are in the dark.
+                    # Don't perform any checks.
                     self._measurement_identifier_verified = True
                 else:
-                    if self.mapping == "same":
-                        # When we have identical mapping, then the measurement
-                        # identifier has to match exactly.
-                        verifier = str.__eq__
+                    # This is the measurement identifier of the basin.
+                    basin_identifier = self.get_measurement_identifier()
+                    if basin_identifier is None:
+                        # Again, we are in the dark, because the basin dataset
+                        # does not have an identifier. This is an undesirable
+                        # situation, but there is nothing we can do about it.
+                        self._measurement_identifier_verified = True
                     else:
-                        # When we have non-identical mapping (e.g. exported
-                        # data), then the measurement identifier has to
-                        # partially match.
-                        verifier = str.startswith
-                    self._measurement_identifier_verified = verifier(
-                        self.measurement_identifier,
-                        self.get_measurement_identifier()
-                    )
+                        if self.mapping == "same":
+                            # When we have identical mapping, then the
+                            # measurement identifier has to match exactly.
+                            verifier = str.__eq__
+                        else:
+                            # When we have non-identical mapping (e.g. exported
+                            # data), then the measurement identifier has to
+                            # partially match.
+                            verifier = str.startswith
+                        self._measurement_identifier_verified = verifier(
+                            self.measurement_identifier, basin_identifier)
+
             check_rid = self._measurement_identifier_verified
         else:
             check_rid = True

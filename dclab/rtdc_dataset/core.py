@@ -835,9 +835,9 @@ class RTDCBase(abc.ABC):
         identifier = self.config.get("experiment", {}).get("run identifier",
                                                            None)
         if identifier is None:
-            time = self.config.get("experiment", {}).get("time", None)
-            date = self.config.get("experiment", {}).get("date", None)
-            sid = self.config.get("setup", {}).get("identifier", None)
+            time = self.config.get("experiment", {}).get("time", None) or None
+            date = self.config.get("experiment", {}).get("date", None) or None
+            sid = self.config.get("setup", {}).get("identifier", None) or None
             if None not in [time, date, sid]:
                 # only compute an identifier if all of the above are defined.
                 hasher = hashlib.md5(f"{time}_{date}_{sid}".encode("utf-8"))

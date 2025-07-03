@@ -1,5 +1,6 @@
 0.64.2
  - enh: raise NotImplementedError when subsetting basin contour data
+ - enh: make measurement identifier computation robust against empty strings
  - ref: remove zombie code for fetching ML model label from model instance
  - ref: minor cleanup in feature definitions
  - docs: minor cleanup

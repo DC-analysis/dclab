@@ -7,7 +7,7 @@ ChipStream package (https://github.com/DC-analysis/ChipStream).
 
 Prerequisites:
 
-    pip install dclab imageio[pyav] click
+    pip install dclab[tdms] imageio[pyav] click
 
 Author: Paul Müller
 License: GPLv3+

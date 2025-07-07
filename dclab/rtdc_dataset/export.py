@@ -334,8 +334,8 @@ class Export(object):
             # Define a new measurement identifier, so that we are not running
             # into any problems with basins being defined for filtered data.
             ds_run_id = ds.get_measurement_identifier()
-            random_ap = str(uuid.uuid4())[:4]
-            meta["experiment"]["run identifier"] = f"{ds_run_id}-{random_ap}"
+            random_ap = f"dclab-{str(uuid.uuid4())[:7]}"
+            meta["experiment"]["run identifier"] = f"{ds_run_id}_{random_ap}"
 
         if filtered:
             filter_arr = ds.filter.all

@@ -1,5 +1,6 @@
 0.65.0
  - scripts: add `vid2dc.py` for converting videos to raw .rtdc files
+ - enh: run identifier splits use "_" upon export and have increased length
 0.64.3
  - ci: use GitHub windows-latest runner for building wheel
 0.64.2

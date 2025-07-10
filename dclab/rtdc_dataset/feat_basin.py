@@ -177,6 +177,7 @@ class Basin(abc.ABC):
                  description: str = None,
                  features: List[str] = None,
                  referrer_identifier: str = None,
+                 basin_identifier: str = None,
                  mapping: Literal["same",
                                   "basinmap0",
                                   "basinmap1",
@@ -210,8 +211,16 @@ class Basin(abc.ABC):
             even if the basin actually contains more features.
         referrer_identifier: str
             A measurement identifier against which to check the basin.
+            If the basin mapping is "same", then this must match the
+            identifier of the basin exactly, otherwise it must start
+            with the basin identifier (e.g. "basin-id_referrer-sub-id").
             If this is set to None (default), there is no certainty
             that the downstream dataset is from the same measurement.
+        basin_identifier: str
+            A measurement identifier that must match the basin exactly.
+            In contrast to `referrer_identifier`, the basin identifier is
+            the identifier of the basin file. If `basin_identifier` is
+            specified, the identifier of the basin must be identical to it.
         mapping: str
             Which type of mapping to use. This can be either "same"
             when the event list of the basin is identical to that
@@ -262,7 +271,8 @@ class Basin(abc.ABC):
         self._features = features
         #: measurement identifier of the referencing dataset
         self.referrer_identifier = referrer_identifier
-        self._referrer_identifier_verified = False
+        self.basin_identifier = basin_identifier or None
+        self._identifiers_verification = None
         #: ignored basins
         self.ignored_basins = ignored_basins or []
         #: additional keyword arguments passed to the basin
@@ -455,20 +465,30 @@ class Basin(abc.ABC):
         # Only check for run identifier if requested and if the availability
         # check did not fail.
         if run_identifier and check_avail:
-            if not self._referrer_identifier_verified:
+            if self._identifiers_verification is None:
+                # This is the measurement identifier of the basin.
+                basin_identifier = self.get_measurement_identifier()
+
+                # Perform a sanity check for the basin identifier.
+                if (self.basin_identifier
+                        and self.basin_identifier != basin_identifier):
+                    # We should not proceed any further with this basin.
+                    self._identifiers_verification = False
+                    warnings.warn(
+                        f"Basin identifier mismatch for {self}. Expected "
+                        f"'{self.basin_identifier}', got '{basin_identifier}'")
+
                 if self.referrer_identifier is None:
                     # No measurement identifier was presented by the
                     # referencing dataset. We are in the dark.
                     # Don't perform any checks.
-                    self._referrer_identifier_verified = True
+                    self._identifiers_verification = True
                 else:
-                    # This is the measurement identifier of the basin.
-                    basin_identifier = self.get_measurement_identifier()
                     if basin_identifier is None:
                         # Again, we are in the dark, because the basin dataset
                         # does not have an identifier. This is an undesirable
                         # situation, but there is nothing we can do about it.
-                        self._referrer_identifier_verified = True
+                        self._identifiers_verification = True
                     else:
                         if self.mapping == "same":
                             # When we have identical mapping, then the
@@ -479,10 +499,10 @@ class Basin(abc.ABC):
                             # data), then the measurement identifier has to
                             # partially match.
                             verifier = str.startswith
-                        self._referrer_identifier_verified = verifier(
+                        self._identifiers_verification = verifier(
                             self.referrer_identifier, basin_identifier)
 
-            check_rid = self._referrer_identifier_verified
+            check_rid = self._identifiers_verification
         else:
             check_rid = True
 

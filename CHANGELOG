@@ -1,4 +1,5 @@
 0.66.0
+ - feat: introduce optional identifiers for basins
  - ref: rename `measurement_identifier` to `referrer_identifier`
    in the `feat_basin` context to clarify which dataset it belongs to
 0.65.0

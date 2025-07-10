@@ -358,7 +358,10 @@ def test_basin_relative_paths(path_sep):
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_basin_key_reproducible():
-    """Since 0.62.9 we sort basin keys"""
+    """
+    Since 0.62.9 we sort basin keys
+    Since 0.66.0 we have identifiers in the basins
+    """
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
     h5path_small = h5path.parent / "subdirectory" / "relative.rtdc"
     h5path_small.parent.mkdir()
@@ -409,10 +412,9 @@ def test_basin_key_reproducible():
     # from the input file.
     with dclab.new_dataset(h5path_small_2) as ds:
         assert len(ds.basins) == 1
-        # dclab 0.62.9
         assert ds.basins[0].key in [
             # posix linesep
-            "08dadcb6873a2cf1e5ce781a8887f00f",
+            "b125c0e7d4ab1aff1030f40b87d670c3",
             # win linesep
             "a1b2aa154724cf46263ad2d41b5b2e1d",
         ]
@@ -458,6 +460,28 @@ def test_basin_run_identifier_unknown():
     with dclab.new_dataset(export_subs) as ds:
         assert "image" in ds
         assert ds["image"][0][0, 0] == 126
+
+
+def test_basin_run_identifier_verify():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    export_same = h5path.with_name("same.rtdc")
+
+    # export a subset with basins.
+    with dclab.new_dataset(h5path) as ds:
+        # export without filters
+        ds.export.hdf5(export_same, features=["deform"], basins=True)
+
+    # change the run identifier of the original file
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["experiment:run identifier"] = "Uiiiid!"
+
+    with dclab.new_dataset(h5path) as ds:
+        assert ds.get_measurement_identifier() == "Uiiiid!"
+
+    with dclab.new_dataset(export_same) as ds2:
+        with pytest.warns(UserWarning, match="identifier mismatch"):
+            with pytest.raises(KeyError, match="does not exist"):
+                ds2["area_um"][0]
 
 
 def test_basin_sorting_basic():

@@ -167,6 +167,59 @@ def test_basin_file_identifier_mismatch():
         assert len(ds.basins) == 1
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_identifier_fallback(tmp_path):
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_test = path.parent / "test.h5"
+
+    with dclab.new_dataset(path) as ds:
+        rid = ds.get_measurement_identifier()
+        assert rid == "920f44b7-42e8-b15e-1847-40f20e8ca1e7"
+
+    # We basically create a file that consists only of the metadata.
+    with RTDCWriter(path_test) as hw:
+        hw.store_basin(basin_name="pidemon",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path],
+                       basin_descr="Invalid basin identifier specified",
+                       verify=True,
+                       )
+
+    with dclab.new_dataset(path_test) as ds2:
+        bn = ds2.basins_get_dicts()[0]
+        assert bn["identifier"] == rid
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_identifier_mismatch(tmp_path):
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_test = path.parent / "test.h5"
+    # We basically create a file that consists only of the metadata.
+    with RTDCWriter(path_test) as hw:
+        with pytest.raises(ValueError, match="identifier mismatch"):
+            hw.store_basin(basin_name="pidemon",
+                           basin_type="file",
+                           basin_format="hdf5",
+                           basin_locs=[path],
+                           basin_descr="Invalid basin identifier specified",
+                           basin_id="blaubert",
+                           verify=True,
+                           )
+
+        # Should work though when verify is set to False
+        hw.store_basin(basin_name="pidemon",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path],
+                       basin_descr="Invalid basin identifier specified",
+                       basin_id="blaubert",
+                       verify=False,
+                       )
+
+
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR not reachable!")
 @pytest.mark.skipif(not BOTO3_AVAILABLE, reason="boto3 not available!")
 def test_basin_url(tmp_path):

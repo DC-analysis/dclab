@@ -438,7 +438,6 @@ class Export(object):
                 if progress_callback:
                     progress_callback(1 - 1 / (len(features) or 1),
                                       "writing basins")
-
                 # We have to store basins. There are three options:
                 # - filtering disabled: just copy basins
                 # - filtering enabled
@@ -450,6 +449,8 @@ class Export(object):
                 basin_list = [bn.as_dict() for bn in ds.basins]
                 # In addition to the upstream basins, also store a reference
                 # to the original file from which the export was done.
+                # Get the identifier of the current dataset for the new basins.
+                basin_id = ds.get_measurement_identifier()
                 if ds.format in get_basin_classes():
                     # The dataset has a format that matches a basin format
                     # directly.
@@ -464,6 +465,7 @@ class Export(object):
                         "basin_format": ds.format,
                         "basin_locs": basin_locs,
                         "basin_descr": f"Exported with dclab {version}",
+                        "basin_id": basin_id,
                     })
                 elif (ds.format == "hierarchy"
                       and ds.get_root_parent().format in get_basin_classes()):
@@ -497,6 +499,7 @@ class Export(object):
                             child=ds,
                             child_indices=np.arange(len(ds))
                             ),
+                        "basin_id": basin_id,
                     })
 
                 for bn_dict in basin_list:

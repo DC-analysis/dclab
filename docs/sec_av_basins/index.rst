@@ -409,6 +409,7 @@ the json data looks like this:
      "type": "file",
      "features": null,
      "mapping": "basinmap0",
+     "identifier": "1231ae-31f23-342-232-42b1c",
      "paths": [
        "/absolute/path/to/input.rtdc",
        "input.rtdc"
@@ -427,6 +428,11 @@ are a few things to notice:
   ``/events/basinmap0`` in the output file. Note that the fact that this mapping
   information is stored *as a feature* means that it is also properly
   gated when you define basins iteratively.
+- The *identifier* is a string that matches the identifier of the dataset.
+  When creating basins without a "same" mapping (as in this case), then the
+  referrer will obtain an identifier that starts with this identifier, but
+  contains additional text. This means identifiers are effectively cryptic
+  data analysis trackers.
 - There are two *paths* defined, an absolute path (from the root of the file
   system) and a relative path (relative to the directory of the output file).
   This relative path makes it possible to copy-paste these two files *together* to

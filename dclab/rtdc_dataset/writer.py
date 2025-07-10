@@ -207,6 +207,7 @@ class RTDCWriter:
                     basin_descr: str | None = None,
                     basin_feats: List[str] = None,
                     basin_map: np.ndarray | Tuple[str, np.ndarray] = None,
+                    basin_id: str = None,
                     internal_data: Dict | h5py.Group = None,
                     verify: bool = True,
                     perishable: bool = False,
@@ -243,6 +244,12 @@ class RTDCWriter:
             a case, you may specify a tuple `(feature_name, mapping_array)`
             where `feature_name` is the explicit mapping name, e.g.
             `"basinmap3"`.
+        basin_id: str
+            Identifier of the basin. This is the string returned by
+            :meth:`.RTDCBase.get_measurement_identifier`. This is
+            a unique string that identifies the data within a basin.
+            If not specified and `verify=True`, this value is automatically
+            taken from the basin file.
         internal_data: dict or instance of h5py.Group
             A dictionary or an `h5py.Group` containing the basin data.
             The data are copied to the "basin_events" group, if
@@ -310,19 +317,30 @@ class RTDCWriter:
             # We have to import this here to avoid circular imports
             from .load import new_dataset
             # Make sure the basin can be opened by dclab, verify its ID
-            cur_id = self.h5file.attrs.get("experiment:run identifier")
+            ref_id = self.h5file.attrs.get("experiment:run identifier")
             for loc in basin_locs:
                 with new_dataset(loc) as ds:
                     # We can open the file, which is great.
-                    if cur_id:
-                        # Compare the IDs.
-                        ds_id = ds.get_measurement_identifier()
-                        if not (ds_id == cur_id
+                    # Compare the IDs.
+                    bn_id = ds.get_measurement_identifier()
+                    # Check whether `basin_id` matches the actual basin
+                    if basin_id:
+                        if basin_id != bn_id:
+                            raise ValueError(
+                                f"Measurement identifier mismatch for "
+                                f"{loc}: got {bn_id}, expected {basin_id=})!")
+                    else:
+                        # If `basin_id` was not specified, set it here for
+                        # user convenience.
+                        basin_id = bn_id or None
+                    # Check whether the referrer ID matches the basin ID.
+                    if ref_id:
+                        if not (bn_id == ref_id
                                 or (basin_map is not None
-                                    and cur_id.startswith(ds_id))):
+                                    and ref_id.startswith(bn_id))):
                             raise ValueError(
                                 f"Measurement identifier mismatch between "
-                                f"{self.path} ({cur_id}) and {loc} ({ds_id})!")
+                                f"{self.path} ({ref_id}) and {loc} ({bn_id})!")
             if basin_feats:
                 for feat in basin_feats:
                     if not dfn.feature_exists(feat):
@@ -389,6 +407,7 @@ class RTDCWriter:
             "features": None if basin_feats is None else sorted(basin_feats),
             "mapping": basin_map_name,
             "perishable": perishable,
+            "identifier": basin_id,
         }
         if basin_type == "file":
             flocs = []

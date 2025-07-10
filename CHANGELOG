@@ -1,3 +1,6 @@
+0.66.0
+ - ref: rename `measurement_identifier` to `referrer_identifier`
+   in the `feat_basin` context to clarify which dataset it belongs to
 0.65.0
  - scripts: add `vid2dc.py` for converting videos to raw .rtdc files
  - enh: run identifier splits use "_" upon export and have increased length

@@ -741,7 +741,7 @@ class RTDCBase(abc.ABC):
                 # need the referring dataset.
                 "mapping_referrer": self,
                 # Make sure the measurement identifier is checked.
-                "measurement_identifier": self.get_measurement_identifier(),
+                "referrer_identifier": self.get_measurement_identifier(),
                 # allow to ignore basins
                 "ignored_basins": bd_keys,
                 # basin key

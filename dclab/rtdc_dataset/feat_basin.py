@@ -176,7 +176,7 @@ class Basin(abc.ABC):
                  name: str = None,
                  description: str = None,
                  features: List[str] = None,
-                 measurement_identifier: str = None,
+                 referrer_identifier: str = None,
                  mapping: Literal["same",
                                   "basinmap0",
                                   "basinmap1",
@@ -208,7 +208,7 @@ class Basin(abc.ABC):
         features: list of str
             List of features this basin provides; This list is enforced,
             even if the basin actually contains more features.
-        measurement_identifier: str
+        referrer_identifier: str
             A measurement identifier against which to check the basin.
             If this is set to None (default), there is no certainty
             that the downstream dataset is from the same measurement.
@@ -261,8 +261,8 @@ class Basin(abc.ABC):
         # features this basin provides
         self._features = features
         #: measurement identifier of the referencing dataset
-        self.measurement_identifier = measurement_identifier
-        self._measurement_identifier_verified = False
+        self.referrer_identifier = referrer_identifier
+        self._referrer_identifier_verified = False
         #: ignored basins
         self.ignored_basins = ignored_basins or []
         #: additional keyword arguments passed to the basin
@@ -304,13 +304,13 @@ class Basin(abc.ABC):
 
         return f"<{self.__class__.__name__} ({opt_str}) at {hex(id(self))}>"
 
-    def _assert_measurement_identifier(self):
+    def _assert_referrer_identifier(self):
         """Make sure the basin matches the measurement identifier
         """
         if not self.verify_basin(run_identifier=True):
             raise KeyError(f"Measurement identifier of basin {self.ds} "
                            f"({self.get_measurement_identifier()}) does "
-                           f"not match {self.measurement_identifier}!")
+                           f"not match {self.referrer_identifier}!")
 
     @property
     def basinmap(self):
@@ -410,7 +410,7 @@ class Basin(abc.ABC):
 
     def get_feature_data(self, feat):
         """Return an object representing feature data of the basin"""
-        self._assert_measurement_identifier()
+        self._assert_referrer_identifier()
         return self.ds[feat]
 
     def get_measurement_identifier(self):
@@ -455,12 +455,12 @@ class Basin(abc.ABC):
         # Only check for run identifier if requested and if the availability
         # check did not fail.
         if run_identifier and check_avail:
-            if not self._measurement_identifier_verified:
-                if self.measurement_identifier is None:
+            if not self._referrer_identifier_verified:
+                if self.referrer_identifier is None:
                     # No measurement identifier was presented by the
                     # referencing dataset. We are in the dark.
                     # Don't perform any checks.
-                    self._measurement_identifier_verified = True
+                    self._referrer_identifier_verified = True
                 else:
                     # This is the measurement identifier of the basin.
                     basin_identifier = self.get_measurement_identifier()
@@ -468,7 +468,7 @@ class Basin(abc.ABC):
                         # Again, we are in the dark, because the basin dataset
                         # does not have an identifier. This is an undesirable
                         # situation, but there is nothing we can do about it.
-                        self._measurement_identifier_verified = True
+                        self._referrer_identifier_verified = True
                     else:
                         if self.mapping == "same":
                             # When we have identical mapping, then the
@@ -479,10 +479,10 @@ class Basin(abc.ABC):
                             # data), then the measurement identifier has to
                             # partially match.
                             verifier = str.startswith
-                        self._measurement_identifier_verified = verifier(
-                            self.measurement_identifier, basin_identifier)
+                        self._referrer_identifier_verified = verifier(
+                            self.referrer_identifier, basin_identifier)
 
-            check_rid = self._measurement_identifier_verified
+            check_rid = self._referrer_identifier_verified
         else:
             check_rid = True
 

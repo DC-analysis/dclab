@@ -183,7 +183,7 @@ def test_basin_identifier_fallback(tmp_path):
                        basin_type="file",
                        basin_format="hdf5",
                        basin_locs=[path],
-                       basin_descr="Invalid basin identifier specified",
+                       basin_descr="No basin identifier specified",
                        verify=True,
                        )
 

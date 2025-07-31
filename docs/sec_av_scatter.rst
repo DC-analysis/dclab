@@ -191,12 +191,12 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
 
 
 
-Polygon filters / Shape-Out
----------------------------
+Polygon filters / DCscope
+-------------------------
 Keep in mind that you can combine your dclab analysis pipeline with
-:ref:`Shape-Out <shapeout2:index>`. For instance, you can create and export
+:ref:`DCscope <dcscope:index>`. For instance, you can create and export
 :ref:`polygon filters <sec_ref_polygon_filter>`
-in Shape-Out and then import them in dclab.
+in DCscope and then import them in dclab.
 
 
 .. plot::

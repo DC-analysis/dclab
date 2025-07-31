@@ -14,7 +14,7 @@ in your dataset without modifying any files on disk.
 
 .. note::
 
-    Temporary features are not supported by Shape-Out, DCKit, or DCOR/DCOR-Aid.
+    Temporary features are not supported by DCscope, DCKit, or DCOR/DCOR-Aid.
     They are only really helpful if you quickly need to test things. If possible,
     it is recommended to work with :ref:`plugin features <sec_av_feat_plugin>`.
 

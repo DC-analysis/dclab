@@ -17,7 +17,7 @@ Module-level methods
 
 Global definitions
 ==================
-These definitionas are used throughout the dclab/Shape-In/Shape-Out ecosystem.
+These definitionas are used throughout the dclab/Shape-In/DCscope ecosystem.
 
 Metadata
 --------

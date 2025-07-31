@@ -14,7 +14,7 @@ file to the input file. Feature data "flows" from the basins to the
 files downstream.
 
 Due to the fact that basins are implemented in dclab, all software that relies
-on dclab for opening data files (e.g. Shape-Out or CytoPlot) automatically
+on dclab for opening data files (e.g. DCscope or CytoPlot) automatically
 supports basins as well.
 
 
@@ -46,7 +46,7 @@ B. You have an automated data analysis pipeline that relies entirely on DCOR.
    connection.
 
 C. Let's say your pipeline is designed to compute a new feature ``userdef1``
-   and you would like to open the output file in Shape-Out, visualizing
+   and you would like to open the output file in DCscope, visualizing
    this feature in combination with other features defined in the input file
    (e.g. ``deform``). What you *could* do is write the ``userdef1`` feature
    directly to the input file or create a copy of your input file and write

@@ -29,7 +29,7 @@ class RTDC_Hierarchy(RTDCBase):
         Children in hierarchies always update their data according to
         the filtered event data from their parent when `apply_filter`
         is called. This makes it easier to save and load hierarchy
-        children with e.g. Shape-Out and it makes the handling of
+        children with e.g. DCscope and it makes the handling of
         hierarchies more intuitive (when the parent changes,
         the child changes as well).
 

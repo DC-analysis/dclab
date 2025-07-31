@@ -6,7 +6,7 @@ from .feat_const import (
     # these should not be used
     feature_names, feature_labels, feature_name2label,
     # this one should also not be used, but we wait with deprecation,
-    # because Shape-Out heavily relies on it (it shouldn't)
+    # because DCscope heavily relies on it (it shouldn't)
     scalar_feature_names
     )
 from .feat_logic import (

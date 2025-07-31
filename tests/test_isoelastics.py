@@ -113,7 +113,7 @@ def test_convert():
                          viscosity_in=15,
                          viscosity_out=15)
     # These values were taken from previous isoelasticity files
-    # used in Shape-Out.
+    # used in DCscope.
     assert np.allclose(isoel15[0][:, 2], 7.11111111e-01)
     assert np.allclose(isoel15[1][:, 2], 9.48148148e-01)
     # area_um

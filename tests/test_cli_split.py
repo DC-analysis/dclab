@@ -34,7 +34,8 @@ def test_split():
                         )
                     else:
                         assert np.all(
-                            ds[feat][ecount:ecount + len(di)] == di[feat]), feat
+                            ds[feat][ecount:ecount + len(di)]
+                            == di[feat]), feat
                 ecount += len(di)
 
 

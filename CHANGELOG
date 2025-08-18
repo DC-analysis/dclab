@@ -1,5 +1,6 @@
 0.66.1
  - docs: acknowledge Shape-Out is being continued as DCscope
+ - tests: correct DCOR IP address
 0.66.0
  - feat: introduce optional identifiers for basins
  - ref: rename `measurement_identifier` to `referrer_identifier`

@@ -179,6 +179,10 @@ class H5MaskEvent:
     def shape(self):
         return self.h5dataset.shape
 
+    @property
+    def size(self):
+        return np.prod(self.shape)
+
 
 class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
     def __init__(self, h5ds):
@@ -234,6 +238,10 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
     @property
     def shape(self):
         return self.h5ds.shape
+
+    @property
+    def size(self):
+        return len(self)
 
 
 class H5TraceEvent:

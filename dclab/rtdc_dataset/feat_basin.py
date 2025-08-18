@@ -567,8 +567,8 @@ class BasinProxy:
     def __getitem__(self, feat):
         if feat not in self._features:
             if feat == "contour":
-                raise NotImplementedError("Feature 'contour' cannot be "
-                                          "handled by BasinProxy.")
+                feat_obj = BasinProxyContour(feat_obj=self.ds[feat],
+                                             basinmap=self.basinmap)
             else:
                 feat_obj = BasinProxyFeature(feat_obj=self.ds[feat],
                                              basinmap=self.basinmap)
@@ -577,6 +577,36 @@ class BasinProxy:
 
     def __len__(self):
         return len(self.basinmap)
+
+
+class BasinProxyContour:
+    def __init__(self, feat_obj, basinmap):
+        """Wrap around a contour, mapping it upon data access, no caching"""
+        self.feat_obj = feat_obj
+        self.basinmap = basinmap
+        self.is_scalar = False
+        self.shape = (len(self.basinmap), np.nan, 2)
+        self.identifier = feat_obj.identifier
+
+    def __getattr__(self, item):
+        if item in [
+            "dtype",
+        ]:
+            return getattr(self.feat_obj, item)
+        else:
+            raise AttributeError(
+                f"BasinProxyContour does not implement {item}")
+
+    def __getitem__(self, index):
+        if isinstance(index, numbers.Integral):
+            # single index, cheap operation
+            return self.feat_obj[self.basinmap[index]]
+        else:
+            raise NotImplementedError(
+                "Cannot index contours without anything else than integers.")
+
+    def __len__(self):
+        return self.shape[0]
 
 
 class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):

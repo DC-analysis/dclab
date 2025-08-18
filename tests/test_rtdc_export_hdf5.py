@@ -10,7 +10,10 @@ import pytest
 
 import dclab
 from dclab import dfn, new_dataset, RTDCWriter
-from dclab.rtdc_dataset.export import store_filtered_feature
+from dclab.rtdc_dataset.export import (
+    ContourNotExportedWarning,
+    store_filtered_feature,
+)
 from dclab.rtdc_dataset import check
 
 from helper_methods import example_data_dict, retrieve_data
@@ -59,6 +62,27 @@ def test_hdf5_compressed():
             assert cue.msg == "Compression: All"
 
 
+def test_hdf5_contour_ignored():
+    """Contours should not be exported by default"""
+    n = 65
+    keys = ["contour", "image", "trace"]
+    ddict = example_data_dict(size=n, keys=keys)
+
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
+    with pytest.warns(ContourNotExportedWarning,
+                      match="not exported to output file"):
+        ds1.export.hdf5(f1, keys, filtered=False)
+
+    # check whether contour does not exist
+    with h5py.File(f1) as h5:
+        assert "contour" not in h5["events"]
+
+
 def test_hdf5_duplicate_feature_for_export():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=127, keys=keys)
@@ -92,7 +116,7 @@ def test_hdf5_contour_image_trace():
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
-    ds1.export.hdf5(f1, keys, filtered=False)
+    ds1.export.hdf5(f1, keys, filtered=False, allow_contour=True)
     ds2 = dclab.new_dataset(f1)
 
     for ii in range(n):
@@ -115,7 +139,7 @@ def test_hdf5_contour_image_trace_large():
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
-    ds1.export.hdf5(f1, keys, filtered=False)
+    ds1.export.hdf5(f1, keys, filtered=False, allow_contour=True)
     ds2 = dclab.new_dataset(f1)
 
     # the trace may have negative values, it's int16, not uint16.
@@ -137,7 +161,7 @@ def test_hdf5_contour_from_hdf5():
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
-    ds1.export.hdf5(f1, ["contour"], filtered=False)
+    ds1.export.hdf5(f1, ["contour"], filtered=False, allow_contour=True)
     ds2 = dclab.new_dataset(f1)
     assert ds2["contour"].shape == (5, np.nan, 2)
 
@@ -200,7 +224,9 @@ def test_hdf5_filtered_full(dataset):
     # first, create a large dataset
     with new_dataset(retrieve_data(dataset)) as ds0:
         num = 100 % len(ds0) + len(ds0)
-        ds0.export.hdf5(path_in, features=ds0.features_innate)
+        ds0.export.hdf5(path_in,
+                        features=ds0.features_innate,
+                        allow_contour=True)
         with RTDCWriter(path_in) as hw:
             for _ in range(num):
                 for feat in ds0.features_innate:
@@ -210,12 +236,18 @@ def test_hdf5_filtered_full(dataset):
     path_out1 = tdir / "out1.rtdc"
     with dclab.new_dataset(path_in) as ds:
         assert len(ds) >= 100
-        ds.export.hdf5(path_out1, features=ds.features_innate, filtered=False)
+        ds.export.hdf5(path_out1,
+                       features=ds.features_innate,
+                       filtered=False,
+                       allow_contour=True)
 
     # 2. via export filtered
     path_out2 = tdir / "out2.rtdc"
     with dclab.new_dataset(path_in) as ds:
-        ds.export.hdf5(path_out2, features=ds.features_innate, filtered=True)
+        ds.export.hdf5(path_out2,
+                       features=ds.features_innate,
+                       filtered=True,
+                       allow_contour=True)
 
     # 3. via RTDC writer
     path_out3 = tdir / "out3.rtdc"

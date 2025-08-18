@@ -39,6 +39,10 @@ class LimitingExportSizeWarning(UserWarning):
     pass
 
 
+class ContourNotExportedWarning(UserWarning):
+    pass
+
+
 class Export(object):
     def __init__(self, rtdc_ds):
         """Export functionalities for RT-DC datasets"""
@@ -228,6 +232,7 @@ class Export(object):
              logs: bool = False,
              tables: bool = False,
              basins: bool = False,
+             allow_contour: bool = False,
              meta_prefix: str = "src_",
              override: bool = False,
              compression_kwargs: Dict = None,
@@ -260,6 +265,14 @@ class Export(object):
             Whether to export basins. If filtering is disabled, basins
             are copied directly to the output file. If filtering is enabled,
             then mapped basins are exported.
+        allow_contour: bool
+            Whether to allow exporting the "contour" feature. Writing this
+            feature to an HDF5 file is extremely inefficient, because it
+            cannot be represented by an ND array and thus must be stored
+            in a group, each contour stored in a separate dataset. The
+            contour can easily be computed via the mask, so actually storing
+            the contour should be avoided. If "contour" is in `features`,
+            it will only be written to the output file if `allow_contour=True`.
         meta_prefix: str
             Prefix for log and table names in the exported file
         override: bool
@@ -318,8 +331,25 @@ class Export(object):
         # for convenience
         ds = self.rtdc_ds
 
+        # remove contour information from user-specified features
+        if "contour" in (features or []) and not allow_contour:
+            features = list(features)
+            features.remove("contour")
+            warnings.warn(
+                "Feature 'contour' not exported to output file, because "
+                "`allow_contour` is `False`. If you really need the "
+                "'contour' feature in the output file (unlikely, unless you "
+                "are venturing outside the DC Cosmos), you must set "
+                "`allow_contour=True`. Otherwise, you can safely ignore "
+                "this warning or silence it by not providing 'contour' in "
+                "`features`.",
+                ContourNotExportedWarning)
+
         if features is None:
             features = ds.features_innate
+            # silently remove contour information
+            if "contour" in features and not allow_contour:
+                features.remove("contour")
 
         # decide which metadata to export
         meta = {}

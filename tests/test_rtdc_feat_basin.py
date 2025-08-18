@@ -14,6 +14,35 @@ from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_contour(tmp_path):
+    hin = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    with h5py.File(hin, "a") as hf:
+        del hf["events/mask"]
+    ds1 = new_dataset(hin)
+    assert ds1["contour"].shape == (8, np.nan, 2)
+
+    ds1.filter.manual[0] = False
+    ds1.apply_filter()
+
+    f2 = tmp_path / "f1.rtdc"
+    ds1.export.hdf5(path=f2,
+                    features=["image"],
+                    filtered=True,
+                    basins=True,)
+    assert f2.exists()
+    ds2 = dclab.new_dataset(f2)
+    assert "contour" in ds2.features_basin
+    assert ds2["contour"].shape == (7, np.nan, 2)
+    assert ds2["contour"].dtype == np.uint16
+
+    assert np.all(ds2["contour"][0] == ds1["contour"][1])
+
+    with pytest.raises(NotImplementedError):
+        ds2["contour"][1:2]
+
+
+@pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.core.FeatureShouldExistButNotFoundWarning")
 def test_basin_cyclic_dependency_found():
     """A basin can be defined in one of its sub-basins

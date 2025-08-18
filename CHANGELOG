@@ -1,4 +1,7 @@
-0.66.1
+0.67.0
+ - BREAKING CHANGE: make it difficult to export the "contour" feature
+ - enh: implement `BasinProxyContour`
+ - enh: improve hashing of `H5ContourEvent`
  - docs: acknowledge Shape-Out is being continued as DCscope
  - tests: correct DCOR IP address
 0.66.0

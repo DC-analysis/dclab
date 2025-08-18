@@ -615,7 +615,24 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
         self.feat_obj = feat_obj
         self.basinmap = basinmap
         self._cache = None
+        self._shape = None
+        self._size = None
         self.is_scalar = bool(len(self.feat_obj.shape) == 1)
+
+    @property
+    def shape(self):
+        if self._shape is None:
+            if self.is_scalar:
+                self._shape = self.basinmap.shape
+            else:
+                self._shape = (self.basinmap.size,) + self.feat_obj.shape[1:]
+        return self._shape
+
+    @property
+    def size(self):
+        if self._size is None:
+            self._size = np.prod(self.shape)
+        return self._size
 
     def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
         if self._cache is None and self.is_scalar:
@@ -633,8 +650,6 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
     def __getattr__(self, item):
         if item in [
             "dtype",
-            "shape",
-            "size",
         ]:
             return getattr(self.feat_obj, item)
         else:

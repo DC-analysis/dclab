@@ -1,5 +1,6 @@
 0.67.0
  - BREAKING CHANGE: make it difficult to export the "contour" feature
+ - fix: `BasinProxyFeature` returned incorrect `shape` and `size`
  - enh: implement `size` for `H5MaskEvent` and `H5ScalarEvent`
  - enh: implement `BasinProxyContour`
  - enh: improve hashing of `H5ContourEvent`

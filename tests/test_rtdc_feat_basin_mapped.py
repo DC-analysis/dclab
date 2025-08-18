@@ -57,6 +57,9 @@ def test_basin_basic_inception():
                         basin_locs=[h5path],
                         basin_map=basin_map1
                         )
+        assert ds0["deform"].shape == (18,)
+        assert ds0["deform"].size == 18
+        assert ds0["image"].size == 18 * 80 * 250
 
     # level 2
     with dclab.new_dataset(h5path) as ds0, dclab.RTDCWriter(h5path_l2) as hw2:
@@ -79,6 +82,11 @@ def test_basin_basic_inception():
         assert "mapped" in str(ds1.basins[0])
         assert "deform" in ds1.basins[0].features
         assert np.all(ds1["deform"] == ds0["deform"][basin_map1])
+        assert ds1["deform"].shape == (4,)
+        assert ds1["deform"].size == 4
+        assert ds1["image"].shape == (4, 80, 250)
+        assert ds1["mask"].shape == (4, 80, 250)
+        assert ds1["image"].size == 4 * 80 * 250
 
     # Checks for level 2
     with dclab.new_dataset(h5path) as ds0, dclab.new_dataset(h5path_l2) as ds2:
@@ -86,6 +94,10 @@ def test_basin_basic_inception():
         assert len(ds2.basins) == 1
         assert "deform" in ds2.basins[0].features
         assert np.all(ds2["deform"] == ds0["deform"][basin_map1][basin_map2])
+        assert ds2["deform"].shape == (2,)
+        assert ds2["image"].shape == (2, 80, 250)
+        assert ds2["mask"].shape == (2, 80, 250)
+        assert ds2["image"].size == 2 * 80 * 250
 
 
 def test_basin_inception():

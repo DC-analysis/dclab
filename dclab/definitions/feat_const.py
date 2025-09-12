@@ -91,11 +91,13 @@ FEATURES_SCALAR = [
     # Sum of the pressures applied to sample and sheath flow
     ["pressure", "Pressure [mPa]"],
     # QPI features computed from holographic data
-    ["qpi_dm_avg", "Dry mass (average) [pg]"],
-    ["qpi_dm_sd", "Dry mass (SD) [pg]"],
+    ["qpi_dm", "Dry mass [pg]"],
+    ["qpi_dm_avg", "DEPRECATED Dry mass (average) [pg]"],
+    ["qpi_dm_dns", "Dry mass density [mg/ml]"],
+    ["qpi_ri_sd", "DEPRECATED Refractive index (SD)"],
     ["qpi_pha_int", "Integrated phase [rad]"],
     ["qpi_ri_avg", "Refractive index (average)"],
-    ["qpi_ri_sd", "Refractive index (SD)"],
+    ["qpi_dm_sd", "DEPRECATED Dry mass (SD) [pg]"],
     # QPI features from refocused events
     ["qpi_focus", "Computed focus distance [µm]"],
     # Size features

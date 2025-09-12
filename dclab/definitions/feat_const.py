@@ -94,10 +94,10 @@ FEATURES_SCALAR = [
     ["qpi_dm", "Dry mass [pg]"],
     ["qpi_dm_avg", "DEPRECATED Dry mass (average) [pg]"],
     ["qpi_dm_dns", "Dry mass density [mg/ml]"],
-    ["qpi_ri_sd", "DEPRECATED Refractive index (SD)"],
+    ["qpi_dm_sd", "DEPRECATED Dry mass (SD) [pg]"],
     ["qpi_pha_int", "Integrated phase [rad]"],
     ["qpi_ri_avg", "Refractive index (average)"],
-    ["qpi_dm_sd", "DEPRECATED Dry mass (SD) [pg]"],
+    ["qpi_ri_sd", "DEPRECATED Refractive index (SD)"],
     # QPI features from refocused events
     ["qpi_focus", "Computed focus distance [µm]"],
     # Size features

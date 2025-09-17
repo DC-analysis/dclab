@@ -1,6 +1,7 @@
 import io
 from os.path import join
 import tempfile
+from unittest import mock
 
 import pytest
 
@@ -31,6 +32,22 @@ def test_fcs_export():
 
     assert a1 == a2
     assert len(a1) != 0
+
+
+def test_fcs_export_progress(tmp_path):
+    pytest.importorskip("fcswrite")
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=222, keys=keys)
+    ds = dclab.new_dataset(ddict)
+
+    f1 = tmp_path / "test.fcs"
+
+    callback = mock.MagicMock()
+    ds.export.fcs(f1, keys, progress_callback=callback)
+
+    callback.assert_any_call(0.0, "collecting data")
+    callback.assert_any_call(0.5, "exporting data")
+    callback.assert_any_call(1.0, "export complete")
 
 
 def test_fcs_override():

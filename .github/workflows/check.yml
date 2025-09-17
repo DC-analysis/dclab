@@ -10,17 +10,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.8', '3.x']
-        # macos-latest (macOS 14): problems with ffmpeg (wait for imageio upgrade)
+        python-version: ['3.9', '3.x']
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
         exclude:
-          # pytest on Python 3.8 cannot handle raises and warns together in
-          # a context.
-          - python-version: '3.8'
+          # problems with compiling on arm64
+          - python-version: '3.9'
+            os: macos-latest
             extras: 'all'
-          - python-version: '3.8'
-            extras: 'dcor-s3'
       fail-fast: false
     timeout-minutes: 30
 

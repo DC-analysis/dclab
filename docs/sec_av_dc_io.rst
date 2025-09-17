@@ -83,6 +83,25 @@ make use of the :class:`RTDCWriter <dclab.rtdc_dataset.writer.RTDCWriter>` class
     In [7]: print(ds_custom.config["experiment"])
 
 
+The `mode` argument defines how data should be written to the file. In the
+above example, any existing data in *my-data-rtdc* is deleted. If you
+are writing to an existing file, you may use `mode="append"` to append
+events to existing features or `mode="replace"` to replace entire features
+with new data. Use `"append"` if you are continuously writing new events
+to a file. Use `"replace"` if you are rewriting feature data (e.g. in
+a script that computes features for all events).
+
+.. warning::
+
+    If you are using the wrong mode, you can introduce inconsistencies.
+    Say you are computing custom feature data and you changed the algorithm
+    that does the computation. You have an existing .rtdc file with the
+    outdated `userdef1` feature. You would like to replace this data with
+    the data from the updated algorithm. If you open that file with
+    `mode="append"` and write `userdef1` to it, then the `userdef1` feature
+    will have twice the length. You should used `mode="replace"` instead.
+
+
 .. _sec_av_dc_io_copy:
 
 Copying (parts of) a dataset

@@ -49,7 +49,7 @@ def test_contour_basic():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_defective_feature_aspect():
-    # see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/241
+    # see https://github.com/DC-analysis/DCscope/issues/241
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     # modify aspect feature
     with h5py.File(h5path, "a") as h5:
@@ -251,7 +251,7 @@ def test_defective_feature_time_issue_207_with_offset():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_defective_feature_volume():
-    # see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/241
+    # see https://github.com/DC-analysis/DCscope/issues/241
     h5path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
 
     with h5py.File(h5path, "r") as h5:

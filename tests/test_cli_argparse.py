@@ -207,8 +207,19 @@ def test_split():
                                 "time",  # issue #204
                                 ]:
                         continue
-                    assert np.all(
-                        ds[feat][ecount:ecount+len(di)] == di[feat]), feat
+                    elif feat in ["volume"]:
+                        # Contour data is required for computing volume.
+                        # But contour data is not exported. Instead,
+                        # contour data must be computed from mask data.
+                        assert np.allclose(
+                            ds[feat][ecount:ecount + len(di)],
+                            di[feat],
+                            rtol=0,
+                            atol=1e-5,
+                        )
+                    else:
+                        assert np.all(
+                            ds[feat][ecount:ecount+len(di)] == di[feat]), feat
                 ecount += len(di)
 
 

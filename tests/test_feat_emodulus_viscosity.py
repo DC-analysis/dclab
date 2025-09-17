@@ -62,6 +62,15 @@ def test_buyukurganci_cell_carrier():
         assert np.allclose(eta, b)
 
 
+def test_buyukurganci_cell_carrier_zero_flow_rate():
+    eta = emodulus.viscosity.get_viscosity(medium="0.59% MC-PBS",
+                                           channel_width=20,
+                                           flow_rate=0,
+                                           temperature=21.5,
+                                           model='buyukurganci-2022')
+    assert np.isnan(eta)
+
+
 @pytest.mark.parametrize("medium", ["0.49% MC-PBS", "0.59% MC-PBS"])
 def test_buyukurganci_mcpbs_range(medium):
     # test values
@@ -165,6 +174,14 @@ def test_kestin_water():
     res = emodulus.viscosity.get_viscosity(medium="water",
                                            temperature=ref[:, 0])
     assert np.allclose(res, ref[:, 1], rtol=8e-5, atol=0)
+
+    # Since water viscosity is not dependent on flow rate, setting
+    # flow rate to zero should still work.
+    res2 = emodulus.viscosity.get_viscosity(medium="water",
+                                            temperature=ref[:, 0],
+                                            flow_rate=0,
+                                            )
+    assert np.allclose(res2, ref[:, 1], rtol=8e-5, atol=0)
 
 
 def test_kestin_water_range():

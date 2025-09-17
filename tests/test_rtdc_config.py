@@ -445,7 +445,7 @@ def test_user_section_set_save_reload_fmt_tdms():
     with new_dataset(h5path) as ds:
         ds.config.update({"user": metadata})
         expath = h5path.with_name("exported.rtdc")
-        ds.export.hdf5(expath, features=ds.features_innate)
+        ds.export.hdf5(expath)
     # make sure that worked
     with h5py.File(expath, "r") as h5:
         assert h5.attrs["user:channel area"] == 100.5

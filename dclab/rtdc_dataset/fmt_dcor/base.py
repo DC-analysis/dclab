@@ -1,15 +1,21 @@
 """DCOR client interface"""
+import logging
 import pathlib
 import re
+import time
 
 from ...util import hashobj
 
 from ..config import Configuration
 from ..core import RTDCBase
+from ..feat_basin import PerishableRecord
 
 from . import api
 from .logs import DCORLogs
 from .tables import DCORTables
+
+
+logger = logging.getLogger(__name__)
 
 
 #: Append directories here where dclab should look for certificate bundles
@@ -73,6 +79,8 @@ class RTDC_DCOR(RTDCBase):
         super(RTDC_DCOR, self).__init__(*args, **kwargs)
 
         self._hash = None
+        self._cache_basin_dict = None
+        self.cache_basin_dict_time = 600
         self.path = RTDC_DCOR.get_full_url(url, use_ssl, host)
 
         if cert_path is None:
@@ -161,15 +169,106 @@ class RTDC_DCOR(RTDCBase):
         new_url = f"{scheme}://{netloc}/{api_path}"
         return new_url
 
-    def basins_get_dicts(self):
-        """Return list of dicts for all basins defined in `self.h5file`"""
+    def _basin_refresh(self, basin):
+        """Refresh the specified basin"""
+        # Retrieve the basin dictionary from DCOR
+        basin_dicts = self.basins_get_dicts()
+        for bn_dict in basin_dicts:
+            if bn_dict.get("name") == basin.name:
+                break
+        else:
+            raise ValueError(f"Basin '{basin.name}' not found in {self}")
+
+        tre = bn_dict["time_request"]
+        ttl = bn_dict["time_expiration"]
+        # remember time relative to time.time, subtract 30s to be on safe side
+        tex = bn_dict["time_local_request"] + (ttl - tre) - 30
+
+        if isinstance(basin.perishable, bool):
+            logger.debug("Initializing basin perishable %s", basin.name)
+            # create a perishable record
+            basin.perishable = PerishableRecord(
+                basin=basin,
+                expiration_func=self._basin_expiration,
+                expiration_kwargs={"time_local_expiration": tex},
+                refresh_func=self._basin_refresh,
+            )
+        else:
+            logger.debug("Refreshing basin perishable %s", basin.name)
+            # only update (this also works with weakref.ProxyType)
+            basin.perishable.expiration_kwargs = {"time_local_expiration": tex}
+
+        if len(bn_dict["urls"]) > 1:
+            logger.warning(f"Basin {basin.name} has multiple URLs. I am not "
+                           f"checking their availability: {bn_dict}")
+        basin.location = bn_dict["urls"][0]
+
+    def _basin_expiration(self, basin, time_local_expiration):
+        """Check whether the basin has perished"""
+        return time_local_expiration < time.time()
+
+    def _basins_get_dicts(self):
         try:
-            basins = self.api.get(query="basins")
+            basin_dicts = self.api.get(query="basins")
+            # Fill in missing timing information
+            for bn_dict in basin_dicts:
+                if (bn_dict.get("format") == "http"
+                        and "perishable" not in bn_dict):
+                    # We are communicating with an older version of
+                    # ckanext-dc_serve. Take a look at the URL and check
+                    # whether we have a perishable (~1 hour) URL or whether
+                    # this is a public resource.
+                    expires_regexp = re.compile(".*expires=([0-9]*)$")
+                    for url in bn_dict.get("urls", []):
+                        if match := expires_regexp.match(url.lower()):
+                            logger.debug("Detected perishable basin: %s",
+                                         bn_dict["name"])
+                            bn_dict["perishable"] = True
+                            bn_dict["time_request"] = time.time()
+                            bn_dict["time_expiration"] = int(match.group(1))
+                            # add part of the resource ID to the name
+                            infourl = url.split(bn_dict["name"], 1)[-1]
+                            infourl = infourl.replace("/", "")
+                            bn_dict["name"] += f"-{infourl[:5]}"
+                            break
+                    else:
+                        bn_dict["perishable"] = False
+                # If we have a perishable basin, add the local request time
+                if bn_dict.get("perishable"):
+                    bn_dict["time_local_request"] = time.time()
         except api.DCORAccessError:
             # TODO: Do not catch this exception when all DCOR instances
             #       implement the 'basins' query.
             # This means that the server does not implement the 'basins' query.
-            basins = []
+            basin_dicts = []
+        return basin_dicts
+
+    def basins_get_dicts(self):
+        """Return list of dicts for all basins defined on DCOR
+
+        The return value of this method is cached for 10 minutes
+        (cache time defined in the `cache_basin_dict_time` [s] property).
+        """
+        if (self._cache_basin_dict is None
+            or time.time() > (self._cache_basin_dict[1]
+                              + self.cache_basin_dict_time)):
+            self._cache_basin_dict = (self._basins_get_dicts(), time.time())
+        return self._cache_basin_dict[0]
+
+    def basins_retrieve(self):
+        """Same as superclass, but add perishable information"""
+        basin_dicts = self.basins_get_dicts()
+        basins = super(RTDC_DCOR, self).basins_retrieve()
+        for bn in basins:
+            for bn_dict in basin_dicts:
+                if bn.name == bn_dict.get("name"):
+                    # Determine whether we have to set a perishable record.
+                    if bn_dict.get("perishable"):
+                        # required for `_basin_refresh` to create a record
+                        bn.perishable = True
+                        # create the actual record
+                        self._basin_refresh(bn)
+                    break
         return basins
 
 

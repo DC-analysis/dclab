@@ -1,6 +1,7 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
+import pathlib
 import warnings
 
 import numbers
@@ -17,7 +18,17 @@ class H5ContourEvent:
         self._length = length
         self.h5group = h5group
         # for hashing in util.obj2bytes
-        self.identifier = (h5group.file.filename, h5group["0"].name)
+        # path within the HDF5 file
+        o_name = h5group["0"].name,
+        # filename
+        o_filename = h5group.file.filename
+        _data = [o_name, o_filename]
+        if pathlib.Path(o_filename).exists():
+            # when the file was changed
+            _data.append(pathlib.Path(h5group.file.filename).stat().st_mtime)
+            # size of the file
+            _data.append(pathlib.Path(h5group.file.filename).stat().st_size)
+        self.identifier = _data
 
     def __getitem__(self, key):
         if not isinstance(key, numbers.Integral):
@@ -168,6 +179,10 @@ class H5MaskEvent:
     def shape(self):
         return self.h5dataset.shape
 
+    @property
+    def size(self):
+        return np.prod(self.shape)
+
 
 class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
     def __init__(self, h5ds):
@@ -223,6 +238,10 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
     @property
     def shape(self):
         return self.h5ds.shape
+
+    @property
+    def size(self):
+        return len(self)
 
 
 class H5TraceEvent:

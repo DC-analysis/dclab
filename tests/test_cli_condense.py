@@ -134,10 +134,12 @@ def test_condense_basins_include_no_data_from_basins():
 @pytest.mark.parametrize("store_basins", [True, False])
 def test_condense_basins_internal(store_basins):
     """
-    Internal basins should just be copied to the new file
+    Internal basins should just be copied to the new file.
+    However, image data are not scalar data, so they should not
+    show up in the condensed file.
     """
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
-    h5path_small = h5path.with_name("smaller.rtdc")
+    h5path_small = h5path.with_name("input_file.rtdc")
     h5path_out = h5path.with_name("condensed.rtdc")
 
     # Dataset creation
@@ -146,7 +148,9 @@ def test_condense_basins_internal(store_basins):
         rtdc_dataset.rtdc_copy(src_h5file=src,
                                dst_h5file=hw.h5file,
                                features="scalar")
-        hw.store_basin(basin_name="example basin",
+        assert "basins" not in hw.h5file, "no basins in input file"
+        # store scalar and non-scalar internal basins in the input file
+        hw.store_basin(basin_name="scalar and non-scalar basin data",
                        basin_type="internal",
                        basin_format="h5dataset",
                        basin_locs=["basin_events"],
@@ -165,8 +169,9 @@ def test_condense_basins_internal(store_basins):
         assert "image_bg" in ds.features_basin
         assert "image_bg" not in ds.features_innate
 
-    # compress the basin-based dataset
-    cli.condense(path_in=h5path_small, path_out=h5path_out,
+    # condense the basin-based dataset
+    cli.condense(path_in=h5path_small,
+                 path_out=h5path_out,
                  store_basin_features=store_basins)
 
     with h5py.File(h5path_out) as h5:
@@ -182,8 +187,10 @@ def test_condense_basins_internal(store_basins):
         assert "image_bg" not in h5["basin_events"]
 
     with new_dataset(h5path_out) as ds:
+        # userdef1 is an internal, scalar basin
         assert "userdef1" in ds.features_basin
-        assert "image_bg" in ds.features_basin
+        # image_bg is not scalar, so it should not be here
+        assert "image_bg" not in ds.features_basin
 
 
 @pytest.mark.filterwarnings(
@@ -226,20 +233,21 @@ def test_condense_from_s3(tmp_path):
     we just test whether we can condense a resource on DCOR
     """
     pytest.importorskip("requests")
-    # TODO: Upload a smaller test dataset to DCOR to speed-up this test
     s3_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
-              "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-              "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+              "circle-442e6d53-c48b-46eb-873c-4a0f98f3827d/"
+              "resource/3ef/b60/c0-0212-43a7-bdd5-030487471ce8")
 
     path_cond = tmp_path / "condensed.rtdc"
     with new_dataset(s3_url) as ds, h5py.File(path_cond, "w") as h5_cond:
-        cli.condense_dataset(ds=ds,
-                             h5_cond=h5_cond,
-                             store_ancillary_features=True)
+        with pytest.warns(rtdc_dataset.core.LocalBasinForbiddenWarning,
+                          match="not allowed"):
+            cli.condense_dataset(ds=ds,
+                                 h5_cond=h5_cond,
+                                 store_ancillary_features=True)
 
     with new_dataset(path_cond) as dsc:
         assert "volume" in dsc
-        assert np.allclose(dsc["deform"][1000], 0.0148279015,
+        assert np.allclose(dsc["deform"][1000], 0.06204707917700181,
                            atol=0, rtol=1e-7)
 
 

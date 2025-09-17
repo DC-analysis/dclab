@@ -1,4 +1,5 @@
 import json
+import time
 import uuid
 
 import h5py
@@ -19,7 +20,7 @@ if not DCOR_AVAILABLE:
     pytest.skip("No connection to DCOR", allow_module_level=True)
 
 dcor_url = ("https://dcor.mpl.mpg.de/api/3/action/dcserv?id="
-            "fb719fb2-bd9f-817a-7d70-f4002af916f0")
+            "57ecde5d-f896-4599-ba35-d1be7defc6fe")
 
 
 @pytest.mark.filterwarnings(
@@ -65,6 +66,17 @@ def test_basin_as_dict(tmp_path):
         assert bdict2["basin_format"] == "dcor"
         assert bdict2["basin_locs"] == [dcor_url]
         assert bdict2["basin_descr"] == "an example DCOR test basin"
+
+
+def test_basins_basins_get_dicts_update():
+    with RTDC_DCOR(dcor_url) as ds:
+        basin_dict1 = ds.basins_get_dicts()
+        basin_dict2 = ds.basins_get_dicts()
+        assert basin_dict1 is basin_dict2, "basin dict should be cached"
+        ds.cache_basin_dict_time = 0.1
+        time.sleep(0.2)
+        basin_dict3 = ds.basins_get_dicts()
+        assert basin_dict3 is not basin_dict1, "cache should be invalidated"
 
 
 @pytest.mark.parametrize("url", [
@@ -169,8 +181,8 @@ def test_create_basin_file_with_no_data(tmp_path):
         bn = ds.basins[0]
         assert len(bn.ds.basins) == 2
         assert ds.features_basin
-        assert len(ds) == 5000
-        assert np.allclose(ds["deform"][0], 0.009741939,
+        assert len(ds) == 28
+        assert np.allclose(ds["deform"][0], 0.05335504858810891,
                            atol=0, rtol=1e-5)
 
 
@@ -196,10 +208,10 @@ def test_create_basin_file_with_one_feature(tmp_path):
 
     with new_dataset(h5path) as ds:
         assert ds.features_basin
-        assert len(ds) == 5000
+        assert len(ds) == 28
         assert "deform" in ds.features_basin
         assert "area_um" not in ds.features_basin
         assert "deform" in ds
         assert "area_um" not in ds
-        assert np.allclose(ds["deform"][0], 0.009741939,
+        assert np.allclose(ds["deform"][0], 0.05335504858810891,
                            atol=0, rtol=1e-5)

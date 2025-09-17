@@ -43,11 +43,11 @@ Use cases
 =========
 If you are a frequent user of RT-DC, you might run into problems that
 cannot (yet) be addressed with the graphical user interface
-`Shape-Out <https://github.com/ZellMechanik-Dresden/ShapeOut2>`_.
+`DCscope <https://github.com/DC-analysis/DCscope>`_.
 Here is a list of use cases that would motivate an installation of dclab.
 
 - You would like to convert old .tdms-based datasets to the new .rtdc
-  file format, because of enhanced speed in Shape-Out and reduced
+  file format, because of enhanced speed in DCscope and reduced
   disk usage. What you are looking for is the command line program
   :ref:`sec_tdms2rtdc` that comes with dclab. It allows to batch-convert
   multiple measurements at a time. Note that you should keep the original
@@ -60,18 +60,18 @@ Here is a list of use cases that would motivate an installation of dclab.
   :class:`.RTDCWriter` class that allows you to convert your tabular data
   to *.rtdc* files.
 - You would like to apply a simple set of filters (e.g. polygon filters that you
-  exported from within Shape-Out) to every new measurement you take and
+  exported from within DCscope) to every new measurement you take and
   apply a custom data analysis pipeline to the filtered data. This is a
   straight-forward Python coding problem with dclab. After reading the
   basic usage section below, please have a look at the
   :ref:`polygon filter reference <sec_ref_polygon_filter>`.
 - You would like to do advanced statistics or combine your RT-DC
   analysis with other fancy approaches such as machine-learning.
-  It would be too laborious to do the analysis in Shape-Out, export the
+  It would be too laborious to do the analysis in DCscope, export the
   data as text files, and then open them in your custom Python script.
-  If your initial analysis step with Shape-Out only involves tasks
+  If your initial analysis step with DCscope only involves tasks
   that can be automated, why not use dclab from the beginning? 
-- You simulated RT-DC data and plan to import them in Shape-Out
+- You simulated RT-DC data and plan to import them in DCscope
   for testing. Once you have loaded your data as a numpy array, you
   can instantiate an :class:`RTDC_Dict <dclab.rtdc_dataset.RTDC_Dict>`
   class and then use the :class:`Export <dclab.rtdc_dataset.export.Export>`

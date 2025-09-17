@@ -84,22 +84,73 @@ def test_dcor_base(monkeypatch):
             assert np.all(t1 == t2)
 
 
+def test_dcor_data():
+    # reference data 2025-02-09_09.46_M003_Reference_dcn_export_28.rtdc
+    with dclab.new_dataset("57ecde5d-f896-4599-ba35-d1be7defc6fe") as ds:
+        assert np.allclose(ds["deform"][0],
+                           0.05335504858810891,
+                           rtol=0, atol=1e-5)
+        assert np.allclose(ds["area_um"][27], 30.411406250000002,
+                           rtol=0, atol=1e-5)
+        assert np.median(ds["image"][1]) == 145
+        assert np.sum(ds["mask"][11]) == 511
+        assert np.sum(ds["mask"][11]) == 511
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
-def test_dcor_data():
+def test_dcor_data_contour_fl():
     # reticulocytes.rtdc contains contour data
     with dclab.new_dataset("13247dd0-3d8b-711d-a410-468b4de6fb7a") as ds:
-        assert np.allclose(ds["circ"][0],
-                           0.7309052348136902,
-                           rtol=0, atol=1e-5)
-        assert np.allclose(ds["area_um"][391], 37.5122, rtol=0, atol=1e-5)
         assert np.all(ds["contour"][24][22] == np.array([87, 61]))
-        assert np.median(ds["image"][1]) == 58
-        assert np.sum(ds["mask"][11]) == 332
-        assert np.sum(ds["mask"][11]) == 332
         assert np.median(ds["trace"]["fl1_raw"][200]) == 183.0
         assert np.sum(ds["trace"]["fl1_median"][2167]) == 183045
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.core.LocalBasinForbiddenWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_export_logs(tmp_path):
+    exported = tmp_path / "exported.rtdc"
+    with dclab.new_dataset("de319c9c-8d4a-4e17-9ae1-4d57a42f4508") as ds0:
+        ds0.export.hdf5(exported, features=[], logs=True)
+
+    with dclab.new_dataset(exported) as ds:
+        assert len(ds.logs) == 7
+        assert "src_cskernel-acquisition" in ds.logs
+        ls = "09:46:49 INFO Main/Worker in CS.Control: Job project_name=Blood"
+        assert ls in ds.logs["src_cskernel-acquisition"]
+        # check for dclab-export log
+        for key in list(ds.logs.keys()):
+            if key.startswith("dclab-export"):
+                break
+        else:
+            assert False, "missing dclab-export log"
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.core.LocalBasinForbiddenWarning")
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_export_tables(tmp_path):
+    exported = tmp_path / "exported.rtdc"
+    with dclab.new_dataset("de319c9c-8d4a-4e17-9ae1-4d57a42f4508") as ds0:
+        ds0.export.hdf5(exported, features=[], tables=True)
+
+    with dclab.new_dataset(exported) as ds:
+        assert len(ds.tables) == 4
+        assert "src_cskernel_monitor" in ds.tables
+        mon = ds.tables["src_cskernel_monitor"]
+        assert mon.has_graphs()
+        assert "disk" in mon.keys()
+        assert np.allclose(mon["disk"][4], 0.49422805, rtol=0, atol=1e-4)
+
+        assert "src_profile-stack_lower" in ds.tables
+        prfl = ds.tables["src_profile-stack_lower"]
+        assert prfl.keys() is None
+        assert not prfl.has_graphs()
+        assert np.allclose(prfl[121, 126], 144.07798537774167,
+                           rtol=0, atol=1e-3)
 
 
 @pytest.mark.filterwarnings(
@@ -145,6 +196,15 @@ def test_dcor_logs_iter():
         assert len(ds.logs) >= 2  # there might be others
         for key in ds.logs:
             assert key
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_logs_reference_data():
+    with dclab.new_dataset("de319c9c-8d4a-4e17-9ae1-4d57a42f4508") as ds:
+        assert len(ds.logs) == 6
+        assert "cskernel-acquisition" in ds.logs
+        ls = "09:46:49 INFO Main/Worker in CS.Control: Job project_name=Blood"
+        assert ls in ds.logs["cskernel-acquisition"]
 
 
 @pytest.mark.filterwarnings(
@@ -268,6 +328,29 @@ def test_dcor_slicing_trace(idxs):
         assert np.all(data_sliced[2] == data_ref[2])
 
 
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_tables():
+    with dclab.new_dataset("de319c9c-8d4a-4e17-9ae1-4d57a42f4508") as ds:
+        assert len(ds.tables) == 4
+        assert "cskernel_monitor" in ds.tables
+        mon = ds.tables["cskernel_monitor"]
+        assert mon.has_graphs()
+        assert "disk" in mon.keys()
+        assert np.allclose(mon["disk"][4], 0.49422805, rtol=0, atol=1e-4)
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_dcor_tables_image():
+    with dclab.new_dataset("de319c9c-8d4a-4e17-9ae1-4d57a42f4508") as ds:
+        assert len(ds.tables) == 4
+        assert "profile-stack_lower" in ds.tables
+        prfl = ds.tables["profile-stack_lower"]
+        assert prfl.keys() is None
+        assert not prfl.has_graphs()
+        assert np.allclose(prfl[121, 126], 144.07798537774167,
+                           rtol=0, atol=1e-3)
+
+
 @pytest.mark.parametrize("target,kwargs", [
     # HTTPS
     ("https://example.com/api/3/action/dcserv?"
@@ -388,3 +471,10 @@ def test_load_nonexistent_file_issue81():
         pass
     else:
         assert False, "Non-existent files should raise FileNotFoundError"
+
+
+@pytest.mark.skipif(not DCOR_AVAILABLE, reason="no connection to DCOR")
+def test_refresh_non_perishable_basin():
+    with dclab.new_dataset("a233aaf8-9998-4c44-8070-20fdba7cf3b2") as ds:
+        bn = ds.basins[0]
+        assert not bn.perishable

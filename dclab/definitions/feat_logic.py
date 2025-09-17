@@ -1,4 +1,9 @@
+import re
+
 from . import feat_const
+
+
+ML_SCORE_REGEX = re.compile(r"^ml_score_[a-z0-9]{3}$")
 
 
 def check_feature_shape(name, data):
@@ -17,11 +22,15 @@ def check_feature_shape(name, data):
         If the data's shape does not match its scalar description
     """
     if len(data.shape) == 1 and not scalar_feature_exists(name):
-        raise ValueError(f"Feature '{name}' is not a scalar feature, but "
-                         "a 1D array was given for `data`!")
+        raise ValueError(
+            f"Feature '{name}' is not a scalar feature, but "
+            "a 1D array was given for `data`!"
+        )
     elif len(data.shape) != 1 and scalar_feature_exists(name):
-        raise ValueError(f"Feature '{name}' is a scalar feature, but the "
-                         "`data` array is not 1D!")
+        raise ValueError(
+            f"Feature '{name}' is a scalar feature, but the "
+            "`data` array is not 1D!"
+        )
 
 
 def feature_exists(name, scalar_only=False):
@@ -56,15 +65,9 @@ def feature_exists(name, scalar_only=False):
     elif not scalar_only and name in feat_const.feature_names:
         # non-scalar feature
         valid = True
-    else:
-        # check whether we have an `ml_score_???` feature
-        valid_chars = "0123456789abcdefghijklmnopqrstuvwxyz"
-        if (name.startswith("ml_score_")
-            and len(name) == len("ml_score_???")
-            and name[-3] in valid_chars
-            and name[-2] in valid_chars
-                and name[-1] in valid_chars):
-            valid = True
+    elif ML_SCORE_REGEX.match(name):
+        # machine-learning score feature ml_score_???
+        valid = True
     return valid
 
 
@@ -93,8 +96,10 @@ def feature_register(name, label=None, is_scalar=True):
     allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
     feat = "".join([f for f in name if f in allowed_chars])
     if feat != name:
-        raise ValueError("`feature` must only contain lower-case characters, "
-                         f"digits, and underscores; got '{name}'!")
+        raise ValueError(
+            "`feature` must only contain lower-case characters, "
+            f"digits, and underscores; got '{name}'!"
+        )
     if label is None:
         label = f"User-defined feature {name}"
     if feature_exists(name):
@@ -156,22 +161,16 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
     TODO: extract feature label from ancillary information when an rtdc_ds is
     given.
     """
-    # TODO: Is there another way of avoiding this circular import?
-    from ..rtdc_dataset.feat_anc_core.ancillary_feature import AncillaryFeature
-    assert feature_exists(name)
     if name in feat_const.feature_name2label:
         label = feat_const.feature_name2label[name]
+    elif ML_SCORE_REGEX.match(name):
+        # use a generic name for machine-learning features
+        label = f"ML score {name[-3:].upper()}"
     else:
-        # First check whether an ancillary feature with that
-        # name exists.
-        for af in AncillaryFeature.features:
-            if af.feature_name == name:
-                labelid = af.data.outputs.index(name)
-                label = af.data.output_labels[labelid]
-                break
-        else:
-            # If that did not work, use a generic name.
-            label = "ML score {}".format(name[-3:].upper())
+        exists = feature_exists(name)
+        msg = f"Could not find label for '{name}'"
+        msg += " (feature does not exist)" if not exists else ""
+        raise ValueError(msg)
     if not with_unit:
         if label.endswith("]") and label.count("["):
             label = label.rsplit("[", 1)[0].strip()

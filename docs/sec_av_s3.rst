@@ -51,7 +51,7 @@ so:
 
     import os
     os.environ["DCLAB_S3_ACCESS_KEY_ID"] = "4f4bf368365967466be9baf07028a5f3"
-    os.environ["DCLAB_S3_ACCESS_KEY_ID"] = "12cd2fe004bc0f17fe9cd76dae412e0d"
+    os.environ["DCLAB_S3_SECRET_ACCESS_KEY"] = "12cd2fe004bc0f17fe9cd76dae412e0d"
     os.environ["DCLAB_S3_ENDPOINT_URL"] = "https://objectstore.hpccloud.mpcdf.mpg.de"
 
     import dclab

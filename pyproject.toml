@@ -26,7 +26,7 @@ maintainers = [
 ]
 description = "Library for real-time deformability cytometry (RT-DC)"
 readme = "README.rst"
-requires-python = ">=3.8, <4"
+requires-python = ">=3.9, <4"
 keywords = ["RT-DC", "deformability", "cytometry"]
 classifiers = [
     'Operating System :: OS Independent',
@@ -34,7 +34,9 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Visualization',
     'Intended Audience :: Science/Research',
 ]
-license = {text = "GPL version 2.0 or later"}
+license = "GPL-2.0-or-later"
+# This is not supported in Python 3.8
+# license = "GPL-2.0-or-later"
 dependencies = [
     "h5py>=3.0.0, <4",
     "hdf5plugin>=3.3.1, <5",
@@ -47,8 +49,8 @@ dynamic = ["version"]
 [project.optional-dependencies]
 all = ["dclab[dcor,export,http,s3,tdms]"]
 dcor = ["requests>=2.31.0, <3"]  # CVE-2023-32681
-export = ["fcswrite>=0.5.0",  # fcs export
-          "imageio[ffmpeg]",  # avi export
+export = ["fcswrite>=0.5.1",  # fcs export
+          "av",  # avi export
 ]
 http = ["requests>=2.31.0, <3"]  # CVE-2023-32681
 s3 = ["boto3>=1.34.31"]
@@ -73,8 +75,8 @@ changelog = "https://dclab.readthedocs.io/en/stable/sec_changelog.html"
 # We need the following, because automatic package discovery does not work
 # when running cibuildwheel on GitHub Actions (there will be a "wheelhouse"
 # directory).
-[tool.setuptools]
-packages = ["dclab"]
+[tool.setuptools.packages.find]
+include = ["dclab"]
 
 [tool.setuptools_scm]
 write_to = "dclab/_version.py"

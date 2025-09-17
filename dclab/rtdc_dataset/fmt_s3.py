@@ -42,6 +42,27 @@ S3_ACCESS_KEY_ID = os.environ.get("DCLAB_S3_ACCESS_KEY_ID")
 S3_SECRET_ACCESS_KEY = os.environ.get("DCLAB_S3_SECRET_ACCESS_KEY")
 
 
+@functools.lru_cache(maxsize=1000)
+def get_s3_session_client(access_key_id: str,
+                          secret_access_key: str,
+                          use_ssl: bool,
+                          verify_ssl: bool,
+                          endpoint_url: str
+                          ):
+    botocore_session = botocore.session.get_session()
+    s3_session = boto3.Session(
+        aws_access_key_id=access_key_id,
+        aws_secret_access_key=secret_access_key,
+        botocore_session=botocore_session)
+    s3_client = s3_session.client(
+        service_name='s3',
+        use_ssl=use_ssl,
+        verify=verify_ssl,
+        endpoint_url=endpoint_url,
+    )
+    return botocore_session, s3_session, s3_client
+
+
 class S3File(HTTPFile):
     """Monkeypatched `HTTPFile` to support authenticated access to S3"""
     def __init__(self,
@@ -74,17 +95,15 @@ class S3File(HTTPFile):
                 "not specify the full S3 URL or that you forgot to set "
                 "the `S3_ENDPOINT_URL` environment variable.")
         endpoint_url = endpoint_url.strip().rstrip("/")
-        self.botocore_session = botocore.session.get_session()
-        self.s3_session = boto3.Session(
-            aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key,
-            botocore_session=self.botocore_session)
-        self.s3_client = self.s3_session.client(
-            service_name='s3',
-            use_ssl=use_ssl,
-            verify=verify_ssl,
-            endpoint_url=endpoint_url,
+        self.botocore_session, self.s3_session, self.s3_client = \
+            get_s3_session_client(
+                access_key_id=access_key_id,
+                secret_access_key=secret_access_key,
+                use_ssl=use_ssl,
+                verify_ssl=verify_ssl,
+                endpoint_url=endpoint_url,
             )
+
         # Use a configuration that allows anonymous access
         # https://stackoverflow.com/a/34866092
         if not secret_access_key:
@@ -168,13 +187,19 @@ class RTDC_S3(RTDC_HDF5):
             object_path=get_object_path(url),
             endpoint_url=(endpoint_url
                           or get_endpoint_url(url)
-                          or S3_ENDPOINT_URL),
+                          or S3_ENDPOINT_URL
+                          or os.environ.get("DCLAB_S3_ENDPOINT_URL")
+                          ),
             access_key_id=(access_key_id
                            or S3_ACCESS_KEY_ID
-                           or ""),
+                           or os.environ.get("DCLAB_S3_ACCESS_KEY_ID")
+                           or ""
+                           ),
             secret_access_key=(secret_access_key
                                or S3_SECRET_ACCESS_KEY
-                               or ""),
+                               or os.environ.get("DCLAB_S3_SECRET_ACCESS_KEY")
+                               or ""
+                               ),
             use_ssl=use_ssl,
             verify_ssl=use_ssl,
             )
@@ -236,7 +261,10 @@ def is_s3_object_available(url: str,
     """
     avail = False
     if is_s3_url(url):
-        endpoint_url = get_endpoint_url(url) or S3_ENDPOINT_URL
+        endpoint_url = (get_endpoint_url(url)
+                        or S3_ENDPOINT_URL
+                        or os.environ.get("DCLAB_S3_ENDPOINT_URL")
+                        )
         if not endpoint_url:
             warnings.warn(
                 f"Could not determine endpoint from URL '{url}'. Please "
@@ -260,12 +288,18 @@ def is_s3_object_available(url: str,
                     s3file = S3File(
                         object_path=get_object_path(url),
                         endpoint_url=endpoint_url,
-                        access_key_id=(access_key_id
-                                       or S3_ACCESS_KEY_ID
-                                       or ""),
-                        secret_access_key=(secret_access_key
-                                           or S3_SECRET_ACCESS_KEY
-                                           or ""),
+                        access_key_id=(
+                            access_key_id
+                            or S3_ACCESS_KEY_ID
+                            or os.environ.get("DCLAB_S3_ACCESS_KEY_ID")
+                            or ""
+                            ),
+                        secret_access_key=(
+                            secret_access_key
+                            or S3_SECRET_ACCESS_KEY
+                            or os.environ.get("DCLAB_S3_SECRET_ACCESS_KEY")
+                            or ""
+                            ),
                         )
                     try:
                         s3file.s3_object.load()

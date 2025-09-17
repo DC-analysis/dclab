@@ -91,11 +91,13 @@ FEATURES_SCALAR = [
     # Sum of the pressures applied to sample and sheath flow
     ["pressure", "Pressure [mPa]"],
     # QPI features computed from holographic data
-    ["qpi_dm_avg", "Dry mass (average) [pg]"],
-    ["qpi_dm_sd", "Dry mass (SD) [pg]"],
+    ["qpi_dm", "Dry mass [pg]"],
+    ["qpi_dm_avg", "DEPRECATED Dry mass (average) [pg]"],
+    ["qpi_dm_dns", "Dry mass density [mg/ml]"],
+    ["qpi_dm_sd", "DEPRECATED Dry mass (SD) [pg]"],
     ["qpi_pha_int", "Integrated phase [rad]"],
     ["qpi_ri_avg", "Refractive index (average)"],
-    ["qpi_ri_sd", "Refractive index (SD)"],
+    ["qpi_ri_sd", "DEPRECATED Refractive index (SD)"],
     # QPI features from refocused events
     ["qpi_focus", "Computed focus distance [µm]"],
     # Size features
@@ -149,7 +151,7 @@ for _i in range(10):
 #: consist of the integer array `[1, 3, 5, 7, ...]` (indexing starts at zero).
 #: The `basinmap1` feature must then be referenced in the corresponding basin
 #: definition. These features should not be presented explicitly to the
-#: normal user (e.g. in Shape-Out) to avoid ambiguities, and they should
+#: normal user (e.g. in DCscope) to avoid ambiguities, and they should
 #: always be exported alongside basins that refer to them.
 for _j in range(10):
     FEATURES_SCALAR.append([f"basinmap{_j}", f"Basin mapping {_j}"])

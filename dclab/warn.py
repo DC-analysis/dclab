@@ -9,7 +9,7 @@ class PipelineWarning(UserWarning):
     computation) in his analysis pipeline. All of these
     warnings should be subclassed from PipelineWarning
     to allow identifying them in higher-level software
-    such as Shape-Out and to present them correctly to the
+    such as DCscope and to present them correctly to the
     user.
     """
     pass

@@ -6,42 +6,112 @@ Basins
 
 Motivation
 ==========
-Basins are a powerful concept that allow you to both save time, disk space,
+Basins are a powerful concept that allow you to save time, disk space,
 and network usage when processing DC data. The basic idea behind basins is
-that you avoid duplicating feature data, by not copying all of the features
+that you avoid duplicating feature data by not copying all of the features
 from an input file to an output file, but by *linking* from the output
-file to the input file.
+file to the input file. Feature data "flows" from the basins to the
+files downstream.
 
-For instance, let's say your pipeline is designed to compute a new feature
-``userdef1`` and you would like to open the output file in Shape-Out, visualizing
-this feature in combination with other features defined in the input file (e.g.
-``deform``). What you *could* do is to write the ``userdef1`` feature directly to
-the input file or to create a copy of your input file and write ``userdef1``
-to that copy. However, this might make you feel uneasy, because you
-would like to avoid editing your original raw data (possible data loss) and
-copying an entire file seems like unnecessary overhead (redundant data, high
-disk usage).
-With basin features, you can create an empty output file, write your
-new feature ``userdef1`` to it, define a basin that links to your input file,
-and you are done. Without ever modifying your input file. And it is even
-possible to create an output file that is gated (containing a subset of events
-from the input file).
+Due to the fact that basins are implemented in dclab, all software that relies
+on dclab for opening data files (e.g. DCscope or CytoPlot) automatically
+supports basins as well.
+
+
+Use cases
+=========
+To illustrate how you can use basins in your analysis pipeline, let's consider
+the three examples shown in :numref:`fig_basins_example_workflow`.
+
+A. You have found a dataset on figshare.com that you would like to work with.
+   However, you are only interested in a fraction of the events in that file.
+   You decide to open the URL of that dataset with dclab, apply a few filters
+   and export the resulting subset to a 500 MB file on disk with ``basins=True``
+   (see :ref:`sec_av_basins_storing_basins` below for exporting with basins).
+   The original file on figshare.com is now a basin of the file on
+   your hard disk. If you e.g. decided not to export image data to your local
+   file, you will still be able to access the images through the basin that
+   is defined in the exported file as long as you have a working internet
+   connection.
+
+B. You have an automated data analysis pipeline that relies entirely on DCOR.
+   You are uploading your raw data to DCOR. A background job performs
+   segmentation and feature extraction and the resulting data are stored
+   on DCOR as well. To have fast scalar feature access, you download the
+   condensed dataset from DCOR to your computer. The raw image data as
+   well as the background image data and the event masks are accessed via
+   their respective basins when you open the condensed file with dclab.
+   In this use case, you are trading local disk space for slower access to
+   the image and mask features limited by the bandwidth of your internet
+   connection.
+
+C. Let's say your pipeline is designed to compute a new feature ``userdef1``
+   and you would like to open the output file in DCscope, visualizing
+   this feature in combination with other features defined in the input file
+   (e.g. ``deform``). What you *could* do is write the ``userdef1`` feature
+   directly to the input file or create a copy of your input file and write
+   ``userdef1`` to that copy. However, this might make you feel uneasy,
+   because you would like to avoid editing your original raw data (possible
+   data loss) and copying an entire file seems like unnecessary overhead
+   (redundant data, high disk usage). Furthermore, your raw data are located
+   on a network share in your institute and you want to avoid causing a lot of
+   traffic. The solution with basins is to open the raw input file, run your
+   analysis and store the scalar features created by your analysis on your local
+   computer. With basins, these local files know that the image data are
+   stored on the network share. You have saved yourself the trouble of copying
+   large files across the network.
+
+
+.. _fig_basins_example_workflow:
+
+.. figure:: basin_example_workflows.svg
+    :target: images/basin_example_workflows.svg
+
+    Three exemplary workflows where basins are used.
+    **(A)** There is one basin consisting of an .rtdc file uploaded to figshare.
+    The user exported partial feature data to their computer. Other feature
+    data are still accessible via the online basin.
+    **(B)** The user has a DCOR-based analysis pipeline where the raw and processed
+    data are stored on DCOR. The user downloads a condensed version of the data
+    and can access image data via basins.
+    **(C)** The raw image data are located on a network share at the user's
+    institute. The user writes one script to e.g. extract the relevant events
+    (processed 1) and a second script to e.g. compute additional features
+    (processed 2).
+
+To summarize the advantages of using basins:
+
+- **Avoid data redundancy**. Since basins defined in basins are also just basins,
+  you can design your analysis pipeline as a chain of basins. The raw file
+  contains the image data and subsequent steps in the pipeline only add features
+  or gate events. You never have to store the same feature twice on disk.
+- **Work with read-only datasets**. When you are computing new features, you
+  do not have to modify any existing files on disk and can instead link to them.
+  This means you can have your data on read-only file storage (e.g. online data)
+  and don't have to fear accidental data loss.
+- **Fast data access**. You do not have to download an entire dataset in order
+  to obtain a simple scatter plot for offline usage. Instead, you can download
+  only a few relevant scalar features, perform your analysis, and afterwards
+  you even have the option to look at the images in the basin.
 
 
 Definitions
 ===========
 To clarify the notation, please read these definition of the terms used in
 dclab in the context of basins. They also serve as a complete introduction
-to the capabilities of basins:
+to the capabilities of basins.
 
+
+referrer:
+    A dataset that defines a basin "refers" to that basin. If a dataset
+    is a referrer, then the dataset has features stored in other datasets
+    (the basins).
 basin:
-    File or remote location containing additional feature data for another
-    dataset. Both the dataset and the basin must originate from the same
+    File or remote location containing feature data that are made accessible
+    to the referrer. Both the referrer and the basin must originate from the same
     DC measurement. E.g. You can work with a local .rtdc file containing only
     :ref:´scalar features <sec_features_scalar>` with the image data stored
-    on :ref:`DCOR <sec_av_dcor>` to keep your local disk usage low.
-referrer:
-    A dataset that defines a basin "refers" to that basin.
+    in a basin on :ref:`DCOR <sec_av_dcor>` to keep your local disk usage low.
 mapped basin:
     A mapped basin is a basin that does not share the same event indices
     with its referrer. This means that either
@@ -109,6 +179,19 @@ basin features:
     via the input file basin. If you combine this approach with the
     `dcor <https://dc.readthedocs.io>`_ basin format, you can distribute all of
     your data (raw and processed) in a very efficient and transparent manner.
+
+.. note::
+
+   Note that basins are locations *upstream* in your analysis pipeline.
+   Features *flow* from basins downstream to the referrers. When a dataset
+   has basins, this means that there are other files (the basins) that
+   contain additional feature data.
+
+.. note::
+
+   Basins can have basins. A referrer can refer to multiple basins. And
+   a referrer can be a basin as well. Basins of basins are passed down
+   to referrers downstream.
 
 These definitions should already give you a good feeling about how you can
 employ basins in your workflow. As a final note, be aware that you can also
@@ -226,6 +309,69 @@ achieving the same result as above (a very small output file).
        assert np.allclose(ds_in["deform"][::2], ds_out["deform"])
 
 
+Rewriting Basins
+================
+In some situations, you might have to modify the location of a basin, e.g.
+because you need to make the basins available on different operating systems
+or because the network share location changed. In those cases, the best
+approach is to read the basin information, update the basin location and
+write the updated basin information to that file.
+
+First, locate the basin you would like to modify by listing all basin
+locations.
+
+.. code-block:: python
+
+   with dclab.new_dataset("data_file.rtdc") as ds:
+       for ii, bn_dict in enumerate(ds.basins_get_dicts()):
+           print(ii, bn_dict["type"], bn_dict.get("paths"), bn_dict["features"])
+
+This will return something like this:
+
+.. code-block::
+
+    0 file ['/ptmp/data/RC/Reference/2025-02-09_09.46_M003_Reference_5000.rtdc'] ['image']
+    1 internal ['basin_events'] ["image_bg"]
+
+.. note::
+
+   The second basin in this example ("basin_events" location) is an internal
+   basin (see definitions above).
+
+As you can see, the basin containing the image data is located on a posix
+path ``/ptmp`` which is not accessible on Windows. Assuming you had the
+same network location mounted on drive ``P:\\``, you could add an additional
+basin to the file like so:
+
+.. code-block:: python
+
+
+   import json
+
+   from dclab.util import hashobj
+
+   with dclab.new_dataset("data_file.rtdc") as ds:
+       # we want to edit the first file-based basin dictionary containing the image data
+       bn_dict = ds.basins_get_dicts()[0]
+
+   # replace the path to the basin with the new path
+   bn_dict["paths"] = [r"P:\\data\RC\Reference\2025-02-09_09.46_M003_Reference_5000.rtdc"]
+   # remove the "key" from the dictionary (it is part of the old basin)
+   bn_dict.pop("key")
+   # convert the basin information to a JSON string
+   b_lines = json.dumps(bn_dict, indent=2, sort_keys=True).split("\n")
+   # compute the new basin key
+   key = hashobj(b_lines)
+
+   # write the new basin
+   with dclab.RTDCWriter("data_file.rtdc") as hw:
+       if key not in hw.h5file["basins"]:
+           hw.write_text(hw.h5file["basins"], key, b_lines)
+
+After that, you can open the dataset on Windows and access the information
+in the basin via the mounted network share on drive ``P:\\``.
+
+
 Accessing private basin data
 ============================
 
@@ -246,6 +392,8 @@ optionally the ``DCLAB_S3_ENDPOINT_URL`` as described in the
 Basin internals
 ===============
 
+.. _sec_av_basins_storing_basins:
+
 Storing the basin information
 -----------------------------
 In the ``output.rtdc`` file, the basin is stored as a json-encoded string in an
@@ -261,6 +409,7 @@ the json data looks like this:
      "type": "file",
      "features": null,
      "mapping": "basinmap0",
+     "identifier": "1231ae-31f23-342-232-42b1c",
      "paths": [
        "/absolute/path/to/input.rtdc",
        "input.rtdc"
@@ -279,12 +428,17 @@ are a few things to notice:
   ``/events/basinmap0`` in the output file. Note that the fact that this mapping
   information is stored *as a feature* means that it is also properly
   gated when you define basins iteratively.
+- The *identifier* is a string that matches the identifier of the dataset.
+  When creating basins without a "same" mapping (as in this case), then the
+  referrer will obtain an identifier that starts with this identifier, but
+  contains additional text. This means identifiers are effectively cryptic
+  data analysis trackers.
 - There are two *paths* defined, an absolute path (from the root of the file
   system) and a relative path (relative to the directory of the output file).
   This relative path makes it possible to copy-paste these two files *together* to
   other locations. You will always be able to open the output file and see the
   basin features defined in the input file. Internally, dclab also checks
-  the :func:`measurement identifier <.RTDCBase.get_measurement_identifier>`
+  the :meth:`run identifier <dclab.rtdc_dataset.RTDCBase.get_measurement_identifier>`
   of the output file against that of the input file to avoid loading basin
   features from the wrong file.
 

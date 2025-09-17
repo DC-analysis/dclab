@@ -199,7 +199,7 @@ a dataset is exported as an .rtdc (HDF5) file.
 .. note::
     It is recommended to use the following data types for the value of
     each key: ``str``, ``bool``, ``float`` and ``int``. Other data types may
-    not render nicely in ShapeOut2 or DCOR.
+    not render nicely in DCscope or DCOR.
 
 To edit the "user" section in dclab, simply modify the `config`
 property of a loaded dataset. The changes made are *not* written

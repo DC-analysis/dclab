@@ -11,7 +11,9 @@ class DCORAccessError(BaseException):
 
 class APIHandler:
     """Handles the DCOR api with caching for simple queries"""
-    #: these are cached to minimize network usage
+    #: These are cached to minimize network usage
+    #: Note that we are not caching basins, since they may contain
+    #: expiring URLs.
     cache_queries = ["metadata", "size", "feature_list", "valid"]
     #: DCOR API Keys/Tokens in the current session
     api_keys = []
@@ -52,8 +54,36 @@ class APIHandler:
         if api_key.strip() and api_key not in APIHandler.api_keys:
             APIHandler.api_keys.append(api_key)
 
-    def _get(self, query, feat=None, trace=None, event=None, api_key="",
-             retries=13):
+    def _get(self,
+             query: str,
+             feat: str = None,
+             trace: str = None,
+             event: str = None,
+             api_key: str = "",
+             timeout: float = None,
+             retries: int = 5):
+        """Fetch information via the DCOR API
+
+        Parameters
+        ----------
+        query: str
+            API route
+        feat: str
+            DEPRECATED (use basins instead), adds f"&feature={feat}" to query
+        trace: str
+            DEPRECATED (use basins instead), adds f"&trace={trace}" to query
+        event: str
+            DEPRECATED (use basins instead), adds f"&event={event}" to query
+        api_key: str
+            DCOR API token to use
+        timeout: float
+            Request timeout
+        retries: int
+            Number of retries to fetch the request. For every retry, the
+            timeout is increased by two seconds.
+        """
+        if timeout is None:
+            timeout = 1
         # "version=2" introduced in dclab 0.54.3
         # (supported since ckanext.dc_serve 0.13.2)
         qstr = f"&version={self.dcserv_api_version}&query={query}"
@@ -65,13 +95,13 @@ class APIHandler:
             qstr += f"&event={event}"
         apicall = self.url + qstr
         fail_reasons = []
-        for _ in range(retries):
+        for ii in range(retries):
             try:
                 # try-except both requests and json conversion
                 req = self.session.get(apicall,
                                        headers={"Authorization": api_key},
                                        verify=self.verify,
-                                       timeout=1,
+                                       timeout=timeout + ii * 2,
                                        )
                 jreq = req.json()
             except requests.urllib3.exceptions.ConnectionError:  # requests
@@ -92,13 +122,45 @@ class APIHandler:
                                   f"Messages: {fail_reasons}")
         return jreq
 
-    def get(self, query, feat=None, trace=None, event=None):
+    def get(self,
+            query: str,
+            feat: str = None,
+            trace: str = None,
+            event: str = None,
+            timeout: float = None,
+            retries: int = 5,
+            ):
+        """Fetch information from DCOR
+
+        Parameters
+        ----------
+        query: str
+            API route
+        feat: str
+            DEPRECATED (use basins instead), adds f"&feature={feat}" to query
+        trace: str
+            DEPRECATED (use basins instead), adds f"&trace={trace}" to query
+        event: str
+            DEPRECATED (use basins instead), adds f"&event={event}" to query
+        timeout: float
+            Request timeout
+        retries: int
+            Number of retries to fetch the request. For every retry, the
+            timeout is increased by two seconds.
+        """
         if query in APIHandler.cache_queries and query in self._cache:
             result = self._cache[query]
         else:
             req = {"error": {"message": "No access to API (api key?)"}}
             for api_key in [self.api_key] + APIHandler.api_keys:
-                req = self._get(query, feat, trace, event, api_key)
+                req = self._get(query=query,
+                                feat=feat,
+                                trace=trace,
+                                event=event,
+                                api_key=api_key,
+                                timeout=timeout,
+                                retries=retries,
+                                )
                 if req["success"]:
                     self.api_key = api_key  # remember working key
                     break

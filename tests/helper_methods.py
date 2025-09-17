@@ -14,7 +14,7 @@ from dclab.rtdc_dataset.fmt_s3 import BOTO3_AVAILABLE  # noqa: F401
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     try:
         # dcor.mpl.mpg.de
-        s.connect(("130.183.206.45", 443))
+        s.connect(("130.183.217.150", 443))
     except (socket.gaierror, OSError):
         DCOR_AVAILABLE = False
     else:

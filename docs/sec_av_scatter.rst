@@ -5,24 +5,28 @@ Scatter plots
 =============
 
 For data visualization, dclab comes with predefined 
-:ref:`kernel density estimators (KDEs) <sec_ref_kde_methods>` and
+:ref:`kernel density estimators (KDEs) <sec_ref_kde>` and
 an :ref:`event downsampling <sec_ref_downsampling>` module.
 The functionalities of both modules are made available directly via the
-:class:`RTDCBase <dclab.rtdc_dataset.RTDCBase>` class.
+:py:class:`dclab.kde.KernelDensityEstimator` class. 
 
 KDE scatter plot
 ----------------
 The KDE of the events in a 2D scatter plot can be used to
 colorize events according to event density using the
-:func:`RTDCBase.get_kde_scatter <dclab.rtdc_dataset.RTDCBase.get_kde_scatter>`
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_scatter`
 function.
 
 .. plot::
 
     import matplotlib.pylab as plt
     import dclab
+    from dclab.kde import KernelDensityEstimator
+    # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
-    kde = ds.get_kde_scatter(xax="area_um", yax="deform")
+    # create a kernel density estimator
+    kde_instance = KernelDensityEstimator(ds)
+    kde = kde_instance.get_scatter(xax="area_um", yax="deform")
     
     ax = plt.subplot(111, title="scatter plot with {} events".format(len(kde)))
     sc = ax.scatter(ds["area_um"], ds["deform"], c=kde, marker=".")
@@ -65,8 +69,8 @@ Frequently, data is visualized on logarithmic scales. If the KDE
 is computed on a linear scale, then the result will look unaesthetic
 when plotted on a logarithmic scale. Therefore, the methods
 :func:`get_downsampled_scatter <dclab.rtdc_dataset.RTDCBase.get_downsampled_scatter>`,
-:func:`get_kde_contour <dclab.rtdc_dataset.RTDCBase.get_kde_contour>`, and
-:func:`get_kde_scatter <dclab.rtdc_dataset.RTDCBase.get_kde_scatter>`
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_raster`, and
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_scatter`
 offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
 "log" for prettier plots.
 
@@ -74,9 +78,13 @@ offer the keyword arguments ``xscale`` and ``yscale`` which can be set to
 
     import matplotlib.pylab as plt
     import dclab
+    from dclab.kde import KernelDensityEstimator
+    # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
-    kde_lin = ds.get_kde_scatter(xax="area_um", yax="deform", yscale="linear")
-    kde_log = ds.get_kde_scatter(xax="area_um", yax="deform", yscale="log")
+    # create a kernel density estimator
+    kde_instance = KernelDensityEstimator(ds)
+    kde_lin = kde_instance.get_scatter(xax="area_um", yax="deform", yscale="linear")
+    kde_log = kde_instance.get_scatter(xax="area_um", yax="deform", yscale="log")
 
     ax1 = plt.subplot(121, title="KDE with linear y-scale")
     sc1 = ax1.scatter(ds["area_um"], ds["deform"], c=kde_lin, marker=".")
@@ -105,8 +113,11 @@ Isoelasticity lines are available via the
 
     import matplotlib.pylab as plt
     import dclab
+    from dclab.kde import KernelDensityEstimator
+    # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
-    kde = ds.get_kde_scatter(xax="area_um", yax="deform")
+    kde_instance = KernelDensityEstimator(ds)
+    kde = kde_instance.get_scatter(xax="area_um", yax="deform")
 
     isodef = dclab.isoelastics.get_default()
     iso = isodef.get_with_rtdcbase(method="numerical",
@@ -131,66 +142,73 @@ Contour plot with percentiles
 Contour plots are commonly used to compare the kernel density
 between measurements. Kernel density estimates (on a grid) for contour
 plots can be computed with the function
-:func:`RTDCBase.get_kde_contour <dclab.rtdc_dataset.RTDCBase.get_kde_contour>`.
+:py:meth:`~dclab.kde.KernelDensityEstimator.get_raster`.
 In addition, it is possible to compute contours at data
 `percentiles <https://en.wikipedia.org/wiki/Percentile>`_
-using :func:`dclab.kde_contours.get_quantile_levels`.
+using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
 
 .. plot::
 
     import matplotlib.pylab as plt
     import dclab
+    from dclab.kde import KernelDensityEstimator
+    # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
-    X, Y, Z = ds.get_kde_contour(xax="area_um", yax="deform")
-    Z /= Z.max()
+    kde_instance = KernelDensityEstimator(ds)
+
     quantiles = [.1, .5, .75]
-    levels = dclab.kde_contours.get_quantile_levels(density=Z,
-                                                    x=X,
-                                                    y=Y,
-                                                    xp=ds["area_um"],
-                                                    yp=ds["deform"],
-                                                    q=quantiles,
-                                                    )
+
+    contours, levels = kde_instance.get_contour_lines(quantiles=quantiles,
+                                                      xax="area_um",
+                                                      yax="deform",
+                                                      ret_levels=True,)
+
+    linestyles = ["--", "--", "-"]
+    colors = ["b", "r", "g"]
 
     ax = plt.subplot(111, title="contour lines")
     sc = ax.scatter(ds["area_um"], ds["deform"], c="lightgray", marker=".", zorder=1)
-    cn = ax.contour(X, Y, Z,
-                    levels=levels,
-                    linestyles=["--", "-", "-"],
-                    colors=["blue", "blue", "darkblue"],
-                    linewidths=[2, 2, 3],
-                    zorder=2)
+
+    for i, (cnt, lvl) in enumerate(zip(contours, levels)):
+        for c in cnt:
+            ax.plot(c[:, 0], c[:, 1],
+                linestyle=linestyles[i],
+                color=colors[i],
+                linewidth=2,
+                label=f"{quantiles[i]*100:.0f}th quantile")
 
     ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
     ax.set_ylabel(dclab.dfn.get_feature_label("deform"))
     ax.set_xlim(0, 150)
     ax.set_ylim(0.01, 0.12)
-    # label contour lines with percentiles
-    fmt = {}
-    for l, q in zip(levels, quantiles):
-        fmt[l] = "{:.0f}th".format(q*100)
-    plt.clabel(cn, fmt=fmt)
+    ax.legend()
     plt.show()
 
-Note that you may compute (and plot) the contour lines directly
-yourself using the function :func:`dclab.kde_contours.find_contours_level`.
+.. note::
+
+    The lower-level method for computing contours from a given density level
+    is :func:`~dclab.kde.contours.find_contours_level`.
 
 
 
-Polygon filters / Shape-Out
----------------------------
+Polygon filters / DCscope
+-------------------------
 Keep in mind that you can combine your dclab analysis pipeline with
-:ref:`Shape-Out <shapeout2:index>`. For instance, you can create and export
+:ref:`DCscope <dcscope:index>`. For instance, you can create and export
 :ref:`polygon filters <sec_ref_polygon_filter>`
-in Shape-Out and then import them in dclab.
+in DCscope and then import them in dclab.
 
 
 .. plot::
 
     import matplotlib.pylab as plt
     import dclab
+    from dclab.kde import KernelDensityEstimator
+    # load the example dataset
     ds = dclab.new_dataset("data/example.rtdc")
-    kde = ds.get_kde_scatter(xax="area_um", yax="deform")
+    kde_instance = KernelDensityEstimator(ds)
+    kde = kde_instance.get_scatter(xax="area_um", yax="deform")
+    
     # load and apply polygon filter from file
     pf = dclab.PolygonFilter(filename="data/example.poly")
     ds.polygon_filter_add(pf)

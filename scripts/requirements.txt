@@ -1,5 +1,7 @@
-dclab>=0.23.0
+click
+dclab[tdms]>=0.23.0
 h5py
+imageio[pyav]
 lmfit
 numpy
 matplotlib

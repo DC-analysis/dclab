@@ -22,9 +22,15 @@ if not DCOR_AVAILABLE:
     pytest.skip("No connection to DCOR", allow_module_level=True)
 
 
+# 250209_Blood_2025-02-09_09.46_M003_Reference_dcn_export_28.rtdc
 http_url = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
-            "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-            "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+            "circle-442e6d53-c48b-46eb-873c-4a0f98f3827d/"
+            "resource/57e/cde/5d-f896-4599-ba35-d1be7defc6fe")
+
+# calibration beads
+http_url_trace = ("https://objectstore.hpccloud.mpcdf.mpg.de/"
+                  "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+                  "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
 
 
 def test_basin_as_dict(tmp_path):
@@ -76,8 +82,8 @@ def test_basin_as_dict_netloc_vs_hostname(tmp_path):
 
     # note the port is included here
     http_url_netloc = ("https://objectstore.hpccloud.mpcdf.mpg.de:443/"
-                       "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-                       "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0")
+                       "circle-442e6d53-c48b-46eb-873c-4a0f98f3827d/"
+                       "resource/57e/cde/5d-f896-4599-ba35-d1be7defc6fe")
 
     with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
         # Store non-existent basin information
@@ -92,11 +98,11 @@ def test_basin_as_dict_netloc_vs_hostname(tmp_path):
                            )
 
     with new_dataset(h5path) as ds:
-        assert len(ds) == 5000
+        assert len(ds) == 28
         # This failed in <0.56.0, because `netloc` was used instead of
         # `hostname` when connecting to the socket to check whether the
         # server is available.
-        assert np.allclose(ds["deform"][0], 0.009741939,
+        assert np.allclose(ds["deform"][0], 0.05335504858810891,
                            rtol=0, atol=1e-7)
 
 
@@ -186,8 +192,8 @@ def test_create_basin_file_with_no_data(tmp_path):
 
     with new_dataset(h5path) as ds:
         assert ds.features_basin
-        assert len(ds) == 5000
-        assert np.allclose(ds["deform"][0], 0.009741939,
+        assert len(ds) == 28
+        assert np.allclose(ds["deform"][0], 0.05335504858810891,
                            atol=0, rtol=1e-5)
 
 
@@ -211,24 +217,24 @@ def test_create_basin_file_with_one_feature(tmp_path):
 
     with new_dataset(h5path) as ds:
         assert ds.features_basin
-        assert len(ds) == 5000
+        assert len(ds) == 28
         assert "deform" in ds.features_basin
         assert "area_um" not in ds.features_basin
         assert "deform" in ds
         assert "area_um" not in ds
-        assert np.allclose(ds["deform"][0], 0.009741939,
+        assert np.allclose(ds["deform"][0], 0.05335504858810891,
                            atol=0, rtol=1e-5)
 
 
 def test_trace_availability(tmp_path):
     h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url_trace) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",
             "format": "http",
-            "urls": [http_url],
+            "urls": [http_url_trace],
             "features": ["trace"],
         }
         blines = json.dumps(bdat, indent=2).split("\n")
@@ -247,12 +253,12 @@ def test_trace_availability(tmp_path):
 def test_trace_availability_invalid(tmp_path):
     h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
+    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url_trace) as src:
         # Store non-existent basin information
         bdat = {
             "type": "remote",
             "format": "http",
-            "urls": ["https://dcor.mpl.mpg.de/api/3/action/site_read"],
+            "urls": ["https://dcor.mpl.mpg.de/api/3/action/status_show"],
             "features": ["trace"],
         }
         blines = json.dumps(bdat, indent=2).split("\n")

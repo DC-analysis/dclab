@@ -49,7 +49,7 @@ for kk in dclab2tdms:
     tdms2dclab[dclab2tdms[kk]] = kk
 
 # Add capitalized userdef features as well.
-# see https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/212
+# see https://github.com/DC-analysis/DCscope/issues/212
 for _i in range(10):
     tdms2dclab["UserDef{}".format(_i)] = "userdef{}".format(_i)
 

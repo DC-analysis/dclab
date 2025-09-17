@@ -1,6 +1,101 @@
+0.67.1
+ - enh: add mass density feature, deprecate some qpi features (#284)
+0.67.0
+ - BREAKING CHANGE: make it difficult to export the "contour" feature
+ - fix: `BasinProxyFeature` returned incorrect `shape` and `size`
+ - enh: implement `size` for `H5MaskEvent` and `H5ScalarEvent`
+ - enh: implement `BasinProxyContour`
+ - enh: improve hashing of `H5ContourEvent`
+ - docs: acknowledge Shape-Out is being continued as DCscope
+ - tests: correct DCOR IP address
+0.66.0
+ - feat: introduce optional identifiers for basins
+ - ref: rename `measurement_identifier` to `referrer_identifier`
+   in the `feat_basin` context to clarify which dataset it belongs to
+0.65.0
+ - scripts: add `vid2dc.py` for converting videos to raw .rtdc files
+ - enh: run identifier splits use "_" upon export and have increased length
+0.64.3
+ - ci: use GitHub windows-latest runner for building wheel
+0.64.2
+ - fix: string comparison TypeError when verifying basins, in niche cases
+   when basin's run identifier was not specified or could not be computed
+ - enh: raise NotImplementedError when subsetting basin contour data
+ - enh: make measurement identifier computation robust against empty strings
+ - ref: remove zombie code for fetching ML model label from model instance
+ - ref: minor cleanup in feature definitions
+ - docs: minor cleanup
+0.64.1
+ - enh: introduce `KernelDensityEstimator.get_at`
+ - enh: add 10th, 25th, 75th, and 90th percentile statistics methods
+ - enh: new `ret_dict` arg in `get_statistics` returns dict instead of tuple
+ - setup: fix finding packages in pyproject.toml
+0.64.0
+ - feat: introduce concept of perishable (e.g. temporally expiring) basins
+ - feat: add `PerishableRecord` to presigned URLs for DCOR basins (#244)
+ - fix: do not export perishable basins (#254)
+ - fix: allow `Basin.verify_basin` to fail
+ - fix: `Basin.__repr__` failed when location did not exist
+ - fix: fetching tables information from DCOR dataset could time out
+ - fix: default to compression level 5 when exporting or writing (#272)
+ - enh: increase timeout every time fetching data from DCOR API times out
+ - docs: update docs `RTDCWriter` I/O
+ - setup: drop support for Python 3.8
+ - tests: add tests for fetching tables from a DCOR dataset (#229)
+ - ref: add `get_contour_lines` method to `KernelDensityEstimator` class
+ - ref: deprecate get_contour and use bin_width_doane_div5 in kde submodule
+ - ref: cache "basins" in `RTDC_DCOR` instead of in `RTDC_DCOR.api`
+0.63.1
+ - docs: update documentation and code references for kde submodule
+ - enh: cache S3 sessions and clients (test suite duration reduced by 30%)
+ - enh: cache "basins" response for DCOR format
+0.63.0
+ - feat: add `progress_callback` argument to all data export methods (#271)
+0.62.17
+ - docs: properly employ license GPL-2.0-or-later
+ - ref: add KernelDensityEstimator class
+ - ref: perform avi export with PyAV instead of imageio
+ - setup: bump fcswrite to 0.5.1
+0.62.16
+ - enh: allow editing S3 credentials via environment variables at runtime
+ - docs: fix typo in S3 section (missing `DCLAB_S3_SECRET_ACCESS_KEY`)
+ - docs: add more example use cases in the basin section
+ - docs: add example script for rewriting paths of basins
+ - docs: remove broken reference to HDF5 `linker` module
+ - tests: reduce test time by 35% from 400s to 250 (smaller S3 reference data)
+0.62.15
+ - fix: support opening files on non-mounted network shares on Windows
+0.62.14
+ - fix: exporting table data broken
+ - ref: introduce base class for tables `TableMeta`
+0.62.13
+ - ref: add custom table class for `hdf5` and `dcor` formats
+0.62.12
+ - fix: viscosity computation for MP-PBS at zero flow rate should be NaN
+0.62.11
+ - enh: support plain `numpy.array` tables
+0.62.10
+ - fix: `basin_definition_copy` failed when more than one basins defined
+   due to redundant loop
+ - fix: JSON logs during export were not sorted and indented
+0.62.9
+ - enh: sort basin definition before exporting to JSON; the side-effect
+   is that the unique key for a basin changes, possibly resulting in
+   duplicated basin definitions for existing datasets
+ - enh: make sure every basin can be identified with a key created from
+   its definition; important for connecting the basin dictionaries
+   with the instantiated basins
+0.62.8
+ - fix: metadata of tables not copied by `copier.py`
+ - docs: formatting typo (#270)
 0.62.7
  - docs: type hinted the features sub-module
  - fix: IntegrityChecker must not load basins
+ - fix: KeyError in IntegrityChecker when "basin_events" group missing (#268)
+ - fix: warn user about missing internal basin features while still loading
+   those that are available (#268)
+ - fix: do not copy internal basin definitions for non-existent features (#269)
+ - docs: clarify interpretation of [qpi]: "filter size" metadata (#267)
  - tests: avoid architecture and Python-version dependent test
 0.62.6
  - enh: support passing pathlib.Path to lme4.rsetup.set_*_path methods
@@ -21,7 +116,8 @@
 0.62.0
  - BREAKING: removed the `rtdc_dataset.linker` module, because it is not
    used by any other piece of software and because combining file-like
-   objects external links are quirky and their combination finally broke with h5py 3.12
+   objects external links are quirky and their combination finally broke
+   with h5py 3.12
  - enh: added integrity check for external links
  - tests: reduce warnings
 0.61.5
@@ -1410,7 +1506,7 @@
    - Contour accuracy for Defo overridden by that of Circ
 0.1.5
  - Fix regressions with filtering.
-   https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/43 
+   https://github.com/DC-analysis/DCscope/issues/43
  - Ignore empty columns in .tdms files (#1)
  - Moved RTDC_DataSet and PolygonFilter classes to separate files
  - Introduce more transparent caching - improves speed in some cases
@@ -1419,10 +1515,10 @@
 0.1.3
  - Fixed minor polygon filter problems.
  - Fix a couple of Shape-Out-related issues:
-   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/17 
-   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/20
-   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/37
-   - https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut/issues/38
+   - https://github.com/DC-analysis/DCscope/issues/17
+   - https://github.com/DC-analysis/DCscope/issues/20
+   - https://github.com/DC-analysis/DCscope/issues/37
+   - https://github.com/DC-analysis/DCscope/issues/38
 0.1.2
  - Add support for limiting amount of data points analyzed
    with the configuration keyword "Limit Events"

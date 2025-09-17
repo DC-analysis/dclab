@@ -1,3 +1,4 @@
+from unittest import mock
 import dclab
 
 from helper_methods import example_data_dict, retrieve_data
@@ -25,6 +26,23 @@ def test_tsv_export(tmp_path):
 
     assert a1 == a2
     assert len(a1) != 0
+
+
+def test_fcs_export_progress(tmp_path):
+    pytest.importorskip("fcswrite")
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=222, keys=keys)
+    ds = dclab.new_dataset(ddict)
+
+    f1 = tmp_path / "test.tsv"
+
+    callback = mock.MagicMock()
+    ds.export.tsv(f1, keys, progress_callback=callback)
+
+    callback.assert_any_call(0.0, "writing metadata")
+    callback.assert_any_call(0.1, "collecting data")
+    callback.assert_any_call(0.5, "writing data")
+    callback.assert_any_call(1.0, "export complete")
 
 
 @pytest.mark.filterwarnings(

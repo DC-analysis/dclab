@@ -14,6 +14,35 @@ from helper_methods import DCOR_AVAILABLE, retrieve_data
 
 
 @pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_contour(tmp_path):
+    hin = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    with h5py.File(hin, "a") as hf:
+        del hf["events/mask"]
+    ds1 = new_dataset(hin)
+    assert ds1["contour"].shape == (8, np.nan, 2)
+
+    ds1.filter.manual[0] = False
+    ds1.apply_filter()
+
+    f2 = tmp_path / "f1.rtdc"
+    ds1.export.hdf5(path=f2,
+                    features=["image"],
+                    filtered=True,
+                    basins=True,)
+    assert f2.exists()
+    ds2 = dclab.new_dataset(f2)
+    assert "contour" in ds2.features_basin
+    assert ds2["contour"].shape == (7, np.nan, 2)
+    assert ds2["contour"].dtype == np.uint16
+
+    assert np.all(ds2["contour"][0] == ds1["contour"][1])
+
+    with pytest.raises(NotImplementedError):
+        ds2["contour"][1:2]
+
+
+@pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.core.FeatureShouldExistButNotFoundWarning")
 def test_basin_cyclic_dependency_found():
     """A basin can be defined in one of its sub-basins
@@ -168,15 +197,14 @@ def test_basin_feature_image_export_from_basin_with_hierarchy(tmp_path):
         assert np.any(ds["mask"][0])
 
 
-@pytest.mark.filterwarnings(
-    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
 @pytest.mark.parametrize("filtered", [True, False])
 def test_basin_feature_nested_image_exported_available(tmp_path, filtered):
     pytest.importorskip("requests")
     epath = tmp_path / "exported.rtdc"
     # Load data from DCOR and export basin-only dataset
-    with dclab.new_dataset("fb719fb2-bd9f-817a-7d70-f4002af916f0") as ds:
+    # 250209_Blood_2025-02-09_09.46_M003_Reference_dcn_export_28.rtdc
+    with dclab.new_dataset("57ecde5d-f896-4599-ba35-d1be7defc6fe") as ds:
         assert "image" in ds
         ds.export.hdf5(path=epath,
                        features=[],
@@ -354,6 +382,135 @@ def test_basin_relative_paths(path_sep):
     with dclab.new_dataset(h5path_small) as ds:
         assert "image" not in ds.features_innate
         assert "image" in ds
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_key_reproducible():
+    """
+    Since 0.62.9 we sort basin keys
+    Since 0.66.0 we have identifiers in the basins
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.parent / "subdirectory" / "relative.rtdc"
+    h5path_small.parent.mkdir()
+    h5path_small_2 = h5path_small.with_name("from_writer.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset manually
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["image"],
+            "paths": [f"../{h5path.name}"]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "relative_paths_basin", blines)
+
+    # When loading a basin, dclab should use the existing key
+    # from the input file.
+    with dclab.new_dataset(h5path_small) as ds:
+        assert len(ds.basins) == 1
+        assert ds.basins[0].key == "relative_paths_basin"
+
+    # By default, dclab should store the basin with a key made from
+    # its hash.
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small_2) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset with dclab
+        hw.store_basin(
+            basin_name="relative_paths_basin",
+            basin_type="file",
+            basin_format="hdf5",
+            basin_feats=["image"],
+            basin_locs=[f"../{h5path.name}"],
+            verify=False,
+            perishable=False,
+        )
+    # When loading a basin, dclab should use the existing key
+    # from the input file.
+    with dclab.new_dataset(h5path_small_2) as ds:
+        assert len(ds.basins) == 1
+        assert ds.basins[0].key in [
+            # posix linesep
+            "b125c0e7d4ab1aff1030f40b87d670c3",
+            # win linesep
+            "93bc9ab45b50c094c1b585cc8702ca92",
+        ]
+
+
+def test_basin_run_identifier_unknown():
+    """
+    When the run identifier of a basin is unknown, the basin
+    should still be accepted.
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    with h5py.File(h5path, "a") as h5:
+        # remove run identifier and metadata from which run identifier
+        # can be computed.
+        for attr in [
+            "experiment:run identifier",
+            "experiment:time",
+            "experiment:date",
+            "setup:identifier",
+        ]:
+            if attr in h5.attrs:
+                del h5.attrs[attr]
+            assert attr not in h5.attrs
+
+    export_same = h5path.with_name("same.rtdc")
+    export_subs = h5path.with_name("subs.rtdc")
+
+    # Check whether that worked and export a subset with basins.
+    with dclab.new_dataset(h5path) as ds:
+        assert ds.get_measurement_identifier() is None
+        # export without filters
+        ds.export.hdf5(export_same, features=["deform"], basins=True)
+        # export with filters
+        ds.filter.manual[::2] = False
+        ds.apply_filter()
+        ds.export.hdf5(export_subs, features=["deform"], basins=True)
+
+    # Try to open the exported datasets (this raised an error before)
+    with dclab.new_dataset(export_same) as ds:
+        assert "image" in ds
+        assert ds["image"][0][0, 0] == 124
+
+    with dclab.new_dataset(export_subs) as ds:
+        assert "image" in ds
+        assert ds["image"][0][0, 0] == 126
+
+
+def test_basin_run_identifier_verify():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    export_same = h5path.with_name("same.rtdc")
+
+    # export a subset with basins.
+    with dclab.new_dataset(h5path) as ds:
+        # export without filters
+        ds.export.hdf5(export_same, features=["deform"], basins=True)
+
+    # change the run identifier of the original file
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["experiment:run identifier"] = "Uiiiid!"
+
+    with dclab.new_dataset(h5path) as ds:
+        assert ds.get_measurement_identifier() == "Uiiiid!"
+
+    with dclab.new_dataset(export_same) as ds2:
+        with pytest.warns(UserWarning, match="identifier mismatch"):
+            with pytest.raises(KeyError, match="does not exist"):
+                ds2["area_um"][0]
 
 
 def test_basin_sorting_basic():

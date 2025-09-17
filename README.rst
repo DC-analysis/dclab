@@ -6,7 +6,13 @@
 
 This is a Python library for the post-measurement analysis of
 real-time deformability cytometry (RT-DC) datasets; an essential part of
-`Shape-Out <https://github.com/ZELLMECHANIK-DRESDEN/ShapeOut2>`__.
+the DC Cosmos (
+`DCscope <https://github.com/DC-analysis/DCscope>`__,
+`DCOR <https://github.com/DCOR-dev/dcor_control>`__,
+`DCOR-Aid <https://github.com/DCOR-dev/DCOR-Aid>`__,
+`DCTag <https://github.com/DC-analysis/DCTag>`__,
+`DCKit <https://github.com/DC-analysis/DCKit>`__,
+).
 
 Documentation
 -------------

@@ -48,7 +48,13 @@ def test_basic():
     assert "Compression: None" in info
 
 
-def test_basin_features_internal_missing_feature():
+@pytest.mark.parametrize("h5_obj_delete", [
+    # delete the entire basin_events directory
+    "basin_events",
+    # delete only the feature data
+    "basin_events/userdef1"
+])
+def test_basin_features_internal_missing_feature(h5_obj_delete):
     path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
     with RTDCWriter(path) as hw:
         size = hw.h5file["events/deform"].shape[0]
@@ -61,7 +67,7 @@ def test_basin_features_internal_missing_feature():
             basin_locs=["basin_events"],
             internal_data={"userdef1": np.arange(2)},
         )
-        del hw.h5file["basin_events/userdef1"]
+        del hw.h5file[h5_obj_delete]
 
     # see if we can open the file without any error
     with check.IntegrityChecker(path) as ic:

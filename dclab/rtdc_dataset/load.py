@@ -61,6 +61,11 @@ def new_dataset(data, identifier=None, **kwargs):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
                                             **kwargs)
     elif isinstance(data, (pathlib.Path, str)):
+        # If we are given a `file:` specifier, remove it. We might be
+        # looking at a network share (not mounted as a drive) on Windows
+        # (e.g. "file:\\127.0.0.1\shared\data.rtdc").
+        if isinstance(data, str) and data.startswith("file:"):
+            data = data[5:]
         path = pathlib.Path(data).resolve()
         if not path.exists():
             raise FileNotFoundError(

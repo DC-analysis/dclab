@@ -677,6 +677,7 @@ def test_pf_load_non_scalar_plugin_data():
     pdir = pathlib.Path(tdir)
     pfile = pdir / "tmp.rtdc"
     features = ds.features + ["image_gauss_filter"]
+    features.remove("contour")
     ds.export.hdf5(pfile, features=features)
     ds2 = dclab.new_dataset(pfile)
     assert isinstance(ds2["image_gauss_filter"], h5py.Dataset)
@@ -697,6 +698,7 @@ def test_pf_load_scalar_plugin_data():
     pdir = pathlib.Path(tdir)
     pfile = pdir / "tmp.rtdc"
     features = ds.features + ["circ_per_area"]
+    features.remove("contour")
     ds.export.hdf5(pfile, features=features)
     ds2 = dclab.new_dataset(pfile)
     assert isinstance(ds2["circ_per_area"],

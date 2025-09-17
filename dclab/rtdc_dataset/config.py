@@ -437,7 +437,7 @@ def load_from_file(cfg_file):
                 convfunc = dfn.get_config_value_func(sec, var)
                 val = convfunc(val)
             else:
-                # unknown parameter (e.g. plotting in Shape-Out), guess type
+                # unknown parameter (e.g. plotting in DCscope), guess type
                 var, val = keyval_str2typ(var, val)
             if len(var) != 0 and len(str(val)) != 0:
                 cfg[sec][var] = val

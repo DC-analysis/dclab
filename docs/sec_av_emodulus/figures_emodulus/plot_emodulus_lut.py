@@ -3,7 +3,7 @@
 The Young's modulus is corrected for pixelation (pixel size 0.34 µm).
 The temperature is set to 23°C.
 The 20µm plot is used in the dclab documentation. The others
-are used in the Shape-Out documentation.
+are used in the DCscope documentation.
 """
 from dclab.features import emodulus
 import numpy as np

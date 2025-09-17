@@ -2,6 +2,7 @@ import json
 from os.path import join
 import pathlib
 import tempfile
+from unittest import mock
 
 import h5py
 import numpy as np
@@ -9,7 +10,11 @@ import pytest
 
 import dclab
 from dclab import dfn, new_dataset, RTDCWriter
-from dclab.rtdc_dataset.export import store_filtered_feature
+from dclab.rtdc_dataset.export import (
+    ContourNotExportedWarning,
+    store_filtered_feature,
+)
+from dclab.rtdc_dataset import check
 
 from helper_methods import example_data_dict, retrieve_data
 
@@ -33,6 +38,49 @@ def test_hdf5():
     assert np.allclose(ds2["time"], ds1["time"])
     assert np.allclose(ds2["frame"], ds1["frame"])
     assert np.allclose(ds2["fl3_width"], ds1["fl3_width"])
+
+
+def test_hdf5_compressed():
+    path = retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip")
+    path_exp = path.parent / "exported.rtdc"
+
+    with dclab.new_dataset(path) as ds:
+        # sanity checks
+        assert len(ds.tables) == 2
+        assert len(ds.logs) == 2
+        ds.export.hdf5(path_exp, tables=True, logs=True)
+
+    with dclab.new_dataset(path_exp) as ds:
+        assert len(ds.tables) == 2
+        assert len(ds.logs) == 3
+
+        # check compression
+        with check.IntegrityChecker(ds) as ic:
+            cues = ic.check_compression()
+            assert len(cues) == 1
+            cue = cues[0]
+            assert cue.msg == "Compression: All"
+
+
+def test_hdf5_contour_ignored():
+    """Contours should not be exported by default"""
+    n = 65
+    keys = ["contour", "image", "trace"]
+    ddict = example_data_dict(size=n, keys=keys)
+
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
+    with pytest.warns(ContourNotExportedWarning,
+                      match="not exported to output file"):
+        ds1.export.hdf5(f1, keys, filtered=False)
+
+    # check whether contour does not exist
+    with h5py.File(f1) as h5:
+        assert "contour" not in h5["events"]
 
 
 def test_hdf5_duplicate_feature_for_export():
@@ -68,7 +116,7 @@ def test_hdf5_contour_image_trace():
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
-    ds1.export.hdf5(f1, keys, filtered=False)
+    ds1.export.hdf5(f1, keys, filtered=False, allow_contour=True)
     ds2 = dclab.new_dataset(f1)
 
     for ii in range(n):
@@ -91,7 +139,7 @@ def test_hdf5_contour_image_trace_large():
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
-    ds1.export.hdf5(f1, keys, filtered=False)
+    ds1.export.hdf5(f1, keys, filtered=False, allow_contour=True)
     ds2 = dclab.new_dataset(f1)
 
     # the trace may have negative values, it's int16, not uint16.
@@ -113,7 +161,7 @@ def test_hdf5_contour_from_hdf5():
 
     edest = tempfile.mkdtemp()
     f1 = join(edest, "dclab_test_export_hdf5_image.rtdc")
-    ds1.export.hdf5(f1, ["contour"], filtered=False)
+    ds1.export.hdf5(f1, ["contour"], filtered=False, allow_contour=True)
     ds2 = dclab.new_dataset(f1)
     assert ds2["contour"].shape == (5, np.nan, 2)
 
@@ -176,7 +224,9 @@ def test_hdf5_filtered_full(dataset):
     # first, create a large dataset
     with new_dataset(retrieve_data(dataset)) as ds0:
         num = 100 % len(ds0) + len(ds0)
-        ds0.export.hdf5(path_in, features=ds0.features_innate)
+        ds0.export.hdf5(path_in,
+                        features=ds0.features_innate,
+                        allow_contour=True)
         with RTDCWriter(path_in) as hw:
             for _ in range(num):
                 for feat in ds0.features_innate:
@@ -186,12 +236,18 @@ def test_hdf5_filtered_full(dataset):
     path_out1 = tdir / "out1.rtdc"
     with dclab.new_dataset(path_in) as ds:
         assert len(ds) >= 100
-        ds.export.hdf5(path_out1, features=ds.features_innate, filtered=False)
+        ds.export.hdf5(path_out1,
+                       features=ds.features_innate,
+                       filtered=False,
+                       allow_contour=True)
 
     # 2. via export filtered
     path_out2 = tdir / "out2.rtdc"
     with dclab.new_dataset(path_in) as ds:
-        ds.export.hdf5(path_out2, features=ds.features_innate, filtered=True)
+        ds.export.hdf5(path_out2,
+                       features=ds.features_innate,
+                       filtered=True,
+                       allow_contour=True)
 
     # 3. via RTDC writer
     path_out3 = tdir / "out3.rtdc"
@@ -578,11 +634,68 @@ def test_hdf5_override():
         raise ValueError("Should append .rtdc and not override!")
 
 
+def test_hdf5_progress(tmp_path):
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=222, keys=keys)
+    ds = dclab.new_dataset(ddict)
+
+    f1 = tmp_path / "test.rtdc"
+
+    callback = mock.MagicMock()
+    ds.export.hdf5(f1, keys, progress_callback=callback)
+
+    callback.assert_any_call(0.0, "writing metadata")
+    callback.assert_any_call(0/5, "exporting area_um")
+    callback.assert_any_call(1/5, "exporting deform")
+    callback.assert_any_call(2/5, "exporting fl3_width")
+    callback.assert_any_call(3/5, "exporting frame")
+    callback.assert_any_call(4/5, "exporting time")
+    callback.assert_any_call(1.0, "export complete")
+
+
+def test_hdf5_progress_basins(tmp_path):
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp = h5path.with_name("exported.rtdc")
+
+    callback = mock.MagicMock()
+
+    with dclab.new_dataset(h5path) as ds:
+        ds.export.hdf5(path_exp,
+                       features=["deform", "image"],
+                       basins=True,
+                       progress_callback=callback
+                       )
+
+    callback.assert_any_call(0.0, "writing metadata")
+    callback.assert_any_call(0/2, "exporting deform")
+    callback.assert_any_call(1/2, "exporting image")
+    callback.assert_any_call(1/2, "writing basins")
+    callback.assert_any_call(1.0, "export complete")
+
+
+def test_hdf5_progress_basins_only(tmp_path):
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp = h5path.with_name("exported.rtdc")
+
+    callback = mock.MagicMock()
+
+    with dclab.new_dataset(h5path) as ds:
+        ds.export.hdf5(path_exp,
+                       features=[],
+                       basins=True,
+                       progress_callback=callback
+                       )
+
+    callback.assert_any_call(0.0, "writing metadata")
+    callback.assert_any_call(0.0, "writing basins")
+    callback.assert_any_call(1.0, "export complete")
+
+
 @pytest.mark.parametrize("tables", [True, False])
 def test_hdf5_tables(tables):
     keys = ["area_um", "deform", "time", "frame", "index_online"]
     ddict = example_data_dict(size=10, keys=keys)
-    ds1 = dclab.new_dataset(ddict)
+    ds1 = new_dataset(ddict)
     ds1.config["experiment"]["sample"] = "test"
     ds1.config["experiment"]["run index"] = 1
     ds1.config["imaging"]["frame rate"] = 2000
@@ -607,6 +720,91 @@ def test_hdf5_tables(tables):
             assert "src_iratrax" in h5.get("tables", {})
         else:
             assert "src_iratrax" not in h5.get("tables", {})
+
+    if tables:
+        # reading the file with dclab
+        with new_dataset(f1) as ds:
+            assert "src_iratrax" in ds.tables
+            assert ds.tables["src_iratrax"].has_graphs()
+            assert np.all(ds.tables["src_iratrax"] == rec_arr)
+
+
+def test_hdf5_tables_array_only():
+    keys = ["area_um", "deform", "time", "frame", "index_online"]
+    ddict = example_data_dict(size=10, keys=keys)
+    ds1 = new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+
+    # generate a table that consists of an array, not a dict-like object
+    tab_data = np.random.random((1000, 300))
+    ds1.tables["iratrax"] = tab_data
+
+    edest = pathlib.Path(tempfile.mkdtemp())
+    f1 = edest / "dclab_test_export_hdf5_1.rtdc"
+    ds1.export.hdf5(f1, keys, tables=True)
+    with h5py.File(f1, "r") as h5:
+        assert "src_iratrax" in h5.get("tables", {})
+        assert np.all(h5["tables"]["src_iratrax"] == tab_data)
+        assert h5["tables"]["src_iratrax"].attrs["CLASS"] == np.bytes_("IMAGE")
+
+    # reading the file with dclab
+    with new_dataset(f1) as ds:
+        assert "src_iratrax" in ds.tables
+        assert not ds.tables["src_iratrax"].has_graphs()
+        assert np.all(ds.tables["src_iratrax"] == tab_data)
+        assert ds.tables["src_iratrax"].meta["CLASS"] == np.bytes_("IMAGE")
+
+
+def test_hdf5_table_from_file(tmp_path):
+    ds = new_dataset(retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip"))
+
+    f1 = join(tmp_path, "test.rtdc")
+    ds.export.hdf5(f1, ["temp"], tables=True)
+
+    ds2 = new_dataset(f1)
+    tab = ds2.tables["src_so2exp_cytoshot_monitor"]
+
+    assert np.allclose(
+        tab["focus"][0],
+        6.241900073522602,
+        atol=1e-7, rtol=0)
+
+    assert tab.meta["COLOR_focus"] == "#a03000"
+
+
+def test_hdf5_table_from_file_with_unnamed_table(tmp_path):
+    path = retrieve_data("fmt-hdf5_raw-cytoshot-exported.zip")
+    with RTDCWriter(path) as hw:
+        hw.store_table("just_an_array", np.ones((30, 50)),
+                       h5_attrs={"heinz": "kunz"})
+
+    # Make sure that worked with tables
+    with new_dataset(path) as ds:
+        tab = ds.tables["just_an_array"]
+        assert not tab.has_graphs()
+        assert np.array(tab).shape == (30, 50)
+        assert tab.meta["heinz"] == "kunz"
+
+    with new_dataset(path) as ds:
+        f1 = join(tmp_path, "test.rtdc")
+        ds.export.hdf5(f1, ["temp"], tables=True)
+
+    with new_dataset(f1) as ds2:
+        tab = ds2.tables["src_so2exp_cytoshot_monitor"]
+        assert tab.has_graphs()
+        assert np.allclose(
+            tab["focus"][0],
+            6.241900073522602,
+            atol=1e-7, rtol=0)
+
+        assert tab.meta["COLOR_focus"] == "#a03000"
+
+        tab2 = ds2.tables["src_just_an_array"]
+        assert not tab2.has_graphs()
+        assert np.array(tab2).shape == (30, 50)
+        assert tab2.meta["heinz"] == "kunz"
 
 
 def test_hdf5_trace_from_tdms():

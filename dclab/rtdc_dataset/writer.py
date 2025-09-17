@@ -17,6 +17,7 @@ from ..util import hashobj
 from .._version import version
 
 from .feat_anc_plugin import PlugInFeature
+from .meta_table import MetaTable
 
 #: DEPRECATED (use `CHUNK_SIZE_BYTES` instead)
 CHUNK_SIZE = 100
@@ -65,8 +66,8 @@ class RTDCWriter:
         compression_kwargs: dict-like
             Dictionary with the keys "compression" and "compression_opts"
             which are passed to :func:`h5py.H5File.create_dataset`. The
-            default is Zstandard compression with the lowest compression
-            level `hdf5plugin.Zstd(clevel=1)`. To disable compression, use
+            default is Zstandard compression with the compression
+            level 5 `hdf5plugin.Zstd(clevel=5)`. To disable compression, use
             `{"compression": None}`.
         compression: str or None
             Compression method used for data storage;
@@ -87,7 +88,7 @@ class RTDCWriter:
             # be backwards-compatible
             compression_kwargs = {"compression": compression}
         if compression_kwargs is None:
-            compression_kwargs = hdf5plugin.Zstd(clevel=1)
+            compression_kwargs = hdf5plugin.Zstd(clevel=5)
 
         self.mode = mode
         self.compression_kwargs = compression_kwargs
@@ -206,8 +207,10 @@ class RTDCWriter:
                     basin_descr: str | None = None,
                     basin_feats: List[str] = None,
                     basin_map: np.ndarray | Tuple[str, np.ndarray] = None,
+                    basin_id: str = None,
                     internal_data: Dict | h5py.Group = None,
                     verify: bool = True,
+                    perishable: bool = False,
                     ):
         """Write basin information
 
@@ -241,6 +244,12 @@ class RTDCWriter:
             a case, you may specify a tuple `(feature_name, mapping_array)`
             where `feature_name` is the explicit mapping name, e.g.
             `"basinmap3"`.
+        basin_id: str
+            Identifier of the basin. This is the string returned by
+            :meth:`.RTDCBase.get_measurement_identifier`. This is
+            a unique string that identifies the data within a basin.
+            If not specified and `verify=True`, this value is automatically
+            taken from the basin file.
         internal_data: dict or instance of h5py.Group
             A dictionary or an `h5py.Group` containing the basin data.
             The data are copied to the "basin_events" group, if
@@ -248,9 +257,13 @@ class RTDCWriter:
             This must be specified when storing internal basins, and it
             must not be specified for any other basin type.
         verify: bool
-            whether to verify the basin before storing it; You might have
+            Whether to verify the basin before storing it; You might have
             set this to False if you would like to write a basin that is
             e.g. temporarily not available
+        perishable: bool
+            Whether the basin is perishable. If this is True, then a
+            warning will be issued, because perishable basins may not be
+            accessed (e.g. time-based URL for private S3 data).
 
         Returns
         -------
@@ -260,6 +273,8 @@ class RTDCWriter:
 
             .. versionadded:: 0.58.0
         """
+        if perishable:
+            warnings.warn(f"Storing perishable basin {basin_name}")
         if basin_type == "internal":
             if internal_data is None:
                 raise ValueError(
@@ -302,19 +317,30 @@ class RTDCWriter:
             # We have to import this here to avoid circular imports
             from .load import new_dataset
             # Make sure the basin can be opened by dclab, verify its ID
-            cur_id = self.h5file.attrs.get("experiment:run identifier")
+            ref_id = self.h5file.attrs.get("experiment:run identifier")
             for loc in basin_locs:
                 with new_dataset(loc) as ds:
                     # We can open the file, which is great.
-                    if cur_id:
-                        # Compare the IDs.
-                        ds_id = ds.get_measurement_identifier()
-                        if not (ds_id == cur_id
+                    # Compare the IDs.
+                    bn_id = ds.get_measurement_identifier()
+                    # Check whether `basin_id` matches the actual basin
+                    if basin_id:
+                        if basin_id != bn_id:
+                            raise ValueError(
+                                f"Measurement identifier mismatch for "
+                                f"{loc}: got {bn_id}, expected {basin_id=})!")
+                    else:
+                        # If `basin_id` was not specified, set it here for
+                        # user convenience.
+                        basin_id = bn_id or None
+                    # Check whether the referrer ID matches the basin ID.
+                    if ref_id:
+                        if not (bn_id == ref_id
                                 or (basin_map is not None
-                                    and cur_id.startswith(ds_id))):
+                                    and ref_id.startswith(bn_id))):
                             raise ValueError(
                                 f"Measurement identifier mismatch between "
-                                f"{self.path} ({cur_id}) and {loc} ({ds_id})!")
+                                f"{self.path} ({ref_id}) and {loc} ({bn_id})!")
             if basin_feats:
                 for feat in basin_feats:
                     if not dfn.feature_exists(feat):
@@ -380,6 +406,8 @@ class RTDCWriter:
             "type": basin_type,
             "features": None if basin_feats is None else sorted(basin_feats),
             "mapping": basin_map_name,
+            "perishable": perishable,
+            "identifier": basin_id,
         }
         if basin_type == "file":
             flocs = []
@@ -389,7 +417,7 @@ class RTDCWriter:
                     flocs.append(str(pp.resolve()))
                     # Also store the relative path for user convenience.
                     # Don't use pathlib.Path.relative_to, because that
-                    # is deprecated in Python 3.12.
+                    # only has `walk_up` since Python 3.12.
                     # Also, just look in subdirectories which simplifies
                     # path resolution.
                     this_parent = str(self.path.parent) + os.sep
@@ -408,7 +436,7 @@ class RTDCWriter:
         else:
             raise ValueError(f"Unknown basin type '{basin_type}'")
 
-        b_lines = json.dumps(b_data, indent=2).split("\n")
+        b_lines = json.dumps(b_data, indent=2, sort_keys=True).split("\n")
         basins = self.h5file.require_group("basins")
         key = hashobj(b_lines)
         if key not in basins:
@@ -616,7 +644,7 @@ class RTDCWriter:
                     convfunc = dfn.get_config_value_func(sec, ck)
                     self.h5file.attrs[idk] = convfunc(value)
 
-    def store_table(self, name, cmp_array):
+    def store_table(self, name, cmp_array, h5_attrs=None):
         """Store a compound array table
 
         Tables are semi-metadata. They may contain information collected
@@ -629,16 +657,39 @@ class RTDCWriter:
         ----------
         name: str
             Name of the table
-        cmp_array: np.recarray, h5py.Dataset, or dict
+        cmp_array: np.recarray, h5py.Dataset, np.ndarray, or dict
             If a np.recarray or h5py.Dataset are provided, then they
             are written as-is to the file. If a dictionary is provided,
             then the dictionary is converted into a numpy recarray.
+            If a numpy array is provided, then the array is written
+            as a raw table (no column names) to the file.
+        h5_attrs: dict, optional
+            Attributes to store alongside the corresponding HDF5 dataset
         """
-        if isinstance(cmp_array, (np.recarray, h5py.Dataset)):
+        if h5_attrs is None:
+            h5_attrs = {}
+
+        # Convert MetaTable to numpy data
+        if isinstance(cmp_array, MetaTable):
+            h5_attrs.update(cmp_array.meta)
+            cmp_array = cmp_array.__array__()
+
+        # Handle individual cases
+        if isinstance(cmp_array, np.recarray):
             # A table is a compound array (np.recarray). If we are here,
-            # this means that the user passed an instance of np.recarray
-            # or an instance h5py.Dataset (which we trust to be a proper
+            # this means that the user passed an instance of np.recarray.
+            pass
+        elif isinstance(cmp_array, h5py.Dataset):
+            # An instance of h5py.Dataset (which we trust to be a proper
             # compound dataset at this point). No additional steps needed.
+            h5_attrs.update(cmp_array.attrs)
+            pass
+        elif isinstance(cmp_array, np.ndarray):
+            # A numpy array was passed. This usually means we have something
+            # that we can look at, so we add image tags.
+            h5_attrs['CLASS'] = np.bytes_('IMAGE')
+            h5_attrs['IMAGE_VERSION'] = np.bytes_('1.2')
+            h5_attrs['IMAGE_SUBCLASS'] = np.bytes_('IMAGE_GRAYSCALE')
             pass
         elif isinstance(cmp_array, dict):
             # The user passed a dict which we now have to convert to a
@@ -659,16 +710,18 @@ class RTDCWriter:
         else:
             raise NotImplementedError(
                 f"Cannot convert {type(cmp_array)} to table!")
+
+        # data
         group = self.h5file.require_group("tables")
         tab = group.create_dataset(
             name,
             data=cmp_array,
             fletcher32=True,
             **self.compression_kwargs)
-        # Also store metadata
-        if hasattr(cmp_array, "attrs"):
-            for key in cmp_array.attrs:
-                tab.attrs[key] = cmp_array.attrs[key]
+
+        # metadata
+        if h5_attrs:
+            tab.attrs.update(h5_attrs)
 
     def version_brand(self, old_version=None, write_attribute=True):
         """Perform version branding

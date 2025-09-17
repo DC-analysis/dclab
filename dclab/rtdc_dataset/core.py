@@ -1,28 +1,34 @@
 """RT-DC dataset core classes and methods"""
 import abc
 import hashlib
+import json
 import os.path
 import pathlib
+import random
 import traceback
 from typing import Literal
 import uuid
-import random
 import warnings
 
 import numpy as np
 
 from .. import definitions as dfn
 from .. import downsampling
+from ..kde import KernelDensityEstimator
+from ..kde import methods as kde_methods
 from ..polygon_filter import PolygonFilter
-from .. import kde_methods
-
-from .feat_anc_core import AncillaryFeature, FEATURES_RAPID
+from ..util import hashobj
 from . import feat_basin
 from .export import Export
+from .feat_anc_core import FEATURES_RAPID, AncillaryFeature
 from .filter import Filter
 
 
 class FeatureShouldExistButNotFoundWarning(UserWarning):
+    pass
+
+
+class LocalBasinForbiddenWarning(UserWarning):
     pass
 
 
@@ -321,47 +327,6 @@ class RTDCBase(abc.ABC):
         return data
 
     @staticmethod
-    def _apply_scale(a, scale, feat):
-        """Helper function for transforming an aray to log-scale
-
-        Parameters
-        ----------
-        a: np.ndarray
-            Input array
-        scale: str
-            If set to "log", take the logarithm of `a`; if set to
-            "linear" return `a` unchanged.
-        feat: str
-            Feature name (required for debugging)
-
-        Returns
-        -------
-        b: np.ndarray
-            The scaled array
-
-        Notes
-        -----
-        If the scale is not "linear", then a new array is returned.
-        All warnings are suppressed when computing `np.log(a)`, as
-        `a` may have negative or nan values.
-        """
-        if scale == "linear":
-            b = a
-        elif scale == "log":
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                b = np.log(a)
-                if len(w):
-                    # Tell the user that the log-transformation issued
-                    # a warning.
-                    warnings.warn("Invalid values encounterd in np.log "
-                                  "while scaling feature '{}'!".format(feat))
-        else:
-            raise ValueError("`scale` must be either 'linear' or 'log', "
-                             + "got '{}'!".format(scale))
-        return b
-
-    @staticmethod
     def get_kde_spacing(a, scale="linear", method=kde_methods.bin_width_doane,
                         method_kw=None, feat="undefined", ret_scaled=False):
         """Convenience function for computing the contour spacing
@@ -381,16 +346,14 @@ class RTDCBase(abc.ABC):
         ret_scaled: bool
             whether to return the scaled array of `a`
         """
-        if method_kw is None:
-            method_kw = {}
-        # Apply scale (no change for linear scale)
-        asc = RTDCBase._apply_scale(a, scale, feat)
-        # Apply multiplicator
-        acc = method(asc, **method_kw)
-        if ret_scaled:
-            return acc, asc
-        else:
-            return acc
+        return KernelDensityEstimator.get_spacing(
+            a=a,
+            scale=scale,
+            method=method,
+            method_kw=method_kw,
+            feat=feat,
+            ret_scaled=ret_scaled,
+        )
 
     @property
     def _feature_candidates(self):
@@ -623,8 +586,8 @@ class RTDCBase(abc.ABC):
         y = self[yax][self.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = RTDCBase._apply_scale(x, xscale, xax)
-        ys = RTDCBase._apply_scale(y, yscale, yax)
+        xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
+        ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
 
         _, _, idx = downsampling.downsample_grid(xs, ys,
                                                  samples=downsample,
@@ -671,64 +634,11 @@ class RTDCBase(abc.ABC):
         X, Y, Z : coordinates
             The kernel density Z evaluated on a rectangular grid (X,Y).
         """
-        if kde_kwargs is None:
-            kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        if kde_type not in kde_methods.methods:
-            raise ValueError("Not a valid kde type: {}!".format(kde_type))
-
-        # Get data
-        x = self[xax][self.filter.all]
-        y = self[yax][self.filter.all]
-
-        xacc_sc, xs = RTDCBase.get_kde_spacing(
-            a=x,
-            feat=xax,
-            scale=xscale,
-            method=kde_methods.bin_width_doane,
-            ret_scaled=True)
-
-        yacc_sc, ys = RTDCBase.get_kde_spacing(
-            a=y,
-            feat=yax,
-            scale=yscale,
-            method=kde_methods.bin_width_doane,
-            ret_scaled=True)
-
-        if xacc is None or xacc == 0:
-            xacc = xacc_sc / 5
-
-        if yacc is None or yacc == 0:
-            yacc = yacc_sc / 5
-
-        # Ignore infs and nans
-        bad = kde_methods.get_bad_vals(xs, ys)
-        xc = xs[~bad]
-        yc = ys[~bad]
-
-        xnum = int(np.ceil((xc.max() - xc.min()) / xacc))
-        ynum = int(np.ceil((yc.max() - yc.min()) / yacc))
-
-        xlin = np.linspace(xc.min(), xc.max(), xnum, endpoint=True)
-        ylin = np.linspace(yc.min(), yc.max(), ynum, endpoint=True)
-
-        xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
-
-        kde_fct = kde_methods.methods[kde_type]
-        if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=xmesh, yout=ymesh,
-                              **kde_kwargs)
-        else:
-            density = np.array([])
-
-        # Convert mesh back to linear scale if applicable
-        if xscale == "log":
-            xmesh = np.exp(xmesh)
-        if yscale == "log":
-            ymesh = np.exp(ymesh)
+        kde_instance = KernelDensityEstimator(rtdc_ds=self)
+        xmesh, ymesh, density = kde_instance.get_raster(
+            xax=xax, yax=yax, xacc=xacc, yacc=yacc, kde_type=kde_type,
+            kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
+        )
 
         return xmesh, ymesh, density
 
@@ -763,36 +673,11 @@ class RTDCBase(abc.ABC):
         density : 1d ndarray
             The kernel density evaluated for the filtered data points.
         """
-        if kde_kwargs is None:
-            kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        if kde_type not in kde_methods.methods:
-            raise ValueError("Not a valid kde type: {}!".format(kde_type))
-
-        # Get data
-        x = self[xax][self.filter.all]
-        y = self[yax][self.filter.all]
-
-        # Apply scale (no change for linear scale)
-        xs = RTDCBase._apply_scale(x, xscale, xax)
-        ys = RTDCBase._apply_scale(y, yscale, yax)
-
-        if positions is None:
-            posx = None
-            posy = None
-        else:
-            posx = RTDCBase._apply_scale(positions[0], xscale, xax)
-            posy = RTDCBase._apply_scale(positions[1], yscale, yax)
-
-        kde_fct = kde_methods.methods[kde_type]
-        if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=posx, yout=posy,
-                              **kde_kwargs)
-        else:
-            density = np.array([])
+        kde_instance = KernelDensityEstimator(rtdc_ds=self)
+        density = kde_instance.get_scatter(
+            xax=xax, yax=yax, positions=positions, kde_type=kde_type,
+            kde_kwargs=kde_kwargs, xscale=xscale, yscale=yscale
+        )
 
         return density
 
@@ -825,14 +710,20 @@ class RTDCBase(abc.ABC):
         # Sort basins according to priority
         bdicts_srt = sorted(self.basins_get_dicts(),
                             key=feat_basin.basin_priority_sorted_key)
-        bd_keys = [bd["key"] for bd in bdicts_srt if "key" in bd]
+        # complement basin "key"s (we do the same in writer)
+        for bdict in bdicts_srt:
+            if "key" not in bdict:
+                b_dat = json.dumps(bdict, indent=2, sort_keys=True).split("\n")
+                bdict["key"] = hashobj(b_dat)
+
+        bd_keys = [bd["key"] for bd in bdicts_srt]
         bd_keys += self._basins_ignored
         for bdict in bdicts_srt:
             if bdict["format"] not in bc:
                 warnings.warn(f"Encountered unsupported basin "
                               f"format '{bdict['format']}'!")
                 continue
-            if "key" in bdict and bdict["key"] in self._basins_ignored:
+            if bdict["key"] in self._basins_ignored:
                 warnings.warn(
                     f"Encountered cyclic basin dependency '{bdict['key']}'",
                     feat_basin.CyclicBasinDependencyFoundWarning)
@@ -850,9 +741,15 @@ class RTDCBase(abc.ABC):
                 # need the referring dataset.
                 "mapping_referrer": self,
                 # Make sure the measurement identifier is checked.
-                "measurement_identifier": self.get_measurement_identifier(),
+                "referrer_identifier": self.get_measurement_identifier(),
+                # Make sure the basin identifier is checked.
+                "basin_identifier": bdict.get("identifier"),
                 # allow to ignore basins
                 "ignored_basins": bd_keys,
+                # basin key
+                "key": bdict["key"],
+                # whether the basin is perishable or not
+                "perishable": bdict.get("perishable", False),
             }
 
             # Check whether this basin is supported and exists
@@ -869,7 +766,8 @@ class RTDCBase(abc.ABC):
             elif bdict["type"] == "file":
                 if not self._local_basins_allowed:
                     warnings.warn(f"Basin type 'file' not allowed for format "
-                                  f"'{self.format}'")
+                                  f"'{self.format}'",
+                                  LocalBasinForbiddenWarning)
                     # stop processing this basin
                     continue
                 p_paths = list(bdict["paths"])
@@ -889,12 +787,19 @@ class RTDCBase(abc.ABC):
                     b_cls = bc[bdict["format"]]
                     # Try absolute path
                     bna = b_cls(pp, **kwargs)
-                    if bna.verify_basin():
-                        basins.append(bna)
-                        break
+
+                    try:
+                        absolute_exists = bna.verify_basin()
+                    except BaseException:
+                        pass
+                    else:
+                        if absolute_exists:
+                            basins.append(bna)
+                            break
                     # Try relative path
                     this_path = pathlib.Path(self.path)
                     if this_path.exists():
+
                         # Insert relative path
                         bnr = b_cls(this_path.parent / pp, **kwargs)
                         if bnr.verify_basin():
@@ -932,9 +837,9 @@ class RTDCBase(abc.ABC):
         identifier = self.config.get("experiment", {}).get("run identifier",
                                                            None)
         if identifier is None:
-            time = self.config.get("experiment", {}).get("time", None)
-            date = self.config.get("experiment", {}).get("date", None)
-            sid = self.config.get("setup", {}).get("identifier", None)
+            time = self.config.get("experiment", {}).get("time", None) or None
+            date = self.config.get("experiment", {}).get("date", None) or None
+            sid = self.config.get("setup", {}).get("identifier", None) or None
             if None not in [time, date, sid]:
                 # only compute an identifier if all of the above are defined.
                 hasher = hashlib.md5(f"{time}_{date}_{sid}".encode("utf-8"))

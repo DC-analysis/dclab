@@ -161,7 +161,17 @@ CFG_METADATA = {
         ["subtract mean", fbool, "Subtract mean before processing"],
         # pipeline_kws
         ["filter name", str, "Fourier filter used"],
-        # Corresponds to `filter_size_interpretation="frequency index"`
+        # qpretrieve defines the keyword argument `filter_size_interpretation`
+        # for determining the filter size in Fourier space. In DC, we
+        # need a well-defined value for the filter size. The most logical
+        # choice is to interpret the filter size as "frequency index", which
+        # is independent of the image shape and yields a good approximation
+        # of the actual resolution one can expect. The default value
+        # ("sideband distance") is a good choice for general QPI analysis,
+        # but there is no meaningful information one could extract from it
+        # by just looking at the number. Thus, the "filter size" that we
+        # see here corresponds to a filter size set in qpretrieve where
+        # `filter_size_interpretation="frequency index"`.
         ["filter size", float, "Fourier filter size [1/pix]"],
         ["scale to filter", fboolorfloat, "Scale QPI data to filter size"],
         # x, y coordinates, don't set if you wish None to be the default

@@ -1,4 +1,5 @@
 0.67.1
+ - docs: type hinted the features sub-module
  - enh: add mass density feature, deprecate some qpi features (#284)
 0.67.0
  - BREAKING CHANGE: make it difficult to export the "contour" feature
@@ -89,7 +90,6 @@
  - fix: metadata of tables not copied by `copier.py`
  - docs: formatting typo (#270)
 0.62.7
- - docs: type hinted the features sub-module
  - fix: IntegrityChecker must not load basins
  - fix: KeyError in IntegrityChecker when "basin_events" group missing (#268)
  - fix: warn user about missing internal basin features while still loading

@@ -307,6 +307,9 @@ class RTDCBase(abc.ABC):
                         data = bn.get_feature_data(feat)
                         # The data are available, we may abort the search.
                         break
+                except feat_basin.BasinIdentifierMismatchError:
+                    # Likely a basin identifier mismatch
+                    warnings.warn(traceback.format_exc())
                 except (KeyError, OSError, PermissionError):
                     # Basin data not available
                     pass

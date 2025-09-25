@@ -1,5 +1,6 @@
 0.67.1
  - enh: add mass density feature, deprecate some qpi features (#284)
+ - enh: warn users about basin identifier mismatches
 0.67.0
  - BREAKING CHANGE: make it difficult to export the "contour" feature
  - fix: `BasinProxyFeature` returned incorrect `shape` and `size`

@@ -26,6 +26,10 @@ class BasinFeatureMissingWarning(UserWarning):
     """Used when a badin feature is defined but not stored"""
 
 
+class BasinIdentifierMismatchError(BaseException):
+    """Used when the identifier of a basin does not match the definition"""
+
+
 class CyclicBasinDependencyFoundWarning(UserWarning):
     """Used when a basin is defined in one of its sub-basins"""
 
@@ -318,9 +322,10 @@ class Basin(abc.ABC):
         """Make sure the basin matches the measurement identifier
         """
         if not self.verify_basin(run_identifier=True):
-            raise KeyError(f"Measurement identifier of basin {self.ds} "
-                           f"({self.get_measurement_identifier()}) does "
-                           f"not match {self.referrer_identifier}!")
+            raise BasinIdentifierMismatchError(
+                f"Measurement identifier of basin {self.ds} "
+                f"({self.get_measurement_identifier()}) does "
+                f"not match {self.referrer_identifier}!")
 
     @property
     def basinmap(self):

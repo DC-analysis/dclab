@@ -18,7 +18,7 @@ def corr_deform_with_area_um(area_um: float | npt.NDArray,
     Parameters
     ----------
     area_um
-        Apparent (2D image) area in µm² of the event(s)
+        Area of the event(s) in µm²
     px_um
         The detector pixel size in µm.
 
@@ -122,8 +122,13 @@ def get_pixelation_delta(feat_corr: str,
         Feature with which to compute the correction (e.g. "area_um");
     data_absc
         Corresponding data for `feat_absc`
-    px_um: float
+    px_um
         Detector pixel size [µm]
+    
+    Returns
+    -------
+    For details see :func:`corr_deform_with_area_um` and 
+    :func:`corr_deform_with_volume`.
     """
     if feat_corr == "deform" and feat_absc == "area_um":
         delt = corr_deform_with_area_um(data_absc, px_um=px_um)

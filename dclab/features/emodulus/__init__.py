@@ -61,11 +61,11 @@ def extrapolate_emodulus(lut: npt.NDArray,
         points, second axis enumerates datax, deform, and emodulus)
     datax: ndarray of size N
         The normalized x data (corresponding to `lut[:, 0]`)
+    deform: ndarray of size N
+        The normalized deform (corresponding to `lut[:, 1]`)
     emod: ndarray of size N
         The emodulus (corresponding to `lut[:, 2]`); If `emod`
         does not contain nan-values, there is nothing to do here.
-    deform: ndarray of size N
-        The normalized deform (corresponding to `lut[:, 1]`)
     deform_norm
         The normalization value used to normalize `lut[:, 1]` and
         `deform`.
@@ -125,10 +125,10 @@ def get_emodulus(deform: float | npt.NDArray,
 
     Parameters
     ----------
-    area_um
-        Apparent (2D image) area [µm²] of the event(s)
     deform
         Deformation (1-circularity) of the event(s)
+    area_um
+        Apparent (2D image) area [µm²] of the event(s)
     volume
         Apparent volume of the event(s). It is not possible to define
         `volume` and `area_um` at the same time (makes no sense).
@@ -148,7 +148,7 @@ def get_emodulus(deform: float | npt.NDArray,
         Set to zero to disable.
     temperature
         Temperature [°C] of the event(s)
-    lut_data: path, str, or tuple of (np.ndarray of shape (N, 3), dict)
+    lut_data: str, path, or tuple of (np.ndarray of shape (N, 3), dict)
         The LUT data to use. If it is a built-in identifier,
         then the respective LUT will be used. Otherwise, a path to a
         file on disk or a tuple (LUT array, metadata) is possible.
@@ -163,7 +163,7 @@ def get_emodulus(deform: float | npt.NDArray,
         Perform extrapolation using :func:`extrapolate_emodulus`. This
         is discouraged!
     copy
-        Copy input arrays. If set to false, input arrays are
+        Copy input arrays. If set to False, input arrays are
         overridden.
 
     Returns

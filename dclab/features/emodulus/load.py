@@ -38,7 +38,7 @@ def get_internal_lut_names_dict() -> dict:
 def get_lut_path(path_or_id: str | pathlib.Path) -> pathlib.Path:
     """Find the path to a LUT
 
-    path_or_id: str or pathlib.Path
+    path_or_id
         Identifier of a LUT. This can be either an existing path
         (checked first), or an internal identifier (see
         :func:`get_internal_lut_names_dict`).

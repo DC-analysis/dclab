@@ -94,14 +94,14 @@ For type hinting and docstring styling, try to keep the
 Code Reference readable in the documentation website.
 If in doubt just ask, or look at the examples in the codebase.
 
-* Simple type combintions such as `float` or `str | pathlib.Path`
+* Simple type combintions such as ``float`` or ``str | pathlib.Path``
   should be included as type hints, but do not need to be included
   in the docstring parameter description.
 * More involved type hints can have extra information in the 
-  docstring. For example for numpy arrays, `npt.NDArray[np.bool]` doesn't
+  docstring. For example for numpy arrays, ``npt.NDArray[np.bool]`` doesn't
   render in a readable way in the Code Reference, and doesn't include shape.
   Therefore, you can also keep the docstring parameter description e.g.,
-  `binary ndarray of shape (M, N)`.
+  ``binary ndarray of shape (M, N)``.
 
 
 Incrementing version

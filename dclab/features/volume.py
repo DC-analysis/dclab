@@ -138,7 +138,7 @@ def counter_clockwise(cx: npt.NDArray, cy: npt.NDArray) -> tuple[float, float]:
 
     Parameters
     ----------
-    cx, cy
+    cx, cy: 1d ndarrays
         The x- and y-coordinates of the contour
 
     Returns
@@ -193,9 +193,9 @@ def vol_revolve(r: npt.NDArray,
 
     Parameters
     ----------
-    r
+    r: 1d ndarray
         radial coordinates (perpendicular to the z axis)
-    z
+    z: 1d ndarray
         coordinate along the axis of rotation
     point_scale
         point size in your preferred units; The volume is multiplied

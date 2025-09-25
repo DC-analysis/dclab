@@ -258,7 +258,7 @@ def get_viscosity_mc_pbs_herold_2017(
 
 
 def get_viscosity_water_kestin_1978(
-        temperature: float = 23.0) -> float | npt.NDArray:
+        temperature: float | npt.NDArray = 23.0) -> float | npt.NDArray:
     """Compute the viscosity of water according to :cite:`Kestin_1978`"""
     # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
     check_temperature("'kestin-1978' water", temperature, 0, 40)

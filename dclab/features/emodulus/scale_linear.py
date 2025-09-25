@@ -21,7 +21,7 @@ def convert(area_um: npt.NDArray,
         tuple[npt.NDArray, npt.NDArray] |
         tuple[npt.NDArray, npt.NDArray, npt.NDArray]
 ):
-    """convert area-deformation-emodulus triplet
+    """Convert area-deformation-emodulus triplet
 
     The conversion formula is described in :cite:`Mietke2015`.
 

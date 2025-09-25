@@ -16,7 +16,7 @@ def cont_moments_cv(cont: npt.NDArray,
 
     Parameters
     ----------
-    cont: shape (N,2)
+    cont: ndarray of shape (N,2)
         The contour for which to compute the moments.
     flt_epsilon
         The value of ``FLT_EPSILON`` in OpenCV/gcc.

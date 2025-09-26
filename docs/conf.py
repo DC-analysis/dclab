@@ -31,6 +31,9 @@ sys.path.append(op.abspath('extensions'))
 autodoc_member_order = 'groupwise'
 autoclass_content = 'both'
 
+# type hints should be displayed next to the parameters
+autodoc_typehints = "description"
+
 # include source of matplotlib plots
 plot_include_source = True
 

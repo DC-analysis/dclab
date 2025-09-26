@@ -81,6 +81,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.vscode/
 
 dclab/_version.py
 *.bib.bak

@@ -1,5 +1,6 @@
 0.67.1
- - docs: type hinted the features sub-module
+ - fix: downsampling with sample size larger than dataset size failed
+ - docs: type-hinted the features sub-module
  - enh: add mass density feature, deprecate some qpi features (#284)
  - enh: warn users about basin identifier mismatches
 0.67.0

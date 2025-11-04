@@ -153,6 +153,19 @@ def test_downsample_none2():
     assert np.sum(ds.filter.all) == 8472
 
 
+def test_downsample_maximum():
+    """
+    Ask to downsample to a size larger than the dataset
+    """
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=100, keys=keys)
+    ds = dclab.new_dataset(ddict)
+
+    ds.apply_filter()
+    x, y = ds.get_downsampled_scatter(downsample=110)
+    assert len(x) == len(y) == 100
+
+
 def test_downsample_up():
     """
     Likely causes removal of too many points and requires

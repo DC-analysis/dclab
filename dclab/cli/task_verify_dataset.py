@@ -56,9 +56,9 @@ def verify_dataset(path_in=None):
         else:
             # everything is ok
             exit_status = 0
-    finally:
-        # return sys.exit for testing (monkeypatched)
-        return sys.exit(exit_status)
+
+    # return sys.exit for testing (monkeypatched)
+    return sys.exit(exit_status)
 
 
 def verify_dataset_parser():

@@ -288,21 +288,24 @@ class KernelDensityEstimator:
         xc = xs[~bad]
         yc = ys[~bad]
 
-        xnum = int(np.ceil((xc.max() - xc.min()) / xacc))
-        ynum = int(np.ceil((yc.max() - yc.min()) / yacc))
+        if xc.size:
+            # Compute the mesh for rastering
+            xnum = int(np.ceil((xc.max() - xc.min()) / xacc))
+            ynum = int(np.ceil((yc.max() - yc.min()) / yacc))
 
-        xlin = np.linspace(xc.min(), xc.max(), xnum, endpoint=True)
-        ylin = np.linspace(yc.min(), yc.max(), ynum, endpoint=True)
+            xlin = np.linspace(xc.min(), xc.max(), xnum, endpoint=True)
+            ylin = np.linspace(yc.min(), yc.max(), ynum, endpoint=True)
 
-        xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
+            xmesh, ymesh = np.meshgrid(xlin, ylin, indexing="ij")
 
-        kde_fct = methods[kde_type]
-        if len(x):
+            # Compute the KDE for each point on the mesh
+            kde_fct = methods[kde_type]
             density = kde_fct(events_x=xs, events_y=ys,
                               xout=xmesh, yout=ymesh,
                               **kde_kwargs)
         else:
-            density = np.array([])
+            xmesh, ymesh = np.meshgrid([0, 1], [0, 1], indexing="ij")
+            density = np.array(np.nan * xmesh)
 
         # Convert mesh back to linear scale if applicable
         if xscale == "log":

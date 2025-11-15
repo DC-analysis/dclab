@@ -3,6 +3,7 @@ import pytest
 import dclab
 from dclab.external import skimage
 from dclab.kde import KernelDensityEstimator
+from dclab.kde.methods import KernelDensityEstimationForEmtpyArrayWarning
 from dclab import polygon_filter
 
 from helper_methods import example_data_dict
@@ -139,6 +140,46 @@ def test_kde_log_get_at_invalid():
     assert np.isnan(a[23])
 
 
+def test_kde_get_at_all_nan_inf():
+    ddict = example_data_dict()
+    ddict["area_um"][:] = [np.nan]
+    ddict["area_um"][0] = np.inf
+
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+                      match="KDE encountered an empty array"):
+        sc = kde_instance.get_at(xax="area_um", yax="deform")
+    assert np.all(np.isnan(sc))
+
+    ds.config["filtering"]["enable filters"] = False
+    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+                      match="KDE encountered an empty array"):
+        sc2 = kde_instance.get_at(xax="area_um", yax="deform",
+                                  positions=(ds["area_um"], ds["deform"]))
+    assert np.all(np.isnan(sc2))
+
+
+def test_kde_get_at_empty():
+    ddict = example_data_dict()
+    ddict["area_um"] = np.array([])
+    ddict["deform"] = np.array([])
+
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    sc = kde_instance.get_at(xax="area_um", yax="deform")
+    assert sc.size == 0
+
+    ds.config["filtering"]["enable filters"] = False
+    sc2 = kde_instance.get_at(xax="area_um", yax="deform",
+                              positions=(ds["area_um"], ds["deform"]))
+    assert sc2.size == 0
+
+
 def test_kde_get_at_positions():
     ddict = example_data_dict()
     ds = dclab.new_dataset(ddict)
@@ -169,3 +210,34 @@ def test_kde_log_get_at_out_of_bounds():
     assert np.isnan(a[1])
     assert np.isfinite(a[2])
     assert np.isfinite(a[3])
+
+
+def test_kde_get_raster_all_nan_inf():
+    ddict = example_data_dict()
+    ddict["area_um"][:] = [np.nan]
+    ddict["area_um"][0] = np.inf
+
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+                      match="KDE encountered an empty array"):
+        x, y, z = kde_instance.get_raster(xax="area_um", yax="deform")
+    assert x.shape == y.shape == z.shape
+    assert np.all(np.isnan(z))
+
+
+def test_kde_get_raster_empty():
+    ddict = example_data_dict()
+    ddict["area_um"] = np.array([])
+    ddict["deform"] = np.array([])
+
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+                      match="KDE encountered an empty array"):
+        x, y, z = kde_instance.get_raster(xax="area_um", yax="deform")
+    assert x.shape == y.shape == z.shape
+    assert np.all(np.isnan(z))

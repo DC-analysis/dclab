@@ -1,4 +1,5 @@
 """Kernel Density Estimation methods"""
+import warnings
 
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
@@ -6,6 +7,10 @@ from scipy.stats import gaussian_kde, skew
 
 from ..cached import Cache
 from ..external.statsmodels.nonparametric.kernel_density import KDEMultivariate
+
+
+class KernelDensityEstimationForEmtpyArrayWarning(UserWarning):
+    """Used when user attempts to compute KDE for an empty array"""
 
 
 def bin_num_doane(a):
@@ -49,10 +54,15 @@ def bin_width_doane(a):
     bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
     n = data.size
-    g1 = skew(data)
-    sigma_g1 = np.sqrt(6 * (n - 2) / ((n + 1) * (n + 3)))
-    k = 1 + np.log2(n) + np.log2(1 + np.abs(g1) / sigma_g1)
-    acc = (data.max() - data.min()) / k
+    if n > 0:
+        g1 = skew(data)
+        sigma_g1 = np.sqrt(6 * (n - 2) / ((n + 1) * (n + 3)))
+        k = 1 + np.log2(n) + np.log2(1 + np.abs(g1) / sigma_g1)
+        acc = (data.max() - data.min()) / k
+    else:
+        warnings.warn("KDE encountered an empty array",
+                      KernelDensityEstimationForEmtpyArrayWarning)
+        acc = 1
     return acc
 
 
@@ -94,12 +104,12 @@ def get_bad_vals(x, y):
 
 
 def ignore_nan_inf(kde_method):
-    """Ignores nans and infs from the input data
+    """Decorator that computes the KDE only for valid values
 
     Invalid positions in the resulting density are set to nan.
     """
-    def new_kde_method(events_x, events_y, xout=None, yout=None,
-                       *args, **kwargs):
+    def kde_wrapper(events_x, events_y, xout=None, yout=None,
+                    *args, **kwargs):
         bad_in = get_bad_vals(events_x, events_y)
         if xout is None:
             density = np.zeros_like(events_x, dtype=np.float64)
@@ -113,18 +123,19 @@ def ignore_nan_inf(kde_method):
         # Filter events
         ev_x = events_x[~bad_in]
         ev_y = events_y[~bad_in]
-        density[~bad_out] = kde_method(ev_x, ev_y,
-                                       xo, yo,
-                                       *args, **kwargs)
+        if ev_x.size:
+            density[~bad_out] = kde_method(ev_x, ev_y,
+                                           xo, yo,
+                                           *args, **kwargs)
         density[bad_out] = np.nan
         return density
 
     doc_add = "\n    Notes\n" +\
               "    -----\n" +\
               "    This is a wrapped version that ignores nan and inf values."
-    new_kde_method.__doc__ = kde_method.__doc__ + doc_add
+    kde_wrapper.__doc__ = kde_method.__doc__ + doc_add
 
-    return new_kde_method
+    return kde_wrapper
 
 
 @ignore_nan_inf

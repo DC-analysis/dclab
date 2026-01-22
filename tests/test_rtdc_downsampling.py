@@ -166,6 +166,34 @@ def test_downsample_maximum():
     assert len(x) == len(y) == 100
 
 
+def test_downsample_maximum_with_invalid():
+    """
+    Ask to downsample to a size larger than the dataset with invalid values.
+    """
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=100, keys=keys)
+    ddict["deform"][:10] = np.nan
+    ds = dclab.new_dataset(ddict)
+
+    ds.apply_filter()
+    x, y = ds.get_downsampled_scatter(downsample=110)
+    assert len(x) == len(y) == 100
+
+
+def test_downsample_maximum_with_invalid_exact():
+    """
+    Ask to downsample to a size larger than the dataset with invalid values.
+    """
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=100, keys=keys)
+    ddict["deform"][:10] = np.nan
+    ds = dclab.new_dataset(ddict)
+
+    ds.apply_filter()
+    x, y = ds.get_downsampled_scatter(downsample=100)
+    assert len(x) == len(y) == 100
+
+
 def test_downsample_up():
     """
     Likely causes removal of too many points and requires

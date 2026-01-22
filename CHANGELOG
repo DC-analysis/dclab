@@ -1,5 +1,6 @@
 0.67.3
  - fix: exporting filtered hierarchy dataset from basin-mapped datasets broken
+ - fix: downsampling failed when invalid values dominated
  - tests: increase coverage for hdf5 export
 0.67.2
  - fix: `KernelDensityEstimator.get_raster` returned non-identical shapes for

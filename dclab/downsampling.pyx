@@ -176,15 +176,19 @@ def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
     if not remove_invalid:
         diff_bad = (samples_int or keep.size) - np.sum(keep)
         if diff_bad > 0:
-            # Add a few of the invalid values so that in the end
-            # we have the desired array size.
             add_indices_bad = np.where(bad)[0]
-            if add_indices_bad.size:
+            if add_indices_bad.size > diff_bad:
+                # Add a few of the invalid values so that in the end
+                # we have the desired array size.
                 np.random.set_state(rs)
                 add_bad = np.random.choice(add_indices_bad,
                                            size=diff_bad,
                                            replace=False)
                 keep[add_bad] = True
+            else:
+                # We don't have enough bad indices (or just enough),
+                # so we add them all.
+                keep[add_indices_bad] = True
 
     # paulmueller 2024-01-03
     # if samples_int and not remove_invalid:

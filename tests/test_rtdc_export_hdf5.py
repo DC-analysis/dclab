@@ -350,8 +350,12 @@ def test_hdf5_hierarchy_basin_only_export():
 
 def test_hdf5_hierarchy_basin_only_export_with_filters():
     """
-    Same as above, only this time we additionally apply filters
-    to the child dataset before exporting.
+    When the dataset that is exported is a hierarchy child,
+    then there should be a mapped basin in the output file
+    referring to the input data.
+
+    This test performs the export after an additional filter
+    is applied to the hierarchy dataset.
     """
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     path_exp = h5path.with_name("exported.rtdc")
@@ -390,9 +394,14 @@ def test_hdf5_hierarchy_basin_only_export_with_filters():
         assert np.all(dse["deform"][:] == ds["deform"][5:][1::2]), "sanity"
 
 
-def test_hdf5_hierarchy_basin_only_export_with_filters_inception():
+def test_hdf5_hierarchy_basin_export_filter_hierarchy_depth_two():
     """
-    Same as above, here with an export from a hierarchy of depth 2.
+    When the dataset that is exported is a hierarchy child,
+    then there should be a mapped basin in the output file
+    referring to the input data.
+
+    This test performs the export after two hierarchy children are
+    created with an additional filter applied to the last hierarchy dataset.
     """
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     path_exp = h5path.with_name("exported.rtdc")
@@ -434,7 +443,7 @@ def test_hdf5_hierarchy_basin_only_export_with_filters_inception():
         assert np.all(dse["deform"][:] == ds["deform"][5:][1::2][:-1]), "sane"
 
 
-def test_hdf5_hierarchy_basin_only_export_with_filters_inception_2():
+def test_hdf5_hierarchy_basin_export_filter_basins_depth_two():
     """
     Same as above, here with an export depth of two
     """

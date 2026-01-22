@@ -434,6 +434,61 @@ def test_hdf5_hierarchy_basin_only_export_with_filters_inception():
         assert np.all(dse["deform"][:] == ds["deform"][5:][1::2][:-1]), "sane"
 
 
+def test_hdf5_hierarchy_basin_only_export_with_filters_inception_2():
+    """
+    Same as above, here with an export depth of two
+    """
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    path_exp1 = h5path.with_name("exported-1.rtdc")
+    path_exp2 = h5path.with_name("exported-2.rtdc")
+
+    with dclab.new_dataset(h5path) as ds:
+        ds.filter.manual[:5] = False
+        ds.apply_filter()
+        ds.export.hdf5(path_exp1,
+                       filtered=True,
+                       features=[],
+                       basins=True,
+                       )
+
+    with h5py.File(path_exp1) as h5:
+        assert "basinmap0" in h5["events"]
+        assert "basins" in h5
+        assert len(h5["basins"]) == 1
+
+    with dclab.new_dataset(path_exp1) as dsc:
+        dsc.filter.manual[::2] = False
+        dsc.apply_filter()
+        with dclab.new_dataset(dsc) as dsci:
+            dsci.filter.manual[-1] = False
+            dsci.apply_filter()
+            dsci.export.hdf5(path_exp2,
+                             filtered=True,
+                             features=[],
+                             basins=True,
+                             )
+
+    with h5py.File(path_exp2) as h5:
+        assert "basinmap1" in h5["events"]
+        assert "basins" in h5
+        assert len(h5["basins"]) == 2
+
+    with dclab.new_dataset(path_exp2) as dse, dclab.new_dataset(h5path) as ds:
+        assert "image" in dse.features_basin
+        assert "mask" in dse.features_basin
+        assert "area_um" in dse.features_basin
+
+        assert "image" not in dse.features_innate
+        assert "mask" not in dse.features_innate
+        assert "area_um" not in dse.features_innate
+
+        # check for inception filtering
+        assert np.allclose(dse["deform"][0], 0.15025392,
+                           atol=1e-7, rtol=0)
+        assert np.all(dse["deform"][:] == ds["deform"][6::2][:-1])
+        assert np.all(dse["deform"][:] == ds["deform"][5:][1::2][:-1]), "sane"
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_identifier_different():

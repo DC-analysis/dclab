@@ -499,14 +499,9 @@ class Export(object):
                     })
                 elif (ds.format == "hierarchy"
                       and ds.get_root_parent().format in get_basin_classes()):
-                    # avoid circular imports
-                    from .fmt_hierarchy import map_indices_child2root
                     # The dataset is a hierarchy child, and it is derived
                     # from a dataset that has a matching basin format.
-                    # We have to add the indices of the root parent, which
-                    # identify the child, to the basin dictionary. Note
-                    # that additional basin filtering is applied below
-                    # this case for all basins.
+                    #
                     # For the sake of clarity I wrote this as a separate case,
                     # even if that means duplicating code from the previous
                     # case.
@@ -523,17 +518,21 @@ class Export(object):
                         "basin_locs": basin_locs,
                         "basin_descr": f"Exported with dclab {version} from a "
                                        f"hierarchy dataset",
-                        # This is where this basin differs from the basin
-                        # definition in the previous case.
-                        "basin_map": map_indices_child2root(
-                            child=ds,
-                            child_indices=np.arange(len(ds))
-                            ),
+                        # Here we do not yet treat the conversion from the
+                        # root dataset indices to the child indices,
+                        # because we will fill in the missing values below
+                        # in the basin mapping correction step.
+                        "basin_map": None,
                         "basin_id": basin_id,
                     })
 
                 for bn_dict in basin_list:
-                    if bn_dict.get("basin_type") == "internal":
+                    if bn_dict.get("basin_format") not in get_basin_classes():
+                        # Whichever software stored this basin in the
+                        # original file, we do not support it or don't want
+                        # to break it.
+                        continue
+                    elif bn_dict.get("basin_type") == "internal":
                         # Internal basins are only valid for files they were
                         # defined in. Since we are exporting, it does not
                         # make sense to store these basins in the output file.
@@ -543,16 +542,45 @@ class Export(object):
                         # logic to execute in order to refresh them. We do not
                         # store them in the output file.
                         continue
+
+                    # Basin mapping correction: If we are filtering, or
+                    # if we are exporting from a hierarchy dataset, we have
+                    # to correct or add basin mapping arrays.
                     basinmap_orig = bn_dict.get("basin_map")
-                    if not filtered:
-                        # filtering disabled: just copy basins
-                        pass
-                    elif basinmap_orig is None:
-                        # basins with "same" mapping: create new mapping
-                        bn_dict["basin_map"] = np.where(filter_arr)[0]
+                    if ds.format == "hierarchy":
+                        # Hierarchy dataset
+                        # Compute mapping from hierarchy root.
+                        from .fmt_hierarchy import map_indices_child2root
+                        map_root = map_indices_child2root(
+                            child=ds,
+                            child_indices=np.arange(len(ds))
+                        )
+
+                        if not filtered and basinmap_orig is None:
+                            # We only have to consider the hierarchy.
+                            bn_dict["basin_map"] = map_root
+                        elif filtered and basinmap_orig is None:
+                            # Filtering must be taken into account.
+                            bn_dict["basin_map"] = map_root[filter_arr]
+                        else:
+                            # The source file has mapping defined which we
+                            # have to take into account.
+                            map_child = basinmap_orig[map_root]
+                            if filtered:
+                                # Subsetting additional filters
+                                bn_dict["basin_map"] = map_child[filter_arr]
+                            else:
+                                bn_dict["basin_map"] = map_child
                     else:
-                        # mapped basins: correct nested mapping
-                        bn_dict["basin_map"] = basinmap_orig[filter_arr]
+                        if not filtered:
+                            # filtering disabled: just copy basins
+                            pass
+                        elif filtered and basinmap_orig is None:
+                            # basins with mapping "same": create new mapping
+                            bn_dict["basin_map"] = np.where(filter_arr)[0]
+                        else:
+                            # filter the source mapping
+                            bn_dict["basin_map"] = basinmap_orig[filter_arr]
 
                     # Do not verify basins, it takes too long.
                     hw.store_basin(**bn_dict, verify=False)

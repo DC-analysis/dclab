@@ -44,6 +44,10 @@ FEATURES_UINT64 = [
 ]
 
 
+class StoringPerishableBasinWarning(UserWarning):
+    pass
+
+
 class RTDCWriter:
     def __init__(self,
                  path_or_h5file: str | pathlib.Path | h5py.File,
@@ -274,7 +278,8 @@ class RTDCWriter:
             .. versionadded:: 0.58.0
         """
         if perishable:
-            warnings.warn(f"Storing perishable basin {basin_name}")
+            warnings.warn(f"Storing perishable basin '{basin_name}'",
+                          StoringPerishableBasinWarning)
         if basin_type == "internal":
             if internal_data is None:
                 raise ValueError(

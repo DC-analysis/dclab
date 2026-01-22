@@ -10,7 +10,7 @@ import pytest
 
 import dclab
 from dclab import dfn, new_dataset, RTDCWriter
-from dclab.rtdc_dataset import rtdc_copy
+from dclab.rtdc_dataset import rtdc_copy, writer
 from dclab.rtdc_dataset.export import (
     ContourNotExportedWarning,
     store_filtered_feature,
@@ -141,13 +141,15 @@ def test_hdf5_basin_ignore_perishable_basins():
                   features="scalar")
         assert "basins" not in hw.h5file, "no basins in input file"
         # store an unknown basin format in the input file
-        hw.store_basin(basin_name="scalar and non-scalar basin data",
-                       basin_type="file",
-                       basin_format="hdf5",
-                       basin_descr="a test basin with an unknown format",
-                       basin_locs=[str(h5path)],
-                       perishable=True,
-                       )
+        with pytest.warns(writer.StoringPerishableBasinWarning,
+                          match="perishable basin"):
+            hw.store_basin(basin_name="scalar and non-scalar basin data",
+                           basin_type="file",
+                           basin_format="hdf5",
+                           basin_descr="a test basin with an unknown format",
+                           basin_locs=[str(h5path)],
+                           perishable=True,
+                           )
 
     with new_dataset(h5path_small) as ds:
         # sanity check

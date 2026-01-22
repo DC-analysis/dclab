@@ -10,6 +10,7 @@ import pytest
 
 import dclab
 from dclab import dfn, new_dataset, RTDCWriter
+from dclab.rtdc_dataset import rtdc_copy
 from dclab.rtdc_dataset.export import (
     ContourNotExportedWarning,
     store_filtered_feature,
@@ -38,6 +39,130 @@ def test_hdf5():
     assert np.allclose(ds2["time"], ds1["time"])
     assert np.allclose(ds2["frame"], ds1["frame"])
     assert np.allclose(ds2["fl3_width"], ds1["fl3_width"])
+
+
+def test_hdf5_basin_ignore_internal_basin():
+    """
+    Internal basin definitions should not be written to exported file.
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("input_file.rtdc")
+    h5path_out = h5path.with_name("exported.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=hw.h5file,
+                  features="scalar")
+        assert "basins" not in hw.h5file, "no basins in input file"
+        # store scalar and non-scalar internal basins in the input file
+        hw.store_basin(basin_name="scalar and non-scalar basin data",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data={"userdef1": np.arange(2),
+                                      "image_bg": np.zeros((2, 80, 320)),
+                                      },
+                       basin_map=np.zeros(src["events/deform"].shape[0]),
+                       basin_feats=["image_bg", "userdef1"],
+                       )
+
+    with new_dataset(h5path_small) as ds:
+        # sanity check
+        assert "userdef1" in ds.features_basin
+        assert "userdef1" not in ds.features_innate
+        assert "image_bg" in ds.features_basin
+        assert "image_bg" not in ds.features_innate
+        # export that
+        ds.export.hdf5(h5path_out,
+                       features=["userdef1", "deform"],
+                       basins=True)
+
+    with new_dataset(h5path_out) as dso:
+        assert "userdef1" in dso.features_innate
+        assert "image_bg" in dso.features_basin
+
+    with h5py.File(h5path_out) as h5:
+        assert "basin_events" not in h5
+
+
+def test_hdf5_basin_ignore_unknown_basin_format():
+    """
+    When exporting basins, unknown basin formats (those that are not in
+    `get_basin_classes`) should not be exported to the output file.
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("input_file.rtdc")
+    h5path_out = h5path.with_name("exported.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=hw.h5file,
+                  features="scalar")
+        assert "basins" not in hw.h5file, "no basins in input file"
+        # store an unknown basin format in the input file
+        hw.store_basin(basin_name="scalar and non-scalar basin data",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_descr="a test basin with an unknown format",
+                       basin_locs=[str(h5path)]
+                       )
+
+    with new_dataset(h5path_small) as ds:
+        # sanity check
+        assert len(ds.basins) == 1
+        # modify the basins (this is a bit hacky)
+        ds._basins[0].basin_format = "unknown"
+        # export that
+        ds.export.hdf5(h5path_out,
+                       features=["deform"],
+                       basins=True)
+
+    with new_dataset(h5path_out) as dso:
+        assert len(ds.basins) == 1, "because the unknown basin is ignored"
+        assert "deform" in dso.features_innate
+        assert "image" in dso.features_basin
+
+
+def test_hdf5_basin_ignore_perishable_basins():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("input_file.rtdc")
+    h5path_out = h5path.with_name("exported.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=hw.h5file,
+                  features="scalar")
+        assert "basins" not in hw.h5file, "no basins in input file"
+        # store an unknown basin format in the input file
+        hw.store_basin(basin_name="scalar and non-scalar basin data",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_descr="a test basin with an unknown format",
+                       basin_locs=[str(h5path)],
+                       perishable=True,
+                       )
+
+    with new_dataset(h5path_small) as ds:
+        # sanity check
+        assert len(ds.basins) == 1
+        # Make sure there is a perishable record
+        assert ds.basins[0].perishable
+        # export, should ignore the perishable basin
+        ds.export.hdf5(h5path_out,
+                       features=["deform"],
+                       basins=True)
+
+    with new_dataset(h5path_out) as dso:
+        assert len(ds.basins) == 1, "because the perishable basin is ignored"
+        assert "deform" in dso.features_innate
+        assert "image" in dso.features_basin
 
 
 def test_hdf5_compressed():

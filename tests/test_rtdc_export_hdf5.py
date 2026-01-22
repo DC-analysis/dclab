@@ -309,11 +309,16 @@ def test_hdf5_filtered_index():
     assert ds2.config["experiment"]["event count"] == n - 1
 
 
-def test_hdf5_hierarchy_basin_only_export():
+@pytest.mark.parametrize("export_filtering", [True, False])
+def test_hdf5_hierarchy_basin_only_export(export_filtering):
     """
     When the dataset that is exported is a hierarchy child,
     then there should be a mapped basin in the output file
     referring to the input data.
+
+    The parametrization of this method checks whether the output
+    is the same when `filtered` is set or not. It should be the
+    same, because the hierarchy child has no filters defined.
     """
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     path_exp = h5path.with_name("exported.rtdc")
@@ -326,6 +331,7 @@ def test_hdf5_hierarchy_basin_only_export():
             dsc.export.hdf5(path_exp,
                             features=[],
                             basins=True,
+                            filtered=export_filtering,
                             )
 
     with h5py.File(path_exp) as h5:

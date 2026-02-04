@@ -320,7 +320,7 @@ class PolygonFilter(object):
             The new version uses the cython implementation from
             scikit-image. In the old version, the inside/outside
             definition was the other way around. In favor of not
-            having to modify upstram code, the scikit-image
+            having to modify upstream code, the scikit-image
             version was adapted.
         """
         points = np.array(p).reshape(1, 2)

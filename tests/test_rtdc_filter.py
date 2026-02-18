@@ -10,29 +10,6 @@ import pytest
 from helper_methods import example_data_dict
 
 
-def test_changed_polygon_filter():
-    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
-    ds = new_dataset(ddict)
-    amin, amax = ds["area_um"].min(), ds["area_um"].max()
-    dmin, dmax = ds["deform"].min(), ds["deform"].max()
-    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
-                             points=[[amin, dmin],
-                                     [(amax + amin) / 2, dmin],
-                                     [(amax + amin) / 2, dmax],
-                                     ])
-    ds.config["filtering"]["polygon filters"].append(pf.unique_id)
-    ds.apply_filter()
-    assert np.sum(ds.filter.all) == 2138
-    # change the filter
-    pf.points = list(pf.points) + [np.array([amin, dmax])]
-    ds.apply_filter()
-    assert np.sum(ds.filter.all) == 4215
-    # invert the filter
-    pf.inverted = True
-    ds.apply_filter()
-    assert np.sum(ds.filter.all) == 4257
-
-
 def test_disable_filters():
     """Disabling the filters should only affect RTDCBase.filter.all"""
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
@@ -54,6 +31,19 @@ def test_filter_manual():
     assert ds["deform"][1] == ds["deform"][ds.filter.all][0]
 
 
+def test_filter_manual_reset():
+    # make sure min/max values are filtered
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ds.filter.manual[[0, 8471]] = False
+    ds.apply_filter()
+    assert len(ds["deform"][ds.filter.all]) == 8470
+    assert ds["deform"][1] == ds["deform"][ds.filter.all][0]
+
+    ds.reset_filter()
+    assert np.sum(ds.filter.all) == 8472
+    assert np.sum(ds.filter.manual) == 8472
+
 def test_filter_min_max():
     # make sure min/max values are filtered
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
@@ -69,6 +59,22 @@ def test_filter_min_max():
     ds.config["filtering"]["deform min"] = (dmin + dmax) / 2
     ds.config["filtering"]["deform max"] = dmax
     assert np.sum(ds.filter.all) == 4256
+
+
+def test_filter_min_max_reset():
+    # make sure min/max values are filtered
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    amin, amax = ds["area_um"].min(), ds["area_um"].max()
+    ds.config["filtering"]["area_um min"] = (amax + amin) / 2
+    ds.config["filtering"]["area_um max"] = amax
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 4256
+
+    ds.reset_filter()
+    assert np.sum(ds.filter.all) == 8472
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 8472
 
 
 def test_nan_warning():
@@ -102,6 +108,49 @@ def test_only_one_boundary_error():
         pass
     else:
         assert False, "setting only half of a box filter should not work"
+
+
+def test_polygon_filter_changed():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    amin, amax = ds["area_um"].min(), ds["area_um"].max()
+    dmin, dmax = ds["deform"].min(), ds["deform"].max()
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[amin, dmin],
+                                     [(amax + amin) / 2, dmin],
+                                     [(amax + amin) / 2, dmax],
+                                     ])
+    ds.config["filtering"]["polygon filters"].append(pf.unique_id)
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 2138
+    # change the filter
+    pf.points = list(pf.points) + [np.array([amin, dmax])]
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 4215
+    # invert the filter
+    pf.inverted = True
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 4257
+
+
+def test_polygon_filter_reset():
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    amin, amax = ds["area_um"].min(), ds["area_um"].max()
+    dmin, dmax = ds["deform"].min(), ds["deform"].max()
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[amin, dmin],
+                                     [(amax + amin) / 2, dmin],
+                                     [(amax + amin) / 2, dmax],
+                                     ])
+    ds.config["filtering"]["polygon filters"].append(pf.unique_id)
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 2138
+
+    ds.reset_filter()
+    assert np.sum(ds.filter.all) == 8472
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 8472
 
 
 @pytest.mark.parametrize("prop", ["all", "box", "invalid", "polygon"])

@@ -895,5 +895,6 @@ class RTDCBase(abc.ABC):
         # reset configuration
         # remember hierarchy parent
         hp = self.config["filtering"]["hierarchy parent"]
+        self.config["filtering"].clear()
         self.config._init_default_filter_values()
         self.config["filtering"]["hierarchy parent"] = hp

@@ -1,3 +1,5 @@
+0.67.4
+ - fix: `RTDCBase.reset_filter` did not remove box filters
 0.67.3
  - fix: exporting filtered hierarchy dataset from basin-mapped datasets broken
  - fix: downsampling failed when invalid values dominated

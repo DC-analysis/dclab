@@ -44,6 +44,7 @@ def test_filter_manual_reset():
     assert np.sum(ds.filter.all) == 8472
     assert np.sum(ds.filter.manual) == 8472
 
+
 def test_filter_min_max():
     # make sure min/max values are filtered
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])

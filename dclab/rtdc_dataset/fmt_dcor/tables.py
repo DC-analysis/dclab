@@ -41,9 +41,14 @@ class DCORTable(MetaTable):
     def __init__(self, table_content):
         self._columns, data = table_content
         self._tab_data = np.asarray(data)
+        if self._tab_data.dtype.char == "O":
+            # numpy could not figure out the dtype. This means
+            # that there are `None` values in the array, and we need
+            # to convert to float instead (which replaces None with NaN).
+            self._tab_data = np.asarray(data, dtype=float)
+
         if self._columns is not None:
             # We have a rec-array (named columns)
-
             ds_dt = np.dtype({'names': self._columns,
                               'formats': [np.float64] * len(self._columns)})
             self._tab_data = np.rec.array(self._tab_data, dtype=ds_dt)

@@ -1,5 +1,5 @@
 0.67.5
- - fix: detect invalid table values and convert to NaN (#287)
+ - fix: detect invalid table values and convert to NaN for DCOR data (#287)
 0.67.4
  - fix: `RTDCBase.reset_filter` did not remove box filters
 0.67.3

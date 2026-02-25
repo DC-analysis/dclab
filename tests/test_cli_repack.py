@@ -29,6 +29,18 @@ def test_repack_basic():
             assert np.all(dsj["mask"][ii] == ds0["mask"][ii])
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_repack_basic_progress(capsys):
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("repacked.rtdc")
+
+    cli.repack(path_in=path_in, path_out=path_out)
+    captured = capsys.readouterr()
+    assert captured.out.count("Repack 100%")
+
+
 @pytest.mark.parametrize("use_basins", [True, False])
 def test_repack_basin_internal(use_basins):
     """

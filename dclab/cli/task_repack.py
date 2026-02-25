@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import multiprocessing as mp
 import pathlib
+import threading
 
 import h5py
 
@@ -58,18 +60,37 @@ def repack(
         path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
     with h5py.File(path_in) as h5, h5py.File(path_temp, "w") as hc:
+        bytes_total = mp.Value("Q")
+        bytes_written = mp.Value("Q")
+        stop_event = threading.Event()
+
+        monitor_thread = threading.Thread(
+            target=common.monitor,
+            args=("Repack", bytes_total, bytes_written, stop_event),
+            name="Repack",
+            daemon=True)
+        monitor_thread.start()
+
         rtdc_copy(src_h5file=h5,
                   dst_h5file=hc,
                   features="all",
                   include_basins=not strip_basins,
                   include_logs=not strip_logs,
                   include_tables=True,
-                  meta_prefix="")
+                  meta_prefix="",
+                  bytes_total=bytes_total,
+                  bytes_written=bytes_written,
+                  )
+
+        stop_event.set()
+        monitor_thread.join()
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
     if ret_path:
         return path_out
+    else:
+        return None
 
 
 def repack_parser():

@@ -1,5 +1,5 @@
 0.68.0
- - feat: print progress in CLI dclab-compress
+ - feat: print progress in CLI dclab-compress and dclab-repack
  - ref: drop support for HDF5 < 1.14.4
 0.67.5
  - fix: detect invalid table values and convert to NaN for DCOR data (#287)

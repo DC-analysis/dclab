@@ -1,3 +1,5 @@
+import multiprocessing as mp
+
 import hdf5plugin
 import h5py
 import numpy as np
@@ -39,6 +41,34 @@ def test_copy_already_compressed():
     with h5py.File(path_copy) as hc:
         assert is_properly_compressed(hc["events/deform"])
         assert is_properly_compressed(hc["events/image"])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_copy_already_compressed_progress():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_temp = path.with_name("test_compressed.rtdc")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    ds1 = new_dataset(path)
+
+    with RTDCWriter(path_temp,
+                    compression_kwargs=hdf5plugin.Zstd(clevel=5)) as hw:
+        hw.store_metadata({"setup": ds1.config["setup"],
+                           "experiment": ds1.config["experiment"]})
+        hw.store_feature("deform", ds1["deform"])
+        hw.store_feature("image", ds1["image"])
+
+        with h5py.File(path_copy, "w") as hc:
+            bytes_total = mp.Value("Q")
+            bytes_written = mp.Value("Q")
+            rtdc_copy(src_h5file=hw.h5file,
+                      dst_h5file=hc,
+                      bytes_total=bytes_total,
+                      bytes_written=bytes_written,
+                      )
+            assert bytes_total.value == 100020
+            assert bytes_written.value == 100020
 
 
 def test_copy_basins():
@@ -175,6 +205,57 @@ def test_copy_basins_internal_no_scalar():
         assert bn["type"] == "internal"
         assert bn["mapping"] != "same"
         assert bn["features"] == ["userdef1"], "image_bg feature must be gone"
+
+
+@pytest.mark.parametrize("features,size", [
+    ["scalar", 1256],
+    ["all", 409600 + 1256],
+    [[], 80],  # 80 bytes for basinmap0
+])
+def test_copy_basins_internal_no_scalar_progress(features, size):
+    """Store an internal basin and only export scalar features"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("input_file.rtdc")
+    h5path_out = h5path.with_name("condensed.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=hw.h5file,
+                  features="scalar")
+        assert "basins" not in hw.h5file, "no basins in input file"
+        # store scalar and non-scalar internal basins in the input file
+        hw.store_basin(basin_name="scalar and non-scalar basin data",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="an example test basin",
+                       internal_data={"userdef1": np.arange(2),
+                                      "image_bg": np.zeros((2, 80, 320)),
+                                      },
+                       basin_map=np.zeros(src["events/deform"].shape[0]),
+                       basin_feats=["image_bg", "userdef1"],
+                       )
+
+    # Now the actual tests starts.
+    with h5py.File(h5path_small) as src, h5py.File(h5path_out, "a") as dst:
+        bytes_total = mp.Value("Q")
+        bytes_written = mp.Value("Q")
+
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=dst,
+                  features=features,
+                  include_basins=True,
+                  include_logs=False,
+                  include_tables=False,
+                  meta_prefix="",
+                  bytes_total=bytes_total,
+                  bytes_written=bytes_written,
+                  )
+
+        assert bytes_total.value == size
+        assert bytes_written.value == size
 
 
 def test_copy_basins_mapped():
@@ -426,6 +507,30 @@ def test_copy_specified_feature_list():
         assert "image" in hc["events"]
         assert "area_um" not in hc["events"]
         assert "deform" in hc["events"]
+
+
+def test_copy_specified_feature_list_progress():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    # copy
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        bytes_total = mp.Value("Q")
+        bytes_written = mp.Value("Q")
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc,
+                  include_tables=False,
+                  include_logs=False,
+                  include_basins=False,
+                  features=["image", "deform"],
+                  bytes_total=bytes_total,
+                  bytes_written=bytes_written,
+                  )
+
+        assert bytes_total.value == (
+            h5["events/deform"].nbytes + h5["events/image"].nbytes)
+        assert bytes_total.value == 100020
+        assert bytes_written.value == 100020
 
 
 def test_copy_tables():

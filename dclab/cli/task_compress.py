@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import multiprocessing as mp
 import pathlib
+import threading
+import time
 import warnings
 
 import hdf5plugin
@@ -70,6 +73,17 @@ def compress(
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         with h5py.File(path_in) as h5, h5py.File(path_temp, "w") as hc:
+            bytes_total = mp.Value("Q")
+            bytes_written = mp.Value("Q")
+            stop_event = threading.Event()
+
+            monitor_thread = threading.Thread(
+                target=compress_monitor,
+                args=(bytes_total, bytes_written, stop_event),
+                name="Compression",
+                daemon=True)
+            monitor_thread.start()
+
             rtdc_copy(src_h5file=h5,
                       dst_h5file=hc,
                       features="all",
@@ -77,7 +91,12 @@ def compress(
                       include_logs=True,
                       include_tables=True,
                       meta_prefix="",
+                      bytes_total=bytes_total,
+                      bytes_written=bytes_written,
                       )
+
+            stop_event.set()
+            monitor_thread.join()
 
             hc.require_group("logs")
             # rename old dclab-compress logs
@@ -105,6 +124,28 @@ def compress(
 
     if ret_path:
         return path_out
+    else:
+        return None
+
+
+def compress_monitor(bytes_total, bytes_written, stop_event):
+    prev_progress = ""
+
+    while not stop_event.is_set():
+        if bytes_total.value == 0:
+            frac = 0
+        else:
+            frac = bytes_written.value / bytes_total.value
+        progress = f"Compression {frac:.0%}"
+        if progress != prev_progress:
+            prev_progress = progress
+            print(progress, end="\r", flush=True)
+        time.sleep(.25)
+
+    if bytes_written.value == bytes_total.value != 0:
+        print("Compression 100%")
+    else:
+        print("")
 
 
 def compress_parser():

@@ -52,6 +52,18 @@ def test_compress():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_compress_progress(capsys):
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("compressed.rtdc")
+
+    cli.compress(path_in=path_in, path_out=path_out)
+    captured = capsys.readouterr()
+    assert captured.out.count("Compression 100%")
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_wo_logs():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     with h5py.File(path_in, "a") as h5:

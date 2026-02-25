@@ -12,6 +12,7 @@ import hdf5plugin
 import numpy as np
 
 from ..definitions import feature_exists, scalar_feature_exists
+from ..external.packaging import parse as parse_version
 from ..util import hashobj
 
 from .fmt_hdf5 import DEFECTIVE_FEATURES, RTDC_HDF5
@@ -123,26 +124,23 @@ def rtdc_copy(src_h5file: h5py.Group,
 
     # copy tables
     if include_tables and "tables" in src_h5file:
+        hdf5_version = h5py.version.hdf5_version
+        if parse_version(hdf5_version) < parse_version("1.14.4"):
+            # There was a problem with h5copy in some rare situations.
+            # https://github.com/HDFGroup/hdf5/issues/3214
+            raise ImportError("Your version of h5py is built against HDF5 "
+                              f"{hdf5_version}, but dclab requires HDF5 "
+                              f"1.14.4 for writing tables.")
+
         dst_h5file.require_group("tables")
         for tkey in src_h5file["tables"]:
-            # There appears to be a problem with h5copy in some rare
-            # situations, so we do not use h5copy, but read and write
-            # the table data directly.
-            # https://github.com/HDFGroup/hdf5/issues/3214
-            # The following caused a Segmentation fault:
-            # h5ds_copy(src_loc=src_h5file["tables"],
-            #           src_name=tkey,
-            #           dst_loc=dst_h5file["tables"],
-            #           dst_name=meta_prefix + tkey,
-            #           recursive=False)
-            copy_table = dst_h5file["tables"].create_dataset(
-                name=tkey,
-                data=src_h5file["tables"][tkey][:],
-                fletcher32=True,
-                **hdf5plugin.Zstd(clevel=5))
-            copy_table.attrs.update(src_h5file["tables"][tkey].attrs)
-            if bytes_written is not None:
-                bytes_written.value += get_size(copy_table)
+            h5ds_copy(src_loc=src_h5file["tables"],
+                      src_name=tkey,
+                      dst_loc=dst_h5file["tables"],
+                      dst_name=meta_prefix + tkey,
+                      recursive=False,
+                      bytes_written=bytes_written,
+                      )
 
     # copy basin definitions
     if include_basins and "basins" in src_h5file:

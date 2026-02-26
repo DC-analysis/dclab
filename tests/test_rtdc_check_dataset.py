@@ -435,6 +435,15 @@ def test_ic_fmt_hdf5_logs():
     assert cues[0].level == "alert"
 
 
+def open_swmr(swmr_path, sync_value):
+    """Helper method for `test_ic_gmt_hdf5_swmr_mode`"""
+    with h5py.File(swmr_path, "a", libver="latest") as hw:
+        hw.swmr_mode = True
+        sync_value.value = 1
+        while sync_value.value == 1:
+            time.sleep(0.1)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_gmt_hdf5_swmr_mode(tmp_path):
@@ -450,14 +459,6 @@ def test_ic_gmt_hdf5_swmr_mode(tmp_path):
     with check.IntegrityChecker(swmr_path) as ic:
         cues = ic.check_fmt_hdf5_swmr_mode()
     assert len(cues) == 0
-
-    # open the file in a different process
-    def open_swmr(path, sync_value):
-        with h5py.File(swmr_path, "a", libver="latest") as hw:
-            hw.swmr_mode = True
-            sync_value.value = 1
-            while sync_value.value == 1:
-                time.sleep(0.1)
 
     abort_value = mp.Value("i", 0)
     opener = mp.Process(target=open_swmr,

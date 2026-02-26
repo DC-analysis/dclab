@@ -107,7 +107,7 @@ def test_basin_as_dict_netloc_vs_hostname(tmp_path):
 
 
 @pytest.mark.parametrize("url", [
-    "https://example.com/nonexistentbucket/nonexistentkey",
+    "http://example.com/nonexistentbucket/nonexistentkey",
     f"https://objectstore.hpccloud.mpcdf.mpg.de/noexist-{uuid.uuid4()}/key",
 ])
 def test_basin_not_available(url):
@@ -137,7 +137,7 @@ def test_basin_not_available(url):
         _ = ds["index"]
 
     # Also test that on a lower level
-    bn = HTTPBasin("https://example.com/nonexistentbucket/nonexistentkey")
+    bn = HTTPBasin("http://example.com/nonexistentbucket/nonexistentkey")
     assert not bn.is_available()
     with pytest.raises(BasinNotAvailableError, match="is not available"):
         _ = bn.ds

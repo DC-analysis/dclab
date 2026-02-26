@@ -601,6 +601,19 @@ class IntegrityChecker(object):
                                     category="format HDF5"))
         return cues
 
+    def check_fmt_hdf5_swmr_mode(self, **kwargs):
+        """If the dataset is opened in SWMR mode, something might be wrong"""
+        cues = []
+        if self.ds.format == "hdf5":
+            if self.ds.h5file.swmr_mode:
+                cues.append(ICue(
+                    msg="File is open in SWMR mode. If the file is not being "
+                        "written to by another program, consider clearing the "
+                        "file consistency flags with `h5clear PATH`.",
+                    level="alert",
+                    category="format HDF5"))
+        return cues
+
     def check_info(self, **kwargs):
         cues = [
             ICue(

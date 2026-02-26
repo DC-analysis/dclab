@@ -1,4 +1,6 @@
+import multiprocessing as mp
 import sys
+import time
 
 import h5py
 import numpy as np
@@ -431,6 +433,52 @@ def test_ic_fmt_hdf5_logs():
     assert cues[0].category == "format HDF5"
     assert cues[0].msg == 'Logs: test line 0 exceeds maximum line length 100'
     assert cues[0].level == "alert"
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_ic_gmt_hdf5_swmr_mode(tmp_path):
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    swmr_path = tmp_path / "swmr.rtdc"
+    with h5py.File(h5path) as h5, h5py.File(swmr_path, "a", libver="latest") as hw:
+        hw.attrs.update(h5.attrs)
+        hw = RTDCWriter(hw)
+        hw.store_feature("deform", h5["events/deform"][:])
+        hw.store_feature("area_msd", h5["events/area_msd"][:])
+
+    with check.IntegrityChecker(swmr_path) as ic:
+        cues = ic.check_fmt_hdf5_swmr_mode()
+    assert len(cues) == 0
+
+    # open the file in a different process
+    def open_swmr(path, sync_value):
+        with h5py.File(swmr_path, "a", libver="latest") as hw:
+            hw.swmr_mode = True
+            sync_value.value = 1
+            while sync_value.value == 1:
+                time.sleep(0.1)
+
+    abort_value = mp.Value("i", 0)
+    opener = mp.Process(target=open_swmr, args=(str(swmr_path.resolve()), abort_value))
+    opener.start()
+
+    try:
+        while abort_value.value == 0:
+            print("waiting for SWMR opener")
+            time.sleep(0.1)
+
+        # The file is open in another process.
+        with check.IntegrityChecker(swmr_path) as ic:
+            cues = ic.check_fmt_hdf5_swmr_mode()
+        assert len(cues) == 1
+    finally:
+        abort_value.value = 2
+        opener.join()
+
+    # The file is not anymore open in another process
+    with check.IntegrityChecker(swmr_path) as ic:
+        cues = ic.check_fmt_hdf5_swmr_mode()
+    assert len(cues) == 0
 
 
 @pytest.mark.filterwarnings(

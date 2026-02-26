@@ -78,7 +78,30 @@ class RTDC_HDF5(RTDCBase):
         h5kwargs.setdefault("rdcc_w0", 0)
 
         self.h5kwargs = h5kwargs
-        self.h5file = h5py.File(h5path, **h5kwargs)
+
+        try:
+            self.h5file = h5py.File(h5path, **h5kwargs)
+        except OSError as e:
+            # This could mean that the dataset is currently being written to
+            # OR the recording software crashed. Opening the file in read mode
+            # is only possible by either clearing the file consistency flags,
+            # or reading it in SWMR mode (which is what we try here).
+            msg = " ".join([str(arg) for arg in e.args])
+            if msg and (
+                # 'Unable to synchronously open file (file locking flag
+                #  values don't match)'
+                msg.count("file locking flag values don't match")
+                # 'Unable to synchronously open file (file is already open for
+                #  write (may use <h5clear file> to clear file consistency
+                #  flags))'
+                    or msg.count("h5clear")):
+                self.h5file = h5py.File(h5path,
+                                        swmr=True,
+                                        locking=False,
+                                        libver="latest",
+                                        **h5kwargs)
+            else:
+                raise
 
         self._events = events.H5Events(self.h5file)
 

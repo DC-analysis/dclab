@@ -150,6 +150,7 @@ def test_create_basin_file_non_matching_identifier(tmp_path):
         # because `__contains__` returns True for "trace", but the trace data
         # are nowhere to find.
         with (pytest.warns(UserWarning, match="but I cannot get its data"),
+              pytest.warns(UserWarning, match="does not match hoolahoop"),
               pytest.raises(KeyError, match="deform")):
             _ = ds["deform"]
 

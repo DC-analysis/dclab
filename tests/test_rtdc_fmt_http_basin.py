@@ -169,6 +169,7 @@ def test_create_basin_file_non_matching_identifier(tmp_path):
         # ...but it is actually not, since the run identifier does not match
         # and therefore dclab does not allow the user to access it.
         with (pytest.warns(UserWarning, match="but I cannot get its data"),
+              pytest.warns(UserWarning, match="does not match hoolahoop"),
               pytest.raises(KeyError, match="deform")):
             _ = ds["deform"]
 

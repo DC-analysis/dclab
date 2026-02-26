@@ -440,7 +440,8 @@ def test_ic_fmt_hdf5_logs():
 def test_ic_gmt_hdf5_swmr_mode(tmp_path):
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     swmr_path = tmp_path / "swmr.rtdc"
-    with h5py.File(h5path) as h5, h5py.File(swmr_path, "a", libver="latest") as hw:
+    with h5py.File(h5path) as h5, h5py.File(swmr_path, "a",
+                                            libver="latest") as hw:
         hw.attrs.update(h5.attrs)
         hw = RTDCWriter(hw)
         hw.store_feature("deform", h5["events/deform"][:])
@@ -459,7 +460,8 @@ def test_ic_gmt_hdf5_swmr_mode(tmp_path):
                 time.sleep(0.1)
 
     abort_value = mp.Value("i", 0)
-    opener = mp.Process(target=open_swmr, args=(str(swmr_path.resolve()), abort_value))
+    opener = mp.Process(target=open_swmr,
+                        args=(str(swmr_path.resolve()), abort_value))
     opener.start()
 
     try:

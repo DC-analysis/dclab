@@ -4,6 +4,7 @@ from __future__ import annotations
 import io
 import json
 import pathlib
+import time
 from typing import Any, BinaryIO, Dict
 import warnings
 
@@ -100,6 +101,22 @@ class RTDC_HDF5(RTDCBase):
                                         locking=False,
                                         libver="latest",
                                         **h5kwargs)
+                # The writer is flushing datasets at specific intervals.
+                # In case we hit just such a flushing point, then our
+                # features might have non-matching lengths.
+                for ii in range(5):
+                    lengths = []
+                    for feat in self.h5file["events"].keys():
+                        ds = self.h5file["events"][feat]
+                        ds.refresh()
+                        lengths.append(ds.shape[0])
+                    if len(set(lengths)) == 1:
+                        # We are good.
+                        break
+                    time.sleep(0.1)
+                else:
+                    warnings.warn(
+                        f"Feature sizes in {self.path} are not identical.")
             else:
                 raise
 

@@ -30,7 +30,7 @@ def compress(
     ----------
     path_in: str or pathlib.Path
         file to compress
-    path_out: str or pathlib
+    path_out: str or pathlib.Path
         output file path
     force: bool
         DEPRECATED

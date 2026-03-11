@@ -29,11 +29,6 @@ class RTDC_HTTP(RTDC_HDF5):
         **kwargs:
             Keyword arguments for `RTDCBase`
 
-        Attributes
-        ----------
-        path: str
-            The URL to the object
-
         Notes
         -----
         Since this format still requires random access to the file online,
@@ -61,6 +56,7 @@ class RTDC_HTTP(RTDC_HDF5):
             *args,
             **kwargs)
         # Override self.path with the actual HTTP URL
+        #: URL to the file
         self.path = url
 
     def close(self):

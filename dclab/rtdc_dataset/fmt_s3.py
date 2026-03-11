@@ -173,11 +173,6 @@ class RTDC_S3(RTDC_HDF5):
             Arguments for `RTDCBase`
         **kwargs:
             Keyword arguments for `RTDCBase`
-
-        Attributes
-        ----------
-        path: str
-            The URL to the object
         """
         if not BOTO3_AVAILABLE:
             raise ModuleNotFoundError(
@@ -209,6 +204,7 @@ class RTDC_S3(RTDC_HDF5):
             *args,
             **kwargs)
         # Override self.path with the actual S3 URL
+        #: URL the object on S3
         self.path = self._s3file.url
 
     def close(self):

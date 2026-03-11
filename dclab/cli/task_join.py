@@ -31,7 +31,7 @@ def join(
 
     Parameters
     ----------
-    paths_in: list of paths
+    paths_in: list of string or pathlib.Path
         input paths to join
     path_out: str or pathlib.Path
         output path

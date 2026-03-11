@@ -50,11 +50,6 @@ class RTDC_HDF5(RTDCBase):
             Arguments for `RTDCBase`
         **kwargs:
             Keyword arguments for `RTDCBase`
-
-        Attributes
-        ----------
-        path: pathlib.Path
-            Path to the experimental HDF5 (.rtdc) file
         """
         super(RTDC_HDF5, self).__init__(*args, **kwargs)
 
@@ -69,6 +64,8 @@ class RTDC_HDF5(RTDCBase):
             h5path = h5path
 
         self._hash = None
+
+        #: Path to the experimental HDF5 (.rtdc) file
         self.path = h5path
 
         # Increase the read cache (which defaults to 1MiB), since

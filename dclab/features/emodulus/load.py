@@ -70,7 +70,7 @@ def load_lut(lut_data: str | pathlib.Path | tuple[npt.NDArray, dict] =
 
     Parameters
     ----------
-    lut_data: path, str, or tuple of (np.ndarray of shape (N, 3), dict)
+    lut_data: pathlib.Path, str, or tuple of (np.ndarray of shape (N, 3), dict)
         The LUT data to use. If it is in :func:`get_internal_lut_names_dict()`,
         then the respective LUT will be used. Otherwise, a path to a
         file on disk or a tuple (LUT array, metadata) is possible.

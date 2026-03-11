@@ -66,11 +66,6 @@ class RTDC_DCOR(RTDCBase):
             Arguments for `RTDCBase`
         **kwargs:
             Keyword arguments for `RTDCBase`
-
-        Attributes
-        ----------
-        path: str
-            Full URL to the DCOR resource
         """
         if not api.REQUESTS_AVAILABLE:
             raise ModuleNotFoundError(
@@ -81,6 +76,7 @@ class RTDC_DCOR(RTDCBase):
         self._hash = None
         self._cache_basin_dict = None
         self.cache_basin_dict_time = 600
+        #: Full URL to the DCOR resource
         self.path = RTDC_DCOR.get_full_url(url, use_ssl, host)
 
         if cert_path is None:

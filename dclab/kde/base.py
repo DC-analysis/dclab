@@ -3,8 +3,21 @@ import warnings
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator as RGI
 
+from ..cached import umbrella_cache
+
 from .methods import bin_width_doane_div5, get_bad_vals, methods
 from .contours import find_contours_level, get_quantile_levels
+
+
+def kde_handler(kde):
+    return [
+        # uniquely identifies an RTDC file, hierarchy child, or online data
+        kde.rtdc_ds.hash,
+        # filters that are set define the plot data points
+        kde.rtdc_ds.filter.all,
+        # custom computation arguments influence e.g. Young's modulus
+        kde.rtdc_ds.config.get("calculation", "")
+        ]
 
 
 class ContourSpacingTooLarge(UserWarning):
@@ -126,6 +139,8 @@ class KernelDensityEstimator:
             xscale=xscale, yscale=yscale
         )
 
+    @umbrella_cache(topic="kde-contour-lines",
+                    custom_handlers={"KernelDensityEstimator": kde_handler})
     def get_contour_lines(self, quantiles=None, xax="area_um", yax="deform",
                           xacc=None, yacc=None, kde_type="histogram",
                           kde_kwargs=None, xscale="linear", yscale="linear",
@@ -218,6 +233,8 @@ class KernelDensityEstimator:
         else:
             return contours
 
+    @umbrella_cache(topic="kde-raster",
+                    custom_handlers={"KernelDensityEstimator": kde_handler})
     def get_raster(self, xax="area_um", yax="deform", xacc=None, yacc=None,
                    kde_type="histogram", kde_kwargs=None, xscale="linear",
                    yscale="linear"):
@@ -315,6 +332,8 @@ class KernelDensityEstimator:
 
         return xmesh, ymesh, density
 
+    @umbrella_cache(topic="kde-scatter",
+                    custom_handlers={"KernelDensityEstimator": kde_handler})
     def get_scatter(self, xax="area_um", yax="deform", positions=None,
                     kde_type="histogram", kde_kwargs=None, xscale="linear",
                     yscale="linear"):
@@ -381,6 +400,8 @@ class KernelDensityEstimator:
 
         return density
 
+    @umbrella_cache(topic="kde-at",
+                    custom_handlers={"KernelDensityEstimator": kde_handler})
     def get_at(self, xax="area_um", yax="deform", positions=None,
                kde_type="histogram", kde_kwargs=None, xscale="linear",
                yscale="linear"):

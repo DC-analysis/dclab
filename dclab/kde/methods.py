@@ -5,7 +5,6 @@ import numpy as np
 from scipy.interpolate import RectBivariateSpline
 from scipy.stats import gaussian_kde, skew
 
-from ..cached import umbrella_cache
 from ..external.statsmodels.nonparametric.kernel_density import KDEMultivariate
 
 
@@ -139,7 +138,6 @@ def ignore_nan_inf(kde_method):
 
 
 @ignore_nan_inf
-@umbrella_cache(topic="kde")
 def kde_gauss(events_x, events_y, xout=None, yout=None):
     """Gaussian Kernel Density Estimation
 
@@ -181,7 +179,6 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
 
 
 @ignore_nan_inf
-@umbrella_cache(topic="kde")
 def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
     """Histogram-based Kernel Density Estimation
 
@@ -271,7 +268,6 @@ def kde_none(events_x, events_y, xout=None, yout=None):
 
 
 @ignore_nan_inf
-@umbrella_cache(topic="kde")
 def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     """Multivariate Kernel Density Estimation
 

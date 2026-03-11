@@ -90,7 +90,7 @@ class umbrella_cache:
 
 def compute_hash_for_cache(func: Callable,
                            args: list,
-                           kwargs:dict,
+                           kwargs: dict,
                            custom_handlers: dict[Any, Callable] = None):
     """Compute the hash for caching the function return value"""
     the_hash = hashlib.md5()

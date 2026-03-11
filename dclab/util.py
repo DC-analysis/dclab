@@ -171,6 +171,8 @@ def obj2bytes(obj):
         return obj2bytes(obj.tostring())
     elif isinstance(obj, ConfigurationDict):
         return obj2bytes(dict(obj))
+    elif isinstance(obj, range):
+        return obj2bytes((obj.start, obj.stop, obj.step))
     else:
         raise ValueError("No rule to convert object '{}' to string.".
                          format(obj.__class__))

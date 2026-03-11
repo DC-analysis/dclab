@@ -148,13 +148,13 @@ def test_kde_get_at_all_nan_inf():
     ds = dclab.new_dataset(ddict)
 
     kde_instance = KernelDensityEstimator(ds)
-
     with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
                       match="KDE encountered an empty array"):
         sc = kde_instance.get_at(xax="area_um", yax="deform")
     assert np.all(np.isnan(sc))
 
-    ds.config["filtering"]["enable filters"] = False
+    ds.filter.manual[0] = False
+    ds.apply_filter()
     with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
                       match="KDE encountered an empty array"):
         sc2 = kde_instance.get_at(xax="area_um", yax="deform",

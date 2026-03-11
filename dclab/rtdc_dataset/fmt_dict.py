@@ -66,7 +66,7 @@ class RTDC_Dict(RTDCBase):
         # Get an identifying string
         keys = list(ddict.keys())
         keys.sort()
-        ids = hashobj(ddict[keys[0]])
+        ids = hashobj(ddict)
         self._ids = ids
         self.path = "none"
         self.title = "{}_{:02d}_{:02d}/{}.dict".format(t[0], t[1], t[2], ids)

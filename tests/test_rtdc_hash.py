@@ -9,7 +9,7 @@ from helper_methods import example_data_dict, retrieve_data
 def test_hash_dict():
     ddict = example_data_dict()
     ds = new_dataset(ddict)
-    assert ds.hash == "5bd08693349fd40369860474e3dab144"
+    assert ds.hash == "5f75fb72c849471c136b2f93c118c4fb"
 
 
 @pytest.mark.filterwarnings(

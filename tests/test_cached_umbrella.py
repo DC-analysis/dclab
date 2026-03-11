@@ -210,6 +210,29 @@ def test_update_hash_custom_handlers(store_keeper):
     assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
 
 
+def test_update_hash_custom_handlers_string(store_keeper):
+    class HandledClass:
+        def __init__(self):
+            self.data = np.arange(10)
+
+    def custom_handler(obj):
+        return obj.data
+
+    data = [
+        "a string",
+        b"some bytes",
+        123,
+        1.23,
+        np.float64(1.234),
+        np.int64(1234),
+        HandledClass(),
+    ]
+    hasher = hashlib.md5()
+    caches.update_hash(hasher, data,
+                       custom_handlers={"HandledClass": custom_handler})
+    assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
+
+
 def test_update_hash_custom_handlers_fail(store_keeper):
     class HandledClass:
         def __init__(self):

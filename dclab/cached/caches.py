@@ -2,7 +2,7 @@ import atexit
 import functools
 import hashlib
 import numbers
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 
@@ -19,7 +19,7 @@ class umbrella_cache:
     def __init__(self,
                  topic: str = "general",
                  bypass_memory_store: bool = False,
-                 custom_handlers: list[Callable] = None,
+                 custom_handlers: dict[Any, Callable] = None,
                  ):
         """
                 A cache that can be used to decorate methods that accept
@@ -88,7 +88,10 @@ class umbrella_cache:
         return wrapper
 
 
-def compute_hash_for_cache(func, args, kwargs, custom_handlers=None):
+def compute_hash_for_cache(func: Callable,
+                           args: list,
+                           kwargs:dict,
+                           custom_handlers: dict[Any, Callable] = None):
     """Compute the hash for caching the function return value"""
     the_hash = hashlib.md5()
 
@@ -106,7 +109,10 @@ def compute_hash_for_cache(func, args, kwargs, custom_handlers=None):
     return the_hash.hexdigest()
 
 
-def update_hash(the_hash, arg, custom_handlers=None):
+def update_hash(the_hash,
+                arg,
+                custom_handlers: dict[Any, Callable] = None
+                ):
     """Update a hashing object with a Python object
 
     The argument can be a numpy array, a string, or a list/tuple
@@ -129,15 +135,25 @@ def update_hash(the_hash, arg, custom_handlers=None):
     elif isinstance(arg, dict):
         update_hash(the_hash, sorted(arg.items()),
                     custom_handlers=custom_handlers)
-    elif custom_handlers and isinstance(arg, tuple(custom_handlers.keys())):
-        for cls, handler in custom_handlers.items():
-            if isinstance(arg, cls):
-                update_hash(the_hash, handler(arg))
-                break
-    elif hasattr(arg, '__getstate__'):
-        try:
-            update_hash(the_hash, arg.__getstate__())
-        except BaseException:
-            raise ValueError(f"No rule to hash object of type {type(arg)}")
     else:
+        if custom_handlers:
+            for cls, handler in custom_handlers.items():
+                if isinstance(cls, str) and arg.__class__.__name__ == cls:
+                    # Handler identifier is the class name of the argument
+                    update_hash(the_hash, handler(arg))
+                    return  # no further checks necessary
+                elif isinstance(arg, cls):
+                    # Handler identifier is the class of the argument
+                    update_hash(the_hash, handler(arg))
+                    return  # no further checks necessary
+
+        # Final option are classes that define `__getstate__`
+        if hasattr(arg, '__getstate__'):
+            try:
+                update_hash(the_hash, arg.__getstate__())
+            except BaseException:
+                pass
+            else:
+                return  # no further checks necessary
+
         raise ValueError(f"No rule to hash object of type {type(arg)}")

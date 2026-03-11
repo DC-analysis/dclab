@@ -17,7 +17,7 @@ class KernelDensityEstimator:
 
     @staticmethod
     def apply_scale(a, scale, feat):
-        """Helper function for transforming an aray to log-scale
+        """Helper function for transforming an array to log-scale
 
         Parameters
         ----------

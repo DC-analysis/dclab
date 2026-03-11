@@ -2,7 +2,7 @@
 import numpy as np
 cimport numpy as cnp
 
-from .cached import Cache
+from .cached import umbrella_cache
 
 # We are using the numpy array API
 cnp.import_array()
@@ -70,7 +70,7 @@ def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
         return dsa
 
 
-@Cache
+@umbrella_cache(topic="downsampling")
 def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
     """Content-based downsampling for faster visualization
 

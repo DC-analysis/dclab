@@ -1,4 +1,6 @@
-0.68.1
+0.69.0
+ - feat: new `cached` module with the `umbrella_cache` decorator
+   which combines in-memory with optional persistent disk caching (#153)
  - fix: refresh to get matching feature sizes in SWMR mode
 0.68.0
  - feat: print progress in CLI dclab-compress and dclab-repack

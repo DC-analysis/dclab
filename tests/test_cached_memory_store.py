@@ -9,6 +9,7 @@ def test_memory_store():
     assert "peter" in ms
     assert ms["peter"] == "hans"
     assert ms.data["peter"][0] == "hans"
+    time.sleep(.1)
     assert ms.data["peter"][1] < time.monotonic()
     assert len(ms) == 1
     ms.clear()

@@ -15,7 +15,9 @@ def test_memory_store():
     ms.clear()
     assert len(ms) == 0
     ms["a"] = 1
+    time.sleep(.1)
     ms["b"] = 2
+    time.sleep(.1)
     assert len(ms) == 2
     ms.pop("a")
     assert len(ms) == 1
@@ -24,8 +26,11 @@ def test_memory_store():
     assert ms.items() == [(key, value)
                           for (key, (value, _)) in ms.data.items()]
     ms["c"] = 3
+    time.sleep(.1)
     ms["d"] = 4
+    time.sleep(.1)
     ms["e"] = 5
+    time.sleep(.1)
     assert len(ms) == 4
     ms.remove_least_used_keys(2)
     assert "b" not in ms
@@ -33,7 +38,9 @@ def test_memory_store():
     assert "d" in ms
     assert "e" in ms
     ms["f"] = 6
+    time.sleep(.1)
     ms["g"] = 7
+    time.sleep(.1)
     # access d
     assert ms["d"] == 4
     ms.remove_least_used_keys(2)

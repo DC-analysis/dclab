@@ -121,7 +121,13 @@ class DiskStore:
 
     def value_write_json(self, key, json_data):
         path_out = pathlib.Path(self.path / f"{key}.json")
-        path_out.write_text(json_data)
+        path_out_tmp = path_out.with_name(path_out.name + "~")
+        if path_out_tmp.exists():
+            path_out_tmp.unlink()
+        path_out_tmp.write_text(json_data)
+        if path_out.exists():
+            path_out.unlink()
+        path_out_tmp.rename(path_out)
         file_meta = {"format": "json",
                      "file": path_out.name,
                      "size": path_out.stat().st_size
@@ -140,7 +146,14 @@ class DiskStore:
                          }
         elif isinstance(value, np.ndarray):
             path_out = self.path / f"{key}.npy"
-            np.save(path_out, value)
+            path_out_tmp = path_out.with_name(path_out.name + "~")
+            if path_out_tmp.exists():
+                path_out_tmp.unlink()
+            np.save(path_out_tmp, value)
+            if path_out.exists():
+                path_out.unlink()
+            path_out_tmp.rename(path_out)
+
             file_meta = {"format": "numpy",
                          "file": path_out.name,
                          "size": path_out.stat().st_size

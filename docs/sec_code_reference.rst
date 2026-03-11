@@ -381,3 +381,24 @@ R and lme4
    :members:
    :undoc-members:
 
+
+Caching
+=======
+
+.. _sec_ref_cached:
+
+.. automodule:: dclab.cached.caches
+   :members:
+   :undoc-members:
+
+.. automodule:: dclab.cached.disk_store
+   :members:
+   :undoc-members:
+
+.. automodule:: dclab.cached.memory_store
+   :members:
+   :undoc-members:
+
+.. automodule:: dclab.cached.store_keeper
+   :members:
+   :undoc-members:

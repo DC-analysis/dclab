@@ -3,6 +3,7 @@ import time
 
 class MemoryStore:
     def __init__(self):
+        """A dictionary-based in-memory store"""
         self.data = {}
 
     def __contains__(self, key):

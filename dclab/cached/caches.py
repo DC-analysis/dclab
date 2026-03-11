@@ -21,27 +21,45 @@ class umbrella_cache:
                  bypass_memory_store: bool = False,
                  custom_handlers: dict[Any, Callable] = None,
                  ):
-        """
-                A cache that can be used to decorate methods that accept
-        numpy ndarrays as arguments.
+        """A hybrid disk and in-memory cache decorator compatible with numpy
 
-        - cache is based on dictionary
-        - md5 hashes of method arguments are the dictionary keys
-        - applicable decorator for all methods in a module
-        - applicable to methods with the same name in different
-          source files
-        - set cache size with `cached.MAX_SIZE`
-        - only one global cache is generated, there are no instances
-          of `Cache`
+        This hybrid cache hashes the input parameters to a function
+        to compute the cache key. If a persistent disk store is configured,
+        data are saved to disk in a background thread
+        (see :class:`.StoreKeeper`).
+
+        The `umbrella_cache` decorator can be used safely with regular
+        functions and methods defined in classes.
+
+        Parameters
+        ----------
+        topic: str
+            A general topic (alphanumeric characters and dashes allowed)
+            under which the cached values are stored.
+        bypass_memory_store: bool
+            Set this to true to disable storing cached values in memory.
+            If no disk store (see :class:`.StoreKeeper`) is defined,
+            then data are never cached.
+        custom_handlers:
+            Custom handlers for hashing objects not handled by
+            :func:`update_hash`. ``custom_handlers`` is a dictionary
+            where a key is a class (or optionally the name
+            of a class as a string) and a value is a callable that
+            translates a class instance to something that can be
+            processed by :func:`update_hash`.
 
         Notes
         -----
+        The behavior of `umbrella_cache` is defined by the global
+        :class:`.StoreKeeper` instance. The ``StoreKeeper`` is
+        a background thread that manages data in memory and on disk.
+
         If you are using other decorators with this decorator, please
-        make sure to apply the `Cache` first (first line before method
-        definition). This wrapper uses name, doc, and filename of the
+        make sure to apply the `umbrella_cache` first (first line before
+        method definition). This wrapper uses name, doc, and filename of the
         method to identify it. If another wrapper does not implement
         a unique `__doc__` and is applied to multiple methods, then
-        `Cached` might return values of the wrong method.
+        `umbrella_cache` might return values of the wrong method.
         """
         # topic must be a valid directory name
         topic = "".join(

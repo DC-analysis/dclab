@@ -11,6 +11,7 @@ class DiskStore:
     version = "1.0"
 
     def __init__(self, path=None):
+        """Disk store for persisting data to disk"""
         self.path = None
         self.index = set()
         self.size_bytes = 0
@@ -151,6 +152,7 @@ class DiskStore:
 
 
 class DiskStoreJSONEncoder(json.JSONEncoder):
+    """Custom JSONEncoder"""
     def default(self, obj):
         if isinstance(obj, pathlib.Path):
             return str(obj)

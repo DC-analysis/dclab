@@ -1,3 +1,5 @@
+0.69.1
+ - fix: use `for_json` instead of `__getstate__` for custom hashing
 0.69.0
  - feat: new `cached` module with the `umbrella_cache` decorator
    which combines in-memory with optional persistent disk caching (#153)

@@ -6,8 +6,12 @@ import numpy as np
 
 import pytest
 
+import dclab
 from dclab import cached
 from dclab.cached import caches
+
+
+from helper_methods import example_data_dict
 
 
 @pytest.fixture
@@ -168,25 +172,6 @@ def test_update_hash(store_keeper):
     assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
 
 
-def test_update_hash_setstate_classes(store_keeper):
-    class CustomClass:
-        def __getstate__(self):
-            return np.arange(10)
-
-    data = [
-        "a string",
-        b"some bytes",
-        123,
-        1.23,
-        np.float64(1.234),
-        np.int64(1234),
-        CustomClass(),
-    ]
-    hasher = hashlib.md5()
-    caches.update_hash(hasher, data)
-    assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
-
-
 def test_update_hash_custom_handlers(store_keeper):
     class HandledClass:
         def __init__(self):
@@ -242,9 +227,6 @@ def test_update_hash_custom_handlers_fail(store_keeper):
         def __init__(self):
             self.data = np.arange(10)
 
-        def __getstate__(self):
-            raise ValueError("Not supported")
-
     def custom_handler(obj):
         return obj.data
 
@@ -263,3 +245,44 @@ def test_update_hash_custom_handlers_fail(store_keeper):
     with pytest.raises(ValueError, match="No rule to hash"):
         caches.update_hash(hasher, data,
                            custom_handlers={HandledClass: custom_handler})
+
+
+def test_update_hash_for_json(store_keeper):
+    class CustomClass:
+        def for_json(self):
+            return np.arange(10)
+
+    data = [
+        "a string",
+        b"some bytes",
+        123,
+        1.23,
+        np.float64(1.234),
+        np.int64(1234),
+        CustomClass(),
+    ]
+    hasher = hashlib.md5()
+    caches.update_hash(hasher, data)
+    assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
+
+
+def test_update_hash_for_json_rtdc_config(store_keeper):
+    keys = ["area_um", "deform", "time", "frame", "fl3_width"]
+    ddict = example_data_dict(size=127, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+    ds1.config["experiment"]["sample"] = "test"
+    ds1.config["experiment"]["run index"] = 1
+    ds1.config["imaging"]["frame rate"] = 2000
+
+    data = [
+        "a string",
+        ds1.config,
+    ]
+    hasher = hashlib.md5()
+    caches.update_hash(hasher, data)
+    assert hasher.hexdigest() == "ce0633084e43f71c9bfbb689dddf1040"
+
+    ds1.config["experiment"]["sample"] = "test2"  # yields different hash
+    hasher = hashlib.md5()
+    caches.update_hash(hasher, data)
+    assert hasher.hexdigest() == "816ab314bde68b0e6a355163a3b9dc2d"

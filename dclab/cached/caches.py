@@ -166,9 +166,9 @@ def update_hash(the_hash,
                     return  # no further checks necessary
 
         # Final option are classes that define `__getstate__`
-        if hasattr(arg, '__getstate__'):
+        if hasattr(arg, 'for_json'):
             try:
-                update_hash(the_hash, arg.__getstate__())
+                update_hash(the_hash, arg.for_json())
             except BaseException:
                 pass
             else:

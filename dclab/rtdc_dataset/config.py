@@ -102,6 +102,9 @@ class ConfigurationDict(UserDict):
             v = super(ConfigurationDict, self).pop(k)
             self.__setitem__(k, v)
 
+    def for_json(self):
+        return dict(self)
+
     def get(self, key, *args, **kwargs):
         return super(ConfigurationDict,
                      self).get(self.__class__._k(key), *args, **kwargs)
@@ -239,6 +242,9 @@ class Configuration(object):
         """Return copy of current configuration"""
         return Configuration(cfg=copy.deepcopy(self._cfg))
 
+    def for_json(self):
+        return self.as_dict()
+
     def get(self, key, other):
         """Famous `dict.get` function
 
@@ -325,16 +331,16 @@ class CaseInsensitiveDict(ConfigurationDict):
 
 class ConfigurationJSONEncode(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, ConfigurationDict):
-            return dict(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, numbers.Integral):
+        if isinstance(obj, numbers.Integral):
             return int(obj)
         elif isinstance(obj, numbers.Number):
             return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
         elif isinstance(obj, (bool, np.bool_)):
             return bool(obj)
+        elif hasattr(obj, "for_json"):
+            return obj.for_json()
         return json.JSONEncoder.default(self, obj)
 
 

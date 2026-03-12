@@ -460,9 +460,10 @@ def test_ic_gmt_hdf5_swmr_mode(tmp_path):
         cues = ic.check_fmt_hdf5_swmr_mode()
     assert len(cues) == 0
 
-    abort_value = mp.Value("i", 0)
-    opener = mp.Process(target=open_swmr,
-                        args=(str(swmr_path.resolve()), abort_value))
+    mp_spawn = mp.get_context("spawn")
+    abort_value = mp_spawn.Value("i", 0)
+    opener = mp_spawn.Process(target=open_swmr,
+                              args=(str(swmr_path.resolve()), abort_value))
     opener.start()
 
     try:

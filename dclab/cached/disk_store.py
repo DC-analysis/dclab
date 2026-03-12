@@ -1,5 +1,6 @@
 import json
 import numbers
+import os
 import pathlib
 import shutil
 import time
@@ -11,7 +12,10 @@ class DiskStore:
     version = "1.0"
 
     def __init__(self, path=None):
-        """Disk store for persisting data to disk"""
+        """Disk store for persisting data to disk
+
+        The disk store is thread- and process-safe.
+        """
         self.path = None
         self.index = set()
         self.size_bytes = 0
@@ -36,12 +40,20 @@ class DiskStore:
         return self.value_read(key, file_meta)
 
     def __setitem__(self, key, value):
-        file_meta = self.value_write(key, value)
-        meta_path = self.path / f"{key}_meta.json"
-        file_meta["version"] = self.version
-        file_meta["timestamp"] = time.time()
-        self.index.add(key)
-        meta_path.write_text(json.dumps(file_meta, indent=2))
+        lock_path = self.path / f"{key}.lock"
+        # Use a lock file to avoid race conditions with other
+        # processes when writing data to disk.
+        # If the lock cannot be acquired, then nothing is written
+        # to disk. We trust that the other disk store is storing
+        # the correct data to disk.
+        with LockFile(lock_path) as lf:
+            if lf.acquired:
+                file_meta = self.value_write(key, value)
+                meta_path = self.path / f"{key}_meta.json"
+                file_meta["version"] = self.version
+                file_meta["timestamp"] = time.time()
+                self.index.add(key)
+                meta_path.write_text(json.dumps(file_meta, indent=2))
 
     def assert_disk_store_path(self):
         if not self:
@@ -54,6 +66,7 @@ class DiskStore:
             shutil.rmtree(self.path, ignore_errors=True)
 
     def remove_old_files(self, max_bytes):
+        """Remove old files, honoring `max_bytes` total size"""
         self.assert_disk_store_path()
         # get the sizes and times of all cache items
         items = []
@@ -83,6 +96,12 @@ class DiskStore:
                         pi.unlink()
                 if total_bytes < max_bytes:
                     break
+
+    def remove_stale_locks(self, max_age_seconds=3600):
+        """Remove stale locks"""
+        for pp in self.path.rglob("*.lock"):
+            if pp.stat().st_mtime < time.time() - max_age_seconds:
+                pp.unlink(missing_ok=True)
 
     def set_path(self, path):
         path = pathlib.Path(path)
@@ -176,3 +195,28 @@ class DiskStoreJSONEncoder(json.JSONEncoder):
             return bool(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
+
+
+class LockFile:
+    def __init__(self, path):
+        """Create a lock file at the specified path
+
+        Use the property `acquire`, to check whether the
+        lock has been acquired.
+        """
+        self.path = pathlib.Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            with self.path.open("x") as fd:
+                fd.write(f"{os.getpid()}")  # for debugging
+        except FileExistsError:
+            self.acquired = False
+        else:
+            self.acquired = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.acquired:
+            self.path.unlink(missing_ok=True)

@@ -83,6 +83,12 @@ class StoreKeeper(threading.Thread):
             except BaseException:
                 self.logger.error(traceback.format_exc())
 
+            # Remove stale locks
+            try:
+                disk_store.remove_stale_locks()
+            except BaseException:
+                self.logger.error(traceback.format_exc())
+
         # Honor `memory_store_size`
         to_remove = len(memory_store) - self.memory_store_size
         if to_remove > 0:

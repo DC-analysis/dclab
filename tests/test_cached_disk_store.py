@@ -1,10 +1,82 @@
 import json
+import multiprocessing as mp
+import os
 import pathlib
+import time
 
 import numpy as np
 from dclab import cached
+from dclab.cached.disk_store import LockFile
 
 import pytest
+
+
+def lock_acquirer(path, ready_counter, start_bit,
+                  done_counter, result_counter):
+    with ready_counter.get_lock():
+        ready_counter.value += 1
+
+    # wait for the parent process to start
+    while start_bit.value == 0:
+        pass
+
+    with LockFile(path) as lf:
+        acquired = lf.acquired
+        with done_counter.get_lock():
+            done_counter.value -= 1
+        while True:
+            if done_counter.value == 0:
+                break
+            time.sleep(0.1)
+    if acquired:
+        with result_counter.get_lock():
+            result_counter.value += 1
+
+
+def test_lockfile(tmp_path):
+    lock_path = tmp_path / "locked.lock"
+    with LockFile(lock_path) as lf:
+        assert lf.acquired
+
+        with LockFile(lock_path) as lf2:
+            assert not lf2.acquired
+
+        assert lock_path.exists()
+
+    assert not lock_path.exists()
+
+
+def test_lockfile_multiprocessing(tmp_path):
+    """Let multiple workers compete for locking a file"""
+    num_workers = 7
+    mp_spawn = mp.get_context("spawn")
+    lock_path = tmp_path / "locked.lock"
+    done_counter = mp_spawn.Value("i", num_workers)
+    ready_counter = mp_spawn.Value("i", 0)
+    start_bit = mp_spawn.Value("i", 0)
+    result_counter = mp_spawn.Value("i", 0)
+    workers = []
+    for ii in range(num_workers):
+        p = mp_spawn.Process(
+            target=lock_acquirer,
+            args=(lock_path, ready_counter, start_bit, done_counter,
+                  result_counter))
+        p.start()
+        workers.append(p)
+
+    # let the workers get ready
+    while ready_counter.value != num_workers:
+        time.sleep(0.1)
+
+    # start the competition
+    start_bit.value = 1
+
+    # wait for the competition to finish
+    for p in workers:
+        p.join()
+
+    assert result_counter.value == 1
+    assert not lock_path.exists()
 
 
 def test_disk_store_disabled():
@@ -148,3 +220,25 @@ def test_disk_store_remove_old_files_touched_index_cleared(tmp_path):
     assert "some/b" not in store
     assert "some/c" not in store
     assert "some/d" in store
+
+
+def test_disk_store_remove_stale_locks(tmp_path):
+    store = cached.DiskStore(tmp_path)
+
+    data = np.linspace(0, 1, 1000, dtype=np.uint8)
+    store["some/a"] = data
+    store["some/b"] = data
+    store["some/c"] = data
+    store["some/d"] = data
+
+    stale_lock = tmp_path / "some/e.lock"
+    stale_lock.touch()
+
+    # should not remove the file
+    store.remove_stale_locks()
+    assert stale_lock.exists()
+
+    # set the modification time to the past. This time, lock should be removed.
+    os.utime(stale_lock, (time.time(), time.time()-3601))
+    store.remove_stale_locks()
+    assert not stale_lock.exists()

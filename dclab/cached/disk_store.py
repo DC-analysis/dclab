@@ -149,7 +149,8 @@ class DiskStore:
             path_out_tmp = path_out.with_name(path_out.name + "~")
             if path_out_tmp.exists():
                 path_out_tmp.unlink()
-            np.save(path_out_tmp, value)
+            with path_out_tmp.open("wb") as fd:
+                np.save(fd, value)
             if path_out.exists():
                 path_out.unlink()
             path_out_tmp.rename(path_out)

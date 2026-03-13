@@ -83,10 +83,15 @@ class PolygonFilter(object):
         PolygonFilter.instances.append(self)
 
     def __eq__(self, pf):
-        if (isinstance(pf, PolygonFilter) and
-            self.inverted == pf.inverted and
-            np.allclose(self.points, pf.points) and
-                list(self.axes) == list(pf.axes)):
+        """Check whether two polygon filters are identical
+
+        This does not check the name or the polygon filter ID.
+        """
+        if (isinstance(pf, PolygonFilter)
+            and self.inverted == pf.inverted
+            and self.points.size == pf.points.size
+            and np.allclose(self.points, pf.points)
+                and list(self.axes) == list(pf.axes)):
             eq = True
         else:
             eq = False

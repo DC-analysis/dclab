@@ -27,6 +27,51 @@ def run_around_tests():
     dclab.PolygonFilter.clear_all_filters()
 
 
+def test_equals():
+    pf1 = dclab.PolygonFilter(
+        axes=["aspect", "tilt"],
+        points=[[.1, 2.],
+                [.1, 1.],
+                [.2, 1.]],
+        inverted=False,
+        name="peter"
+    )
+    pf2 = dclab.PolygonFilter(
+        axes=["aspect", "tilt"],
+        points=[[.1, 2.],
+                [.1, 1.],
+                [.2, 1.]],
+        inverted=False,
+        name="hans"
+    )
+    assert pf1 == pf2
+    assert pf1.name != pf2.name
+    assert pf1.unique_id != pf2.unique_id
+
+
+def test_equals_shape():
+    pf1 = dclab.PolygonFilter(
+        axes=["aspect", "tilt"],
+        points=[[.1, 2.],
+                [.1, 1.],
+                [.2, 1.],
+                [.2, 3.]],  # one more item
+        inverted=False,
+        name="peter"
+    )
+    pf2 = dclab.PolygonFilter(
+        axes=["aspect", "tilt"],
+        points=[[.1, 2.],
+                [.1, 1.],
+                [.2, 1.]],
+        inverted=False,
+        name="hans"
+    )
+    assert pf1 != pf2
+    assert pf1.name != pf2.name
+    assert pf1.unique_id != pf2.unique_id
+
+
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
                             + 'FilterIdExistsWarning')
 def test_import():

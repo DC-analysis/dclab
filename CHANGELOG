@@ -1,5 +1,6 @@
 0.69.2
  - fix: comparing two `PolygonFilter` with differing size failed
+ - enh: make `PolygonFilter` operations thread-safe
 0.69.1
  - fix: use `for_json` instead of `__getstate__` for custom hashing
  - tests: use multiprocessing 'spawn' for SWMR test

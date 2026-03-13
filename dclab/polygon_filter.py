@@ -1,6 +1,6 @@
-
 import io
 import pathlib
+import threading
 import warnings
 
 import numpy as np
@@ -17,6 +17,7 @@ class PolygonFilter(object):
     # Stuff that is done upon creation (not instantiation) of this class
     instances = []
     _instance_counter = 0
+    _modify_lock = threading.Lock()
 
     def __init__(self, axes=None, points=None, inverted=False,
                  name=None, filename=None, fileid=0,
@@ -80,7 +81,8 @@ class PolygonFilter(object):
 
         self._check_data()
         # if everything worked out, add to instances
-        PolygonFilter.instances.append(self)
+        with PolygonFilter._modify_lock:
+            PolygonFilter.instances.append(self)
 
     def __eq__(self, pf):
         """Check whether two polygon filters are identical
@@ -215,18 +217,20 @@ class PolygonFilter(object):
     @staticmethod
     def clear_all_filters():
         """Remove all filters and reset instance counter"""
-        PolygonFilter.instances = []
-        PolygonFilter._instance_counter = 0
+        with PolygonFilter._modify_lock:
+            PolygonFilter.instances.clear()
+            PolygonFilter._instance_counter = 0
 
     @staticmethod
     def unique_id_exists(pid):
         """Whether or not a filter with this unique id exists"""
-        for instance in PolygonFilter.instances:
-            if instance.unique_id == pid:
-                exists = True
-                break
-        else:
-            exists = False
+        with PolygonFilter._modify_lock:
+            for instance in PolygonFilter.instances:
+                if instance.unique_id == pid:
+                    exists = True
+                    break
+            else:
+                exists = False
         return exists
 
     def copy(self, invert=False):
@@ -335,9 +339,11 @@ class PolygonFilter(object):
     @staticmethod
     def remove(unique_id):
         """Remove a polygon filter from `PolygonFilter.instances`"""
-        for p in PolygonFilter.instances:
-            if p.unique_id == unique_id:
-                PolygonFilter.instances.remove(p)
+        with PolygonFilter._modify_lock:
+            for ii, p in enumerate(PolygonFilter.instances):
+                if p.unique_id == unique_id:
+                    PolygonFilter.instances.pop(ii)
+                    break
 
     def save(self, polyfile, ret_fobj=False):
         """Save all data to a text file (appends data if file exists).
@@ -383,10 +389,11 @@ class PolygonFilter(object):
         """Save all polygon filters"""
         if len(PolygonFilter.instances) == 0:
             raise PolygonFilterError("There are no polygon filters to save.")
-        for p in PolygonFilter.instances:
-            # we return the ret_obj, so we don't need to open and
-            # close the file multiple times.
-            polyobj = p.save(polyfile, ret_fobj=True)
+        with PolygonFilter._modify_lock:
+            for p in PolygonFilter.instances:
+                # we return the ret_obj, so we don't need to open and
+                # close the file multiple times.
+                polyobj = p.save(polyfile, ret_fobj=True)
         # close the object after we are done saving all filters
         polyobj.close()
 
@@ -398,6 +405,7 @@ class PolygonFilterError(BaseException):
 def get_polygon_filter_names():
     """Get the names of all polygon filters in the order of creation"""
     names = []
-    for p in PolygonFilter.instances:
-        names.append(p.name)
+    with PolygonFilter._modify_lock:
+        for p in PolygonFilter.instances:
+            names.append(p.name)
     return names

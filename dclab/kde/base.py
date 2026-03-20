@@ -5,8 +5,9 @@ from scipy.interpolate import RegularGridInterpolator as RGI
 
 from ..cached import umbrella_cache
 
-from .methods import bin_width_percentile, get_bad_vals, methods
 from .contours import find_contours_level, get_quantile_levels
+from .helpers import get_bad_vals
+from .methods import bin_width_percentile, methods
 
 
 def kde_handler(kde):

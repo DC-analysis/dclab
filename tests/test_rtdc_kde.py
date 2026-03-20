@@ -1,8 +1,8 @@
 import numpy as np
+from helper_methods import example_data_dict
+
 import dclab
 import dclab.kde
-
-from helper_methods import example_data_dict
 
 
 def test_kde_empty():
@@ -32,8 +32,8 @@ def test_kde_general():
 
 def test_kde_linear_scatter():
     ddict = example_data_dict(size=300, keys=["area_um", "deform"])
-    ddict["deform"][:20] = .1
-    ddict["area_um"][:20] = .5
+    ddict["deform"][:20] = 0.1
+    ddict["area_um"][:20] = 0.5
     ds = dclab.new_dataset(ddict)
     a = ds.get_kde_scatter(yscale="linear")
     assert np.all(a[:20] == a[0])
@@ -41,8 +41,8 @@ def test_kde_linear_scatter():
 
 def test_kde_log_contour():
     ddict = example_data_dict(size=300, keys=["area_um", "deform"])
-    ddict["deform"][:20] = .1
-    ddict["area_um"][:20] = .5
+    ddict["deform"][:20] = 0.1
+    ddict["area_um"][:20] = 0.5
     ds = dclab.new_dataset(ddict)
     xm, ym, _ = ds.get_kde_contour(yscale="log")
     dx = np.diff(xm[0])
@@ -53,8 +53,8 @@ def test_kde_log_contour():
 
 def test_kde_log_scatter():
     ddict = example_data_dict(size=300, keys=["area_um", "deform"])
-    ddict["deform"][:20] = .1
-    ddict["area_um"][:20] = .5
+    ddict["deform"][:20] = 0.1
+    ddict["area_um"][:20] = 0.5
     ds = dclab.new_dataset(ddict)
     a = ds.get_kde_scatter(yscale="log")
     assert np.all(a[:20] == a[0])
@@ -64,19 +64,21 @@ def test_kde_log_scatter_points():
     ddict = example_data_dict(size=300, keys=["area_um", "tilt"])
     ds = dclab.new_dataset(ddict)
     a = ds.get_kde_scatter(yscale="log", xax="area_um", yax="tilt")
-    b = ds.get_kde_scatter(yscale="log", xax="area_um", yax="tilt",
-                           positions=[ds["area_um"], ds["tilt"]])
+    b = ds.get_kde_scatter(
+        yscale="log", xax="area_um", yax="tilt",
+        positions=[ds["area_um"], ds["tilt"]]
+    )
 
     assert np.all(a == b)
 
 
 def test_kde_log_scatter_invalid():
     ddict = example_data_dict(size=300, keys=["area_um", "deform"])
-    ddict["deform"][:20] = .1
-    ddict["area_um"][:20] = .5
+    ddict["deform"][:20] = 0.1
+    ddict["area_um"][:20] = 0.5
     ddict["deform"][21] = np.nan
     ddict["deform"][22] = np.inf
-    ddict["deform"][23] = -.1
+    ddict["deform"][23] = -0.1
     ds = dclab.new_dataset(ddict)
     a = ds.get_kde_scatter(yscale="log")
     assert np.all(a[:20] == a[0])
@@ -102,7 +104,7 @@ def test_kde_nofilt():
     assert sc.shape[0] == 100
     # This will fail if the default contour accuracy is changed
     # in `get_kde_contour`.
-    assert cc[0].shape == (43, 41)
+    assert cc[0].shape == (30, 29)
 
 
 def test_kde_positions():
@@ -111,6 +113,7 @@ def test_kde_positions():
 
     ds.config["filtering"]["enable filters"] = False
     sc = ds.get_kde_scatter(xax="area_um", yax="deform")
-    sc2 = ds.get_kde_scatter(xax="area_um", yax="deform",
-                             positions=(ds["area_um"], ds["deform"]))
+    sc2 = ds.get_kde_scatter(
+        xax="area_um", yax="deform", positions=(ds["area_um"], ds["deform"])
+    )
     assert np.all(sc == sc2)

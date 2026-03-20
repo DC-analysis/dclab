@@ -92,9 +92,14 @@ def bin_width_percentile(a):
     """
     bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
-    start = np.percentile(data, 10)
-    end = np.percentile(data, 90)
-    acc = (end - start) / 23
+    if not data.size:
+        warnings.warn("KDE encountered an empty array",
+                      KernelDensityEstimationForEmtpyArrayWarning)
+        acc = 1
+    else:
+        start = np.percentile(data, 10)
+        end = np.percentile(data, 90)
+        acc = (end - start) / 23
     return acc
 
 

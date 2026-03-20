@@ -5,7 +5,7 @@ from scipy.interpolate import RegularGridInterpolator as RGI
 
 from ..cached import umbrella_cache
 
-from .methods import bin_width_doane_div5, get_bad_vals, methods
+from .methods import bin_width_percentile, get_bad_vals, methods
 from .contours import find_contours_level, get_quantile_levels
 
 
@@ -145,7 +145,7 @@ class KernelDensityEstimator:
                           xacc=None, yacc=None, kde_type="histogram",
                           kde_kwargs=None, xscale="linear", yscale="linear",
                           ret_levels=False):
-        """Compute contour lines for a given kernel kensity estimate.
+        """Compute contour lines for a given kernel density estimate.
 
         Parameters
         ----------
@@ -159,10 +159,10 @@ class KernelDensityEstimator:
             Identifier for Y axis
         xacc: float
             Contour accuracy in x direction
-            if set to None, will use :func:`bin_width_doane_div5`
+            if set to None, will use :func:`bin_width_percentile`
         yacc: float
             Contour accuracy in y direction
-            if set to None, will use :func:`bin_width_doane_div5`
+            if set to None, will use :func:`bin_width_percentile`
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
@@ -248,10 +248,10 @@ class KernelDensityEstimator:
             Identifier for Y axis
         xacc: float
             Contour accuracy in x direction
-            if set to None, will use :func:`bin_width_doane_div5`
+            if set to None, will use :func:`bin_width_percentile`
         yacc: float
             Contour accuracy in y direction
-            if set to None, will use :func:`bin_width_doane_div5`
+            if set to None, will use :func:`bin_width_percentile`
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
@@ -284,14 +284,14 @@ class KernelDensityEstimator:
             a=x,
             feat=xax,
             scale=xscale,
-            method=bin_width_doane_div5,
+            method=bin_width_percentile,
             ret_scaled=True)
 
         yacc_sc, ys = self.get_spacing(
             a=y,
             feat=yax,
             scale=yscale,
-            method=bin_width_doane_div5,
+            method=bin_width_percentile,
             ret_scaled=True)
 
         if xacc is None or xacc == 0:

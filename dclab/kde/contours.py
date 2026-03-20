@@ -184,7 +184,7 @@ def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
     skimage.measure.find_contours: Contour finding algorithm
     """
     if quantile >= 1 or quantile <= 0:
-        raise ValueError("Invalid value for `quantile`: {}".format(quantile))
+        raise ValueError(f"Invalid value for `quantile`: {quantile}")
 
     # remove bad events
     bad = get_bad_vals(xp, yp)

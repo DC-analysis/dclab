@@ -10,8 +10,8 @@ def ignore_nan_inf(kde_method):
 
     Invalid positions in the resulting density are set to nan.
     """
-    def kde_wrapper(events_x, events_y, xout=None, yout=None,
-                    *args, **kwargs):
+
+    def kde_wrapper(events_x, events_y, xout=None, yout=None, *args, **kwargs):
         bad_in = get_bad_vals(events_x, events_y)
         if xout is None or yout is None:
             density = np.zeros_like(events_x, dtype=np.float64)
@@ -26,15 +26,15 @@ def ignore_nan_inf(kde_method):
         ev_x = events_x[~bad_in]
         ev_y = events_y[~bad_in]
         if ev_x.size:
-            density[~bad_out] = kde_method(ev_x, ev_y,
-                                           xo, yo,
-                                           *args, **kwargs)
+            density[~bad_out] = kde_method(ev_x, ev_y, xo, yo, *args, **kwargs)
         density[bad_out] = np.nan
         return density
 
-    doc_add = "\n    Notes\n" +\
-              "    -----\n" +\
-              "    This is a wrapped version that ignores nan and inf values."
+    doc_add = (
+        "\n    Notes\n"
+        + "    -----\n"
+        + "    This is a wrapped version that ignores nan and inf values."
+    )
     kde_wrapper.__doc__ = kde_method.__doc__ + doc_add
 
     return kde_wrapper

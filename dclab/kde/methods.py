@@ -1,10 +1,10 @@
 """Kernel Density Estimation methods"""
+
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
 from scipy.stats import gaussian_kde
 
 from ..external.statsmodels.nonparametric.kernel_density import KDEMultivariate
-
 from .binning import bin_num_doane, bin_width_doane
 from .helpers import ignore_nan_inf
 
@@ -31,9 +31,9 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
     --------
     `scipy.stats.gaussian_kde`
     """
-    valid_combi = ((xout is None and yout is None) or
-                   (xout is not None and yout is not None)
-                   )
+    valid_combi = (xout is None and yout is None) or (
+        xout is not None and yout is not None
+    )
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
@@ -46,7 +46,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
         density = estimator.evaluate([xout.flatten(), yout.flatten()])
     except np.linalg.LinAlgError:
         # LinAlgError occurs when matrix to solve is singular (issue #117)
-        density = np.zeros(xout.shape)*np.nan
+        density = np.zeros(xout.shape) * np.nan
     return density.reshape(xout.shape)
 
 
@@ -75,9 +75,9 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
     `numpy.histogram2d`
     `scipy.interpolate.RectBivariateSpline`
     """
-    valid_combi = ((xout is None and yout is None) or
-                   (xout is not None and yout is not None)
-                   )
+    valid_combi = (xout is None and yout is None) or (
+        xout is not None and yout is not None
+    )
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
@@ -90,12 +90,11 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
                 max(5, bin_num_doane(events_y)))
 
     # Compute the histogram
-    hist2d, xedges, yedges = np.histogram2d(x=events_x,
-                                            y=events_y,
-                                            bins=bins,
-                                            density=True)
-    xip = xedges[1:]-(xedges[1]-xedges[0])/2
-    yip = yedges[1:]-(yedges[1]-yedges[0])/2
+    hist2d, xedges, yedges = np.histogram2d(
+        x=events_x, y=events_y, bins=bins, density=True
+    )
+    xip = xedges[1:] - (xedges[1] - xedges[0]) / 2
+    yip = yedges[1:] - (yedges[1] - yedges[0]) / 2
 
     estimator = RectBivariateSpline(x=xip, y=yip, z=hist2d)
     density = estimator.ev(xout, yout)
@@ -126,9 +125,9 @@ def kde_none(events_x, events_y, xout=None, yout=None):
     This method is a convenience method that always returns ones in the shape
     that the other methods in this module produce.
     """
-    valid_combi = ((xout is None and yout is None) or
-                   (xout is not None and yout is not None)
-                   )
+    valid_combi = (xout is None and yout is None) or (
+        xout is not None and yout is not None
+    )
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
@@ -163,9 +162,9 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     --------
     `statsmodels.nonparametric.kernel_density.KDEMultivariate`
     """
-    valid_combi = ((xout is None and yout is None) or
-                   (xout is not None and yout is not None)
-                   )
+    valid_combi = (xout is None and yout is None) or (
+        xout is not None and yout is not None
+    )
     if not valid_combi:
         raise ValueError("Both `xout` and `yout` must be (un)set.")
 
@@ -178,15 +177,19 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
               bin_width_doane(events_y) / 2)
 
     positions = np.vstack([xout.flatten(), yout.flatten()])
-    estimator_ly = KDEMultivariate(data=[events_x.flatten(),
-                                         events_y.flatten()],
-                                   var_type='cc', bw=bw)
+    estimator_ly = KDEMultivariate(
+        data=[events_x.flatten(), events_y.flatten()],
+        var_type="cc",
+        bw=bw
+    )
 
     density = estimator_ly.pdf(positions)
     return density.reshape(xout.shape)
 
 
-methods = {"gauss": kde_gauss,
-           "histogram": kde_histogram,
-           "none": kde_none,
-           "multivariate": kde_multivariate}
+methods = {
+    "gauss": kde_gauss,
+    "histogram": kde_histogram,
+    "none": kde_none,
+    "multivariate": kde_multivariate,
+}

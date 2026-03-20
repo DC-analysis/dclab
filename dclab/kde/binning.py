@@ -55,8 +55,10 @@ def bin_width_doane(a):
         k = 1 + np.log2(n) + np.log2(1 + np.abs(g1) / sigma_g1)
         acc = (data.max() - data.min()) / k
     else:
-        warnings.warn("KDE encountered an empty array",
-                      KernelDensityEstimationForEmtpyArrayWarning)
+        warnings.warn(
+            "KDE encountered an empty array",
+            KernelDensityEstimationForEmtpyArrayWarning,
+        )
         acc = 1
     return acc
 
@@ -89,8 +91,10 @@ def bin_width_percentile(a):
     bad = np.isnan(a) | np.isinf(a)
     data = a[~bad]
     if not data.size:
-        warnings.warn("KDE encountered an empty array",
-                      KernelDensityEstimationForEmtpyArrayWarning)
+        warnings.warn(
+            "KDE encountered an empty array",
+            KernelDensityEstimationForEmtpyArrayWarning,
+        )
         acc = 1
     else:
         start = np.percentile(data, 10)

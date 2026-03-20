@@ -4,7 +4,6 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from ..cached import umbrella_cache
-
 from .binning import bin_width_percentile
 from .contours import find_contours_level, get_quantile_levels
 from .helpers import get_bad_vals
@@ -18,8 +17,8 @@ def kde_handler(kde):
         # filters that are set define the plot data points
         kde.rtdc_ds.filter.all,
         # custom computation arguments influence e.g. Young's modulus
-        kde.rtdc_ds.config.get("calculation", "")
-        ]
+        kde.rtdc_ds.config.get("calculation", ""),
+    ]
 
 
 class ContourSpacingTooLarge(UserWarning):
@@ -64,16 +63,21 @@ class KernelDensityEstimator:
                 if len(w):
                     # Tell the user that the log-transformation issued
                     # a warning.
-                    warnings.warn(f"Invalid values encounterd in np.log "
-                                  f"while scaling feature '{feat}'!")
+                    warnings.warn(
+                        f"Invalid values encounterd in np.log "
+                        f"while scaling feature '{feat}'!"
+                    )
         else:
-            raise ValueError(f"`scale` must be either 'linear' or 'log', "
-                             f"got '{scale}'!")
+            raise ValueError(
+                f"`scale` must be either 'linear' or 'log', got '{scale}'!"
+            )
         return b
 
     @staticmethod
-    def get_spacing(a, method, scale="linear", method_kw=None,
-                    feat="undefined", ret_scaled=False):
+    def get_spacing(
+        a, method,
+        scale="linear", method_kw=None, feat="undefined", ret_scaled=False
+    ):
         """Convenience function for computing the contour spacing
 
         Parameters
@@ -102,9 +106,17 @@ class KernelDensityEstimator:
         else:
             return acc
 
-    def get_contour(self, xax="area_um", yax="deform", xacc=None, yacc=None,
-                    kde_type="histogram", kde_kwargs=None, xscale="linear",
-                    yscale="linear"):
+    def get_contour(
+        self,
+        xax="area_um",
+        yax="deform",
+        xacc=None,
+        yacc=None,
+        kde_type="histogram",
+        kde_kwargs=None,
+        xscale="linear",
+        yscale="linear",
+    ):
         """Evaluate the kernel density estimate for contour plots
 
         Parameters
@@ -133,20 +145,38 @@ class KernelDensityEstimator:
         X, Y, Z : coordinates
             The kernel density Z evaluated on a rectangular grid (X,Y).
         """
-        warnings.warn("`get_contour` is deprecated; please use "
-                      "`get_raster` instead", DeprecationWarning)
+        warnings.warn(
+            "`get_contour` is deprecated; please use `get_raster` instead",
+            DeprecationWarning,
+        )
         return self.get_raster(
-            xax=xax, yax=yax, xacc=xacc, yacc=yacc,
-            kde_type=kde_type, kde_kwargs=kde_kwargs,
-            xscale=xscale, yscale=yscale
+            xax=xax,
+            yax=yax,
+            xacc=xacc,
+            yacc=yacc,
+            kde_type=kde_type,
+            kde_kwargs=kde_kwargs,
+            xscale=xscale,
+            yscale=yscale,
         )
 
-    @umbrella_cache(topic="kde-contour-lines",
-                    custom_handlers={"KernelDensityEstimator": kde_handler})
-    def get_contour_lines(self, quantiles=None, xax="area_um", yax="deform",
-                          xacc=None, yacc=None, kde_type="histogram",
-                          kde_kwargs=None, xscale="linear", yscale="linear",
-                          ret_levels=False):
+    @umbrella_cache(
+        topic="kde-contour-lines",
+        custom_handlers={"KernelDensityEstimator": kde_handler},
+    )
+    def get_contour_lines(
+        self,
+        quantiles=None,
+        xax="area_um",
+        yax="deform",
+        xacc=None,
+        yacc=None,
+        kde_type="histogram",
+        kde_kwargs=None,
+        xscale="linear",
+        yscale="linear",
+        ret_levels=False,
+    ):
         """Compute contour lines for a given kernel density estimate.
 
         Parameters
@@ -207,8 +237,10 @@ class KernelDensityEstimator:
             # most-likely there is nothing to compute a contour for
             return []
         if density.shape[0] < 3 or density.shape[1] < 3:
-            warnings.warn("Contour not possible; spacing may be too large!",
-                          ContourSpacingTooLarge)
+            warnings.warn(
+                "Contour not possible; spacing may be too large!",
+                ContourSpacingTooLarge,
+            )
             return []
         levels = get_quantile_levels(
             density=density,
@@ -217,16 +249,18 @@ class KernelDensityEstimator:
             xp=self.rtdc_ds[xax][self.rtdc_ds.filter.all],
             yp=self.rtdc_ds[yax][self.rtdc_ds.filter.all],
             q=np.array(quantiles),
-            normalize=False)
+            normalize=False,
+        )
         contours = []
         # Normalize levels to [0, 1]
         nlevels = np.array(levels) / density.max()
         for nlev in nlevels:
             # make sure that the contour levels are not at the boundaries
-            if not (np.allclose(nlev, 0, atol=1e-12, rtol=0)
-                    or np.allclose(nlev, 1, atol=1e-12, rtol=0)):
-                cc = find_contours_level(
-                    density, x=x, y=y, level=nlev)
+            if not (
+                np.allclose(nlev, 0, atol=1e-12, rtol=0)
+                or np.allclose(nlev, 1, atol=1e-12, rtol=0)
+            ):
+                cc = find_contours_level(density, x=x, y=y, level=nlev)
                 contours.append(cc)
             else:
                 contours.append([])
@@ -235,11 +269,21 @@ class KernelDensityEstimator:
         else:
             return contours
 
-    @umbrella_cache(topic="kde-raster",
-                    custom_handlers={"KernelDensityEstimator": kde_handler})
-    def get_raster(self, xax="area_um", yax="deform", xacc=None, yacc=None,
-                   kde_type="histogram", kde_kwargs=None, xscale="linear",
-                   yscale="linear"):
+    @umbrella_cache(
+        topic="kde-raster",
+        custom_handlers={"KernelDensityEstimator": kde_handler}
+    )
+    def get_raster(
+        self,
+        xax="area_um",
+        yax="deform",
+        xacc=None,
+        yacc=None,
+        kde_type="histogram",
+        kde_kwargs=None,
+        xscale="linear",
+        yscale="linear",
+    ):
         """Evaluate the kernel density estimate on a grid
 
         Parameters
@@ -287,14 +331,16 @@ class KernelDensityEstimator:
             feat=xax,
             scale=xscale,
             method=bin_width_percentile,
-            ret_scaled=True)
+            ret_scaled=True
+        )
 
         yacc_sc, ys = self.get_spacing(
             a=y,
             feat=yax,
             scale=yscale,
             method=bin_width_percentile,
-            ret_scaled=True)
+            ret_scaled=True
+        )
 
         if xacc is None or xacc == 0:
             xacc = xacc_sc
@@ -319,9 +365,9 @@ class KernelDensityEstimator:
 
             # Compute the KDE for each point on the mesh
             kde_fct = methods[kde_type]
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=xmesh, yout=ymesh,
-                              **kde_kwargs)
+            density = kde_fct(
+                events_x=xs, events_y=ys, xout=xmesh, yout=ymesh, **kde_kwargs
+            )
         else:
             xmesh, ymesh = np.meshgrid([0, 1], [0, 1], indexing="ij")
             density = np.array(np.nan * xmesh)
@@ -334,11 +380,20 @@ class KernelDensityEstimator:
 
         return xmesh, ymesh, density
 
-    @umbrella_cache(topic="kde-scatter",
-                    custom_handlers={"KernelDensityEstimator": kde_handler})
-    def get_scatter(self, xax="area_um", yax="deform", positions=None,
-                    kde_type="histogram", kde_kwargs=None, xscale="linear",
-                    yscale="linear"):
+    @umbrella_cache(
+        topic="kde-scatter",
+        custom_handlers={"KernelDensityEstimator": kde_handler}
+    )
+    def get_scatter(
+        self,
+        xax="area_um",
+        yax="deform",
+        positions=None,
+        kde_type="histogram",
+        kde_kwargs=None,
+        xscale="linear",
+        yscale="linear",
+    ):
         """Evaluate the kernel density estimate for scatter plots
 
         The KDE is evaluated with the `kde_type` function for every point.
@@ -394,19 +449,27 @@ class KernelDensityEstimator:
 
         kde_fct = methods[kde_type]
         if len(x):
-            density = kde_fct(events_x=xs, events_y=ys,
-                              xout=posx, yout=posy,
-                              **kde_kwargs)
+            density = kde_fct(
+                events_x=xs, events_y=ys, xout=posx, yout=posy, **kde_kwargs
+            )
         else:
             density = np.array([])
 
         return density
 
-    @umbrella_cache(topic="kde-at",
-                    custom_handlers={"KernelDensityEstimator": kde_handler})
-    def get_at(self, xax="area_um", yax="deform", positions=None,
-               kde_type="histogram", kde_kwargs=None, xscale="linear",
-               yscale="linear"):
+    @umbrella_cache(
+        topic="kde-at", custom_handlers={"KernelDensityEstimator": kde_handler}
+    )
+    def get_at(
+        self,
+        xax="area_um",
+        yax="deform",
+        positions=None,
+        kde_type="histogram",
+        kde_kwargs=None,
+        xscale="linear",
+        yscale="linear",
+    ):
         """Evaluate the kernel density estimate for specific events
 
         The KDE is computed via linear interpolation from the output
@@ -459,12 +522,14 @@ class KernelDensityEstimator:
             ys = self.apply_scale(positions[1], yscale, yax)
 
         if len(x):
-            xr, yr, density_grid = self.get_raster(xax=xax,
-                                                   yax=yax,
-                                                   kde_type=kde_type,
-                                                   kde_kwargs=kde_kwargs,
-                                                   xscale=xscale,
-                                                   yscale=yscale)
+            xr, yr, density_grid = self.get_raster(
+                xax=xax,
+                yax=yax,
+                kde_type=kde_type,
+                kde_kwargs=kde_kwargs,
+                xscale=xscale,
+                yscale=yscale,
+            )
 
             # Apply scale (no change for linear scale)
             xrs = self.apply_scale(xr, xscale, xax)
@@ -472,11 +537,13 @@ class KernelDensityEstimator:
 
             # 'scipy.interp2d' has been removed in SciPy 1.14.0
             # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
-            interp_func = RGI((xrs[:, 0], yrs[0, :]),
-                              density_grid,
-                              method="linear",
-                              bounds_error=False,
-                              fill_value=np.nan)
+            interp_func = RGI(
+                (xrs[:, 0], yrs[0, :]),
+                density_grid,
+                method="linear",
+                bounds_error=False,
+                fill_value=np.nan,
+            )
             density = interp_func((xs, ys))
 
         else:

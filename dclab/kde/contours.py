@@ -1,9 +1,7 @@
-
 import numpy as np
-
-from ..external.skimage.measure import find_contours, points_in_poly
 import scipy.interpolate as spint
 
+from ..external.skimage.measure import find_contours, points_in_poly
 from .helpers import get_bad_vals
 
 
@@ -56,10 +54,10 @@ def find_contours_level(density, x, y, level, closed=False):
     conts_xy = []
 
     for cc in conts_idx:
-        cx = np.interp(x=cc[:, 0]-offset,
+        cx = np.interp(x=cc[:, 0] - offset,
                        xp=range(x.size),
                        fp=x)
-        cy = np.interp(x=cc[:, 1]-offset,
+        cy = np.interp(x=cc[:, 1] - offset,
                        xp=range(y.size),
                        fp=y)
         conts_xy.append(np.stack((cx, cy), axis=1))
@@ -128,23 +126,24 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
     yp = yp / y_norm
 
     # Perform interpolation
-    dp = spint.interpn((x, y), density,
-                       (xp, yp),
-                       method='linear',
-                       bounds_error=False,
-                       fill_value=0)
+    dp = spint.interpn(
+        (x, y), density, (xp, yp),
+        method="linear",
+        bounds_error=False,
+        fill_value=0
+    )
 
     if normalize:
         dp /= density.max()
 
     if not np.isscalar(q):
         q = np.array(q)
-    plev = np.nanpercentile(dp, q=q*100)
+    plev = np.nanpercentile(dp, q=q * 100)
     return plev
 
 
-def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
-                         ret_err=False):
+def _find_quantile_level(density, x, y, xp, yp, quantile,
+                         acc=0.01, ret_err=False):
     """Find density level for a given data quantile by iteration
 
     Parameters
@@ -214,7 +213,7 @@ def _find_quantile_level(density, x, y, xp, yp, quantile, acc=.01,
             pi = pi[~pinc]
         err = quantile - (nev - isin) / nev
         level += err * itfac
-        itfac *= .9
+        itfac *= 0.9
 
     if ret_err:
         return level, err

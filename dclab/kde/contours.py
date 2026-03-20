@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.interpolate as spint
 
-from ..external.skimage.measure import find_contours, points_in_poly
+from ..external.skimage.measure import find_contours
 from .helpers import get_bad_vals
 
 
@@ -140,82 +140,3 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
         q = np.array(q)
     plev = np.nanpercentile(dp, q=q * 100)
     return plev
-
-
-def _find_quantile_level(density, x, y, xp, yp, quantile,
-                         acc=0.01, ret_err=False):
-    """Find density level for a given data quantile by iteration
-
-    Parameters
-    ----------
-    density: 2d ndarray of shape (M, N)
-        Kernel density estimate for which to compute the contours
-    x: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        X-values corresponding to `density`
-    y: 2d ndarray of shape (M, N) or 1d ndarray of size M
-        Y-values corresponding to `density`
-    xp: 1d ndarray of size D
-        Event x-data from which to compute the quantile
-    yp: 1d ndarray of size D
-        Event y-data from which to compute the quantile
-    quantile: float between 0 and 1
-        Quantile along which to find contours in `density` relative
-        to its maximum
-    acc: float
-        Desired absolute accuracy (stopping criterion) of the
-        contours
-    ret_err: bool
-        If True, also return the absolute error
-
-    Returns
-    -------
-    level: float
-        Contours level corresponding to the given quantile
-
-    Notes
-    -----
-    A much more faster method (using interpolation) is implemented in
-    :func:`get_quantile_levels`.
-    NaN-values events in `xp` and `yp` are ignored.
-
-    See Also
-    --------
-    skimage.measure.find_contours: Contour finding algorithm
-    """
-    if quantile >= 1 or quantile <= 0:
-        raise ValueError(f"Invalid value for `quantile`: {quantile}")
-
-    # remove bad events
-    bad = get_bad_vals(xp, yp)
-    xp = xp[~bad]
-    yp = yp[~bad]
-    points = np.concatenate((xp.reshape(-1, 1), yp.reshape(-1, 1)), axis=1)
-
-    # initial guess
-    level = quantile
-    # error of current iteration
-    err = 1
-    # iteration factor (guarantees convergence)
-    itfac = 1
-    # total number of events
-    nev = xp.size
-
-    while np.abs(err) > acc:
-        # compute contours
-        conts = find_contours_level(density, x, y, level, closed=True)
-        # compute number of points in contour
-        isin = 0
-        pi = np.array(points, copy=True)
-        for cc in conts:
-            pinc = points_in_poly(points=pi, verts=cc)
-            isin += np.sum(pinc)
-            # ignore these points for the other contours
-            pi = pi[~pinc]
-        err = quantile - (nev - isin) / nev
-        level += err * itfac
-        itfac *= 0.9
-
-    if ret_err:
-        return level, err
-    else:
-        return level

@@ -74,11 +74,11 @@ class KernelDensityEstimator:
         return b
 
     @staticmethod
-    def get_spacing(
+    def estimate_spacing(
         a, method,
         scale="linear", method_kw=None, feat="undefined", ret_scaled=False
     ):
-        """Convenience function for computing the contour spacing
+        """Helper function for guessing the spacing/accuracy for KDE plots
 
         Parameters
         ----------
@@ -326,7 +326,7 @@ class KernelDensityEstimator:
         x = self.rtdc_ds[xax][self.rtdc_ds.filter.all]
         y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
 
-        xacc_sc, xs = self.get_spacing(
+        xacc_sc, xs = self.estimate_spacing(
             a=x,
             feat=xax,
             scale=xscale,
@@ -334,7 +334,7 @@ class KernelDensityEstimator:
             ret_scaled=True
         )
 
-        yacc_sc, ys = self.get_spacing(
+        yacc_sc, ys = self.estimate_spacing(
             a=y,
             feat=yax,
             scale=yscale,
@@ -458,7 +458,8 @@ class KernelDensityEstimator:
         return density
 
     @umbrella_cache(
-        topic="kde-at", custom_handlers={"KernelDensityEstimator": kde_handler}
+        topic="kde-at",
+        custom_handlers={"KernelDensityEstimator": kde_handler}
     )
     def get_at(
         self,

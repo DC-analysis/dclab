@@ -3,6 +3,7 @@
  - ref: move KDE helper methods/decorators to `kde.helpers` submodule
  - ref: move KDE binning methods to `kde.binning` submodule
  - ref: move `kde.contours._find_quantile_level` to test module
+ - ref: rename `KernelDensityEstimator.get_spacing` to `estimate_spacing`
 0.69.2
  - fix: comparing two `PolygonFilter` with differing size failed
  - enh: make `PolygonFilter` operations thread-safe

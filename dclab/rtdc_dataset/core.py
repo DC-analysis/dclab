@@ -349,7 +349,7 @@ class RTDCBase(abc.ABC):
         ret_scaled: bool
             whether to return the scaled array of `a`
         """
-        return KernelDensityEstimator.get_spacing(
+        return KernelDensityEstimator.estimate_spacing(
             a=a,
             scale=scale,
             method=method,

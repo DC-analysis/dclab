@@ -1,6 +1,7 @@
 0.70.0
  - ref: change default contour accuracy algorithm to `bin_width_percentile`
  - ref: move KDE helper methods/decorators to `kde.helpers` submodule
+ - ref: move KDE binning methods to `kde.binning` submodule
 0.69.2
  - fix: comparing two `PolygonFilter` with differing size failed
  - enh: make `PolygonFilter` operations thread-safe

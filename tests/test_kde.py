@@ -3,7 +3,7 @@ import pytest
 import dclab
 from dclab.external import skimage
 from dclab.kde import KernelDensityEstimator
-from dclab.kde.methods import KernelDensityEstimationForEmtpyArrayWarning
+from dclab.kde.binning import KernelDensityEstimationForEmtpyArrayWarning
 from dclab import polygon_filter
 
 from helper_methods import example_data_dict

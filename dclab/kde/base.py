@@ -185,26 +185,19 @@ class KernelDensityEstimator:
             KDE Quantiles for which contour levels are computed. The
             values must be between 0 and 1. If set to None, use
             [0.5, 0.95] as default.
-        xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform")
-        yax: str
-            Identifier for Y axis
-        xacc: float
-            Contour accuracy in x direction
-            if set to None, will use :func:`bin_width_percentile`
-        yacc: float
-            Contour accuracy in y direction
-            if set to None, will use :func:`bin_width_percentile`
+        xax, yax: str
+            Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
+        xacc, yacc: float
+            Contour accuracy in x and y direction
+            if set to None, will use :func:`.find_smooth_contour_spacing`
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
-        xscale: str
-            If set to "log", take the logarithm of the x-values before
+        xscale, yscale: str
+            If set to "log", take the logarithm of the axis-values before
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
-        yscale: str
-            See `xscale`
         ret_levels: bool
             If set to True, return the levels of the contours
             (default: False)
@@ -222,6 +215,23 @@ class KernelDensityEstimator:
         """
         if not quantiles:
             quantiles = [0.5, 0.95]
+
+        if xacc is None or yacc is None:
+            # workaround for circular import
+            from .smooth_contour import find_smooth_contour_spacing
+            sc_res = find_smooth_contour_spacing(
+                [self.rtdc_ds],
+                xax=xax,
+                yax=yax,
+                xrange=(np.min(self.rtdc_ds[xax]), np.max(self.rtdc_ds[xax])),
+                yrange=(np.min(self.rtdc_ds[yax]), np.max(self.rtdc_ds[yax])),
+                quantiles=quantiles,
+                xscale=xscale,
+                yscale=yscale,
+            )
+            xacc = xacc or sc_res["spacing x"]
+            yacc = yacc or sc_res["spacing y"]
+
         try:
             x, y, density = self.get_raster(
                 xax=xax,

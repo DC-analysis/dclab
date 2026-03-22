@@ -315,6 +315,10 @@ Kernel Density Estimators (KDEs)
    :members:
    :undoc-members:
 
+.. automodule:: dclab.kde.smooth_contour
+   :members:
+   :undoc-members:
+
 
 .. _sec_ref_polygon_filter:
 

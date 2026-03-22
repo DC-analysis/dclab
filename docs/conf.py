@@ -15,12 +15,14 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import pathlib
 import os.path as op
+import pathlib
 import sys
+
 import tomllib
 
 import dclab
+
 # include parent directory
 pdir = op.dirname(op.dirname(op.abspath(__file__)))
 # include extensions
@@ -52,6 +54,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinx.ext.napoleon',
+              'sphinx.ext.todo',
               'sphinxcontrib.bibtex',
               'matplotlib.sphinxext.plot_directive',
               'IPython.sphinxext.ipython_directive',

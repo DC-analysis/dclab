@@ -4,11 +4,11 @@
 Scatter plots
 =============
 
-For data visualization, dclab comes with predefined 
+For data visualization, dclab comes with predefined
 :ref:`kernel density estimators (KDEs) <sec_ref_kde>` and
 an :ref:`event downsampling <sec_ref_downsampling>` module.
 The functionalities of both modules are made available directly via the
-:py:class:`dclab.kde.KernelDensityEstimator` class. 
+:py:class:`dclab.kde.KernelDensityEstimator` class.
 
 KDE scatter plot
 ----------------
@@ -27,7 +27,7 @@ function.
     # create a kernel density estimator
     kde_instance = KernelDensityEstimator(ds)
     kde = kde_instance.get_scatter(xax="area_um", yax="deform")
-    
+
     ax = plt.subplot(111, title="scatter plot with {} events".format(len(kde)))
     sc = ax.scatter(ds["area_um"], ds["deform"], c=kde, marker=".")
     ax.set_xlabel(dclab.dfn.get_feature_label("area_um"))
@@ -41,7 +41,7 @@ KDE scatter plot with event-density-based downsampling
 ------------------------------------------------------
 To reduce the complexity of the plot (e.g. when exporting to
 scalable vector graphics (.svg)), the plotted events can be
-downsampled by removing events from high-event-density regions. 
+downsampled by removing events from high-event-density regions.
 The number of events plotted is reduced but the resulting
 visualization is almost indistinguishable from the one above.
 
@@ -189,6 +189,9 @@ using :func:`~dclab.kde.KernelDensityEstimator.get_contour_lines`.
     The lower-level method for computing contours from a given density level
     is :func:`~dclab.kde.contours.find_contours_level`.
 
+    The lower-level method for finding a contour spacing that yields smooth
+    contours is :func:`~dclab.kde.smooth_contour.find_smooth_contour_spacing`.
+
 
 
 Polygon filters / DCscope
@@ -208,7 +211,7 @@ in DCscope and then import them in dclab.
     ds = dclab.new_dataset("data/example.rtdc")
     kde_instance = KernelDensityEstimator(ds)
     kde = kde_instance.get_scatter(xax="area_um", yax="deform")
-    
+
     # load and apply polygon filter from file
     pf = dclab.PolygonFilter(filename="data/example.poly")
     ds.polygon_filter_add(pf)

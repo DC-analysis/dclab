@@ -1,4 +1,7 @@
 0.70.0
+ - feat: migrate `find_smooth_contour_spacing` from DCscope (#153)
+ - enh: use `find_smooth_contour_spacing` as default spacing
+   in `KernelDensityEstimator.get_contour_lines`
  - fix: array to scalar conversion in `kde.contours` 
  - ref: change default contour accuracy algorithm to `bin_width_percentile`
  - ref: move KDE helper methods/decorators to `kde.helpers` submodule

@@ -1,4 +1,5 @@
 0.70.0
+ - fix: array to scalar conversion in `kde.contours` 
  - ref: change default contour accuracy algorithm to `bin_width_percentile`
  - ref: move KDE helper methods/decorators to `kde.helpers` submodule
  - ref: move KDE binning methods to `kde.binning` submodule

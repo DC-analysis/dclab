@@ -32,7 +32,7 @@ def find_contours_level(density, x, y, level, closed=False):
     skimage.measure.find_contours: Contour finding algorithm used
     """
     if level >= 1 or level <= 0:
-        raise ValueError("`level` must be in (0,1), got '{}'!".format(level))
+        raise ValueError(f"`level` must be in (0,1), got '{level}'!")
     # level relative to maximum
     level = level * density.max()
     # xy coordinates
@@ -49,6 +49,9 @@ def find_contours_level(density, x, y, level, closed=False):
     else:
         # leave contours open at kde boundary
         offset = 0
+
+    if isinstance(level, np.ndarray):
+        level = level.item()
 
     conts_idx = find_contours(density, level)
     conts_xy = []

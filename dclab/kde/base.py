@@ -107,6 +107,104 @@ class KernelDensityEstimator:
             return acc
 
     @umbrella_cache(
+        topic="kde-at",
+        custom_handlers={"KernelDensityEstimator": kde_handler}
+    )
+    def get_at(
+        self,
+        xax="area_um",
+        yax="deform",
+        positions=None,
+        kde_type="histogram",
+        kde_kwargs=None,
+        xscale="linear",
+        yscale="linear",
+        xacc=None,
+        yacc=None,
+    ):
+        """Fast evaluation of the KDE via linear interpolation
+
+        The KDE is computed via linear interpolation from the output
+        of :meth:`KernelDensityEstimator.get_raster`.
+
+        Parameters
+        ----------
+        xax, yax: str
+            Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
+        positions: list of two 1d ndarrays or ndarray of shape (2, N)
+            The positions where the KDE will be computed. Note that
+            the KDE estimate is computed from the points that
+            are set in `self.rtdc_ds.filter.all`.
+        kde_type: str
+            The KDE method to use, see :const:`.kde_methods.methods`
+        kde_kwargs: dict
+            Additional keyword arguments to the KDE method
+        xscale, yscale: str
+            If set to "log", take the logarithm of the axes values before
+            computing the KDE. This is useful when data are
+            displayed on a log-scale. Defaults to "linear".
+        xacc, yacc: float
+            KDE grid spacing in x and y direction
+            if set to None, will use :func:`.bin_width_percentile`
+
+        Returns
+        -------
+        density : 1d ndarray
+            The kernel density evaluated for the filtered events.
+        """
+        if kde_kwargs is None:
+            kde_kwargs = {}
+        xax = xax.lower()
+        yax = yax.lower()
+        kde_type = kde_type.lower()
+        if kde_type not in methods:
+            raise ValueError(f"Not a valid kde type: {kde_type}!")
+
+        # Get data
+        x = self.rtdc_ds[xax][self.rtdc_ds.filter.all]
+        y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
+
+        # Apply scale (no change for linear scale)
+        if positions:
+            xs = KernelDensityEstimator.apply_scale(positions[0], xscale, xax)
+            ys = KernelDensityEstimator.apply_scale(positions[1], yscale, yax)
+        else:
+            xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
+            ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
+
+        if len(x):
+            xr, yr, density_grid = self.get_raster(
+                xax=xax,
+                yax=yax,
+                kde_type=kde_type,
+                kde_kwargs=kde_kwargs,
+                xscale=xscale,
+                yscale=yscale,
+                xacc=xacc,
+                yacc=yacc,
+            )
+
+            # Apply scale (no change for linear scale)
+            xrs = KernelDensityEstimator.apply_scale(xr, xscale, xax)
+            yrs = KernelDensityEstimator.apply_scale(yr, yscale, yax)
+
+            # 'scipy.interp2d' has been removed in SciPy 1.14.0
+            # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
+            interp_func = RGI(
+                (xrs[:, 0], yrs[0, :]),
+                density_grid,
+                method="linear",
+                bounds_error=False,
+                fill_value=np.nan,
+            )
+            density = interp_func((xs, ys))
+
+        else:
+            density = np.array([])
+
+        return density
+
+    @umbrella_cache(
         topic="kde-contour-lines",
         custom_handlers={"KernelDensityEstimator": kde_handler},
     )
@@ -386,104 +484,6 @@ class KernelDensityEstimator:
             density = kde_fct(
                 events_x=xs, events_y=ys, xout=px, yout=py, **kde_kwargs
             )
-        else:
-            density = np.array([])
-
-        return density
-
-    @umbrella_cache(
-        topic="kde-at",
-        custom_handlers={"KernelDensityEstimator": kde_handler}
-    )
-    def get_at(
-        self,
-        xax="area_um",
-        yax="deform",
-        positions=None,
-        kde_type="histogram",
-        kde_kwargs=None,
-        xscale="linear",
-        yscale="linear",
-        xacc=None,
-        yacc=None,
-    ):
-        """Fast evaluation of the KDE via linear interpolation
-
-        The KDE is computed via linear interpolation from the output
-        of :meth:`KernelDensityEstimator.get_raster`.
-
-        Parameters
-        ----------
-        xax, yax: str
-            Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
-        positions: list of two 1d ndarrays or ndarray of shape (2, N)
-            The positions where the KDE will be computed. Note that
-            the KDE estimate is computed from the points that
-            are set in `self.rtdc_ds.filter.all`.
-        kde_type: str
-            The KDE method to use, see :const:`.kde_methods.methods`
-        kde_kwargs: dict
-            Additional keyword arguments to the KDE method
-        xscale, yscale: str
-            If set to "log", take the logarithm of the axes values before
-            computing the KDE. This is useful when data are
-            displayed on a log-scale. Defaults to "linear".
-        xacc, yacc: float
-            KDE grid spacing in x and y direction
-            if set to None, will use :func:`.bin_width_percentile`
-
-        Returns
-        -------
-        density : 1d ndarray
-            The kernel density evaluated for the filtered events.
-        """
-        if kde_kwargs is None:
-            kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
-        kde_type = kde_type.lower()
-        if kde_type not in methods:
-            raise ValueError(f"Not a valid kde type: {kde_type}!")
-
-        # Get data
-        x = self.rtdc_ds[xax][self.rtdc_ds.filter.all]
-        y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
-
-        # Apply scale (no change for linear scale)
-        if positions:
-            xs = KernelDensityEstimator.apply_scale(positions[0], xscale, xax)
-            ys = KernelDensityEstimator.apply_scale(positions[1], yscale, yax)
-        else:
-            xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
-            ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
-
-        if len(x):
-            xr, yr, density_grid = self.get_raster(
-                xax=xax,
-                yax=yax,
-                kde_type=kde_type,
-                kde_kwargs=kde_kwargs,
-                xscale=xscale,
-                yscale=yscale,
-                xacc=xacc,
-                yacc=yacc,
-            )
-
-            # Apply scale (no change for linear scale)
-            xrs = KernelDensityEstimator.apply_scale(xr, xscale, xax)
-            yrs = KernelDensityEstimator.apply_scale(yr, yscale, yax)
-
-            # 'scipy.interp2d' has been removed in SciPy 1.14.0
-            # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
-            interp_func = RGI(
-                (xrs[:, 0], yrs[0, :]),
-                density_grid,
-                method="linear",
-                bounds_error=False,
-                fill_value=np.nan,
-            )
-            density = interp_func((xs, ys))
-
         else:
             density = np.array([])
 

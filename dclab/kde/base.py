@@ -87,7 +87,7 @@ class KernelDensityEstimator:
         scale: str
             how the data should be scaled ("log" or "linear")
         method: callable
-            KDE spacing method to use
+            Binning method to use
         method_kw: dict
             keyword arguments to `method`
         feat: str
@@ -106,60 +106,6 @@ class KernelDensityEstimator:
         else:
             return acc
 
-    def get_contour(
-        self,
-        xax="area_um",
-        yax="deform",
-        xacc=None,
-        yacc=None,
-        kde_type="histogram",
-        kde_kwargs=None,
-        xscale="linear",
-        yscale="linear",
-    ):
-        """Evaluate the kernel density estimate for contour plots
-
-        Parameters
-        ----------
-        xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform")
-        yax: str
-            Identifier for Y axis
-        xacc: float
-            Contour accuracy in x direction
-        yacc: float
-            Contour accuracy in y direction
-        kde_type: str
-            The KDE method to use
-        kde_kwargs: dict
-            Additional keyword arguments to the KDE method
-        xscale: str
-            If set to "log", take the logarithm of the x-values before
-            computing the KDE. This is useful when data are
-            displayed on a log-scale. Defaults to "linear".
-        yscale: str
-            See `xscale`.
-
-        Returns
-        -------
-        X, Y, Z : coordinates
-            The kernel density Z evaluated on a rectangular grid (X,Y).
-        """
-        warnings.warn(
-            "`get_contour` is deprecated; please use `get_raster` instead",
-            DeprecationWarning,
-        )
-        return self.get_raster(
-            xax=xax,
-            yax=yax,
-            xacc=xacc,
-            yacc=yacc,
-            kde_type=kde_type,
-            kde_kwargs=kde_kwargs,
-            xscale=xscale,
-            yscale=yscale,
-        )
-
     @umbrella_cache(
         topic="kde-contour-lines",
         custom_handlers={"KernelDensityEstimator": kde_handler},
@@ -169,12 +115,12 @@ class KernelDensityEstimator:
         quantiles=None,
         xax="area_um",
         yax="deform",
-        xacc=None,
-        yacc=None,
         kde_type="histogram",
         kde_kwargs=None,
         xscale="linear",
         yscale="linear",
+        xacc=None,
+        yacc=None,
         ret_levels=False,
     ):
         """Compute contour lines for a given kernel density estimate.
@@ -187,9 +133,6 @@ class KernelDensityEstimator:
             [0.5, 0.95] as default.
         xax, yax: str
             Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
-        xacc, yacc: float
-            Contour accuracy in x and y direction
-            if set to None, will use :func:`.find_smooth_contour_spacing`
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
@@ -198,6 +141,9 @@ class KernelDensityEstimator:
             If set to "log", take the logarithm of the axis-values before
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
+        xacc, yacc: float
+            KDE grid spacing in x and y direction; Affects contour shape.
+            If set to None, will use :func:`.find_smooth_contour_spacing`
         ret_levels: bool
             If set to True, return the levels of the contours
             (default: False)
@@ -287,37 +233,30 @@ class KernelDensityEstimator:
         self,
         xax="area_um",
         yax="deform",
-        xacc=None,
-        yacc=None,
         kde_type="histogram",
         kde_kwargs=None,
         xscale="linear",
         yscale="linear",
+        xacc=None,
+        yacc=None,
     ):
         """Evaluate the kernel density estimate on a grid
 
         Parameters
         ----------
-        xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform")
-        yax: str
-            Identifier for Y axis
-        xacc: float
-            Contour accuracy in x direction
-            if set to None, will use :func:`bin_width_percentile`
-        yacc: float
-            Contour accuracy in y direction
-            if set to None, will use :func:`bin_width_percentile`
+        xax, yax: str
+            Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
-        xscale: str
-            If set to "log", take the logarithm of the x-values before
+        xscale, yscale: str
+            If set to "log", take the logarithm of the axes values before
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
-        yscale: str
-            See `xscale`.
+        xacc, yacc: float
+            Grid spacing size for the axes;
+            If set to None, will use :func:`bin_width_percentile`
 
         Returns
         -------
@@ -336,27 +275,14 @@ class KernelDensityEstimator:
         x = self.rtdc_ds[xax][self.rtdc_ds.filter.all]
         y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
 
-        xacc_sc, xs = self.estimate_spacing(
-            a=x,
-            feat=xax,
-            scale=xscale,
-            method=bin_width_percentile,
-            ret_scaled=True
-        )
-
-        yacc_sc, ys = self.estimate_spacing(
-            a=y,
-            feat=yax,
-            scale=yscale,
-            method=bin_width_percentile,
-            ret_scaled=True
-        )
+        xs = KernelDensityEstimator.apply_scale(x, scale=xscale, feat=xax)
+        ys = KernelDensityEstimator.apply_scale(y, scale=yscale, feat=yax)
 
         if xacc is None or xacc == 0:
-            xacc = xacc_sc
+            xacc = bin_width_percentile(xs)
 
         if yacc is None or yacc == 0:
-            yacc = yacc_sc
+            yacc = bin_width_percentile(ys)
 
         # Ignore infs and nans
         bad = get_bad_vals(xs, ys)
@@ -404,16 +330,16 @@ class KernelDensityEstimator:
         xscale="linear",
         yscale="linear",
     ):
-        """Evaluate the kernel density estimate for scatter plots
+        """Evaluate the KDE at specific positions
 
-        The KDE is evaluated with the `kde_type` function for every point.
+        The KDE is evaluated with the `kde_type` function for every point,
+        which is significantly slower than using interpolation
+        via :meth:`.KernelDensityEstimator.get_at`.
 
         Parameters
         ----------
-        xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform")
-        yax: str
-            Identifier for Y axis
+        xax, yax: str
+            Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
         positions: list of two 1d ndarrays or ndarray of shape (2, N)
             The positions where the KDE will be computed. Note that
             the KDE estimate is computed from the points that
@@ -422,12 +348,10 @@ class KernelDensityEstimator:
             The KDE method to use, see :const:`.kde_methods.methods`
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
-        xscale: str
-            If set to "log", take the logarithm of the x-values before
+        xscale, yscale: str
+            If set to "log", take the logarithm of the axis-values before
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
-        yscale: str
-            See `xscale`.
 
         Returns
         -------
@@ -447,20 +371,20 @@ class KernelDensityEstimator:
         y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = self.apply_scale(x, xscale, xax)
-        ys = self.apply_scale(y, yscale, yax)
+        xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
+        ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
 
         if positions is None:
-            posx = None
-            posy = None
+            px = None
+            py = None
         else:
-            posx = self.apply_scale(positions[0], xscale, xax)
-            posy = self.apply_scale(positions[1], yscale, yax)
+            px = KernelDensityEstimator.apply_scale(positions[0], xscale, xax)
+            py = KernelDensityEstimator.apply_scale(positions[1], yscale, yax)
 
         kde_fct = methods[kde_type]
         if len(x):
             density = kde_fct(
-                events_x=xs, events_y=ys, xout=posx, yout=posy, **kde_kwargs
+                events_x=xs, events_y=ys, xout=px, yout=py, **kde_kwargs
             )
         else:
             density = np.array([])
@@ -480,18 +404,18 @@ class KernelDensityEstimator:
         kde_kwargs=None,
         xscale="linear",
         yscale="linear",
+        xacc=None,
+        yacc=None,
     ):
-        """Evaluate the kernel density estimate for specific events
+        """Fast evaluation of the KDE via linear interpolation
 
         The KDE is computed via linear interpolation from the output
-        of `get_raster`.
+        of :meth:`KernelDensityEstimator.get_raster`.
 
         Parameters
         ----------
-        xax: str
-            Identifier for X axis (e.g. "area_um", "aspect", "deform")
-        yax: str
-            Identifier for Y axis
+        xax, yax: str
+            Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
         positions: list of two 1d ndarrays or ndarray of shape (2, N)
             The positions where the KDE will be computed. Note that
             the KDE estimate is computed from the points that
@@ -500,12 +424,13 @@ class KernelDensityEstimator:
             The KDE method to use, see :const:`.kde_methods.methods`
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
-        xscale: str
-            If set to "log", take the logarithm of the x-values before
+        xscale, yscale: str
+            If set to "log", take the logarithm of the axes values before
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
-        yscale: str
-            See `xscale`.
+        xacc, yacc: float
+            KDE grid spacing in x and y direction
+            if set to None, will use :func:`.bin_width_percentile`
 
         Returns
         -------
@@ -525,12 +450,12 @@ class KernelDensityEstimator:
         y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
 
         # Apply scale (no change for linear scale)
-        xs = self.apply_scale(x, xscale, xax)
-        ys = self.apply_scale(y, yscale, yax)
-
         if positions:
-            xs = self.apply_scale(positions[0], xscale, xax)
-            ys = self.apply_scale(positions[1], yscale, yax)
+            xs = KernelDensityEstimator.apply_scale(positions[0], xscale, xax)
+            ys = KernelDensityEstimator.apply_scale(positions[1], yscale, yax)
+        else:
+            xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
+            ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
 
         if len(x):
             xr, yr, density_grid = self.get_raster(
@@ -540,11 +465,13 @@ class KernelDensityEstimator:
                 kde_kwargs=kde_kwargs,
                 xscale=xscale,
                 yscale=yscale,
+                xacc=xacc,
+                yacc=yacc,
             )
 
             # Apply scale (no change for linear scale)
-            xrs = self.apply_scale(xr, xscale, xax)
-            yrs = self.apply_scale(yr, yscale, yax)
+            xrs = KernelDensityEstimator.apply_scale(xr, xscale, xax)
+            yrs = KernelDensityEstimator.apply_scale(yr, yscale, yax)
 
             # 'scipy.interp2d' has been removed in SciPy 1.14.0
             # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html

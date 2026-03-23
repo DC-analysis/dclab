@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
-import dclab
-from dclab.external import skimage
-from dclab.kde import KernelDensityEstimator
-from dclab.kde.binning import KernelDensityEstimationForEmtpyArrayWarning
-from dclab import polygon_filter
-
 from helper_methods import example_data_dict
+
+import dclab
+from dclab import polygon_filter
+from dclab.external import skimage
+from dclab.kde import KernelDensityEstimator, binning
+from dclab.kde.binning import KernelDensityEstimationForEmtpyArrayWarning
 
 
 def test_contour_lines():
@@ -102,6 +102,23 @@ def test_contour_lines_data_with_too_much_space():
                                               yscale="linear",
                                               quantiles=[0.5])
     assert not contours, "there should be no contours with too much space"
+
+
+def test_kde_get_at_acc():
+    ddict = example_data_dict(size=300, keys=["area_um", "deform"])
+    ds = dclab.new_dataset(ddict)
+    kde_instance = KernelDensityEstimator(ds)
+    kde_auto = kde_instance.get_at(xax="area_um", yax="deform")
+    kde_manual = kde_instance.get_at(xax="area_um", yax="deform",
+                                     xacc=1, yacc=.01)
+
+    xacc = binning.bin_width_percentile(ds["area_um"])
+    yacc = binning.bin_width_percentile(ds["deform"])
+    kde_auto_exp = kde_instance.get_at(xax="area_um", yax="deform",
+                                       xacc=xacc, yacc=yacc)
+
+    assert np.all(kde_auto == kde_auto_exp)
+    assert np.all(kde_auto != kde_manual)
 
 
 def test_kde_log_get_at():

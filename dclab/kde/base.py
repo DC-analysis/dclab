@@ -260,6 +260,16 @@ class KernelDensityEstimator:
         if not quantiles:
             quantiles = [0.5, 0.95]
 
+        if xax == yax:
+            # There is no point in computing contours, because the user is
+            # plotting a feature against itself.
+            contours = [[]] * len(quantiles)
+            levels = [np.nan] * len(quantiles)
+            if ret_levels:
+                return contours, levels
+            else:
+                return contours
+
         if xacc is None or yacc is None:
             # workaround for circular import
             from .smooth_contour import find_smooth_contour_spacing

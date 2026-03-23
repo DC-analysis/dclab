@@ -1,5 +1,6 @@
 0.71.0
  - enh: add spacing kwargs `xacc` and `yacc` to `KernelDensityEstimator.get_at`
+ - enh: refuse to compute contour lines for identical features (#273)
  - ref: remove deprecated `KernelDensityEstimator.get_contour`
  - ref: change kwargs order in `KernelDensityEstimator` methods
 0.70.0

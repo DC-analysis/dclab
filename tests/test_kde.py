@@ -42,6 +42,42 @@ def test_contour_lines():
     assert nump2.sum() == 11
 
 
+def test_contour_lines_same_feature_issue_273():
+    np.random.seed(47)
+    x0 = np.random.normal(loc=100, scale=10, size=100)
+    y0 = np.random.normal(loc=.1, scale=.01, size=100)
+
+    ds = dclab.new_dataset({"area_um": x0, "deform": y0})
+    ds.config["filtering"]["enable filters"] = False
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    contours = kde_instance.get_contour_lines(xax="area_um",
+                                              yax="area_um",
+                                              xacc=.10,
+                                              yacc=.10,
+                                              kde_type="histogram",
+                                              kde_kwargs=None,
+                                              xscale="linear",
+                                              yscale="linear",
+                                              quantiles=[0.89])
+
+    assert contours == [[]], "should refuse to compute"
+
+    contours, levels = kde_instance.get_contour_lines(xax="area_um",
+                                                      yax="area_um",
+                                                      xacc=.10,
+                                                      yacc=.10,
+                                                      kde_type="histogram",
+                                                      kde_kwargs=None,
+                                                      xscale="linear",
+                                                      yscale="linear",
+                                                      quantiles=[0.89],
+                                                      ret_levels=True)
+    assert contours == [[]], "should refuse to compute"
+    assert levels == [np.nan], "should refuse to compute"
+
+
 def test_contour_lines_without_quantiles_with_ret_levels():
     np.random.seed(47)
     x0 = np.random.normal(loc=100, scale=10, size=100)

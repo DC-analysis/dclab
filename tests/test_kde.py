@@ -42,6 +42,32 @@ def test_contour_lines():
     assert nump2.sum() == 11
 
 
+def test_contour_lines_monotonous():
+    np.random.seed(47)
+
+    ds = dclab.new_dataset({
+        "area_um": np.random.normal(loc=100, scale=10, size=100),
+        "deform": np.random.normal(loc=.1, scale=.01, size=100),
+        "index_online": np.arange(100),
+        "time": np.linspace(0, 10, 100),
+    })
+    ds.config["filtering"]["enable filters"] = False
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    contours = kde_instance.get_contour_lines(xax="index_online",
+                                              yax="time",
+                                              xacc=.10,
+                                              yacc=.10,
+                                              kde_type="histogram",
+                                              kde_kwargs=None,
+                                              xscale="linear",
+                                              yscale="linear",
+                                              quantiles=[0.89, .12])
+
+    assert contours == [[], []], "should refuse to compute"
+
+
 def test_contour_lines_same_feature_issue_273():
     np.random.seed(47)
     x0 = np.random.normal(loc=100, scale=10, size=100)

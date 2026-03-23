@@ -4,6 +4,7 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator as RGI
 
 from ..cached import umbrella_cache
+from ..definitions import feat_const
 from .binning import bin_width_percentile
 from .contours import find_contours_level, get_quantile_levels
 from .helpers import get_bad_vals
@@ -72,6 +73,19 @@ class KernelDensityEstimator:
                 f"`scale` must be either 'linear' or 'log', got '{scale}'!"
             )
         return b
+
+    @staticmethod
+    def check_feat_kde_applicability(xax: str, yax: str) -> bool:
+        """Return True when it makes sense to compute KDE data"""
+        if xax == yax:
+            # Same feature -> just a line
+            return False
+        elif (xax in feat_const.FEATURES_MONOTONOUS
+              and yax in feat_const.FEATURES_MONOTONOUS):
+            # Monotonous features -> just a line
+            return False
+        else:
+            return True
 
     @staticmethod
     def estimate_spacing(
@@ -260,9 +274,8 @@ class KernelDensityEstimator:
         if not quantiles:
             quantiles = [0.5, 0.95]
 
-        if xax == yax:
-            # There is no point in computing contours, because the user is
-            # plotting a feature against itself.
+        if not KernelDensityEstimator.check_feat_kde_applicability(xax, yax):
+            # There is no point in computing contours.
             contours = [[]] * len(quantiles)
             levels = [np.nan] * len(quantiles)
             if ret_levels:
@@ -373,8 +386,7 @@ class KernelDensityEstimator:
         """
         if kde_kwargs is None:
             kde_kwargs = {}
-        xax = xax.lower()
-        yax = yax.lower()
+
         kde_type = kde_type.lower()
         if kde_type not in methods:
             raise ValueError(f"Not a valid kde type: {kde_type}!")

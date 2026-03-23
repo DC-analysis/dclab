@@ -185,6 +185,13 @@ FLUOR_TRACES = [
     "fl3_raw",
 ]
 
+#: Features that by definition trend monotonously during a measurement
+FEATURES_MONOTONOUS = [
+    "frame",
+    "index",
+    "index_online",
+    "time",
+]
 
 # FEATURE convenience lists and dicts
 

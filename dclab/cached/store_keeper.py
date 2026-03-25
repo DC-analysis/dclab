@@ -73,8 +73,10 @@ class StoreKeeper(threading.Thread):
                         num_stored += 1
                 except BaseException:
                     self.logger.error(traceback.format_exc())
-            self.logger.info(
-                f"Added {num_stored} entries to persistent cache")
+
+            if num_stored:
+                self.logger.info(
+                    f"Added {num_stored} entries to persistent cache")
 
             # Remove data from disk store
             try:

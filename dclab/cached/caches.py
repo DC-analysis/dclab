@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import functools
 import hashlib
@@ -19,7 +21,7 @@ class umbrella_cache:
     def __init__(self,
                  topic: str = "general",
                  bypass_memory_store: bool = False,
-                 custom_handlers: dict[Any, Callable] = None,
+                 custom_handlers: dict[type[Any], Callable] | None = None,
                  ):
         """A hybrid disk and in-memory cache decorator compatible with numpy
 
@@ -107,9 +109,9 @@ class umbrella_cache:
 
 
 def compute_hash_for_cache(func: Callable,
-                           args: list,
+                           args: list | tuple,
                            kwargs: dict,
-                           custom_handlers: dict[Any, Callable] = None):
+                           custom_handlers: dict[type[Any], Callable] | None = None):
     """Compute the hash for caching the function return value"""
     the_hash = hashlib.md5()
 
@@ -129,7 +131,7 @@ def compute_hash_for_cache(func: Callable,
 
 def update_hash(the_hash,
                 arg,
-                custom_handlers: dict[Any, Callable] = None
+                custom_handlers: dict[type[Any], Callable] | None = None
                 ):
     """Update a hashing object with a Python object
 

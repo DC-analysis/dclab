@@ -1,5 +1,6 @@
 0.71.1
  - fix: handle deleted `DiskStore` in `umbrella_cache`
+ - enh: store `DiskStore` keys in POSIX format internally
  - enh: only log when entries are added to persistent cache in `StoreKeeper`
  - enh: add `evaluation_time_threshold` kwarg to `umbrella_cache`
 0.71.0

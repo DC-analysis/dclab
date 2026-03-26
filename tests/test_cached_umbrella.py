@@ -135,8 +135,6 @@ def test_umbrella_cache_disk_store_hybrid_deleted(tmp_path, store_keeper):
     key = list(store_keeper.memory_store.data.keys())[0]
 
     store_keeper.perform_tasks()
-    # wait for the data to be written to the disk store
-    time.sleep(1)
 
     assert len(store_keeper.memory_store) == 1
     assert key in store_keeper.disk_store.index

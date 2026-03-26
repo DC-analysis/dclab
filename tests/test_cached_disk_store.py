@@ -198,6 +198,12 @@ def test_disk_store_remove_old_files_touched(tmp_path):
     assert "some/c" not in store
     assert "some/d" in store
 
+    # Make sure the keys are stored in POSIX path format internally
+    assert "some/a" in store.index
+    assert "some/b" not in store.index
+    assert "some/c" not in store.index
+    assert "some/d" in store.index
+
 
 def test_disk_store_remove_old_files_touched_index_cleared(tmp_path):
     store = cached.DiskStore(tmp_path)

@@ -75,7 +75,10 @@ class DiskStore:
         for pp in self.path.rglob("*_meta.json"):
             meta = json.loads(pp.read_text())
             stem = pp.with_name(pp.name.split("_")[0])
-            key = str(stem.relative_to(self.path))
+            key_path = str(stem.relative_to(self.path))
+            # On Windows, paths are separated with "\", but our keys
+            # are labeled with "/".
+            key = "/".join(key_path.split(os.path.sep))
             keys.append(key)
             items.append([pp.stat().st_mtime, meta["size"], key])
             total_bytes += meta["size"]

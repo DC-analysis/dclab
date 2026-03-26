@@ -97,22 +97,31 @@ class umbrella_cache:
             if self.use_memory_store and key in self._memory_store:
                 return self._memory_store[key]
             elif key in self._disk_store:
-                value = self._disk_store[key]
-                if self.use_memory_store:
-                    self._memory_store[key] = value
-                return value
-            else:
-                value = func(*args, **kwargs)
-                if time.perf_counter() - t0 < self.evaluation_time_threshold:
-                    pass  # no caching
-                elif self.use_memory_store:
-                    self._memory_store[key] = value
-                elif self._disk_store:
-                    # Only write to DiskStore directly, if the memory store
-                    # is disabled. Normally, the StoreKeeper does this in the
-                    # background.
-                    self._disk_store[key] = value
-                return value
+                try:
+                    value = self._disk_store[key]
+                except BaseException:
+                    # Maybe the data got deleted. Only the `else` clause
+                    # returns, so the value is computed and returned as if
+                    # it wasn't there.
+                    # Remove key from the disk store index.
+                    self._disk_store.index.remove(key)
+                    pass
+                else:
+                    if self.use_memory_store:
+                        self._memory_store[key] = value
+                    return value
+
+            value = func(*args, **kwargs)
+            if time.perf_counter() - t0 < self.evaluation_time_threshold:
+                pass  # no caching
+            elif self.use_memory_store:
+                self._memory_store[key] = value
+            elif self._disk_store:
+                # Only write to DiskStore directly, if the memory store
+                # is disabled. Normally, the StoreKeeper does this in the
+                # background.
+                self._disk_store[key] = value
+            return value
 
         return wrapper
 

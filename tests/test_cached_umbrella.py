@@ -1,5 +1,6 @@
 import hashlib
 import time
+import shutil
 import sys
 
 import numpy as np
@@ -113,6 +114,50 @@ def test_umbrella_cache_disk_store_hybrid(tmp_path, store_keeper):
     t2 = time.perf_counter()
     assert t2 - t1 < wait
     assert b == a
+
+
+@pytest.mark.skipif(sys.version_info < (3, 3),
+                    reason="perf_counter requires python3.3 or higher")
+def test_umbrella_cache_disk_store_hybrid_deleted(tmp_path, store_keeper):
+    """Pull the data from under the disk store"""
+    store_keeper.set_disk_store_path(tmp_path)
+
+    wait = .05
+
+    @cached.umbrella_cache()
+    def func1(x):
+        time.sleep(wait)
+        return 2 * x
+
+    a = func1(4)
+    assert a == 8
+
+    key = list(store_keeper.memory_store.data.keys())[0]
+
+    store_keeper.perform_tasks()
+    # wait for the data to be written to the disk store
+    time.sleep(1)
+
+    assert len(store_keeper.memory_store) == 1
+    assert key in store_keeper.disk_store.index
+
+    # cause the wrapper to fetch the data from the disk store
+    store_keeper.memory_store.clear()
+    assert len(store_keeper.memory_store) == 0
+    assert key in store_keeper.disk_store.index
+
+    # forcibly remove the data from the disk store
+    shutil.rmtree(tmp_path)
+
+    # the disk store still thinks it has the data, but actually it doesn't.
+    assert key in store_keeper.disk_store.index
+    b = func1(4)
+    assert key not in store_keeper.disk_store.index
+    assert key in store_keeper.memory_store.data
+    assert b == a
+
+    store_keeper.perform_tasks()
+    assert key in store_keeper.disk_store.index
 
 
 @pytest.mark.skipif(sys.version_info < (3, 3),

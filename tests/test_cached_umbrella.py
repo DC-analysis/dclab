@@ -157,6 +157,30 @@ def test_umbrella_cache_size(store_keeper):
     assert len(store_keeper.memory_store) == 10
 
 
+@pytest.mark.skipif(sys.version_info < (3, 3),
+                    reason="perf_counter requires python3.3 or higher")
+def test_umbrella_cache_evaluation_time_threshold(store_keeper):
+    """Test if caching skips when function call is quicker"""
+
+    @cached.umbrella_cache(evaluation_time_threshold=0.5)
+    def func1(x):
+        time.sleep(0.1)
+        return 2 * x
+
+    @cached.umbrella_cache(evaluation_time_threshold=0.0)
+    def func2(x):
+        time.sleep(0.1)
+        return 2 * x
+
+    assert len(store_keeper.memory_store) == 0
+    a = func1(4)
+    assert a == 8
+    assert len(store_keeper.memory_store) == 0
+    b = func2(4)
+    assert b == 8
+    assert len(store_keeper.memory_store) == 1
+
+
 def test_update_hash(store_keeper):
     data = [
         "a string",

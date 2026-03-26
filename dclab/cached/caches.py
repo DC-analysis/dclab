@@ -4,6 +4,7 @@ import atexit
 import functools
 import hashlib
 import numbers
+import time
 from typing import Any, Callable
 
 import numpy as np
@@ -22,6 +23,7 @@ class umbrella_cache:
                  topic: str = "general",
                  bypass_memory_store: bool = False,
                  custom_handlers: dict[type[Any], Callable] | None = None,
+                 evaluation_time_threshold: float = 0.01
                  ):
         """A hybrid disk and in-memory cache decorator compatible with numpy
 
@@ -49,6 +51,9 @@ class umbrella_cache:
             of a class as a string) and a value is a callable that
             translates a class instance to something that can be
             processed by :func:`update_hash`.
+        evaluation_time_threshold:
+            If the time the method takes for computation is shorter than
+            the the threshold value, then it will not be cached.
 
         Notes
         -----
@@ -69,6 +74,7 @@ class umbrella_cache:
         self.topic = topic or "general"
         self.use_memory_store = not bypass_memory_store
         self.custom_handlers = custom_handlers
+        self.evaluation_time_threshold = evaluation_time_threshold
 
     def __call__(self, func):
         @functools.wraps(func)
@@ -83,6 +89,7 @@ class umbrella_cache:
                     umbrella_cache._store_keeper.start()
                 umbrella_cache._store_keeper_started = True
 
+            t0 = time.perf_counter()
             ref = compute_hash_for_cache(func, args, kwargs,
                                          custom_handlers=self.custom_handlers)
             key = f"{self.topic}/{ref[:3]}/{ref[3:6]}/{ref[6:]}"
@@ -96,7 +103,9 @@ class umbrella_cache:
                 return value
             else:
                 value = func(*args, **kwargs)
-                if self.use_memory_store:
+                if time.perf_counter() - t0 < self.evaluation_time_threshold:
+                    pass  # no caching
+                elif self.use_memory_store:
                     self._memory_store[key] = value
                 elif self._disk_store:
                     # Only write to DiskStore directly, if the memory store
@@ -108,10 +117,12 @@ class umbrella_cache:
         return wrapper
 
 
-def compute_hash_for_cache(func: Callable,
-                           args: list | tuple,
-                           kwargs: dict,
-                           custom_handlers: dict[type[Any], Callable] | None = None):
+def compute_hash_for_cache(
+        func: Callable,
+        args: list | tuple,
+        kwargs: dict,
+        custom_handlers: dict[type[Any], Callable] | None = None,
+        ) -> str:
     """Compute the hash for caching the function return value"""
     the_hash = hashlib.md5()
 
@@ -132,7 +143,7 @@ def compute_hash_for_cache(func: Callable,
 def update_hash(the_hash,
                 arg,
                 custom_handlers: dict[type[Any], Callable] | None = None
-                ):
+                ) -> None:
     """Update a hashing object with a Python object
 
     The argument can be a numpy array, a string, or a list/tuple

@@ -449,6 +449,73 @@ def test_basin_key_reproducible():
         ]
 
 
+def test_basin_min_max_mean():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features=["area_um"])
+        # Next, store the basin information in the new dataset
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["deform"],
+            "paths": [
+                str(h5path),  # absolute path name
+            ]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "trace_basin", blines)
+
+    with h5py.File(h5path, "a") as h5:
+        # deliberately change the ufunc attributes so we can test them
+        h5["events/deform"].attrs["max"] = 0.12
+        h5["events/deform"].attrs["min"] = 0.01
+        h5["events/deform"].attrs["mean"] = 0.07
+
+    ds = dclab.new_dataset(h5path_small)
+
+    # test ufunc data (getting min/max/mean from attributes)
+    assert ds["deform"].max() == 0.12
+    assert ds["deform"].min() == 0.01
+    assert ds["deform"].mean() == 0.07
+    assert np.max(ds["deform"]) == 0.12
+    assert np.min(ds["deform"]) == 0.01
+    assert np.mean(ds["deform"]) == 0.07
+
+    assert np.allclose(np.max(ds["deform"][:]), 0.111675784, atol=1e-6, rtol=0)
+    assert np.allclose(np.min(ds["deform"][:]), 0.015729045, atol=1e-6, rtol=0)
+    assert np.allclose(np.mean(ds["deform"][:]), 0.03620074, atol=1e-6, rtol=0)
+
+    # ufunc data should also be used in dataset hierarchies
+    d2 = dclab.new_dataset(ds)
+    d2.apply_filter()
+    assert d2["deform"].max() == 0.12
+    assert d2["deform"].min() == 0.01
+    assert d2["deform"].mean() == 0.07
+    assert np.max(d2["deform"]) == 0.12
+    assert np.min(d2["deform"]) == 0.01
+    assert np.mean(d2["deform"]) == 0.07
+
+    assert np.allclose(np.max(d2["deform"][:]), 0.111675784, atol=1e-6, rtol=0)
+    assert np.allclose(np.min(d2["deform"][:]), 0.015729045, atol=1e-6, rtol=0)
+    assert np.allclose(np.mean(d2["deform"][:]), 0.03620074, atol=1e-6, rtol=0)
+
+    # when filters are applied, ufunc data is not valid anymore, and the
+    # actual values should be computed
+    ds.filter.manual[0] = False
+    d2.apply_filter()
+
+    assert np.allclose(np.max(d2["deform"]), 0.111675784, atol=1e-6, rtol=0)
+    assert np.allclose(np.min(d2["deform"]), 0.015729045, atol=1e-6, rtol=0)
+    assert np.allclose(np.mean(d2["deform"]), 0.037451237, atol=1e-6, rtol=0)
+
+
 def test_basin_run_identifier_unknown():
     """
     When the run identifier of a basin is unknown, the basin

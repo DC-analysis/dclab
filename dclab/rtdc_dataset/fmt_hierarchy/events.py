@@ -62,12 +62,14 @@ class ChildNDArray(ChildBase):
 
 
 class ChildScalar(np.lib.mixins.NDArrayOperatorsMixin):
-    def __init__(self, child, feat):
+    def __init__(self, child, feat, ufunc_data=None):
         self.child = child
         self.feat = feat
         self._array = None
         # ufunc metadata attribute cache
         self._ufunc_attrs = {}
+        if ufunc_data is not None:
+            self._ufunc_attrs.update(ufunc_data)
         self.ndim = 1  # matplotlib might expect this from an array
 
     def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):

@@ -85,7 +85,15 @@ class RTDC_Hierarchy(RTDCBase):
                 data = ChildNDArray(self, feat)
             else:
                 # scalar feature
-                data = ChildScalar(self, feat)
+                if len(self.hparent) == len(self):
+                    ufunc_data = {
+                        "min": self.hparent[feat].min(),
+                        "max": self.hparent[feat].max(),
+                        "mean": self.hparent[feat].mean(),
+                    }
+                else:
+                    ufunc_data = None
+                data = ChildScalar(self, feat, ufunc_data=ufunc_data)
             # Cache everything, even the Young's modulus. The user is
             # responsible for calling `rejuvenate` to reset everything.
             self._events[feat] = data

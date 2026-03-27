@@ -683,6 +683,51 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
     def __len__(self):
         return len(self.basinmap)
 
+    def max(self, *args, **kwargs):
+        if self.is_scalar:
+            if np.all(self.basinmap):
+                # If the original basin dataset has the ufunc specified
+                # as an HDF5 attribute or similar, then this is faster.
+                return self.feat_obj.max()
+            else:
+                # Compute the maximum at the cost of potentially having
+                # to download the data.
+                return np.max(self.feat_obj[self.basinmap])
+        else:
+            raise NotImplementedError(
+                f"ufunc 'max' only available for scalar features in "
+                f"'{self.__class__.__name__}'")
+
+    def mean(self, *args, **kwargs):
+        if self.is_scalar:
+            if np.all(self.basinmap):
+                # If the original basin dataset has the ufunc specified
+                # as an HDF5 attribute or similar, then this is faster.
+                return self.feat_obj.mean()
+            else:
+                # Compute the mean at the cost of potentially having
+                # to download the data.
+                return np.mean(self.feat_obj[self.basinmap])
+        else:
+            raise NotImplementedError(
+                f"ufunc 'mean' only available for scalar features in "
+                f"'{self.__class__.__name__}'")
+
+    def min(self, *args, **kwargs):
+        if self.is_scalar:
+            if np.all(self.basinmap):
+                # If the original basin dataset has the ufunc specified
+                # as an HDF5 attribute or similar, then this is faster.
+                return self.feat_obj.min()
+            else:
+                # Compute the minimum at the cost of potentially having
+                # to download the data.
+                return np.min(self.feat_obj[self.basinmap])
+        else:
+            raise NotImplementedError(
+                f"ufunc 'min' only available for scalar features in "
+                f"'{self.__class__.__name__}'")
+
 
 def basin_priority_sorted_key(bdict: Dict):
     """Yield a sorting value for a given basin that can be used with `sorted`

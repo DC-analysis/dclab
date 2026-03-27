@@ -1,3 +1,5 @@
+0.71.2
+ - enh: implement min/max/mean metadata ufuncs in `BasinProxyFeature`
 0.71.1
  - fix: handle deleted `DiskStore` in `umbrella_cache`
  - enh: store `DiskStore` keys in POSIX format internally

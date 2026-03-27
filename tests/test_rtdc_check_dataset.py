@@ -424,9 +424,9 @@ def test_ic_fmt_hdf5_image_bg():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_ic_fmt_hdf5_logs():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
-    hw = RTDCWriter(h5path)
-    hw.store_log("test", ["asdasd"*100])
-    hw.store_log("M1_para.ini", ["asdasd"*100])
+    with RTDCWriter(h5path) as hw:
+        hw.store_log("test", ["asdasd"*100])
+        hw.store_log("M1_para.ini", ["asdasd"*100])
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check_fmt_hdf5()
     assert len(cues) == 1

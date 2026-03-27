@@ -582,7 +582,7 @@ class IntegrityChecker(object):
                                 level="alert",
                                 category="format HDF5"))
             # check length of logs
-            with h5py.File(self.ds.path, mode="r") as h5:
+            with h5py.File(self.ds.path, mode="r", locking=False) as h5:
                 if "logs" in h5:
                     logs = h5["logs"]
                     for logname in logs.keys():

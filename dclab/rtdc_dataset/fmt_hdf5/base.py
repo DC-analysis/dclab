@@ -35,7 +35,7 @@ class UnknownKeyWarning(UserWarning):
 class RTDC_HDF5(RTDCBase):
     def __init__(self,
                  h5path: str | pathlib.Path | BinaryIO | io.IOBase,
-                 h5kwargs: Dict[str, Any] = None,
+                 h5kwargs: Dict[str, Any] | None = None,
                  *args,
                  **kwargs):
         """HDF5 file format for RT-DC measurements
@@ -70,52 +70,56 @@ class RTDC_HDF5(RTDCBase):
 
         # Increase the read cache (which defaults to 1MiB), since
         # normally we have around 2.5MiB image chunks.
-        if h5kwargs is None:
-            h5kwargs = {}
+        h5kwargs = h5kwargs or {}
         h5kwargs.setdefault("rdcc_nbytes", 10 * 1024 ** 2)
         h5kwargs.setdefault("rdcc_w0", 0)
+        h5kwargs.setdefault("locking", False)
 
         self.h5kwargs = h5kwargs
 
         try:
             self.h5file = h5py.File(h5path, **h5kwargs)
-        except OSError as e:
-            # This could mean that the dataset is currently being written to
-            # OR the recording software crashed. Opening the file in read mode
-            # is only possible by either clearing the file consistency flags,
-            # or reading it in SWMR mode (which is what we try here).
-            msg = " ".join([str(arg) for arg in e.args])
-            if msg and (
-                # 'Unable to synchronously open file (file locking flag
-                #  values don't match)'
-                msg.count("file locking flag values don't match")
-                # 'Unable to synchronously open file (file is already open for
-                #  write (may use <h5clear file> to clear file consistency
-                #  flags))'
-                    or msg.count("h5clear")):
-                self.h5file = h5py.File(h5path,
-                                        swmr=True,
-                                        locking=False,
-                                        libver="latest",
-                                        **h5kwargs)
-                # The writer is flushing datasets at specific intervals.
-                # In case we hit just such a flushing point, then our
-                # features might have non-matching lengths.
-                for ii in range(5):
-                    lengths = []
-                    for feat in self.h5file["events"].keys():
-                        ds = self.h5file["events"][feat]
-                        ds.refresh()
-                        lengths.append(ds.shape[0])
-                    if len(set(lengths)) == 1:
-                        # We are good.
-                        break
-                    time.sleep(0.1)
+        except OSError:
+            try:
+                h5kwargs["locking"] = "best-effort"
+                self.h5file = h5py.File(h5path, **h5kwargs)
+            except OSError as e:
+                # This could mean that the dataset is currently being written
+                # to OR the recording software crashed. Opening the file in
+                # read mode is only possible by either clearing the file
+                # consistency flags, or reading it in SWMR mode (which is
+                # what we try here).
+                msg = " ".join([str(arg) for arg in e.args])
+                if msg and (
+                    # 'Unable to synchronously open file (file locking flag
+                    #  values don't match)'
+                    msg.count("file locking flag values don't match")
+                    # 'Unable to synchronously open file (file is already open
+                    #  for write (may use <h5clear file> to clear file
+                    #  consistency flags))'
+                        or msg.count("h5clear")):
+                    h5kwargs["locking"] = False
+                    h5kwargs["swmr"] = True
+                    h5kwargs["libver"] = "latest"
+                    self.h5file = h5py.File(h5path, **h5kwargs)
+                    # The writer is flushing datasets at specific intervals.
+                    # In case we hit just such a flushing point, then our
+                    # features might have non-matching lengths.
+                    for ii in range(5):
+                        lengths = []
+                        for feat in self.h5file["events"].keys():
+                            ds = self.h5file["events"][feat]
+                            ds.refresh()
+                            lengths.append(ds.shape[0])
+                        if len(set(lengths)) == 1:
+                            # We are good.
+                            break
+                        time.sleep(0.1)
+                    else:
+                        warnings.warn(
+                            f"Feature sizes in {self.path} are not identical.")
                 else:
-                    warnings.warn(
-                        f"Feature sizes in {self.path} are not identical.")
-            else:
-                raise
+                    raise
 
         self._events = events.H5Events(self.h5file)
 
@@ -168,7 +172,7 @@ class RTDC_HDF5(RTDCBase):
                 # This is a workaround for Python2 where h5py cannot handle
                 # unicode file names.
                 with h5path.open("rb") as fd:
-                    h5 = h5py.File(fd, "r")
+                    h5 = h5py.File(fd, "r", locking=False)
                     if "events" in h5:
                         canopen = True
             except IOError:
@@ -183,7 +187,7 @@ class RTDC_HDF5(RTDCBase):
         `h5path` may be a h5py.File object or an actual path
         """
         if not isinstance(h5path, h5py.File):
-            with h5py.File(h5path, mode="r") as fh5:
+            with h5py.File(h5path, mode="r", locking=False) as fh5:
                 h5attrs = dict(fh5.attrs)
         else:
             h5attrs = dict(h5path.attrs)

@@ -59,7 +59,8 @@ def repack(
     path_in, path_out, path_temp = common.setup_task_paths(
         path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
 
-    with h5py.File(path_in) as h5, h5py.File(path_temp, "w") as hc:
+    with h5py.File(path_in, locking=False) as h5, \
+            h5py.File(path_temp, "w") as hc:
         bytes_total = mp.Value("Q")
         bytes_written = mp.Value("Q")
         stop_event = threading.Event()

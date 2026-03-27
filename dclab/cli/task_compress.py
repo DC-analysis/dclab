@@ -71,7 +71,8 @@ def compress(
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        with h5py.File(path_in) as h5, h5py.File(path_temp, "w") as hc:
+        with h5py.File(path_in, locking=False) as h5, \
+                h5py.File(path_temp, "w") as hc:
             bytes_total = mp.Value("Q")
             bytes_written = mp.Value("Q")
             stop_event = threading.Event()

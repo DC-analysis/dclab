@@ -48,7 +48,7 @@ class RTDC_HTTP(RTDC_HDF5):
             else:
                 # Compute a hash of the first data chunk
                 kwargs["identifier"] = hashlib.md5(
-                    self._fhttp.get_cache_chunk(0)).hexdigest()
+                    self._fhttp.get_chunk(0)).hexdigest()
 
         # Initialize the HDF5 dataset
         super(RTDC_HTTP, self).__init__(

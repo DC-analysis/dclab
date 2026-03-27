@@ -183,10 +183,20 @@ def update_hash(the_hash,
     else:
         if custom_handlers:
             for cls, handler in custom_handlers.items():
-                if isinstance(cls, str) and arg.__class__.__name__ == cls:
-                    # Handler identifier is the class name of the argument
-                    update_hash(the_hash, handler(arg))
-                    return  # no further checks necessary
+                if isinstance(cls, str):
+                    if arg.__class__.__name__ == cls:
+                        # Handler identifier is the class name of the argument
+                        update_hash(the_hash, handler(arg))
+                        return  # no further checks necessary
+                    else:
+                        # The class could be a subclass of one of the handlers
+                        found_base = False
+                        for bcl in arg.__class__.__bases__:
+                            if bcl.__name__ == cls:
+                                found_base = True
+                                update_hash(the_hash, handler(arg))
+                        if found_base:
+                            return  # no further checks necessary
                 elif isinstance(arg, cls):
                     # Handler identifier is the class of the argument
                     update_hash(the_hash, handler(arg))

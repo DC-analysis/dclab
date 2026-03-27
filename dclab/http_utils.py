@@ -9,6 +9,8 @@ import warnings
 
 import numpy as np
 
+from .cached import umbrella_cache
+
 
 try:
     import requests
@@ -27,6 +29,20 @@ REGEXP_HTTP_URL = re.compile(
 )
 
 
+def httpfile_cache_handler(httpfile):
+    return [
+        # Only the base URL is used. We don't warn URL parameters,
+        # such as "ExpiresAt" in the cache key.
+        httpfile.url.split("?")[0],
+        # Unique identifier for the dataset online.
+        httpfile.etag,
+        # Another sanity check.
+        httpfile.length,
+        # Chunk size is important, because we use `index` as a cache key.
+        httpfile.chunk_size
+    ]
+
+
 class ETagNotInResponseHeaderWarning(UserWarning):
     """Used for cases where the requests.Response does not contain an ETag"""
 
@@ -36,7 +52,7 @@ class ConnectionTimeoutWarning(UserWarning):
 
 
 class HTTPFile(io.IOBase):
-    def __init__(self, url, chunk_size=2**18, keep_chunks=200):
+    def __init__(self, url, chunk_size=2**18):
         """Chunk-cached access to a URL supporting range requests
 
         Range requests (https://en.wikipedia.org/wiki/Byte_serving)
@@ -57,19 +73,17 @@ class HTTPFile(io.IOBase):
         chunk_size: int
             Download chunk size. The entire file is split up into
             equally-sized (and thus indexable) chunks.
-        keep_chunks: int
-            Number of downloaded chunks to keep in memory. For a
-            `chunk_size` of 2**18 bytes, a `keep_chunks` of 200
-            impliese a chunk cache size of 50 MiB.
+
+        Notes
+        -----
+        Caching is done with dclab's :func:`.umbrella_cache`.
         """
         self.url = url
         self._chunk_size = chunk_size
-        self._keep_chunks = keep_chunks
         self.session = session_cache.get_session(url)
         self._len = None
         self._etag = None
         self._pos = 0
-        self.cache = {}
 
     def _parse_header(self):
         """parse the header sent by the server, populates length and etag"""
@@ -91,20 +105,20 @@ class HTTPFile(io.IOBase):
             self._etag = etag
 
     @property
+    def chunk_size(self) -> int:
+        """The chunk size of the HTTPfile in bytes"""
+        return self._chunk_size
+
+    @property
     def etag(self):
         """Unique identifier for this resource (version) by the web server"""
         self._parse_header()
         return self._etag
 
     @property
-    def length(self):
+    def length(self) -> int:
         self._parse_header()
         return self._len
-
-    @property
-    def max_cache_size(self):
-        """The maximum cache size allowed by `chunk_size` and `keep_chunks`"""
-        return self._chunk_size * self._keep_chunks
 
     def close(self):
         """Close the file
@@ -115,7 +129,7 @@ class HTTPFile(io.IOBase):
         self.session.close()
         super(HTTPFile, self).close()
 
-    def download_range(self, start, stop):
+    def download_range(self, start, stop) -> bytes:
         """Download bytes given by the range (`start`, `stop`)
 
         `stop` is not inclusive (In the HTTP range request it normally is).
@@ -125,36 +139,31 @@ class HTTPFile(io.IOBase):
                                 )
         return resp.content
 
-    def get_cache_chunk(self, index):
+    @umbrella_cache(topic="httpfile",
+                    custom_handlers={"HTTPFile": httpfile_cache_handler})
+    def get_chunk(self, index: int) -> bytes:
         """Return the cache chunk defined by `index`
 
         If the chunk is not in `self.cache`, it is downloaded.
         """
-        if index not in self.cache:
-            start = index*self._chunk_size
-            stop = min((index+1)*self._chunk_size, self.length)
-            self.cache[index] = self.download_range(start, stop)
-        if len(self.cache) > self._keep_chunks:
-            for kk in self.cache.keys():
-                if kk != 0:  # always keep the first chunk
-                    self.cache.pop(kk)
-                    break
-        return self.cache[index]
+        start = index*self._chunk_size
+        stop = min((index + 1) * self._chunk_size, self.length)
+        return self.download_range(start, stop)
 
-    def read(self, size=-1, /):
+    def read(self, size: int = -1, /) -> bytes:
         """Cache-supported read operation (file object)"""
-        data = self.read_range_cached(self._pos, self._pos + size)
+        data = self.read_range(self._pos, self._pos + size)
         if size > 0:
             self._pos += size
         else:
             self._pos = self.length
         return data
 
-    def read_range_cached(self, start, stop):
-        """Concatenate the requested bytes from the cached chunks
+    def read_range(self, start, stop) -> bytes:
+        """Concatenate the requested bytes from chunks
 
-        This calls `get_cache_chunk` and thus downloads cache
-        chunks when necessary.
+        This calls `get_chunk` and thus downloads cache
+        chunks when they are not already cached with `umbrella_cache`.
         """
         toread = stop - start
         # compute the chunk indices between start and stop
@@ -163,7 +172,7 @@ class HTTPFile(io.IOBase):
         data = b""
         pos = start
         for chunk_index in range(chunk_start, chunk_stop):
-            chunk = self.get_cache_chunk(chunk_index)
+            chunk = self.get_chunk(chunk_index)
             chunk_start = pos % self._chunk_size
             if toread == 0:
                 break

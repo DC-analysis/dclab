@@ -223,7 +223,7 @@ class ResoluteRequestsSessionCache:
         self.sessions = {}
 
     def __getstate__(self):
-        """Returns None, so sessions are not pickled into subrpocesses"""
+        """Returns None, so sessions are not pickled into subprocesses"""
         pass
 
     def __setstate__(self, state):

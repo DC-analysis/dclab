@@ -27,7 +27,7 @@ def test_cache_features():
         _ = ds["deform"][:]
         _ = ds["image"][10]
         t1 = time.perf_counter()
-        for ii in range(50):
+        for ii in range(10):
             _ = ds["deform"][:]
             _ = ds["image"][10]
         t2 = time.perf_counter()

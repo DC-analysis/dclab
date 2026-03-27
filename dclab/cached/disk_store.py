@@ -119,6 +119,8 @@ class DiskStore:
                 ((self.path / key).parent / file_meta["file"]).read_text())
         elif file_meta["format"] == "numpy":
             return np.load((self.path / key).parent / file_meta["file"])
+        elif file_meta["format"] == "bytes":
+            return ((self.path / key).parent / file_meta["file"]).read_bytes()
         elif file_meta["format"] == "list":
             data = []
             for fmi in file_meta["items"]:
@@ -178,6 +180,20 @@ class DiskStore:
             path_out_tmp.rename(path_out)
 
             file_meta = {"format": "numpy",
+                         "file": path_out.name,
+                         "size": path_out.stat().st_size
+                         }
+        elif isinstance(value, bytes):
+            path_out = self.path / f"{key}.bin"
+            path_out_tmp = path_out.with_name(path_out.name + "~")
+            if path_out_tmp.exists():
+                path_out_tmp.unlink()
+            path_out_tmp.write_bytes(value)
+            if path_out.exists():
+                path_out.unlink()
+            path_out_tmp.rename(path_out)
+
+            file_meta = {"format": "bytes",
                          "file": path_out.name,
                          "size": path_out.stat().st_size
                          }

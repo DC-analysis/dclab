@@ -111,6 +111,25 @@ def test_disk_store_fail(tmp_path):
         store["invalid/data"] = np
 
 
+def test_disk_store_bytes(tmp_path):
+    store = cached.DiskStore(tmp_path)
+    test_list = (["one", "two", "three", "four"],
+                 np.random.bytes(100),
+                 )
+    store["great/bytesoo"] = test_list
+
+    meta_path = tmp_path / "great/bytesoo_meta.json"
+    assert meta_path.exists()
+
+    list_path = tmp_path / "great/bytesoo_0.json"
+    assert json.loads(list_path.read_text()) == test_list[0]
+    assert store["great/bytesoo"][0] == test_list[0]
+
+    bytes_path = tmp_path / "great/bytesoo_1.bin"
+    assert bytes_path.read_bytes() == test_list[1]
+    assert store["great/bytesoo"][1] == test_list[1]
+
+
 def test_disk_store_json(tmp_path):
     store = cached.DiskStore(tmp_path)
     test_dict = {"number": 2,

@@ -1,6 +1,7 @@
 0.71.2
  - enh: implement min/max/mean metadata ufuncs in `BasinProxyFeature`
  - enh: pass on min/max/mean metadata to unfiltered hierarchy `ChildScalar`
+ - enh: add bytes format to `DiskStore`
 0.71.1
  - fix: handle deleted `DiskStore` in `umbrella_cache`
  - enh: store `DiskStore` keys in POSIX format internally

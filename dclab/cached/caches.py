@@ -3,9 +3,11 @@ from __future__ import annotations
 import atexit
 import functools
 import hashlib
+import logging
 import numbers
 import time
 from typing import Any, Callable
+import traceback
 
 import numpy as np
 
@@ -75,6 +77,7 @@ class umbrella_cache:
         self.use_memory_store = not bypass_memory_store
         self.custom_handlers = custom_handlers
         self.evaluation_time_threshold = evaluation_time_threshold
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, func):
         @functools.wraps(func)
@@ -105,6 +108,8 @@ class umbrella_cache:
                     # it wasn't there.
                     # Remove key from the disk store index.
                     self._disk_store.index.remove(key)
+                    self.logger.warning(f"Could not fetch {key} from disk "
+                                        f"store: {traceback.format_exc()}")
                     pass
                 else:
                     if self.use_memory_store:

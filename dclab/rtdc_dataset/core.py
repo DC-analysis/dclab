@@ -2,6 +2,7 @@
 import abc
 import hashlib
 import json
+import logging
 import os.path
 import pathlib
 import random
@@ -104,6 +105,8 @@ class RTDCBase(abc.ABC):
 
         # Basins are initialized in the "basins" property function
         self._enable_basins = enable_basins
+
+        self._logger = None
 
     def __contains__(self, feat):
         ct = False
@@ -214,6 +217,12 @@ class RTDCBase(abc.ABC):
         """Filtering functionalities; instance of :class:`.Filter`"""
         self._assert_filter()
         return self._ds_filter
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            self._logger = logging.getLogger(__name__).getChild(self.hash)
+        return self._logger
 
     def _assert_filter(self):
         if self._ds_filter is None:
@@ -507,7 +516,7 @@ class RTDCBase(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def hash(self):
+    def hash(self) -> str:
         """Reproducible dataset hash (defined by derived classes)"""
 
     def ignore_basins(self, basin_identifiers):

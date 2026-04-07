@@ -1,5 +1,4 @@
 """DCOR client interface"""
-import logging
 import pathlib
 import re
 import time
@@ -13,9 +12,6 @@ from ..feat_basin import PerishableRecord
 from . import api
 from .logs import DCORLogs
 from .tables import DCORTables
-
-
-logger = logging.getLogger(__name__)
 
 
 #: Append directories here where dclab should look for certificate bundles
@@ -181,7 +177,7 @@ class RTDC_DCOR(RTDCBase):
         tex = bn_dict["time_local_request"] + (ttl - tre) - 30
 
         if isinstance(basin.perishable, bool):
-            logger.debug("Initializing basin perishable %s", basin.name)
+            self.logger.debug("Initializing basin perishable %s", basin.name)
             # create a perishable record
             basin.perishable = PerishableRecord(
                 basin=basin,
@@ -190,13 +186,14 @@ class RTDC_DCOR(RTDCBase):
                 refresh_func=self._basin_refresh,
             )
         else:
-            logger.debug("Refreshing basin perishable %s", basin.name)
+            self.logger.debug("Refreshing basin perishable %s", basin.name)
             # only update (this also works with weakref.ProxyType)
             basin.perishable.expiration_kwargs = {"time_local_expiration": tex}
 
         if len(bn_dict["urls"]) > 1:
-            logger.warning(f"Basin {basin.name} has multiple URLs. I am not "
-                           f"checking their availability: {bn_dict}")
+            self.logger.warning(
+                f"Basin {basin.name} has multiple URLs. I am not "
+                f"checking their availability: {bn_dict}")
         basin.location = bn_dict["urls"][0]
 
     def _basin_expiration(self, basin, time_local_expiration):
@@ -217,8 +214,8 @@ class RTDC_DCOR(RTDCBase):
                     expires_regexp = re.compile(".*expires=([0-9]*)$")
                     for url in bn_dict.get("urls", []):
                         if match := expires_regexp.match(url.lower()):
-                            logger.debug("Detected perishable basin: %s",
-                                         bn_dict["name"])
+                            self.logger.debug("Detected perishable basin: %s",
+                                              bn_dict["name"])
                             bn_dict["perishable"] = True
                             bn_dict["time_request"] = time.time()
                             bn_dict["time_expiration"] = int(match.group(1))

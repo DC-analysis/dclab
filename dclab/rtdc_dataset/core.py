@@ -454,8 +454,16 @@ class RTDCBase(abc.ABC):
 
     @property
     def features_innate(self):
-        """All features excluding ancillary, basin, or temporary features"""
+        """All features excluding ancillary, basin, or temporary features
+
+        Internal basin features are included since version 0.71.4.
+        """
         innate = [ft for ft in self.features if ft in self._events]
+        for bn_dict in self.basins_get_dicts():
+            if bn_dict.get("type") == "internal":
+                for feat in bn_dict.get("features", []):
+                    if feat in self.features_basin:
+                        innate.append(feat)
         return innate
 
     @property

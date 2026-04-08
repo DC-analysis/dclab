@@ -165,9 +165,9 @@ def test_condense_basins_internal(store_basins):
     # sanity check
     with new_dataset(h5path_small) as ds:
         assert "userdef1" in ds.features_basin
-        assert "userdef1" not in ds.features_innate
+        assert "userdef1" in ds.features_innate
         assert "image_bg" in ds.features_basin
-        assert "image_bg" not in ds.features_innate
+        assert "image_bg" in ds.features_innate
 
     # condense the basin-based dataset
     cli.condense(path_in=h5path_small,
@@ -189,8 +189,10 @@ def test_condense_basins_internal(store_basins):
     with new_dataset(h5path_out) as ds:
         # userdef1 is an internal, scalar basin
         assert "userdef1" in ds.features_basin
+        assert "userdef1" in ds.features_innate
         # image_bg is not scalar, so it should not be here
         assert "image_bg" not in ds.features_basin
+        assert "image_bg" not in ds.features_innate
 
 
 @pytest.mark.filterwarnings(

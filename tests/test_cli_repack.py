@@ -69,9 +69,9 @@ def test_repack_basin_internal(use_basins):
     # sanity check
     with new_dataset(h5path_small) as ds:
         assert "userdef1" in ds.features_basin
-        assert "userdef1" not in ds.features_innate
+        assert "userdef1" in ds.features_innate
 
-    # compress the basin-based dataset
+    # repack the basin-based dataset
     cli.repack(path_in=h5path_small, path_out=h5path_out,
                strip_basins=not use_basins)
 
@@ -79,17 +79,13 @@ def test_repack_basin_internal(use_basins):
         assert "deform" in h5["events"], "sanity check"
         # userdef1 should not be in "events" in any case
         assert "userdef1" not in h5["events"]
-        if use_basins:
-            assert "userdef1" in h5["basin_events"]
-            assert np.all(h5["basin_events"]["userdef1"] == np.arange(2))
-        else:
-            assert "basin_events" not in h5
+        # we are repacking the entire dataset, preserving internal basins
+        assert "userdef1" in h5["basin_events"]
+        assert np.all(h5["basin_events"]["userdef1"] == np.arange(2))
 
     with new_dataset(h5path_out) as ds:
-        if use_basins:
-            assert "userdef1" in ds.features_basin
-        else:
-            assert "userdef1" not in ds.features_basin
+        assert "userdef1" in ds.features_basin
+        assert "userdef1" in ds.features_innate
 
 
 @pytest.mark.filterwarnings(

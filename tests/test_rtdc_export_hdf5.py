@@ -72,9 +72,9 @@ def test_hdf5_basin_ignore_internal_basin():
     with new_dataset(h5path_small) as ds:
         # sanity check
         assert "userdef1" in ds.features_basin
-        assert "userdef1" not in ds.features_innate
+        assert "userdef1" in ds.features_innate
         assert "image_bg" in ds.features_basin
-        assert "image_bg" not in ds.features_innate
+        assert "image_bg" in ds.features_innate
         # export that
         ds.export.hdf5(h5path_out,
                        features=["userdef1", "deform"],

@@ -127,7 +127,7 @@ def test_copy_basins_internal_none():
     # sanity check
     with new_dataset(h5path_small) as ds:
         assert "image_bg" in ds.features_basin
-        assert "image_bg" not in ds.features_innate
+        assert "image_bg" in ds.features_innate
 
     # Now the actual tests starts.
     with h5py.File(h5path_small) as src, h5py.File(h5path_out, "a") as dst:
@@ -178,9 +178,9 @@ def test_copy_basins_internal_no_scalar():
     # sanity check
     with new_dataset(h5path_small) as ds:
         assert "userdef1" in ds.features_basin
-        assert "userdef1" not in ds.features_innate
+        assert "userdef1" in ds.features_innate
         assert "image_bg" in ds.features_basin
-        assert "image_bg" not in ds.features_innate
+        assert "image_bg" in ds.features_innate
 
     # Now the actual tests starts.
     with h5py.File(h5path_small) as src, h5py.File(h5path_out, "a") as dst:

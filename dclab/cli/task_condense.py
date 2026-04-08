@@ -101,10 +101,27 @@ def condense_dataset(
         ancillaries: bool = None,
         store_ancillary_features: bool = True,
         store_basin_features: bool = True,
-        warnings_list: List = None):
+        warnings_list: List[str] | None = None):
     """Condense a dataset using low-level HDF5 methods
 
     For ancillary and basin features, high-level dclab methods are used.
+
+    Parameters
+    ----------
+    ds:
+        dataset from which to export
+    h5_cond:
+        HDF5 file to which data are written
+    ancillaries: bool
+        DEPRECATED, use `store_ancillary_features` instead
+    store_ancillary_features: bool
+        compute and store ancillary features in the output file
+    store_basin_features: bool
+        copy basin features from the input path to the output file;
+        Note that the basin information (including any internal
+        basin dataset) are always copied over to the new dataset.
+    warngins_list:
+        List of warnings that should be written to the output file
     """
     if ancillaries is not None:
         warnings.warn("Please use `store_ancillary_features` instead of "
@@ -182,7 +199,8 @@ def condense_dataset(
         # Write all remaining scalar features to the file
         # (these are *all* scalar features in the case of .tdms data).
         for feat in features:
-            if feat not in h5_cond["events"]:
+            if (feat not in h5_cond.get("events", {})
+                    and feat not in h5_cond.get("basin_events", {})):
                 hw.store_feature(feat=feat, data=ds[feat])
 
         # collect warnings log

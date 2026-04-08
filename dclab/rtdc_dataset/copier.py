@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import json
+import multiprocessing as mp
 from multiprocessing.sharedctypes import Synchronized
 import re
-from typing import List, Literal
+from typing import Literal
 
 import h5py
 import h5py.h5o
@@ -21,13 +22,13 @@ from .writer import RTDCWriter
 
 def rtdc_copy(src_h5file: h5py.Group,
               dst_h5file: h5py.Group,
-              features: List[str] | Literal['all', 'scalar', 'none'] = "all",
+              features: list[str] | Literal['all', 'scalar', 'none'] = "all",
               include_basins: bool = True,
               include_logs: bool = True,
               include_tables: bool = True,
               meta_prefix: str = "",
-              bytes_total: Synchronized[int] = None,
-              bytes_written: Synchronized[int] = None,
+              bytes_total: Synchronized[int] | None = None,
+              bytes_written: Synchronized[int] | None = None,
               ):
     """Create a compressed copy of an RT-DC file
 
@@ -63,13 +64,10 @@ def rtdc_copy(src_h5file: h5py.Group,
 
     # identify features in source file
     if "events" in src_h5file:
-        events_src = list(src_h5file["events"].keys())
+        events_src = (list(src_h5file.get("events", {}).keys())
+                      + list(src_h5file.get("basin_events", {}).keys()))
     else:
         events_src = []
-
-    if include_basins and "basin_events" in src_h5file:
-        events_src += list(src_h5file["basin_events"].keys())
-        events_src = sorted(set(events_src))
 
     # actual features to copy
     if isinstance(features, list):
@@ -86,17 +84,27 @@ def rtdc_copy(src_h5file: h5py.Group,
                          f"or one of 'all', 'scalar' or 'none', got "
                          f"'{features}'")
 
-    # additional check for basin features.
+    # copy internal basins
+    basin_feat, basin_bytes = internal_basin_events_copy(
+        src_h5file=src_h5file,
+        dst_h5file=dst_h5file,
+        features=feature_iter,
+    )
+
+    # remove features that are already written to the output file
+    for feat in basin_feat:
+        if feat in feature_iter:
+            feature_iter.remove(feat)
+
     bn_regexp = re.compile("^basinmap[0-9]*$")  # future-proof regexp
     src_basin_feats = [f for f in events_src if bn_regexp.match(f)]
     if include_basins:
-        # Make sure all 'basinmap?' features are included in the output file.
+        # Explicitly include all remaining basinmap features.
         for feat in src_basin_feats:
-            if feat not in feature_iter:
+            if feat not in feature_iter and feat not in basin_feat:
                 feature_iter.append(feat)
     else:
-        # We do not need the basinmap features, because basins are
-        # stripped from the output file.
+        # Remove all remaining basinmap features from the list.
         for feat in src_basin_feats:
             if feat in feature_iter:
                 feature_iter.remove(feat)
@@ -106,11 +114,14 @@ def rtdc_copy(src_h5file: h5py.Group,
         if include_tables and "tables" in src_h5file:
             bytes_total.value += get_size(src_h5file["tables"])
 
-        for feat in feature_iter:
+        for feat in feature_iter + basin_feat:
             if feat in src_h5file["events"]:
                 bytes_total.value += get_size(src_h5file["events"][feat])
-            elif include_basins and f"basin_events/{feat}" in src_h5file:
+            elif f"basin_events/{feat}" in src_h5file:
                 bytes_total.value += get_size(src_h5file["basin_events"][feat])
+
+        if bytes_written is not None:
+            bytes_written.value += basin_bytes
 
     # copy logs
     if include_logs and "logs" in src_h5file:
@@ -148,7 +159,7 @@ def rtdc_copy(src_h5file: h5py.Group,
                               dst_h5file=dst_h5file,
                               features_iter=feature_iter)
 
-    # copy features
+    # copy regular event features
     if feature_iter:
         dst_h5file.require_group("events")
         for feat in feature_iter:
@@ -185,16 +196,57 @@ def rtdc_copy(src_h5file: h5py.Group,
                         if attr not in dst.attrs:
                             dst.attrs[attr] = ufunc(dst)
 
-            elif include_basins and f"basin_events/{feat}" in src_h5file:
-                # Also copy internal basins which should have been defined
-                # in the "basin_events" group.
-                if feat in src_h5file["basin_events"]:
-                    h5ds_copy(src_loc=src_h5file["basin_events"],
-                              src_name=feat,
-                              dst_loc=dst_h5file.require_group("basin_events"),
-                              dst_name=feat,
-                              bytes_written=bytes_written,
-                              )
+
+def internal_basin_events_copy(
+        src_h5file: h5py.Group,
+        dst_h5file: h5py.Group,
+        features: list[str],
+        ) -> tuple[list[str], int]:
+    """Copy internal basin data from the input to the output file
+
+    The basin dictionaries are read and only the `basinmap` features
+    that are required are copied to the output file.
+    """
+    basin_feat = []
+    basin_bytes_mp = mp.Value("L")
+
+    bn_dicts = RTDC_HDF5.basin_get_dicts_from_h5file(src_h5file)
+
+    for bn in bn_dicts:
+        if bn["type"] == "internal":
+            bn_feats = []
+            for feat in bn["features"]:
+                if feat in features and f"basin_events/{feat}" in src_h5file:
+                    bn_feats.append(feat)
+                    h5ds_copy(
+                        src_loc=src_h5file["basin_events"],
+                        src_name=feat,
+                        dst_loc=dst_h5file.require_group("basin_events"),
+                        dst_name=feat,
+                        bytes_written=basin_bytes_mp,
+                        )
+            if bn_feats:
+                # Note down features that we added
+                basin_feat += bn_feats
+                # Write basinmap feature
+                if bn["mapping"].startswith("basinmap"):
+                    basin_feat.append(bn["mapping"])
+                    h5ds_copy(
+                        src_loc=src_h5file["events"],
+                        src_name=bn["mapping"],
+                        dst_loc=dst_h5file.require_group("events"),
+                        dst_name=bn["mapping"],
+                        bytes_written=basin_bytes_mp,
+                    )
+                # Rewrite basin definition
+                bn["features"] = bn_feats
+                # Convert edited `bn` to JSON and write feature data
+                b_lines = json.dumps(bn, indent=2).split("\n")
+                key = hashobj(b_lines)
+                if key not in dst_h5file.require_group("basins"):
+                    with RTDCWriter(dst_h5file) as hw:
+                        hw.write_text(dst_h5file["basins"], key, b_lines)
+    return list(set(basin_feat)), basin_bytes_mp.value
 
 
 def basin_definition_copy(src_h5file, dst_h5file, features_iter):
@@ -207,11 +259,17 @@ def basin_definition_copy(src_h5file, dst_h5file, features_iter):
 
     The `features_iter` list of features defines which features are
     relevant for the internal basin.
+
+    To copy internal basins, use :func:`internal_basin_events_copy`.
     """
     dst_h5file.require_group("basins")
     # Load the basin information
     basin_dicts = RTDC_HDF5.basin_get_dicts_from_h5file(src_h5file)
     for bn in basin_dicts:
+        if bn["type"] == "internal":
+            # handled in `internal_basin_events_copy`
+            continue
+
         b_key = bn["key"]
 
         if b_key in dst_h5file["basins"]:
@@ -225,44 +283,20 @@ def basin_definition_copy(src_h5file, dst_h5file, features_iter):
                 f"{src_h5file} does not contain basin {b_key} which I got "
                 f"from `RTDC_HDF5.basin_get_dicts_from_h5file`.")
 
-        if bn["type"] == "internal":
-            # Make sure we define the internal features selected
-            feat_used = [f for f in bn["features"] if f in features_iter]
-            if len(feat_used) == 0:
-                # We don't have any internal features, don't write anything
-                continue
-            elif feat_used != bn["features"]:
-                bn["features"] = feat_used
-                rewrite = True
-            else:
-                rewrite = False
-        else:
-            # We do not have an internal basin, just copy everything
-            rewrite = False
-
-        if rewrite:
-            # Convert edited `bn` to JSON and write feature data
-            b_lines = json.dumps(bn, indent=2).split("\n")
-            key = hashobj(b_lines)
-            if key not in dst_h5file["basins"]:
-                with RTDCWriter(dst_h5file) as hw:
-                    hw.write_text(dst_h5file["basins"], key, b_lines)
-        else:
-            # copy only
-            h5ds_copy(src_loc=src_h5file["basins"],
-                      src_name=b_key,
-                      dst_loc=dst_h5file["basins"],
-                      dst_name=b_key,
-                      recursive=False)
+        h5ds_copy(src_loc=src_h5file["basins"],
+                  src_name=b_key,
+                  dst_loc=dst_h5file["basins"],
+                  dst_name=b_key,
+                  recursive=False)
 
 
 def h5ds_copy(src_loc: h5py.Group,
               src_name: str,
               dst_loc: h5py.Group,
-              dst_name: str = None,
+              dst_name: str | None = None,
               ensure_compression: bool = True,
               recursive: bool = True,
-              bytes_written: Synchronized[int] = None,
+              bytes_written: Synchronized[int] | None = None,
               ):
     """Copy an HDF5 Dataset from one group to another
 

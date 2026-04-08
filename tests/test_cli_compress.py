@@ -133,7 +133,7 @@ def test_compress_basin_internal():
     # sanity check
     with new_dataset(h5path_small) as ds:
         assert "userdef1" in ds.features_basin
-        assert "userdef1" not in ds.features_innate
+        assert "userdef1" in ds.features_innate
 
     # compress the basin-based dataset
     cli.compress(path_in=h5path_small, path_out=h5path_out)
@@ -146,6 +146,7 @@ def test_compress_basin_internal():
 
     with new_dataset(h5path_out) as ds:
         assert "userdef1" in ds.features_basin
+        assert "userdef1" in ds.features_innate
 
 
 def test_compress_basin_no_data_from_basins():

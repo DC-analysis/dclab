@@ -84,6 +84,8 @@ def rtdc_copy(src_h5file: h5py.Group,
                          f"or one of 'all', 'scalar' or 'none', got "
                          f"'{features}'")
 
+    feature_iter = list(set(feature_iter))
+
     # copy internal basins
     basin_feat, basin_bytes = internal_basin_events_copy(
         src_h5file=src_h5file,

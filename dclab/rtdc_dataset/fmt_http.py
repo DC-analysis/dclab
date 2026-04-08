@@ -40,15 +40,6 @@ class RTDC_HTTP(RTDC_HDF5):
                 f"Package `requests` required for loading http data '{url}'!")
 
         self._fhttp = HTTPFile(url)
-        if kwargs.get("identifier") is None:
-            if self._fhttp.etag is not None:
-                # Set the HTTP ETag as the identifier, it doesn't get
-                # more unique than that!
-                kwargs["identifier"] = self._fhttp.etag
-            else:
-                # Compute a hash of the first data chunk
-                kwargs["identifier"] = hashlib.md5(
-                    self._fhttp.get_chunk(0)).hexdigest()
 
         # Initialize the HDF5 dataset
         super(RTDC_HTTP, self).__init__(
@@ -58,6 +49,16 @@ class RTDC_HTTP(RTDC_HDF5):
         # Override self.path with the actual HTTP URL
         #: URL to the file
         self.path = url
+
+    @property
+    def hash(self):
+        if self._fhttp.etag is not None:
+            # Set the HTTP ETag as the hash, it doesn't get
+            # more unique than that!
+            return self._fhttp.etag
+        else:
+            # Compute a hash of the first data chunk
+            return hashlib.md5(self._fhttp.get_chunk(0)).hexdigest()
 
     def close(self):
         super(RTDC_HTTP, self).close()

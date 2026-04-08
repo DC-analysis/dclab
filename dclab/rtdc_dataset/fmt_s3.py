@@ -1,4 +1,5 @@
 import functools
+import hashlib
 # import multiprocessing BaseManager here, because there is some kind
 # of circular dependency issue with s3transfer.compat and multiprocessing.
 from multiprocessing.managers import BaseManager  # noqa: F401
@@ -130,7 +131,7 @@ class S3File(HTTPFile):
     def _parse_header(self):
         if self._len is None:
             self._len = self.s3_object.content_length
-            self._etag = self.s3_object.e_tag
+            self._etag = self.s3_object.e_tag.strip("'").strip('"')
 
     def close(self):
         super(S3File, self).close()
@@ -206,6 +207,16 @@ class RTDC_S3(RTDC_HDF5):
         # Override self.path with the actual S3 URL
         #: URL the object on S3
         self.path = self._s3file.url
+
+    @property
+    def hash(self):
+        if self._s3file.etag is not None:
+            # Set the HTTP ETag as the hash, it doesn't get
+            # more unique than that!
+            return self._s3file.etag
+        else:
+            # Compute a hash of the first data chunk
+            return hashlib.md5(self._s3file.get_chunk(0)).hexdigest()
 
     def close(self):
         super(RTDC_S3, self).close()

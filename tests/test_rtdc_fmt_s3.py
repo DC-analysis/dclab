@@ -35,6 +35,14 @@ def test_cache_features():
         assert t2 - t1 < t1 - t0
 
 
+def test_hash():
+    with RTDC_S3(s3_url) as ds:
+        # This is the HTTP ETag (https://en.wikipedia.org/wiki/HTTP_ETag)
+        # given to this resource by the object store. If the file is
+        # re-uploaded, the ETag may change and this test will fail.
+        assert ds.hash == "6dd392feb1aeda7cfb73b4ec76c1fe7c"
+
+
 @pytest.mark.parametrize("url, avail", [
     ("https://objectstore.hpccloud.mpcdf.mpg.de/"
      "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"

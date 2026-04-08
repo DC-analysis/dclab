@@ -34,12 +34,12 @@ def test_cache_features():
         assert t2 - t1 < t1 - t0
 
 
-def test_identifier():
+def test_hash():
     with RTDC_HTTP(s3_url) as ds:
         # This is the HTTP ETag (https://en.wikipedia.org/wiki/HTTP_ETag)
         # given to this resource by the object store. If the file is
         # re-uploaded, the ETag may change and this test will fail.
-        assert ds.identifier == "6dd392feb1aeda7cfb73b4ec76c1fe7c"
+        assert ds.hash == "6dd392feb1aeda7cfb73b4ec76c1fe7c"
 
 
 @pytest.mark.parametrize("netloc", [

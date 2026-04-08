@@ -1,4 +1,7 @@
 0.71.4
+ - fix: dataset `identifier` is session-unique for `RTDC_HTTP`
+ - fix: dataset `hash` must be globally unique for `RTDC_HTTP` and `RTDC_S3`
+ - fix: strip quotes from ETag in `S3File`
  - enh: add unified `logger` property for all instances of `RTDCBase`
 0.71.3
  - enh: disable HDF5 file locking for basic reading operations

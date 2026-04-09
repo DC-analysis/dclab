@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 
 import dclab.rtdc_dataset.config
-from dclab.rtdc_dataset import check, check_dataset, fmt_tdms, new_dataset, \
-    RTDCWriter
+from dclab.rtdc_dataset import check, check_dataset, feat_basin, fmt_tdms, \
+    new_dataset, RTDCWriter
 
 from helper_methods import example_data_dict, retrieve_data
 
@@ -71,12 +71,15 @@ def test_basin_features_internal_missing_feature(h5_obj_delete):
         )
         del hw.h5file[h5_obj_delete]
 
-    # see if we can open the file without any error
-    with check.IntegrityChecker(path) as ic:
-        cues = [cc for cc in ic.check() if cc.level != "info"]
-        assert len(cues) == 1
-        assert cues[0].level == "violation"
-        assert cues[0].msg.count("Missing internal basin")
+    with pytest.warns(
+        feat_basin.BasinFeatureMissingWarning,
+            match="defined as an internal basin, but it cannot be found"):
+        # see if we can open the file without any error
+        with check.IntegrityChecker(path) as ic:
+            cues = [cc for cc in ic.check() if cc.level != "info"]
+            assert len(cues) == 1
+            assert cues[0].level == "violation"
+            assert cues[0].msg.count("Missing internal basin")
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")

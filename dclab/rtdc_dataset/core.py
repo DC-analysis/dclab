@@ -204,12 +204,13 @@ class RTDCBase(abc.ABC):
 
     @property
     def basins(self):
-        """Basins containing upstream features from other datasets"""
+        """Basins with upstream features from internal/external locations
+
+        If the instance was created with `enable_basins=False`, then
+        only internal basins are returned.
+        """
         if self._basins is None:
-            if self._enable_basins:
-                self._basins = self.basins_retrieve()
-            else:
-                self._basins = []
+            self._basins = self.basins_retrieve()
         return self._basins
 
     @property
@@ -725,9 +726,20 @@ class RTDCBase(abc.ABC):
 
             "file"-type basins are only available for subclasses that
             set the `_local_basins_allowed` attribute to True.
+
+        .. versionchanged:: 0.71.5
+
+            If the instance was created with `enable_basins=False`, then
+            only internal basins are returned.
+            The `enable_basins` check was previously done in the logic
+            of in the `basins` property.
         """
         basins = []
-        bc = feat_basin.get_basin_classes()
+        if self._enable_basins:
+            bc = feat_basin.get_basin_classes()
+        else:
+            # Only allow internal basins
+            bc = {"h5dataset": feat_basin.InternalH5DatasetBasin}
         # Sort basins according to priority
         bdicts_srt = sorted(self.basins_get_dicts(),
                             key=feat_basin.basin_priority_sorted_key)
@@ -741,8 +753,7 @@ class RTDCBase(abc.ABC):
         bd_keys += self._basins_ignored
         for bdict in bdicts_srt:
             if bdict["format"] not in bc:
-                warnings.warn(f"Encountered unsupported basin "
-                              f"format '{bdict['format']}'!")
+                warnings.warn(f"Ignored basin of format '{bdict['format']}'!")
                 continue
             if bdict["key"] in self._basins_ignored:
                 warnings.warn(
@@ -777,12 +788,6 @@ class RTDCBase(abc.ABC):
             if bdict["type"] == "internal":
                 b_cls = bc[bdict["format"]]
                 bna = b_cls(bdict["paths"][0], **kwargs)
-                # In contrast to file-type basins, we just add all remote
-                # basins without checking first. We do not check for
-                # the availability of remote basins, because they could
-                # be temporarily inaccessible (unstable network connection)
-                # and because checking the availability of remote basins
-                # normally takes a lot of time.
                 basins.append(bna)
             elif bdict["type"] == "file":
                 if not self._local_basins_allowed:

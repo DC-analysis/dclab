@@ -15,6 +15,56 @@ import pytest
 from helper_methods import retrieve_data
 
 
+def test_enable_basins_with_external():
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    with new_dataset(h5path) as ds0:
+        ds0.export.hdf5(path=h5path_small,
+                        features=["area_um", "deform"],
+                        basins=True,
+                        )
+
+    with new_dataset(h5path_small, enable_basins=True) as ds:
+        assert "deform" in ds.features_innate
+        assert "temp" not in ds.features_innate
+        assert "temp" in ds.features_basin
+
+    with pytest.warns(UserWarning, match="Ignored basin of format 'hdf5'"):
+        with new_dataset(h5path_small, enable_basins=False) as ds:
+            assert "deform" in ds.features_innate
+            assert "temp" not in ds.features_innate
+            assert "temp" not in ds.features_basin
+
+
+@pytest.mark.parametrize("enable_basins", [True, False])
+def test_enable_basins_with_internal(enable_basins):
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+
+        hw.store_basin(
+            basin_name="example basin",
+            basin_type="internal",
+            basin_format="h5dataset",
+            basin_locs=["uncommon_loc"],
+            basin_descr="an example test basin",
+            basin_map=np.zeros(10),
+            basin_feats=["userdef1"],
+            internal_data={"userdef1": np.arange(2)},
+            )
+
+    with new_dataset(h5path_small, enable_basins=enable_basins) as ds:
+        assert "deform" in ds.features_innate, "sanity check"
+        assert "userdef1" in ds.features_innate
+        assert "userdef1" in ds.features_basin
+
+
 @pytest.mark.parametrize("mapping", [
     # monotonic
     np.array([0] * 2 + [1] * 3 + [2] * 1 + [3] * 4),

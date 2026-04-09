@@ -638,7 +638,7 @@ def test_basin_unsupported_basin_format():
     h5path.unlink()
 
     with pytest.warns(UserWarning,
-                      match="Encountered unsupported basin format 'peter'"):
+                      match="Ignored basin of format 'peter'"):
         with new_dataset(h5path_small) as ds:
             assert "image" not in ds
             assert not ds.features_basin

@@ -259,6 +259,51 @@ def test_kde_get_at_empty():
     assert sc2.size == 0
 
 
+def test_kde_get_at_empty_positions():
+    ddict = example_data_dict()
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    ds.config["filtering"]["enable filters"] = False
+    sc2 = kde_instance.get_at(xax="area_um", yax="deform",
+                              positions=(np.array([]), np.array([])))
+    assert sc2.size == 0
+
+
+def test_kde_get_at_empty_positions_zero_data():
+    ddict = example_data_dict(size=100)
+    ddict["deform"] = np.full(100, 0.1)
+    ddict["area_um"] = np.full(100, 50)
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    ds.config["filtering"]["enable filters"] = False
+    sc2 = kde_instance.get_at(xax="area_um", yax="deform",
+                              xacc=0.5, yacc=0.01,
+                              positions=(ddict["area_um"], ddict["deform"]))
+    assert np.all(np.isnan(sc2))
+    assert len(sc2) == 100
+
+
+def test_kde_get_at_empty_positions_zero_data_2():
+    ddict = example_data_dict(size=100)
+    ddict["deform"] = np.full(100, 0.1)
+    ddict["area_um"] = np.full(100, 50)
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    ds.config["filtering"]["enable filters"] = False
+    sc2 = kde_instance.get_at(xax="area_um", yax="deform",
+                              xacc=0.5, yacc=0.01,
+                              positions=(ddict["area_um"][:2],
+                                         ddict["deform"][:2]))
+    assert np.all(np.isnan(sc2))
+    assert len(sc2) == 2
+
+
 def test_kde_get_at_positions():
     ddict = example_data_dict()
     ds = dclab.new_dataset(ddict)

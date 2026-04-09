@@ -186,7 +186,7 @@ class KernelDensityEstimator:
             xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
             ys = KernelDensityEstimator.apply_scale(y, yscale, yax)
 
-        if len(x):
+        if len(xs):
             xr, yr, density_grid = self.get_raster(
                 xax=xax,
                 yax=yax,
@@ -198,22 +198,27 @@ class KernelDensityEstimator:
                 yacc=yacc,
             )
 
-            # Apply scale (no change for linear scale)
-            xrs = KernelDensityEstimator.apply_scale(xr, xscale, xax)
-            yrs = KernelDensityEstimator.apply_scale(yr, yscale, yax)
+            if xr.size:
+                # Apply scale (no change for linear scale)
+                xrs = KernelDensityEstimator.apply_scale(xr, xscale, xax)
+                yrs = KernelDensityEstimator.apply_scale(yr, yscale, yax)
 
-            # 'scipy.interp2d' has been removed in SciPy 1.14.0
-            # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
-            interp_func = RGI(
-                (xrs[:, 0], yrs[0, :]),
-                density_grid,
-                method="linear",
-                bounds_error=False,
-                fill_value=np.nan,
-            )
-            density = interp_func((xs, ys))
-
+                # 'scipy.interp2d' has been removed in SciPy 1.14.0
+                # https://scipy.github.io/devdocs/tutorial/interpolate/interp_transition_guide.html
+                interp_func = RGI(
+                    (xrs[:, 0], yrs[0, :]),
+                    density_grid,
+                    method="linear",
+                    bounds_error=False,
+                    fill_value=np.nan,
+                )
+                density = interp_func((xs, ys))
+            else:
+                # We don't have a raster to interpolate on. This can happen
+                # when a feature has all-equal values.
+                density = np.full(len(xs), np.nan)
         else:
+            # No input coordinates.
             density = np.array([])
 
         return density

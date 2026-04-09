@@ -1,3 +1,5 @@
+0.71.6
+ - fix: index error when attempting to compute KDE for equal-valued feature
 0.71.5
  - enh: allow internal basins with `RTDCBase(.., enable_basins=False)`
 0.71.4

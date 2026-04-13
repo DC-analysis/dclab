@@ -271,6 +271,8 @@ def test_kde_get_at_empty_positions():
     assert sc2.size == 0
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Precision loss occurred.*:RuntimeWarning")
 def test_kde_get_at_empty_positions_zero_data():
     ddict = example_data_dict(size=100)
     ddict["deform"] = np.full(100, 0.1)
@@ -287,6 +289,8 @@ def test_kde_get_at_empty_positions_zero_data():
     assert len(sc2) == 100
 
 
+@pytest.mark.filterwarnings(
+    "ignore:.*Precision loss occurred.*:RuntimeWarning")
 def test_kde_get_at_empty_positions_zero_data_2():
     ddict = example_data_dict(size=100)
     ddict["deform"] = np.full(100, 0.1)

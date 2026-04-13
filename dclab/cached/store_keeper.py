@@ -22,7 +22,12 @@ class StoreKeeper(threading.Thread):
         super(StoreKeeper, self).__init__(daemon=True,
                                           name="StoreKeeper",
                                           *args, **kwargs)
+        #: exit event is set when `close` is called
         self.event_exit = threading.Event()
+        #: run event can be `clear`ed to temporarily prevent `perform_tasks`
+        self.event_run = threading.Event()
+        self.event_run.set()
+
         self.logger = logging.getLogger(__name__)
 
         #: global volatile memory store
@@ -109,7 +114,8 @@ class StoreKeeper(threading.Thread):
             # update disk store index
             disk_store.remove_old_files(max_bytes=self.disk_store_size_bytes)
         while not self.event_exit.wait(self.interval):
-            self.perform_tasks()
+            if self.event_run.wait(0.5):
+                self.perform_tasks()
 
     def set_interval(self, interval):
         """Set the interval in seconds at which ``perform_tasks`` is called"""

@@ -1,3 +1,6 @@
+0.71.8
+ - tests: introduce `StoreKeeper.event_run` to avoid race conditions
+ - tests: consider floating point errors in `umbrella_cache` timing test
 0.71.7
  - fix: ValueError when creating hierarchy child of a zero-length dataset
 0.71.6

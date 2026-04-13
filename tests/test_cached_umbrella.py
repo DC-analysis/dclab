@@ -23,6 +23,7 @@ def store_keeper():
     store_keeper.clear()
     yield store_keeper
     store_keeper.interval = interval
+    store_keeper.event_run.set()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 3),
@@ -61,7 +62,7 @@ def test_umbrella_cache_disabled():
     t1 = time.perf_counter()
     b = func2(4)
     t2 = time.perf_counter()
-    assert t2 - t1 >= wait
+    assert t2 - t1 >= wait * 0.999  # 0.999 due to floating point errors
     assert b == a
 
 
@@ -121,6 +122,10 @@ def test_umbrella_cache_disk_store_hybrid(tmp_path, store_keeper):
 def test_umbrella_cache_disk_store_hybrid_deleted(tmp_path, store_keeper):
     """Pull the data from under the disk store"""
     store_keeper.set_disk_store_path(tmp_path)
+    # avoid race conditions, because we are running `perform_tasks` manually.
+    ival = store_keeper.interval
+    store_keeper.event_run.clear()
+    time.sleep(ival)
 
     wait = .05
 

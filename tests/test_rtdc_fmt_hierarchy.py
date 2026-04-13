@@ -373,6 +373,30 @@ def test_hierarchy_ufuncs():
     assert ch["area_cvx"]._ufunc_attrs["min"] == 226.0
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hierarchy_ufuncs_empty():
+    path = retrieve_data("fmt-hdf5_fl_2018.zip")
+
+    ds = new_dataset(path)
+    ch = new_dataset(ds)
+    ch.filter.manual[:] = False
+    ch.apply_filter()
+    assert len(ch) == 7
+
+    ch2 = new_dataset(ch)
+    assert len(ch2["deform"]) == 0
+
+    ch3 = new_dataset(ch2)
+    ch3.apply_filter()
+    # This raised the ValueError initially
+    # (ufuncs were accessed when getting feature)
+    assert len(ch3["deform"]) == 0
+    # The ValueError should only be raised when actually trying to do sth.
+    with pytest.raises(ValueError, match="zero-size array"):
+        np.min(ch3["deform"])
+
+
 def test_index_deep_contour():
     data = example_data_dict(42, keys=["area_um", "contour", "deform"])
     ds = new_dataset(data)

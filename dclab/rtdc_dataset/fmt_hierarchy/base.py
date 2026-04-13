@@ -85,7 +85,7 @@ class RTDC_Hierarchy(RTDCBase):
                 data = ChildNDArray(self, feat)
             else:
                 # scalar feature
-                if len(self.hparent) == len(self):
+                if len(self.hparent) == len(self) != 0:
                     ufunc_data = {
                         "min": self.hparent[feat].min(),
                         "max": self.hparent[feat].max(),

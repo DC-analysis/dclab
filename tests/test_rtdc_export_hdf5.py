@@ -2,6 +2,7 @@ import json
 from os.path import join
 import pathlib
 import shutil
+import sys
 import tempfile
 from unittest import mock
 
@@ -815,6 +816,9 @@ def test_hdf5_normal_basin_export_filter_basins_depth_two_no_filter(
         assert np.all(dse["deform"][:] == ds["deform"][5:]), "sane"
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="`Path.relative_to(.., walk_up)` requires python3.12 or higher")
 def test_hdf5_hierarchy_basin_export_relative_path(tmp_path):
     """
     Since version 0.71.8, dclab also stores the relative path in the

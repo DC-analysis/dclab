@@ -1,4 +1,5 @@
 0.71.8
+ - enh: store relative basin information when exporting data
  - tests: introduce `StoreKeeper.event_run` to avoid race conditions
  - tests: consider floating point errors in `umbrella_cache` timing test
 0.71.7

@@ -1,6 +1,7 @@
 import json
 from os.path import join
 import pathlib
+import shutil
 import tempfile
 from unittest import mock
 
@@ -812,6 +813,83 @@ def test_hdf5_normal_basin_export_filter_basins_depth_two_no_filter(
         assert np.allclose(dse["deform"][1], 0.15025392,
                            atol=1e-7, rtol=0)
         assert np.all(dse["deform"][:] == ds["deform"][5:]), "sane"
+
+
+def test_hdf5_hierarchy_basin_export_relative_path(tmp_path):
+    """
+    Since version 0.71.8, dclab also stores the relative path in the
+    basin definition.
+    Test this by exporting and then renaming the folders.
+    """
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+
+    path_in = tmp_path / "workdir" / "input" / "incomming.rtdc"
+    path_out = tmp_path / "workdir" / "output" / "exported.rtdc"
+
+    path_in.parent.mkdir(parents=True)
+    path_out.parent.mkdir(parents=True)
+
+    shutil.copy2(h5path, path_in)
+
+    with dclab.new_dataset(path_in) as ds:
+        ds.filter.manual[:5] = False
+        ds.apply_filter()
+
+        with dclab.new_dataset(ds) as dsc:
+            dsc.filter.manual[::2] = False
+            dsc.apply_filter()
+            with dclab.new_dataset(dsc) as dsci:
+                dsci.filter.manual[-1] = False
+                dsci.apply_filter()
+                dsci.export.hdf5(path_out,
+                                 filtered=True,
+                                 features=[],
+                                 basins=True,
+                                 )
+
+    # sanity check 1
+    with h5py.File(path_out) as h5:
+        assert "basinmap0" in h5["events"]
+        assert "basins" in h5
+        assert len(h5["basins"]) == 1
+    # sanity check 2
+    with dclab.new_dataset(path_out) as dse, dclab.new_dataset(h5path) as ds:
+        assert "image" in dse.features_basin
+        assert "mask" in dse.features_basin
+        assert "area_um" in dse.features_basin
+
+        assert "image" not in dse.features_innate
+        assert "mask" not in dse.features_innate
+        assert "area_um" not in dse.features_innate
+        # check for inception filtering
+        assert np.allclose(dse["deform"][0], 0.15025392,
+                           atol=1e-7, rtol=0)
+        assert np.all(dse["deform"][:] == ds["deform"][6::2][:-1])
+        assert np.all(dse["deform"][:] == ds["deform"][5:][1::2][:-1]), "sane"
+
+    # rename the entire directory
+    (tmp_path / "workdir").rename(tmp_path / "holidaydir")
+    path_out_2 = tmp_path / "holidaydir" / "output" / "exported.rtdc"
+
+    # check 1
+    with h5py.File(path_out_2) as h5:
+        assert "basinmap0" in h5["events"]
+        assert "basins" in h5
+        assert len(h5["basins"]) == 1
+    # check 2
+    with dclab.new_dataset(path_out_2) as dse, dclab.new_dataset(h5path) as ds:
+        assert "image" in dse.features_basin
+        assert "mask" in dse.features_basin
+        assert "area_um" in dse.features_basin
+
+        assert "image" not in dse.features_innate
+        assert "mask" not in dse.features_innate
+        assert "area_um" not in dse.features_innate
+        # check for inception filtering
+        assert np.allclose(dse["deform"][0], 0.15025392,
+                           atol=1e-7, rtol=0)
+        assert np.all(dse["deform"][:] == ds["deform"][6::2][:-1])
+        assert np.all(dse["deform"][:] == ds["deform"][5:][1::2][:-1]), "sane"
 
 
 @pytest.mark.filterwarnings(

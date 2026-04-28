@@ -302,6 +302,14 @@ class Export(object):
            to pass an empty list to ``features``. This combination results
            in a very small file consisting of metadata and a mapped basin
            referring to the original dataset.
+
+        .. versionchanged:: 0.71.8
+
+           The relative path to the original file is stored in the basin
+           definition as well. Previously, renaming folders containing
+           basin files and exported files located in different
+           subdirectories broke the basin localization.
+
         """
         if compression != "deprecated":
             warnings.warn("The `compression` kwarg is deprecated in favor of "
@@ -509,8 +517,19 @@ class Export(object):
                     basin_is_local = ds_root.format == "hdf5"
                     basin_locs = [ds_root.path]
                     if basin_is_local:
-                        # So the user can put them into the same directory.
+                        # Allow putting them in the same directory as fallback.
                         basin_locs.append(ds_root.path.name)
+                        # Keep the relative path information.
+                        try:
+                            relp = ds_root.path.relative_to(path.parent,
+                                                            walk_up=True)
+                            basin_locs.append(relp.as_posix())
+                        except BaseException:
+                            # Might fail for multiple reasons:
+                            # - located on other drive
+                            # - located on network share
+                            # - walk_up not implemented in Python<3.12
+                            pass
                     basin_list.append({
                         "basin_name": "Exported data (hierarchy)",
                         "basin_type": "file" if basin_is_local else "remote",

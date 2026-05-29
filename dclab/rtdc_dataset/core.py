@@ -321,7 +321,7 @@ class RTDCBase(abc.ABC):
                     #  especially when considering networking issues.
                     if feat in bn.features:
                         data = bn.get_feature_data(feat)
-                        self.logger.info(f"Feature '{feat}' found in '{bn}'")
+                        self.logger.info(f"Taking '{feat}' from '{bn}'")
                         # The data are available, we may abort the search.
                         break
                 except feat_basin.BasinIdentifierMismatchError:

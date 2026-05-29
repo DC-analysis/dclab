@@ -94,7 +94,7 @@ def test_umbrella_cache_disk_store_hybrid(tmp_path, store_keeper):
     """Test if caching works"""
     store_keeper.set_disk_store_path(tmp_path)
 
-    wait = .05
+    wait = 0.3
 
     @cached.umbrella_cache()
     def func1(x):

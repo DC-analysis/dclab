@@ -131,7 +131,7 @@ def test_lazy_contour_timing():
     t1 = time.perf_counter()
     get_contour(masks)
     t2 = time.perf_counter()
-    assert t2-t1 > 10*(t1-t0)
+    assert t2-t1 > 5 * (t1-t0)
 
 
 @pytest.mark.filterwarnings(

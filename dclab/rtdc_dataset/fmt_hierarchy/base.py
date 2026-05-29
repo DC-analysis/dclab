@@ -52,6 +52,8 @@ class RTDC_Hierarchy(RTDCBase):
             Hierarchy parent of this instance
         """
         super(RTDC_Hierarchy, self).__init__(*args, **kwargs)
+        # inherit the lock from the parent
+        self.lock = hparent.lock
 
         self.path = hparent.path
         self.title = hparent.title + "_child"

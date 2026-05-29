@@ -6,6 +6,7 @@ import logging
 import os.path
 import pathlib
 import random
+import threading
 import traceback
 from typing import Literal
 import uuid
@@ -58,6 +59,9 @@ class RTDCBase(abc.ABC):
 
         #: Dataset format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
+
+        # Lock for being thread-safe when modifying filters
+        self.lock = threading.Lock()
 
         # Cache attribute used for __len__()-function
         self._length = None
@@ -187,12 +191,14 @@ class RTDCBase(abc.ABC):
         # Try to get the length from the feature sizes
         keys = list(self._events.keys()) or self.features_basin
         keys.sort()
-        for kk in keys:
-            length = len(self[kk])
-            if length:
-                return length
-        else:
-            raise ValueError(f"Could not determine size of dataset '{self}'.")
+        with self.lock:
+            for kk in keys:
+                length = len(self[kk])
+                if length:
+                    return length
+            else:
+                raise ValueError(
+                    f"Could not determine size of dataset '{self}'.")
 
     def __repr__(self):
         repre = "<{} '{}' at {}".format(self.__class__.__name__,
@@ -538,9 +544,10 @@ class RTDCBase(abc.ABC):
 
     def apply_filter(self, force=None):
         """Compute the filters for the dataset"""
-        if force is None:
-            force = []
-        self.filter.update(rtdc_ds=self, force=force)
+        with self.lock:
+            if force is None:
+                force = []
+            self.filter.update(rtdc_ds=self, force=force)
 
     def close(self):
         """Close any open files or connections, including basins
@@ -604,8 +611,10 @@ class RTDCBase(abc.ABC):
         yax = yax.lower()
 
         # Get data
-        x = self[xax][self.filter.all]
-        y = self[yax][self.filter.all]
+        with self.lock:
+            filter_all = self.filter.all
+            x = self[xax][filter_all]
+            y = self[yax][filter_all]
 
         # Apply scale (no change for linear scale)
         xs = KernelDensityEstimator.apply_scale(x, xscale, xax)
@@ -619,7 +628,7 @@ class RTDCBase(abc.ABC):
         if ret_mask:
             # Mask is a boolean array of len(self)
             mask = np.zeros(len(self), dtype=bool)
-            mids = np.where(self.filter.all)[0]
+            mids = np.where(filter_all)[0]
             mask[mids] = idx
             return x[idx], y[idx], mask
         else:
@@ -880,17 +889,18 @@ class RTDCBase(abc.ABC):
         filt: int or instance of `PolygonFilter`
             The polygon filter to add
         """
-        self._assert_filter()  # [sic] initialize the filter if not done yet
-        if not isinstance(filt, (PolygonFilter, int, float)):
-            msg = "`filt` must be a number or instance of PolygonFilter!"
-            raise ValueError(msg)
+        with self.lock:
+            self._assert_filter()  # [sic] initialize filter if not done yet
+            if not isinstance(filt, (PolygonFilter, int, float)):
+                msg = "`filt` must be a number or instance of PolygonFilter!"
+                raise ValueError(msg)
 
-        if isinstance(filt, PolygonFilter):
-            uid = filt.unique_id
-        else:
-            uid = int(filt)
-        # append item
-        self.config["filtering"]["polygon filters"].append(uid)
+            if isinstance(filt, PolygonFilter):
+                uid = filt.unique_id
+            else:
+                uid = int(filt)
+            # append item
+            self.config["filtering"]["polygon filters"].append(uid)
 
     def polygon_filter_rm(self, filt):
         """Remove a polygon filter from this instance
@@ -900,24 +910,26 @@ class RTDCBase(abc.ABC):
         filt: int or instance of `PolygonFilter`
             The polygon filter to remove
         """
-        if not isinstance(filt, (PolygonFilter, int, float)):
-            msg = "`filt` must be a number or instance of PolygonFilter!"
-            raise ValueError(msg)
+        with self.lock:
+            if not isinstance(filt, (PolygonFilter, int, float)):
+                msg = "`filt` must be a number or instance of PolygonFilter!"
+                raise ValueError(msg)
 
-        if isinstance(filt, PolygonFilter):
-            uid = filt.unique_id
-        else:
-            uid = int(filt)
-        # remove item
-        self.config["filtering"]["polygon filters"].remove(uid)
+            if isinstance(filt, PolygonFilter):
+                uid = filt.unique_id
+            else:
+                uid = int(filt)
+            # remove item
+            self.config["filtering"]["polygon filters"].remove(uid)
 
     def reset_filter(self):
         """Reset the current filter"""
-        # reset filter instance
-        self.filter.reset()
-        # reset configuration
-        # remember hierarchy parent
-        hp = self.config["filtering"]["hierarchy parent"]
-        self.config["filtering"].clear()
-        self.config._init_default_filter_values()
-        self.config["filtering"]["hierarchy parent"] = hp
+        with self.lock:
+            # reset filter instance
+            self.filter.reset()
+            # reset configuration
+            # remember hierarchy parent
+            hp = self.config["filtering"]["hierarchy parent"]
+            self.config["filtering"].clear()
+            self.config._init_default_filter_values()
+            self.config["filtering"]["hierarchy parent"] = hp

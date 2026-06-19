@@ -1,4 +1,5 @@
 """DCOR client interface"""
+from __future__ import annotations
 import pathlib
 import re
 import time
@@ -27,8 +28,14 @@ REGEXP_DCOR_URL = re.compile(
 
 
 class RTDC_DCOR(RTDCBase):
-    def __init__(self, url, host="dcor.mpl.mpg.de", api_key="",
-                 use_ssl=None, cert_path=None, dcserv_api_version=2,
+    def __init__(self,
+                 url: str,
+                 host: str = "dcor.mpl.mpg.de",
+                 api_key: str = "",
+                 remember_api_key: bool = True,
+                 use_ssl: bool | None = None,
+                 cert_path: pathlib.Path | str | None = None,
+                 dcserv_api_version: int = 2,
                  *args, **kwargs):
         """Wrap around the DCOR API
 
@@ -46,6 +53,9 @@ class RTDC_DCOR(RTDCBase):
             The default host machine used if the host is not given in `url`
         api_key: str
             API key to access private resources
+        remember_api_key:
+            Remember the API Key in the current session; this is
+            required if basins on DCOR need to be accessed
         use_ssl: bool
             Set this to False to disable SSL (should only be used for
             testing). Defaults to None (does not force SSL if the URL
@@ -82,6 +92,8 @@ class RTDC_DCOR(RTDCBase):
                                   api_key=api_key,
                                   cert_path=cert_path,
                                   dcserv_api_version=dcserv_api_version)
+        if api_key and remember_api_key and api_key not in self.api.api_keys:
+            self.api.add_api_key(api_key)
 
         # Parse configuration
         self.config = Configuration(cfg=self.api.get(query="metadata"))

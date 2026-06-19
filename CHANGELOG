@@ -1,3 +1,6 @@
+0.71.10
+ - enh: remember DCOR API token by default for subsequent basin access
+ - tests: increase robustness for slow CI systems
 0.71.9
  - enh: make filtering operations thread-safe with `RTDCBase.lock`
 0.71.8

@@ -100,4 +100,7 @@ def bin_width_percentile(a):
         start = np.percentile(data, 10)
         end = np.percentile(data, 90)
         acc = (end - start) / 23
-    return acc
+        if acc == 0:
+            # fallback to sane values
+            acc = np.ptp(data) / 10
+    return acc or 1

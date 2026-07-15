@@ -1,4 +1,5 @@
 0.71.10
+ - fix: `bin_width_percentile` could fail for mostly constant arrays
  - enh: remember DCOR API token by default for subsequent basin access
  - tests: increase robustness for slow CI systems
 0.71.9

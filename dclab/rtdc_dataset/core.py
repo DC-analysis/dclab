@@ -815,14 +815,15 @@ class RTDCBase(abc.ABC):
                         elif pi[2:].count(r"\\") and os.path.sep == "/":
                             # Unix
                             p_paths.append(pi.replace(r"\\", "/"))
+
                 # perform the actual check
                 for pp in p_paths:
                     pp = pathlib.Path(pp)
                     # Instantiate the proper basin class
                     b_cls = bc[bdict["format"]]
+
                     # Try absolute path
                     bna = b_cls(pp, **kwargs)
-
                     try:
                         absolute_exists = bna.verify_basin()
                     except BaseException:
@@ -831,14 +832,19 @@ class RTDCBase(abc.ABC):
                         if absolute_exists:
                             basins.append(bna)
                             break
+
                     # Try relative path
                     this_path = pathlib.Path(self.path)
                     if this_path.exists():
-
-                        # Insert relative path
-                        bnr = b_cls(this_path.parent / pp, **kwargs)
-                        if bnr.verify_basin():
-                            basins.append(bnr)
+                        found_relative = False
+                        # Relative path to current directory
+                        for pi in [pp.name, pp]:
+                            bnr = b_cls(this_path.parent / pi, **kwargs)
+                            if bnr.verify_basin():
+                                basins.append(bnr)
+                                found_relative = True
+                                break
+                        if found_relative:
                             break
             elif bdict["type"] == "remote":
                 for url in bdict["urls"]:

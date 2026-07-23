@@ -1,4 +1,5 @@
 import json
+import pathlib
 
 import h5py
 import numpy as np
@@ -378,6 +379,44 @@ def test_basin_relative_paths(path_sep):
         blines = json.dumps(bdat, indent=2).split("\n")
         basins = hw.h5file.require_group("basins")
         hw.write_text(basins, "relative_paths_basin", blines)
+
+    with dclab.new_dataset(h5path_small) as ds:
+        assert "image" not in ds.features_innate
+        assert "image" in ds
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.parametrize("path_sep", [r"/", r"\\"])
+def test_basin_relative_paths_same_dir(path_sep):
+    """Search relative basins in referring dataset directory as well"""
+    h5path: pathlib.Path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.parent / "subdirectory" / "relative.rtdc"
+    h5path_small.parent.mkdir()
+
+    with dclab.new_dataset(h5path) as ds0:
+        assert "image" in ds0
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["image"],
+            "paths": [f"..{path_sep}{h5path.name}"]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "relative_paths_basin", blines)
+
+    # Move the basin next to the referring file. Since version 0.71.10, dclab
+    # will look in the same directory for the basin.
+    h5path.rename(h5path_small.parent / h5path.name)
 
     with dclab.new_dataset(h5path_small) as ds:
         assert "image" not in ds.features_innate

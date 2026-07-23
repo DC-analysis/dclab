@@ -1,6 +1,7 @@
 0.71.10
  - fix: `bin_width_percentile` could fail for mostly constant arrays
  - enh: remember DCOR API token by default for subsequent basin access
+ - enh: don't catch DeprectaionWarning when doing dataset checks
  - tests: increase robustness for slow CI systems
  - setup: scipy!=1.18.0, because of regression with contiguous arrays
 0.71.9

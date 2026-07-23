@@ -193,6 +193,7 @@ class IntegrityChecker(object):
         else:
             with warnings.catch_warnings(record=True) as ws:
                 warnings.simplefilter("always")
+                warnings.simplefilter("ignore", DeprecationWarning)
                 self.ds = load_file(path_or_ds, enable_basins=False)
                 for ww in ws:
                     self.warn_cues.append(ICue(

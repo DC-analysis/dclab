@@ -1,5 +1,4 @@
 """RT-DC dataset core classes and methods"""
-
 import warnings
 
 import numpy as np
@@ -14,7 +13,7 @@ class NanWarning(UserWarning):
     pass
 
 
-class Filter(object):
+class Filter:
     def __init__(self, rtdc_ds):
         """Boolean filter arrays for RT-DC measurements
 
@@ -41,7 +40,7 @@ class Filter(object):
                 # Generate filters on-the-fly
                 self._box_filters[key] = np.ones(self.size, dtype=bool)
         else:
-            raise KeyError("Feature not available: '{}'".format(key))
+            raise KeyError(f"Feature not available: '{key}'")
         return self._box_filters[key]
 
     @property
@@ -161,7 +160,7 @@ class Filter(object):
         for k in newkeys:
             # k[:-4] because we want to crop " min" and " max"
             if (dfn.scalar_feature_exists(k[:-4])
-                    and (k.endswith(" min") or k.endswith(" max"))):
+                    and k.endswith((" min", " max"))):
                 feat2filter.append(k[:-4])
 
         for f in force:
@@ -170,7 +169,7 @@ class Filter(object):
                 feat2filter.append(f)
             else:
                 # Make sure the feature name is valid.
-                raise ValueError("Unknown scalar feature name '{}'!".format(f))
+                raise ValueError(f"Unknown scalar feature name '{f}'!")
 
         feat2filter = np.unique(feat2filter)
 
@@ -183,8 +182,8 @@ class Filter(object):
             if ((fstart in cfg_cur and fend not in cfg_cur)
                     or (fstart not in cfg_cur and fend in cfg_cur)):
                 # User is responsible for setting min and max values!
-                raise ValueError("Box filter: Please make sure that both "
-                                 "'{}' and '{}' are set!".format(fstart, fend))
+                raise ValueError(f"Box filter: Please make sure that both "
+                                 f"'{fstart}' and '{fend}' are set!")
             if feat in self.features:
                 # Get the current feature filter
                 feat_filt = self[feat]
@@ -194,7 +193,7 @@ class Filter(object):
                     ivalstart = cfg_cur[fstart]
                     ivalend = cfg_cur[fend]
                     if ivalstart > ivalend:
-                        msg = "inverting filter: {} > {}".format(fstart, fend)
+                        msg = f"inverting filter: {fstart} > {fend}"
                         warnings.warn(msg)
                         ivalstart, ivalend = ivalend, ivalstart
                     data = rtdc_ds[feat]
@@ -206,17 +205,17 @@ class Filter(object):
                         feat_filt[disnan] = False
                         idx = ~disnan
                         if not cfg_cur["remove invalid events"]:
-                            msg = "Feature '{}' contains ".format(feat) \
-                                  + "nan-values! Box filters remove those."
+                            msg = (f"Feature '{feat}' contains "
+                                   f"nan-values! Box filters remove those.")
                             warnings.warn(msg, NanWarning)
                     else:
                         idx = slice(0, self.size)  # place-holder for [:]
                     feat_filt[idx] &= ivalstart <= data[idx]
                     feat_filt[idx] &= data[idx] <= ivalend
             elif must_be_filtered:
-                warnings.warn("Dataset '{}' does ".format(rtdc_ds.identifier)
-                              + "not contain the feature '{}'! ".format(feat)
-                              + "A box filter has been ignored.")
+                warnings.warn(f"Dataset '{rtdc_ds.identifier}' does "
+                              f"not contain the feature '{feat}'! "
+                              f"A box filter has been ignored.")
         # store box filters
         arr_box = self._get_rw_array("box")
         arr_box[:] = True

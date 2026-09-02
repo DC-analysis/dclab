@@ -1,4 +1,6 @@
 """RT-DC dataset core classes and methods"""
+from __future__ import annotations
+
 import abc
 import hashlib
 import json
@@ -8,7 +10,7 @@ import pathlib
 import random
 import threading
 import traceback
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 import uuid
 import warnings
 
@@ -24,6 +26,10 @@ from . import feat_basin
 from .export import Export
 from .feat_anc_core import FEATURES_RAPID, AncillaryFeature
 from .filter import Filter
+
+if TYPE_CHECKING:
+    from .config import Configuration
+    from .feat_basin import Basin
 
 
 class FeatureShouldExistButNotFoundWarning(UserWarning):
@@ -74,20 +80,20 @@ class RTDCBase(abc.ABC):
         # Temporary features are defined by the user ad hoc at runtime.
         self._usertemp = {}
         # List of :class:`.Basin` for external features
-        self._basins = None
+        self._basins: list[Basin] | None = None
         # List of basin identifiers that should be ignored, used to
         # avoid circular basin dependencies
         self._basins_ignored = []
         # List of all features available via basins
         self._basins_features = None
-        #: Configuration of the measurement
-        self.config = None
+        #: Configuration of the measurement (set by subclass)
+        self.config: Configuration = None  # type: ignore
         #: Export functionalities; instance of
         #: :class:`dclab.rtdc_dataset.export.Export`.
         self.export = Export(self)
         # Filtering functionalities; instance of
         # :class:`dclab.rtdc_dataset.filter.Filter`.
-        self._ds_filter = None
+        self._ds_filter: Filter = None  # type: ignore
         #: Dictionary of log files. Each log file is a list of strings
         #: (one string per line).
         self.logs = {}
@@ -196,16 +202,17 @@ class RTDCBase(abc.ABC):
                 length = len(self[kk])
                 if length:
                     return length
-            else:
-                raise ValueError(
-                    f"Could not determine size of dataset '{self}'.")
+
+            raise ValueError(f"Could not determine size of dataset '{self}'.")
 
     def __repr__(self):
-        repre = "<{} '{}' at {}".format(self.__class__.__name__,
-                                        self.identifier,
-                                        hex(id(self)))
+        repre = (
+            f"<{self.__class__.__name__} "
+            f"'{self.identifier}' "
+            f"at {hex(id(self))}"
+        )
         if self.path != "none":
-            repre += " ({})>".format(self.path)
+            repre += f" ({self.path})>"
         return repre
 
     @property
@@ -220,7 +227,7 @@ class RTDCBase(abc.ABC):
         return self._basins
 
     @property
-    def filter(self):
+    def filter(self) -> Filter:
         """Filtering functionalities; instance of :class:`.Filter`"""
         self._assert_filter()
         return self._ds_filter
@@ -285,7 +292,7 @@ class RTDCBase(abc.ABC):
     def _get_basin_feature_data(
             self,
             feat: str,
-            basin_type: Literal["file", "internal", "remote", None] = None):
+            basin_type: Literal["file", "internal", "remote"] | None = None):
         """Return feature data from basins
 
         Parameters
@@ -337,13 +344,15 @@ class RTDCBase(abc.ABC):
                     #  that due to some iterative process `self`
                     #  gets re-initialized and we have to go through this
                     #  again.
+                    # Since `basins` **is** cached in `self._basins`, these
+                    # two lists are identical.
+                    assert self._basins
                     self._basins.remove(bn)
                     warnings.warn(
                         f"Removed unavailable basin {bn} from {self}")
                 except BaseException:
                     warnings.warn(f"Could not access {feat} in {self}:\n"
                                   f"{traceback.format_exc()}")
-                    pass
         return data
 
     @staticmethod
@@ -717,7 +726,7 @@ class RTDCBase(abc.ABC):
         # Only implement this for classes that support this
         return []
 
-    def basins_retrieve(self):
+    def basins_retrieve(self) -> list[Basin]:
         """Load all basins available
 
         .. versionadded:: 0.54.0
@@ -834,18 +843,19 @@ class RTDCBase(abc.ABC):
                             break
 
                     # Try relative path
-                    this_path = pathlib.Path(self.path)
-                    if this_path.exists():
-                        found_relative = False
-                        # Relative path to current directory
-                        for pi in [pp.name, pp]:
-                            bnr = b_cls(this_path.parent / pi, **kwargs)
-                            if bnr.verify_basin():
-                                basins.append(bnr)
-                                found_relative = True
+                    if self.path is not None:
+                        this_path = pathlib.Path(self.path)
+                        if this_path.exists():
+                            found_relative = False
+                            # Relative path to current directory
+                            for pi in [pp.name, pp]:
+                                bnr = b_cls(this_path.parent / pi, **kwargs)
+                                if bnr.verify_basin():
+                                    basins.append(bnr)
+                                    found_relative = True
+                                    break
+                            if found_relative:
                                 break
-                        if found_relative:
-                            break
             elif bdict["type"] == "remote":
                 for url in bdict["urls"]:
                     # Instantiate the proper basin class
@@ -883,7 +893,7 @@ class RTDCBase(abc.ABC):
             sid = self.config.get("setup", {}).get("identifier", None) or None
             if None not in [time, date, sid]:
                 # only compute an identifier if all of the above are defined.
-                hasher = hashlib.md5(f"{time}_{date}_{sid}".encode("utf-8"))
+                hasher = hashlib.md5(f"{time}_{date}_{sid}".encode())
                 identifier = str(uuid.UUID(hex=hasher.hexdigest()))
         return identifier
 
@@ -899,7 +909,7 @@ class RTDCBase(abc.ABC):
             self._assert_filter()  # [sic] initialize filter if not done yet
             if not isinstance(filt, (PolygonFilter, int, float)):
                 msg = "`filt` must be a number or instance of PolygonFilter!"
-                raise ValueError(msg)
+                raise TypeError(msg)
 
             if isinstance(filt, PolygonFilter):
                 uid = filt.unique_id
@@ -919,7 +929,7 @@ class RTDCBase(abc.ABC):
         with self.lock:
             if not isinstance(filt, (PolygonFilter, int, float)):
                 msg = "`filt` must be a number or instance of PolygonFilter!"
-                raise ValueError(msg)
+                raise TypeError(msg)
 
             if isinstance(filt, PolygonFilter):
                 uid = filt.unique_id

@@ -89,3 +89,14 @@ version_scheme = "post-release"
 build = "cp*"
 # Only build for 64bit
 archs = "auto64"
+
+[tool.ruff.lint]
+ignore = [
+    # Do not organize imports (we have our own scheme)
+    "I001",
+    # Allow catching blind exceptions
+    "BLE001",
+    # Allow catching blind exceptions
+    "S110",
+    "S112",
+]

@@ -1,5 +1,6 @@
 0.71.11
  - ref: cleanup of `core` and `filter` modules with ruff
+ - ref: implement `__array_ufunc__` for `NDArrayOperatorsMixin` subclasses
 0.71.10
  - fix: `bin_width_percentile` could fail for mostly constant arrays
  - enh: remember DCOR API token by default for subsequent basin access

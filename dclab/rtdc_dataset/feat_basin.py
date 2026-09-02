@@ -652,6 +652,12 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
             return out_arr
         return np.array(self._cache, copy=copy)
 
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        # Convert all instances of `BasinProxyFeature` to arrays.
+        inputs = [ip.__array__() if isinstance(ip, BasinProxyFeature) else ip
+                  for ip in inputs]
+        return getattr(ufunc, method)(*inputs, **kwargs)
+
     def __getattr__(self, item):
         if item in [
             "dtype",

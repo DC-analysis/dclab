@@ -200,6 +200,12 @@ class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):
             self._array = np.asarray(self.h5ds, *args, **kwargs)
         return np.array(self._array, dtype=dtype, copy=copy)
 
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        # Convert all instances of `H5ScalarEvent` to arrays.
+        inputs = [ip.__array__() if isinstance(ip, H5ScalarEvent) else ip
+                  for ip in inputs]
+        return getattr(ufunc, method)(*inputs, **kwargs)
+
     def __getitem__(self, idx):
         return self.__array__()[idx]
 

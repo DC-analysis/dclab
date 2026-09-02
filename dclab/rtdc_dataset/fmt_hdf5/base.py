@@ -5,7 +5,7 @@ import io
 import json
 import pathlib
 import time
-from typing import Any, BinaryIO, Dict
+from typing import Any, BinaryIO
 import warnings
 
 import h5py
@@ -35,7 +35,7 @@ class UnknownKeyWarning(UserWarning):
 class RTDC_HDF5(RTDCBase):
     def __init__(self,
                  h5path: str | pathlib.Path | BinaryIO | io.IOBase,
-                 h5kwargs: Dict[str, Any] | None = None,
+                 h5kwargs: dict[str, Any] | None = None,
                  *args,
                  **kwargs):
         """HDF5 file format for RT-DC measurements
@@ -51,17 +51,15 @@ class RTDC_HDF5(RTDCBase):
         **kwargs:
             Keyword arguments for `RTDCBase`
         """
-        super(RTDC_HDF5, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Any subclass from RTDC_HDF5 is probably a remote-type and should
         # not be able to access local basins. If you do not agree, please
         # enable this in the definition of the subclass.
-        self._local_basins_allowed = True if self.format == "hdf5" else False
+        self._local_basins_allowed = (self.format == "hdf5")
 
         if isinstance(h5path, (str, pathlib.Path)):
             h5path = pathlib.Path(h5path)
-        else:
-            h5path = h5path
 
         self._hash = None
 
@@ -107,7 +105,7 @@ class RTDC_HDF5(RTDCBase):
                     # features might have non-matching lengths.
                     for ii in range(5):
                         lengths = []
-                        for feat in self.h5file["events"].keys():
+                        for feat in self.h5file["events"]:
                             ds = self.h5file["events"][feat]
                             ds.refresh()
                             lengths.append(ds.shape[0])
@@ -137,10 +135,11 @@ class RTDC_HDF5(RTDCBase):
         if rtdc_soft.startswith("dclab "):
             rtdc_ver = parse_version(rtdc_soft.split(" ")[1])
             if rtdc_ver < parse_version(MIN_DCLAB_EXPORT_VERSION):
-                msg = "The file {} was created ".format(self.path) \
-                      + "with dclab {} which is ".format(rtdc_ver) \
-                      + "not supported anymore! Please rerun " \
-                      + "dclab-tdms2rtdc / export the data again."
+                msg = (f"The file {self.path} was created "
+                       f"with dclab {rtdc_ver} which is "
+                       f"not supported anymore! Please rerun "
+                       f"dclab-tdms2rtdc / export the data again."
+                       )
                 raise OldFormatNotSupportedError(msg)
 
         self.title = "{} - M{}".format(
@@ -149,7 +148,7 @@ class RTDC_HDF5(RTDCBase):
 
     def close(self):
         """Close the underlying HDF5 file"""
-        super(RTDC_HDF5, self).close()
+        super().close()
         self.h5file.close()
 
     @property

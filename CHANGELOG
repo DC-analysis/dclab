@@ -1,6 +1,7 @@
 0.71.11
  - ref: cleanup of several submodules with ruff
  - ref: implement `__array_ufunc__` for `NDArrayOperatorsMixin` subclasses
+ - ref: create submodules for members of `feat_basin`
 0.71.10
  - fix: `bin_width_percentile` could fail for mostly constant arrays
  - enh: remember DCOR API token by default for subsequent basin access

@@ -1,5 +1,5 @@
 0.71.11
- - ref: cleanup of `core` and `filter` modules with ruff
+ - ref: cleanup of several submodules with ruff
  - ref: implement `__array_ufunc__` for `NDArrayOperatorsMixin` subclasses
 0.71.10
  - fix: `bin_width_percentile` could fail for mostly constant arrays

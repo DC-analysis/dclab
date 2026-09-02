@@ -111,8 +111,7 @@ class H5Events:
 
     def __iter__(self):
         # dict-like behavior
-        for key in self.keys():
-            yield key
+        yield from self.keys()
 
     def _is_defective_feature(self, feat):
         """Whether the stored feature is defective"""
@@ -159,7 +158,7 @@ class H5MaskEvent:
         # One of the reasons why we implement __array__ is such that
         # the data exporter knows this object is sliceable
         # (see yield_filtered_array_stacks).
-        return self.h5dataset.__array__(dtype=dtype, *args, **kwargs)
+        return self.h5dataset.__array__(*args, dtype=dtype, **kwargs)
 
     def __getitem__(self, idx):
         return np.asarray(self.h5dataset[idx], dtype=bool)
@@ -268,8 +267,7 @@ class H5TraceEvent:
         return self._num_traces
 
     def __iter__(self):
-        for key in sorted(self.h5group.keys()):
-            yield key
+        yield from sorted(self.h5group.keys())
 
     def keys(self):
         return self.h5group.keys()
@@ -277,6 +275,6 @@ class H5TraceEvent:
     @property
     def shape(self):
         if self._shape is None:
-            atrace = list(self.h5group.keys())[0]
+            atrace = next(iter(self.h5group.keys()))
             self._shape = tuple([len(self)] + list(self.h5group[atrace].shape))
         return self._shape

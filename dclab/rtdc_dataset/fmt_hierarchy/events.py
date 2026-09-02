@@ -7,7 +7,7 @@ from ...util import copy_if_needed
 from .mapper import map_indices_child2parent
 
 
-class ChildBase(object):
+class ChildBase:
     def __init__(self, child):
         self.child = child
 
@@ -17,7 +17,7 @@ class ChildBase(object):
 
 class ChildContour(ChildBase):
     def __init__(self, child):
-        super(ChildContour, self).__init__(child)
+        super().__init__(child)
         self.shape = (len(child), np.nan, 2)
         # Note that since the contour has variable lengths, we cannot
         # implement an __array__ method here.
@@ -35,7 +35,7 @@ class ChildContour(ChildBase):
 
 class ChildNDArray(ChildBase):
     def __init__(self, child, feat):
-        super(ChildNDArray, self).__init__(child)
+        super().__init__(child)
         self.feat = feat
 
     def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
@@ -43,7 +43,7 @@ class ChildNDArray(ChildBase):
                       "`ChildNDArray`. It may consume a lot of memory. "
                       "Consider using a generator instead.",
                       UserWarning)
-        return np.asarray(self[:], dtype=dtype, *args, **kwargs)
+        return np.asarray(self[:], *args, dtype=dtype, **kwargs)
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,
@@ -121,13 +121,13 @@ class ChildTrace(collections.UserDict):
     @property
     def shape(self):
         # set proper shape (#117)
-        key0 = sorted(self.keys())[0]
+        key0 = min(self.keys())
         return tuple([len(self)] + list(self[key0].shape))
 
 
 class ChildTraceItem(ChildBase):
     def __init__(self, child, flname):
-        super(ChildTraceItem, self).__init__(child)
+        super().__init__(child)
         self.flname = flname
 
     def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
@@ -135,7 +135,7 @@ class ChildTraceItem(ChildBase):
                       "`ChildTraceItem`. It may consume a lot of memory. "
                       "Consider using a generator instead.",
                       UserWarning)
-        return np.asarray(self[:], dtype=dtype, *args, **kwargs)
+        return np.asarray(self[:], *args, dtype=dtype, **kwargs)
 
     def __getitem__(self, idx):
         pidx = map_indices_child2parent(child=self.child,

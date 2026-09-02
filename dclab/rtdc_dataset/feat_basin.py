@@ -9,7 +9,7 @@ import abc
 import logging
 import numbers
 import threading
-from typing import Callable, Dict, List, Literal, Union
+from typing import Callable, Literal, TYPE_CHECKING
 import uuid
 import warnings
 import weakref
@@ -17,6 +17,9 @@ import weakref
 import numpy as np
 
 from ..util import copy_if_needed
+
+if TYPE_CHECKING:
+    from .core import RTDCBase
 
 
 logger = logging.getLogger(__name__)
@@ -40,19 +43,16 @@ class IgnoringPerishableBasinTTL(UserWarning):
 
 class BasinmapFeatureMissingError(KeyError):
     """Used when one of the `basinmap` features is not defined"""
-    pass
 
 
 class BasinNotAvailableError(BaseException):
     """Used to identify situations where the basin data is not available"""
-    pass
 
 
 class BasinAvailabilityChecker(threading.Thread):
     """Helper thread for checking basin availability in the background"""
     def __init__(self, basin, *args, **kwargs):
-        super(BasinAvailabilityChecker, self).__init__(*args, daemon=True,
-                                                       **kwargs)
+        super().__init__(*args, daemon=True, **kwargs)
         self.basin = basin
 
     def run(self):
@@ -69,10 +69,10 @@ class PerishableRecord:
     """
     def __init__(self,
                  basin,
-                 expiration_func: Callable = None,
-                 expiration_kwargs: Dict = None,
-                 refresh_func: Callable = None,
-                 refresh_kwargs: Dict = None,
+                 expiration_func: Callable | None = None,
+                 expiration_kwargs: dict | None = None,
+                 refresh_func: Callable | None = None,
+                 refresh_kwargs: dict | None = None,
                  ):
         """
         Parameters
@@ -111,7 +111,7 @@ class PerishableRecord:
         state = "perished" if self.perished() else "valid"
         return f"<PerishableRecord ({state}) at {hex(id(self))}>"
 
-    def perished(self) -> Union[bool, None]:
+    def perished(self) -> bool | None:
         """Determine whether the basin has perished
 
         Returns
@@ -125,7 +125,7 @@ class PerishableRecord:
         else:
             return self.expiration_func(self.basin, **self.expiration_kwargs)
 
-    def refresh(self, extend_by: float = None) -> None:
+    def refresh(self, extend_by: float | None = None) -> None:
         """Extend the lifetime of the associated perishable basin
 
         Parameters
@@ -173,15 +173,13 @@ class Basin(abc.ABC):
     The external data must be a valid RT-DC dataset, subclasses
     should ensure that the corresponding API is available.
     """
-    id_getters = {}
-
     def __init__(self,
                  location: str,
-                 name: str = None,
-                 description: str = None,
-                 features: List[str] = None,
-                 referrer_identifier: str = None,
-                 basin_identifier: str = None,
+                 name: str | None = None,
+                 description: str | None = None,
+                 features: list[str] | None = None,
+                 referrer_identifier: str | None = None,
+                 basin_identifier: str | None = None,
                  mapping: Literal["same",
                                   "basinmap0",
                                   "basinmap1",
@@ -194,10 +192,10 @@ class Basin(abc.ABC):
                                   "basinmap8",
                                   "basinmap9",
                                   ] = "same",
-                 mapping_referrer: Dict = None,
-                 ignored_basins: List[str] = None,
-                 key: str = None,
-                 perishable=False,
+                 mapping_referrer: dict | None = None,
+                 ignored_basins: list[str] | None = None,
+                 key: str | None = None,
+                 perishable: bool | PerishableRecord = False,
                  **kwargs):
         """
 
@@ -268,7 +266,7 @@ class Basin(abc.ABC):
         if isinstance(perishable, bool) and perishable:
             # Create an empty perishable record
             perishable = PerishableRecord(self)
-        self.perishable = perishable
+        self.perishable: PerishableRecord | Literal[False] = perishable
         # define key of the basin
         self.key = key or str(uuid.uuid4())
         # features this basin provides
@@ -297,7 +295,7 @@ class Basin(abc.ABC):
             self._basinmap_referrer = weakref.ref(mapping_referrer)
         else:
             self._basinmap_referrer = None
-        self._ds = None
+        self._ds: RTDCBase | BasinProxy | None = None
         # perform availability check in separate thread
         self._av_check_lock = threading.Lock()
         self._av_check = BasinAvailabilityChecker(self)
@@ -332,8 +330,11 @@ class Basin(abc.ABC):
         """Contains the indexing array in case of a mapped basin"""
         if self._basinmap is None:
             if self.mapping != "same":
+                assert self._basinmap_referrer is not None
+                ref = self._basinmap_referrer()
+                assert ref is not None
                 try:
-                    basinmap = self._basinmap_referrer()[self.mapping]
+                    basinmap = ref[self.mapping]
                 except (KeyError, RecursionError):
                     raise BasinmapFeatureMissingError(
                         f"Could not find the feature '{self.mapping}' in the "
@@ -373,6 +374,7 @@ class Basin(abc.ABC):
             if not self.is_available():
                 raise BasinNotAvailableError(f"Basin {self} is not available!")
             self._ds = self.load_dataset(self.location, **self.kwargs)
+            assert self._ds is not None
             self._ds.ignore_basins(self.ignored_basins)
         return self._ds
 
@@ -433,11 +435,11 @@ class Basin(abc.ABC):
         return self.ds.get_measurement_identifier()
 
     @abc.abstractmethod
-    def is_available(self):
+    def is_available(self) -> bool:
         """Return True if the basin is available"""
 
     @abc.abstractmethod
-    def _load_dataset(self, location, **kwargs):
+    def _load_dataset(self, location, **kwargs) -> RTDCBase:
         """Subclasses should return an instance of :class:`.RTDCBase`"""
 
     def load_dataset(self, location, **kwargs):
@@ -645,8 +647,9 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
         else:
             # This is dangerous territory in terms of memory usage
             out_arr = np.empty((len(self.basinmap),) + self.feat_obj.shape[1:],
+                               *args,
                                dtype=dtype or self.feat_obj.dtype,
-                               *args, **kwargs)
+                               **kwargs)
             for ii, idx in enumerate(self.basinmap):
                 out_arr[ii] = self.feat_obj[idx]
             return out_arr
@@ -735,7 +738,7 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
                 f"'{self.__class__.__name__}'")
 
 
-def basin_priority_sorted_key(bdict: Dict):
+def basin_priority_sorted_key(bdict: dict[str, str]):
     """Yield a sorting value for a given basin that can be used with `sorted`
 
     Basins are normally stored in random order in a dataset. This method
@@ -749,7 +752,7 @@ def basin_priority_sorted_key(bdict: Dict):
         "internal": "a",
         "file": "b",
         "remote": "c",
-    }.get(bdict.get("type"), "z")
+    }.get(bdict.get("type", "_"), "z")
 
     srt_format = {
         "h5dataset": "a",
@@ -757,7 +760,7 @@ def basin_priority_sorted_key(bdict: Dict):
         "http": "c",
         "s3": "d",
         "dcor": "e",
-    }.get(bdict.get("format"), "z")
+    }.get(bdict.get("format", "_"), "z")
 
     mapping = bdict.get("mapping", "same")  # old dicts don't have "mapping"
     srt_map = "a" if mapping == "same" else mapping
@@ -770,7 +773,7 @@ class InternalH5DatasetBasin(Basin):
     basin_type = "internal"
 
     def __init__(self, *args, **kwargs):
-        super(InternalH5DatasetBasin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.mapping == "same":
             raise ValueError(
                 "'internal' basins must be instantiated with `mapping`. "
@@ -780,7 +783,7 @@ class InternalH5DatasetBasin(Basin):
             raise ValueError("You must specify features when defining "
                              "internal basins.")
         # Redefine the features if necessary
-        h5root = self._basinmap_referrer().h5file
+        h5root = self._get_h5file()
         available_features = []
         for feat in self._features:
             if self.location in h5root and feat in h5root[self.location]:
@@ -793,10 +796,16 @@ class InternalH5DatasetBasin(Basin):
         self._features.clear()
         self._features += available_features
 
+    def _get_h5file(self):
+        assert self._basinmap_referrer is not None
+        ref = self._basinmap_referrer()
+        assert ref is not None
+        return ref.h5file
+
     def _load_dataset(self, location, **kwargs):
         from .fmt_dict import RTDC_Dict
         # get the h5file object
-        h5root = self._basinmap_referrer().h5file
+        h5root = self._get_h5file()
         ds_dict = {}
         for feat in self.features:
             ds_dict[feat] = h5root[self.location][feat]

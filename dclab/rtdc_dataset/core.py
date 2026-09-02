@@ -147,6 +147,7 @@ class RTDCBase(abc.ABC):
         self.close()
 
     def __getitem__(self, feat):
+        """Return the requested feature object"""
         if feat in self._events:
             return self._events[feat]
         elif feat in self._usertemp:

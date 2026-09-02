@@ -305,8 +305,9 @@ class Basin(abc.ABC):
     def load_dataset(self, location, **kwargs):
         """Return an instance of :class:`.RTDCBase` for this basin
 
-        If the basin mapping (`self.mapping`) is not the same as
-        the referencing dataset
+        If the basin mapping (`self.mapping`) is not the same as the
+        referencing dataset (`self.mapping != "same"`), return a
+        `BasinProxy` object.
         """
         ds = self._load_dataset(location, **kwargs)
         if self.mapping != "same":

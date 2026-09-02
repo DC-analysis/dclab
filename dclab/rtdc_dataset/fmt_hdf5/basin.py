@@ -14,7 +14,7 @@ class HDF5Basin(feat_basin.Basin):
 
     def __init__(self, *args, **kwargs):
         self._available_verified = None
-        super(HDF5Basin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _load_dataset(self, location, **kwargs):
         return RTDC_HDF5(location, **kwargs)

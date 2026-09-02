@@ -156,23 +156,28 @@ for _i in range(10):
 for _j in range(10):
     FEATURES_SCALAR.append([f"basinmap{_j}", f"Basin mapping {_j}"])
 
-#: list of non-scalar features
-FEATURES_NON_SCALAR = [
-    # This is a (M, 2)-shaped array with integer contour coordinates
-    ["contour", "Event contour"],
+#: list of features that have the shape defined by the metadata
+#: constants "roi size x" and "roi size y".
+FEATURES_IMAGE_ROI = [
     ["image", "Gray scale event image"],
     ["image_bg", "Gray scale event background image"],
     # This is the contour with holes filled
     ["mask", "Binary mask labeling the event in the image"],
+    # QPI features computed from holographic data
+    ["qpi_pha", "Hologram phase image [rad]"],
+    ["qpi_amp", "Hologram amplitude image"],
+]
+
+#: list of non-scalar features
+FEATURES_NON_SCALAR = FEATURES_IMAGE_ROI + [
+    # This is a (M, 2)-shaped array with integer contour coordinates
+    ["contour", "Event contour"],
     # See FLUOR_TRACES for valid keys
     ["trace", "Dictionary of fluorescence traces"],
     # QPI experimental holographic data
     ["qpi_oah", "Off-axis hologram"],
     # QPI holographic background data (experimental or computed)
     ["qpi_oah_bg", "Off-axis hologram background"],
-    # QPI features computed from holographic data
-    ["qpi_pha", "Hologram phase image [rad]"],
-    ["qpi_amp", "Hologram amplitude image"],
 ]
 
 #: List of fluorescence traces

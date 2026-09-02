@@ -1,4 +1,5 @@
 0.71.11
+ - enh: new feature list for images that have the ROI shape `FEATURES_IMAGE_ROI`
  - ref: cleanup of several submodules with ruff
  - ref: implement `__array_ufunc__` for `NDArrayOperatorsMixin` subclasses
  - ref: create submodules for members of `feat_basin`

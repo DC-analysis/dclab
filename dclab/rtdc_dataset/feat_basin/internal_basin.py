@@ -41,9 +41,11 @@ class InternalH5DatasetBasin(Basin):
         return ref.h5file
 
     def _load_dataset(self, location, **kwargs):
+        # to avoid circular imports...
         from ..fmt_dict import RTDC_Dict
         # get the h5file object
         h5root = self._get_h5file()
+        # fetch data
         ds_dict = {}
         for feat in self.features:
             ds_dict[feat] = h5root[self.location][feat]

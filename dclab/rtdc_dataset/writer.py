@@ -342,23 +342,23 @@ class RTDCWriter:
                         # user convenience.
                         basin_id = bn_id or None
                     # Check whether the referrer ID matches the basin ID.
-                    if ref_id:
-                        if not (bn_id == ref_id
-                                or (basin_map is not None
-                                    and ref_id.startswith(bn_id))):
-                            raise ValueError(
-                                f"Measurement identifier mismatch between "
-                                f"{self.path} ({ref_id}) and {loc} ({bn_id})!")
+                    if (ref_id and (not (bn_id == ref_id
+                                         or (basin_map is not None
+                                             and ref_id.startswith(bn_id))))):
+                        raise ValueError(
+                            f"Measurement identifier mismatch between "
+                            f"{self.path} ({ref_id}) and {loc} ({bn_id})!")
             if basin_feats:
                 for feat in basin_feats:
                     if not dfn.feature_exists(feat):
                         raise ValueError(f"Invalid feature: '{feat}'")
-            if basin_map is not None:
-                if (not isinstance(basin_map, np.ndarray)
-                        and basin_map.dtype != np.uint64):
-                    raise ValueError(
-                        "The array specified in `basin_map` argument must be "
-                        "a numpy array with the dtype `np.uint64`!")
+            if (basin_map is not None
+                and isinstance(basin_map, np.ndarray)
+                    and basin_map.dtype != np.int64):
+                raise ValueError(
+                    f"The array specified in `basin_map` argument must be "
+                    f"a numpy array with the dtype `np.int64`, "
+                    f"got {basin_map.dtype}")
 
         # determine the basinmap to use
         if basin_map is not None:

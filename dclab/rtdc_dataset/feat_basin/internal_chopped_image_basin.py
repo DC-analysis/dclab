@@ -18,6 +18,28 @@ class InternalH5DatasetChoppedImageBasin(Basin):
     basin_type = "internal"
 
     def __init__(self, *args, **kwargs):
+        """Chopped image basin
+
+        The chopped image basin is an internal basin that stores image
+        data. Allowed features are listed in `FEATURES_IMAGE_ROI`. Only
+        relevant image data are stored. This addresses the problem that
+        in the .rtdc file format the full frame is stored for each event.
+        If there is only one event in a frame, then ~80% of that frame are
+        unused data that lead to larger file sizes. The chopped image
+        approach stores smaller event images which are reassembled into
+        the full frame images when read.
+
+        The basin information must be registered with the correct basin format
+        "h5datasetchop" and the "same" basin mapping. This means that for each
+        event in the referring dataset, one image is stored in the basin.
+
+        The basin data are organized in a group with an `index` dataset and
+        multiple chunked datasets of different shapes for the image data.
+        The `index` dataset contains the information how to read and position
+        each event image in the event's frame. Multiple events per frame are
+        supported. The other datasets, enumerated with "0", "1", etc. contain
+        the event images sorted to optimize shape and chunking for storage.
+        """
         super().__init__(*args, **kwargs)
         if self.mapping != "same":
             raise ValueError(
@@ -142,11 +164,27 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
         else:
             return self.__array__()[index]
 
-    def _get_image_chopped(self, index):
+    def _get_image_chopped(self, index) -> tuple[np.ndarray, int, int, int]:
+        """Return a chopped image (not with frame shape)
+
+        Returns
+        -------
+        image:
+            Image data
+        offx, offy:
+            Offset for positioning the image data in the event frame
+        other:
+            Event index of the next image that belongs into the same frame
+        """
         dataset, sub_idx, offy, offx, other = self.chopper_index[index]
         return self.feat_obj[str(dataset)][sub_idx], offx, offy, other
 
     def _get_image_frame(self, index):
+        """Reconstruct the frame for event `index`
+
+        If the frame contains multiple events, the image data of all
+        events is put into the frame.
+        """
         image, offx, offy, other = self._get_image_chopped(index)
 
         needs_roi_update = image.shape[-2:] != self.roi_shape
@@ -181,6 +219,7 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
 
     @property
     def chopper_index(self):
+        """Access the chopped "index" information"""
         if self._chopper_index is None:
             self._chopper_index = self.feat_obj["index"][:]
         return self._chopper_index

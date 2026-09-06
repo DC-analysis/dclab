@@ -44,9 +44,9 @@ def test_basin_basic_inception():
         del h5["events"]["circ"]
 
     h5path_l1 = h5path.with_name("level1.rtdc")
-    basin_map1 = np.array([1, 7, 10, 14], dtype=np.uint64)
+    basin_map1 = np.array([1, 7, 10, 14], dtype=np.int64)
     h5path_l2 = h5path.with_name("level2.rtdc")
-    basin_map2 = np.array([1, 2], dtype=np.uint64)
+    basin_map2 = np.array([1, 2], dtype=np.int64)
 
     # level 1
     with dclab.new_dataset(h5path) as ds0, dclab.RTDCWriter(h5path_l1) as hw1:
@@ -109,7 +109,7 @@ def test_basin_inception():
     """
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     h5path_incept = h5path.with_name("inception.rtdc")
-    mapping_array = np.arange(10, dtype=np.uint64)
+    mapping_array = np.arange(10, dtype=np.int64)
 
     with h5py.File(h5path) as h5:
         attrs = dict(h5.attrs)
@@ -145,7 +145,7 @@ def test_basin_mapped(basinmap):
         del h5["events"]["circ"]
 
     path_out = path.with_name("level1.rtdc")
-    basinmap = np.array(basinmap, dtype=np.uint64)
+    basinmap = np.array(basinmap, dtype=np.int64)
 
     # create basin
     with dclab.new_dataset(path) as ds0, dclab.RTDCWriter(path_out) as hw1:
@@ -183,7 +183,7 @@ def test_basin_mapped_export(basinmap):
         del h5["events"]["circ"]
 
     path_out = path.with_name("level1.rtdc")
-    basinmap = np.array(basinmap, dtype=np.uint64)
+    basinmap = np.array(basinmap, dtype=np.int64)
 
     # create basin
     with dclab.new_dataset(path) as ds0, dclab.RTDCWriter(path_out) as hw1:
@@ -221,7 +221,7 @@ def test_error_when_basinmap_not_given():
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     # create a file-based basin with mapped content
     h5path_small = h5path.with_name("smaller.rtdc")
-    mapping_array = np.array([1, 7, 10, 14], dtype=np.uint64)
+    mapping_array = np.array([1, 7, 10, 14], dtype=np.int64)
 
     # Dataset creation
     with h5py.File(h5path, "a") as src, RTDCWriter(h5path_small) as hw:
@@ -497,7 +497,7 @@ def test_verify_basin_identifier():
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     # create a file-based basin with mapped content
     h5path_small = h5path.with_name("smaller.rtdc")
-    mapping_array = np.array([1, 7, 10, 14], dtype=np.uint64)
+    mapping_array = np.array([1, 7, 10, 14], dtype=np.int64)
 
     # Dataset creation
     with h5py.File(h5path, "a") as src, RTDCWriter(h5path_small) as hw:
@@ -539,7 +539,7 @@ def test_writer_reuse_basinmap_feature():
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     # create a file-based basin with mapped content
     h5path_small = h5path.with_name("smaller.rtdc")
-    mapping_array = np.array([1, 7, 10, 14], dtype=np.uint64)
+    mapping_array = np.array([1, 7, 10, 14], dtype=np.int64)
 
     with h5py.File(h5path, "a") as src, RTDCWriter(h5path_small) as hw:
         # write experiment identifiers
@@ -573,7 +573,7 @@ def test_writer_verify_dataset_with_mapped_basin():
     h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
     # create a file-based basin with mapped content
     h5path_small = h5path.with_name("smaller.rtdc")
-    mapping_array = np.array([1, 7, 10, 14], dtype=np.uint64)
+    mapping_array = np.array([1, 7, 10, 14], dtype=np.int64)
 
     # Dataset creation
     with h5py.File(h5path, "a") as src, RTDCWriter(h5path_small) as hw:

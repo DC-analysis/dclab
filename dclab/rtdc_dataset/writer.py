@@ -5,7 +5,7 @@ import copy
 import json
 import os
 import pathlib
-from typing import Dict, List, Literal, Tuple
+from typing import Literal
 import warnings
 
 import h5py
@@ -52,7 +52,7 @@ class RTDCWriter:
     def __init__(self,
                  path_or_h5file: str | pathlib.Path | h5py.File,
                  mode: Literal['append', 'replace', 'reset'] = "append",
-                 compression_kwargs: Dict | Mapping = None,
+                 compression_kwargs: dict | Mapping | None = None,
                  compression: str = "deprecated"):
         """RT-DC data writer classe
 
@@ -120,8 +120,6 @@ class RTDCWriter:
             if len(self.h5file["events"]):
                 self.rectify_metadata()
             self.version_brand()
-        except BaseException:
-            raise
         finally:
             # This is guaranteed to run if any exception is raised.
             self.close()
@@ -187,8 +185,7 @@ class RTDCWriter:
         # set channel count
         chcount = sum(
             ["fl1_max" in feats, "fl2_max" in feats, "fl3_max" in feats])
-        if chcount:
-            if "fluorescence:channel count" not in self.h5file.attrs:
+        if chcount and "fluorescence:channel count" not in self.h5file.attrs:
                 self.h5file.attrs["fluorescence:channel count"] = chcount
 
         # set roi size x/y
@@ -203,19 +200,20 @@ class RTDCWriter:
             self.h5file.attrs["imaging:roi size x"] = shape[1]
             self.h5file.attrs["imaging:roi size y"] = shape[0]
 
-    def store_basin(self,
-                    basin_name: str,
-                    basin_type: Literal['file', 'internal', 'remote'],
-                    basin_format: str,
-                    basin_locs: List[str | pathlib.Path],
-                    basin_descr: str | None = None,
-                    basin_feats: List[str] = None,
-                    basin_map: np.ndarray | Tuple[str, np.ndarray] = None,
-                    basin_id: str = None,
-                    internal_data: Dict | h5py.Group = None,
-                    verify: bool = True,
-                    perishable: bool = False,
-                    ):
+    def store_basin(
+        self,
+        basin_name: str,
+        basin_type: Literal['file', 'internal', 'remote'],
+        basin_format: str,
+        basin_locs: list[str | pathlib.Path],
+        basin_descr: str | None = None,
+        basin_feats: list[str] | None = None,
+        basin_map: np.ndarray | tuple[str, np.ndarray] | None = None,
+        basin_id: str | None = None,
+        internal_data: dict | h5py.Group | None = None,
+        verify: bool = True,
+        perishable: bool = False,
+        ):
         """Write basin information
 
         Parameters
@@ -286,7 +284,12 @@ class RTDCWriter:
                     "When writing an internal basin, you must specify "
                     "`internal_data` which is either a dictionary of numpy "
                     "arrays or an `h5py.Group` containing the relevant "
-                    "datasets.")
+                    "datasets")
+            if basin_feats is None:
+                raise ValueError(
+                    "When writing an internal basin, you must specifiy "
+                    "the list of features `basin_feats`"
+                )
             if (isinstance(internal_data, dict)
                     or (isinstance(internal_data, h5py.Group)
                         and internal_data.file != self.h5file)):
@@ -474,7 +477,7 @@ class RTDCWriter:
         # replace data?
         if feat in events and self.mode == "replace":
             if feat == "trace":
-                for tr_name in data.keys():
+                for tr_name in data:
                     if tr_name in events[feat]:
                         del events[feat][tr_name]
             else:
@@ -518,7 +521,7 @@ class RTDCWriter:
                                      name=feat,
                                      data=data)
         elif feat == "trace":
-            for tr_name in data.keys():
+            for tr_name in data:
                 # verify trace names
                 if tr_name not in dfn.FLUOR_TRACES:
                     raise ValueError(f"Unknown trace key: '{tr_name}'!")
@@ -688,14 +691,12 @@ class RTDCWriter:
             # An instance of h5py.Dataset (which we trust to be a proper
             # compound dataset at this point). No additional steps needed.
             h5_attrs.update(cmp_array.attrs)
-            pass
         elif isinstance(cmp_array, np.ndarray):
             # A numpy array was passed. This usually means we have something
             # that we can look at, so we add image tags.
             h5_attrs['CLASS'] = np.bytes_('IMAGE')
             h5_attrs['IMAGE_VERSION'] = np.bytes_('1.2')
             h5_attrs['IMAGE_SUBCLASS'] = np.bytes_('IMAGE_GRAYSCALE')
-            pass
         elif isinstance(cmp_array, dict):
             # The user passed a dict which we now have to convert to a
             # compound dataset. We do this because we are user-convenient.
@@ -749,7 +750,7 @@ class RTDCWriter:
             old_version = old_version.decode("utf-8")
         version_chain = [vv.strip() for vv in old_version.split("|")]
         version_chain = [vv for vv in version_chain if vv]
-        cur_version = "dclab {}".format(version)
+        cur_version = f"dclab {version}"
 
         if version_chain:
             if version_chain[-1] != cur_version:
@@ -954,7 +955,7 @@ class RTDCWriter:
             self._group_sizes[grp] = len(grp)
         curid = self._group_sizes[grp]
         for ii, cc in enumerate(data):
-            grp.create_dataset("{}".format(curid + ii),
+            grp.create_dataset(f"{curid + ii}",
                                data=cc,
                                fletcher32=True,
                                chunks=cc.shape,

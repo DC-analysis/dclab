@@ -758,7 +758,10 @@ class RTDCBase(abc.ABC):
             bc = feat_basin.get_basin_classes()
         else:
             # Only allow internal basins
-            bc = {"h5dataset": feat_basin.InternalH5DatasetBasin}
+            bc = {
+                "h5dataset": feat_basin.InternalH5DatasetBasin,
+                "h5datasetchop": feat_basin.InternalH5DatasetChoppedImageBasin,
+            }
         # Sort basins according to priority
         bdicts_srt = sorted(self.basins_get_dicts(),
                             key=feat_basin.basin_priority_sorted_key)

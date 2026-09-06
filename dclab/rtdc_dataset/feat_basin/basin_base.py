@@ -52,7 +52,7 @@ class Basin(abc.ABC):
                                   "basinmap8",
                                   "basinmap9",
                                   ] = "same",
-                 mapping_referrer: dict | None = None,
+                 mapping_referrer: dict | RTDCBase | None = None,
                  ignored_basins: list[str] | None = None,
                  key: str | None = None,
                  perishable: bool | PerishableRecord = False,
@@ -151,7 +151,7 @@ class Basin(abc.ABC):
         # Create a weakref to the original referrer: If it is an instance
         # of RTDCBase, then garbage collection can clean up properly and
         # the basin instance has no reason to exist without the referrer.
-        if self.mapping != "same":
+        if mapping_referrer is not None:
             self._basinmap_referrer = weakref.ref(mapping_referrer)
         else:
             self._basinmap_referrer = None

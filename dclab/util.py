@@ -47,9 +47,9 @@ class file_monitoring_lru_cache:
             if full_path.exists():
                 path_stat = full_path.stat()
                 return cached_wrapper(
+                    *args,
                     path=full_path,
                     path_stats=(path_stat.st_mtime_ns, path_stat.st_size),
-                    *args,
                     **kwargs)
             else:
                 # `func` will most-likely raise an exception
@@ -61,7 +61,7 @@ class file_monitoring_lru_cache:
         return wrapper
 
 
-class LazyLoader():
+class LazyLoader:
     """Lazy load a module on first attribute access"""
 
     def __init__(self, modname):
@@ -174,5 +174,5 @@ def obj2bytes(obj):
     elif isinstance(obj, range):
         return obj2bytes((obj.start, obj.stop, obj.step))
     else:
-        raise ValueError("No rule to convert object '{}' to string.".
-                         format(obj.__class__))
+        raise ValueError(
+            f"No rule to convert object '{obj.__class__}' to string.")

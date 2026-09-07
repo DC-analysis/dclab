@@ -177,7 +177,20 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
             Event index of the next image that belongs into the same frame
         """
         dataset, sub_idx, offy, offx, other = self.chopper_index[index]
-        return self.feat_obj[str(dataset)][sub_idx], offx, offy, other
+        image = self.feat_obj[str(dataset)][sub_idx]
+
+        # remove padding at bottom and right
+        if np.all(image[:, -1] == 0):
+            pad_right = -np.argmax(np.sum(image, axis=0)[::-1] > 0)
+        else:
+            pad_right = None
+        if np.all(image[-1, :] == 0):
+            pad_bottom = -np.argmax(np.sum(image, axis=1)[::-1] > 0)
+        else:
+            pad_bottom = None
+        image_cropped = image[slice(None, pad_bottom), slice(None, pad_right)]
+
+        return image_cropped, offx, offy, other
 
     def _get_image_frame(self, index):
         """Reconstruct the frame for event `index`

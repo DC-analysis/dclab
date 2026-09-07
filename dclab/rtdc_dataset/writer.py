@@ -186,7 +186,7 @@ class RTDCWriter:
         chcount = sum(
             ["fl1_max" in feats, "fl2_max" in feats, "fl3_max" in feats])
         if chcount and "fluorescence:channel count" not in self.h5file.attrs:
-                self.h5file.attrs["fluorescence:channel count"] = chcount
+            self.h5file.attrs["fluorescence:channel count"] = chcount
 
         # set roi size x/y
         if "image" in feats:
@@ -213,7 +213,7 @@ class RTDCWriter:
         internal_data: dict | h5py.Group | None = None,
         verify: bool = True,
         perishable: bool = False,
-        ):
+            ):
         """Write basin information
 
         Parameters

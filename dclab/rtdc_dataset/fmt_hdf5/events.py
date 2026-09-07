@@ -151,7 +151,7 @@ class H5MaskEvent:
         self.dtype = np.dtype(bool)
 
     def __array__(self, dtype=np.bool_, copy=copy_if_needed, *args, **kwargs):
-        if dtype is not np.uint8:
+        if dtype is not np.uint8:  # [sic!]
             warnings.warn("Please avoid calling the `__array__` method of the "
                           "`H5MaskEvent`. It may consume a lot of memory.",
                           UserWarning)

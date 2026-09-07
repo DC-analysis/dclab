@@ -205,12 +205,21 @@ def write_chopped_images(ds: RTDCBase,
     index[:, 3] = geometry[:, 3]
     # other
     index[:, 4] = np.arange(len(index))
-    for fr in np.unique(frame):
-        same = np.where(frame == fr)[0]
-        if len(same) != 1:
-            for idx in range(len(same)):
-                ii = same[idx]
-                index[ii, 4] = same[idx - 1]
+    _, fr_index, fr_counts = np.unique(frame,
+                                       return_index=True,
+                                       return_counts=True,
+                                       sorted=False)
+    # We are only interested in frames with multiple events
+    fr_relevant = fr_counts > 1
+    fr_index = fr_index[fr_relevant]
+    fr_counts = fr_counts[fr_relevant]
+    # Set the indices
+    for ii in range(len(fr_index)):
+        # We assume that events with identical frames are monotonous
+        same = np.arange(fr_index[ii], fr_index[ii] + fr_counts[ii])
+        for idx in range(len(same)):
+            jj = same[idx]
+            index[jj, 4] = same[idx - 1]
 
     compression_kwargs = hdf5plugin.Zstd(clevel=5)
 

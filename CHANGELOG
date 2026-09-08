@@ -1,5 +1,6 @@
 0.72.0
  - feat: support reading and writing internal chopped image basin data
+ - feat: add `H5Events.iter_chunks` for memory-friendly mask access
  - fix: correctly check for `basinmap?` dtype int64
  - enh: new feature list for images that have the ROI shape `FEATURES_IMAGE_ROI`
  - ref: cleanup of several submodules with ruff

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-import warnings
 
 import h5py
 import hdf5plugin
@@ -125,28 +124,27 @@ def obtain_event_geometry(ds: RTDCBase,
         np.ceil((ds["size_x"] + 2*pad_um) / pixel_size),
         np.int64)
 
-    with warnings.catch_warnings():
-        # Getting the whole mask data is memory-consuming. Catch that chicken!
-        warnings.simplefilter("ignore", UserWarning)
-        mask = ds["mask"][:]
+    for mslice in ds["mask"].iter_chunks(10*1024**2):
+        mask = ds["mask"][mslice]
 
-    # determine position from mask data
-    mask_y = np.count_nonzero(mask, axis=2) > 0
-    start_y = np.argmax(mask_y, axis=1)  # first non-zero value along y
-    geometry[:, 2] = np.clip(start_y - np.round(pad_um / pixel_size),
-                             a_min=0, a_max=shape_y)
+        # determine position from mask data
+        mask_y = np.count_nonzero(mask, axis=2) > 0
+        start_y = np.argmax(mask_y, axis=1)  # first non-zero value along y
+        geometry[mslice, 2] = np.clip(start_y - np.round(pad_um / pixel_size),
+                                      a_min=0, a_max=shape_y)
+
+        mask_x = np.count_nonzero(mask, axis=1) > 0
+        start_x = np.argmax(mask_x, axis=1)  # first non-zero value along x
+        geometry[mslice, 3] = np.clip(start_x - np.round(pad_um / pixel_size),
+                                      a_min=0, a_max=shape_x)
+
     # correct elements with incorrect height
     too_high = geometry[:, 2] + geometry[:, 0] > shape_y
     geometry[too_high, 2] = shape_y - geometry[too_high, 0]
 
-    mask_x = np.count_nonzero(mask, axis=1) > 0
-    start_x = np.argmax(mask_x, axis=1)  # first non-zero value along x
-    geometry[:, 3] = np.clip(start_x - np.round(pad_um / pixel_size),
-                             a_min=0, a_max=shape_x)
     # correct elements with incorrect width
     too_wide = geometry[:, 3] + geometry[:, 1] > shape_x
     geometry[too_wide, 3] = shape_x - geometry[too_wide, 1]
-
     return geometry
 
 

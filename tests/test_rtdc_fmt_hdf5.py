@@ -550,6 +550,44 @@ def test_logs():
             pass
 
 
+def test_mask_iter_chunks():
+    h5path = retrieve_data("fmt-hdf5_reference_2025.zip")
+
+    # rewrite the mask data in smaller chunks
+    with h5py.File(h5path, "a") as h5:
+        mask = h5["events/mask"][:]
+        del h5["events/mask"]
+        h5["events"].create_dataset(
+            name="mask",
+            data=mask,
+            chunks=(2, 80, 320),
+        )
+
+    with new_dataset(h5path) as ds0:
+        mask = ds0["mask"]
+
+        # sanity check
+        assert mask[:].shape == (13, 80, 320)
+
+        # iterate in very small chunks
+        chunks1 = list(mask.iter_chunks(max_size_bytes=1))
+        assert chunks1[0] == slice(0, 2)
+        assert len(chunks1) == 7  # 13 total events
+
+        data1 = np.concatenate([ds0.h5file["events/mask"][sl]
+                                for sl in chunks1])
+        assert np.all(np.array(data1, dtype=bool) == mask[:])
+
+        # iterate in pairs of 4
+        chunks4 = list(mask.iter_chunks(max_size_bytes=320*80*4))
+        assert chunks4[0] == slice(0, 4)
+        assert len(chunks4) == 4  # 13 total events
+
+        data4 = np.concatenate([ds0.h5file["events/mask"][sl]
+                                for sl in chunks4])
+        assert np.all(np.array(data4, dtype=bool) == mask[:])
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_no_suffix():

@@ -152,9 +152,11 @@ class H5MaskEvent:
 
     def __array__(self, dtype=np.bool_, copy=copy_if_needed, *args, **kwargs):
         if dtype is not np.uint8:  # [sic!]
-            warnings.warn("Please avoid calling the `__array__` method of the "
-                          "`H5MaskEvent`. It may consume a lot of memory.",
-                          UserWarning)
+            warnings.warn(
+                "Please avoid calling the `__array__` method of the "
+                "`H5MaskEvent`. It may consume a lot of memory. Use the "
+                "`iter_chunks` method instead.",
+                UserWarning)
         # One of the reasons why we implement __array__ is such that
         # the data exporter knows this object is sliceable
         # (see yield_filtered_array_stacks).
@@ -181,6 +183,28 @@ class H5MaskEvent:
     @property
     def size(self):
         return np.prod(self.shape)
+
+    def iter_chunks(self, max_size_bytes=1024**2):
+        """Return slices for chunked data access"""
+        # Extract data in `max_size_bytes` byte chunks
+        # Mask images are always chunked so that the entire image is in
+        # the chunk. The variable coordinate is event index.
+        chunksize = (np.prod(self.h5dataset.chunks)
+                     * self.h5dataset.dtype.itemsize)
+        num_chunks = int(np.floor(max_size_bytes / chunksize))
+        num_chunks = max(1, num_chunks)
+
+        extract_size = self.h5dataset.chunks[0] * num_chunks
+
+        idx = 0
+        num_iter = self.h5dataset.shape[0] / extract_size
+        if num_iter != int(num_iter):
+            num_iter = np.ceil(num_iter)
+        num_iter = int(num_iter)
+
+        for _ in range(num_iter):
+            yield slice(idx, idx + extract_size)
+            idx += extract_size
 
 
 class H5ScalarEvent(np.lib.mixins.NDArrayOperatorsMixin):

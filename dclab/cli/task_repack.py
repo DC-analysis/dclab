@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import multiprocessing as mp
 import pathlib
 import threading
@@ -67,6 +68,7 @@ def repack(
     # temporary
     path_temp = path_out.with_suffix(".rtdc~")
     path_temp.unlink(missing_ok=True)
+    atexit.register(path_temp.unlink, missing_ok=True)
 
     with h5py.File(path_in, locking=False) as h5, \
             h5py.File(path_temp, "w") as hc:

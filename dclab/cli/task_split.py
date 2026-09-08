@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import pathlib
 import warnings
 
@@ -96,6 +97,7 @@ def split(
                 pt = pp.with_suffix(".rtdc~")
                 paths_gen.append(pp)
                 paths_temp.append(pt)
+                atexit.register(pt.unlink, missing_ok=True)
                 if verbose:
                     print(f"Generating {ii+1:d}/{num_files:d}: {pt}")
                 ds.filter.manual[:] = False  # reset filter

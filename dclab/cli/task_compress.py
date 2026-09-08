@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import multiprocessing as mp
 import pathlib
 import threading
@@ -63,6 +64,7 @@ def compress(
     # temporary
     path_temp = path_out.with_suffix(".rtdc~")
     path_temp.unlink(missing_ok=True)
+    atexit.register(path_temp.unlink, missing_ok=True)
 
     # command log
     logs = {"dclab-compress": common.get_command_log(paths=[path_in])}

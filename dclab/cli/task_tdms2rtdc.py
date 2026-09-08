@@ -1,5 +1,6 @@
 """Convert .tdms to .rtdc files"""
 import argparse
+import atexit
 import pathlib
 import warnings
 
@@ -78,6 +79,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         path_out.unlink(missing_ok=True)
         path_temp = path_out.with_suffix(".rtdc~")
         path_temp.unlink(missing_ok=True)
+        atexit.register(path_temp.unlink, missing_ok=True)
 
         if verbose:
             common.print_info(

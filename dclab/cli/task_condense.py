@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import pathlib
 import warnings
 
@@ -83,6 +84,7 @@ def condense(
     # temporary
     path_temp = path_out.with_suffix(".rtdc~")
     path_temp.unlink(missing_ok=True)
+    atexit.register(path_temp.unlink, missing_ok=True)
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")

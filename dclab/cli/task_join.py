@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import pathlib
 import time
 import warnings
@@ -79,6 +80,7 @@ def join(
     # temporary
     path_temp = path_out.with_suffix(".rtdc~")
     path_temp.unlink(missing_ok=True)
+    atexit.register(path_temp.unlink, missing_ok=True)
 
     # Order input files by date
     key_paths = []

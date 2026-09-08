@@ -97,6 +97,7 @@ def split(
                 pt = pp.with_suffix(".rtdc~")
                 paths_gen.append(pp)
                 paths_temp.append(pt)
+                pt.unlink(missing_ok=True)
                 atexit.register(pt.unlink, missing_ok=True)
                 if verbose:
                     print(f"Generating {ii+1:d}/{num_files:d}: {pt}")

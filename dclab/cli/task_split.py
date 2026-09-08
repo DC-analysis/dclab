@@ -14,8 +14,8 @@ from . import common
 
 
 def split(
-        path_in: str | pathlib.Path = None,
-        path_out: str | pathlib.Path = None,
+        path_in: str | pathlib.Path | None = None,
+        path_out: str | pathlib.Path | None = None,
         split_events: int = 10000,
         skip_initial_empty_image: bool = True,
         skip_final_empty_image: bool = True,
@@ -49,19 +49,24 @@ def split(
     if path_in is None:
         parser = split_parser()
         args = parser.parse_args()
-
-        path_in = pathlib.Path(args.path_in).resolve()
+        path_in = args.path_in
         path_out = args.path_out
         split_events = args.split_events
         skip_initial_empty_image = not args.include_empty_boundary_images
         skip_final_empty_image = not args.include_empty_boundary_images
         verbose = True
 
+    # setup paths
+    # input
+    assert path_in is not None
+    path_in = pathlib.Path(path_in).resolve()
+    # output
     if path_out in ["SAME", None]:  # default to input directory
         path_out = path_in.parent
-
-    path_in = pathlib.Path(path_in)
+    assert path_out is not None
     path_out = pathlib.Path(path_out)
+    if path_out.is_file():
+        raise ValueError(f"Output directory '{path_out}' is an existing file")
 
     logs = {"dclab-split": common.get_command_log(paths=[path_in])}
 
@@ -70,7 +75,7 @@ def split(
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
-        warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
+        warnings.simplefilter("ignore", ResourceWarning)
         if fmt_tdms.NPTDMS_AVAILABLE:  # tdms-related warning filters
             # ignore SlowVideoWarning
             warnings.simplefilter("ignore",
@@ -117,8 +122,8 @@ def split(
     for ii, pt in enumerate(paths_temp):
         meta = {"experiment": {"sample": f"{sample_name} {ii+1}/{num_files}"}}
         with RTDCWriter(pt, compression_kwargs=cmp_kw) as hw:
-            for name in logs:
-                hw.store_log(name, logs[name])
+            for name, value in logs.items():
+                hw.store_log(name, value)
             hw.store_metadata(meta)
 
     for pt, pp in zip(paths_temp, paths_gen):

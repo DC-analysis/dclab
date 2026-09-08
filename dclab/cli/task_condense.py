@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import pathlib
-from typing import List
 import warnings
 
 import h5py
@@ -19,9 +18,9 @@ from . import common
 
 
 def condense(
-        path_in: str | pathlib.Path = None,
-        path_out: str | pathlib.Path = None,
-        ancillaries: bool = None,
+        path_in: str | pathlib.Path | None = None,
+        path_out: str | pathlib.Path | None = None,
+        ancillaries: bool | None = None,
         store_ancillary_features: bool = True,
         store_basin_features: bool = True,
         check_suffix: bool = True,
@@ -69,12 +68,21 @@ def condense(
         store_ancillary_features = not args.no_ancillaries
         store_basin_features = not args.no_basins
 
-    allowed_input_suffixes = [".rtdc", ".tdms"]
-    if not check_suffix:
-        allowed_input_suffixes.append(pathlib.Path(path_in).suffix)
-
-    path_in, path_out, path_temp = common.setup_task_paths(
-        path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
+    # setup paths
+    # input
+    assert path_in is not None
+    path_in = pathlib.Path(path_in)
+    if check_suffix and path_in.suffix not in [".rtdc", ".tdms"]:
+        raise ValueError(f"Unsupported file type: '{path_in.suffix}'")
+    # output
+    assert path_out is not None
+    path_out = pathlib.Path(path_out)
+    if path_out.suffix != ".rtdc":
+        path_out = path_out.with_name(path_out.name + ".rtdc")
+    path_out.unlink(missing_ok=True)
+    # temporary
+    path_temp = path_out.with_suffix(".rtdc~")
+    path_temp.unlink(missing_ok=True)
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -98,10 +106,10 @@ def condense(
 def condense_dataset(
         ds: RTDCBase,
         h5_cond: h5py.File,
-        ancillaries: bool = None,
+        ancillaries: bool | None = None,
         store_ancillary_features: bool = True,
         store_basin_features: bool = True,
-        warnings_list: List[str] | None = None):
+        warnings_list: list[str] | None = None):
     """Condense a dataset using low-level HDF5 methods
 
     For ancillary and basin features, high-level dclab methods are used.
@@ -209,8 +217,8 @@ def condense_dataset(
                 common.assemble_warnings(warnings_list)
 
         # Write logs
-        for name in logs:
-            hw.store_log(name, logs[name])
+        for name, value in logs.items():
+            hw.store_log(name, value)
 
 
 def condense_parser():

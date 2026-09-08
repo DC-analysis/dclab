@@ -18,9 +18,8 @@ from . import common
 
 
 def compress(
-        path_in: str | pathlib.Path = None,
-        path_out: str | pathlib.Path = None,
-        force: bool = False,
+        path_in: str | pathlib.Path | None = None,
+        path_out: str | pathlib.Path | None = None,
         check_suffix: bool = True,
         ret_path: bool = False,
         ):
@@ -32,8 +31,6 @@ def compress(
         file to compress
     path_out: str or pathlib.Path
         output file path
-    force: bool
-        DEPRECATED
     check_suffix: bool
         check suffixes for input and output files
     ret_path: bool
@@ -50,21 +47,22 @@ def compress(
         args = parser.parse_args()
         path_in = args.input
         path_out = args.output
-        force = args.force
 
-    allowed_input_suffixes = [".rtdc"]
-    if not check_suffix:
-        allowed_input_suffixes.append(pathlib.Path(path_in).suffix)
-
-    path_in, path_out, path_temp = common.setup_task_paths(
-        path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
-
-    if force:
-        warnings.warn(
-            "The `force` keyword argument is deprecated since dclab 0.49.0, "
-            "because compressed HDF5 Datasets are now copied and there "
-            "is no reason to avoid or use force anymore.",
-            DeprecationWarning)
+    # setup paths
+    # input
+    assert path_in is not None
+    path_in = pathlib.Path(path_in)
+    if check_suffix and path_in.suffix != ".rtdc":
+        raise ValueError(f"Unsupported file type: '{path_in.suffix}'")
+    # output
+    assert path_out is not None
+    path_out = pathlib.Path(path_out)
+    if path_out.suffix != ".rtdc":
+        path_out = path_out.with_name(path_out.name + ".rtdc")
+    path_out.unlink(missing_ok=True)
+    # temporary
+    path_temp = path_out.with_suffix(".rtdc~")
+    path_temp.unlink(missing_ok=True)
 
     # command log
     logs = {"dclab-compress": common.get_command_log(paths=[path_in])}
@@ -116,8 +114,8 @@ def compress(
     with RTDCWriter(path_temp,
                     compression_kwargs=cmp_kw,
                     mode="append") as hw:
-        for name in logs:
-            hw.store_log(name, logs[name])
+        for name, value in logs.items():
+            hw.store_log(name, value)
 
     # Finally, rename temp to out
     path_temp.rename(path_out)
@@ -137,10 +135,6 @@ def compress_parser():
                         help='Input path (.rtdc file)')
     parser.add_argument('output', metavar="OUTPUT", type=str,
                         help='Output path (.rtdc file)')
-    parser.add_argument('--force',
-                        dest='force',
-                        action='store_true',
-                        help='DEPRECATED')
     parser.set_defaults(force=False)
     parser.add_argument('--version', action='version',
                         version=f'dclab-compress {version}')

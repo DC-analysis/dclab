@@ -15,8 +15,8 @@ from . import common
 
 
 def repack(
-        path_in: str | pathlib.Path = None,
-        path_out: str | pathlib.Path = None,
+        path_in: str | pathlib.Path | None = None,
+        path_out: str | pathlib.Path | None = None,
         strip_basins: bool = False,
         strip_logs: bool = False,
         check_suffix: bool = True,
@@ -52,12 +52,21 @@ def repack(
         strip_basins = args.strip_basins
         strip_logs = args.strip_logs
 
-    allowed_input_suffixes = [".rtdc"]
-    if not check_suffix:
-        allowed_input_suffixes.append(pathlib.Path(path_in).suffix)
-
-    path_in, path_out, path_temp = common.setup_task_paths(
-        path_in, path_out, allowed_input_suffixes=allowed_input_suffixes)
+    # setup paths
+    # input
+    assert path_in is not None
+    path_in = pathlib.Path(path_in)
+    if check_suffix and path_in.suffix != ".rtdc":
+        raise ValueError(f"Unsupported file type: '{path_in.suffix}'")
+    # output
+    assert path_out is not None
+    path_out = pathlib.Path(path_out)
+    if path_out.suffix != ".rtdc":
+        path_out = path_out.with_name(path_out.name + ".rtdc")
+    path_out.unlink(missing_ok=True)
+    # temporary
+    path_temp = path_out.with_suffix(".rtdc~")
+    path_temp.unlink(missing_ok=True)
 
     with h5py.File(path_in, locking=False) as h5, \
             h5py.File(path_temp, "w") as hc:

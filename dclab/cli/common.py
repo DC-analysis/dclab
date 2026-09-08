@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hashlib
 import json
 import numbers
@@ -25,15 +27,15 @@ from .._version import version
 
 
 class ExtendedJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, pathlib.Path):
-            return str(obj)
-        elif isinstance(obj, numbers.Integral):
-            return int(obj)
-        elif isinstance(obj, np.bool_):
-            return bool(obj)
+    def default(self, o):
+        if isinstance(o, pathlib.Path):
+            return str(o)
+        elif isinstance(o, numbers.Integral):
+            return int(o)
+        elif isinstance(o, np.bool_):
+            return bool(o)
         # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, o)
 
 
 def assemble_warnings(w):
@@ -154,7 +156,7 @@ def monitor(task, bytes_total, bytes_written, stop_event):
     if bytes_written.value == bytes_total.value != 0:
         print(f"{task} 100%")
     else:
-        print("")
+        print()
 
 
 def print_info(string):
@@ -167,64 +169,6 @@ def print_alert(string):
 
 def print_violation(string):
     print_info(f"\033[31m{string}")
-
-
-def setup_task_paths(paths_in, paths_out, allowed_input_suffixes):
-    """Setup directories for a CLI task
-
-    Parameters
-    ----------
-    paths_in: list of str or lsit of pathlib.Path or str or pathlib.Path
-        Input paths
-    paths_out: list of str or list of pathlib.Path or str or pathlib.Path
-        Output paths
-    allowed_input_suffixes: list
-        List of allowed input suffixes (e.g. [".rtdc"])
-
-    Returns
-    -------
-    paths_in: list of pathlib.Path or pathlib.Path
-        Input paths
-    paths_out: list of pathlib.Path or pathlib.Path
-        Output paths
-    paths_temp: list of pathlib.Path or pathlib.Path
-        Temporary paths (working path)
-    """
-    if isinstance(paths_in, list):
-        list_in = True
-    else:
-        paths_in = [paths_in]
-        list_in = False
-
-    if isinstance(paths_out, list):
-        list_out = True
-    else:
-        paths_out = [paths_out]
-        list_out = False
-
-    paths_in = [pathlib.Path(pi) for pi in paths_in]
-    for pi in paths_in:
-        if pi.suffix not in allowed_input_suffixes:
-            raise ValueError(f"Unsupported file type: '{pi.suffix}'")
-
-    paths_out = [pathlib.Path(po) for po in paths_out]
-    for ii, po in enumerate(paths_out):
-        if po.suffix != ".rtdc":
-            paths_out[ii] = po.with_name(po.name + ".rtdc")
-    [po.unlink() for po in paths_out if po.exists()]
-
-    paths_temp = [po.with_suffix(".rtdc~") for po in paths_out]
-    [pt.unlink() for pt in paths_temp if pt.exists()]
-
-    # convert lists back to paths
-    if not list_in:
-        paths_in = paths_in[0]
-
-    if not list_out:
-        paths_out = paths_out[0]
-        paths_temp = paths_temp[0]
-
-    return paths_in, paths_out, paths_temp
 
 
 def skip_empty_image_events(ds, initial=True, final=True):

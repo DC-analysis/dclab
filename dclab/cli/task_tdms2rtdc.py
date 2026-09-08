@@ -19,9 +19,9 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
     Parameters
     ----------
     path_tdms: str or pathlib.Path
-        Path to input .tdms file
+        Path to input .tdms file or folder containing .tdms files
     path_rtdc: str or pathlib.Path
-        Path to output .rtdc file
+        Path to output .rtdc file or folder if `path_tdms` is a folder
     compute_features: bool
         If `True`, compute all ancillary features and store them in the
         output file
@@ -53,6 +53,8 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
     if path_tdms.is_dir():
         # we have a directory to search
         files_tdms = fmt_tdms.get_tdms_files(path_tdms)
+        if not files_tdms:
+            raise ValueError(f"No .tdms files found at '{path_tdms}'")
         if path_rtdc.is_file():
             raise ValueError(
                 f"Output path is a file, expected folder: '{path_rtdc}'!")
@@ -65,19 +67,17 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
             files_rtdc.append(rpr)
     else:
         # we have a single file or a non-existent path
+        if path_tdms.suffix != ".tdms":
+            raise ValueError(f"Invalid input file type '{path_tdms.suffix}'")
         files_tdms = [path_tdms]
         files_rtdc = [path_rtdc]
-
-    files_tdms, files_rtdc, files_temp = common.setup_task_paths(
-        paths_in=files_tdms,
-        paths_out=files_rtdc,
-        allowed_input_suffixes=[".tdms"]
-    )
 
     for ii in range(len(files_tdms)):
         path_in = files_tdms[ii]
         path_out = files_rtdc[ii]
-        path_temp = files_temp[ii]
+        path_out.unlink(missing_ok=True)
+        path_temp = path_out.with_suffix(".rtdc~")
+        path_temp.unlink(missing_ok=True)
 
         if verbose:
             common.print_info(
@@ -88,7 +88,7 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             # ignore ResourceWarning: unclosed file <_io.BufferedReader...>
-            warnings.simplefilter("ignore", ResourceWarning)  # noqa: F821
+            warnings.simplefilter("ignore", ResourceWarning)
             # ignore SlowVideoWarning
             warnings.simplefilter("ignore",
                                   fmt_tdms.event_image.SlowVideoWarning)
@@ -140,8 +140,8 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
                         common.assemble_warnings(w)
                 logs.update(ds.logs)
                 with RTDCWriter(path_temp, compression_kwargs=cmp_kw) as hw:
-                    for name in logs:
-                        hw.store_log(name, logs[name])
+                    for name, value in logs.items():
+                        hw.store_log(name, value)
 
                 # Finally, rename temp to out
                 path_temp.rename(path_out)

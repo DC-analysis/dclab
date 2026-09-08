@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import pathlib
 import time
-from typing import Dict, List
 import warnings
 
 import hdf5plugin
@@ -22,9 +21,9 @@ class FeatureSetNotIdenticalJoinWarning(UserWarning):
 
 
 def join(
-        paths_in: List[str | pathlib.Path] = None,
-        path_out: str | pathlib.Path = None,
-        metadata: Dict = None,
+        paths_in: list[str | pathlib.Path] | None = None,
+        path_out: str | pathlib.Path | None = None,
+        metadata: dict | None = None,
         ret_path: bool = False,
         ):
     """Join multiple RT-DC measurements into a single .rtdc file
@@ -61,11 +60,25 @@ def join(
         paths_in = args.input
         path_out = args.output
 
+    # setup paths
+    # input
+    assert paths_in is not None
     if len(paths_in) < 2:
         raise ValueError("At least two input files must be specified!")
-
-    paths_in, path_out, path_temp = common.setup_task_paths(
-        paths_in, path_out, allowed_input_suffixes=[".rtdc", ".tdms"])
+    paths_in = [pathlib.Path(pi) for pi in paths_in]
+    for pi in paths_in:
+        assert isinstance(pi, pathlib.Path)
+        if pi.suffix not in [".rtdc", ".tdms"]:
+            raise ValueError(f"Unsupported file type: '{pi.suffix}'")
+    # output
+    assert path_out is not None
+    path_out = pathlib.Path(path_out)
+    if path_out.suffix != ".rtdc":
+        path_out = path_out.with_name(path_out.name + ".rtdc")
+    path_out.unlink(missing_ok=True)
+    # temporary
+    path_temp = path_out.with_suffix(".rtdc~")
+    path_temp.unlink(missing_ok=True)
 
     # Order input files by date
     key_paths = []
@@ -134,6 +147,7 @@ def join(
         if w:
             logs["dclab-join-feature-warnings"] = common.assemble_warnings(w)
 
+    assert isinstance(features, list)
     # Create initial output file
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -202,8 +216,8 @@ def join(
                                  lines=common.assemble_warnings(w))
 
         # Write logs and missing meta data
-        for name in logs:
-            hw.store_log(name, logs[name])
+        for name, value in logs.items():
+            hw.store_log(name, value)
         hw.store_metadata(metadata)
 
     # Finally, rename temp to out

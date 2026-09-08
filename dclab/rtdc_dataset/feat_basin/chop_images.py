@@ -206,7 +206,7 @@ def write_chopped_images(ds: RTDCBase,
     _, fr_index, fr_counts = np.unique(frame,
                                        return_index=True,
                                        return_counts=True,
-                                       sorted=False)
+                                       )
     # We are only interested in frames with multiple events
     fr_relevant = fr_counts > 1
     fr_index = fr_index[fr_relevant]

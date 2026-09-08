@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 import codecs
+from collections.abc import Callable, Mapping
 import json
 import pathlib
 import time
-from typing import Dict, List
 import uuid
 import warnings
 
@@ -16,6 +16,7 @@ try:
     import av
 except ModuleNotFoundError:
     PYAV_AVAILABLE = False
+    av = None
 else:
     PYAV_AVAILABLE = True
 
@@ -23,6 +24,7 @@ try:
     import fcswrite
 except ModuleNotFoundError:
     FCSWRITE_AVAILABLE = False
+    fcswrite = None
 else:
     FCSWRITE_AVAILABLE = True
 
@@ -43,7 +45,7 @@ class ContourNotExportedWarning(UserWarning):
     pass
 
 
-class Export(object):
+class Export:
     def __init__(self, rtdc_ds):
         """Export functionalities for RT-DC datasets"""
         self.rtdc_ds = rtdc_ds
@@ -54,8 +56,8 @@ class Export(object):
             override: bool = False,
             pixel_format: str = "yuv420p",
             codec: str = "rawvideo",
-            codec_options: dict[str, str] = None,
-            progress_callback: callable = None,
+            codec_options: dict[str, str] | None = None,
+            progress_callback: Callable | None = None,
             ):
         """Exports filtered event images to a video file
 
@@ -101,6 +103,7 @@ class Export(object):
         # Start exporting
         if "image" in ds:
             # Open video for writing
+            assert av is not None
             with av.open(path, mode="w") as container:
                 stream = container.add_stream(codec_name=codec,
                                               rate=25)
@@ -134,16 +137,15 @@ class Export(object):
                 progress_callback(1.0, "video export complete")
 
         else:
-            msg = "No image data to export: dataset {} !".format(ds.title)
-            raise OSError(msg)
+            raise OSError(f"No image data to export: dataset {ds.title}")
 
     def fcs(self,
             path: pathlib.Path | str,
             features: list[str],
-            meta_data: dict = None,
+            meta_data: dict | None = None,
             filtered: bool = True,
             override: bool = False,
-            progress_callback: callable = None,
+            progress_callback: Callable | None = None,
             ):
         """Export the data of an RT-DC dataset to an .fcs file
 
@@ -196,8 +198,7 @@ class Export(object):
         features = sorted(set(features))
         for c in features:
             if c not in ds.features_scalar:
-                msg = "Invalid feature name: {}".format(c)
-                raise ValueError(msg)
+                raise ValueError(f"Invalid feature name '{c}'")
 
         # Collect the header
         chn_names = [dfn.get_feature_label(c, rtdc_ds=ds) for c in features]
@@ -216,6 +217,7 @@ class Export(object):
 
         data = np.array(data).transpose()
         meta_data["dclab version"] = version
+        assert fcswrite is not None
         fcswrite.write_fcs(filename=str(path),
                            chn_names=chn_names,
                            data=data,
@@ -227,7 +229,7 @@ class Export(object):
 
     def hdf5(self,
              path: str | pathlib.Path,
-             features: List[str] = None,
+             features: list[str] | None = None,
              filtered: bool = True,
              logs: bool = False,
              tables: bool = False,
@@ -235,10 +237,10 @@ class Export(object):
              allow_contour: bool = False,
              meta_prefix: str = "src_",
              override: bool = False,
-             compression_kwargs: Dict = None,
+             compression_kwargs: Mapping | None = None,
              compression: str = "deprecated",
              skip_checks: bool = False,
-             progress_callback: callable = None,
+             progress_callback: Callable | None = None,
              ):
         """Export the data of the current instance to an HDF5 file
 
@@ -328,8 +330,8 @@ class Export(object):
             path = path.parent / (path.name + ".rtdc")
         # Check if file already exists
         if not override and path.exists():
-            raise OSError("File already exists: {}\n".format(path)
-                          + "Please use the `override=True` option.")
+            raise OSError(f"File '{path}' already exists, "
+                          f"please use the 'override=True' option.")
         elif path.exists():
             path.unlink()
 
@@ -341,7 +343,7 @@ class Export(object):
 
         # remove contour information from user-specified features
         if "contour" in (features or []) and not allow_contour:
-            features = list(features)
+            assert isinstance(features, list)
             features.remove("contour")
             warnings.warn(
                 "Feature 'contour' not exported to output file, because "
@@ -355,6 +357,7 @@ class Export(object):
 
         if features is None:
             features = ds.features_innate
+            assert isinstance(features, list)
             # silently remove contour information
             if "contour" in features and not allow_contour:
                 features.remove("contour")
@@ -596,6 +599,7 @@ class Export(object):
                             pass
                         elif filtered and basinmap_orig is None:
                             # basins with mapping "same": create new mapping
+                            assert filter_arr is not None
                             bn_dict["basin_map"] = np.where(filter_arr)[0]
                         else:
                             # filter the source mapping
@@ -609,10 +613,10 @@ class Export(object):
     def tsv(self,
             path: pathlib.Path | str,
             features: list[str],
-            meta_data: dict = None,
+            meta_data: dict | None = None,
             filtered: bool = True,
             override: bool = False,
-            progress_callback: callable = None,
+            progress_callback: Callable | None = None,
             ):
         """Export the data of the current instance to a .tsv file
 
@@ -657,7 +661,7 @@ class Export(object):
         # Check that features exist
         for c in features:
             if c not in ds.features_scalar:
-                raise ValueError("Invalid feature name {}".format(c))
+                raise ValueError(f"Invalid feature name '{c}'")
         meta_data["dclab version"] = version
 
         if progress_callback is not None:
@@ -700,7 +704,7 @@ class Export(object):
 
             np.savetxt(fd,
                        np.array(data).transpose(),
-                       fmt=str("%.10e"),
+                       fmt="%.10e",
                        delimiter="\t")
 
         if progress_callback is not None:
@@ -811,7 +815,7 @@ def store_filtered_feature(rtdc_writer, feat, data, filtarr):
             hw.store_feature(feat, imstack)
     elif feat == "trace":
         # assemble filtered trace stacks
-        for tr in data.keys():
+        for tr in data:
             for trstack in yield_filtered_array_stacks(data[tr], indices):
                 hw.store_feature("trace", {tr: trstack})
     elif dfn.scalar_feature_exists(feat):

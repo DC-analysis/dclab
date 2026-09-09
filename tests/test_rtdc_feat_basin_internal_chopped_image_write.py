@@ -84,7 +84,6 @@ def test_chopped_image_base_small():
         grp = chop_images.write_chopped_images(
             ds=ds,
             feat="image",
-            feat_bg="image_bg",
             h5_dst=hw.h5file,
         )
         assert "index" in grp
@@ -104,7 +103,6 @@ def test_chopped_image_base_large():
         grp = chop_images.write_chopped_images(
             ds=ds,
             feat="image",
-            feat_bg="image_bg",
             h5_dst=hw.h5file,
         )
 
@@ -168,7 +166,6 @@ def test_chopped_image_extremities(mask_slice):
         chop_images.write_chopped_images(
             ds=ds,
             feat="image",
-            feat_bg="image_bg",
             h5_dst=hw.h5file,
         )
 

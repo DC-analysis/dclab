@@ -151,7 +151,6 @@ def obtain_event_geometry(ds: RTDCBase,
 def write_chopped_images(ds: RTDCBase,
                          feat: str,
                          h5_dst: h5py.File,
-                         feat_bg: str | None = None,
                          pad_um: float = 2.0,
                          ) -> h5py.Group:
     """Write image feature from `ds` to chopped image data in `h5_dst`
@@ -185,9 +184,9 @@ def write_chopped_images(ds: RTDCBase,
     # create group
     h5_dst_group = h5_dst.require_group(f"/basin_events/{feat}")
 
-    if feat_bg is not None:
-        bg_data = ds[feat_bg]
-        h5_dst_group.attrs["inverse_background_feature"] = feat_bg
+    if feat == "image":
+        bg_data = ds["image_bg"]
+        h5_dst_group.attrs["inverse_background_feature"] = "image_bg"
     else:
         bg_data = None
 

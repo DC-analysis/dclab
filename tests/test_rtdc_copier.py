@@ -9,6 +9,7 @@ import dclab
 from dclab import new_dataset
 from dclab.rtdc_dataset import is_properly_compressed, rtdc_copy
 from dclab.rtdc_dataset import RTDCWriter
+from dclab.rtdc_dataset.feat_basin.chop_images import write_chopped_images
 
 from helper_methods import retrieve_data
 
@@ -41,6 +42,67 @@ def test_copy_already_compressed():
     with h5py.File(path_copy) as hc:
         assert is_properly_compressed(hc["events/deform"])
         assert is_properly_compressed(hc["events/image"])
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_copy_already_compressed_chopped():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_temp = path.with_name("test_compressed.rtdc")
+    path_copy = path.with_name("test_copy.rtdc")
+
+    ds1 = new_dataset(path)
+
+    with RTDCWriter(path_temp,
+                    compression_kwargs=hdf5plugin.Zstd(clevel=5)) as hw:
+        hw.store_metadata({"setup": ds1.config["setup"],
+                           "experiment": ds1.config["experiment"]})
+        hw.store_feature("deform", ds1["deform"])
+        hw.store_feature("mask", ds1["mask"])
+        hw.store_feature("image_bg", ds1["image_bg"])
+        hw.store_feature("size_x", ds1["size_x"])
+
+        # chop "image" feature
+        write_chopped_images(
+            ds=ds1,
+            feat="image",
+            h5_dst=hw.h5file)
+
+        # sanity check
+        assert is_properly_compressed(hw.h5file["events/deform"])
+        assert (
+            hw.h5file["basin_events/image"].attrs["inverse_background_feature"]
+            == "image_bg"
+        )
+        for key in hw.h5file["basin_events/image"]:
+            assert is_properly_compressed(hw.h5file["basin_events/image"][key])
+        assert "image" not in hw.h5file["events"]
+
+        with h5py.File(path_copy, "w") as hc:
+            rtdc_copy(src_h5file=hw.h5file,
+                      dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["events/deform"])
+        assert (
+            hc["basin_events/image"].attrs["inverse_background_feature"]
+            == "image_bg"
+        )
+        for key in hc["basin_events/image"]:
+            assert is_properly_compressed(hc["basin_events/image"][key])
+        assert "image" not in hc["events"]
+
+    # Functionality test
+    with new_dataset(path) as ds0, new_dataset(path_copy) as dsc:
+        # make sure all mask data match
+        for ii in range(len(ds0)):
+            # Check whether the mask feature matches
+            assert dsc["mask"][0].dtype == bool
+            assert np.all(ds0["mask"][ii] == dsc["mask"][ii])
+            # check image data
+            assert np.all(ds0["image"][ii][ds0["mask"][ii]]
+                          == dsc["image"][ii][dsc["mask"][ii]])
 
 
 @pytest.mark.filterwarnings(

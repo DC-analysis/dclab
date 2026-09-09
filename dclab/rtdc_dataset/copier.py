@@ -406,6 +406,7 @@ def h5ds_copy(src_loc: h5py.Group,
 
     elif recursive and isinstance(src, h5py.Group):
         dst_rec = dst_loc.require_group(dst_name)
+        dst_rec.attrs.update(src.attrs)
         for key in src:
             h5ds_copy(src_loc=src,
                       src_name=key,
@@ -431,8 +432,8 @@ def get_size(h5_obj: h5py.Group | h5py.Dataset | list | tuple | None
     """
     size = 0
     if isinstance(h5_obj, h5py.Group):
-        for key in h5_obj.keys():
-            size += get_size(h5_obj[key])
+        for item in h5_obj.values():
+            size += get_size(item)
     elif isinstance(h5_obj, h5py.Dataset):
         size += h5_obj.nbytes
     elif isinstance(h5_obj, (tuple, list)):

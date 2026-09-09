@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from multiprocessing.sharedctypes import Synchronized
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import h5py
 import hdf5plugin
 import numpy as np
+from scipy import ndimage
 
 from ..import writer
 
@@ -92,8 +93,32 @@ def determine_clustering(geometry, dtype) -> tuple[np.ndarray, int]:
     return clusters, cluster_id - 1
 
 
+def disk(radius):
+    """Generates a flat, disk-shaped footprint.
+
+    Taken from scikit-image (originally BSD-3-Clause license)
+
+    A pixel is within the neighborhood if the Euclidean distance between
+    it and the origin is no greater than radius.
+
+    Parameters
+    ----------
+    radius : int
+        The radius of the disk-shaped footprint.
+
+    Returns
+    -------
+    footprint : ndarray
+        The footprint where elements of the neighborhood are 1 and 0 otherwise.
+    """
+    L = np.arange(-radius, radius + 1)
+    X, Y = np.meshgrid(L, L)
+    return (X**2 + Y**2) <= radius**2
+
+
 def obtain_event_geometry(ds: RTDCBase,
-                          pad_um: float = 2.0) -> np.ndarray:
+                          pad_um: float = 1.5,
+                          ) -> np.ndarray:
     """Return a shape array for all events in `ds`
 
     Parameters
@@ -149,12 +174,14 @@ def obtain_event_geometry(ds: RTDCBase,
     return geometry
 
 
-def write_chopped_images(ds: RTDCBase,
-                         feat: str,
-                         h5_dst: h5py.File,
-                         pad_um: float = 2.0,
-                         bytes_chopped: Synchronized[int] | None = None,
-                         ) -> h5py.Group:
+def write_chopped_images(
+        ds: RTDCBase,
+        feat: str,
+        h5_dst: h5py.File,
+        pad_um: float = 1.5,
+        bytes_chopped: Synchronized[int] | None = None,
+        crop_method: Literal["box", "dilation"] = "dilation",
+        ) -> h5py.Group:
     """Write image feature from `ds` to chopped image data in `h5_dst`
 
     This method writes the feature specified as chopped image data
@@ -170,6 +197,12 @@ def write_chopped_images(ds: RTDCBase,
         Target file to write the feature data to
     pad_um:
         padding to add (top, left, right, bottom) to shape in [µm]
+    bytes_chopped:
+        multiprocessing value for tracking export process
+    crop_method:
+        method for cropping out the images; "box" means a rectangular
+        bounding box, "dilation" means binary dilation which reduces
+        the resulting file size by ~9%
 
     Returns
     -------
@@ -197,6 +230,7 @@ def write_chopped_images(ds: RTDCBase,
         # store as uin8, but treat as bool when loading
         h5_dst_group.attrs["is_boolean"] = True
         h5_feat_dtype = np.uint8
+        crop_method = "box"  # because it is a boolean mask
     else:
         h5_feat_dtype = feat_dtype
 
@@ -205,6 +239,12 @@ def write_chopped_images(ds: RTDCBase,
         h5_dst_group.attrs["inverse_background_feature"] = "image_bg"
     else:
         bg_data = None
+
+    dilate = crop_method == "dilation"
+    mask_data = ds["mask"]
+    pixel_size = ds.config["imaging"]["pixel size"]
+    # The radius of the disk for dilation is equal to the padding size.
+    dilate_structure = disk(int(np.ceil(pad_um / pixel_size)))
 
     # Clusters (event indices that are written to the same dataset)
     clusters, num_clusters = determine_clustering(
@@ -271,7 +311,13 @@ def write_chopped_images(ds: RTDCBase,
         for _ in range(num_chunks):
             # assemble a chunk
             chunk_size = min(chunk_size_opt, num_events - idx)
-            data = np.zeros((chunk_size, shy, shx), dtype=h5_feat_dtype)
+            chunk_data = np.zeros((chunk_size, shy, shx), dtype=h5_feat_dtype)
+            if dilate:
+                # prepare mask data array for dilation
+                chunk_mask = np.zeros((chunk_size, shy, shx), dtype=bool)
+            else:
+                chunk_mask = None
+
             for ii in range(chunk_size):
                 ida = cidx_where[idx]
                 shyi, shxi, offy, offx = geometry[ida][:4]
@@ -282,15 +328,29 @@ def write_chopped_images(ds: RTDCBase,
                 feat_chop = feat_data[ida][offy:offy+shyi, offx:offx+shxi]
                 if bg_data is not None:
                     feat_chop -= bg_data[ida][offy:offy+shyi, offx:offx+shxi]
-                data[ii, :shyi, :shxi] = feat_chop
+                if dilate:
+                    assert chunk_mask is not None
+                    chunk_mask[ii, :shyi, :shxi] = \
+                        mask_data[ida][offy:offy+shyi, offx:offx+shxi]
+                chunk_data[ii, :shyi, :shxi] = feat_chop
                 idx += 1
+
+            if dilate:
+                # run dilation on all masks
+                mask_dilate = ndimage.binary_dilation(
+                    input=chunk_mask,
+                    structure=dilate_structure,
+                    axes=(1, 2))
+                # multiply chunk data with dilated mask
+                chunk_data *= mask_dilate
+
             # write the chunk
             offset = dset.shape[0]
             dset.resize(offset + chunk_size, axis=0)
             if is_boolean:
                 # Multiply mask feature with 255 so it is visible in HDFView
-                data *= 255
-            dset[offset:offset+chunk_size] = data
+                chunk_data *= 255
+            dset[offset:offset+chunk_size] = chunk_data
             # report the size of the original feature that we chopped down
             if bytes_chopped is not None:
                 bytes_chopped.value += (

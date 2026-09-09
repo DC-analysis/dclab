@@ -168,15 +168,13 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
         else:
             return self.__array__()[index]
 
-    def _get_image_chopped(self, index) -> tuple[np.ndarray, int, int, int]:
-        """Return a chopped image (not with frame shape)
+    def _get_image_event(self, index) -> tuple[np.ndarray, int]:
+        """Return the image from one event
 
         Returns
         -------
         image:
-            Image data
-        offx, offy:
-            Offset for positioning the image data in the event frame
+            Event image data placed in the frame ROI
         other:
             Event index of the next image that belongs into the same frame
         """
@@ -184,51 +182,44 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
         image = np.asarray(self.feat_obj[str(dataset)][sub_idx],
                            dtype=self.dtype)
 
-        # remove padding at bottom and right
-        if np.all(image[:, -1] == 0):
-            pad_right = -np.argmax(np.sum(image, axis=0)[::-1] > 0)
-        else:
-            pad_right = None
-        if np.all(image[-1, :] == 0):
-            pad_bottom = -np.argmax(np.sum(image, axis=1)[::-1] > 0)
-        else:
-            pad_bottom = None
-        image_cropped = image[slice(None, pad_bottom), slice(None, pad_right)]
+        # crop event image to maximum allowed size
+        max_y = self.roi_shape[0] - offy
+        max_x = self.roi_shape[1] - offx
+        image_cropped = image[:max_y, :max_x]
 
-        return image_cropped, offx, offy, other
+        # place event image in full frame ROI
+        imsh = image_cropped.shape
+        full_image = np.zeros(self.roi_shape, dtype=image.dtype)
+        full_image[offy:offy+imsh[0], offx:offx+imsh[1]] = image_cropped
+
+        return full_image, other
 
     def _get_image_frame(self, index):
         """Reconstruct the frame for event `index`
 
-        If the frame contains multiple events, the image data of all
-        events is put into the frame.
+        If the frame contains multiple events, all available image data
+        from the other events is put into the image.
         """
-        image, offx, offy, other = self._get_image_chopped(index)
+        image, other = self._get_image_event(index)
 
-        needs_roi_update = image.shape[-2:] != self.roi_shape
+        needs_frame_update = other != index
         needs_bg_update = self.inverse_bg is not None
 
-        if needs_roi_update or needs_bg_update:
+        if needs_frame_update or needs_bg_update:
             ref = self._basinmap_referrer()
             assert ref is not None
-            if needs_roi_update:
-                imsh = image.shape
-                # create correctly-shaped image
-                new_image = np.zeros(self.roi_shape, dtype=image.dtype)
-                new_image[offy:offy+imsh[0], offx:offx+imsh[1]] = image
-                # If the 'other' index is identical to 'index', then there
-                # is only one event in this frame.
-                # If the 'other' index is different from 'index', then
-                # add the image from the 'other' event to the current image.
-                # The 'other' column is always defined in a circular manner.
-                # This means that independent of which event you select, you
-                # will always get all images from the other events.
-                while other != index:
-                    # There are more events in this image
-                    imo, offxo, offyo, other = self._get_image_chopped(other)
-                    imsho = imo.shape
-                    new_image[offyo:offyo+imsho[0], offxo:offxo+imsho[1]] = imo
-                image = new_image
+            # If the 'other' index is identical to 'index', then there
+            # is only one event in this frame.
+            # If the 'other' index is different from 'index', then
+            # add the image from the 'other' event to the current image.
+            # The 'other' column is always defined in a circular manner.
+            # This means that independent of which event you select, you
+            # will always get all images from the other events.
+            while other != index:
+                # There are more events in this image
+                imo, other = self._get_image_event(other)
+                support = imo != 0
+                image[support] = imo[support]
 
             if needs_bg_update:
                 # Perform inverse background correction

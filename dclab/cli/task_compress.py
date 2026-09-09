@@ -137,7 +137,6 @@ def compress_parser():
                         help='Input path (.rtdc file)')
     parser.add_argument('output', metavar="OUTPUT", type=str,
                         help='Output path (.rtdc file)')
-    parser.set_defaults(force=False)
     parser.add_argument('--version', action='version',
                         version=f'dclab-compress {version}')
     return parser

@@ -120,6 +120,10 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
         # for `util.hashobj`
         self.identifier = feat_obj["index"]
         self.inverse_bg = feat_obj.attrs.get("inverse_background_feature")
+        if feat_obj.attrs.get("is_boolean", False):
+            self.dtype = np.dtype(np.bool_)
+        else:
+            self.dtype = self.feat_obj["0"].dtype
         self.roi_shape = roi_shape
         self._basinmap_referrer = basinmap_referrer
         self._chopper_index = None
@@ -177,7 +181,8 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
             Event index of the next image that belongs into the same frame
         """
         dataset, sub_idx, offy, offx, other = self.chopper_index[index]
-        image = self.feat_obj[str(dataset)][sub_idx]
+        image = np.asarray(self.feat_obj[str(dataset)][sub_idx],
+                           dtype=self.dtype)
 
         # remove padding at bottom and right
         if np.all(image[:, -1] == 0):
@@ -236,10 +241,6 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
         if self._chopper_index is None:
             self._chopper_index = self.feat_obj["index"][:]
         return self._chopper_index
-
-    @property
-    def dtype(self):
-        return self.feat_obj["0"].dtype
 
     @property
     def shape(self):

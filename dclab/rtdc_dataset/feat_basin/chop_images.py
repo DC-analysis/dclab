@@ -173,16 +173,30 @@ def write_chopped_images(ds: RTDCBase,
     -------
     h5_dst_group:
         HDF5 group containing the chopped image data
+
+    Notes
+    -----
+    Traditionally, only the "image" feature is chopped. This algorithm
+    should also work for "qpi_pha" and "qpi_amp". Don't use it for
+    "image_bg" feature, because it is used for recovering "image" data.
+    Chopping up the "mask" feature is supported.
     """
+    # create output group
+    h5_dst_group = h5_dst.require_group(f"/basin_events/{feat}")
+
     # Event geometry (shape and offset)
     geometry = obtain_event_geometry(ds=ds, pad_um=pad_um)
     feat_data = ds[feat]
     frame = ds["frame"]
     imshape = ds[feat].shape[1:]
     feat_dtype = feat_data.dtype
-
-    # create group
-    h5_dst_group = h5_dst.require_group(f"/basin_events/{feat}")
+    is_boolean = feat_dtype == bool
+    if is_boolean:
+        # store as uin8, but treat as bool when loading
+        h5_dst_group.attrs["is_boolean"] = True
+        h5_feat_dtype = np.uint8
+    else:
+        h5_feat_dtype = feat_dtype
 
     if feat == "image":
         bg_data = ds["image_bg"]
@@ -202,21 +216,25 @@ def write_chopped_images(ds: RTDCBase,
     index[:, 3] = geometry[:, 3]
     # other
     index[:, 4] = np.arange(len(index))
-    _, fr_index, fr_counts = np.unique(frame,
-                                       return_index=True,
-                                       return_counts=True,
-                                       )
-    # We are only interested in frames with multiple events
-    fr_relevant = fr_counts > 1
-    fr_index = fr_index[fr_relevant]
-    fr_counts = fr_counts[fr_relevant]
-    # Set the indices
-    for ii in range(len(fr_index)):
-        # We assume that events with identical frames are monotonous
-        same = np.arange(fr_index[ii], fr_index[ii] + fr_counts[ii])
-        for idx in range(len(same)):
-            jj = same[idx]
-            index[jj, 4] = same[idx - 1]
+    # For the "mask" feature, all chopped images must be unique.
+    # For all other features, add references to the sibling events
+    # within one frame.
+    if feat != "mask":
+        _, fr_index, fr_counts = np.unique(frame,
+                                           return_index=True,
+                                           return_counts=True,
+                                           )
+        # We are only interested in frames with multiple events
+        fr_relevant = fr_counts > 1
+        fr_index = fr_index[fr_relevant]
+        fr_counts = fr_counts[fr_relevant]
+        # Set the indices
+        for ii in range(len(fr_index)):
+            # We assume that events with identical frames are monotonous
+            same = np.arange(fr_index[ii], fr_index[ii] + fr_counts[ii])
+            for idx in range(len(same)):
+                jj = same[idx]
+                index[jj, 4] = same[idx - 1]
 
     compression_kwargs = hdf5plugin.Zstd(clevel=5)
 
@@ -238,7 +256,7 @@ def write_chopped_images(ds: RTDCBase,
         dset = h5_dst_group.create_dataset(
             name=f"{cid - 1}",
             shape=(0, shy, shx),
-            dtype=feat_dtype,
+            dtype=h5_feat_dtype,
             maxshape=(num_events, shy, shx),
             chunks=(chunk_size_opt, shy, shx),
             fletcher32=True,
@@ -250,7 +268,7 @@ def write_chopped_images(ds: RTDCBase,
         for _ in range(num_chunks):
             # assemble a chunk
             chunk_size = min(chunk_size_opt, num_events - idx)
-            data = np.zeros((chunk_size, shy, shx), dtype=feat_dtype)
+            data = np.zeros((chunk_size, shy, shx), dtype=h5_feat_dtype)
             for ii in range(chunk_size):
                 ida = cidx_where[idx]
                 shyi, shxi, offy, offx = geometry[ida][:4]
@@ -266,6 +284,9 @@ def write_chopped_images(ds: RTDCBase,
             # write the chunk
             offset = dset.shape[0]
             dset.resize(offset + chunk_size, axis=0)
+            if is_boolean:
+                # Multiply mask feature with 255 so it is visible in HDFView
+                data *= 255
             dset[offset:offset+chunk_size] = data
 
         # update index

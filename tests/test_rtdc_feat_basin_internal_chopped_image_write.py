@@ -179,3 +179,34 @@ def test_chopped_image_extremities(mask_slice):
         mask[mask_slice] = True
         assert np.all(dsc["mask"][500] == mask)
         assert np.all(dsc["image"][500][mask] == ds0["image"][500][mask])
+
+
+def test_chopped_image_and_mask():
+    h5path = create_fake_dataset(mult_factor=200)
+    h5chop = h5path.with_name("chopped.rtdc")
+    with new_dataset(h5path) as ds, RTDCWriter(h5chop) as hw:
+        hw.h5file.attrs.update(ds.h5file.attrs)
+        chop_images.write_chopped_images(
+            ds=ds,
+            feat="image",
+            h5_dst=hw.h5file,
+        )
+        grpm = chop_images.write_chopped_images(
+            ds=ds,
+            feat="mask",
+            h5_dst=hw.h5file,
+        )
+        assert np.all(grpm["index"][:, 4] == np.arange(len(ds)))
+        hw.store_feature("frame", ds["frame"])
+        hw.store_feature("time", ds["time"])
+        hw.store_feature("image_bg", ds["image_bg"])
+
+    with new_dataset(h5path) as ds0, new_dataset(h5chop) as dsc:
+        # make sure all mask data match
+        for ii in range(len(ds0)):
+            # Check whether the mask feature matches
+            assert dsc["mask"][0].dtype == bool
+            assert np.all(ds0["mask"][ii] == dsc["mask"][ii])
+            # check image data
+            assert np.all(ds0["image"][ii][ds0["mask"][ii]]
+                          == dsc["image"][ii][dsc["mask"][ii]])

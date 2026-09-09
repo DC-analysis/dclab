@@ -54,7 +54,7 @@ def rtdc_copy(src_h5file: h5py.Group,
     bytes_total:
         If specified, will be set to the estimated total size in bytes
         (uncompressed) that will be written to the new file.
-        The basin definitions are not included due to their variable size.
+        The basin *definitions* are not included due to their variable size.
         Logs are also not included, because the line length may vary.
     bytes_written:
         Number of bytes written to the output file during the copying process

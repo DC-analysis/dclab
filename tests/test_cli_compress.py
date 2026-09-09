@@ -223,6 +223,27 @@ def test_compress_basin_preserved_compress():
             assert feat in ds_out.features_basin
 
 
+def test_compress_chopped():
+    h5path = retrieve_data("fmt-hdf5_reference_2025.zip")
+    path_out = h5path.with_name("compressed.rtdc")
+    cli.compress(path_in=h5path,
+                 path_out=path_out,
+                 crop_event_images=True,
+                 )
+
+    with h5py.File(path_out) as h5:
+        assert "image" in h5["basin_events"]
+        assert "index" in h5["basin_events/image"]
+        assert "0" in h5["basin_events/image"]
+        # mask is not chopped
+
+    with new_dataset(h5path) as ds0, new_dataset(path_out) as dsc:
+        for ii in range(len(ds0)):
+            assert np.all(ds0["mask"][ii] == dsc["mask"][ii])
+            mask = ds0["mask"][ii]
+            assert np.all(ds0["image"][ii][mask] == dsc["image"][ii][mask])
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_log_md5_5m():

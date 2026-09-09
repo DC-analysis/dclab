@@ -11,7 +11,10 @@ import warnings
 import hdf5plugin
 import h5py
 
-from ..rtdc_dataset import rtdc_copy, RTDCWriter
+from ..definitions.feat_const import FEATURES_IMAGE_ROI
+from ..rtdc_dataset import RTDCWriter, new_dataset
+from ..rtdc_dataset.copier import get_size, rtdc_copy
+from ..rtdc_dataset.feat_basin.chop_images import write_chopped_images
 from .. import util
 from .._version import version
 
@@ -21,6 +24,7 @@ from . import common
 def compress(
         path_in: str | pathlib.Path | None = None,
         path_out: str | pathlib.Path | None = None,
+        crop_event_images: bool = False,
         check_suffix: bool = True,
         ret_path: bool = False,
         ):
@@ -32,6 +36,12 @@ def compress(
         file to compress
     path_out: str or pathlib.Path
         output file path
+    crop_event_images: bool
+        Crop event images using an internal "h5datasetchop" basin.
+        This reduces storage size by removing pixels that are not
+        related to an event. For this to work, the features "mask",
+        "frame", "size_y", and "size_x", as well as "image_bg" for the
+        "image" feature must be available.
     check_suffix: bool
         check suffixes for input and output files
     ret_path: bool
@@ -48,6 +58,7 @@ def compress(
         args = parser.parse_args()
         path_in = args.input
         path_out = args.output
+        crop_event_images = args.crop_event_images
 
     # setup paths
     # input
@@ -84,9 +95,35 @@ def compress(
                 daemon=True)
             monitor_thread.start()
 
+            features_copy = (
+                list(h5.get("events", {}).keys())
+                + list(h5.get("basin_events", {}).keys()))
+
+            features_crop = []
+            if crop_event_images:
+                feat_croppable = [f[0] for f in FEATURES_IMAGE_ROI]
+                # 'image_bg' must stay intact (for embedding of "image")
+                # and in addition, it should actually be stored as a
+                # regular basin feature (mapping multiple images to one)
+                feat_croppable.remove("image_bg")
+                # 'mask' should not be chopped, because the "background"
+                # of mask data is just zeros. Mask data are best compressed
+                # with regular compression algorithms (e.g. zstd). For a
+                # full blood measurement, chopping up the mask reduces the
+                # file size by less than only 10 MB. Compression time of
+                # the mask feature would increase by a factor of ~6x.
+                feat_croppable.remove("mask")
+
+                for feat in feat_croppable:
+                    if feat in h5.get("events", {}):
+                        # only crop image features that are not a basin already
+                        features_copy.remove(feat)
+                        features_crop.append(feat)
+                        bytes_total.value += get_size(h5[f"events/{feat}"])
+
             rtdc_copy(src_h5file=h5,
                       dst_h5file=hc,
-                      features="all",
+                      features=features_copy,
                       include_basins=True,
                       include_logs=True,
                       include_tables=True,
@@ -94,6 +131,15 @@ def compress(
                       bytes_total=bytes_total,
                       bytes_written=bytes_written,
                       )
+
+            for feat in features_crop:
+                with new_dataset(path_in) as ds:
+                    write_chopped_images(
+                        ds=ds,
+                        feat=feat,
+                        h5_dst=hc,
+                        bytes_chopped=bytes_written,
+                        )
 
             stop_event.set()
             monitor_thread.join()
@@ -137,6 +183,13 @@ def compress_parser():
                         help='Input path (.rtdc file)')
     parser.add_argument('output', metavar="OUTPUT", type=str,
                         help='Output path (.rtdc file)')
+    parser.add_argument("--crop-event-images",
+                        dest="crop_event_images",
+                        action="store_true",
+                        help="Reduce the amount of storage required by "
+                             "cropping event images. This removes pixels "
+                             "not related to events which reduced file size.")
+    parser.set_defaults(crop_event_images=False)
     parser.add_argument('--version', action='version',
                         version=f'dclab-compress {version}')
     return parser

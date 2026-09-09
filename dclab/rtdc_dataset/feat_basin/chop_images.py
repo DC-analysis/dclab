@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from multiprocessing.sharedctypes import Synchronized
 from typing import TYPE_CHECKING
 
 import h5py
@@ -152,6 +153,7 @@ def write_chopped_images(ds: RTDCBase,
                          feat: str,
                          h5_dst: h5py.File,
                          pad_um: float = 2.0,
+                         bytes_chopped: Synchronized[int] | None = None,
                          ) -> h5py.Group:
     """Write image feature from `ds` to chopped image data in `h5_dst`
 
@@ -179,7 +181,8 @@ def write_chopped_images(ds: RTDCBase,
     Traditionally, only the "image" feature is chopped. This algorithm
     should also work for "qpi_pha" and "qpi_amp". Don't use it for
     "image_bg" feature, because it is used for recovering "image" data.
-    Chopping up the "mask" feature is supported.
+    Chopping up the "mask" feature is supported, but discouraged, because
+    it is compute intensive and yields only <10MB smaller file sizes.
     """
     # create output group
     h5_dst_group = h5_dst.require_group(f"/basin_events/{feat}")
@@ -187,7 +190,6 @@ def write_chopped_images(ds: RTDCBase,
     # Event geometry (shape and offset)
     geometry = obtain_event_geometry(ds=ds, pad_um=pad_um)
     feat_data = ds[feat]
-    frame = ds["frame"]
     imshape = ds[feat].shape[1:]
     feat_dtype = feat_data.dtype
     is_boolean = feat_dtype == bool
@@ -220,6 +222,7 @@ def write_chopped_images(ds: RTDCBase,
     # For all other features, add references to the sibling events
     # within one frame.
     if feat != "mask":
+        frame = ds["frame"]
         _, fr_index, fr_counts = np.unique(frame,
                                            return_index=True,
                                            return_counts=True,
@@ -288,6 +291,10 @@ def write_chopped_images(ds: RTDCBase,
                 # Multiply mask feature with 255 so it is visible in HDFView
                 data *= 255
             dset[offset:offset+chunk_size] = data
+            # report the size of the original feature that we chopped down
+            if bytes_chopped is not None:
+                bytes_chopped.value += (
+                    np.prod(imshape) * chunk_size * feat_dtype.itemsize)
 
         # update index
         # dataset

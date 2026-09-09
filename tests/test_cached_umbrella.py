@@ -101,11 +101,18 @@ def test_umbrella_cache_disk_store_hybrid(tmp_path, store_keeper):
         time.sleep(wait)
         return 2 * x
 
+    assert len(store_keeper.disk_store.index) == 0
+
     a = func1(4)
     assert a == 8
 
     # wait for the data to be written to the disk store
-    time.sleep(1)
+    for _ in range(30):
+        time.sleep(0.1)
+        if len(store_keeper.disk_store.index) == 1:
+            break
+    else:
+        assert False, "Failed to write from memory to disk"
 
     # cause the wrapper to fetch the data from the disk store
     store_keeper.memory_store.clear()
@@ -200,8 +207,14 @@ def test_umbrella_cache_size(store_keeper):
     assert t3 - t2 > wait / 2
 
     # Wait for the store_keeper to remove the item
-    time.sleep(1.1)
+    for _ in range(30):
+        time.sleep(0.1)
+        if len(store_keeper.memory_store) == 10:
+            break
+    else:
+        assert False, "keeper failed to remove memory store item"
 
+    # make the test explicit
     assert len(store_keeper.memory_store) == 10
 
 

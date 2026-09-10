@@ -168,13 +168,11 @@ class RTDC_HDF5(RTDCBase):
             # we don't know the extension; check for the "events" group
             canopen = False
             try:
-                # This is a workaround for Python2 where h5py cannot handle
-                # unicode file names.
                 with h5path.open("rb") as fd:
                     h5 = h5py.File(fd, "r", locking=False)
                     if "events" in h5:
                         canopen = True
-            except IOError:
+            except OSError:
                 # not an HDF5 file
                 pass
             return canopen

@@ -10,6 +10,8 @@
  - ref: create submodules for members of `feat_basin`
  - ref: remove `cli.common.setup_task_paths` to improve code readability
  - ref: remove deprecated `--force` kwarg for `dclab-compress` CLI
+ - setup: drop support for python 3.9
+ - setup: remove importlib_resources dependency
 0.71.10
  - fix: `bin_width_percentile` could fail for mostly constant arrays
  - enh: remember DCOR API token by default for subsequent basin access

@@ -1,8 +1,5 @@
 import pathlib
-# replace this import when dropping support for Python 3.8
-# from importlib import resources as importlib_resources
-import importlib_resources
-import sys
+from importlib import resources as importlib_resources
 import tempfile
 import time
 
@@ -84,8 +81,6 @@ def test_af_emodulus_known_media_error_set_viscosity():
         ds.__getitem__("emodulus")
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
                             + 'YoungsModulusLookupTableExceededWarning')
 def test_af_emodulus_cache():

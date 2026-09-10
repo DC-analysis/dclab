@@ -1,7 +1,6 @@
 import hashlib
 import time
 import shutil
-import sys
 
 import numpy as np
 
@@ -26,8 +25,6 @@ def store_keeper():
     store_keeper.event_run.set()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 def test_umbrella_cache():
     """Test if caching works"""
     wait = .05
@@ -46,8 +43,6 @@ def test_umbrella_cache():
     assert b == a
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 def test_umbrella_cache_disabled():
     """Test if caching works"""
     wait = .05
@@ -66,8 +61,6 @@ def test_umbrella_cache_disabled():
     assert b == a
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 def test_umbrella_cache_disk_store(tmp_path, store_keeper):
     """Test if caching works"""
     store_keeper.set_disk_store_path(tmp_path)
@@ -88,8 +81,6 @@ def test_umbrella_cache_disk_store(tmp_path, store_keeper):
     assert b == a
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 def test_umbrella_cache_disk_store_hybrid(tmp_path, store_keeper):
     """Test if caching works"""
     store_keeper.set_disk_store_path(tmp_path)
@@ -124,8 +115,6 @@ def test_umbrella_cache_disk_store_hybrid(tmp_path, store_keeper):
     assert b == a
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 def test_umbrella_cache_disk_store_hybrid_deleted(tmp_path, store_keeper):
     """Pull the data from under the disk store"""
     store_keeper.set_disk_store_path(tmp_path)
@@ -170,8 +159,6 @@ def test_umbrella_cache_disk_store_hybrid_deleted(tmp_path, store_keeper):
     assert key in store_keeper.disk_store.index
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 def test_umbrella_cache_size(store_keeper):
     """Create more cache entries than memory_store_size"""
     ss = 10
@@ -218,8 +205,6 @@ def test_umbrella_cache_size(store_keeper):
     assert len(store_keeper.memory_store) == 10
 
 
-@pytest.mark.skipif(sys.version_info < (3, 3),
-                    reason="perf_counter requires python3.3 or higher")
 def test_umbrella_cache_evaluation_time_threshold(store_keeper):
     """Test if caching skips when function call is quicker"""
 

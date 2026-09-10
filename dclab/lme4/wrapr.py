@@ -3,8 +3,8 @@ import logging
 import numbers
 import pathlib
 import tempfile
+from importlib import resources as importlib_resources
 
-import importlib_resources
 import numpy as np
 
 from .. import definitions as dfn

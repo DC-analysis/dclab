@@ -2,9 +2,7 @@
 import collections
 from contextlib import ExitStack
 import functools
-# replace this import when dropping support for Python 3.8
-# from importlib import resources as importlib_resources
-import importlib_resources
+from importlib import resources as importlib_resources
 import warnings
 
 import numpy as np

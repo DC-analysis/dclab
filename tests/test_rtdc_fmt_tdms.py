@@ -2,7 +2,6 @@
 import os
 import pathlib
 import shutil
-import sys
 import tempfile
 
 import numpy as np
@@ -26,8 +25,6 @@ def test_compatibility_minimal():
     assert ds.config["imaging"]["pixel size"] == 0.34
 
 
-@pytest.mark.skipif(sys.version_info < (3, 6),
-                    reason="requires python3.6 or higher")
 def test_compatibility_channel_width():
     # At some point, "Channel width" was replaced by "Channel width [um]"
     path = retrieve_data("fmt-tdms_minimal_2016.zip")

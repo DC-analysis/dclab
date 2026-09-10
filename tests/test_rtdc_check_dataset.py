@@ -1,5 +1,4 @@
 import multiprocessing as mp
-import sys
 import time
 
 import h5py
@@ -379,8 +378,6 @@ def test_ic_fmt_hdf5_image1():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.skipif(sys.version_info < (3, 0),
-                    reason="requires python3 or higher")
 def test_ic_fmt_hdf5_image2():
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
@@ -653,8 +650,6 @@ def test_ic_temp_allzero_issue_183():
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
                             + 'feat_anc_core.ancillary_feature.'
                             + 'BadFeatureSizeWarning')
-@pytest.mark.skipif(sys.version_info < (3, 6),
-                    reason="requires python3.6 or higher")
 def test_invalid_medium():
     pytest.importorskip("nptdms")
     h5path = retrieve_data("fmt-tdms_minimal_2016.zip")

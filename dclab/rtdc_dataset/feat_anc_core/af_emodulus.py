@@ -63,8 +63,8 @@ def compute_emodulus(mm: RTDCBase) -> npt.NDArray | None:
 
 
 def compute_emodulus_known_media(mm: RTDCBase,
-                                  temperature: float | npt.NDArray
-                                  ) -> npt.NDArray:
+                                 temperature: float | npt.NDArray
+                                 ) -> npt.NDArray:
     """Only use known media and one temperature for all"""
     calccfg = mm.config["calculation"]
     # compute elastic modulus

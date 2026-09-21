@@ -1,25 +1,28 @@
+from __future__ import annotations
+
+from collections.abc import Sequence
 import logging
 import os
 import pathlib
 import shutil
 import subprocess as sp
+import sys
 
 logger = logging.getLogger(__name__)
 
-_has_lme4 = None
-_has_r = None
+_has_lme4: bool | None = None
+_has_r: bool | None = None
 
 
 class CommandFailedError(BaseException):
     """Used when `run_command` encounters an error"""
-    pass
 
 
 class RNotFoundError(BaseException):
     pass
 
 
-def get_r_path():
+def get_r_path() -> pathlib.Path:
     """Return the path of the R executable"""
     # Maybe the user set the executable already?
     r_exec = os.environ.get("R_EXEC")
@@ -57,17 +60,16 @@ def get_r_path():
         rr_win = rr.with_name("R.exe")
         if rr_win.is_file():
             return rr_win
-    else:
-        raise RNotFoundError(
-            f"Could not find R binary in '{r_home}'")
+    raise RNotFoundError(
+        f"Could not find R binary in '{r_home}'")
 
 
-def get_r_script_path():
+def get_r_script_path() -> pathlib.Path:
     """Return the path to the Rscript executable"""
     return get_r_path().with_name("Rscript")
 
 
-def get_r_version():
+def get_r_version() -> str:
     """Return the full R version string"""
     require_r()
     cmd = (str(get_r_path()), "--version")
@@ -88,7 +90,7 @@ def get_r_version():
     return r_version.strip()
 
 
-def has_lme4():
+def has_lme4() -> bool:
     """Return True if the lme4 package is installed"""
     global _has_lme4
     if _has_lme4:
@@ -107,7 +109,7 @@ def has_lme4():
     return avail
 
 
-def has_r():
+def has_r() -> bool:
     """Return True if R is available"""
     global _has_r
     if _has_r:
@@ -121,7 +123,7 @@ def has_r():
     return hasr
 
 
-def require_lme4():
+def require_lme4() -> None:
     """Install the lme4 package (if not already installed)
 
     Besides ``lme4``, this also installs ``nloptr`` and ``statmod``.
@@ -140,7 +142,7 @@ def require_lme4():
                     )
 
 
-def require_r():
+def require_r() -> None:
     """Make sure R is installed an R HOME is set"""
     if not has_r():
         raise RNotFoundError("Cannot find R, please set its path with the "
@@ -148,9 +150,9 @@ def require_r():
                              "environment variable.")
 
 
-def run_command(cmd, **kwargs):
+def run_command(cmd: Sequence[str | pathlib.Path], **kwargs) -> str:
     """Run a command via subprocess"""
-    if hasattr(sp, "STARTUPINFO"):
+    if sys.platform == "win32":
         # On Windows, subprocess calls will pop up a command window by
         # default when run from Pyinstaller with the ``--noconsole``
         # option. Avoid this distraction.
@@ -183,7 +185,7 @@ def run_command(cmd, **kwargs):
     return tmp.strip()
 
 
-def set_r_lib_path(r_lib_path):
+def set_r_lib_path(r_lib_path: str | pathlib.Path) -> None:
     """Add given directory to the R_LIBS_USER environment variable"""
     paths = os.environ.get("R_LIBS_USER", "").split(os.pathsep)
     paths = [p for p in paths if p]
@@ -191,7 +193,7 @@ def set_r_lib_path(r_lib_path):
     os.environ["R_LIBS_USER"] = os.pathsep.join(list(set(paths)))
 
 
-def set_r_path(r_path):
+def set_r_path(r_path: str | pathlib.Path) -> None:
     """Set the path of the R executable/binary"""
     tmp = run_command((str(r_path), "RHOME"))
 

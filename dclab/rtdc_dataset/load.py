@@ -1,4 +1,6 @@
 """Load RT-DC datasets"""
+from __future__ import annotations
+
 import errno
 import io
 import os
@@ -9,16 +11,19 @@ from . import (
     fmt_dict, fmt_dcor, fmt_hdf5, fmt_hierarchy, fmt_http, fmt_s3, fmt_tdms)
 
 
-def load_file(path, identifier=None, **kwargs):
+def load_file(path: str | pathlib.Path,
+              identifier: str | None = None,
+              **kwargs) -> RTDCBase:
     path = pathlib.Path(path).resolve()
     for fmt in [fmt_hdf5.RTDC_HDF5, fmt_tdms.RTDC_TDMS]:
         if fmt.can_open(path):
             return fmt(path, identifier=identifier, **kwargs)
-    else:
-        raise ValueError("Unknown file format: '{}'".format(path.suffix))
+    raise ValueError(f"Unknown file format: '{path.suffix}'")
 
 
-def new_dataset(data, identifier=None, **kwargs):
+def new_dataset(data: dict | io.BytesIO | RTDCBase | str | pathlib.Path,
+                identifier: str | None = None,
+                **kwargs) -> RTDCBase:
     """Initialize a new RT-DC dataset
 
     Parameters
@@ -48,18 +53,18 @@ def new_dataset(data, identifier=None, **kwargs):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
     elif isinstance(data, io.BytesIO):
         return fmt_hdf5.RTDC_HDF5(data, **kwargs)
-    elif fmt_dcor.is_dcor_url(data):
+    elif isinstance(data, RTDCBase):
+        return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
+                                            **kwargs)
+    elif isinstance(data, str) and fmt_dcor.is_dcor_url(data):
         return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
-    elif fmt_http.is_http_url(data):
+    elif isinstance(data, str) and fmt_http.is_http_url(data):
         if fmt_http.is_url_available(data, ret_reason=False):
             return fmt_http.RTDC_HTTP(data, identifier=identifier)
         elif fmt_s3.is_s3_url(data):
             return fmt_s3.RTDC_S3(data, identifier=identifier, **kwargs)
         else:
             raise NotImplementedError(f"Unknown remote format: {data}")
-    elif isinstance(data, RTDCBase):
-        return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
-                                            **kwargs)
     elif isinstance(data, (pathlib.Path, str)):
         # If we are given a `file:` specifier, remove it. We might be
         # looking at a network share (not mounted as a drive) on Windows
@@ -73,5 +78,5 @@ def new_dataset(data, identifier=None, **kwargs):
         else:
             return load_file(data, identifier=identifier, **kwargs)
     else:
-        msg = "data type not supported: {}".format(data.__class__)
+        msg = f"data type not supported: {data.__class__}"
         raise NotImplementedError(msg)

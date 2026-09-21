@@ -8,7 +8,7 @@ import zipfile
 
 
 def get_api_key(access_token_path: pathlib.Path | str,
-                 password: str | bytes) -> str:
+                password: str | bytes) -> str:
     """Extract the API key / API token from an encrypted DCOR access token"""
     if isinstance(password, str):
         password = password.encode("utf-8")
@@ -18,7 +18,7 @@ def get_api_key(access_token_path: pathlib.Path | str,
 
 
 def get_certificate(access_token_path: pathlib.Path | str,
-                     password: str | bytes) -> bytes:
+                    password: str | bytes) -> bytes:
     """Extract the certificate bundle from an encrypted DCOR access token"""
     if isinstance(password, str):
         password = password.encode("utf-8")
@@ -28,7 +28,7 @@ def get_certificate(access_token_path: pathlib.Path | str,
 
 
 def get_hostname(access_token_path: pathlib.Path | str,
-                  password: str | bytes) -> str:
+                 password: str | bytes) -> str:
     """Extract the hostname from an encrypted DCOR access token"""
     cert_data = get_certificate(access_token_path, password)
     with tempfile.TemporaryDirectory(prefix="dcoraid_access_token_") as td:

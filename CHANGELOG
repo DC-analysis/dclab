@@ -1,5 +1,7 @@
 0.72.1
  - ref: add type hints and cleanup `definitions.meta_logic` with ruff
+ - ref: add type hints and cleanup `fmt_tdms.exc` and
+   `feat_anc_core.af_fl_max_ctc` with ruff
 0.72.0
  - feat: support reading and writing internal chopped image basin data
  - feat: add `H5Events.iter_chunks` for memory-friendly mask access

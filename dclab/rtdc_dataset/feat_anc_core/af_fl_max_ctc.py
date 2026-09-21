@@ -1,14 +1,22 @@
+from __future__ import annotations
 
+from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+import numpy.typing as npt
 
 from ... import features
 from .ancillary_feature import AncillaryFeature
+
+if TYPE_CHECKING:
+    from ..core import RTDCBase
 
 
 class MissingCrosstalkMatrixElementsError(BaseException):
     pass
 
 
-def compute_ctc(mm, fl_channel):
+def compute_ctc(mm: RTDCBase, fl_channel: int) -> npt.NDArray:
     if "fl1_max" in mm:
         fl1 = mm["fl1_max"]
     else:
@@ -30,8 +38,8 @@ def compute_ctc(mm, fl_channel):
         for j in [1, 2, 3]:
             if i == j:
                 continue
-            key = "crosstalk fl{}{}".format(i, j)
-            par = "ct{}{}".format(i, j)
+            key = f"crosstalk fl{i}{j}"
+            par = f"ct{i}{j}"
             if key in mm.config["calculation"]:
                 ctdict[par] = mm.config["calculation"][key]
 
@@ -44,7 +52,7 @@ def compute_ctc(mm, fl_channel):
          "ct23" not in ctdict or
          "ct31" not in ctdict or
          "ct32" not in ctdict)):
-        msg = "{}, has fl1_max, fl2_max, and fl3_max,".format(mm) \
+        msg = f"{mm}, has fl1_max, fl2_max, and fl3_max," \
               + " but not all crosstalk matrix elements are" \
               + " defined in the 'calculation' configuration section."
         raise MissingCrosstalkMatrixElementsError(msg)
@@ -57,28 +65,29 @@ def compute_ctc(mm, fl_channel):
         **ctdict)
 
 
-def compute_ctc1(mm):
+def compute_ctc1(mm: RTDCBase) -> npt.NDArray:
     return compute_ctc(mm, fl_channel=1)
 
 
-def compute_ctc2(mm):
+def compute_ctc2(mm: RTDCBase) -> npt.NDArray:
     return compute_ctc(mm, fl_channel=2)
 
 
-def compute_ctc3(mm):
+def compute_ctc3(mm: RTDCBase) -> npt.NDArray:
     return compute_ctc(mm, fl_channel=3)
 
 
-def get_method(fl_channel):
+def get_method(fl_channel: int) -> Callable | None:
     if fl_channel == 1:
         return compute_ctc1
     elif fl_channel == 2:
         return compute_ctc2
     elif fl_channel == 3:
         return compute_ctc3
+    return None
 
 
-def register():
+def register() -> None:
     opts_all = (["fl1_max",
                  "fl2_max",
                  "fl3_max"],
@@ -105,28 +114,28 @@ def register():
                 "crosstalk fl23"])
 
     for flch in [1, 2, 3]:
-        AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
+        AncillaryFeature(feature_name=f"fl{flch}_max_ctc",
                          method=get_method(flch),
                          req_features=opts_all[0],
                          req_config=[["calculation", opts_all[1]]],
                          priority=1)
 
     for flch in [1, 2]:
-        AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
+        AncillaryFeature(feature_name=f"fl{flch}_max_ctc",
                          method=get_method(flch),
                          req_features=opts_12[0],
                          req_config=[["calculation", opts_12[1]]],
                          priority=0)
 
     for flch in [1, 3]:
-        AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
+        AncillaryFeature(feature_name=f"fl{flch}_max_ctc",
                          method=get_method(flch),
                          req_features=opts_13[0],
                          req_config=[["calculation", opts_13[1]]],
                          priority=0)
 
     for flch in [2, 3]:
-        AncillaryFeature(feature_name="fl{}_max_ctc".format(flch),
+        AncillaryFeature(feature_name=f"fl{flch}_max_ctc",
                          method=get_method(flch),
                          req_features=opts_23[0],
                          req_config=[["calculation", opts_23[1]]],

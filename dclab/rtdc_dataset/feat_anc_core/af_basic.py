@@ -1,20 +1,28 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
+import numpy.typing as npt
 
 from .ancillary_feature import AncillaryFeature
 
+if TYPE_CHECKING:
+    from ..core import RTDCBase
 
-def compute_area_ratio(mm):
+
+def compute_area_ratio(mm: RTDCBase) -> npt.NDArray:
     valid = mm["area_msd"] != 0
     out = np.nan * np.ones(len(mm), dtype=float)
     return np.divide(mm["area_cvx"], mm["area_msd"], where=valid, out=out)
 
 
-def compute_area_um(mm):
+def compute_area_um(mm: RTDCBase) -> npt.NDArray:
     pxs = mm.config["imaging"]["pixel size"]
     return mm["area_cvx"] * pxs**2
 
 
-def compute_aspect(mm):
+def compute_aspect(mm: RTDCBase) -> npt.NDArray:
     """Compute the aspect ratio of the bounding box
 
     Notes
@@ -29,15 +37,15 @@ def compute_aspect(mm):
     return np.divide(mm["size_x"], mm["size_y"], where=valid, out=out)
 
 
-def compute_deform(mm):
+def compute_deform(mm: RTDCBase) -> npt.NDArray:
     return 1 - mm["circ"]
 
 
-def compute_index(mm):
+def compute_index(mm: RTDCBase) -> npt.NDArray:
     return np.arange(1, len(mm)+1)
 
 
-def compute_time(mm):
+def compute_time(mm: RTDCBase) -> npt.NDArray:
     fr = mm.config["imaging"]["frame rate"]
     # Since version 0.47.8, we don't "normalize" the time anymore
     # with the information from mm["frame"][0]. This is important
@@ -56,7 +64,7 @@ AncillaryFeature(feature_name="index",
                  method=compute_index)
 
 
-def register():
+def register() -> None:
     AncillaryFeature(feature_name="area_ratio",
                      method=compute_area_ratio,
                      req_features=["area_cvx", "area_msd"])

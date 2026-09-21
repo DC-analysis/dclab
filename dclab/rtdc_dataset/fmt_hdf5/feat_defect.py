@@ -1,23 +1,27 @@
 """RT-DC hdf5 format"""
 from __future__ import annotations
 
+from collections.abc import Callable
+
+import h5py
+
 from ...external.packaging import parse as parse_version
 
 
-def get_software_version_from_h5(h5):
+def get_software_version_from_h5(h5: h5py.Group) -> str:
     software_version = h5.attrs.get("setup:software version", "")
     if isinstance(software_version, bytes):
         software_version = software_version.decode("utf-8")
     return software_version
 
 
-def is_defective_feature_aspect(h5):
+def is_defective_feature_aspect(h5: h5py.Group) -> bool:
     """In Shape-In 2.0.6, there was a wrong variable cast"""
     software_version = get_software_version_from_h5(h5)
     return software_version in ["ShapeIn 2.0.6", "ShapeIn 2.0.7"]
 
 
-def is_defective_feature_time(h5):
+def is_defective_feature_time(h5: h5py.Group) -> bool:
     """Shape-In stores the "time" feature as a low-precision float32
 
     This makes time resolution for large measurements useless,
@@ -29,13 +33,13 @@ def is_defective_feature_time(h5):
     """
     # This is a necessary requirement. If we cannot compute the
     # ancillary feature, then we cannot ignore (even inaccurate) information.
-    has_ancil = "frame" in h5["events"] and h5.attrs.get("imaging:frame rate",
-                                                         0) != 0
-    if not has_ancil:
+    has_frame = "frame" in h5["events"]  # type: ignore
+    has_rate = h5.attrs.get("imaging:frame rate", 0) != 0
+    if not (has_frame and has_rate):
         return False
 
     # If we have a 32 bit dataset, then things are pretty clear.
-    is_32float = h5["events/time"].dtype.char[-1] == "f"
+    is_32float = h5["events/time"].dtype.char[-1] == "f"  # type: ignore
     if is_32float:
         return True
 
@@ -67,10 +71,10 @@ def is_defective_feature_time(h5):
     return False
 
 
-def is_defective_feature_volume(h5):
+def is_defective_feature_volume(h5: h5py.Group) -> bool:
     """dclab computed volume wrong up until version 0.36.1"""
     # first check if the scripted fix was applied
-    if "dclab_issue_141" in list(h5.get("logs", {}).keys()):
+    if "dclab_issue_141" in list(h5.get("logs", {}).keys()):  # type: ignore
         return False
     # if that does not apply, check the software version
     software_version = get_software_version_from_h5(h5)
@@ -83,7 +87,7 @@ def is_defective_feature_volume(h5):
     return False
 
 
-def is_defective_feature_inert_ratio(h5):
+def is_defective_feature_inert_ratio(h5: h5py.Group) -> bool:
     """For long channels, there was an integer overflow until 0.48.1
 
     The problem here is that not only the channel length, but also
@@ -116,7 +120,7 @@ def is_defective_feature_inert_ratio(h5):
     return False
 
 
-def is_defective_feature_inert_ratio_raw_cvx(h5):
+def is_defective_feature_inert_ratio_raw_cvx(h5: h5py.Group) -> bool:
     """Additional check for `inert_ratio_raw` and `inert_ratio_cvx`
 
     These features were computed with Shape-In and were very likely
@@ -131,7 +135,7 @@ def is_defective_feature_inert_ratio_raw_cvx(h5):
         first_version = version_pipeline[0]
         if first_version.startswith("ShapeIn"):
             si_version = first_version.split()[1]
-        elif "shapein-acquisition" in h5.get("logs", []):
+        elif "shapein-acquisition" in h5.get("logs", []):  # type: ignore
             # Later versions of Shape-In do not anymore write "ShapeIn" in the
             # version string.
             si_version = first_version
@@ -141,10 +145,7 @@ def is_defective_feature_inert_ratio_raw_cvx(h5):
             return True
 
         # We trust Shape-In >= 2.0.5
-        if parse_version(si_version) >= parse_version("2.0.5"):
-            return False
-
-        return True
+        return parse_version(si_version) < parse_version("2.0.5")
 
     return False
 
@@ -152,7 +153,7 @@ def is_defective_feature_inert_ratio_raw_cvx(h5):
 #: dictionary of defective features, defined by HDF5 attributes;
 #: if a value matches the given HDF5 attribute, the feature is
 #: considered defective
-DEFECTIVE_FEATURES = {
+DEFECTIVE_FEATURES: dict[str, Callable[[h5py.Group], bool]] = {
     # feature: [HDF5_attribute, matching_value]
     "aspect": is_defective_feature_aspect,
     "inert_ratio_cvx": is_defective_feature_inert_ratio_raw_cvx,

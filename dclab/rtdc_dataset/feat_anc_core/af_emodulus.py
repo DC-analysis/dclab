@@ -1,11 +1,19 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 import warnings
+
+import numpy.typing as npt
 
 from ... import features
 
 from .ancillary_feature import AncillaryFeature
 
+if TYPE_CHECKING:
+    from ..core import RTDCBase
 
-def compute_emodulus(mm):
+
+def compute_emodulus(mm: RTDCBase) -> npt.NDArray | None:
     """Wrapper function for computing the Young's modulus
 
     Please take a look at the docs :ref:`sec_emodulus_usage`
@@ -51,9 +59,12 @@ def compute_emodulus(mm):
         elif "temp" in mm:
             # case A from the docs
             return compute_emodulus_known_media(mm, temperature=mm["temp"])
+        return None
 
 
-def compute_emodulus_known_media(mm, temperature):
+def compute_emodulus_known_media(mm: RTDCBase,
+                                  temperature: float | npt.NDArray
+                                  ) -> npt.NDArray:
     """Only use known media and one temperature for all"""
     calccfg = mm.config["calculation"]
     # compute elastic modulus
@@ -71,7 +82,7 @@ def compute_emodulus_known_media(mm, temperature):
     return emod
 
 
-def compute_emodulus_visc_only(mm):
+def compute_emodulus_visc_only(mm: RTDCBase) -> npt.NDArray:
     """The user entered the viscosity directly"""
     calccfg = mm.config["calculation"]
     # compute elastic modulus
@@ -89,7 +100,7 @@ def compute_emodulus_visc_only(mm):
     return emod
 
 
-def is_channel(mm):
+def is_channel(mm: RTDCBase) -> bool:
     """Check whether the measurement was performed in the channel
 
     If the chip region is not set, then it is assumed to be a
@@ -98,19 +109,15 @@ def is_channel(mm):
     """
     if "setup" in mm.config and "chip region" in mm.config["setup"]:
         region = mm.config["setup"]["chip region"]
-        if region == "channel":
-            # measured in the channel
-            return True
-        else:
-            # measured in the reservoir
-            return False
+        # measured in the channel (not the reservoir)
+        return region == "channel"
     else:
         # This might be a testing dictionary or someone who is
         # playing around with data. Avoid disappointments here.
         return True
 
 
-def register():
+def register() -> None:
     # Please note that registering these things is a delicate business,
     # because the priority has to be chosen carefully.
     # Note that here we have not included the "emodulus viscosity model"

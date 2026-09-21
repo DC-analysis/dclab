@@ -2,6 +2,8 @@
  - ref: add type hints and cleanup `definitions.meta_logic` with ruff
  - ref: add type hints and cleanup `fmt_tdms.exc` and
    `feat_anc_core.af_fl_max_ctc` with ruff
+ - ref: add type hints and cleanup `feat_anc_core.af_ml_class` and
+   `fmt_dcor.access_token` with ruff/pyright
  - ref: add type hints and cleanup `feat_anc_core.af_emodulus`,
    `feat_anc_core.af_basic`, `feat_temp`, `fmt_hdf5.feat_defect`,
    `feat_anc_plugin.plugin_feature`, and `definitions.meta_parse`

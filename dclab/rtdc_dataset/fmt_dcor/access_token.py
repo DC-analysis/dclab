@@ -1,11 +1,14 @@
 """DCOR-med access token (SSL certificate + CKAN token)"""
+from __future__ import annotations
+
 import pathlib
 import ssl
 import tempfile
 import zipfile
 
 
-def get_api_key(access_token_path, password):
+def get_api_key(access_token_path: pathlib.Path | str,
+                password: str | bytes) -> str:
     """Extract the API key / API token from an encrypted DCOR access token"""
     if isinstance(password, str):
         password = password.encode("utf-8")
@@ -14,7 +17,8 @@ def get_api_key(access_token_path, password):
     return api_key
 
 
-def get_certificate(access_token_path, password):
+def get_certificate(access_token_path: pathlib.Path | str,
+                    password: str | bytes) -> bytes:
     """Extract the certificate bundle from an encrypted DCOR access token"""
     if isinstance(password, str):
         password = password.encode("utf-8")
@@ -23,7 +27,8 @@ def get_certificate(access_token_path, password):
     return cert_data
 
 
-def get_hostname(access_token_path, password):
+def get_hostname(access_token_path: pathlib.Path | str,
+                 password: str | bytes) -> str:
     """Extract the hostname from an encrypted DCOR access token"""
     cert_data = get_certificate(access_token_path, password)
     with tempfile.TemporaryDirectory(prefix="dcoraid_access_token_") as td:
@@ -41,7 +46,7 @@ def get_hostname(access_token_path, password):
         #
         # Cheers,
         # Paul
-        cert_dict = ssl._ssl._test_decode_cert(str(cfile))
+        cert_dict = ssl._ssl._test_decode_cert(str(cfile))  # type: ignore
     # get the common name
     for ((key, value),) in cert_dict["subject"]:
         if key == "commonName":

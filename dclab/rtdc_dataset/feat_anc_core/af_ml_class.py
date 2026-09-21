@@ -1,9 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
+import numpy.typing as npt
+
 from .ancillary_feature import AncillaryFeature
 
+if TYPE_CHECKING:
+    from ..core import RTDCBase
 
-def get_ml_score_names(mm):
+
+def get_ml_score_names(mm: RTDCBase) -> list[str]:
     """Return a list of all ml_score_??? features"""
     feats = []
     # We cannot loop over mm.features because of infinite recursions
@@ -13,7 +21,7 @@ def get_ml_score_names(mm):
     return sorted(feats)
 
 
-def compute_ml_class(mm, sanity_checks=True):
+def compute_ml_class(mm: RTDCBase, sanity_checks: bool = True) -> npt.NDArray:
     """Compute the most-probable class membership for all events
 
     Parameters
@@ -51,9 +59,9 @@ def compute_ml_class(mm, sanity_checks=True):
     for ii, ft in enumerate(feats):
         if sanity_checks:
             if np.nanmax(mm[ft]) > 1:
-                raise ValueError("Feature '{}' has values > 1!".format(ft))
+                raise ValueError(f"Feature '{ft}' has values > 1!")
             elif np.nanmin(mm[ft]) < 0:
-                raise ValueError("Feature '{}' has values < 0!".format(ft))
+                raise ValueError(f"Feature '{ft}' has values < 0!")
         score_matrix[:, ii] = mm[ft]
 
     # Now compute the maximum for each event. The initial idea was to just
@@ -78,7 +86,7 @@ def compute_ml_class(mm, sanity_checks=True):
     return ml_class
 
 
-def has_ml_scores(mm):
+def has_ml_scores(mm: RTDCBase) -> list[tuple[str, list[str]]]:
     """Check whether the dataset has ml_scores defined"""
     # Return the sorted score names plus Ancillary feature hashes.
     # This will be used to determine the hash of the ml_class feature,
@@ -95,7 +103,7 @@ def has_ml_scores(mm):
     return idlist
 
 
-def register():
+def register() -> None:
     AncillaryFeature(feature_name="ml_class",
                      method=compute_ml_class,
                      req_func=has_ml_scores,

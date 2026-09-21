@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from ...util import hashobj
@@ -6,14 +10,16 @@ from ..filter import Filter
 
 from .mapper import map_indices_root2child, map_indices_child2root
 
+if TYPE_CHECKING:
+    from .base import RTDC_Hierarchy
+
 
 class HierarchyFilterError(BaseException):
     """Used for unexpected filtering operations"""
-    pass
 
 
 class HierarchyFilter(Filter):
-    def __init__(self, rtdc_ds):
+    def __init__(self, rtdc_ds: RTDC_Hierarchy) -> None:
         """A filtering class for RTDC_Hierarchy
 
         This subclass handles manual filters for hierarchy children.
@@ -31,17 +37,21 @@ class HierarchyFilter(Filter):
         - the parent is a hierarchy child as well, or
         - the excluded event is filtered out in the parent.
         """
-        self._man_root_ids = []
-        super(HierarchyFilter, self).__init__(rtdc_ds)
-        self._parent_rtdc_ds = None
-        self._parent_hash = None
+        self._man_root_ids: list[int] = []
+        super().__init__(rtdc_ds)
+        self._parent_rtdc_ds: RTDC_Hierarchy | None = None
+        self._parent_hash: str | None = None
         self.update_parent(rtdc_ds.hparent)
 
     @property
-    def parent_changed(self):
+    def parent_changed(self) -> bool:
+        assert self._parent_rtdc_ds is not None
         return hashobj(self._parent_rtdc_ds.filter.all) != self._parent_hash
 
-    def apply_manual_indices(self, rtdc_ds, manual_indices):
+    def apply_manual_indices(self,
+                             rtdc_ds: RTDC_Hierarchy,
+                             manual_indices: list[int] | np.ndarray
+                             ) -> None:
         """Write to `self.manual`
 
         Write `manual_indices` to the boolean array `self.manual`
@@ -58,7 +68,7 @@ class HierarchyFilter(Filter):
         """
         if self.parent_changed:
             msg = "Cannot apply filter, because parent changed: " \
-                  + "dataset {}. ".format(rtdc_ds) \
+                  + f"dataset {rtdc_ds}. " \
                   + "Run `RTDC_Hierarchy.apply_filter()` first!"
             raise HierarchyFilterError(msg)
         else:
@@ -68,11 +78,11 @@ class HierarchyFilter(Filter):
             if len(cidx):
                 self.manual[cidx] = False
 
-    def reset(self):
-        super(HierarchyFilter, self).reset()
+    def reset(self) -> None:
+        super().reset()
         self._man_root_ids.clear()
 
-    def retrieve_manual_indices(self, rtdc_ds):
+    def retrieve_manual_indices(self, rtdc_ds: RTDC_Hierarchy) -> list[int]:
         """Read from self.manual
 
         Read from the boolean array `self.manual`, index all
@@ -112,13 +122,13 @@ class HierarchyFilter(Filter):
             # all indices previously selected either via
             # - self.manual or
             # - self.apply_manual_indices
-            pall = sorted(list(set(pbool + pold)))
+            pall = sorted(set(pbool + pold))
             # visible indices (only available child indices are returned)
-            pvis_c = map_indices_root2child(child=rtdc_ds,
-                                            root_indices=pall).tolist()
+            pvis_c = map_indices_root2child(
+                child=rtdc_ds, root_indices=pall).tolist()  # type: ignore
             # map visible child indices back to root indices
-            pvis_p = map_indices_child2root(child=rtdc_ds,
-                                            child_indices=pvis_c).tolist()
+            pvis_p = map_indices_child2root(
+                child=rtdc_ds, child_indices=pvis_c).tolist()  # type: ignore
             # hidden indices
             phid = list(set(pall) - set(pvis_p))
             # Why not set `all_idx` to `pall`:
@@ -133,7 +143,7 @@ class HierarchyFilter(Filter):
             self._man_root_ids = sorted(all_idx)
         return self._man_root_ids
 
-    def update_parent(self, parent_rtdc_ds):
+    def update_parent(self, parent_rtdc_ds: RTDC_Hierarchy) -> None:
         # hold reference to rtdc_ds parent
         # (not to its filter, because that is reinstantiated)
         self._parent_rtdc_ds = parent_rtdc_ds

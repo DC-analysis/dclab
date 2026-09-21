@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 from ..feat_basin import Basin
@@ -13,10 +15,10 @@ REGEXP_FULL_DCOR_URL = re.compile(
 
 
 class DCORBasin(Basin):
-    basin_format = "dcor"
-    basin_type = "remote"
+    basin_format = "dcor"  # type: ignore
+    basin_type = "remote"  # type: ignore
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """Access to private and public DCOR resources
 
         Since version 2 of the DCOR data API, all feature data are
@@ -35,13 +37,13 @@ class DCORBasin(Basin):
             https://dcor.mpl.mpg.de/api/3/action/dcserv?
             id=b1404eb5-f661-4920-be79-5ff4e85915d5
         """
-        self._available_verified = None
-        super(DCORBasin, self).__init__(*args, **kwargs)
+        self._available_verified: bool | None = None
+        super().__init__(*args, **kwargs)
 
-    def _load_dataset(self, location, **kwargs):
+    def _load_dataset(self, location: str, **kwargs) -> RTDC_DCOR:
         return RTDC_DCOR(location, **kwargs)
 
-    def is_available(self):
+    def is_available(self) -> bool:
         """Check whether a DCOR resource is available
 
         Notes
@@ -63,11 +65,12 @@ class DCORBasin(Basin):
                     self._available_verified = api.get("valid")
                 except DCORAccessError:
                     self._available_verified = False
+        assert self._available_verified is not None
         return self._available_verified
 
 
-def is_full_dcor_url(string):
+def is_full_dcor_url(string: str) -> bool:
     if not isinstance(string, str):
         return False
     else:
-        return REGEXP_FULL_DCOR_URL.match(string.strip())
+        return bool(REGEXP_FULL_DCOR_URL.match(string.strip()))

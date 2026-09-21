@@ -1,7 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
+import numpy.typing as npt
+
+if TYPE_CHECKING:
+    from .base import RTDC_Hierarchy
 
 
-def map_indices_child2parent(child, child_indices):
+def map_indices_child2parent(child: RTDC_Hierarchy,
+                             child_indices: npt.NDArray | list[int]
+                             ) -> npt.NDArray:
     """Map child RTDCBase event indices to parent RTDCBase
 
     Given a hierarchy child and indices defined for that child,
@@ -36,7 +46,9 @@ def map_indices_child2parent(child, child_indices):
     return parent_indices
 
 
-def map_indices_child2root(child, child_indices):
+def map_indices_child2root(child: RTDC_Hierarchy,
+                           child_indices: npt.NDArray | list[int]
+                           ) -> npt.NDArray:
     """Map RTDC_Hierarchy event indices to root RTDCBase
 
     Like :func:`map_indices_child2parent`, but map the
@@ -66,7 +78,9 @@ def map_indices_child2root(child, child_indices):
     return indices
 
 
-def map_indices_parent2child(child, parent_indices):
+def map_indices_parent2child(child: RTDC_Hierarchy,
+                             parent_indices: npt.NDArray | list[int]
+                             ) -> npt.NDArray:
     """Map parent RTDCBase event indices to RTDC_Hierarchy child
 
     Given a hierarchy child and indices defined for its `child.hparent`,
@@ -96,7 +110,9 @@ def map_indices_parent2child(child, parent_indices):
     return np.where(same)[0]
 
 
-def map_indices_root2child(child, root_indices):
+def map_indices_root2child(child: RTDC_Hierarchy,
+                           root_indices: npt.NDArray | list[int]
+                           ) -> npt.NDArray:
     """Map root RTDCBase event indices to RTDC_Hierarchy child
 
     Like :func:`map_indices_parent2child`, but accepts the
@@ -131,4 +147,4 @@ def map_indices_root2child(child, root_indices):
         # hierarchy tree.
         indices = map_indices_parent2child(child=hp,
                                            parent_indices=indices)
-    return indices
+    return indices  # type: ignore

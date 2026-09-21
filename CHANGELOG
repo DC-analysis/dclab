@@ -8,6 +8,10 @@
    `feat_anc_core.af_basic`, `feat_temp`, `fmt_hdf5.feat_defect`,
    `feat_anc_plugin.plugin_feature`, and `definitions.meta_parse`
    with ruff/pyright
+ - ref: add type hints and cleanup `fmt_hdf5.logs`, `fmt_hierarchy.hfilter`,
+   `fmt_dcor.basin`, `feat_anc_core.af_image_contour`,
+   `fmt_hierarchy.mapper`, `fmt_hdf5.tables`, and `feat_anc_ml`
+   with ruff/flake8/pyright
 0.72.0
  - feat: support reading and writing internal chopped image basin data
  - feat: add `H5Events.iter_chunks` for memory-friendly mask access

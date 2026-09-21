@@ -1,9 +1,12 @@
+from __future__ import annotations
+
+from collections.abc import Callable
 import numbers
 
 from . import feat_logic, meta_const, meta_parse
 
 
-def config_key_exists(section, key):
+def config_key_exists(section: str, key: str) -> bool:
     """Return `True` if the configuration key exists"""
     valid = False
     if section == "user":
@@ -13,8 +16,7 @@ def config_key_exists(section, key):
         valid = True
     elif section == "online_filter":
         if (key.count(",")
-                and (key.endswith("soft limit")
-                     or key.endswith("polygon points"))):
+                and key.endswith(("soft limit", "polygon points"))):
             # "online_filter:area_um,deform soft limit"
             # "online_filter:area_um,deform polygon points"
             f1, f2 = key.split(" ", 1)[0].split(",")
@@ -26,7 +28,7 @@ def config_key_exists(section, key):
     return valid
 
 
-def get_config_value_descr(section, key):
+def get_config_value_descr(section: str, key: str) -> str:
     """Return the description of a config value
 
     Returns `key` if not defined anywhere
@@ -38,8 +40,7 @@ def get_config_value_descr(section, key):
         descr = meta_const.config_descr[section][key]
     elif section == "online_filter":
         if (key.count(",")
-                and (key.endswith("soft limit")
-                     or key.endswith("polygon points"))):
+                and key.endswith(("soft limit", "polygon points"))):
             # "online_filter:area_um,deform soft limit"
             # "online_filter:area_um,deform polygon points"
             f1, f2 = key.split(" ", 1)[0].split(",")
@@ -67,7 +68,7 @@ def get_config_value_descr(section, key):
     return descr
 
 
-def get_config_value_func(section, key):
+def get_config_value_func(section: str, key: str) -> Callable:
     """Return configuration type converter function"""
     func = None
     if section == "user":
@@ -89,7 +90,7 @@ def get_config_value_func(section, key):
         return func
 
 
-def get_config_value_type(section, key):
+def get_config_value_type(section: str, key: str) -> type | None:
     """Return the expected type of a config value
 
     Returns `None` if no type is defined
@@ -105,7 +106,7 @@ def get_config_value_type(section, key):
             typ = meta_parse.func_types[meta_parse.fbool]
         elif key.endswith("polygon points"):
             typ = meta_parse.func_types[meta_parse.f2dfloatarray]
-        elif key.endswith("min") or key.endswith("max"):
+        elif key.endswith(("min", "max")):
             # most-general type is a number
             typ = numbers.Number
     return typ

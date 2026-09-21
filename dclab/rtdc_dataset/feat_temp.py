@@ -3,7 +3,6 @@
 """
 from __future__ import annotations
 
-from typing import Optional
 
 import numpy as np
 
@@ -16,13 +15,15 @@ from .fmt_hierarchy import RTDC_Hierarchy, map_indices_child2root
 _registered_temporary_features = []
 
 
-def deregister_all():
+def deregister_all() -> None:
     """Deregisters all temporary features"""
-    for feat in list(_registered_temporary_features):
+    # Iterate over a copy, since `deregister_temporary_feature` mutates
+    # `_registered_temporary_features`.
+    for feat in list(_registered_temporary_features):  # noqa: PERF101
         deregister_temporary_feature(feat)
 
 
-def deregister_temporary_feature(feature: str):
+def deregister_temporary_feature(feature: str) -> None:
     """Convenience function for deregistering a temporary feature
 
     This method is mostly used during testing. It does not
@@ -36,8 +37,8 @@ def deregister_temporary_feature(feature: str):
 
 
 def register_temporary_feature(feature: str,
-                               label: Optional[str] = None,
-                               is_scalar: bool = True):
+                               label: str | None = None,
+                               is_scalar: bool = True) -> None:
     """Register a new temporary feature
 
     Temporary features are custom features that can be defined ad hoc
@@ -63,7 +64,7 @@ def register_temporary_feature(feature: str,
 
 def set_temporary_feature(rtdc_ds: RTDCBase,
                           feature: str,
-                          data: np.ndarray):
+                          data: np.ndarray) -> None:
     """Set temporary feature data for a dataset
 
     Parameters
@@ -90,7 +91,7 @@ def set_temporary_feature(rtdc_ds: RTDCBase,
     if isinstance(rtdc_ds, RTDC_Hierarchy):
         root_ids = map_indices_child2root(rtdc_ds, np.arange(len(rtdc_ds)))
         root_parent = rtdc_ds.get_root_parent()
-        root_feat_data = np.empty((len(root_parent)))
+        root_feat_data = np.empty(len(root_parent))
         root_feat_data[:] = np.nan
         root_feat_data[root_ids] = data
         set_temporary_feature(root_parent, feature, root_feat_data)

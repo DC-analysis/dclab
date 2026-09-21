@@ -2,6 +2,10 @@
  - ref: add type hints and cleanup `definitions.meta_logic` with ruff
  - ref: add type hints and cleanup `fmt_tdms.exc` and
    `feat_anc_core.af_fl_max_ctc` with ruff
+ - ref: add type hints and cleanup `feat_anc_core.af_emodulus`,
+   `feat_anc_core.af_basic`, `feat_temp`, `fmt_hdf5.feat_defect`,
+   `feat_anc_plugin.plugin_feature`, and `definitions.meta_parse`
+   with ruff/pyright
 0.72.0
  - feat: support reading and writing internal chopped image basin data
  - feat: add `H5Events.iter_chunks` for memory-friendly mask access

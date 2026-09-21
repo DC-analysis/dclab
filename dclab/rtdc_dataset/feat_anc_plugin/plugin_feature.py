@@ -7,7 +7,6 @@ import hashlib
 import importlib
 import pathlib
 import sys
-from typing import List, Optional
 
 from ...definitions import feat_logic
 from ..feat_anc_core import AncillaryFeature
@@ -21,7 +20,7 @@ class PlugInFeature(AncillaryFeature):
     def __init__(self,
                  feature_name: str,
                  info: dict,
-                 plugin_path: Optional[str | pathlib.Path] = None):
+                 plugin_path: str | pathlib.Path | None = None) -> None:
         """A user-defined plugin feature
 
         Parameters
@@ -101,7 +100,7 @@ class PlugInFeature(AncillaryFeature):
         )
 
         # Instantiate the super class
-        super(PlugInFeature, self).__init__(
+        super().__init__(
             feature_name=self.plugin_feature_info["feature name"],
             method=self.plugin_feature_info["method"],
             req_config=self.plugin_feature_info["config required"],
@@ -171,7 +170,7 @@ class PlugInFeature(AncillaryFeature):
 
         return feature_info
 
-    def _sanity_check_original_info(self, original_info: dict):
+    def _sanity_check_original_info(self, original_info: dict) -> None:
         """Various checks on the `original_info` attribute dict
 
         Raises
@@ -251,7 +250,7 @@ def import_plugin_feature_script(
 
 
 def load_plugin_feature(
-        plugin_path: str | pathlib.Path) -> List[PlugInFeature]:
+        plugin_path: str | pathlib.Path) -> list[PlugInFeature]:
     """Find and load PlugInFeature(s) from a user-defined recipe
 
     Parameters
@@ -291,7 +290,7 @@ def load_plugin_feature(
     return plugin_list
 
 
-def remove_all_plugin_features():
+def remove_all_plugin_features() -> None:
     """Convenience function for removing all `PlugInFeature` instances
 
     See Also
@@ -303,7 +302,7 @@ def remove_all_plugin_features():
             remove_plugin_feature(plugin_instance)
 
 
-def remove_plugin_feature(plugin_instance: PlugInFeature):
+def remove_plugin_feature(plugin_instance: PlugInFeature) -> None:
     """Convenience function for removing a `PlugInFeature` instance
 
     Parameters

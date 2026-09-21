@@ -1,14 +1,24 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import numpy.typing as npt
+
 from ... import features
 from .ancillary_feature import AncillaryFeature
 
+if TYPE_CHECKING:
+    from ..core import RTDCBase
 
-def compute_contour(mm):
+
+def compute_contour(
+        mm: RTDCBase) -> npt.NDArray | features.contour.LazyContourList:
     cont = features.contour.get_contour_lazily(mask=mm["mask"])
     return cont
 
 
-def compute_bright(mm):
-    bavg, bsd = features.bright.get_bright(
+def compute_bright(mm: RTDCBase) -> dict[str, float | npt.NDArray]:
+    bavg, bsd = features.bright.get_bright(  # type: ignore
         mask=mm["mask"],
         image=mm["image"],
         ret_data="avg,sd",
@@ -16,44 +26,44 @@ def compute_bright(mm):
     return {"bright_avg": bavg, "bright_sd": bsd}
 
 
-def compute_bright_bc(mm):
-    bavg, bsd = features.bright_bc.get_bright_bc(
+def compute_bright_bc(mm: RTDCBase) -> dict[str, float | npt.NDArray]:
+    bavg, bsd = features.bright_bc.get_bright_bc(  # type: ignore
         mask=mm["mask"],
         image=mm["image"],
         image_bg=mm["image_bg"],
-        bg_off=mm["bg_off"] if "bg_off" in mm else None,
+        bg_off=mm["bg_off"] if "bg_off" in mm else None,  # type: ignore
         ret_data="avg,sd",
         )
     return {"bright_bc_avg": bavg, "bright_bc_sd": bsd}
 
 
-def compute_bright_perc(mm):
+def compute_bright_perc(mm: RTDCBase) -> dict[str, float | npt.NDArray]:
     p10, p90 = features.bright_perc.get_bright_perc(
         mask=mm["mask"],
         image=mm["image"],
         image_bg=mm["image_bg"],
-        bg_off=mm["bg_off"] if "bg_off" in mm else None,
+        bg_off=mm["bg_off"] if "bg_off" in mm else None,  # type: ignore
         )
     return {"bright_perc_10": p10, "bright_perc_90": p90}
 
 
-def compute_inert_ratio_cvx(mm):
+def compute_inert_ratio_cvx(mm: RTDCBase) -> float | npt.NDArray:
     return features.inert_ratio.get_inert_ratio_cvx(cont=mm["contour"])
 
 
-def compute_inert_ratio_prnc(mm):
+def compute_inert_ratio_prnc(mm: RTDCBase) -> float | npt.NDArray:
     return features.inert_ratio.get_inert_ratio_prnc(cont=mm["contour"])
 
 
-def compute_inert_ratio_raw(mm):
+def compute_inert_ratio_raw(mm: RTDCBase) -> float | npt.NDArray:
     return features.inert_ratio.get_inert_ratio_raw(cont=mm["contour"])
 
 
-def compute_tilt(mm):
+def compute_tilt(mm: RTDCBase) -> float | npt.NDArray:
     return features.inert_ratio.get_tilt(cont=mm["contour"])
 
 
-def compute_volume(mm):
+def compute_volume(mm: RTDCBase) -> float | npt.NDArray:
     vol = features.volume.get_volume(
         cont=mm["contour"],
         pos_x=mm["pos_x"],
@@ -62,7 +72,7 @@ def compute_volume(mm):
     return vol
 
 
-def register():
+def register() -> None:
     AncillaryFeature(feature_name="contour",
                      method=compute_contour,
                      req_features=["mask"])

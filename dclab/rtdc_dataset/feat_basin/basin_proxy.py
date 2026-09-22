@@ -58,6 +58,10 @@ class BasinProxy:
             "ignore_basins",
         ]:
             return getattr(self.ds, item)
+        elif item == "config":
+            config = self.ds.config.copy()
+            config["experiment"]["event count"] = len(self.basinmap)
+            return config
         else:
             raise AttributeError(
                 f"BasinProxy does not implement {item}")
@@ -66,10 +70,14 @@ class BasinProxy:
         if feat not in self._features:
             if feat == "contour":
                 feat_obj = BasinProxyContour(feat_obj=self.ds[feat],
-                                             basinmap=self.basinmap)
+                                             basinmap=self.basinmap,
+                                             name=feat,
+                                             )
             else:
                 feat_obj = BasinProxyFeature(feat_obj=self.ds[feat],
-                                             basinmap=self.basinmap)
+                                             basinmap=self.basinmap,
+                                             name=feat,
+                                             )
             self._features[feat] = feat_obj
         return self._features[feat]
 
@@ -78,8 +86,9 @@ class BasinProxy:
 
 
 class BasinProxyContour:
-    def __init__(self, feat_obj, basinmap):
+    def __init__(self, feat_obj, basinmap, name="contour"):
         """Wrap around a contour, mapping it upon data access, no caching"""
+        assert name == "contour"
         self.feat_obj = feat_obj
         self.basinmap = basinmap
         self.is_scalar = False
@@ -106,12 +115,16 @@ class BasinProxyContour:
     def __len__(self):
         return self.shape[0]
 
+    def __repr__(self):
+        return f"<BasinProxyFeature(conour) at {hex(id(self))}>"
+
 
 class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
-    def __init__(self, feat_obj, basinmap):
+    def __init__(self, feat_obj, basinmap, name: str = ""):
         """Wrap around a feature object, mapping it upon data access"""
         self.feat_obj = feat_obj
         self.basinmap = basinmap
+        self._name = name
         self._cache = None
         self._shape = None
         self._size = None
@@ -182,6 +195,28 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
 
     def __len__(self):
         return len(self.basinmap)
+
+    def __repr__(self):
+        return f"<BasinProxyFeature({self._name}) at {hex(id(self))}>"
+
+    def iter_chunks(self, max_size_bytes):
+        if not hasattr(self.feat_obj, "iter_chunks"):
+            raise NotImplementedError(
+                f"`iter_chunks` not implemented for {self}")
+
+        # Fetch a chunk from the wrapped feature to get the desired size.
+        chunk_slice = next(self.feat_obj.iter_chunks(max_size_bytes))
+        extract_size = chunk_slice.stop - chunk_slice.start
+
+        num_iter = self.basinmap.size / extract_size
+        if num_iter != int(num_iter):
+            num_iter = np.ceil(num_iter)
+        num_iter = int(num_iter)
+
+        idx = 0
+        for _ in range(num_iter):
+            yield slice(idx, idx + extract_size)
+            idx += extract_size
 
     def max(self, *args, **kwargs):
         if self.is_scalar:

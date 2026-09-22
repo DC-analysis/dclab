@@ -12,6 +12,7 @@ import pytest
 import dclab
 from dclab import new_dataset, rtdc_dataset
 from dclab.rtdc_dataset import config, rtdc_copy
+from dclab.rtdc_dataset.feat_basin.basin_proxy import BasinProxyFeature
 
 from helper_methods import retrieve_data
 
@@ -581,6 +582,51 @@ def test_mask_iter_chunks():
         assert len(chunks4) == 4  # 13 total events
 
         data4 = np.concatenate([ds0.h5file["events/mask"][sl]
+                                for sl in chunks4])
+        assert np.all(np.array(data4, dtype=bool) == mask[:])
+
+
+def test_mask_iter_chunks_basin_proxy():
+    h5path = retrieve_data("fmt-hdf5_reference_2025.zip")
+
+    # rewrite the mask data in smaller chunks
+    with h5py.File(h5path, "a") as h5:
+        mask = h5["events/mask"][:]
+        del h5["events/mask"]
+        h5["events"].create_dataset(
+            name="mask",
+            data=mask,
+            chunks=(2, 80, 320),
+        )
+
+    basinmap = np.array([0, 2, 2, 4, 10])
+
+    with new_dataset(h5path) as ds0:
+        mask = BasinProxyFeature(
+            feat_obj=ds0["mask"],
+            basinmap=basinmap,
+            name="mask",
+        )
+        assert "mask" in str(mask)
+
+        # sanity check
+        assert mask[:].shape == (5, 80, 320)
+
+        # iterate in very small chunks
+        chunks1 = list(mask.iter_chunks(max_size_bytes=1))
+        assert chunks1[0] == slice(0, 2)
+        assert len(chunks1) == 3  # 5 total events (basinmapped)
+
+        data1 = np.concatenate([ds0.h5file["events/mask"][:][basinmap][sl]
+                                for sl in chunks1])
+        assert np.all(np.array(data1, dtype=bool) == mask[:])
+
+        # iterate in pairs of 4
+        chunks4 = list(mask.iter_chunks(max_size_bytes=320*80*4))
+        assert chunks4[0] == slice(0, 4)
+        assert len(chunks4) == 2  # 5 total events
+
+        data4 = np.concatenate([ds0.h5file["events/mask"][:][basinmap][sl]
                                 for sl in chunks4])
         assert np.all(np.array(data4, dtype=bool) == mask[:])
 

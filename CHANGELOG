@@ -1,4 +1,5 @@
 0.72.1
+ - enh: pass-through `iter_chunks` for `BasinProxyFeature`
  - ref: more general type hints for chop_images
  - ref: add type hints and cleanup `definitions.meta_logic` with ruff
  - ref: add type hints and cleanup `fmt_tdms.exc` and

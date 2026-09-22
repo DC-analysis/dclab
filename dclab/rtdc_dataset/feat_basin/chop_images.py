@@ -13,6 +13,7 @@ from ..import writer
 
 if TYPE_CHECKING:
     from ..core import RTDCBase
+    from .basin_proxy import BasinProxy
 
 
 def check_for_keep(size, shape, dtype):
@@ -175,9 +176,9 @@ def obtain_event_geometry(ds: RTDCBase,
 
 
 def write_chopped_images(
-        ds: RTDCBase,
+        ds: RTDCBase | BasinProxy,
         feat: str,
-        h5_dst: h5py.File,
+        h5_dst: h5py.Group,
         pad_um: float = 1.5,
         bytes_chopped: Synchronized[int] | None = None,
         crop_method: Literal["box", "dilation"] = "dilation",

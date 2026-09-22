@@ -34,13 +34,20 @@ is computed from the feature data `req_features` and the
 configuration metadata `req_config`.
 """
 
+from __future__ import annotations
+
+from collections.abc import Callable
 import hashlib
+from typing import Any, ClassVar, TYPE_CHECKING
 import warnings
 
 import numpy as np
 
 from ...util import obj2bytes
 from ... import definitions as dfn
+
+if TYPE_CHECKING:
+    from ..core import RTDCBase
 
 
 class BadFeatureSizeWarning(UserWarning):
@@ -49,13 +56,19 @@ class BadFeatureSizeWarning(UserWarning):
 
 class AncillaryFeature:
     #: All ancillary features registered
-    features = []
+    features: ClassVar[list[AncillaryFeature]] = []
     #: All feature names registered
-    feature_names = []
+    feature_names: ClassVar[list[str]] = []
 
-    def __init__(self, feature_name, method, req_config=None,
-                 req_features=None, req_func=lambda x: True, priority=0,
-                 data=None, identifier=None):
+    def __init__(self,
+                 feature_name: str,
+                 method: Callable[[RTDCBase], Any],
+                 req_config: list | None = None,
+                 req_features: list[str] | None = None,
+                 req_func: Callable[[RTDCBase], Any] = lambda x: True,
+                 priority: int = 0,
+                 data: Any = None,
+                 identifier: str | None = None) -> None:
         """A data feature that is computed from existing data
 
         Parameters
@@ -122,7 +135,7 @@ class AncillaryFeature:
         AncillaryFeature.features.append(self)
         AncillaryFeature.feature_names.append(feature_name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         repre = " ".join([
             f"<{self.__class__.__name__}",
             f"'{self.feature_name}'",
@@ -133,7 +146,7 @@ class AncillaryFeature:
         return repre
 
     @staticmethod
-    def available_features(rtdc_ds):
+    def available_features(rtdc_ds: RTDCBase) -> dict[str, AncillaryFeature]:
         """Determine available features for an RT-DC dataset
 
         Parameters
@@ -155,7 +168,7 @@ class AncillaryFeature:
         return cols
 
     @staticmethod
-    def get_instances(feature_name):
+    def get_instances(feature_name: str) -> list[AncillaryFeature]:
         """Return all instances that compute `feature_name`"""
         feats = []
         for ft in AncillaryFeature.features:
@@ -164,7 +177,7 @@ class AncillaryFeature:
         return feats
 
     @staticmethod
-    def check_data_size(rtdc_ds, data_dict):
+    def check_data_size(rtdc_ds: RTDCBase, data_dict: dict) -> dict:
         """Check the feature data is the correct size. If it isn't, resize it.
 
         Parameters
@@ -181,29 +194,30 @@ class AncillaryFeature:
             Dictionary with `feature_name` as keys and the correctly resized
             data features as values.
         """
-        for key in data_dict:
-            dsize = len(rtdc_ds) - len(data_dict[key])
+        for key, value in data_dict.items():
+            dsize = len(rtdc_ds) - len(value)
             if dsize > 0:
                 msg = "Growing feature {} in {} by {} to match event number!"
                 warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
                               BadFeatureSizeWarning)
-                data_dict[key] = np.array(data_dict[key], dtype=float)
-                data_dict[key].resize(len(rtdc_ds), refcheck=False)
-                data_dict[key][-dsize:] = np.nan
+                value = np.array(value, dtype=float)
+                value.resize(len(rtdc_ds), refcheck=False)
+                value[-dsize:] = np.nan
+                data_dict[key] = value
             elif dsize < 0:
                 msg = "Shrinking feature {} in {} by {} to match event number!"
                 warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
                               BadFeatureSizeWarning)
-                data_dict[key].resize(len(rtdc_ds), refcheck=False)
-            if isinstance(data_dict[key], np.ndarray):
-                data_dict[key].setflags(write=False)
-            elif isinstance(data_dict[key], list):
-                for item in data_dict[key]:
+                value.resize(len(rtdc_ds), refcheck=False)
+            if isinstance(value, np.ndarray):
+                value.setflags(write=False)
+            elif isinstance(value, list):
+                for item in value:
                     if isinstance(item, np.ndarray):
                         item.setflags(write=False)
         return data_dict
 
-    def compute(self, rtdc_ds):
+    def compute(self, rtdc_ds: RTDCBase) -> dict:
         """Compute the feature with self.method. All ancillary features that
         share the same method will also be populated automatically.
 
@@ -231,7 +245,7 @@ class AncillaryFeature:
             dfn.check_feature_shape(key, data_dict[key])
         return data_dict
 
-    def hash(self, rtdc_ds):
+    def hash(self, rtdc_ds: RTDCBase) -> str:
         """Used for identifying an ancillary computation
 
         The required features, the used configuration keys/values, and
@@ -245,7 +259,7 @@ class AncillaryFeature:
         for sec, keys in self.req_config:
             for key in keys:
                 val = rtdc_ds.config[sec][key]
-                data = "{}:{}={}".format(sec, key, val)
+                data = f"{sec}:{key}={val}"
                 hasher.update(obj2bytes(data))
         # custom requirement function hash
         reqret = self.req_func(rtdc_ds)
@@ -254,7 +268,7 @@ class AncillaryFeature:
             hasher.update(obj2bytes(reqret))
         return hasher.hexdigest()
 
-    def is_available(self, rtdc_ds, verbose=False):
+    def is_available(self, rtdc_ds: RTDCBase, verbose: bool = False) -> bool:
         """Check whether the feature is available
 
         Parameters
@@ -279,14 +293,13 @@ class AncillaryFeature:
             section, keys = item
             if section not in rtdc_ds.config:
                 if verbose:
-                    print("{} not in config".format(section))
+                    print(f"{section} not in config")
                 return False
             else:
                 for key in keys:
                     if key not in rtdc_ds.config[section]:
                         if verbose:
-                            print("{} not in config['{}']".format(key,
-                                                                  section))
+                            print(f"{key} not in config['{section}']")
                         return False
         # Check features
         for col in self.req_features:
@@ -314,7 +327,11 @@ class AncillaryFeature:
             else:
                 # other feature
                 continue
-        # Check user-defined function
-        if not self.req_func(rtdc_ds):
+        # Check user-defined function. Note that we deliberately do not
+        # `return self.req_func(rtdc_ds)` here (as ruff's SIM103 suggests),
+        # because `req_func` may return a non-bool hashable object (used
+        # for caching), which we must normalize to `True` to honor the
+        # `-> bool` contract of this method.
+        if not self.req_func(rtdc_ds):  # noqa: SIM103
             return False
         return True

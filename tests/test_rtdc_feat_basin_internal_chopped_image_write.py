@@ -210,3 +210,40 @@ def test_chopped_image_and_mask():
             # check image data
             assert np.all(ds0["image"][ii][ds0["mask"][ii]]
                           == dsc["image"][ii][dsc["mask"][ii]])
+
+
+def test_chopped_image_features_in_target_not_source():
+    """
+    Chopping images requires the features
+    ["frame", "mask", "size_x", "size_y", "image_bg"].
+    These features do not necessarily have to be in the input file.
+    They can also be in the output file.
+    """
+    h5path = create_fake_dataset(mult_factor=200)
+    h5chop = h5path.with_name("chopped.rtdc")
+
+    # Move the required features to the output file.
+    with h5py.File(h5path, "a") as hin, h5py.File(h5chop, "a") as hout:
+        hout.attrs.update(hin.attrs)
+        hout.require_group("events")
+
+        for feat in ["frame", "mask", "size_x", "size_y", "image_bg"]:
+            hout["events"][feat] = hin["events"][feat][:]
+            del hin["events"][feat]
+
+    # Perform the chopping
+    with new_dataset(h5path) as ds, RTDCWriter(h5chop) as hw:
+        hw.h5file.attrs.update(ds.h5file.attrs)
+        chop_images.write_chopped_images(
+            ds=ds,
+            feat="image",
+            h5_dst=hw.h5file,
+        )
+        hw.store_feature("time", ds["time"])
+
+    with new_dataset(h5path) as ds0, new_dataset(h5chop) as dsc:
+        # make sure all mask data match
+        for ii in range(len(ds0)):
+            # check image data
+            assert np.all(ds0["image"][ii][dsc["mask"][ii]]
+                          == dsc["image"][ii][dsc["mask"][ii]])

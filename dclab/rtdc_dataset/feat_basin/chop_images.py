@@ -8,12 +8,14 @@ import hdf5plugin
 import numpy as np
 from scipy import ndimage
 
+
+from ..fmt_hdf5 import RTDC_HDF5
 from ..import writer
 
 
 if TYPE_CHECKING:
-    from ..core import RTDCBase
     from .basin_proxy import BasinProxy
+    from ..core import RTDCBase
 
 
 def check_for_keep(size, shape, dtype):
@@ -118,6 +120,7 @@ def disk(radius):
 
 
 def obtain_event_geometry(ds: RTDCBase,
+                          av_feats: dict,
                           pad_um: float = 1.5,
                           ) -> np.ndarray:
     """Return a shape array for all events in `ds`
@@ -145,14 +148,14 @@ def obtain_event_geometry(ds: RTDCBase,
 
     # use existing size feature for bounding box
     geometry[:, 0] = np.astype(
-        np.ceil((ds["size_y"] + 2*pad_um) / pixel_size),
+        np.ceil((av_feats["size_y"] + 2*pad_um) / pixel_size),
         np.int64)
     geometry[:, 1] = np.astype(
-        np.ceil((ds["size_x"] + 2*pad_um) / pixel_size),
+        np.ceil((av_feats["size_x"] + 2*pad_um) / pixel_size),
         np.int64)
 
-    for mslice in ds["mask"].iter_chunks(10*1024**2):
-        mask = ds["mask"][mslice]
+    for mslice in av_feats["mask"].iter_chunks(10*1024**2):
+        mask = av_feats["mask"][mslice]
 
         # determine position from mask data
         mask_y = np.count_nonzero(mask, axis=2) > 0
@@ -218,11 +221,22 @@ def write_chopped_images(
     Chopping up the "mask" feature is supported, but discouraged, because
     it is compute intensive and yields only <10MB smaller file sizes.
     """
+    # Assemble required features
+    av_feats = {}
+    h5ev = RTDC_HDF5(h5_dst.file.filename)
+    for ft in ["frame", "mask", "size_x", "size_y", "image_bg"]:
+        if ft in ds:
+            av_feats[ft] = ds[ft]
+        elif ft in h5ev:
+            av_feats[ft] = h5ev[ft]
+        else:
+            raise KeyError(f"Feature {ft} not found in input")
+
     # create output group
     h5_dst_group = h5_dst.require_group(f"/basin_events/{feat}")
 
     # Event geometry (shape and offset)
-    geometry = obtain_event_geometry(ds=ds, pad_um=pad_um)
+    geometry = obtain_event_geometry(ds=ds, av_feats=av_feats, pad_um=pad_um)
     feat_data = ds[feat]
     imshape = ds[feat].shape[1:]
     feat_dtype = feat_data.dtype
@@ -236,13 +250,13 @@ def write_chopped_images(
         h5_feat_dtype = feat_dtype
 
     if feat == "image":
-        bg_data = ds["image_bg"]
+        bg_data = av_feats["image_bg"]
         h5_dst_group.attrs["inverse_background_feature"] = "image_bg"
     else:
         bg_data = None
 
     dilate = crop_method == "dilation"
-    mask_data = ds["mask"]
+    mask_data = av_feats["mask"]
     pixel_size = ds.config["imaging"]["pixel size"]
     # The radius of the disk for dilation is equal to the padding size.
     dilate_structure = disk(int(np.ceil(pad_um / pixel_size)))
@@ -263,7 +277,7 @@ def write_chopped_images(
     # For all other features, add references to the sibling events
     # within one frame.
     if feat != "mask":
-        frame = ds["frame"]
+        frame = av_feats["frame"]
         _, fr_index, fr_counts = np.unique(frame,
                                            return_index=True,
                                            return_counts=True,

@@ -344,6 +344,14 @@ def h5ds_copy(src_loc: h5py.Group,
             if src.shape[0] == 0:
                 # Ignore empty datasets (This sometimes happens with logs).
                 return
+            elif src.chunks is None:
+                # The input dataset does not have chunks defined
+                chunks = RTDCWriter.get_best_nd_chunks(
+                    item_shape=src.shape[1:],
+                    item_dtype=src.dtype
+                    )
+                if chunks[0] > len(src):
+                    chunks = (len(src),) + chunks[1:]
             elif src.chunks and src.chunks[0] > src.shape[0]:
                 # The chunks in the input file are larger than the dataset
                 # shape. So we set the chunks to the shape. Here, we only
@@ -358,6 +366,10 @@ def h5ds_copy(src_loc: h5py.Group,
             else:
                 # original chunk size is fine
                 chunks = src.chunks
+
+            # Make sure chunks are always well-defined.
+            assert chunks is not None
+
             # Variable length strings, compression, and fletcher32 are not
             # a good combination. If we encounter any logs, then we have
             # to write them with fixed-length strings.
@@ -386,11 +398,14 @@ def h5ds_copy(src_loc: h5py.Group,
             elif chunks is None:
                 dst[:] = src[:]
             else:
-                for chunk in src.iter_chunks():
-                    new_chunk = src[chunk]
-                    dst[chunk] = new_chunk
-                    if bytes_written is not None:
-                        bytes_written.value += new_chunk.nbytes
+                # Write to the new dataset in chunks that we defined during
+                # dataset creation.
+                chunk_size = chunks[0]
+                num_chunks = int(np.ceil(len(src) / chunk_size))
+                for ii in range(num_chunks):
+                    ch_slice = slice(chunk_size*ii, chunk_size*(ii+1))
+                    new_chunk = src[ch_slice]
+                    dst[ch_slice] = new_chunk
 
             # Also write all the attributes
             dst.attrs.update(src.attrs)

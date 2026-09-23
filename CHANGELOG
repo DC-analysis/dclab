@@ -1,5 +1,6 @@
 0.72.1
  - fix: `H5Events.iter_chunks` failed for input datasets without chunks
+ - fix: `copier.h5ds_copy` did not necessarily write in correct chunk sizes
  - enh: pass-through `iter_chunks` for `BasinProxyFeature`
  - ref: more general type hints for chop_images
  - ref: add type hints and cleanup `definitions.meta_logic` with ruff

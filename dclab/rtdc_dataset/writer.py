@@ -125,7 +125,8 @@ class RTDCWriter:
             self.close()
 
     @staticmethod
-    def get_best_nd_chunks(item_shape, item_dtype=np.float64):
+    def get_best_nd_chunks(item_shape: tuple[int, ...],
+                           item_dtype: type = np.float64) -> tuple[int, ...]:
         """Return best chunks for HDF5 datasets
 
         Chunking has performance implications. It’s recommended to keep the

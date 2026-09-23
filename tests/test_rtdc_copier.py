@@ -423,6 +423,29 @@ def test_copy_basins_no_basin():
         assert "basinmap0" not in hc["events"]
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_copy_chunks_not_defined():
+    path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
+    path_copy = path.with_name("test_copy.rtdc")
+
+
+    # Remove chunk information from deformation dataset
+    with h5py.File(path, "a") as h5:
+        deform = h5["events/deform"][:]
+        del h5["events/deform"]
+        h5["events/deform"] = deform
+
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5, dst_h5file=hc)
+
+    # Make sure this worked
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["events/deform"])
+        assert is_properly_compressed(hc["events/image"])
+        assert hc["events/deform"].chunks[0] == 5
+
+
 def test_copy_logs():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")

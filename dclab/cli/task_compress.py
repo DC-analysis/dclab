@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import atexit
+import gc
 import pathlib
 import threading
 import warnings
@@ -186,6 +187,10 @@ def compress(
             hw.store_log(name, value)
 
     # Finally, rename temp to out
+    # Collect garbage, a workaround for Windows'
+    # "PermissionError: [WinError 32] The process cannot access the
+    # file because it is being used by another process"
+    gc.collect()
     path_temp.rename(path_out)
 
     if bbk is not None:

@@ -319,17 +319,16 @@ def test_compress_with_online_polygon_filters_real_data():
         )
 
 
-@mock.patch('sys.stdout', new_callable=io.StringIO)
-def test_version(mock_stdout, monkeypatch):
+def test_version(capsys, monkeypatch):
     def sys_exit(status):
         return status
     monkeypatch.setattr(sys, "exit", sys_exit)
-
     monkeypatch.setattr(sys, "argv", ["dclab-compress", "--version"])
 
     parser = cli.compress_parser()
     parser.parse_args()
 
-    stdout_printed = mock_stdout.getvalue()
-    assert stdout_printed.count("dclab-compress")
-    assert stdout_printed.count(dclab.__version__)
+    output = capsys.readouterr().out.rstrip()
+    assert output.count("dclab-compress")
+    assert output.count(dclab.__version__)
+    assert not output.count("usage")

@@ -3,6 +3,7 @@
  - fix: `copier.h5ds_copy` did not necessarily write in correct chunk sizes
  - enh: pass-through `iter_chunks` for `BasinProxyFeature`
  - enh: `write_chopped_images` can use required features from destination file
+ - tests: fix version check
  - ref: more general type hints for chop_images
  - ref: add type hints and cleanup `definitions.meta_logic` with ruff
  - ref: add type hints and cleanup `fmt_tdms.exc` and

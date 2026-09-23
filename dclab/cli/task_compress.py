@@ -138,7 +138,7 @@ def compress(
         paths = [path_in] + list(basin_maps.keys())
         for pp in paths:
             pp_feats = set()
-            with h5py.File(pp) as h5:
+            with h5py.File(pp, locking=False) as h5:
                 for loc in ["events", "basin_events"]:
                     for feat in h5.get(loc, {}):
                         if feat not in features_all:

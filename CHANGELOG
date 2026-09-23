@@ -1,4 +1,6 @@
 0.72.1
+ - feat: CLI `dclab-compress` can now include data from local basin files
+ - fix: migrate CLI to BytBookKeper progress for accurate numbers
  - fix: `H5Events.iter_chunks` failed for input datasets without chunks
  - fix: `copier.h5ds_copy` did not necessarily write in correct chunk sizes
  - enh: pass-through `iter_chunks` for `BasinProxyFeature`

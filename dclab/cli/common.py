@@ -139,24 +139,23 @@ def get_job_info():
     return data
 
 
-def monitor(task, bytes_total, bytes_written, stop_event):
+def monitor(task, byte_book_keeper, stop_event):
+    bbk = byte_book_keeper
+
     prev_progress = ""
 
     while not stop_event.is_set():
-        if bytes_total.value == 0:
-            frac = 0
-        else:
-            frac = bytes_written.value / bytes_total.value
+        frac = bbk.get_progress()
         progress = f"{task} {frac:.0%}"
         if progress != prev_progress:
             prev_progress = progress
             print(progress, end="\r", flush=True)
         time.sleep(.25)
 
-    if bytes_written.value == bytes_total.value != 0:
-        print(f"{task} 100%")
+    if bbk.get_progress() == 1:
+        print(f"{task} 100%", flush=True)
     else:
-        print()
+        print(flush=True)
 
 
 def print_info(string):

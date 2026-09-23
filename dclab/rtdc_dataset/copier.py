@@ -20,6 +20,50 @@ from .fmt_hdf5 import DEFECTIVE_FEATURES, RTDC_HDF5
 from .writer import RTDCWriter
 
 
+class ByteBookKeeper:
+    def __init__(self):
+        """A book keeper for sharing copying state between threads
+
+        This is only process-safe, if all pages are defined before
+        spawning the new subprocesses.
+        """
+        self._book = {}
+
+    def __setitem__(self, page, size):
+        if page in self._book:
+            self._book[page][0].value = size
+        else:
+            self._book[page] = [mp.Value("Q", size), mp.Value("Q", 0)]
+
+    def __getitem__(self, page):
+        return self._book[page]
+
+    def remove(self, page):
+        """Remove a page from the book (e.g. invalid feature)"""
+        self._book.pop(page)
+
+    def update(self, page, total=0, completed=0):
+        """Update an empty book keeping page"""
+        self[page] = total
+        self[page][1].value = completed
+
+    def complete_item(self, page):
+        """Set a page as completed"""
+        self._book[page][1].value = self._book[page][0].value
+
+    def get_total(self):
+        """Return sum of total byte count for all pages"""
+        return sum(page[0].value for page in self._book.values())
+
+    def get_done(self):
+        """Return sum of partial byte count for all pages"""
+        return sum(page[1].value for page in self._book.values())
+
+    def get_progress(self) -> float:
+        """Return total progress in interval [0, 1]"""
+        return self.get_done() / (self.get_total() or 1e6)
+
+
 def rtdc_copy(src_h5file: h5py.Group,
               dst_h5file: h5py.Group,
               features: list[str] | Literal['all', 'scalar', 'none'] = "all",
@@ -27,8 +71,7 @@ def rtdc_copy(src_h5file: h5py.Group,
               include_logs: bool = True,
               include_tables: bool = True,
               meta_prefix: str = "",
-              bytes_total: Synchronized[int] | None = None,
-              bytes_written: Synchronized[int] | None = None,
+              byte_book_keeper: ByteBookKeeper | None = None,
               ):
     """Create a compressed copy of an RT-DC file
 
@@ -51,16 +94,12 @@ def rtdc_copy(src_h5file: h5py.Group,
         Copy the tables from `src_h5file` to `dst_h5file`.
     meta_prefix: str
         Add this prefix to the name of the logs and tables in `dst_h5file`.
-    bytes_total:
-        If specified, will be set to the estimated total size in bytes
-        (uncompressed) that will be written to the new file.
+    byte_book_keeper:
+        If specified, will be used to track the progress of copying features.
         The basin *definitions* are not included due to their variable size.
         Logs are also not included, because the line length may vary.
-    bytes_written:
-        Number of bytes written to the output file during the copying process
     """
-    # copy metadata
-    dst_h5file.attrs.update(src_h5file.attrs)
+    bbk = byte_book_keeper
 
     # identify features in source file
     if "events" in src_h5file:
@@ -84,13 +123,25 @@ def rtdc_copy(src_h5file: h5py.Group,
                          f"or one of 'all', 'scalar' or 'none', got "
                          f"'{features}'")
 
-    feature_iter = list(set(feature_iter))
+    feature_iter = [feat for feat in set(feature_iter) if feature_exists(feat)]
 
-    # copy internal basins
-    basin_feat, basin_bytes = internal_basin_events_copy(
+    # determine the total size of the data that need to be copied
+    if bbk is not None:
+        if include_tables and "tables" in src_h5file:
+            bbk["tables"] = get_size(src_h5file["tables"])
+
+        for feat in feature_iter:
+            for loc in ["events", "basin_events"]:
+                if feat in src_h5file[loc]:
+                    bbk[feat] = get_size(src_h5file[loc][feat])
+                    break
+
+    # copy internal basin data (this will also update the byte_book_keeper)
+    basin_feat = internal_basin_events_copy(
         src_h5file=src_h5file,
         dst_h5file=dst_h5file,
         features=feature_iter,
+        byte_book_keeper=bbk,
     )
 
     # remove features that are already written to the output file
@@ -111,21 +162,10 @@ def rtdc_copy(src_h5file: h5py.Group,
             if feat in feature_iter:
                 feature_iter.remove(feat)
 
-    # determine the total size of the data that need to be copied
-    if bytes_total is not None:
-        if include_tables and "tables" in src_h5file:
-            bytes_total.value += get_size(src_h5file["tables"])
+    # copy metadata (bytes not counted)
+    dst_h5file.attrs.update(src_h5file.attrs)
 
-        for feat in feature_iter + basin_feat:
-            if feat in src_h5file["events"]:
-                bytes_total.value += get_size(src_h5file["events"][feat])
-            elif f"basin_events/{feat}" in src_h5file:
-                bytes_total.value += get_size(src_h5file["basin_events"][feat])
-
-        if bytes_written is not None:
-            bytes_written.value += basin_bytes
-
-    # copy logs
+    # copy logs (bytes not counted)
     if include_logs and "logs" in src_h5file:
         dst_h5file.require_group("logs")
         for l_key in src_h5file["logs"]:
@@ -134,6 +174,12 @@ def rtdc_copy(src_h5file: h5py.Group,
                       dst_loc=dst_h5file["logs"],
                       dst_name=meta_prefix + l_key,
                       recursive=False)
+
+    # copy basin definitions (bytes not counted)
+    if include_basins and "basins" in src_h5file:
+        basin_definition_copy(src_h5file=src_h5file,
+                              dst_h5file=dst_h5file,
+                              features_iter=feature_iter)
 
     # copy tables
     if include_tables and "tables" in src_h5file:
@@ -147,47 +193,42 @@ def rtdc_copy(src_h5file: h5py.Group,
 
         dst_h5file.require_group("tables")
         for tkey in src_h5file["tables"]:
-            h5ds_copy(src_loc=src_h5file["tables"],
-                      src_name=tkey,
-                      dst_loc=dst_h5file["tables"],
-                      dst_name=meta_prefix + tkey,
-                      recursive=False,
-                      bytes_written=bytes_written,
-                      )
-
-    # copy basin definitions
-    if include_basins and "basins" in src_h5file:
-        basin_definition_copy(src_h5file=src_h5file,
-                              dst_h5file=dst_h5file,
-                              features_iter=feature_iter)
+            h5ds_copy(
+                src_loc=src_h5file["tables"],
+                src_name=tkey,
+                dst_loc=dst_h5file["tables"],
+                dst_name=meta_prefix + tkey,
+                recursive=False,
+                bytes_copied=bbk["tables"][1] if bbk is not None else None,
+                )
 
     # copy regular event features
     if feature_iter:
-        dst_h5file.require_group("events")
+        src_events = src_h5file["events"]
+        dst_events = dst_h5file.require_group("events")
         for feat in feature_iter:
-            if not feature_exists(feat):
-                if bytes_total is not None:
-                    bytes_total.value -= get_size(
-                        src_h5file["events"].get(feat))
-                continue
-            elif feat in src_h5file["events"]:
+            if feat in src_events:
                 # Skip all defective features. These are features that
                 # are known to be invalid (e.g. ancillary features that
                 # were computed falsely) and must be recomputed by dclab.
                 if feat in DEFECTIVE_FEATURES:
                     defective = DEFECTIVE_FEATURES[feat](src_h5file)
                     if defective:
-                        if bytes_total is not None:
-                            bytes_total.value -= get_size(
-                                src_h5file["events"].get(feat))
+                        if bbk is not None:
+                            bbk.remove(feat)
+                        # Do not copy this feature
                         continue
 
-                dst = h5ds_copy(src_loc=src_h5file["events"],
-                                src_name=feat,
-                                dst_loc=dst_h5file["events"],
-                                recursive=True,
-                                bytes_written=bytes_written,
-                                )
+                if bbk is not None:
+                    bbk[feat] = get_size(src_events[feat])
+
+                dst = h5ds_copy(
+                    src_loc=src_events,
+                    src_name=feat,
+                    dst_loc=dst_events,
+                    recursive=True,
+                    bytes_copied=bbk[feat][1] if bbk is not None else None,
+                    )
 
                 if scalar_feature_exists(feat):
                     # complement min/max values for all scalar features
@@ -203,14 +244,15 @@ def internal_basin_events_copy(
         src_h5file: h5py.Group,
         dst_h5file: h5py.Group,
         features: list[str],
-        ) -> tuple[list[str], int]:
+        byte_book_keeper: ByteBookKeeper | None = None,
+        ) -> list[str]:
     """Copy internal basin data from the input to the output file
 
     The basin dictionaries are read and only the `basinmap` features
     that are required are copied to the output file.
     """
+    bbk = byte_book_keeper
     basin_feat = []
-    basin_bytes_mp = mp.Value("L")
 
     bn_dicts = RTDC_HDF5.basin_get_dicts_from_h5file(src_h5file)
 
@@ -219,26 +261,39 @@ def internal_basin_events_copy(
             bn_feats = []
             for feat in bn["features"]:
                 if feat in features and f"basin_events/{feat}" in src_h5file:
+                    if bbk is not None:
+                        bbk.update(
+                            page=feat,
+                            total=get_size(src_h5file[f"basin_events/{feat}"]),
+                            completed=0,
+                        )
+                        bytes_copied = bbk[feat][1]
+                    else:
+                        bytes_copied = None
                     bn_feats.append(feat)
                     h5ds_copy(
                         src_loc=src_h5file["basin_events"],
                         src_name=feat,
                         dst_loc=dst_h5file.require_group("basin_events"),
                         dst_name=feat,
-                        bytes_written=basin_bytes_mp,
+                        bytes_copied=bytes_copied,
                         )
+
+            # Complete by copying basinmap features and basin definitions
             if bn_feats:
                 # Note down features that we added
                 basin_feat += bn_feats
                 # Write basinmap feature
                 if bn["mapping"].startswith("basinmap"):
-                    basin_feat.append(bn["mapping"])
+                    feat = bn["mapping"]
+                    basin_feat.append(feat)
+                    if bbk is not None:
+                        bbk[feat] = get_size(src_h5file[f"events/{feat}"])
                     h5ds_copy(
                         src_loc=src_h5file["events"],
-                        src_name=bn["mapping"],
+                        src_name=feat,
                         dst_loc=dst_h5file.require_group("events"),
-                        dst_name=bn["mapping"],
-                        bytes_written=basin_bytes_mp,
+                        bytes_copied=bbk[feat][1] if bbk else None,
                     )
                 # Rewrite basin definition
                 bn["features"] = bn_feats
@@ -248,7 +303,7 @@ def internal_basin_events_copy(
                 if key not in dst_h5file.require_group("basins"):
                     with RTDCWriter(dst_h5file) as hw:
                         hw.write_text(dst_h5file["basins"], key, b_lines)
-    return list(set(basin_feat)), basin_bytes_mp.value
+    return list(set(basin_feat))
 
 
 def basin_definition_copy(src_h5file, dst_h5file, features_iter):
@@ -298,7 +353,7 @@ def h5ds_copy(src_loc: h5py.Group,
               dst_name: str | None = None,
               ensure_compression: bool = True,
               recursive: bool = True,
-              bytes_written: Synchronized[int] | None = None,
+              bytes_copied: Synchronized[int] | None = None,
               ):
     """Copy an HDF5 Dataset from one group to another
 
@@ -319,7 +374,7 @@ def h5ds_copy(src_loc: h5py.Group,
     recursive: bool
         Whether to recurse into HDF5 Groups (this is required e.g.
         for copying the "trace" feature)
-    bytes_written: mp.Value
+    bytes_copied: mp.Value
         A shared :class:`multiprocessing.Value` instance to which
         the number of bytes written is added during the copying process;
         Use this if you would like to track the progress.
@@ -406,6 +461,8 @@ def h5ds_copy(src_loc: h5py.Group,
                     ch_slice = slice(chunk_size*ii, chunk_size*(ii+1))
                     new_chunk = src[ch_slice]
                     dst[ch_slice] = new_chunk
+                    if bytes_copied is not None:
+                        bytes_copied.value += new_chunk.nbytes
 
             # Also write all the attributes
             dst.attrs.update(src.attrs)
@@ -416,8 +473,8 @@ def h5ds_copy(src_loc: h5py.Group,
                           dst_loc=dst_loc.id,
                           dst_name=dst_name.encode(),
                           )
-            if bytes_written is not None:
-                bytes_written.value += src.nbytes
+            if bytes_copied is not None:
+                bytes_copied.value += src.nbytes
 
     elif recursive and isinstance(src, h5py.Group):
         dst_rec = dst_loc.require_group(dst_name)
@@ -428,7 +485,7 @@ def h5ds_copy(src_loc: h5py.Group,
                       dst_loc=dst_rec,
                       ensure_compression=ensure_compression,
                       recursive=recursive,
-                      bytes_written=bytes_written,
+                      bytes_copied=bytes_copied,
                       )
     else:
         raise ValueError(f"The object {src_name} in {src.file} is not "

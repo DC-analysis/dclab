@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import argparse
 import atexit
-import multiprocessing as mp
 import pathlib
 import threading
 
 import h5py
 
-from ..rtdc_dataset import rtdc_copy
+from ..rtdc_dataset.copier import ByteBookKeeper, rtdc_copy
 from .._version import version
 
 from . import common
@@ -72,13 +71,13 @@ def repack(
 
     with h5py.File(path_in, locking=False) as h5, \
             h5py.File(path_temp, "w") as hc:
-        bytes_total = mp.Value("Q")
-        bytes_written = mp.Value("Q")
+
+        bbk = ByteBookKeeper()
         stop_event = threading.Event()
 
         monitor_thread = threading.Thread(
             target=common.monitor,
-            args=("Repack", bytes_total, bytes_written, stop_event),
+            args=("Repack", bbk, stop_event),
             name="Repack",
             daemon=True)
         monitor_thread.start()
@@ -90,8 +89,7 @@ def repack(
                   include_logs=not strip_logs,
                   include_tables=True,
                   meta_prefix="",
-                  bytes_total=bytes_total,
-                  bytes_written=bytes_written,
+                  byte_book_keeper=bbk,
                   )
 
         stop_event.set()

@@ -224,7 +224,18 @@ def write_chopped_images(
     # Assemble required features
     av_feats = {}
     h5ev = RTDC_HDF5(h5_dst.file.filename)
-    for ft in ["frame", "mask", "size_x", "size_y", "image_bg"]:
+    # For general chopping, we need:
+    # - "mask": identify where to chop
+    # - "size_x" / "size_y": image size determination (inferreable from mask)
+    required_features = ["mask", "size_x", "size_y"]
+    # For chopping image data, we need the "image_bg" feature
+    if feat == "image":
+        required_features.append("image_bg")
+    # We don't need the "frame" feature for cropping the mask.
+    if feat != "mask":
+        required_features.append("frame")
+
+    for ft in required_features:
         if ft in ds:
             av_feats[ft] = ds[ft]
         elif ft in h5ev:

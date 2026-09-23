@@ -1,5 +1,3 @@
-import multiprocessing as mp
-
 import hdf5plugin
 import h5py
 import numpy as np
@@ -7,8 +5,9 @@ import pytest
 
 import dclab
 from dclab import new_dataset
-from dclab.rtdc_dataset import is_properly_compressed, rtdc_copy
+from dclab.rtdc_dataset import is_properly_compressed
 from dclab.rtdc_dataset import RTDCWriter
+from dclab.rtdc_dataset.copier import ByteBookKeeper, rtdc_copy
 from dclab.rtdc_dataset.feat_basin.chop_images import write_chopped_images
 
 from helper_methods import retrieve_data
@@ -122,15 +121,13 @@ def test_copy_already_compressed_progress():
         hw.store_feature("image", ds1["image"])
 
         with h5py.File(path_copy, "w") as hc:
-            bytes_total = mp.Value("Q")
-            bytes_written = mp.Value("Q")
+            bbk = ByteBookKeeper()
             rtdc_copy(src_h5file=hw.h5file,
                       dst_h5file=hc,
-                      bytes_total=bytes_total,
-                      bytes_written=bytes_written,
+                      byte_book_keeper=bbk
                       )
-            assert bytes_total.value == 100020
-            assert bytes_written.value == 100020
+            assert bbk.get_total() == 100020
+            assert bbk.get_done() == 100020
 
 
 def test_copy_basins():
@@ -302,8 +299,7 @@ def test_copy_basins_internal_no_scalar_progress(features, size):
 
     # Now the actual tests starts.
     with h5py.File(h5path_small) as src, h5py.File(h5path_out, "a") as dst:
-        bytes_total = mp.Value("Q")
-        bytes_written = mp.Value("Q")
+        bbk = ByteBookKeeper()
 
         rtdc_copy(src_h5file=src,
                   dst_h5file=dst,
@@ -312,12 +308,12 @@ def test_copy_basins_internal_no_scalar_progress(features, size):
                   include_logs=False,
                   include_tables=False,
                   meta_prefix="",
-                  bytes_total=bytes_total,
-                  bytes_written=bytes_written,
+                  byte_book_keeper=bbk
                   )
 
-        assert bytes_total.value == size
-        assert bytes_written.value == size
+        assert bbk.get_total() == size
+        assert bbk.get_done() == size
+        assert bbk.get_progress() == 1
 
 
 def test_copy_basins_mapped():
@@ -428,7 +424,6 @@ def test_copy_basins_no_basin():
 def test_copy_chunks_not_defined():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")
-
 
     # Remove chunk information from deformation dataset
     with h5py.File(path, "a") as h5:
@@ -600,22 +595,23 @@ def test_copy_specified_feature_list_progress():
 
     # copy
     with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
-        bytes_total = mp.Value("Q")
-        bytes_written = mp.Value("Q")
+
+        bbk = ByteBookKeeper()
+
         rtdc_copy(src_h5file=h5,
                   dst_h5file=hc,
                   include_tables=False,
                   include_logs=False,
                   include_basins=False,
                   features=["image", "deform"],
-                  bytes_total=bytes_total,
-                  bytes_written=bytes_written,
+                  byte_book_keeper=bbk,
                   )
 
-        assert bytes_total.value == (
+        assert bbk.get_total() == (
             h5["events/deform"].nbytes + h5["events/image"].nbytes)
-        assert bytes_total.value == 100020
-        assert bytes_written.value == 100020
+        assert bbk.get_total() == 100020
+        assert bbk.get_done() == 100020
+        assert bbk.get_progress() == 1
 
 
 def test_copy_tables():

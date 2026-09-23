@@ -10,6 +10,8 @@ import numpy as np
 from ... import definitions as dfn
 from ...util import copy_if_needed
 
+from ..writer import RTDCWriter
+
 from . import feat_defect
 
 
@@ -148,7 +150,7 @@ class H5MaskEvent:
         # identifier required because "mask" is used for computation
         # of ancillary feature "contour".
         self.identifier = (self.h5dataset.file.filename, self.h5dataset.name)
-        self.dtype = np.dtype(bool)
+        self.dtype = bool
 
     def __array__(self, dtype=np.bool_, copy=copy_if_needed, *args, **kwargs):
         if dtype is not np.uint8:  # [sic!]
@@ -185,16 +187,33 @@ class H5MaskEvent:
         return np.prod(self.shape)
 
     def iter_chunks(self, max_size_bytes=1024**2):
-        """Return slices for chunked data access"""
+        """Return slices for chunked data access
+
+        The actual chunk size used for iteration is a multiple of
+        the HDF5 dataset chunk size. If no chunks are defined in the
+        dataset, a best guess is made.
+        """
         # Extract data in `max_size_bytes` byte chunks
         # Mask images are always chunked so that the entire image is in
         # the chunk. The variable coordinate is event index.
-        chunksize = (np.prod(self.h5dataset.chunks)
-                     * self.h5dataset.dtype.itemsize)
+        if self.h5dataset.chunks is None:
+            # The input file is not chunked. Let's hope there is no
+            # compression. Set a reasonable chunk number.
+            chunks = RTDCWriter.get_best_nd_chunks(
+                item_shape=self.shape[1:],
+                item_dtype=self.h5dataset.dtype,
+                )
+        else:
+            chunks = self.h5dataset.chunks
+
+        chunksize = np.prod(chunks) * self.h5dataset.dtype.itemsize
+
+        # Number of chunks loaded per iteration
         num_chunks = int(np.floor(max_size_bytes / chunksize))
         num_chunks = max(1, num_chunks)
 
-        extract_size = self.h5dataset.chunks[0] * num_chunks
+        # Number of events loaded per iteration
+        extract_size = chunks[0] * num_chunks
 
         idx = 0
         num_iter = self.h5dataset.shape[0] / extract_size

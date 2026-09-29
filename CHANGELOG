@@ -1,27 +1,13 @@
-0.72.1
+0.73.0
  - feat: CLI `dclab-compress` can now include data from local basin files
- - fix: migrate CLI to BytBookKeper progress for accurate numbers
+ - fix: migrate CLI to ByteBookKeeper progress for accurate numbers
  - fix: `H5Events.iter_chunks` failed for input datasets without chunks
  - fix: `copier.h5ds_copy` did not necessarily write in correct chunk sizes
  - enh: pass-through `iter_chunks` for `BasinProxyFeature`
  - enh: `write_chopped_images` can use required features from destination file
  - tests: fix version check
  - ref: more general type hints for chop_images
- - ref: add type hints and cleanup `definitions.meta_logic` with ruff
- - ref: add type hints and cleanup `fmt_tdms.exc` and
-   `feat_anc_core.af_fl_max_ctc` with ruff
- - ref: add type hints and cleanup `feat_anc_core.af_ml_class` and
-   `fmt_dcor.access_token` with ruff/pyright
- - ref: add type hints and cleanup `feat_anc_core.af_emodulus`,
-   `feat_anc_core.af_basic`, `feat_temp`, `fmt_hdf5.feat_defect`,
-   `feat_anc_plugin.plugin_feature`, and `definitions.meta_parse`
-   with ruff/pyright
- - ref: add type hints and cleanup `fmt_hdf5.logs`, `fmt_hierarchy.hfilter`,
-   `fmt_dcor.basin`, `feat_anc_core.af_image_contour`,
-   `fmt_hierarchy.mapper`, `fmt_hdf5.tables`, and `feat_anc_ml`
-   with ruff/flake8/pyright
- - ref: add type hints and cleanup `rtdc_dataset.load`, `lme4.rsetup`,
-   and `feat_anc_core.ancillary_feature` with ruff/flake8/pyright
+ - ref: agent-based type hints and cleanup
 0.72.0
  - feat: support reading and writing internal chopped image basin data
  - feat: add `H5Events.iter_chunks` for memory-friendly mask access

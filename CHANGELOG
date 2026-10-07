@@ -1,3 +1,5 @@
+0.73.1
+ - fix: integer overflow in shape determination for chopped image compression
 0.73.0
  - feat: CLI `dclab-compress` can now include data from local basin files
  - fix: migrate CLI to ByteBookKeeper progress for accurate numbers

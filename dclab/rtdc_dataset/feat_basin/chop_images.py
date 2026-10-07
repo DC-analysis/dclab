@@ -146,18 +146,30 @@ def obtain_event_geometry(ds: RTDCBase,
     shape_y = ds.config["imaging"]["roi size y"]
     shape_x = ds.config["imaging"]["roi size x"]
 
-    # use existing size feature for bounding box
-    geometry[:, 0] = np.astype(
-        np.ceil((av_feats["size_y"] + 2*pad_um) / pixel_size),
-        np.int64)
-    geometry[:, 1] = np.astype(
-        np.ceil((av_feats["size_x"] + 2*pad_um) / pixel_size),
-        np.int64)
+    # use existing size feature for determine the required event shapes
+    # - use np.ceil to avoid cropping too much
+    # - use np.clip to keep the shapes within the ROI
+    geometry[:, 0] = \
+        np.clip(
+            np.astype(
+                np.ceil((av_feats["size_y"] + 2*pad_um) / pixel_size),
+                np.uint64),
+            a_min=1,
+            a_max=shape_y,
+            )
+    geometry[:, 1] = \
+        np.clip(
+            np.astype(
+                np.ceil((av_feats["size_x"] + 2*pad_um) / pixel_size),
+                np.uint64),
+            a_min=1,
+            a_max=shape_x,
+            )
 
     for mslice in av_feats["mask"].iter_chunks(10*1024**2):
         mask = av_feats["mask"][mslice]
 
-        # determine position from mask data
+        # determine offset position from mask data
         mask_y = np.count_nonzero(mask, axis=2) > 0
         start_y = np.argmax(mask_y, axis=1)  # first non-zero value along y
         geometry[mslice, 2] = np.clip(start_y - np.round(pad_um / pixel_size),
@@ -347,9 +359,9 @@ def write_chopped_images(
             for ii in range(chunk_size):
                 ida = cidx_where[idx]
                 shyi, shxi, offy, offx = geometry[ida][:4]
-                if shyi + offy > imshape[0]:
+                if offy + shyi > imshape[0]:
                     offy = imshape[0] - shyi
-                if shxi + offx > imshape[1]:
+                if offx + shxi > imshape[1]:
                     offx = imshape[1] - shxi
                 feat_chop = feat_data[ida][offy:offy+shyi, offx:offx+shxi]
                 if bg_data is not None:

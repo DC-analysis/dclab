@@ -3,6 +3,8 @@ import numpy as np
 
 from dclab import RTDCWriter, new_dataset
 from dclab.rtdc_dataset.feat_basin import chop_images
+from dclab.rtdc_dataset.fmt_dict import RTDC_Dict
+from dclab.rtdc_dataset.fmt_hdf5.events import H5MaskEvent
 
 from helper_methods import retrieve_data
 
@@ -247,3 +249,43 @@ def test_chopped_image_features_in_target_not_source():
             # check image data
             assert np.all(ds0["image"][ii][dsc["mask"][ii]]
                           == dsc["image"][ii][dsc["mask"][ii]])
+
+
+@pytest.mark.parametrize("input,output", [
+    # padding is 1.5 -> size increases by 3, offset is lower rounded
+    ([20, 20, 10, 10], [23, 23, 8, 8]),
+    # lower boundary of image
+    ([20, 20, 60, 10], [23, 23, 57, 8]),
+    # too large
+    ([80, 205, 0, 0], [80, 208, 0, 0]),
+    ([81, 205, 0, 0], [80, 208, 0, 0]),
+    ([81, 205, 1, 0], [80, 208, 0, 0]),
+    ([80, 205, 1, 0], [80, 208, 0, 0]),
+    # below lower boundary of image (suggested shape is incorrect)
+    ([21, 20, 60, 10], [24, 23, 56, 8]),
+])
+def test_chopped_image_obtain_event_geometry(input, output):
+
+    sy, sx, oy, ox = input
+    mask = np.zeros((80, 320), dtype=bool)
+    mask[oy:oy+sy, ox:ox+sx] = True
+
+    with h5py.File("memfile-dclab-test", "w",
+                   driver="core", backing_store=False) as h5:
+        maskds = h5.create_dataset(name="mask", data=mask[np.newaxis, :, :])
+        mask_feat = H5MaskEvent(maskds)
+
+        av_feats = {
+            "size_x": np.array([sx], dtype=float),
+            "size_y": np.array([sy], dtype=float),
+            "mask": mask_feat,
+        }
+
+        ds = RTDC_Dict(av_feats)
+        ds.config["imaging"]["pixel size"] = 1
+        ds.config["imaging"]["roi size x"] = 320
+        ds.config["imaging"]["roi size y"] = 80
+
+        # size y, size x, offset y, offset x
+        geom = chop_images.obtain_event_geometry(ds=ds, av_feats=av_feats)
+        assert np.all(geom[0] == output)

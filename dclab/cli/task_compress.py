@@ -136,6 +136,7 @@ def compress(
         # Which features are taken from which file?
         features_all = set()
         pp_features = {}
+        # The input file `path_in` takes metadata precedence in `rtdc_copy`
         paths = [path_in] + list(basin_maps.keys())
         for pp in paths:
             pp_feats = set()
@@ -271,9 +272,9 @@ def compress_input(h5_in: h5py.File,
                   )
     else:
         # Instantiate an RTDCBase object. This is more time-consuming.
-        # Note that we don't write logs, tables, or basins when `basinmap` is
-        # defined, because in this case we are only interested in the
-        # feature data.
+        # Note that we don't write logs, tables, metadata, or basins when
+        # `basinmap` is defined, because in this case we are only interested
+        # in the feature data.
         assert not include_other_data, "basin should not write logs, etc."
         assert basinmap.dtype.kind in "iu", "must be integer array"
         with new_dataset(h5_in.filename) as ds, RTDCWriter(h5_out) as hw:

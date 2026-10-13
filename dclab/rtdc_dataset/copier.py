@@ -162,8 +162,11 @@ def rtdc_copy(src_h5file: h5py.Group,
             if feat in feature_iter:
                 feature_iter.remove(feat)
 
-    # copy metadata (bytes not counted)
-    dst_h5file.attrs.update(src_h5file.attrs)
+    # copy metadata (bytes not counted); existing metadata in the
+    # destination take precedence (e.g. when combining basin files)
+    for key, value in src_h5file.attrs.items():
+        if key not in dst_h5file.attrs:
+            dst_h5file.attrs[key] = value
 
     # copy logs (bytes not counted)
     if include_logs and "logs" in src_h5file:

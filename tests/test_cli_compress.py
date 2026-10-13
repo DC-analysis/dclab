@@ -259,6 +259,54 @@ def test_compress_basin_invalid_measurement_identifier():
                      )
 
 
+def test_compress_basin_input_metadata_precedence_control():
+    """Metadata from the dcn file takes precedence
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_2 = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+
+    # Fake basin file
+    with h5py.File(h5path, "a") as src, RTDCWriter(h5path_2) as hw:
+        # modify sample identifier in basin file (should not get copied)
+        src.attrs["experiment:sample"] = "raw sample"
+        hw.h5file.attrs["experiment:sample"] = "processed sample"
+        # matching identifier
+        src.attrs["experiment:run identifier"] = "hans"
+        hw.h5file.attrs["experiment:run identifier"] = "hans"
+        # remove features from referrer
+        del hw.h5file["events/area_um"]
+        del hw.h5file["events/image"]
+        # add basin to referrer
+        hw.store_basin(basin_name="example basin",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[str(h5path)],
+                       basin_descr="an example test basin",
+                       verify=True,
+                       )
+
+    # sanity check
+    with new_dataset(h5path) as ds:
+        assert len(ds.basins) == 0
+        assert "image" in ds
+        assert ds.config["experiment"]["sample"] == "raw sample"
+
+    with new_dataset(h5path_2) as ds:
+        assert len(ds.basins) == 1
+        assert "image" in ds
+        assert ds.config["experiment"]["sample"] == "processed sample"
+
+    path_out = h5path.with_name("out.rtdc")
+    cli.compress(path_in=h5path_2,
+                 path_out=path_out,
+                 basin_input=[h5path]
+                 )
+    with new_dataset(path_out) as ds:
+        assert "image" in ds.features_innate
+        assert "area_um" in ds.features_innate
+        assert ds.config["experiment"]["sample"] == "processed sample"
+
+
 def test_compress_basin_valid_control():
     """If a basin is specified that is not actually a basin
     """

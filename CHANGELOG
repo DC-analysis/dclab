@@ -1,3 +1,5 @@
+0.73.2
+ - fix: `dclab-compress` metadata of basin overrides input with "same" mapping
 0.73.1
  - fix: integer overflow in shape determination for chopped image compression
 0.73.0

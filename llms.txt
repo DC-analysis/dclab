@@ -1,0 +1,272 @@
+# llms.txt — notes for LLM agents refactoring dclab
+
+This file captures what was learned while running a series of small PRs that
+added type hints to previously-untyped modules and cleaned them up with
+ruff/flake8/pyright. It exists so a future agent (or the same one, next
+session) doesn't have to re-learn it. Update this file as you learn more —
+don't let it go stale.
+
+## Scope and PR hygiene
+
+- Keep each PR small (roughly 1-8 files, agreed with the maintainer per
+  batch). Pick files oldest-first by `git log -1 --format=%ai -- <file>`,
+  skipping:
+  - `dclab/external/*` — vendored third-party code, never touch it.
+  - `dclab/rtdc_dataset/fmt_tdms/*` — deferred separately (large, complex,
+    excluded by explicit request).
+  - `dclab/_version.py` — generated, has a header saying not to edit it.
+  - Bare `__init__.py` files that only do `from .foo import Bar` re-exports
+    with no function/class definitions of their own — there is nothing to
+    type-hint and they are already ruff/flake8-clean. Don't pad a batch with
+    these; skip them and say so in the PR description.
+- Before starting a new batch: `git checkout master`,
+  `git fetch upstream`, `git merge --ff-only upstream/master` — the
+  previous PR may have merged since you last looked, and basing a new
+  branch on a stale master causes a CHANGELOG conflict (see below).
+- One new branch per batch, off current master. Add a CHANGELOG entry
+  under the current unreleased version header (top of file) describing
+  which modules were touched, following the existing one-line-per-PR style.
+  If you rebase onto a master that already has other PRs' CHANGELOG
+  entries, resolve the conflict by keeping *both* entries in the order the
+  underlying commits were authored — don't drop either one.
+- No behavioral changes. If a mechanical fix (ruff autofix, a "simplify"
+  suggestion) *would* change behavior, don't apply it blindly — see
+  "ruff findings that look safe but aren't" below.
+
+## Type-hint patterns specific to this codebase
+
+- Add `from __future__ import annotations` when using `X | None` /
+  `list[X]` syntax (this codebase mixes old and new style; new code should
+  use the modern syntax).
+- Avoid circular imports with the established `TYPE_CHECKING` pattern, used
+  everywhere in already-typed files (`core.py`, `chop_images.py`,
+  `basin_base.py`, ...):
+
+  ```python
+  from typing import TYPE_CHECKING
+  if TYPE_CHECKING:
+      from ..core import RTDCBase   # or wherever the real class lives
+  ```
+
+  This is safe even when there *is* a real circular import at runtime
+  (e.g. `core.py` imports `feat_anc_core`, which imports a module that
+  wants to type-hint `RTDCBase`) — the import is never executed at
+  runtime, only read by the type checker.
+- `mm` / `rtdc_ds` parameters across `feat_anc_core`, `feat_anc_ml`,
+  `fmt_hierarchy`, etc. are almost always `RTDCBase` (or a specific
+  subclass like `RTDC_Hierarchy`, `RTDC_TDMS` — check what's actually
+  passed at the call site, e.g. `ImageColumn(self)` inside `RTDC_TDMS`
+  means the parameter should be typed `RTDC_TDMS`, not the more generic
+  `RTDCBase`, if the code accesses TDMS-only attributes like `_fdir`/`_mid`).
+- Ancillary feature `method`/`req_func` callbacks
+  (`AncillaryFeature.__init__`) are genuinely heterogeneous across call
+  sites (some return `npt.NDArray`, some a `dict`, some a `list`). Type
+  them as `Callable[[RTDCBase], Any]` rather than something narrower —
+  narrowing here breaks already-typed call sites elsewhere in the tree.
+- Mutable class-level attributes meant to be shared across all instances
+  (e.g. `AncillaryFeature.features: list[...] = []`, a class-wide
+  registry) should be annotated `ClassVar[list[...]]` — plain
+  `list[...] = []` trips ruff's `RUF012` and is genuinely ambiguous
+  without it.
+- h5py: `h5py.Group.__getitem__` / `.get()` return a wide union
+  (`Group | Dataset | Datatype | ...`) that pyright enforces strictly.
+  Typing a parameter as `h5py.Group` is *correct* and matches the existing
+  convention (see `copier.py`'s `get_size(h5_obj: h5py.Group | ...)`), but
+  it *will* surface pyright errors on code that indexes/iterates the
+  group without an `isinstance` check first. **Do not paper over these
+  with `# type: ignore`** (this was explicitly requested against). Options
+  that were used successfully instead:
+  - Split a compound boolean expression into named intermediate variables
+    (`has_frame = "frame" in h5["events"]`) — doesn't fix the typing
+    issue by itself, but keeping the h5py access minimal makes it easier
+    to reason about; combine with the next option.
+  - Prefer not to lean on the exact wide-union return of `Group[...]`
+    where you can restructure to avoid the ambiguous access entirely.
+  - If a genuine fix isn't practical within the PR's scope, say so
+    explicitly in the PR description rather than silently suppressing.
+- Windows-only stdlib attributes (`subprocess.STARTUPINFO`,
+  `STARTF_USESHOWWINDOW`) are defined in typeshed inside
+  `if sys.platform == "win32":`. Guard the runtime code the same way
+  (`if sys.platform == "win32":`) instead of `hasattr(sp, "STARTUPINFO")`
+  — pyright specifically narrows on `sys.platform` checks (it's the same
+  pattern typeshed itself uses), so this resolves
+  `reportAttributeAccessIssue` with a *more* precise, no-suppression fix.
+  `hasattr()` does not get this treatment.
+- Plain boolean-returning helper functions (`is_dcor_url`, `is_http_url`,
+  `is_s3_url`, ... — none annotated `TypeGuard[str]`) do **not** narrow
+  the caller's type for pyright, even though they do an `isinstance`
+  check internally. If downstream code needs `data` narrowed to `str`
+  after such a call, add an explicit `isinstance(data, str) and
+  some_predicate(data)` guard (or reorder branches so a real
+  `isinstance` check comes first) rather than reaching for
+  `# type: ignore`. This was the fix for `rtdc_dataset/load.py`.
+- A `for` loop that provably always executes at least once (e.g. it
+  iterates a list that was seeded with the input itself,
+  `hierarchy = [child]`) still gets treated by pyright as "might not
+  execute" for narrowing purposes. An `assert x is not None` right
+  before the `return` (or `# type: ignore` on that one line, if an
+  assert isn't practical) is the usual fix — this is a known pyright
+  limitation, not a bug in the code.
+- Overriding an abstract `@property` with a plain class attribute
+  (`class DCORBasin(Basin): basin_format = "dcor"` where the base class
+  declares `basin_format` as `@property @abc.abstractmethod`) is a
+  working, idiomatic pattern already used elsewhere in this codebase
+  (`HDF5Basin` in `fmt_hdf5/basin.py`). pyright flags it as
+  `reportIncompatibleMethodOverride` regardless. Fixing it "properly"
+  means changing the base class, which is usually out of scope for a
+  small cleanup PR — a `# type: ignore` here is reasonable *if you say so
+  explicitly in the PR description*; it is not the same kind of
+  suppression as papering over a real h5py typing gap.
+
+## ruff findings that look safe but aren't — always verify, don't trust blindly
+
+Several ruff "fixes" (including autofixes with `--fix`) are outright wrong
+for specific code, or silently change behavior. Always read *why* the
+existing code is the way it is before applying a suggestion, and **rerun
+the test suite after every ruff autofix, not just after manual edits.**
+
+- `PERF101` ("don't cast to `list()` before iterating") — **caused a real
+  bug** when applied here: `for feat in list(_registered_temporary_features):
+  deregister_temporary_feature(feat)` where the loop body calls
+  `.remove()` on that same list. Removing the `list()` copy makes the
+  loop skip every other element (classic mutate-while-iterating bug).
+  Caught only because the test suite was rerun after the autofix. If a
+  `list(...)` / `dict(...)` / `set(...)` cast looks redundant, check
+  whether the loop body mutates the underlying collection before removing
+  it. If you keep the cast, silence the rule with a `# noqa: PERF101` and
+  a one-line comment explaining why, not by leaving it flagged.
+- `SIM401` ("use `mm.get(key, default)` instead of
+  `mm[key] if key in mm else default`") — **wrong** for anything that
+  isn't a real `dict`/`Mapping`. `RTDCBase` defines `__contains__` and
+  `__getitem__` but has no `.get()` method; applying this "simplification"
+  would raise `AttributeError` at runtime. Check the target class's
+  actual API (`grep -n "def get\b"` on the class) before applying.
+- `TRY004` ("raise `TypeError` instead of `ValueError` for a type check")
+  — **wrong** if any test asserts the specific exception type/message,
+  e.g. `pytest.raises(ValueError, match="must be a dict")`. Grep the test
+  suite for `pytest.raises(ValueError` / the exact message before
+  applying; if tests pin the type, leave the exception as-is and don't
+  "fix" the lint finding — this is a real, deliberate part of the public
+  API's contract, not a mistake.
+- `SIM103` ("replace `if not X: return False`; `return True` with
+  `return X`") — **wrong** if `X`'s runtime return type is wider than
+  `bool` and the enclosing function is typed (or documented) to always
+  return a strict `bool`. Example: `AncillaryFeature.is_available`'s
+  `req_func` callback may return a non-bool hashable object used for
+  cache-key purposes (see its docstring); collapsing the check would leak
+  that object out through a `-> bool` method. Keep the explicit
+  `if/return False; return True` and silence with `# noqa: SIM103` plus a
+  comment, don't apply the suggestion.
+- Ruff's *default* rule selection is not the same as this repo's actual
+  CI linter. This project's CI runs plain `flake8 --exclude _version.py .`
+  — flake8 checks pycodestyle continuation-line rules (`E127`, `E124`,
+  `E128`, ...) that ruff's default rule set does **not** enable. A file
+  that passes `ruff check` can still fail CI on a badly-indented
+  multi-line function signature. **Always run flake8 too, matching the
+  installed CI version** (`uvx flake8` — check `pyproject.toml`/CI config
+  for the pinned version if in doubt), on every file you touch, and
+  ideally on the whole repo (`flake8 --exclude _version.py .`) before
+  pushing, to make sure you haven't introduced anything new.
+
+## flake8 continuation-line indentation — don't hand-count, verify
+
+When wrapping a function signature across multiple lines, flake8's
+"visual indent" rule requires the continuation lines to align exactly with
+the column right after the opening `(`. Manually counting characters is
+error-prone (got it wrong more than once this session, by one space).
+**Verify with `flake8` immediately after writing any multi-line
+signature** — don't trust the count and move on. If flake8 flags
+`E127`/`E124`, adjust the indent by the exact number of columns it
+reports and re-check; do not guess twice.
+
+Example, correct visual indent:
+
+```python
+def apply_manual_indices(self,
+                         rtdc_ds: RTDC_Hierarchy,
+                         manual_indices: list[int] | np.ndarray
+                         ) -> None:
+```
+
+(Here `rtdc_ds` lines up with where `self` started after the `(`.)
+
+## Safe, mechanical ruff fixes (generally fine to apply as-is)
+
+These showed up repeatedly and were safe every time — apply them, but
+still rerun tests once per file/PR as a sanity check:
+
+- `UP032` — `.format()` / `%` → f-strings.
+- `UP008` — `super(Cls, self)` → `super()`.
+- `UP006` / `UP045` — `typing.List`/`typing.Optional[X]` →
+  `list`/`X | None`.
+- `PIE790` — drop a redundant `pass` after a docstring-only class/function
+  body.
+- `PIE810` — merge `x.endswith(a) or x.endswith(b)` into
+  `x.endswith((a, b))`.
+- `C414` — drop a redundant `list(...)` inside `sorted(...)`.
+- `PLC0206` — `for k in d: ... d[k] ...` → `for k, v in d.items(): ...`.
+  (Do this carefully if the loop body reassigns `d[k]` — keep a local
+  `value` variable in sync with the dict, see
+  `AncillaryFeature.check_data_size` for a worked example.)
+- `UP028` — `for x in y: yield x` → `yield from y`.
+- `PLW0120` — `for`/`else` with no `break` in the loop body: the `else`
+  is redundant noise (it always runs unless the function already
+  returned), safe to remove and dedent.
+
+## CI signal vs. noise
+
+- A single flaky test failure on one matrix leg
+  (`test_umbrella_cache_disk_store_hybrid`, a hard-coded timing
+  assertion) shows up repeatedly on Windows CI runners under load. It is
+  unrelated to typing/cleanup changes — confirm by checking whether the
+  same test fails against unmodified `master`, or whether other PRs in
+  this same series hit the identical failure. Don't chase it.
+- `codecov/patch` and `codecov/project` failing does not necessarily mean
+  the diff is undertested. Check the codecov bot's PR comment
+  (`gh api repos/<org>/<repo>/issues/<pr>/comments --jq '.[] | select(.user.login | test("codecov")) | .body'`)
+  for a line like "HEAD has N uploads less than BASE" — that means some
+  CI matrix legs failed to upload their coverage report at all (usually
+  from an unrelated flake), which craters the reported project-wide
+  number even though every actual build/test job passed. Verify by
+  checking that all non-codecov checks are green before worrying about
+  a coverage delta.
+- A full local `pytest tests/` run in this environment can produce
+  hundreds of unrelated `OSError: [Errno 122] Disk quota exceeded`
+  failures depending on the sandbox's `/tmp` quota at the time. Prefer
+  running the targeted test files for the modules you touched
+  (`pytest tests/test_rtdc_fmt_hdf5.py tests/test_rtdc_feat_anc_core.py ...`)
+  over a full-suite run when investigating whether *your* change broke
+  something.
+
+## Tooling workarounds used this session (environment-specific, may not
+## apply to you — but the underlying idea is reusable)
+
+- When the sandboxed `Bash` tool was returning `exit 1`/`128` with no
+  output for an entire session (confirmed unrelated to the command's own
+  exit code — `cmd || echo "ERROR"` still came back empty), the
+  `mcp__terminal__run_in_terminal` / `read_terminal` tools were the
+  working fallback. Two things to know about them:
+  - `run_in_terminal` always opens a **new** terminal tab per call, and
+    this session had a hard cap of 6 open tabs; there is no tool
+    available to close a tab from the agent side, only the user can close
+    them from their UI.
+  - `read_terminal` on an **existing** `tab_id` does *not* count against
+    that cap — only *new* `run_in_terminal` calls do. So: batch as many
+    commands as possible into one `run_in_terminal` call (chain with
+    `&&`), then poll with repeated `read_terminal` calls on that same
+    `tab_id`.
+  - Best fix found: start a detached `screen` session that logs to a
+    file (`screen -dmS work -L -Logfile /path/to/log.txt <command or
+    script>`), then read that log file with the plain `Read` tool. This
+    burns exactly one terminal tab for an arbitrary amount of
+    multi-step or long-running diagnostic work, since `Read` doesn't
+    touch the terminal-tab budget at all. Useful for polling CI status,
+    running multi-command investigations, etc. Avoid putting characters
+    outside printable ASCII (e.g. the ✓/✗ unicode the `gh` CLI prints)
+    directly in a `run_in_terminal` command string — write the command to
+    a script file first if it needs those.
+- Multi-line commit messages / PR bodies can't be passed inline to
+  `run_in_terminal` (single-line only) — write them to a temp file (e.g.
+  under `.git/`, which is never itself version-controlled) and use
+  `git commit -F <file>` / `gh pr create --body-file <file>`, then delete
+  the temp file.

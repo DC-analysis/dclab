@@ -1,3 +1,6 @@
+0.73.3
+ - fix: "setup:version info" not inherited in `cli-compress` with internal
+   basins and `--crop-event-images`
 0.73.2
  - fix: `dclab-compress` metadata of basin overrides input with "same" mapping
 0.73.1

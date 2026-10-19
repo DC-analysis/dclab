@@ -453,6 +453,28 @@ def test_compress_chopped():
             assert np.all(ds0["image"][ii][mask] == dsc["image"][ii][mask])
 
 
+def test_compress_chopped_keep_software_version():
+    h5path = retrieve_data("fmt-hdf5_reference_2025.zip")
+    path_out = h5path.with_name("compressed.rtdc")
+
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:software version"] = "bald 1.4.5"
+
+    bbk = ByteBookKeeper()
+    cli.compress(path_in=h5path,
+                 path_out=path_out,
+                 crop_event_images=True,
+                 byte_book_keeper=bbk,
+                 )
+    assert bbk.get_progress() == 1
+
+    with dclab.new_dataset(path_out) as ds:
+        assert (
+            ds.config["setup"]["software version"]
+            == f"bald 1.4.5 | dclab {dclab.__version__}"
+        )
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_compress_log_md5_5m():
@@ -592,6 +614,60 @@ def test_compress_with_basin_mapped_and_chopped(basinmap):
 
         assert np.all(ds1["deform"][:] == ds0["deform"][basinmap])
         assert np.all(ds1["mask"][:] == ds0["mask"][:][basinmap])
+
+
+def test_compress_with_basin_mapped_and_chopped_keep_version():
+    path = retrieve_data("fmt-hdf5_reference_2025.zip")
+
+    path_referrer = path.with_name("level1.rtdc")
+    basinmap = np.array([1, 3, 4], dtype=np.int64)
+
+    # create metadata-only file that links to basin `path`
+    with (dclab.new_dataset(path) as ds0,
+          dclab.RTDCWriter(path_referrer) as hw1):
+        hw1.store_metadata(ds0.config.as_dict(pop_filtering=True))
+        hw1.store_basin(basin_name="level1",
+                        basin_type="file",
+                        basin_format="hdf5",
+                        basin_locs=[path],
+                        basin_map=basinmap
+                        )
+        # add an internal basin
+        hw1.store_basin(basin_name="internal_test",
+                        basin_type="internal",
+                        basin_format="hdf5",
+                        basin_locs=["basin_events"],
+                        basin_feats=["userdef1"],
+                        internal_data={"userdef1": np.array([1.2])},
+                        basin_map=np.zeros(len(basinmap)),
+                        )
+
+    with h5py.File(path_referrer, "a") as h5:
+        # add custom software version
+        h5.attrs["setup:software version"] = "bald 1.4.5 | dclab 0.66.6"
+
+    with h5py.File(path, "a") as h5:
+        # add custom software version
+        h5.attrs["setup:software version"] = "bald 1.4.5"
+
+    # Compress with basins
+    path_comp = path.with_name("compressed.rtdc")
+
+    bbk = ByteBookKeeper()
+    cli.compress(path_in=path_referrer,
+                 path_out=path_comp,
+                 basin_input=[path],
+                 crop_event_images=True,
+                 byte_book_keeper=bbk,
+                 )
+    assert bbk.get_progress() == 1
+
+    # Checks compressed file
+    with dclab.new_dataset(path_comp) as ds:
+        assert (
+            ds.config["setup"]["software version"]
+            == f"bald 1.4.5 | dclab 0.66.6 | dclab {dclab.__version__}"
+        )
 
 
 def test_compress_with_logs():

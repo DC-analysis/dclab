@@ -99,6 +99,12 @@ def rtdc_copy(src_h5file: h5py.Group,
         The basin *definitions* are not included due to their variable size.
         Logs are also not included, because the line length may vary.
     """
+    # copy metadata (bytes not counted); existing metadata in the
+    # destination take precedence (e.g. when combining basin files)
+    for key, value in src_h5file.attrs.items():
+        if key not in dst_h5file.attrs:
+            dst_h5file.attrs[key] = value
+
     bbk = byte_book_keeper
 
     # identify features in source file
@@ -161,12 +167,6 @@ def rtdc_copy(src_h5file: h5py.Group,
         for feat in src_basin_feats:
             if feat in feature_iter:
                 feature_iter.remove(feat)
-
-    # copy metadata (bytes not counted); existing metadata in the
-    # destination take precedence (e.g. when combining basin files)
-    for key, value in src_h5file.attrs.items():
-        if key not in dst_h5file.attrs:
-            dst_h5file.attrs[key] = value
 
     # copy logs (bytes not counted)
     if include_logs and "logs" in src_h5file:

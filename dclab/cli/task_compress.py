@@ -155,7 +155,6 @@ def compress(
         # Start with the actual compression
         with h5py.File(path_temp, "w") as h5_out:
             for pp in paths:
-                print(pp.name, h5_out.attrs.get("setup:software version"))
                 with h5py.File(pp, locking=False) as h5_in:
                     compress_input(
                         h5_in=h5_in,

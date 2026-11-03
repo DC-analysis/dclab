@@ -319,7 +319,18 @@ def write_chopped_images(
 
     compression_kwargs = hdf5plugin.Zstd(clevel=5)
 
-    # Prepare each cluster for writing
+    # In an initial approach, the clusters were written sequentially.
+    # This had the disadvantage that chunked data needed to be read
+    # multiple times (since cluster data are interleaved in the input file)
+    # which was slow, especially for compressed data.
+    # In the current approach, we create dictionaries for all clusters
+    # and write full chunks to the output file. The memory overhead
+    # should be negligible.
+    cluster_cache = {}
+    cluster_chunks = {}
+    cluster_datasets = {}
+
+    # Prepare all clusters for writing
     for cid in range(1, num_clusters + 1):
         cidx = clusters == cid
         cidx_where = np.where(cidx)[0]
@@ -330,7 +341,6 @@ def write_chopped_images(
             item_shape=(shy, shx), item_dtype=feat_dtype)[0]
         num_events = len(cidx_where)
         chunk_size_opt = min(chunk_size_opt, num_events)
-        num_chunks = int(np.ceil(num_events / chunk_size_opt))
 
         idx = 0  # enumerates events within cluster
 
@@ -346,59 +356,73 @@ def write_chopped_images(
         dset.attrs.create('IMAGE_VERSION', np.bytes_('1.2'))
         dset.attrs.create('IMAGE_SUBCLASS', np.bytes_('IMAGE_GRAYSCALE'))
 
-        for _ in range(num_chunks):
-            # assemble a chunk
-            chunk_size = min(chunk_size_opt, num_events - idx)
-            chunk_data = np.zeros((chunk_size, shy, shx), dtype=h5_feat_dtype)
-            if dilate:
-                # prepare mask data array for dilation
-                chunk_mask = np.zeros((chunk_size, shy, shx), dtype=bool)
-            else:
-                chunk_mask = None
-
-            for ii in range(chunk_size):
-                ida = cidx_where[idx]
-                shyi, shxi, offy, offx = geometry[ida][:4]
-                if offy + shyi > imshape[0]:
-                    offy = imshape[0] - shyi
-                if offx + shxi > imshape[1]:
-                    offx = imshape[1] - shxi
-                feat_chop = feat_data[ida][offy:offy+shyi, offx:offx+shxi]
-                if bg_data is not None:
-                    feat_chop -= bg_data[ida][offy:offy+shyi, offx:offx+shxi]
-                if dilate:
-                    assert chunk_mask is not None
-                    chunk_mask[ii, :shyi, :shxi] = \
-                        mask_data[ida][offy:offy+shyi, offx:offx+shxi]
-                chunk_data[ii, :shyi, :shxi] = feat_chop
-                idx += 1
-
-            if dilate:
-                # run dilation on all masks
-                mask_dilate = ndimage.binary_dilation(
-                    input=chunk_mask,
-                    structure=dilate_structure,
-                    axes=(1, 2))
-                # multiply chunk data with dilated mask
-                chunk_data *= mask_dilate
-
-            # write the chunk
-            offset = dset.shape[0]
-            dset.resize(offset + chunk_size, axis=0)
-            if is_boolean:
-                # Multiply mask feature with 255 so it is visible in HDFView
-                chunk_data *= 255
-            dset[offset:offset+chunk_size] = chunk_data
-            # report the size of the original feature that we chopped down
-            if bytes_chopped is not None:
-                bytes_chopped.value += (
-                    np.prod(imshape) * chunk_size * feat_dtype.itemsize)
+        # Register cluster in cache dictionary and remember chunk size
+        cluster_cache[cid] = []
+        cluster_chunks[cid] = (chunk_size_opt, shy, shx)
+        cluster_datasets[cid] = dset
 
         # update index
         # dataset
         index[cidx, 0] = cid - 1
         # sub-dataset index
         index[cidx, 1] = np.arange(num_events)
+
+    # Walk through the events in sequential order, populate the cache,
+    # and write when cache size reaches chunk size.
+    for ii, cid in enumerate(clusters):
+        # shape and offset
+        shyi, shxi, offy, offx = geometry[ii][:4]
+        if offy + shyi > imshape[0]:
+            offy = imshape[0] - shyi
+        if offx + shxi > imshape[1]:
+            offx = imshape[1] - shxi
+        # event data
+        feat_chop = feat_data[ii][offy:offy+shyi, offx:offx+shxi]
+        if bg_data is not None:
+            feat_chop -= bg_data[ii][offy:offy+shyi, offx:offx+shxi]
+        if dilate:
+            # perform binary dilation
+            mask = mask_data[ii][offy:offy+shyi, offx:offx+shxi]
+            mask_dilate = ndimage.binary_dilation(
+                input=mask,
+                structure=dilate_structure,
+                )
+            feat_chop *= mask_dilate
+        # append to cluster list
+        cluster_cache[cid].append(feat_chop)
+
+        if ii % 1000 or ii == len(clusters) - 1:
+            # flush cache to disk
+            for cid, dlist in cluster_cache.items():
+                chunks = cluster_chunks[cid]
+                # how many events to store
+                if ii == len(clusters) - 1:
+                    # final write (all events)
+                    write_num = len(dlist)
+                else:
+                    # write in chunks
+                    write_num = (len(dlist) // chunks[0]) * chunks[0]
+                if write_num:
+                    # prepare data
+                    chunk_data = np.zeros((write_num, chunks[1], chunks[2]),
+                                          dtype=h5_feat_dtype)
+                    for jj in range(write_num):
+                        im = dlist.pop(0)
+                        sh = im.shape
+                        chunk_data[jj, :sh[0], :sh[1]] = im
+                    # write the chunk
+                    dset = cluster_datasets[cid]
+                    offset = dset.shape[0]
+                    dset.resize(offset + write_num, axis=0)
+                    if is_boolean:
+                        # Multiply mask feature with 255 so it
+                        # is visible in HDFView
+                        chunk_data *= 255
+                    dset[offset:offset+write_num] = chunk_data
+                    # report the size of the original feature that we chopped
+                    if bytes_chopped is not None:
+                        bytes_chopped.value += (
+                            np.prod(imshape) * write_num * feat_dtype.itemsize)
 
     # write index
     h5_dst_group.create_dataset(

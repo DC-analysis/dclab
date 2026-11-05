@@ -153,7 +153,7 @@ def compress(
             features_all = features_all | pp_feats
 
         # Start with the actual compression
-        with h5py.File(path_temp, "w") as h5_out:
+        with h5py.File(path_temp, "w", rdcc_nbytes=0) as h5_out:
             for pp in paths:
                 with h5py.File(pp, locking=False) as h5_in:
                     compress_input(

@@ -285,7 +285,7 @@ def write_chopped_images(
     dilate_structure = disk(int(np.ceil(pad_um / pixel_size)))
 
     # Clusters (event indices that are written to the same dataset)
-    clusters, num_clusters = determine_clustering(
+    events_labeled, num_clusters = determine_clustering(
         geometry=geometry, dtype=feat_dtype)
 
     # index array
@@ -330,9 +330,12 @@ def write_chopped_images(
     cluster_chunks = {}
     cluster_datasets = {}
 
+    dapl = h5py.h5p.create(h5py.h5p.DATASET_ACCESS)
+    dapl.set_chunk_cache(0, 0, 0.0)
+
     # Prepare all clusters for writing
     for cid in range(1, num_clusters + 1):
-        cidx = clusters == cid
+        cidx = events_labeled == cid
         cidx_where = np.where(cidx)[0]
         # determine maximum shape
         shy, shx = np.max(geometry[cidx, :2], axis=0)
@@ -351,6 +354,7 @@ def write_chopped_images(
             maxshape=(num_events, shy, shx),
             chunks=(chunk_size_opt, shy, shx),
             fletcher32=True,
+            dapl=dapl,
             **compression_kwargs)
         dset.attrs.create('CLASS', np.bytes_('IMAGE'))
         dset.attrs.create('IMAGE_VERSION', np.bytes_('1.2'))
@@ -369,7 +373,7 @@ def write_chopped_images(
 
     # Walk through the events in sequential order, populate the cache,
     # and write when cache size reaches chunk size.
-    for ii, cid in enumerate(clusters):
+    for ii, cid in enumerate(events_labeled):
         # shape and offset
         shyi, shxi, offy, offx = geometry[ii][:4]
         if offy + shyi > imshape[0]:
@@ -377,7 +381,7 @@ def write_chopped_images(
         if offx + shxi > imshape[1]:
             offx = imshape[1] - shxi
         # event data
-        feat_chop = feat_data[ii][offy:offy+shyi, offx:offx+shxi]
+        feat_chop = feat_data[ii][offy:offy+shyi, offx:offx+shxi].copy()
         if bg_data is not None:
             feat_chop -= bg_data[ii][offy:offy+shyi, offx:offx+shxi]
         if dilate:
@@ -391,12 +395,12 @@ def write_chopped_images(
         # append to cluster list
         cluster_cache[cid].append(feat_chop)
 
-        if ii % 1000 or ii == len(clusters) - 1:
+        if (ii % 1000) == 0 or ii == len(events_labeled) - 1:
             # flush cache to disk
             for cid, dlist in cluster_cache.items():
                 chunks = cluster_chunks[cid]
                 # how many events to store
-                if ii == len(clusters) - 1:
+                if ii == len(events_labeled) - 1:
                     # final write (all events)
                     write_num = len(dlist)
                 else:

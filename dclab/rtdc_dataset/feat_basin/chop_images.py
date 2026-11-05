@@ -235,7 +235,6 @@ def write_chopped_images(
     """
     # Assemble required features
     av_feats = {}
-    h5ev = RTDC_HDF5(h5_dst.file.filename)
     # For general chopping, we need:
     # - "mask": identify where to chop
     # - "size_x" / "size_y": image size determination (inferreable from mask)
@@ -247,13 +246,14 @@ def write_chopped_images(
     if feat != "mask":
         required_features.append("frame")
 
-    for ft in required_features:
-        if ft in ds:
-            av_feats[ft] = ds[ft]
-        elif ft in h5ev:
-            av_feats[ft] = h5ev[ft]
-        else:
-            raise KeyError(f"Feature {ft} not found in input")
+    with RTDC_HDF5(h5_dst.file.filename) as h5ev:
+        for ft in required_features:
+            if ft in ds:
+                av_feats[ft] = ds[ft]
+            elif ft in h5ev:
+                av_feats[ft] = h5ev[ft]
+            else:
+                raise KeyError(f"Feature {ft} not found in input")
 
     # create output group
     h5_dst_group = h5_dst.require_group(f"/basin_events/{feat}")
@@ -330,6 +330,9 @@ def write_chopped_images(
     cluster_chunks = {}
     cluster_datasets = {}
 
+    # Disable the per-dataset chunk cache (1 MiB each by default): we keep all
+    # cluster datasets open and always write whole chunks. Do not use
+    # `create_dataset(rdcc_nbytes=0)` instead; h5py ignores falsy values.
     dapl = h5py.h5p.create(h5py.h5p.DATASET_ACCESS)
     dapl.set_chunk_cache(0, 0, 0.0)
 
@@ -397,8 +400,8 @@ def write_chopped_images(
 
         if (ii % 1000) == 0 or ii == len(events_labeled) - 1:
             # flush cache to disk
-            for cid, dlist in cluster_cache.items():
-                chunks = cluster_chunks[cid]
+            for cid2, dlist in cluster_cache.items():
+                chunks = cluster_chunks[cid2]
                 # how many events to store
                 if ii == len(events_labeled) - 1:
                     # final write (all events)
@@ -415,7 +418,7 @@ def write_chopped_images(
                         sh = im.shape
                         chunk_data[jj, :sh[0], :sh[1]] = im
                     # write the chunk
-                    dset = cluster_datasets[cid]
+                    dset = cluster_datasets[cid2]
                     offset = dset.shape[0]
                     dset.resize(offset + write_num, axis=0)
                     if is_boolean:

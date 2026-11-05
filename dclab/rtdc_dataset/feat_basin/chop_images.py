@@ -246,14 +246,14 @@ def write_chopped_images(
     if feat != "mask":
         required_features.append("frame")
 
-    with RTDC_HDF5(h5_dst.file.filename) as h5ev:
-        for ft in required_features:
-            if ft in ds:
-                av_feats[ft] = ds[ft]
-            elif ft in h5ev:
-                av_feats[ft] = h5ev[ft]
-            else:
-                raise KeyError(f"Feature {ft} not found in input")
+    h5ev = RTDC_HDF5(h5_dst.file.filename)
+    for ft in required_features:
+        if ft in ds:
+            av_feats[ft] = ds[ft]
+        elif ft in h5ev:
+            av_feats[ft] = h5ev[ft]
+        else:
+            raise KeyError(f"Feature {ft} not found in input")
 
     # create output group
     h5_dst_group = h5_dst.require_group(f"/basin_events/{feat}")
@@ -430,6 +430,8 @@ def write_chopped_images(
                     if bytes_chopped is not None:
                         bytes_chopped.value += (
                             np.prod(imshape) * write_num * feat_dtype.itemsize)
+
+    h5ev.close()
 
     # write index
     h5_dst_group.create_dataset(

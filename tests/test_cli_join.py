@@ -138,6 +138,19 @@ def test_join_rtdc_basin_information_lost():
         assert "basins" not in h5
 
 
+@pytest.mark.parametrize("suffix", [".rtdc", ""])
+def test_join_rtdc_input_not_deleted(suffix):
+    """Output path identical to an input path must not delete the input"""
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    path_in2 = path_in.with_name("other.rtdc")
+    shutil.copy2(path_in, path_in2)
+    size = path_in2.stat().st_size
+    with pytest.raises(ValueError, match="Output path is an input path"):
+        cli.join(paths_in=[path_in, path_in2],
+                 path_out=path_in2.with_suffix(suffix))
+    assert path_in2.stat().st_size == size
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_join_rtdc_logs():

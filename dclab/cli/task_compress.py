@@ -82,13 +82,17 @@ def compress(
     path_out = pathlib.Path(path_out)
     if path_out.suffix != ".rtdc":
         path_out = path_out.with_name(path_out.name + ".rtdc")
+    # basin paths (resolve for later comparison)
+    basin_input = [pathlib.Path(pp).resolve() for pp in basin_input or []]
+    # make sure we do not delete any input file
+    for pp in [path_in] + basin_input:
+        if path_out.exists() and path_out.samefile(pp):
+            raise ValueError(f"Output path is an input path: '{pp}'")
     path_out.unlink(missing_ok=True)
     # temporary
     path_temp = path_out.with_suffix(".rtdc~")
     path_temp.unlink(missing_ok=True)
     atexit.register(path_temp.unlink, missing_ok=True)
-    # basin paths (resolve for later comparison)
-    basin_input = [pathlib.Path(pp).resolve() for pp in basin_input or []]
 
     # command log
     logs = {"dclab-compress": common.get_command_log(paths=[path_in])}

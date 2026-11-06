@@ -228,6 +228,17 @@ def test_condense_defective_feature():
         assert np.allclose(dso["volume"], volume, atol=0, rtol=1e-10)
 
 
+@pytest.mark.parametrize("suffix", [".rtdc", ""])
+def test_condense_input_not_deleted(suffix):
+    """Output path identical to input path must not delete the input"""
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    size = path_in.stat().st_size
+    with pytest.raises(ValueError, match="Output path is the input path"):
+        cli.condense(path_in=path_in,
+                     path_out=path_in.with_suffix(suffix))
+    assert path_in.stat().st_size == size
+
+
 @pytest.mark.skipif(not DCOR_AVAILABLE, reason="DCOR is not available")
 def test_condense_from_s3(tmp_path):
     """

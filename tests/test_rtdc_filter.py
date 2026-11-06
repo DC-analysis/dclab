@@ -1,8 +1,11 @@
+import threading
 import warnings
 
+import h5py
 import numpy as np
 
 import dclab
+from dclab.polygon_filter import PolygonFilter
 from dclab.rtdc_dataset import new_dataset
 
 import pytest
@@ -76,6 +79,45 @@ def test_filter_min_max_reset():
     assert np.sum(ds.filter.all) == 8472
     ds.apply_filter()
     assert np.sum(ds.filter.all) == 8472
+
+
+@pytest.mark.parametrize("method", ["apply_filter",
+                                    "get_downsampled_scatter",
+                                    "polygon_filter_add",
+                                    "reset_filter",
+                                    ])
+def test_filter_no_event_count_no_deadlock(method, tmp_path):
+    """Filtering must not deadlock if "event count" is not in the metadata
+
+    In this case, `len(ds)` acquires `ds.lock`, which is already held
+    by the filtering methods.
+    """
+    path = tmp_path / "no_event_count.rtdc"
+    with h5py.File(path, "w") as h5:
+        h5.attrs["experiment:date"] = "2020-01-01"
+        h5.attrs["experiment:time"] = "12:00:00"
+        h5.attrs["imaging:pixel size"] = 0.34
+        h5.attrs["setup:channel width"] = 20.
+        h5.attrs["setup:chip region"] = "channel"
+        h5["events/area_um"] = np.linspace(10, 100, 100)
+        h5["events/deform"] = np.linspace(0, .1, 100)
+
+    if method == "polygon_filter_add":
+        args = [PolygonFilter(axes=["area_um", "deform"],
+                              points=[[0, 0], [200, 0], [200, 1]])]
+    else:
+        args = []
+
+    with new_dataset(path) as ds:
+        assert "event count" not in ds.config["experiment"]
+        thread = threading.Thread(target=getattr(ds, method),
+                                  args=args,
+                                  daemon=True)
+        thread.start()
+        thread.join(timeout=30)
+        assert not thread.is_alive(), f"`{method}` did not return (deadlock)"
+        assert len(ds) == 100
+    PolygonFilter.clear_all_filters()
 
 
 def test_nan_warning():

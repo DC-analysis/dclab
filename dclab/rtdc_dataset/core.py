@@ -66,8 +66,10 @@ class RTDCBase(abc.ABC):
         #: Dataset format (derived from class name)
         self.format = self.__class__.__name__.split("_")[-1].lower()
 
-        # Lock for being thread-safe when modifying filters
-        self.lock = threading.Lock()
+        # Lock for being thread-safe when modifying filters. This must be
+        # reentrant, because e.g. `apply_filter` may call `len(self)` which
+        # acquires the lock again if "event count" is not in the metadata.
+        self.lock = threading.RLock()
 
         # Cache attribute used for __len__()-function
         self._length = None

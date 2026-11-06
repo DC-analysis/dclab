@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from multiprocessing.sharedctypes import Synchronized
 from typing import TYPE_CHECKING, Literal
+import warnings
 
 import h5py
 import hdf5plugin
@@ -300,7 +301,26 @@ def write_chopped_images(
     # For all other features, add references to the sibling events
     # within one frame.
     if feat != "mask":
-        frame = av_feats["frame"]
+        # int64, not uint, because we might have to repair.
+        frame = np.astype(av_feats["frame"][:], np.int64)
+
+        # Check for negative frame counts
+        frames_invalid = np.diff(frame) < 0
+        if np.sum(frames_invalid):
+            # The frame counter counted negative values. We have to repair
+            # the frame. It can happen that a faulty camera returns all-zero
+            # frame numbers. To mitigate this, instead of adding a constant
+            # offset to the rest of the frames, we add np.arange [sic].
+            # This means that after such an invalid event, there will always
+            # only be one event per image in the chopped dataset. No data
+            # is lost, just the way it is disaplayed when reassembling the
+            # ROI image changes.
+            warnings.warn("Detected negative frame count")
+            for ii in np.where(frames_invalid)[0]:
+                offset = frame[ii] + 1
+                frame[ii+1:] += np.arange(offset, offset+frame.size-ii-1)
+
+        # Check whether the frames are monotonically increasing
         _, fr_index, fr_counts = np.unique(frame,
                                            return_index=True,
                                            return_counts=True,

@@ -215,7 +215,10 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
             # The 'other' column is always defined in a circular manner.
             # This means that independent of which event you select, you
             # will always get all images from the other events.
-            while other != index:
+            # Prevent endless-looping due to malformed lists with indices_seen.
+            indices_seen = [index]
+            while other not in indices_seen:
+                indices_seen.append(other)
                 # There are more events in this image
                 imo, other = self._get_image_event(other)
                 support = imo != 0

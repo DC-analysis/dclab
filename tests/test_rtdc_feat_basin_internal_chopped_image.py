@@ -1,7 +1,9 @@
 import json
+import threading
 
 import h5py
 import numpy as np
+import pytest
 
 from dclab import rtdc_dataset, RTDCWriter, new_dataset
 from dclab.rtdc_dataset.feat_basin import internal_chopped_image_basin
@@ -118,6 +120,29 @@ def make_chopped_image_dataset():
     return h5path, h5path_chopped
 
 
+def call_with_timeout(func, *args, timeout=30):
+    """Call `func(*args)` in a thread and fail if it does not return in time
+
+    This turns an endless loop into a test failure instead of a hanging
+    test session.
+    """
+    result = {}
+
+    def target():
+        try:
+            result["value"] = func(*args)
+        except BaseException as e:
+            result["error"] = e
+
+    thread = threading.Thread(target=target, daemon=True)
+    thread.start()
+    thread.join(timeout)
+    assert not thread.is_alive(), f"Call did not return within {timeout}s"
+    if "error" in result:
+        raise result["error"]
+    return result["value"]
+
+
 def test_chopped_basin_feature_access():
     """Make sure that the information inside the mask is identical"""
     path, path_chopped = make_chopped_image_dataset()
@@ -152,6 +177,32 @@ def test_chopped_basin_feature_multiple_events_per_frame():
             for jj in range(4, 8):
                 assert np.all(ds0["image"][ii][ds0["mask"][ii]]
                               == dsc["image"][jj][dsc["mask"][ii]])
+
+
+@pytest.mark.parametrize("malformed,reached", [
+    # Event 5 references itself instead of event 4.
+    ({5: 5}, {4: [4, 7, 6, 5], 5: [5], 6: [6, 5], 7: [7, 6, 5]}),
+    # Events 6 and 7 reference each other, event 5 is skipped.
+    ({6: 7}, {4: [4, 7, 6], 5: [5, 4, 7, 6], 6: [6, 7], 7: [7, 6]}),
+])
+def test_chopped_basin_feature_malformed_index(malformed, reached):
+    """A non-circular 'other' column must not lead to an endless loop"""
+    path, path_chopped = make_chopped_image_dataset()
+
+    with h5py.File(path_chopped, "a") as h5:
+        index = h5["basin_events/image/index"]
+        # sanity check (events 4 to 7 are in frame 10091)
+        assert np.all(index[4:8, 4] == [7, 4, 5, 6])
+        for ii, other in malformed.items():
+            index[ii, 4] = other
+
+    with new_dataset(path) as ds0, new_dataset(path_chopped) as dsc:
+        for ii, events in reached.items():
+            image = call_with_timeout(dsc["image"].__getitem__, ii)
+            # All events that can be reached are in the image
+            for jj in events:
+                assert np.all(ds0["image"][jj][ds0["mask"][jj]]
+                              == image[dsc["mask"][jj]])
 
 
 def test_chopped_basin_feature_proxy_array_indexing():

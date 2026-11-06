@@ -1,3 +1,5 @@
+import warnings
+
 import h5py
 import numpy as np
 
@@ -32,6 +34,22 @@ def create_fake_dataset(mult_factor=10):
             hw.store_feature(feat, feat_data)
 
     return h5path_large
+
+
+def write_chopped_index(h5path, h5chop, feat="image"):
+    """Chop `feat` from `h5path` into `h5chop` and return the index array"""
+    with new_dataset(h5path) as ds, RTDCWriter(h5chop) as hw:
+        hw.h5file.attrs.update(ds.h5file.attrs)
+        grp = chop_images.write_chopped_images(
+            ds=ds,
+            feat=feat,
+            h5_dst=hw.h5file,
+        )
+        index = grp["index"][:]
+        for ft in ["frame", "time", "image_bg", "mask"]:
+            if ft != feat:
+                hw.store_feature(ft, ds[ft])
+    return index
 
 
 @pytest.mark.parametrize("size,shape,keep", [
@@ -249,6 +267,73 @@ def test_chopped_image_features_in_target_not_source():
             # check image data
             assert np.all(ds0["image"][ii][dsc["mask"][ii]]
                           == dsc["image"][ii][dsc["mask"][ii]])
+
+
+@pytest.mark.parametrize("corruption", [
+    "zeros",  # faulty camera returns zero from some point on
+    "reset",  # frame counter restarts (frames with multiple events remain)
+    "collide",  # frame counter restarts with frame numbers used before
+    "glitch",  # a single event has an invalid frame number
+])
+def test_chopped_image_negative_frame_count(corruption):
+    """A decreasing "frame" feature must not lead to an invalid index"""
+    h5path = create_fake_dataset(mult_factor=10)
+    # This is the first event of the 4th repetition of the reference
+    # dataset. Events [k, k+3] are in the same frame and event k-1 is not.
+    k = 4 * 13 + 4
+
+    # Reference index for the intact "frame" feature
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", chop_images.NegativeFrameCountWarning)
+        index_ref = write_chopped_index(h5path, h5path.with_name("ref.rtdc"))
+    assert np.all(index_ref[k:k+4, 4] == [k+3, k, k+1, k+2]), "sanity check"
+
+    # Corrupt the frame feature
+    with h5py.File(h5path, "a") as h5:
+        frame = h5["events/frame"][:]
+        if corruption == "zeros":
+            frame[k:] = 0
+        elif corruption == "reset":
+            frame[k:] -= frame[k] - 1
+        elif corruption == "collide":
+            # Without repair, events after k would be referenced from
+            # events before k (`np.unique` groups identical frames).
+            frame[k:] -= frame[k] - frame[0]
+        else:
+            frame[k] = 0
+        h5["events/frame"][:] = frame
+
+    h5chop = h5path.with_name("chopped.rtdc")
+    with pytest.warns(chop_images.NegativeFrameCountWarning,
+                      match="negative frame count"):
+        index = write_chopped_index(h5path, h5chop)
+
+    # Dataset, sub-dataset index, and offsets do not depend on "frame"
+    assert np.all(index[:, :4] == index_ref[:, :4])
+    # Events before the corrupted frame keep their siblings
+    assert np.all(index[:k, 4] == index_ref[:k, 4])
+    # After the corrupted frame, each event is in its own frame
+    assert np.all(index[k:, 4] == np.arange(k, len(index)))
+
+    # No image data are lost
+    with new_dataset(h5path) as ds0, new_dataset(h5chop) as dsc:
+        for ii in range(len(ds0)):
+            assert np.all(ds0["image"][ii][ds0["mask"][ii]]
+                          == dsc["image"][ii][dsc["mask"][ii]])
+
+
+def test_chopped_image_negative_frame_count_ignored_for_mask():
+    """The "frame" feature is not used for chopping the "mask" feature"""
+    h5path = create_fake_dataset(mult_factor=10)
+    with h5py.File(h5path, "a") as h5:
+        h5["events/frame"][50:] = 0
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", chop_images.NegativeFrameCountWarning)
+        index = write_chopped_index(h5path,
+                                    h5path.with_name("chopped.rtdc"),
+                                    feat="mask")
+    assert np.all(index[:, 4] == np.arange(len(index)))
 
 
 @pytest.mark.parametrize("input,output", [

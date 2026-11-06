@@ -19,6 +19,10 @@ if TYPE_CHECKING:
     from ..core import RTDCBase
 
 
+class NegativeFrameCountWarning(UserWarning):
+    """Used when the "frame" feature is not monotonically increasing"""
+
+
 def check_for_keep(size, shape, dtype):
     """Return whether a shape/size/dtype is large enough for storage"""
     size_req = writer.RTDCWriter.get_best_nd_chunks(
@@ -315,7 +319,8 @@ def write_chopped_images(
             # only be one event per image in the chopped dataset. No data
             # is lost, just the way it is disaplayed when reassembling the
             # ROI image changes.
-            warnings.warn("Detected negative frame count")
+            warnings.warn("Detected negative frame count",
+                          NegativeFrameCountWarning)
             for ii in np.where(frames_invalid)[0]:
                 offset = frame[ii] + 1
                 frame[ii+1:] += np.arange(offset, offset+frame.size-ii-1)

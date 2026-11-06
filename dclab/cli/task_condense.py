@@ -80,6 +80,9 @@ def condense(
     path_out = pathlib.Path(path_out)
     if path_out.suffix != ".rtdc":
         path_out = path_out.with_name(path_out.name + ".rtdc")
+    # make sure we do not delete the input file
+    if path_out.exists() and path_out.samefile(path_in):
+        raise ValueError(f"Output path is the input path: '{path_in}'")
     path_out.unlink(missing_ok=True)
     # temporary
     path_temp = path_out.with_suffix(".rtdc~")

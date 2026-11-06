@@ -428,6 +428,39 @@ def test_compress_basin_preserved_compress():
             assert feat in ds_out.features_basin
 
 
+@pytest.mark.parametrize("suffix", [".rtdc", ""])
+def test_compress_input_not_deleted(suffix):
+    """Output path identical to input path must not delete the input"""
+    path_in = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    size = path_in.stat().st_size
+    with pytest.raises(ValueError, match="Output path is an input path"):
+        cli.compress(path_in=path_in,
+                     path_out=path_in.with_suffix(suffix))
+    assert path_in.stat().st_size == size
+
+
+def test_compress_input_not_deleted_basin_input():
+    """Output path identical to a basin input path must not delete it"""
+    path_in = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_basin = path_in.with_name("basin.rtdc")
+    path_in.rename(path_basin)
+    with h5py.File(path_basin) as src, RTDCWriter(path_in) as hw:
+        hw.h5file.attrs.update(src.attrs)
+        hw.store_feature("deform", src["events/deform"][:])
+        hw.store_basin(basin_name="upstream",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path_basin],
+                       verify=False,
+                       )
+    size = path_basin.stat().st_size
+    with pytest.raises(ValueError, match="Output path is an input path"):
+        cli.compress(path_in=path_in,
+                     path_out=path_basin,
+                     basin_input=[path_basin])
+    assert path_basin.stat().st_size == size
+
+
 def test_compress_chopped():
     h5path = retrieve_data("fmt-hdf5_reference_2025.zip")
     path_out = h5path.with_name("compressed.rtdc")

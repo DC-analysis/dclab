@@ -1,3 +1,6 @@
+0.73.8
+ - fix: CLI commands compress, condense, join, and repack deleted the
+   input file if it was also given as the output path
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

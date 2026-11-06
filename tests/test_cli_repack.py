@@ -88,6 +88,17 @@ def test_repack_basin_internal(use_basins):
         assert "userdef1" in ds.features_innate
 
 
+@pytest.mark.parametrize("suffix", [".rtdc", ""])
+def test_repack_input_not_deleted(suffix):
+    """Output path identical to input path must not delete the input"""
+    path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
+    size = path_in.stat().st_size
+    with pytest.raises(ValueError, match="Output path is the input path"):
+        cli.repack(path_in=path_in,
+                   path_out=path_in.with_suffix(suffix))
+    assert path_in.stat().st_size == size
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_repack_multiple_basins():

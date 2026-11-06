@@ -76,6 +76,10 @@ def join(
     path_out = pathlib.Path(path_out)
     if path_out.suffix != ".rtdc":
         path_out = path_out.with_name(path_out.name + ".rtdc")
+    # make sure we do not delete any input file
+    for pp in paths_in:
+        if path_out.exists() and path_out.samefile(pp):
+            raise ValueError(f"Output path is an input path: '{pp}'")
     path_out.unlink(missing_ok=True)
     # temporary
     path_temp = path_out.with_suffix(".rtdc~")

@@ -232,39 +232,44 @@ class RTDC_Hierarchy(RTDCBase):
 
     def apply_filter(self, *args, **kwargs):
         """Overridden `apply_filter` to perform tasks for hierarchy child"""
-        if self._ds_filter is not None:
-            # make sure self.filter knows about root manual indices
-            # (stored in self.filter._man_root_ids)
-            self.filter.retrieve_manual_indices(self)
+        # Hold the lock for the entire update, so other threads never see
+        # the event data of this child while it is being rebuilt. The lock
+        # is shared with the hierarchy parent; it is an `RLock`, so
+        # `self.hparent.apply_filter` below can acquire it again.
+        with self.lock:
+            if self._ds_filter is not None:
+                # make sure self.filter knows about root manual indices
+                # (stored in self.filter._man_root_ids)
+                self.filter.retrieve_manual_indices(self)
 
-        # Copy event data from hierarchy parent
-        self.hparent.apply_filter(*args, **kwargs)
+            # Copy event data from hierarchy parent
+            self.hparent.apply_filter(*args, **kwargs)
 
-        # Clear anything that has been cached until now
-        self._length = None
+            # Clear anything that has been cached until now
+            self._length = None
 
-        # update event index
-        event_count = len(self)
-        self._events.clear()
-        self._events["index"] = np.arange(1, event_count + 1)
-        # set non-scalar column data
-        for feat in ["image", "image_bg", "mask"]:
-            if feat in self.hparent:
-                self._events[feat] = ChildNDArray(self, feat)
-        if "contour" in self.hparent:
-            self._events["contour"] = ChildContour(self)
-        if "trace" in self.hparent:
-            trdict = ChildTrace()
-            for flname in dfn.FLUOR_TRACES:
-                if flname in self.hparent["trace"]:
-                    trdict[flname] = ChildTraceItem(self, flname)
-            self._events["trace"] = trdict
-        # Update configuration
-        self._update_config()
+            # update event index
+            event_count = len(self)
+            self._events.clear()
+            self._events["index"] = np.arange(1, event_count + 1)
+            # set non-scalar column data
+            for feat in ["image", "image_bg", "mask"]:
+                if feat in self.hparent:
+                    self._events[feat] = ChildNDArray(self, feat)
+            if "contour" in self.hparent:
+                self._events["contour"] = ChildContour(self)
+            if "trace" in self.hparent:
+                trdict = ChildTrace()
+                for flname in dfn.FLUOR_TRACES:
+                    if flname in self.hparent["trace"]:
+                        trdict[flname] = ChildTraceItem(self, flname)
+                self._events["trace"] = trdict
+            # Update configuration
+            self._update_config()
 
-        # create a new filter if the parent changed
-        self._check_parent_filter()
-        super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
+            # create a new filter if the parent changed
+            self._check_parent_filter()
+            super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
 
     def get_root_parent(self):
         """Return the root parent of this dataset"""

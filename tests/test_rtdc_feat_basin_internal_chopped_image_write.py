@@ -96,6 +96,38 @@ def test_determine_clustering_combine():
     assert np.all(clusters == 1)
 
 
+@pytest.mark.parametrize("dtype", [np.uint32, np.uint64, np.int64])
+def test_repair_frame_valid(dtype):
+    frame = np.array([3, 4, 4, 4, 7, 9, 9], dtype=dtype)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", chop_images.NegativeFrameCountWarning)
+        repaired = chop_images.repair_frame(frame)
+    assert repaired.dtype == np.int64
+    assert np.all(repaired == frame)
+
+
+@pytest.mark.parametrize("dtype", [np.uint32, np.uint64, np.int64])
+def test_repair_frame_invalid(dtype):
+    frame = np.array([3, 4, 4, 1, 1, 2, 0, 0], dtype=dtype)
+    with pytest.warns(chop_images.NegativeFrameCountWarning):
+        repaired = chop_images.repair_frame(frame)
+    # valid frames are kept, the rest is consecutive
+    assert np.all(repaired == [3, 4, 4, 5, 6, 7, 8, 9])
+    # input is not modified
+    assert np.all(frame == [3, 4, 4, 1, 1, 2, 0, 0])
+
+
+def test_repair_frame_many_invalid():
+    """Many invalid frames must not lead to an integer overflow"""
+    size = 100_000
+    frame = np.arange(size, dtype=np.uint64)
+    frame[1000::10] = 0  # 9900 invalid frames
+    with pytest.warns(chop_images.NegativeFrameCountWarning):
+        repaired = chop_images.repair_frame(frame)
+    assert np.all(repaired[:1000] == np.arange(1000))
+    assert np.all(np.diff(repaired) > 0)
+
+
 def test_chopped_image_base_small():
     h5path = create_fake_dataset(mult_factor=10)
     h5chop = h5path.with_name("chopped.rtdc")

@@ -1,4 +1,6 @@
 """Test filter hierarchies"""
+import threading
+
 import numpy as np
 import pytest
 
@@ -455,6 +457,41 @@ def test_index_slicing_trace(idxs):
     ch_feat = ch["trace"]["fl1_median"]
 
     assert np.all(ch_feat[idxs] == ds_feat)
+
+
+@pytest.mark.parametrize("depth", [1, 2])
+def test_lock_held_during_apply_filter(depth):
+    """Other threads must not access a child while it is being rebuilt"""
+    ddict = example_data_dict(size=100, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ch = ds
+    for _ in range(depth):
+        ch = new_dataset(ch)
+    assert ch.lock is ds.lock, "the lock is shared within the hierarchy"
+
+    acquired_by_other_thread = []
+
+    def try_acquire():
+        got_it = ds.lock.acquire(timeout=0.1)
+        if got_it:
+            ds.lock.release()
+        acquired_by_other_thread.append(got_it)
+
+    update_config_orig = ch._update_config
+
+    def update_config_check_lock():
+        # This is called after the event data of the child have been
+        # cleared and before the filter of the child is updated.
+        thread = threading.Thread(target=try_acquire)
+        thread.start()
+        thread.join()
+        update_config_orig()
+
+    ch._update_config = update_config_check_lock
+    ds.filter.manual[0] = False
+    ch.apply_filter()
+    assert acquired_by_other_thread == [False]
+    assert len(ch) == 99
 
 
 def test_manual_exclude():

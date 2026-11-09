@@ -597,6 +597,37 @@ def test_basin_run_identifier_unknown():
         assert ds["image"][0][0, 0] == 126
 
 
+def test_basin_identifier_mismatch_basin_not_used():
+    """A basin with the wrong basin identifier must not be used
+
+    Even if the measurement identifier of the referrer matches
+    the basin, a mismatching basin identifier must invalidate it.
+    """
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("small.rtdc")
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # same metadata, thus same measurement identifier
+        hw.h5file.attrs.update(src.attrs)
+        hw.store_feature("area_um", src["events/area_um"][:])
+        hw.store_basin(basin_name="wrong identifier",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[h5path],
+                       basin_descr="basin identifier does not match",
+                       basin_feats=["deform"],
+                       basin_id="this-is-not-the-basin-identifier",
+                       verify=False,
+                       )
+
+    with dclab.new_dataset(h5path_small) as ds:
+        # sanity check
+        assert len(ds.basins_get_dicts()) == 1
+        with pytest.warns(UserWarning, match="Basin identifier mismatch"):
+            assert not ds.basins
+        assert "deform" not in ds
+        assert "area_um" in ds
+
+
 def test_basin_run_identifier_verify():
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
     export_same = h5path.with_name("same.rtdc")

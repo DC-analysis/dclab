@@ -229,7 +229,13 @@ def valid(a, b):
 
 
 def norm(a):
-    """Normalize `a` with its min/max values"""
+    """Normalize `a` with its min/max values
+
+    If all values in `a` are identical, an array of zeros is returned.
+    """
     rmin = a.min()
     rptp = a.max() - rmin
+    if rptp == 0:
+        # avoid division by zero (nan values cannot be discretized)
+        return np.zeros(a.shape, dtype=float)
     return (a - rmin) / rptp

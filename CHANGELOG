@@ -27,6 +27,8 @@
  - fix: `KernelDensityEstimator.get_contour_lines` with automatic
    spacing failed for data containing NaN values and ignored the
    filters when determining the plot range
+ - fix: `downsample_grid` raised an IndexError if all values along one
+   axis were identical (e.g. scatter plot of a constant feature)
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

@@ -141,15 +141,15 @@ class HTTPFile(io.IOBase):
         never returned (and cached) as file data.
         """
         for ii in range(10):
+            if ii:
+                # wait before retrying
+                time.sleep(min(0.1 * 2**(ii - 1), 2))
             resp = self.session.get(
                 self.url,
                 headers={"Range": f"bytes={start}-{stop-1}"}
             )
-            if (resp.status_code in [408, 429, 500, 502, 503, 504]
-                    and ii < 9):
-                time.sleep(min(0.1 * 2**ii, 2))
-                continue
-            break
+            if resp.status_code not in [408, 429, 500, 502, 503, 504]:
+                break
         resp.raise_for_status()
         if len(resp.content) != stop - start:
             raise ValueError(

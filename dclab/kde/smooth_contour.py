@@ -111,11 +111,13 @@ def find_smooth_contour_spacing(
         # maximum difference of opening angle from 180° [rad]
         max_dphi = 0
         max_length = np.inf
+        # number of datasets for which a contour could be computed
+        num_contours = 0
         for kdi, ds in zip(kde_list, ds_list):
             if abort_event is not None and abort_event.is_set():
                 break
             # Compute the contour for the highest percentile of the plot.
-            cc = kdi.get_contour_lines(
+            contours = kdi.get_contour_lines(
                 quantiles=[[np.max(quantiles)]],
                 xax=xax,
                 yax=yax,
@@ -124,7 +126,12 @@ def find_smooth_contour_spacing(
                 xscale=xscale,
                 yscale=yscale,
                 kde_type=kde_type,
-                kde_kwargs=kde_kwargs)[0][0]
+                kde_kwargs=kde_kwargs)
+            if not contours or not contours[0]:
+                # No contour for this dataset (e.g. all events filtered).
+                continue
+            num_contours += 1
+            cc = contours[0][0]
             angles = compute_contour_opening_angles(
                 contour=cc,
                 xrange=xrange,
@@ -147,6 +154,10 @@ def find_smooth_contour_spacing(
         else:
             results["reason"] = "maximum iterations reached"
             results["success"] = False
+            if not num_contours:
+                # There is no contour we could smooth.
+                results["reason"] = "no contour found"
+                break
 
         if max_dphi < np.deg2rad(23):
             # A contour is considered smooth when the maximum angle between

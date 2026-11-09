@@ -22,6 +22,11 @@
    was also set
  - fix: "qpi:scale to filter" metadata could not be loaded from .rtdc
    files (`fboolorfloat` did not accept numpy scalars)
+ - fix: `find_smooth_contour_spacing` raised an IndexError for datasets
+   without a contour (e.g. all events filtered)
+ - fix: `KernelDensityEstimator.get_contour_lines` with automatic
+   spacing failed for data containing NaN values and ignored the
+   filters when determining the plot range
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

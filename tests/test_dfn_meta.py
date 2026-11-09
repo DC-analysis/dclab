@@ -158,6 +158,14 @@ def test_meta_parse_fboolorfloat():
     assert meta_parse.fboolorfloat(1) == 1.0
     assert meta_parse.fboolorfloat(-42) == -42.0
 
+    # numpy scalars (e.g. from HDF5 attributes)
+    assert meta_parse.fboolorfloat(np.True_) is True
+    assert meta_parse.fboolorfloat(np.False_) is False
+    assert meta_parse.fboolorfloat(np.int64(3)) == 3.0
+    assert meta_parse.fboolorfloat(np.int32(-2)) == -2.0
+    assert meta_parse.fboolorfloat(np.float32(0.5)) == 0.5
+    assert meta_parse.fboolorfloat(np.float64(0.25)) == 0.25
+
     with pytest.raises(ValueError, match=re.escape(
             "Value could not be converted to bool or float, got [1, 2, 3]!")):
         assert meta_parse.fboolorfloat([1, 2, 3])

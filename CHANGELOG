@@ -20,6 +20,8 @@
  - fix: changing "emodulus viscosity" (medium "other") did not
    invalidate the cached "emodulus" feature if "emodulus temperature"
    was also set
+ - fix: "qpi:scale to filter" metadata could not be loaded from .rtdc
+   files (`fboolorfloat` did not accept numpy scalars)
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

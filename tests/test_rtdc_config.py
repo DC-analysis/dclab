@@ -90,6 +90,22 @@ def test_config_save_load():
         pass
 
 
+@pytest.mark.parametrize("value", [True, False, 0.5, 2])
+def test_config_save_load_hdf5_bool_or_float(value, tmp_path):
+    """Bool-or-float metadata are numpy scalars when read from HDF5"""
+    ds = new_dataset({"deform": np.linspace(0, .1, 5),
+                      "area_um": np.linspace(10, 50, 5)})
+    ds.config["qpi"]["scale to filter"] = value
+    path = tmp_path / "test.rtdc"
+    ds.export.hdf5(path, features=["deform", "area_um"])
+    with h5py.File(path) as h5:
+        assert isinstance(h5.attrs["qpi:scale to filter"], np.generic)
+    with new_dataset(path) as ds2:
+        loaded = ds2.config["qpi"]["scale to filter"]
+        assert loaded == value
+        assert isinstance(loaded, bool) == isinstance(value, bool)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(

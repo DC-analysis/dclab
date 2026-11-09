@@ -215,6 +215,46 @@ def test_basin_mapped_export(basinmap):
 @pytest.mark.parametrize("basinmap", [
     [1, 3, 4],  # very simple case
     [1, 1, 1, 2],  # not trivial, not realizable with hierarchy children
+    [0, 1, 5],  # contains zero
+    None,  # identity mapping (all events)
+])
+def test_basin_mapped_scalar_min_max_mean(basinmap):
+    """min/max/mean must be computed for the mapped events only"""
+    path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    with h5py.File(path, "a") as h5:
+        # delete circularity to avoid ancillary feature computation in this
+        # test.
+        del h5["events"]["circ"]
+        deform = h5["events/deform"][:]
+    # Set a NaN value for an event that is part of all mappings
+    deform[1] = np.nan
+    with dclab.RTDCWriter(path, mode="replace") as hw:
+        hw.store_feature("deform", deform)
+
+    if basinmap is None:
+        basinmap = np.arange(len(deform))
+    basinmap = np.array(basinmap, dtype=np.int64)
+
+    path_out = path.with_name("level1.rtdc")
+    with dclab.new_dataset(path) as ds0, dclab.RTDCWriter(path_out) as hw1:
+        hw1.store_metadata(ds0.config.as_dict(pop_filtering=True))
+        hw1.store_basin(basin_name="level1",
+                        basin_type="file",
+                        basin_format="hdf5",
+                        basin_locs=[path],
+                        basin_map=basinmap
+                        )
+
+    deform_mapped = deform[basinmap]
+    with dclab.new_dataset(path_out) as ds1:
+        assert np.allclose(ds1["deform"].min(), np.nanmin(deform_mapped))
+        assert np.allclose(ds1["deform"].max(), np.nanmax(deform_mapped))
+        assert np.allclose(ds1["deform"].mean(), np.nanmean(deform_mapped))
+
+
+@pytest.mark.parametrize("basinmap", [
+    [1, 3, 4],  # very simple case
+    [1, 1, 1, 2],  # not trivial, not realizable with hierarchy children
 ])
 @pytest.mark.filterwarnings(
     "ignore::UserWarning")

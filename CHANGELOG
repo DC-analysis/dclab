@@ -5,6 +5,11 @@
    metadata (regression in 0.71.9)
  - fix: `RTDC_Hierarchy.apply_filter` rebuilt the event data without
    holding `RTDCBase.lock`, so other threads could see an empty child
+ - fix: `HTTPFile` returned and cached HTTP error responses (e.g. 503
+   or expired pre-signed URLs) as file data; transient errors are
+   now retried and other errors raise `requests.HTTPError`
+ - fix: `HTTPFile.read_range` downloaded an additional chunk (beyond
+   the end of the file) when reading up to a chunk boundary
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

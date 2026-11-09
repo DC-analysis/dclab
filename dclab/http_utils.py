@@ -3,6 +3,7 @@ import io
 import os
 import re
 import socket
+import time
 from unittest import mock
 from urllib.parse import urlparse
 import warnings
@@ -133,10 +134,28 @@ class HTTPFile(io.IOBase):
         """Download bytes given by the range (`start`, `stop`)
 
         `stop` is not inclusive (In the HTTP range request it normally is).
+
+        Transient server errors (e.g. "503 SlowDown" from S3) are retried.
+        For any other error response, :class:`requests.HTTPError` is
+        raised. This makes sure that error messages from the server are
+        never returned (and cached) as file data.
         """
-        resp = self.session.get(self.url,
-                                headers={"Range": f"bytes={start}-{stop-1}"}
-                                )
+        for ii in range(10):
+            if ii:
+                # wait before retrying
+                time.sleep(min(0.1 * 2**(ii - 1), 2))
+            resp = self.session.get(
+                self.url,
+                headers={"Range": f"bytes={start}-{stop-1}"}
+            )
+            if resp.status_code not in [408, 429, 500, 502, 503, 504]:
+                break
+        resp.raise_for_status()
+        if len(resp.content) != stop - start:
+            raise ValueError(
+                f"Server replied with {len(resp.content)} bytes instead of "
+                f"{stop - start} (status code {resp.status_code}) for range "
+                f"request {start}-{stop-1} of '{self.url}'")
         return resp.content
 
     @umbrella_cache(topic="httpfile",
@@ -165,6 +184,8 @@ class HTTPFile(io.IOBase):
         This calls `get_chunk` and thus downloads cache
         chunks when they are not already cached with `umbrella_cache`.
         """
+        # do not request data beyond the end of the file
+        stop = min(stop, self.length)
         toread = stop - start
         # compute the chunk indices between start and stop
         chunk_start = np.int64(start // self._chunk_size)
@@ -172,11 +193,13 @@ class HTTPFile(io.IOBase):
         data = b""
         pos = start
         for chunk_index in range(chunk_start, chunk_stop):
+            if toread <= 0:
+                # Don't download the next chunk if we are done (this might
+                # also be a chunk beyond the end of the file).
+                break
             chunk = self.get_chunk(chunk_index)
             chunk_start = pos % self._chunk_size
-            if toread == 0:
-                break
-            elif chunk_start + toread >= self._chunk_size:
+            if chunk_start + toread >= self._chunk_size:
                 data += chunk[chunk_start:]
                 chunks_read = self._chunk_size - chunk_start
             else:

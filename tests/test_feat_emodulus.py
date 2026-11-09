@@ -484,6 +484,37 @@ def test_af_emodulus_visc_only_2():
                        rtol=0, atol=1e-7)
 
 
+@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
+                            + 'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings(
+    "ignore:The 'emodulus temperature' configuration key is ignored")
+def test_af_emodulus_visc_only_cache_with_temperature():
+    """Changing the viscosity must invalidate the cached emodulus
+
+    If "emodulus temperature" is set (ignored for medium "other"),
+    the ancillary feature for case C was used, whose hash did not
+    contain the "emodulus viscosity" configuration key.
+    """
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=8472, keys=keys)
+    ds = dclab.new_dataset(ddict)
+    ds.config["setup"]["flow rate"] = 0.16
+    ds.config["setup"]["channel width"] = 30
+    ds.config["imaging"]["pixel size"] = .34
+    ds.config["calculation"] = {"emodulus lut": "LE-2D-FEM-19",
+                                "emodulus medium": "other",
+                                "emodulus temperature": 23.0,
+                                "emodulus viscosity model": "herold-2017",
+                                "emodulus viscosity": 5.0,
+                                }
+    emod1 = np.array(ds["emodulus"], copy=True)
+    assert np.sum(~np.isnan(emod1)) > 0
+    ds.config["calculation"]["emodulus viscosity"] = 10.0
+    emod2 = np.array(ds["emodulus"], copy=True)
+    # The emodulus is proportional to the viscosity
+    assert np.allclose(emod2, 2 * emod1, equal_nan=True, rtol=1e-10, atol=0)
+
+
 def test_bad_lut_data():
     try:
         emodulus.load_lut("bad_string_asdkubhasd")

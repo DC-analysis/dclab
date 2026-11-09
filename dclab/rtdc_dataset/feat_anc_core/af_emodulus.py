@@ -117,6 +117,23 @@ def is_channel(mm: RTDCBase) -> bool:
         return True
 
 
+def is_channel_known_medium(mm: RTDCBase) -> bool:
+    """Requirement function for cases A and C
+
+    Same as :func:`is_channel`, but returns False if the viscosity
+    is given directly (case B, medium "other" and "emodulus viscosity"
+    set). In that case, :func:`compute_emodulus` ignores the temperature
+    and the ancillary feature for case B must be used, because only
+    its hash contains the "emodulus viscosity" configuration key.
+    """
+    calccfg = mm.config["calculation"]
+    medium = calccfg.get("emodulus medium", "other")
+    if (calccfg.get("emodulus viscosity", None) is not None
+            and isinstance(medium, str) and medium.lower() == "other"):
+        return False
+    return is_channel(mm)
+
+
 def register() -> None:
     # Please note that registering these things is a delicate business,
     # because the priority has to be chosen carefully.
@@ -138,7 +155,7 @@ def register() -> None:
                                      ["imaging", ["pixel size"]],
                                      ["setup", ["flow rate", "channel width"]]
                                      ],
-                         req_func=is_channel,
+                         req_func=is_channel_known_medium,
                          priority=4 + pr)
         AncillaryFeature(feature_name="emodulus",
                          data="case A",
@@ -150,7 +167,7 @@ def register() -> None:
                                      ["imaging", ["pixel size"]],
                                      ["setup", ["flow rate", "channel width"]]
                                      ],
-                         req_func=is_channel,
+                         req_func=is_channel_known_medium,
                          priority=0 + pr)
 
     AncillaryFeature(feature_name="emodulus",

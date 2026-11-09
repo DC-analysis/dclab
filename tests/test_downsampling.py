@@ -1,4 +1,6 @@
 
+import warnings
+
 import numpy as np
 
 from dclab import downsampling
@@ -33,6 +35,26 @@ def test_grid_basic():
                                               ret_idx=False)
     assert np.all(ads2 == ads)
     assert np.all(bds2 == bds)
+
+
+def test_grid_constant_axis():
+    """An axis with identical values must not break the grid"""
+    rng = np.random.default_rng(42)
+    varying = rng.normal(size=5000)
+    constant = np.full(5000, 3.0)
+    for a, b in [(constant, varying),
+                 (varying, constant),
+                 (constant, constant)]:
+        with warnings.catch_warnings():
+            # division by zero in `norm`
+            warnings.simplefilter("error", RuntimeWarning)
+            ads, bds, idx = downsampling.downsample_grid(a=a,
+                                                         b=b,
+                                                         samples=500,
+                                                         ret_idx=True)
+        assert np.sum(idx) == 500
+        assert np.all(a[idx] == ads)
+        assert np.all(b[idx] == bds)
 
 
 def test_grid_nan():

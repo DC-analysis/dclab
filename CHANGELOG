@@ -10,6 +10,8 @@
    now retried and other errors raise `requests.HTTPError`
  - fix: `HTTPFile.read_range` downloaded an additional chunk (beyond
    the end of the file) when reading up to a chunk boundary
+ - fix: basins with a mismatching basin identifier were still used if
+   the measurement identifier of the referrer matched
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

@@ -345,8 +345,7 @@ class Basin(abc.ABC):
                     warnings.warn(
                         f"Basin identifier mismatch for {self}. Expected "
                         f"'{self.basin_identifier}', got '{basin_identifier}'")
-
-                if self.referrer_identifier is None:
+                elif self.referrer_identifier is None:
                     # No measurement identifier was presented by the
                     # referencing dataset. We are in the dark.
                     # Don't perform any checks.

@@ -73,6 +73,10 @@ class BasinProxy:
                                              basinmap=self.basinmap,
                                              name=feat,
                                              )
+            elif feat == "trace":
+                feat_obj = BasinProxyTrace(feat_obj=self.ds[feat],
+                                           basinmap=self.basinmap,
+                                           )
             else:
                 feat_obj = BasinProxyFeature(feat_obj=self.ds[feat],
                                              basinmap=self.basinmap,
@@ -262,3 +266,43 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
             raise NotImplementedError(
                 f"ufunc 'min' only available for scalar features in "
                 f"'{self.__class__.__name__}'")
+
+
+class BasinProxyTrace:
+    def __init__(self, feat_obj, basinmap):
+        """Wrap around a trace dictionary, mapping every trace upon access
+
+        Every trace (e.g. "fl1_raw") is wrapped in a
+        :class:`BasinProxyFeature` when it is accessed.
+        """
+        self.feat_obj = feat_obj
+        self.basinmap = basinmap
+        self._traces = {}
+
+    def __contains__(self, key):
+        return key in self.feat_obj
+
+    def __getitem__(self, key):
+        if key not in self._traces:
+            self._traces[key] = BasinProxyFeature(feat_obj=self.feat_obj[key],
+                                                  basinmap=self.basinmap,
+                                                  name=key,
+                                                  )
+        return self._traces[key]
+
+    def __iter__(self):
+        yield from sorted(self.keys())
+
+    def __len__(self):
+        return len(self.feat_obj)
+
+    def __repr__(self):
+        return f"<BasinProxyTrace at {hex(id(self))}>"
+
+    def keys(self):
+        return self.feat_obj.keys()
+
+    @property
+    def shape(self):
+        key0 = min(self.keys())
+        return (len(self),) + self[key0].shape

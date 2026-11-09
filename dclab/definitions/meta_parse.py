@@ -40,9 +40,10 @@ def fbool(value: str | bool | float) -> bool:
 
 def fboolorfloat(value: str | bool | float) -> bool | float:
     """Bool or float"""
-    if isinstance(value, (str, bool)) or value == 0:
+    if isinstance(value, (str, bool, np.bool_)) or value == 0:
         return fbool(value)
-    elif isinstance(value, (int, float)):
+    elif isinstance(value, numbers.Real):
+        # includes numpy integers and floats (e.g. from HDF5 attributes)
         return float(value)
     else:
         raise ValueError(f"Value could not be converted to bool "

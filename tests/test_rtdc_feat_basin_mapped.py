@@ -212,6 +212,54 @@ def test_basin_mapped_export(basinmap):
         assert np.all(ds1["mask"] == ds0["mask"][:][basinmap[:2]])
 
 
+@pytest.mark.parametrize("basinmap", [
+    [1, 3, 4],  # very simple case
+    [1, 1, 1, 2],  # not trivial, not realizable with hierarchy children
+])
+@pytest.mark.filterwarnings(
+    "ignore::UserWarning")
+def test_basin_mapped_trace(basinmap):
+    """Traces must be mapped, accessed, and exported via mapped basins"""
+    path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    path_out = path.with_name("level1.rtdc")
+    basinmap = np.array(basinmap, dtype=np.int64)
+
+    # create basin
+    with dclab.new_dataset(path) as ds0, dclab.RTDCWriter(path_out) as hw1:
+        hw1.store_metadata(ds0.config.as_dict(pop_filtering=True))
+        hw1.store_basin(basin_name="level1",
+                        basin_type="file",
+                        basin_format="hdf5",
+                        basin_locs=[path],
+                        basin_map=basinmap
+                        )
+
+    # Check traces
+    with dclab.new_dataset(path) as ds0, dclab.new_dataset(path_out) as ds1:
+        assert "trace" in ds1
+        assert sorted(ds1["trace"]) == sorted(ds0["trace"].keys())
+        assert "fl1_raw" in ds1["trace"]
+        assert ds1["trace"].shape == ((len(ds0["trace"]), len(basinmap))
+                                      + ds0["trace"]["fl1_raw"].shape[1:])
+        for key in ds0["trace"]:
+            trace0 = ds0["trace"][key][:][basinmap]
+            assert np.all(ds1["trace"][key][:] == trace0)
+            for ii in range(len(basinmap)):
+                assert np.all(ds1["trace"][key][ii] == trace0[ii])
+
+        # export the first two events
+        path_export = path.with_name("export.rtdc")
+        ds1.filter.manual[:] = False
+        ds1.filter.manual[:2] = True
+        ds1.apply_filter()
+        ds1.export.hdf5(path_export, features=["deform", "trace"])
+
+    with dclab.new_dataset(path) as ds0, dclab.new_dataset(path_export) as dse:
+        for key in ds0["trace"]:
+            assert np.all(dse["trace"][key][:]
+                          == ds0["trace"][key][:][basinmap[:2]])
+
+
 def test_error_when_basinmap_not_given():
     """This is a test for when the basinmap feature for mapping is missing
 

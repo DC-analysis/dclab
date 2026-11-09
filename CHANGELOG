@@ -31,6 +31,9 @@
    axis were identical (e.g. scatter plot of a constant feature)
  - fix: `isoelastics.get_available_identifiers` loaded the isoelastics
    files relative to the current working directory
+ - fix: `import_plugin_feature_script` removed the first entry of
+   `sys.path` (instead of the plugin directory) and returned the wrong
+   plugin if a module with the same name was imported before
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

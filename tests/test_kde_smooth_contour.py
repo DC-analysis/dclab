@@ -126,6 +126,52 @@ def test_find_smooth_contour_spacing_max_length():
                        rtol=0, atol=1e-12)
 
 
+def test_find_smooth_contour_spacing_dataset_all_filtered():
+    np.random.seed(47)
+    x0 = np.random.normal(loc=100, scale=10, size=100)
+    y0 = np.random.normal(loc=.1, scale=.01, size=100)
+
+    ds = dclab.new_dataset({"area_um": x0, "deform": y0})
+    ds_filtered = dclab.new_dataset({"area_um": x0, "deform": y0})
+    ds_filtered.filter.manual[:] = False
+    ds_filtered.apply_filter()
+
+    kwargs = {"xax": "area_um",
+              "yax": "deform",
+              "xrange": (50, 150),
+              "yrange": (0.09, 0.11),
+              "quantiles": [0.90],
+              }
+    res = smooth_contour.find_smooth_contour_spacing(
+        ds_list=[ds], **kwargs)
+    # The dataset without events must be ignored (was an IndexError).
+    res2 = smooth_contour.find_smooth_contour_spacing(
+        ds_list=[ds_filtered, ds], **kwargs)
+    assert res == res2
+
+
+def test_find_smooth_contour_spacing_no_contour():
+    np.random.seed(47)
+    x0 = np.random.normal(loc=100, scale=10, size=100)
+    y0 = np.random.normal(loc=.1, scale=.01, size=100)
+
+    ds = dclab.new_dataset({"area_um": x0, "deform": y0})
+    ds.filter.manual[:] = False
+    ds.apply_filter()
+
+    res = smooth_contour.find_smooth_contour_spacing(
+        ds_list=[ds],
+        xax="area_um",
+        yax="deform",
+        xrange=(50, 150),
+        yrange=(0.09, 0.11),
+        quantiles=[0.90],
+    )
+    assert res["total iterations"] == 1
+    assert not res["success"]
+    assert res["reason"] == "no contour found"
+
+
 def test_find_smooth_contour_spacing_max_iter():
     np.random.seed(47)
     x0 = np.random.normal(loc=100, scale=10, size=5)

@@ -166,6 +166,44 @@ def test_contour_lines_data_with_too_much_space():
     assert not contours, "there should be no contours with too much space"
 
 
+def test_contour_lines_auto_spacing_all_filtered():
+    np.random.seed(47)
+    ds = dclab.new_dataset({
+        "area_um": np.random.normal(loc=100, scale=10, size=100),
+        "deform": np.random.normal(loc=.1, scale=.01, size=100),
+    })
+    ds.filter.manual[:] = False
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 0
+
+    kde_instance = KernelDensityEstimator(ds)
+    # This raised an IndexError in `find_smooth_contour_spacing`
+    contours = kde_instance.get_contour_lines(xax="area_um", yax="deform")
+    assert contours == []
+
+
+def test_contour_lines_auto_spacing_nan():
+    np.random.seed(47)
+    x0 = np.random.normal(loc=100, scale=10, size=1000)
+    y0 = np.random.normal(loc=.1, scale=.01, size=1000)
+    ds = dclab.new_dataset({"area_um": x0[1:], "deform": y0[1:]})
+
+    y1 = np.copy(y0)
+    y1[0] = np.nan
+    ds_nan = dclab.new_dataset({"area_um": x0, "deform": y1})
+
+    contours = KernelDensityEstimator(ds).get_contour_lines(
+        xax="area_um", yax="deform")
+    # NaN values resulted in a NaN plot range for `find_smooth_contour_spacing`
+    contours_nan = KernelDensityEstimator(ds_nan).get_contour_lines(
+        xax="area_um", yax="deform")
+    assert len(contours) == len(contours_nan) == 2
+    for cc, cc_nan in zip(contours, contours_nan):
+        assert len(cc) == len(cc_nan) > 0
+        for ci, ci_nan in zip(cc, cc_nan):
+            assert np.allclose(ci, ci_nan, rtol=0, atol=1e-12)
+
+
 def test_kde_get_at_acc():
     ddict = example_data_dict(size=300, keys=["area_um", "deform"])
     ds = dclab.new_dataset(ddict)

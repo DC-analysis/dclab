@@ -291,12 +291,21 @@ class KernelDensityEstimator:
         if xacc is None or yacc is None:
             # workaround for circular import
             from .smooth_contour import find_smooth_contour_spacing
+            # Determine the plot range from the filtered, finite events
+            xd = self.rtdc_ds[xax][self.rtdc_ds.filter.all]
+            yd = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
+            valid = np.isfinite(xd) & np.isfinite(yd)
+            if not np.any(valid):
+                # there is nothing to compute a contour for
+                return []
+            xd = xd[valid]
+            yd = yd[valid]
             sc_res = find_smooth_contour_spacing(
                 [self.rtdc_ds],
                 xax=xax,
                 yax=yax,
-                xrange=(np.min(self.rtdc_ds[xax]), np.max(self.rtdc_ds[xax])),
-                yrange=(np.min(self.rtdc_ds[yax]), np.max(self.rtdc_ds[yax])),
+                xrange=(np.min(xd), np.max(xd)),
+                yrange=(np.min(yd), np.max(yd)),
                 quantiles=quantiles,
                 xscale=xscale,
                 yscale=yscale,

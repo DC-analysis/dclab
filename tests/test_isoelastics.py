@@ -196,6 +196,15 @@ def test_get():
         assert np.all(a == b)
 
 
+def test_get_available_identifiers(monkeypatch, tmp_path):
+    # The isoelastics files were loaded relative to the working directory
+    monkeypatch.chdir(tmp_path)
+    iso.get_available_identifiers.cache_clear()
+    ids = iso.get_available_identifiers()
+    assert ids == ["HE-2D-FEM-22", "HE-3D-FEM-22", "LE-2D-FEM-19",
+                   "LE-2D-ana-18"]
+
+
 def test_pixel_err():
     i1 = iso.Isoelastics([get_isofile()])
     isoel = i1._data["test-LE-2D-ana-18"]["area_um"]["deform"]["isoelastics"]

@@ -431,8 +431,11 @@ def get_available_identifiers():
     """Return a list of available LUT identifiers"""
     isofiles = get_available_files()
     ids = []
-    for pp in isofiles:
-        _, meta = feat_emod.load_mtext(pp)
+    for name in isofiles:
+        # `name` is only the file name, not the path to the file
+        ref = importlib_resources.files('dclab.isoelastics') / name
+        with importlib_resources.as_file(ref) as path:
+            _, meta = feat_emod.load_mtext(path)
         ids.append(meta["lut identifier"])
     return sorted(set(ids))
 

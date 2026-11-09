@@ -17,6 +17,9 @@
  - fix: `BasinProxyFeature.min/max/mean` returned the values of the
    entire basin for mapped basins whose basinmap did not contain 0,
    and did not ignore NaN values otherwise
+ - fix: changing "emodulus viscosity" (medium "other") did not
+   invalidate the cached "emodulus" feature if "emodulus temperature"
+   was also set
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

@@ -1,4 +1,4 @@
-0.73.8
+0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path
  - fix: deadlock when filtering datasets without "experiment:event count"

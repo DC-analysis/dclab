@@ -1,4 +1,5 @@
 import pathlib
+import sys
 import tempfile
 import traceback
 
@@ -495,6 +496,29 @@ def test_pf_import_plugin_info_bad_path():
     bad_plugin_path = "not/a/real/path/plugin.py"
     with pytest.raises(PluginImportError, match="could be not be found"):
         import_plugin_feature_script(bad_plugin_path)
+
+
+def test_pf_import_plugin_same_name_different_directory(tmp_path):
+    """Plugins with identical file names must not be confused"""
+    for name in ["a", "b"]:
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "my_plugin_same_name.py").write_text(
+            f"info = {{'description': '{name}'}}\n")
+    info_a = import_plugin_feature_script(
+        tmp_path / "a" / "my_plugin_same_name.py")
+    info_b = import_plugin_feature_script(
+        tmp_path / "b" / "my_plugin_same_name.py")
+    assert info_a["description"] == "a"
+    # this returned the info of plugin "a"
+    assert info_b["description"] == "b"
+
+
+def test_pf_import_plugin_sys_path_unchanged():
+    """Importing a plugin must not modify `sys.path`"""
+    sys_path = list(sys.path)
+    import_plugin_feature_script(data_dir / "feat_anc_plugin_creative.py")
+    # The first item was removed and the plugin directory was left in it.
+    assert sys.path == sys_path
 
 
 def test_pf_incorrect_input_info():

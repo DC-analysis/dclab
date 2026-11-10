@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import hashlib
-import importlib
+import importlib.util
 import pathlib
 import sys
 
@@ -233,17 +233,34 @@ def import_plugin_feature_script(
     if not path.exists():
         raise PluginImportError("The plugin could be not be found at "
                                 f"'{plugin_path}'!")
+    # Load the plugin directly from its file. The unique module name
+    # makes sure that we neither get nor replace a different module
+    # with the same name (e.g. a plugin with the same file name that
+    # was loaded from a different directory).
+    path_hash = hashlib.md5(str(path.resolve()).encode()).hexdigest()[:10]
+    module_name = f"dclab_plugin_{path.stem}_{path_hash}"
+    if module_name in sys.modules:
+        # plugin already imported
+        return sys.modules[module_name].info
+    # allow the plugin to import modules from its directory
+    plugin_dir = str(path.parent)
+    sys.path.insert(0, plugin_dir)
+    sys.dont_write_bytecode = True
     try:
-        # insert the plugin directory to sys.path so we can import it
-        sys.path.insert(-1, str(path.parent))
-        sys.dont_write_bytecode = True
-        plugin = importlib.import_module(path.stem)
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        plugin = importlib.util.module_from_spec(spec)
+        # The module must be in `sys.modules` while it is executed
+        # (required e.g. for dataclasses).
+        sys.modules[module_name] = plugin
+        spec.loader.exec_module(plugin)
     except BaseException as e:
+        sys.modules.pop(module_name, None)
         raise PluginImportError(
             f"The plugin {plugin_path} could not be loaded!") from e
     finally:
         # undo our path insertion
-        sys.path.pop(0)
+        if plugin_dir in sys.path:
+            sys.path.remove(plugin_dir)
         sys.dont_write_bytecode = False
 
     return plugin.info

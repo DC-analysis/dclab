@@ -2,6 +2,8 @@
  - fix: `import_plugin_feature_script` removed the first entry of
    `sys.path` (instead of the plugin directory) and returned the wrong
    plugin if a module with the same name was imported before
+ - fix: replacing a plugin feature did not invalidate the cached
+   feature data (`AncillaryFeature.hash` now includes `identifier`)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

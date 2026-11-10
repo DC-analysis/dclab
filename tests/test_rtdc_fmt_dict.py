@@ -14,6 +14,19 @@ def test_contour_not_available():
     assert "contour" not in ds
 
 
+@pytest.mark.parametrize("features", [["trace", "deform"],
+                                      ["deform", "trace"],
+                                      ["trace"]])
+def test_event_count_trace(features):
+    """The event count must not be the number of trace channels"""
+    data = {"deform": np.linspace(0.01, 0.1, 5),
+            "trace": {"fl1_median": np.zeros((5, 10), dtype=np.int16),
+                      "fl1_raw": np.zeros((5, 10), dtype=np.int16)}}
+    ds = new_dataset({feat: data[feat] for feat in features})
+    assert ds.config["experiment"]["event count"] == 5
+    assert len(ds) == 5
+
+
 def test_image_not_available():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)

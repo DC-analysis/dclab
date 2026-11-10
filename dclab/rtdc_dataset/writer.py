@@ -164,11 +164,18 @@ class RTDCWriter:
         """
         # set event count
         feats = sorted(self.h5file.get("events", {}).keys())
-        if feats:
-            self.h5file.attrs["experiment:event count"] = len(
-                self.h5file["events"][feats[0]])
-        else:
+        if not feats:
             raise ValueError(f"No features in '{self.path}'!")
+        # The "trace" group contains one dataset per trace channel. Its
+        # length is the number of channels, not the number of events.
+        others = [ft for ft in feats if ft != "trace"]
+        if others:
+            event_count = len(self.h5file["events"][others[0]])
+        else:
+            channels = sorted(self.h5file["events"]["trace"].keys())
+            event_count = (len(self.h5file["events"]["trace"][channels[0]])
+                           if channels else 0)
+        self.h5file.attrs["experiment:event count"] = event_count
 
         # ignore empty features in the checks further below
         for feat in feats[:]:  # iterate over a copy of the list

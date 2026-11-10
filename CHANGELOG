@@ -1,4 +1,8 @@
-0.73.8
+0.74.1
+ - fix: `import_plugin_feature_script` removed the first entry of
+   `sys.path` (instead of the plugin directory) and returned the wrong
+   plugin if a module with the same name was imported before
+0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path
  - fix: deadlock when filtering datasets without "experiment:event count"
@@ -31,9 +35,7 @@
    axis were identical (e.g. scatter plot of a constant feature)
  - fix: `isoelastics.get_available_identifiers` loaded the isoelastics
    files relative to the current working directory
- - fix: `import_plugin_feature_script` removed the first entry of
-   `sys.path` (instead of the plugin directory) and returned the wrong
-   plugin if a module with the same name was imported before
+ - enh: never show 100% rounded progress when CLI is still working
 0.73.7
  - fix: broken frame feature lead to invalid index in `write_chopped_images`
  - fix: prevent endless loop for invalid index when reading chopped images

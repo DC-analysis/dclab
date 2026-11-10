@@ -248,8 +248,9 @@ class AncillaryFeature:
     def hash(self, rtdc_ds: RTDCBase) -> str:
         """Used for identifying an ancillary computation
 
-        The required features, the used configuration keys/values, and
-        the return value of the requirement function are hashed.
+        The required features, the used configuration keys/values,
+        the return value of the requirement function, and the
+        `identifier` (if set) are hashed.
         """
         hasher = hashlib.md5()
         # data columns
@@ -266,6 +267,9 @@ class AncillaryFeature:
         if not isinstance(reqret, bool):
             # add to hash if not a boolean
             hasher.update(obj2bytes(reqret))
+        # identifier of the implementation (e.g. of a plugin feature)
+        if self.identifier is not None:
+            hasher.update(obj2bytes(self.identifier))
         return hasher.hexdigest()
 
     def is_available(self, rtdc_ds: RTDCBase, verbose: bool = False) -> bool:

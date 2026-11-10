@@ -804,6 +804,27 @@ def test_pf_remove_plugin_feature():
         remove_plugin_feature(not_a_plugin_instance)
 
 
+def test_pf_replace_plugin_feature_cache(tmp_path):
+    """Replacing a plugin must invalidate the cached feature data"""
+    ds = dclab.new_dataset({"circ": np.array([0.5, 0.6]),
+                            "deform": np.array([0.5, 0.4])})
+    for factor in [2, 3]:
+        plugin_path = tmp_path / f"plugin_factor_{factor}.py"
+        plugin_path.write_text(
+            "def compute(rtdc_ds):\n"
+            f"    return {{'circ_times_factor': rtdc_ds['circ'] * {factor}}}\n"
+            "\n"
+            "info = {'method': compute,\n"
+            "        'feature names': ['circ_times_factor'],\n"
+            "        'features required': ['circ']}\n"
+        )
+        dclab.load_plugin_feature(plugin_path)
+        # This returned the cached data of the first plugin.
+        assert np.allclose(ds["circ_times_factor"], [0.5 * factor,
+                                                     0.6 * factor])
+        remove_all_plugin_features()
+
+
 def test_pf_try_existing_feature_fails():
     """An existing feature name is not allowed"""
     info = example_plugin_info_single_feature()

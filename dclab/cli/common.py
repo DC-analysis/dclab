@@ -145,7 +145,7 @@ def monitor(task, byte_book_keeper, stop_event):
     prev_progress = ""
 
     while not stop_event.is_set():
-        frac = bbk.get_progress()
+        frac = bbk.get_progress() * 0.99  # never print 100%
         progress = f"{task} {frac:.0%}"
         if progress != prev_progress:
             prev_progress = progress

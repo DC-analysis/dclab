@@ -785,6 +785,29 @@ def test_rectify_metadata_ignore_empty_trace():
         assert h5.attrs["experiment:event count"] == 7
 
 
+def test_rectify_metadata_event_count_trace(tmp_path):
+    """The event count must not be the number of trace channels"""
+    path = tmp_path / "test.rtdc"
+    with RTDCWriter(path, mode="reset") as hw:
+        # "trace" comes before "volume" in alphabetical order
+        hw.store_feature("trace", {
+            "fl1_median": np.zeros((5, 10), dtype=np.int16),
+            "fl1_raw": np.zeros((5, 10), dtype=np.int16)})
+        hw.store_feature("volume", np.arange(5, dtype=float))
+    with h5py.File(path) as h5:
+        assert h5.attrs["experiment:event count"] == 5
+
+
+def test_rectify_metadata_event_count_trace_only(tmp_path):
+    path = tmp_path / "test.rtdc"
+    with RTDCWriter(path, mode="reset") as hw:
+        hw.store_feature("trace", {
+            "fl1_median": np.zeros((5, 10), dtype=np.int16),
+            "fl1_raw": np.zeros((5, 10), dtype=np.int16)})
+    with h5py.File(path) as h5:
+        assert h5.attrs["experiment:event count"] == 5
+
+
 def test_replace_contour():
     num = 7
     contour = []

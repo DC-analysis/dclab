@@ -4,6 +4,9 @@
    plugin if a module with the same name was imported before
  - fix: replacing a plugin feature did not invalidate the cached
    feature data (`AncillaryFeature.hash` now includes `identifier`)
+ - fix: the event count was set to the number of trace channels if
+   "trace" was the first feature (`RTDCWriter.rectify_metadata`,
+   `RTDC_Dict`, and `RTDCBase` without "experiment:event count")
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

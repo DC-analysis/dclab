@@ -313,6 +313,19 @@ def test_discouraged_array_dunder_childndarray():
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
     'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+def test_length_no_event_count_trace(tmp_path):
+    """Without "event count", the length is computed from the features"""
+    path = tmp_path / "test.rtdc"
+    with h5py.File(path, "w") as h5:
+        h5["events/trace/fl1_median"] = np.zeros((5, 10), dtype=np.int16)
+        h5["events/trace/fl1_raw"] = np.zeros((5, 10), dtype=np.int16)
+        h5["events/volume"] = np.arange(5, dtype=float)
+    with new_dataset(path) as ds:
+        assert "event count" not in ds.config["experiment"]
+        # This was the number of trace channels
+        assert len(ds) == 5
+
+
 def test_hash():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert ds.hash == "2c436daba22d2c7397b74d53d80f8931"

@@ -202,7 +202,11 @@ class RTDCBase(abc.ABC):
         keys.sort()
         with self.lock:
             for kk in keys:
-                length = len(self[kk])
+                if kk == "trace":
+                    # The length of "trace" is the number of channels.
+                    length = self[kk].shape[1]
+                else:
+                    length = len(self[kk])
                 if length:
                     return length
 

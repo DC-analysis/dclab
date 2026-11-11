@@ -93,7 +93,12 @@ class RTDC_Dict(RTDCBase):
                 data.setflags(write=False)
             self._events[feat] = data
 
-        event_count = len(ddict[list(ddict.keys())[0]])
+        # The length of "trace" is the number of trace channels.
+        others = [ft for ft in ddict if ft != "trace"]
+        if others:
+            event_count = len(ddict[others[0]])
+        else:
+            event_count = self._events["trace"].shape[1]
 
         self.config = Configuration()
         self.config["experiment"]["event count"] = event_count

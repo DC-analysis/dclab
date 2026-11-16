@@ -845,7 +845,12 @@ class RTDCBase(abc.ABC):
                     bna = b_cls(pp, **kwargs)
                     try:
                         absolute_exists = bna.verify_basin()
+                    except feat_basin.BasinmapFeatureMissingError:
+                        # The referring dataset is broken.
+                        raise
                     except BaseException:
+                        # The file is not a valid basin
+                        # (e.g. corrupt or not readable).
                         pass
                     else:
                         if absolute_exists:

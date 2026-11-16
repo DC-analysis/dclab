@@ -540,7 +540,10 @@ def is_properly_compressed(h5obj):
     # attribute of `obj`.
     create_plist = h5obj.id.get_create_plist()
     filter_args = create_plist.get_filter_by_id(32015)
-    if filter_args is not None and filter_args[1][0] >= 5:
+    # If no compression level is set, zstd uses its default level (3).
+    if (filter_args is not None
+            and len(filter_args[1])
+            and filter_args[1][0] >= 5):
         properly_compressed = True
     else:
         properly_compressed = False

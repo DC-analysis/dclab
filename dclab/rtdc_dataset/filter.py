@@ -89,14 +89,14 @@ class Filter:
                 self._box_filters.pop(key)
         # determine polygon filters that have been removed
         for pf_id in list(self._poly_filters.keys()):
-            pf = PolygonFilter.get_instance_from_id(pf_id)
-            if (pf_id in rtdc_ds.config["filtering"]["polygon filters"]
-                and pf.axes[0] in self.features
-                    and pf.axes[1] in self.features):
-                pass
-            else:
-                # filter has been removed
-                self._poly_filters.pop(pf_id)
+            if pf_id in rtdc_ds.config["filtering"]["polygon filters"]:
+                # Only get the instance if the filter is still in use,
+                # because removed filters might not exist anymore.
+                pf = PolygonFilter.get_instance_from_id(pf_id)
+                if pf.axes[0] in self.features and pf.axes[1] in self.features:
+                    continue
+            # filter has been removed
+            self._poly_filters.pop(pf_id)
 
     def reset(self):
         """Reset all filters"""

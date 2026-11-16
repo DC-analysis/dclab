@@ -196,6 +196,27 @@ def test_polygon_filter_reset():
     assert np.sum(ds.filter.all) == 8472
 
 
+def test_polygon_filter_removed_instance():
+    """Removing the filter and its instance must not break `apply_filter`"""
+    ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    amin, amax = ds["area_um"].min(), ds["area_um"].max()
+    dmin, dmax = ds["deform"].min(), ds["deform"].max()
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[amin, dmin],
+                                     [(amax + amin) / 2, dmin],
+                                     [(amax + amin) / 2, dmax],
+                                     ])
+    ds.polygon_filter_add(pf)
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 2138
+
+    ds.polygon_filter_rm(pf)
+    PolygonFilter.remove(pf.unique_id)
+    ds.apply_filter()
+    assert np.sum(ds.filter.all) == 8472
+
+
 @pytest.mark.parametrize("prop", ["all", "box", "invalid", "polygon"])
 def test_readonly_properties(prop):
     ddict = example_data_dict(size=8472, keys=["area_um", "deform",

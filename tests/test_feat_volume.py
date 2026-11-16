@@ -135,6 +135,35 @@ def test_orientation():
     assert np.allclose(v1, v2, atol=1e-11, rtol=0)
 
 
+@pytest.mark.parametrize("roll", [0, 30, 50, 75])
+def test_orientation_start_point(roll):
+    """fix_orientation must work for any start point of the contour"""
+    major = 10
+    minor = 5
+    ellip = get_ellipse_coords(a=major,
+                               b=minor,
+                               x=minor,
+                               y=5,
+                               angle=0,
+                               k=100)
+    cx, cy = centroid_of_polygon(ellip)
+    # reference volume (correct orientation without fixing)
+    v_ref = get_volume(cont=ellip[::-1, :],
+                       pos_x=cx,
+                       pos_y=cy,
+                       pix=1)
+    assert v_ref > 0, "sanity check"
+
+    # wrong orientation with a different start point
+    ellip_wrong = np.roll(ellip, roll, axis=0)
+    v_fix = get_volume(cont=ellip_wrong,
+                       pos_x=cx,
+                       pos_y=cy,
+                       pix=1,
+                       fix_orientation=True)
+    assert np.allclose(v_fix, v_ref, atol=1e-8, rtol=0)
+
+
 def test_shape():
     major = 10
     minor = 5

@@ -108,7 +108,7 @@ def get_volume(
             # These points will be shifted up to r=0 directly on the z-axis
             contour_right = np.copy(contour_r)
             contour_right[inx_neg] = 0
-            vol_right = vol_revolve(contour_right, contour_x, pix)
+            vol_right = vol_revolve(contour_right, contour_z, pix)
 
             # Compute left volume
             # Which points are at positive r-values? (r>0)?
@@ -121,7 +121,7 @@ def get_volume(
             contour_left[:] *= -1
             # ... but in doing so, we have switched to clockwise rotation
             # and we need to pass the array in reverse order
-            vol_left = vol_revolve(contour_left[::-1], contour_x[::-1], pix)
+            vol_left = vol_revolve(contour_left[::-1], contour_z[::-1], pix)
 
             # Compute the average
             v_avg[ii] = (vol_right + vol_left) / 2

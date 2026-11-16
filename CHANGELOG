@@ -46,6 +46,9 @@
    could not be opened
  - fix: CLI compress with `--crop-event-images` and `--basin-input`
    failed if the input file and a basin both contained image data
+ - fix: `get_volume` with `fix_orientation=True` returned wrong (also
+   negative) volumes for contours in the opposite orientation, because
+   the reordered contour was combined with the original x-coordinates
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

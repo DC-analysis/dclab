@@ -15,6 +15,9 @@
    against a two-character string
  - fix: `apply_filter` raised a KeyError if a polygon filter was
    removed from a dataset and its `PolygonFilter` instance deleted
+ - fix: an event manually re-included in a hierarchy child was
+   excluded again when the hierarchy parent changed (if all manually
+   excluded events had been re-included)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

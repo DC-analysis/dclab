@@ -289,6 +289,30 @@ def test_join_rtdc_unequal_features_issue_157_2():
         assert "ml_score_abc" in log
 
 
+def test_join_rtdc_unequal_features_two_adjacent():
+    """Two adjacent (sorted) features missing in the second file"""
+    path1 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path2 = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    path_out = path1.with_name("out.rtdc")
+
+    # add features to path1 and define order (join sorts the files with date)
+    with h5py.File(path1, "a") as h51:
+        h51["events"]["ml_score_abc"] = np.log10(h51["events"]["area_um"][:])
+        h51["events"]["ml_score_abd"] = np.log10(h51["events"]["area_um"][:])
+        h51.attrs["experiment:date"] = "2020-01-01"
+    with h5py.File(path2, "a") as h51:
+        h51.attrs["experiment:date"] = "2021-01-01"
+
+    cli.join(paths_in=[path1, path2], path_out=path_out)
+    with dclab.new_dataset(path_out) as ds:
+        assert "ml_score_abc" not in ds.features_innate
+        assert "ml_score_abd" not in ds.features_innate
+        assert "area_um" in ds.features_innate
+        log = "\n".join(ds.logs["dclab-join-feature-warnings"])
+        assert "ml_score_abc" in log
+        assert "ml_score_abd" in log
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_join_frame():

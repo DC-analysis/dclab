@@ -133,7 +133,7 @@ def join(
                 else:
                     # Remove features from the feature list, if it is not in
                     # this dataset, or cannot be computed on-the-fly.
-                    for feat in features:
+                    for feat in list(features):  # [sic] iterate over a copy
                         if feat not in dsc.features:
                             features.remove(feat)
                             warnings.warn(

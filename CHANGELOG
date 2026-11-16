@@ -27,6 +27,9 @@
    path to the original file in the basin definition
  - docs: the default branch was renamed from "master" to "main"
  - docs: fix links to renamed files in the emodulus docs
+ - fix: CLI join failed if two features that are adjacent in the sorted
+   feature list were missing in one of the files (feature list was
+   modified while iterating over it)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

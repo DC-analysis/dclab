@@ -500,6 +500,17 @@ class Export:
                     if basin_is_local:
                         # So the user can put them into the same directory.
                         basin_locs.append(ds.path.name)
+                        # Keep the relative path information.
+                        try:
+                            relp = ds.path.relative_to(path.parent,
+                                                       walk_up=True)
+                            basin_locs.append(relp.as_posix())
+                        except BaseException:
+                            # Might fail for multiple reasons:
+                            # - located on other drive
+                            # - located on network share
+                            # - walk_up not implemented in Python<3.12
+                            pass
                     basin_list.append({
                         "basin_name": "Exported data",
                         "basin_type": "file" if basin_is_local else "remote",

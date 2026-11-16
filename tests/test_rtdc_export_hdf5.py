@@ -896,6 +896,40 @@ def test_hdf5_hierarchy_basin_export_relative_path(tmp_path):
         assert np.all(dse["deform"][:] == ds["deform"][5:][1::2][:-1]), "sane"
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="`Path.relative_to(.., walk_up)` requires python3.12 or higher")
+def test_hdf5_basin_export_relative_path(tmp_path):
+    """The relative basin path is also stored for non-hierarchy datasets"""
+    h5path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+
+    path_in = tmp_path / "workdir" / "input" / "incomming.rtdc"
+    path_out = tmp_path / "workdir" / "output" / "exported.rtdc"
+
+    path_in.parent.mkdir(parents=True)
+    path_out.parent.mkdir(parents=True)
+
+    shutil.copy2(h5path, path_in)
+
+    with dclab.new_dataset(path_in) as ds:
+        ds.filter.manual[:5] = False
+        ds.apply_filter()
+        ds.export.hdf5(path_out,
+                       filtered=True,
+                       features=[],
+                       basins=True,
+                       )
+
+    # rename the entire directory
+    (tmp_path / "workdir").rename(tmp_path / "holidaydir")
+    path_out_2 = tmp_path / "holidaydir" / "output" / "exported.rtdc"
+
+    with dclab.new_dataset(path_out_2) as dse, dclab.new_dataset(h5path) as ds:
+        assert "image" in dse.features_basin
+        assert "image" not in dse.features_innate
+        assert np.all(dse["deform"][:] == ds["deform"][5:])
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_identifier_different():

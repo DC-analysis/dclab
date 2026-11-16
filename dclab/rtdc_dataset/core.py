@@ -828,12 +828,12 @@ class RTDCBase(abc.ABC):
                 # translate Windows and Unix relative paths
                 for pi in list(p_paths):  # [sic] create a copy of the list
                     if pi.count(".."):
-                        if pi[2:].count("/") and os.path.sep == r"\\":
+                        if pi[2:].count("/") and os.path.sep == "\\":
                             # Windows
-                            p_paths.append(pi.replace("/", r"\\"))
-                        elif pi[2:].count(r"\\") and os.path.sep == "/":
+                            p_paths.append(pi.replace("/", "\\"))
+                        elif pi[2:].count("\\") and os.path.sep == "/":
                             # Unix
-                            p_paths.append(pi.replace(r"\\", "/"))
+                            p_paths.append(pi.replace("\\", "/"))
 
                 # perform the actual check
                 for pp in p_paths:

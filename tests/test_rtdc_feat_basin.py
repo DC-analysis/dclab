@@ -353,7 +353,7 @@ def test_basin_not_allowed_to_have_local_basin_in_remote_basin():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.parametrize("path_sep", [r"/", r"\\"])
+@pytest.mark.parametrize("path_sep", [r"/", "\\", r"\\"])
 def test_basin_relative_paths(path_sep):
     """Relative paths should work for both `\\` and ¸`/`."""
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
@@ -387,7 +387,7 @@ def test_basin_relative_paths(path_sep):
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.parametrize("path_sep", [r"/", r"\\"])
+@pytest.mark.parametrize("path_sep", [r"/", "\\", r"\\"])
 def test_basin_relative_paths_same_dir(path_sep):
     """Search relative basins in referring dataset directory as well"""
     h5path: pathlib.Path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")

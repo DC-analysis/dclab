@@ -37,15 +37,15 @@ Information for developers
 
 Contributing
 ~~~~~~~~~~~~
-The main branch for developing dclab is master.
+The main branch for developing dclab is main.
 If you want to make small changes like one-liners,
 documentation, or default values in the configuration,
-you may work on the master branch. If you want to change
+you may work on the main branch. If you want to change
 more, please (fork dclab and) create a separate branch,
 e.g. ``my_new_feature_dev``, and create a pull-request
 once you are done making your changes.
 Please make sure to edit the 
-`Changelog <https://github.com/DC-analysis/dclab/blob/master/CHANGELOG>`__.
+`Changelog <https://github.com/DC-analysis/dclab/blob/main/CHANGELOG>`__.
 
 **Very important:** Please always try to use ::
 
@@ -108,7 +108,7 @@ Incrementing version
 ~~~~~~~~~~~~~~~~~~~~
 Dclab gets its version from the latest git tag.
 If you think that a new version should be published,
-create a tag on the master branch (if you have the necessary
+create a tag on the main branch (if you have the necessary
 permissions to do so)::
 
     git tag -a "0.1.3"
@@ -118,12 +118,12 @@ Appveyor and GitHub Actions will then automatically build source package and whe
 and publish them on PyPI.
 
 
-.. |dclab| image:: https://raw.github.com/DC-analysis/dclab/master/docs/logo/dclab.png
+.. |dclab| image:: https://raw.github.com/DC-analysis/dclab/main/docs/logo/dclab.png
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/dclab.svg
    :target: https://pypi.python.org/pypi/dclab
 .. |Build Status| image:: https://img.shields.io/github/actions/workflow/status/DC-analysis/dclab/check.yml
    :target: https://github.com/DC-analysis/dclab/actions?query=workflow%3AChecks
-.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/dclab/master.svg
+.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/dclab/main.svg
    :target: https://codecov.io/gh/DC-analysis/dclab
 .. |Docs Status| image:: https://readthedocs.org/projects/dclab/badge/?version=latest
    :target: https://readthedocs.org/projects/dclab/builds/

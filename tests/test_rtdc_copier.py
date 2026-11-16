@@ -208,6 +208,53 @@ def test_copy_basins_internal_none():
         assert len(basin_dicts) == 0
 
 
+def test_copy_basins_internal_shared_basinmap():
+    """Two internal basins that share the same basinmap feature"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("input_file.rtdc")
+    h5path_out = h5path.with_name("copied.rtdc")
+
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=hw.h5file,
+                  features="scalar")
+        size = src["events/deform"].shape[0]
+        basin_map = np.zeros(size, dtype=np.int64)
+        basin_map[1::2] = 1
+        hw.store_basin(basin_name="background",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       internal_data={"image_bg": np.zeros((2, 80, 320))},
+                       basin_map=basin_map,
+                       basin_feats=["image_bg"],
+                       )
+        hw.store_basin(basin_name="user-defined",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       internal_data={"userdef1": np.array([3., 7.])},
+                       basin_map=basin_map,
+                       basin_feats=["userdef1"],
+                       )
+
+    # sanity check
+    with h5py.File(h5path_small) as h5:
+        assert [f for f in h5["events"] if f.startswith("basinmap")] \
+            == ["basinmap0"]
+
+    with h5py.File(h5path_small) as src, h5py.File(h5path_out, "a") as dst:
+        rtdc_copy(src_h5file=src,
+                  dst_h5file=dst,
+                  features="all",
+                  include_basins=True)
+
+    with dclab.new_dataset(h5path_out) as ds:
+        assert len(ds.basins_get_dicts()) == 2
+        assert "image_bg" in ds.features_basin
+        assert np.all(ds["userdef1"][:4] == [3, 7, 3, 7])
+
+
 def test_copy_basins_internal_no_scalar():
     """Store an internal basin and only export scalar features"""
     h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")

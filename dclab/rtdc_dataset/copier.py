@@ -286,8 +286,10 @@ def internal_basin_events_copy(
             if bn_feats:
                 # Note down features that we added
                 basin_feat += bn_feats
-                # Write basinmap feature
-                if bn["mapping"].startswith("basinmap"):
+                # Write basinmap feature (only once, because it might be
+                # shared by multiple basins)
+                if (bn["mapping"].startswith("basinmap")
+                        and bn["mapping"] not in basin_feat):
                     feat = bn["mapping"]
                     basin_feat.append(feat)
                     if bbk is not None:

@@ -21,6 +21,8 @@
  - fix: removing the min/max keys of a box filter from the
    configuration did not remove that filter
  - ref: cleanup filter.py (incorrect variable names, use of sets)
+ - fix: `Configuration.copy` did not preserve `disable_checks`, which
+   removed unknown configuration keys from the copy
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

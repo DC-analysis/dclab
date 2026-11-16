@@ -1,6 +1,7 @@
 import numbers
 from os.path import join
 import tempfile
+import warnings
 
 import h5py
 import numpy as np
@@ -905,6 +906,39 @@ def test_scalar_ufuncs_attrs_append():
         assert np.allclose(h5["events/area_um"].attrs["max"], 700)
         assert np.allclose(h5["events/area_um"].attrs["mean"],
                            382.6259946949602)
+
+
+@pytest.mark.parametrize("new_session", [False, True])
+def test_scalar_ufuncs_attrs_append_nan(new_session, tmp_path):
+    """The cached mean must ignore nan values when appending data"""
+    rtdc_file = tmp_path / "test.rtdc"
+    chunks = [
+        # deform: nan values in the first chunk
+        {"deform": np.array([0.1, np.nan]),
+         # area_um: only nan values in the first chunk
+         "area_um": np.array([np.nan, np.nan])},
+        {"deform": np.array([0.3]),
+         "area_um": np.array([5.0, 7.0])},
+        {"deform": np.array([np.nan, 0.2]),
+         "area_um": np.array([np.nan, 9.0])},
+    ]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        hw = RTDCWriter(rtdc_file)
+        for chunk in chunks:
+            for feat in chunk:
+                hw.store_feature(feat, chunk[feat])
+            if new_session:
+                hw.close()
+                hw = RTDCWriter(rtdc_file)
+        hw.close()
+
+    with h5py.File(rtdc_file) as h5:
+        for feat in ["deform", "area_um"]:
+            assert np.allclose(h5["events"][feat].attrs["mean"],
+                               np.nanmean(h5["events"][feat][:]))
+        assert np.allclose(h5["events/deform"].attrs["mean"], 0.2)
+        assert np.allclose(h5["events/area_um"].attrs["mean"], 7)
 
 
 def test_tables_recarray():

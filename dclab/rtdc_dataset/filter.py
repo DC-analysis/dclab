@@ -140,8 +140,7 @@ class Filter:
         cfg_old = self._old_config
 
         # Determine which data was updated (including removed keys)
-        for skey in list(cfg_cur.keys()) + [k for k in cfg_old
-                                            if k not in cfg_cur]:
+        for skey in set(cfg_cur.keys()) | set(cfg_old.keys()):
             if cfg_cur.get(skey, None) != cfg_old.get(skey, None):
                 newkeys.append(skey)
                 oldvals.append(cfg_old.get(skey, None))

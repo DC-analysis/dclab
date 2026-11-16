@@ -41,6 +41,9 @@
  - fix: `RTDCWriter` computed a wrong "mean" attribute for scalar
    features when appending data containing nan values (and the mean
    remained nan if the first data written were all nan)
+ - fix: HDF5 files with user-defined metadata keys containing a colon
+   (e.g. "user:time:start") or root attributes without a section
+   could not be opened
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

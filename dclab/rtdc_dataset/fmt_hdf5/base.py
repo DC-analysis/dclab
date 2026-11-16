@@ -197,7 +197,12 @@ class RTDC_HDF5(RTDCBase):
 
         config = Configuration()
         for key in h5attrs:
-            section, pname = key.split(":")
+            if ":" not in key:
+                # Not a metadata key (e.g. written by other software)
+                continue
+            # Split only at the first colon, because user-defined
+            # metadata keys may contain colons (e.g. "user:time:start").
+            section, pname = key.split(":", 1)
             config[section][pname] = h5attrs[key]
         return config
 

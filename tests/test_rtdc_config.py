@@ -409,6 +409,33 @@ def test_user_section_set_save_reload_fmt_hdf5_basic():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_user_section_set_save_reload_fmt_hdf5_colon_in_key():
+    """User-defined metadata keys may contain colons"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with dclab.RTDCWriter(h5path) as hw:
+        hw.store_metadata({"user": {"time:start": "12:00"}})
+    with h5py.File(h5path, "r") as h5:
+        assert h5.attrs["user:time:start"] == "12:00"
+    with new_dataset(h5path) as ds:
+        assert ds.config["user"]["time:start"] == "12:00"
+    # the low-level HDF5 metadata check must work as well
+    dclab.rtdc_dataset.check_dataset(h5path)
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hdf5_root_attribute_without_section():
+    """Root attributes without a section (no colon) are ignored"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["version"] = "1.0"
+    with new_dataset(h5path) as ds:
+        assert "version" not in ds.config
+        assert len(ds) == 7
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_user_section_set_save_reload_fmt_hdf5_containers():
     """Check that 'user' section metadata works for container data types"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")

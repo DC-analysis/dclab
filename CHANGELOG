@@ -7,6 +7,9 @@
  - fix: the event count was set to the number of trace channels if
    "trace" was the first feature (`RTDCWriter.rectify_metadata`,
    `RTDC_Dict`, and `RTDCBase` without "experiment:event count")
+ - fix: a corrupt file in the dataset directory with the same name as
+   a file basin aborted the basin search (exception during relative
+   path check)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

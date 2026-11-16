@@ -860,7 +860,16 @@ class RTDCBase(abc.ABC):
                             # Relative path to current directory
                             for pi in [pp.name, pp]:
                                 bnr = b_cls(this_path.parent / pi, **kwargs)
-                                if bnr.verify_basin():
+                                try:
+                                    relative_exists = bnr.verify_basin()
+                                except feat_basin.BasinmapFeatureMissingError:
+                                    # The referring dataset is broken.
+                                    raise
+                                except BaseException:
+                                    # The file is not a valid basin
+                                    # (e.g. corrupt or not readable).
+                                    continue
+                                if relative_exists:
                                     basins.append(bnr)
                                     found_relative = True
                                     break

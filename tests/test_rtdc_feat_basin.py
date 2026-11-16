@@ -425,6 +425,39 @@ def test_basin_relative_paths_same_dir(path_sep):
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_basin_relative_paths_corrupt_file():
+    """A corrupt file at the relative basin location must not break things"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.parent / "subdirectory" / "relative.rtdc"
+    h5path_small.parent.mkdir()
+    # This file has the same name as the first basin path
+    (h5path_small.parent / "corrupt.rtdc").write_bytes(b"no HDF5 file")
+
+    # Dataset creation
+    with h5py.File(h5path) as src, RTDCWriter(h5path_small) as hw:
+        # first, copy all the scalar features to the new file
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        # Next, store the basin information in the new dataset
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "features": ["image"],
+            "paths": [str(h5path.parent / "nonexistent" / "corrupt.rtdc"),
+                      str(h5path)]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = hw.h5file.require_group("basins")
+        hw.write_text(basins, "corrupt_relative_basin", blines)
+
+    with dclab.new_dataset(h5path_small) as ds:
+        assert "image" not in ds.features_innate
+        assert "image" in ds
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_basin_key_reproducible():
     """
     Since 0.62.9 we sort basin keys

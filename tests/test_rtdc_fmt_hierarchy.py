@@ -555,6 +555,51 @@ def test_manual_exclude_parent_changed():
     assert c.filter.retrieve_manual_indices(c) == [1, 2]
 
 
+def test_manual_exclude_hidden_kept():
+    """Hidden manually excluded events are restored by the parent"""
+    data = example_data_dict(10, keys=["area_um", "deform"])
+    p = new_dataset(data)
+    c = new_dataset(p)
+    c.filter.manual[2] = False
+    c.apply_filter()
+    # The parent hides the excluded event
+    p.filter.manual[2] = False
+    p.apply_filter()
+    c.apply_filter()
+    assert len(c) == 9
+    assert np.all(c.filter.manual)
+    assert c.filter.retrieve_manual_indices(c) == [2]
+    # The parent shows the event again, the child still excludes it
+    p.filter.manual[2] = True
+    p.apply_filter()
+    c.apply_filter()
+    assert len(c) == 10
+    assert not c.filter.manual[2]
+    assert np.sum(c.filter.all) == 9
+
+
+def test_manual_exclude_reinclude_parent_changed():
+    """Re-included events must stay included when the parent changes"""
+    data = example_data_dict(10, keys=["area_um", "deform"])
+    p = new_dataset(data)
+    c = new_dataset(p)
+    c.filter.manual[2] = False
+    c.apply_filter()
+    assert np.sum(c.filter.all) == 9
+    # re-include the event
+    c.filter.manual[2] = True
+    c.apply_filter()
+    assert np.sum(c.filter.all) == 10
+    # change the parent
+    p.filter.manual[9] = False
+    p.apply_filter()
+    c.apply_filter()
+    assert len(c) == 9
+    assert c.filter.manual[2]
+    assert np.sum(c.filter.all) == 9
+    assert c.filter.retrieve_manual_indices(c) == []
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_same_hash_different_identifier():

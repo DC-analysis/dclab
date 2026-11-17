@@ -43,12 +43,15 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
         parser = tdms2rtdc_parser()
         args = parser.parse_args()
 
-        path_tdms = pathlib.Path(args.tdms_path).resolve()
-        path_rtdc = pathlib.Path(args.rtdc_path)
+        path_tdms = args.tdms_path
+        path_rtdc = args.rtdc_path
         compute_features = args.compute_features
         skip_initial_empty_image = not args.include_empty_boundary_images
         skip_final_empty_image = not args.include_empty_boundary_images
         verbose = True
+
+    path_tdms = pathlib.Path(path_tdms).resolve()
+    path_rtdc = pathlib.Path(path_rtdc)
 
     # Determine whether input path is a tdms file or a directory
     if path_tdms.is_dir():

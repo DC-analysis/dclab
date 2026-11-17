@@ -291,6 +291,39 @@ def test_save():
     assert names.count(names[0]) == 2
 
 
+def test_save_load_blank_lines(tmp_path):
+    """Blank lines in .poly files (e.g. hand-edited) are ignored"""
+    path = tmp_path / "test.poly"
+    pf1 = dclab.PolygonFilter(axes=["area_um", "deform"],
+                              points=[[0, 0], [1, 0], [1, 1]])
+    pf2 = dclab.PolygonFilter(axes=["area_um", "deform"],
+                              points=[[0, 0], [2, 0], [2, 2]])
+    dclab.PolygonFilter.save_all(path)
+    data = path.read_text()
+    path.write_text("\n" + data.replace("[Polygon 00000001]",
+                                        "\n\n[Polygon 00000001]") + "\n\n")
+    dclab.PolygonFilter.clear_all_filters()
+
+    pfs = dclab.PolygonFilter.import_all(path)
+    assert len(pfs) == 2
+    assert np.allclose(pfs[0].points, pf1.points)
+    assert np.allclose(pfs[1].points, pf2.points)
+
+
+def test_save_load_name_with_equals_sign(tmp_path):
+    """The name of a polygon filter may contain an equals sign"""
+    path = tmp_path / "test.poly"
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[0, 0], [1, 0], [1, 1]],
+                             name="deform=0.1 gate")
+    pf.save(path)
+    dclab.PolygonFilter.clear_all_filters()
+
+    pf2 = dclab.PolygonFilter(filename=path)
+    assert pf2.name == "deform=0.1 gate"
+    assert np.allclose(pf2.points, pf.points)
+
+
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
                             + 'FilterIdExistsWarning')
 def test_save_multiple():

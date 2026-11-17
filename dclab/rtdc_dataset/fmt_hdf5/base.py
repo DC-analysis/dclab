@@ -211,16 +211,30 @@ class RTDC_HDF5(RTDCBase):
         """Hash value based on file name and content"""
         if self._hash is None:
             tohash = []
-            if isinstance(self.path, pathlib.Path):
-                # actual path on file system
-                tohash.append(self.path.name)
-            elif isinstance(self.path, str):
-                # remote location (when `hash` not defined in subclass)
-                tohash.append(self.path)
-            tohash.append(
-                # Hash a maximum of ~1MB of the hdf5 file
-                hashfile(self.path, blocksize=65536, count=20)
-            )
+            if isinstance(self.path, (pathlib.Path, str)):
+                if isinstance(self.path, pathlib.Path):
+                    # actual path on file system
+                    tohash.append(self.path.name)
+                else:
+                    # remote location (when `hash` not defined in subclass)
+                    tohash.append(self.path)
+                tohash.append(
+                    # Hash a maximum of ~1MB of the hdf5 file
+                    hashfile(self.path, blocksize=65536, count=20)
+                )
+            else:
+                # File-like object (e.g. `io.BytesIO`). We cannot read
+                # from it directly without interfering with h5py, so we
+                # hash the metadata and parts of the feature data.
+                tohash.append(self.config)
+                events = self.h5file.get("events", {})
+                for feat in sorted(events):
+                    h5ds = events[feat]
+                    if isinstance(h5ds, h5py.Dataset):
+                        tohash.append([feat, h5ds.shape, str(h5ds.dtype)])
+                        if h5ds.ndim == 1 and h5ds.shape[0]:
+                            tohash.append(h5ds[:100])
+                            tohash.append(h5ds[-100:])
             self._hash = hashobj(tohash)
         return self._hash
 

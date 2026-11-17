@@ -79,6 +79,9 @@
  - fix: functions decorated with `umbrella_cache` raised a KeyError
    (instead of recomputing the value) if a disk store entry written by
    another process could not be read
+ - fix: values returned by functions decorated with `umbrella_cache`
+   were the cached objects themselves; modifying them in-place (e.g.
+   KDE or downsampling results) modified the cached values
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

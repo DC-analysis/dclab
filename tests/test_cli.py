@@ -70,6 +70,21 @@ def test_tdms2rtdc():
             assert np.all(ds1[feat] == ds2[feat])
 
 
+def test_tdms2rtdc_str_path():
+    pytest.importorskip("nptdms")
+    path_in = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
+    # same directory (will be cleaned up with path_in)
+    path_out = path_in.with_name("out.rtdc")
+
+    cli.tdms2rtdc(path_tdms=str(path_in),
+                  path_rtdc=str(path_out),
+                  compute_features=False)
+
+    with new_dataset(path_out) as ds2, new_dataset(path_in) as ds1:
+        assert len(ds2)
+        assert set(ds1.features) == set(ds2.features)
+
+
 def test_tdms2rtdc_bulk():
     pytest.importorskip("nptdms")
     path_data = retrieve_data("fmt-tdms_shapein-2.0.1-no-image_2017.zip")
@@ -233,6 +248,18 @@ def test_verify_dataset_exit_codes(dataset, exit_status_expected, monkeypatch):
     h5path = retrieve_data(dataset)
     exit_status = cli.verify_dataset(h5path)
     assert exit_status == exit_status_expected
+
+
+def test_verify_dataset_str_path(monkeypatch):
+    # get the exit status from the script
+    def sys_exit(status):
+        return status
+
+    monkeypatch.setattr(sys, "exit", sys_exit)
+
+    h5path = retrieve_data("fmt-hdf5_polygon_gate_2021.zip")
+    exit_status = cli.verify_dataset(str(h5path))
+    assert exit_status == 0
 
 
 def test_verify_dataset_exit_code_alert(monkeypatch):

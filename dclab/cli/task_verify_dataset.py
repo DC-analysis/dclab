@@ -14,7 +14,8 @@ def verify_dataset(path_in=None):
     if path_in is None:
         parser = verify_dataset_parser()
         args = parser.parse_args()
-        path_in = pathlib.Path(args.path).resolve()
+        path_in = args.path
+    path_in = pathlib.Path(path_in).resolve()
     if not path_in.exists():
         common.print_violation(f"File not found: {path_in}")
         return sys.exit(4)

@@ -488,6 +488,29 @@ def test_copy_chunks_not_defined():
         assert hc["events/deform"].chunks[0] == 5
 
 
+def test_copy_compression_zstd_without_options(tmp_path):
+    """Zstandard compression without compression level"""
+    path = tmp_path / "zstd_no_options.rtdc"
+    path_copy = tmp_path / "test_copy.rtdc"
+    with h5py.File(path, "w") as h5:
+        h5.attrs["experiment:event count"] = 100
+        h5.create_dataset("events/deform",
+                          data=np.linspace(0, .1, 100),
+                          compression=32015)
+        create_plist = h5["events/deform"].id.get_create_plist()
+        assert create_plist.get_filter_by_id(32015)[1] == (), "sanity check"
+        # zstd uses its default level if not specified (smaller than 5)
+        assert not is_properly_compressed(h5["events/deform"])
+
+    with h5py.File(path) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    with h5py.File(path_copy) as hc:
+        assert is_properly_compressed(hc["events/deform"])
+        assert np.allclose(hc["events/deform"][:], np.linspace(0, .1, 100))
+
+
 def test_copy_logs():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")

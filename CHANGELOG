@@ -35,6 +35,9 @@
  - fix: copying files with zero events failed (affects CLI repack,
    compress, and condense); empty datasets are now copied as empty,
    compressed datasets instead of being dropped
+ - fix: `is_properly_compressed` raised an IndexError for Zstandard
+   compressed data without compression level (affects CLI repack,
+   compress, condense, and `check_dataset`)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

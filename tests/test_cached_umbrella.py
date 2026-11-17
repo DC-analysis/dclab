@@ -1,4 +1,5 @@
 import hashlib
+import json
 import time
 import shutil
 
@@ -175,6 +176,40 @@ def test_umbrella_cache_disk_store_hybrid_deleted(tmp_path, store_keeper):
 
     store_keeper.perform_tasks()
     assert key in store_keeper.disk_store.index
+
+
+def test_umbrella_cache_disk_store_unreadable_not_in_index(tmp_path,
+                                                           store_keeper):
+    """Broken disk store entry that was written by another process
+
+    The entry is not in the index of this disk store, and the data
+    cannot be read (e.g. data file removed by another process).
+    """
+    store_keeper.set_disk_store_path(tmp_path)
+    store_keeper.event_run.clear()
+
+    @cached.umbrella_cache(topic="unreadable")
+    def func_unreadable(x):
+        time.sleep(.02)
+        return 2 * x
+
+    # Make sure the StoreKeeper thread is running (when it starts, it
+    # updates the index from the files on disk).
+    assert func_unreadable(1) == 2
+    time.sleep(store_keeper.interval)
+
+    ref = caches.compute_hash_for_cache(func_unreadable.__wrapped__,
+                                        (5,), {})
+    key = f"unreadable/{ref[:3]}/{ref[3:6]}/{ref[6:]}"
+    meta_path = tmp_path / f"{key}_meta.json"
+    meta_path.parent.mkdir(parents=True)
+    meta_path.write_text(json.dumps({"format": "json",
+                                     "file": "missing.json",
+                                     "size": 1}))
+    assert key not in store_keeper.disk_store.index
+    assert key in store_keeper.disk_store
+
+    assert func_unreadable(5) == 10
 
 
 def test_umbrella_cache_size(store_keeper):

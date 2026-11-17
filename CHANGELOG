@@ -76,6 +76,9 @@
  - fix: functions decorated with `umbrella_cache` raised a KeyError if
    the `StoreKeeper` thread removed the cached value from the memory
    store between checking for and retrieving the value
+ - fix: functions decorated with `umbrella_cache` raised a KeyError
+   (instead of recomputing the value) if a disk store entry written by
+   another process could not be read
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

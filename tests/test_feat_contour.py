@@ -1,5 +1,4 @@
 import pathlib
-import time
 
 import h5py
 import numpy as np
@@ -141,15 +140,36 @@ def test_lazy_contour_single():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-def test_lazy_contour_timing():
+def test_lazy_contour_timing(monkeypatch):
+    """Contours must only be computed when they are accessed
+
+    This test used to compare execution times, which was flaky.
+    Count the number of contour computations instead.
+    """
     ds = new_dataset(retrieve_data("fmt-hdf5_mask-contour_2018.zip"))
     masks = ds["mask"][:]
-    t0 = time.perf_counter()
-    get_contour_lazily(masks)
-    t1 = time.perf_counter()
+    find_contours = dclab.features.contour.find_contours
+    num_computed = []
+
+    def find_contours_counted(*args, **kwargs):
+        num_computed.append(1)
+        return find_contours(*args, **kwargs)
+
+    monkeypatch.setattr(dclab.features.contour, "find_contours",
+                        find_contours_counted)
+
+    conts = get_contour_lazily(masks)
+    assert len(conts) == len(masks)
+    assert len(num_computed) == 0
+    # access a single contour
+    assert np.all(conts[1] == get_contour(masks[1]))
+    assert len(num_computed) == 2
+    # the contour is cached
+    assert np.all(conts[1] == get_contour(masks[1]))
+    assert len(num_computed) == 3
+    # computing all contours
     get_contour(masks)
-    t2 = time.perf_counter()
-    assert t2-t1 > 5 * (t1-t0)
+    assert len(num_computed) == 3 + len(masks)
 
 
 @pytest.mark.filterwarnings(

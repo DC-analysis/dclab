@@ -38,6 +38,9 @@
  - fix: `is_properly_compressed` raised an IndexError for Zstandard
    compressed data without compression level (affects CLI repack,
    compress, condense, and `check_dataset`)
+ - fix: `RTDCWriter` computed a wrong "mean" attribute for scalar
+   features when appending data containing nan values (and the mean
+   remained nan if the first data written were all nan)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

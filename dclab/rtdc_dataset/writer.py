@@ -109,6 +109,10 @@ class RTDCWriter:
                                     mode=("w" if mode == "reset" else "a"))
         #: unfortunate necessity, as `len(h5py.Group)` can be really slow
         self._group_sizes = {}
+        #: number of valid (non-nan) values that were used to compute
+        #: the "mean" attribute of scalar HDF5 datasets (keys are the
+        #: dataset names)
+        self._mean_counts = {}
 
     def __enter__(self):
         return self
@@ -907,15 +911,27 @@ class RTDCWriter:
                 else:
                     val = ufunc(dset)
                 dset.attrs[uname] = val
-            # store ufunc data for mean (weighted with size)
-            mean_a = dset.attrs.get("mean", None)
-            if mean_a is not None:
-                num_a = offset
-                mean_b = np.nanmean(data)
-                num_b = data.size
-                mean = (mean_a * num_a + mean_b * num_b) / (num_a + num_b)
+            # store ufunc data for mean (weighted with the number of
+            # valid values, because nan values are ignored)
+            if offset == 0 or dset.name not in self._mean_counts:
+                # We don't know how many valid values the mean is based
+                # on (e.g. when appending to an existing file), so we
+                # compute it from all data.
+                values = data if offset == 0 else dset[:]
+                count = np.count_nonzero(~np.isnan(values))
+                mean = np.nanmean(values)
             else:
-                mean = np.nanmean(dset)
+                valid = data[~np.isnan(data)]
+                count_a = self._mean_counts[dset.name]
+                count = count_a + valid.size
+                if valid.size == 0:
+                    mean = dset.attrs["mean"]
+                elif count_a == 0:
+                    mean = np.mean(valid)
+                else:
+                    mean = (dset.attrs["mean"] * count_a
+                            + np.sum(valid)) / count
+            self._mean_counts[dset.name] = count
             dset.attrs["mean"] = mean
         else:
             chunk_size = dset.chunks[0]

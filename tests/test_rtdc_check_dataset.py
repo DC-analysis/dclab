@@ -5,6 +5,7 @@ import h5py
 import numpy as np
 import pytest
 
+from dclab import cli
 import dclab.rtdc_dataset.config
 from dclab.rtdc_dataset import check, check_dataset, feat_basin, fmt_tdms, \
     new_dataset, RTDCWriter
@@ -799,7 +800,11 @@ def test_online_polygon_filters_wrong_shape(shape):
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",
                                         "2.2.2.0", "2.2.2.1", "2.2.2.2",
-                                        "2.2.2.4", "2.2.2.4", "2.3.0.0"])
+                                        "2.2.2.4", "2.2.2.4", "2.3.0.0",
+                                        # version branded by dclab
+                                        "2.2.1.0 | dclab 0.74.0",
+                                        "2.3.0.0 | dclab 0.62 | dclab 0.74",
+                                        ])
 def test_shapein_issue3_bad_medium(si_version):
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
@@ -816,7 +821,8 @@ def test_shapein_issue3_bad_medium(si_version):
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.parametrize("si_version", ["2.2.0.3", "2.3.1.0"])
+@pytest.mark.parametrize("si_version", ["2.2.0.3", "2.3.1.0",
+                                        "2.3.1.0 | dclab 0.74.0"])
 def test_shapein_issue3_bad_medium_control(si_version):
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
     with h5py.File(h5path, "a") as h5:
@@ -826,6 +832,23 @@ def test_shapein_issue3_bad_medium_control(si_version):
     with check.IntegrityChecker(ds) as ic:
         cues = ic.check_shapein_issue3_bad_medium()
         assert len(cues) == 0
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_shapein_issue3_bad_medium_after_compress():
+    """The check must also work for files written by dclab"""
+    h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
+    with h5py.File(h5path, "a") as h5:
+        h5.attrs["setup:software version"] = "2.2.1.0"
+        h5.attrs["setup:medium"] = "CellCarrierB"
+    path_out = cli.compress(h5path, h5path.with_name("compressed.rtdc"),
+                            ret_path=True)
+    with new_dataset(path_out) as ds, check.IntegrityChecker(ds) as ic:
+        # sanity check
+        assert ds.config["setup"]["software version"].count("dclab")
+        cues = ic.check_shapein_issue3_bad_medium()
+        assert len(cues) == 1
 
 
 def test_temperature():

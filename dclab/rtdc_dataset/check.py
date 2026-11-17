@@ -294,8 +294,11 @@ class IntegrityChecker(object):
                 comp_i = 0
                 noco_i = 0
                 for key in h5:
-                    obj = h5[key]
-                    if isinstance(obj, h5py.Dataset):
+                    obj = h5.get(key)
+                    if obj is None:
+                        # dangling link (see `check_external_links`)
+                        continue
+                    elif isinstance(obj, h5py.Dataset):
                         if is_properly_compressed(obj):
                             # data are compressed with at least level 5
                             comp_i += 1
@@ -593,7 +596,10 @@ class IntegrityChecker(object):
                         lign = [logname.endswith(n) for n in IGNORED_LOG_NAMES]
                         if sum(lign):
                             continue
-                        log = logs[logname]
+                        log = logs.get(logname)
+                        if log is None:
+                            # dangling link (see `check_external_links`)
+                            continue
                         for ii in range(len(log)):
                             if len(log[ii]) > LOG_MAX_LINE_LENGTH:
                                 cues.append(ICue(
@@ -905,6 +911,10 @@ def hdf5_has_external(h5):
 
     """
     for key in h5:
+        if isinstance(h5.get(key, getlink=True), h5py.ExternalLink):
+            # External links (check before accessing the object,
+            # because dangling links cannot be opened)
+            return True, f"{h5.name}/{key}".replace("//", "/")
         obj = h5[key]
         if (obj.file != h5.file  # not in same file
                 or (isinstance(obj, h5py.Dataset)

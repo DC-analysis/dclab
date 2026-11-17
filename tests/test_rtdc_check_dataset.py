@@ -275,6 +275,31 @@ def test_ic_external_links_logs():
                        "link: '/logs'")
 
 
+def test_ic_external_links_dangling():
+    """A dangling external link must be flagged and not crash the check"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+
+    with h5py.File(h5path, "a") as h5:
+        h5["/logs/dangling"] = h5py.ExternalLink(
+            str(h5path.with_name("does-not-exist.h5")), "/foo"
+        )
+
+    with check.IntegrityChecker(h5path) as ic:
+        cues1 = ic.check_external_links()
+
+    assert len(cues1) == 1
+    cue = cues1[0]
+    assert cue.level == "violation"
+    assert cue.category == "format HDF5"
+    assert cue.msg == ("The HDF5 file contains at least one external "
+                       "link: '/logs/dangling'")
+
+    # The other checks must not crash either
+    viol, _, _ = check_dataset(h5path)
+    assert ("The HDF5 file contains at least one external "
+            "link: '/logs/dangling'") in viol
+
+
 def test_ic_feature_size_scalar():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ddict["bright_sd"] = np.linspace(10, 20, 1000)

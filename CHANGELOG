@@ -108,6 +108,9 @@
    being reported by the external links check)
  - fix: `cli.verify_dataset` and `cli.tdms2rtdc` failed if paths were
    given as `str` instead of `pathlib.Path`
+ - fix: hierarchy children inherited the "limit events" filter of the
+   parent, i.e. the events were limited twice and changing the parent's
+   limit did not take effect in the child
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

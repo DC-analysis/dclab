@@ -145,6 +145,7 @@ class RTDC_Hierarchy(RTDCBase):
         for key in cfg["filtering"]:
             if (key.endswith(" min") or
                 key.endswith(" max") or
+                key == "limit events" or
                     key == "polygon filters"):
                 pops.append(key)
         [cfg["filtering"].pop(key) for key in pops]

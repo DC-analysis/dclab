@@ -692,7 +692,7 @@ class IntegrityChecker(object):
         if self.ds.format == "hdf5":
             for entry in self.ds.h5file.attrs:
                 if entry.count(":"):
-                    sec, key = entry.split(":")
+                    sec, key = entry.split(":", 1)
                     val_act = self.ds.h5file.attrs[entry]  # actual value
                     if isinstance(val_act, bytes):
                         val_act = val_act.decode("utf-8")

@@ -1,5 +1,7 @@
 import json
 import pathlib
+import threading
+import time
 
 import h5py
 import numpy as np
@@ -163,6 +165,43 @@ def test_basin_cyclic_dependency_found_2():
         with pytest.warns(feat_basin.CyclicBasinDependencyFoundWarning,
                           match="Encountered cyclic basin dependency"):
             _ = ds["userdef1"]
+
+
+def test_basin_dataset_loaded_once_threads(monkeypatch):
+    """Concurrent access to `Basin.ds` must only load the dataset once"""
+    path = retrieve_data("fmt-hdf5_image-mask-blood_2021.zip")
+    bn = rtdc_dataset.fmt_hdf5.HDF5Basin(path)
+    assert bn.is_available()
+
+    loaded = []
+    load_dataset = rtdc_dataset.fmt_hdf5.HDF5Basin._load_dataset
+
+    def load_dataset_slow(self, location, **kwargs):
+        # make sure all threads try to load the dataset at the same time
+        time.sleep(0.1)
+        ds = load_dataset(self, location, **kwargs)
+        loaded.append(ds)
+        return ds
+
+    monkeypatch.setattr(rtdc_dataset.fmt_hdf5.HDF5Basin, "_load_dataset",
+                        load_dataset_slow)
+
+    barrier = threading.Barrier(4)
+
+    def worker():
+        barrier.wait()
+        assert bn.ds["deform"][0]
+
+    threads = [threading.Thread(target=worker) for _ in range(4)]
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join()
+
+    assert len(loaded) == 1
+    bn.close()
+    # no open file handles left
+    assert not loaded[0].h5file.id.valid
 
 
 @pytest.mark.filterwarnings(

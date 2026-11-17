@@ -86,6 +86,9 @@
    (e.g. x86 and ARM), because ffmpeg used optimized, inexact YUV to RGB
    conversion; dclab now requests a bitexact conversion (gray values of
    .tdms images change by up to about one gray level)
+ - fix: accessing `Basin.ds` from multiple threads at the same time
+   loaded the basin dataset multiple times and left all but one of the
+   files open after `Basin.close`
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -166,9 +166,10 @@ class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):
         return self._size
 
     def __array__(self, dtype=None, copy=copy_if_needed, *args, **kwargs):
-        if self._cache is None and self.is_scalar:
-            self._cache = self.feat_obj[:][self.basinmap]
-            return np.array(self._cache, copy=copy)
+        if self.is_scalar:
+            if self._cache is None:
+                self._cache = self.feat_obj[:][self.basinmap]
+            return np.array(self._cache, dtype=dtype, copy=copy)
         else:
             # This is dangerous territory in terms of memory usage
             out_arr = np.empty((len(self.basinmap),) + self.feat_obj.shape[1:],

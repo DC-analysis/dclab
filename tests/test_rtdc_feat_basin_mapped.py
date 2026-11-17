@@ -18,6 +18,7 @@ from dclab import new_dataset, RTDCWriter
 from dclab.rtdc_dataset.feat_basin import (
     BasinmapFeatureMissingError, basin_priority_sorted_key
 )
+from dclab.rtdc_dataset.feat_basin.basin_proxy import BasinProxyFeature
 
 
 from helper_methods import DCOR_AVAILABLE, retrieve_data
@@ -298,6 +299,36 @@ def test_basin_mapped_trace(basinmap):
         for key in ds0["trace"]:
             assert np.all(dse["trace"][key][:]
                           == ds0["trace"][key][:][basinmap[:2]])
+
+
+def test_basin_proxy_feature_cache():
+    """Scalar data must be fetched from the basin only once"""
+    class CountingFeature:
+        def __init__(self, data):
+            self.data = data
+            self.dtype = data.dtype
+            self.shape = data.shape
+            self.num_access = 0
+
+        def __getitem__(self, index):
+            self.num_access += 1
+            return self.data[index]
+
+    feat_obj = CountingFeature(np.linspace(0, 1, 20))
+    basinmap = np.array([3, 1, 7, 7, 19, 0], dtype=np.uint64)
+    proxy = BasinProxyFeature(feat_obj, basinmap, name="deform")
+    # access of a single event before the cache is populated
+    assert proxy[2] == feat_obj.data[7]
+    assert feat_obj.num_access == 1
+    # populate the cache
+    assert np.all(proxy[:] == feat_obj.data[basinmap])
+    assert feat_obj.num_access == 2
+    # all further accesses must use the cache
+    assert proxy[4] == feat_obj.data[19]
+    assert np.all(proxy[1:3] == feat_obj.data[[1, 7]])
+    assert np.all(np.asarray(proxy) == feat_obj.data[basinmap])
+    assert np.asarray(proxy, dtype=np.float32).dtype == np.float32
+    assert feat_obj.num_access == 2
 
 
 def test_error_when_basinmap_not_given():

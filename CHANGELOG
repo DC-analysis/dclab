@@ -151,6 +151,8 @@
  - fix: values cached in the disk store changed their type when loaded
    (tuples became lists, non-string dictionary keys became strings);
    such values are now stored in the new "json-typed" format
+ - fix: `BasinProxyFeature` did not use its cache for scalar features,
+   i.e. each access after the first one copied the data event by event
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

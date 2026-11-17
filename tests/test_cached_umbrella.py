@@ -124,6 +124,24 @@ def test_umbrella_cache_disk_store(tmp_path, store_keeper):
     assert b == a
 
 
+def test_umbrella_cache_disk_store_return_type(tmp_path, store_keeper):
+    """The return type must not change when loading from the disk store"""
+    store_keeper.set_disk_store_path(tmp_path)
+
+    @cached.umbrella_cache(bypass_memory_store=True)
+    def func_tuple(x):
+        time.sleep(.02)
+        return x, {1: (x,)}
+
+    a = func_tuple(4)
+    assert a == (4, {1: (4,)})
+    # from the disk store
+    b = func_tuple(4)
+    assert b == a
+    assert isinstance(b, tuple)
+    assert isinstance(b[1][1], tuple)
+
+
 def test_umbrella_cache_disk_store_hybrid(tmp_path, store_keeper):
     """Test if caching works"""
     store_keeper.set_disk_store_path(tmp_path)

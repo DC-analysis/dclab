@@ -42,6 +42,22 @@ def test_contour_lines():
     assert nump2.sum() == 11
 
 
+def test_contour_lines_quantiles_ndarray():
+    ddict = example_data_dict(size=1000, keys=["area_um", "deform"])
+    ds = dclab.new_dataset(ddict)
+    kde_instance = KernelDensityEstimator(ds)
+    kwargs = {"xacc": 2, "yacc": 0.005}
+    contours = kde_instance.get_contour_lines(quantiles=[0.5, 0.9],
+                                              **kwargs)
+    contours_nd = kde_instance.get_contour_lines(
+        quantiles=np.array([0.5, 0.9]), **kwargs)
+    assert len(contours) == len(contours_nd) == 2
+    for cc, cc_nd in zip(contours, contours_nd):
+        assert len(cc) == len(cc_nd) > 0
+        for ci, ci_nd in zip(cc, cc_nd):
+            assert np.all(ci == ci_nd)
+
+
 def test_contour_lines_monotonous():
     np.random.seed(47)
 
@@ -356,6 +372,23 @@ def test_kde_get_at_positions():
     sc = kde_instance.get_at(xax="area_um", yax="deform")
     sc2 = kde_instance.get_at(xax="area_um", yax="deform",
                               positions=(ds["area_um"], ds["deform"]))
+    assert np.all(sc == sc2)
+
+
+def test_kde_get_at_positions_ndarray():
+    """positions may be an ndarray of shape (2, N)"""
+    ddict = example_data_dict()
+    ds = dclab.new_dataset(ddict)
+
+    kde_instance = KernelDensityEstimator(ds)
+
+    positions = [ds["area_um"][:10], ds["deform"][:10]]
+    sc = kde_instance.get_at(xax="area_um", yax="deform",
+                             positions=positions)
+    sc2 = kde_instance.get_at(xax="area_um", yax="deform",
+                              positions=np.array(positions))
+    assert sc.size == 10
+    assert np.all(np.isfinite(sc))
     assert np.all(sc == sc2)
 
 

@@ -130,6 +130,8 @@
    had the same label
  - fix: the linear scaling functions for area_um, volume, and emodulus
    (`scale_feature`) failed for integer, scalar, or list input
+ - fix: `KernelDensityEstimator.get_at` and `get_contour_lines` failed
+   for ndarray `positions` and `quantiles`
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

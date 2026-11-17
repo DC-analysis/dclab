@@ -91,6 +91,8 @@
    files open after `Basin.close`
  - fix: indexing chopped image data (internal chopped image basins)
    with a boolean array (e.g. `ds["image"][ds.filter.all]`) failed
+ - fix: `RTDC_HDF5.hash` raised a TypeError for datasets opened from a
+   file-like object (e.g. `io.BytesIO`), which also broke KDE methods
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

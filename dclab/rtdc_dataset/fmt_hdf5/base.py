@@ -10,6 +10,7 @@ import warnings
 
 import h5py
 
+from ... import definitions as dfn
 from ...external.packaging import parse as parse_version
 from ...util import hashobj, hashfile
 
@@ -211,16 +212,35 @@ class RTDC_HDF5(RTDCBase):
         """Hash value based on file name and content"""
         if self._hash is None:
             tohash = []
-            if isinstance(self.path, pathlib.Path):
-                # actual path on file system
-                tohash.append(self.path.name)
-            elif isinstance(self.path, str):
-                # remote location (when `hash` not defined in subclass)
-                tohash.append(self.path)
-            tohash.append(
-                # Hash a maximum of ~1MB of the hdf5 file
-                hashfile(self.path, blocksize=65536, count=20)
-            )
+            if isinstance(self.path, (pathlib.Path, str)):
+                if isinstance(self.path, pathlib.Path):
+                    # actual path on file system
+                    tohash.append(self.path.name)
+                else:
+                    # remote location (when `hash` not defined in subclass)
+                    tohash.append(self.path)
+                tohash.append(
+                    # Hash a maximum of ~1MB of the hdf5 file
+                    hashfile(self.path, blocksize=65536, count=20)
+                )
+            else:
+                # File-like object (e.g. `io.BytesIO`). We cannot read
+                # from it directly without interfering with h5py, so we
+                # hash the metadata and parts of the feature data.
+                # Only use metadata sections that cannot be edited by the
+                # user (not "filtering" or "calculation").
+                for sec in sorted(dfn.CFG_METADATA) + ["user"]:
+                    if sec in self.config:
+                        tohash.append([sec, self.config[sec]])
+                # Use the first events of a few scalar features (reading
+                # all features might take long, e.g. for bad chunking).
+                h5events = self.h5file.get("events", {})
+                feats = [f for f in sorted(h5events)
+                         if f != "index"
+                         and isinstance(h5events[f], h5py.Dataset)
+                         and h5events[f].ndim == 1][:5]
+                for feat in feats:
+                    tohash.append([feat, h5events[feat][:200]])
             self._hash = hashobj(tohash)
         return self._hash
 

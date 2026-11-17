@@ -358,6 +358,45 @@ def test_fileio_basic():
                        rtol=1e-6, atol=0)
 
 
+def test_fileio_hash():
+    """The hash of datasets opened from file objects"""
+    path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    data = path.read_bytes()
+
+    ds1 = dclab.new_dataset(io.BytesIO(data))
+    ds2 = dclab.new_dataset(io.BytesIO(data))
+    assert ds1.hash == ds2.hash
+
+    # modified data must result in a different hash
+    # (the hash uses the first five scalar features, e.g. "area_um")
+    path_mod = path.with_name("modified.rtdc")
+    path_mod.write_bytes(data)
+    with h5py.File(path_mod, "a") as h5:
+        h5["events/area_um"][2] += 0.01
+    ds3 = dclab.new_dataset(io.BytesIO(path_mod.read_bytes()))
+    assert ds1.hash != ds3.hash
+
+    # KDE computation uses the hash for caching
+    ds1.get_kde_scatter(xax="area_um", yax="deform")
+
+
+def test_fileio_hash_metadata():
+    """Only metadata that cannot be edited by the user is hashed"""
+    path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    data = path.read_bytes()
+
+    ds1 = dclab.new_dataset(io.BytesIO(data))
+    ds2 = dclab.new_dataset(io.BytesIO(data))
+    ds2.config["filtering"]["deform min"] = 0
+    ds2.config["filtering"]["deform max"] = .05
+    ds2.config["calculation"]["crosstalk fl12"] = 0.1
+    assert ds1.hash == ds2.hash
+
+    ds3 = dclab.new_dataset(io.BytesIO(data))
+    ds3.config["user"]["hans"] = "peter"
+    assert ds1.hash != ds3.hash
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_hdf5_load_non_scalar_data():

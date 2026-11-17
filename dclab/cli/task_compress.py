@@ -258,8 +258,10 @@ def compress_input(h5_in: h5py.File,
         feat_croppable.remove("mask")
 
         for feat in feat_croppable:
-            if feat in h5_in.get("events", {}):
-                # only crop image features that are not a basin already
+            # Only crop image features that are not a basin already and
+            # that should be copied from this file (e.g. "image" is not
+            # copied from a basin if it is already in the input file).
+            if feat in h5_in.get("events", {}) and feat in features:
                 features.remove(feat)
                 features_crop.append(feat)
 

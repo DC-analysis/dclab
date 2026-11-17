@@ -649,6 +649,41 @@ def test_compress_with_basin_mapped_and_chopped(basinmap):
         assert np.all(ds1["mask"][:] == ds0["mask"][:][basinmap])
 
 
+def test_compress_with_basin_and_chopped_image_in_referrer():
+    """The basin and the referrer both contain the "image" feature"""
+    path = retrieve_data("fmt-hdf5_reference_2025.zip")
+
+    path_referrer = path.with_name("level1.rtdc")
+    basinmap = np.array([1, 3, 4], dtype=np.int64)
+
+    with (dclab.new_dataset(path) as ds0,
+          dclab.RTDCWriter(path_referrer) as hw1):
+        hw1.store_metadata(ds0.config.as_dict(pop_filtering=True))
+        # The referrer stores its own (different) images
+        image_ref = 255 - ds0["image"][:][basinmap]
+        hw1.store_feature("image", image_ref)
+        hw1.store_basin(basin_name="level1",
+                        basin_type="file",
+                        basin_format="hdf5",
+                        basin_locs=[path],
+                        basin_map=basinmap
+                        )
+
+    path_comp = path.with_name("compressed.rtdc")
+    cli.compress(path_in=path_referrer,
+                 path_out=path_comp,
+                 basin_input=[path],
+                 crop_event_images=True,
+                 )
+
+    # The image data must be taken from the referrer
+    with new_dataset(path_comp) as dsc:
+        assert len(dsc) == len(basinmap)
+        for ii in range(len(dsc)):
+            mask = dsc["mask"][ii]
+            assert np.all(dsc["image"][ii][mask] == image_ref[ii][mask])
+
+
 def test_compress_with_basin_mapped_and_chopped_keep_version():
     path = retrieve_data("fmt-hdf5_reference_2025.zip")
 

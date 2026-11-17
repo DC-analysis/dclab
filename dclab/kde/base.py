@@ -297,7 +297,7 @@ class KernelDensityEstimator:
             valid = np.isfinite(xd) & np.isfinite(yd)
             if not np.any(valid):
                 # there is nothing to compute a contour for
-                return []
+                return ([], []) if ret_levels else []
             xd = xd[valid]
             yd = yd[valid]
             sc_res = find_smooth_contour_spacing(
@@ -326,13 +326,13 @@ class KernelDensityEstimator:
             )
         except ValueError:
             # most-likely there is nothing to compute a contour for
-            return []
+            return ([], []) if ret_levels else []
         if density.shape[0] < 3 or density.shape[1] < 3:
             warnings.warn(
                 "Contour not possible; spacing may be too large!",
                 ContourSpacingTooLarge,
             )
-            return []
+            return ([], []) if ret_levels else []
         levels = get_quantile_levels(
             density=density,
             x=x,

@@ -510,6 +510,43 @@ def test_logs_append():
             assert outii == (log1 + log2)[ii]
 
 
+def test_logs_append_longer_lines(tmp_path):
+    """Appended log lines that are longer than the existing lines"""
+    rtdc_file = tmp_path / "test.rtdc"
+    log1 = ["short line", "y" * 120]
+    log2 = ["x" * 150, "short again"]
+    with RTDCWriter(rtdc_file, mode="reset") as hw:
+        hw.store_log("testlog", log1)
+        hw.h5file["logs/testlog"].attrs["hans"] = "peter"
+
+    with RTDCWriter(rtdc_file, mode="append") as hw:
+        hw.store_log("testlog", log2)
+
+    with h5py.File(rtdc_file, mode="r") as h5:
+        outlog = [line.decode("utf-8") for line in h5["logs/testlog"]]
+        assert outlog == log1 + log2
+        assert h5["logs/testlog"].attrs["hans"] == "peter"
+
+
+def test_logs_append_longer_lines_multibyte(tmp_path):
+    """Multi-byte UTF-8 characters must not be cut when appending
+
+    Before, the line was truncated to 100 bytes, which cut the "ä" in
+    half and the log could not be decoded anymore.
+    """
+    rtdc_file = tmp_path / "test.rtdc"
+    line = "x" * 99 + "ä"  # 100 characters, 101 bytes
+    with RTDCWriter(rtdc_file, mode="reset") as hw:
+        hw.store_feature("deform", np.linspace(.01, .02, 10))
+        hw.store_log("testlog", ["short"])
+
+    with RTDCWriter(rtdc_file, mode="append") as hw:
+        hw.store_log("testlog", [line, "ü" * 60])
+
+    with new_dataset(rtdc_file) as ds:
+        assert ds.logs["testlog"] == ["short", line, "ü" * 60]
+
+
 def test_meta():
     data = {"area_um": np.linspace(100.7, 110.9, 100)}
     meta = {"setup": {

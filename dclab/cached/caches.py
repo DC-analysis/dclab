@@ -116,13 +116,18 @@ class umbrella_cache:
                     # Maybe the data got deleted. Only the `else` clause
                     # returns, so the value is computed and returned as if
                     # it wasn't there.
-                    # Remove key from the disk store index (the key is not
-                    # in the index if the data were written by another
-                    # process).
-                    self._disk_store.index.discard(key)
                     self.logger.warning(f"Could not fetch {key} from disk "
                                         f"store: {traceback.format_exc()}")
-                    pass
+                    # Remove the broken entry from the disk store (also
+                    # from its index), so that the value can be stored
+                    # again.
+                    try:
+                        self._disk_store.remove(key)
+                    except BaseException:
+                        self._disk_store.index.discard(key)
+                        self.logger.warning(
+                            f"Could not remove {key} from disk store: "
+                            f"{traceback.format_exc()}")
                 else:
                     if self.use_memory_store:
                         self._memory_store[key] = copy.deepcopy(value)

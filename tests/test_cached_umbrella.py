@@ -254,6 +254,43 @@ def test_umbrella_cache_disk_store_unreadable_not_in_index(tmp_path,
     assert func_unreadable(5) == 10
 
 
+def test_umbrella_cache_disk_store_unreadable_meta_replaced(
+        tmp_path, store_keeper):
+    """A broken disk store entry must be replaced by the StoreKeeper"""
+    store_keeper.set_disk_store_path(tmp_path)
+    store_keeper.event_run.clear()
+    time.sleep(store_keeper.interval)
+    calls = []
+
+    @cached.umbrella_cache(topic="broken-meta")
+    def func_broken_meta(x):
+        calls.append(x)
+        time.sleep(.02)
+        return 2 * x
+
+    assert func_broken_meta(5) == 10
+    store_keeper.perform_tasks()
+
+    ref = caches.compute_hash_for_cache(func_broken_meta.__wrapped__,
+                                        (5,), {})
+    key = f"broken-meta/{ref[:3]}/{ref[3:6]}/{ref[6:]}"
+    meta_path = tmp_path / f"{key}_meta.json"
+    assert meta_path.exists()
+    meta_path.write_text("{corrupt")
+
+    store_keeper.memory_store.clear()
+    assert func_broken_meta(5) == 10
+    assert len(calls) == 2
+    # The StoreKeeper must write the value to the disk store again.
+    store_keeper.perform_tasks()
+    assert json.loads(meta_path.read_text())["format"] == "json"
+
+    # The value is now taken from the disk store.
+    store_keeper.memory_store.clear()
+    assert func_broken_meta(5) == 10
+    assert len(calls) == 2
+
+
 def test_umbrella_cache_modify_returned_value_disk_store(tmp_path,
                                                          store_keeper):
     """Modifying a value from the disk store must not modify the cache"""

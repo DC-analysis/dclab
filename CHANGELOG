@@ -156,6 +156,8 @@
  - fix: `Inverted = False` in a .poly file did not override the
    `inverted` keyword argument of `PolygonFilter` (as documented)
  - docs: inverted polygon filters include events with nan-values
+ - fix: unreadable disk store entries were never replaced (the value was
+   recomputed on every call and the disk store size management failed)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

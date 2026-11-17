@@ -155,12 +155,11 @@ class InternalImageChoppedFeatureProxy(np.lib.mixins.NDArrayOperatorsMixin):
         if isinstance(index, numbers.Integral):
             return self._get_image_frame(index)
         elif isinstance(index, (slice, range, np.ndarray, list)):
-            if isinstance(index, slice):
-                indices = np.arange(self.chopper_index.shape[0])
-                indices = indices[index]
-            else:
-                # range, or indexing array
-                indices = index
+            if isinstance(index, range):
+                index = np.asarray(index, dtype=int)
+            # Let numpy convert slices, indexing arrays, and boolean
+            # masks to the actual event indices.
+            indices = np.arange(self.chopper_index.shape[0])[index]
             data = np.zeros((len(indices),) + self.roi_shape, dtype=self.dtype)
             for ii, idx in enumerate(indices):
                 data[ii] = self._get_image_frame(idx)

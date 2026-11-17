@@ -105,6 +105,8 @@ def test_config_save_load():
         pass
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("value", [True, False, 0.5, 2])
 def test_config_save_load_hdf5_bool_or_float(value, tmp_path):
     """Bool-or-float metadata are numpy scalars when read from HDF5"""

@@ -119,6 +119,8 @@
    by the caller and failed for tuples
  - fix: `get_contour` raised an IndexError for an empty mask instead of
    `NoValidContourFoundError`
+ - fix: `new_dataset` ignored `identifier` for `io.BytesIO` objects and
+   additional keyword arguments for HTTP URLs
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -52,7 +52,7 @@ def new_dataset(data: dict | io.BytesIO | RTDCBase | str | pathlib.Path,
     if isinstance(data, dict):
         return fmt_dict.RTDC_Dict(data, identifier=identifier, **kwargs)
     elif isinstance(data, io.BytesIO):
-        return fmt_hdf5.RTDC_HDF5(data, **kwargs)
+        return fmt_hdf5.RTDC_HDF5(data, identifier=identifier, **kwargs)
     elif isinstance(data, RTDCBase):
         return fmt_hierarchy.RTDC_Hierarchy(data, identifier=identifier,
                                             **kwargs)
@@ -60,7 +60,7 @@ def new_dataset(data: dict | io.BytesIO | RTDCBase | str | pathlib.Path,
         return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
     elif isinstance(data, str) and fmt_http.is_http_url(data):
         if fmt_http.is_url_available(data, ret_reason=False):
-            return fmt_http.RTDC_HTTP(data, identifier=identifier)
+            return fmt_http.RTDC_HTTP(data, identifier=identifier, **kwargs)
         elif fmt_s3.is_s3_url(data):
             return fmt_s3.RTDC_S3(data, identifier=identifier, **kwargs)
         else:

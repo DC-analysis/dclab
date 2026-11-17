@@ -1038,9 +1038,26 @@ class RTDCWriter:
                 **self.compression_kwargs)
             line_offset = 0
         else:
-            # TODO: test whether fixed length is long enough!
-            # Resize the dataset
             txt_dset = group[name]
+            if (txt_dset.dtype.kind == "S"
+                    and txt_dset.dtype.itemsize < max_length):
+                # The fixed-length strings of the existing dataset are too
+                # short for the new lines (h5py would silently truncate
+                # them). Re-create the dataset with a larger string length.
+                data = txt_dset[:]
+                attrs = dict(txt_dset.attrs)
+                del group[name]
+                txt_dset = group.create_dataset(
+                    name,
+                    shape=data.shape,
+                    dtype=f"S{max_length}",
+                    maxshape=(None,),
+                    chunks=True,
+                    fletcher32=True,
+                    **self.compression_kwargs)
+                txt_dset[:] = data
+                txt_dset.attrs.update(attrs)
+            # Resize the dataset
             line_offset = txt_dset.shape[0]
             txt_dset.resize(line_offset + lnum, axis=0)
 

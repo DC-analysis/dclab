@@ -139,12 +139,12 @@ class Filter:
         cfg_cur = rtdc_ds.config["filtering"]
         cfg_old = self._old_config
 
-        # Determine which data was updated
-        for skey in list(cfg_cur.keys()):
-            if cfg_cur[skey] != cfg_old.get(skey, None):
+        # Determine which data was updated (including removed keys)
+        for skey in set(cfg_cur.keys()) | set(cfg_old.keys()):
+            if cfg_cur.get(skey, None) != cfg_old.get(skey, None):
                 newkeys.append(skey)
                 oldvals.append(cfg_old.get(skey, None))
-                newvals.append(cfg_cur[skey])
+                newvals.append(cfg_cur.get(skey, None))
 
         # 1. Invalid filters
         arr_invalid = self._get_rw_array("invalid")

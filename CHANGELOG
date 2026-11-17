@@ -25,6 +25,8 @@
    removed unknown configuration keys from the copy
  - fix: exports of non-hierarchy datasets did not store the relative
    path to the original file in the basin definition
+ - docs: the default branch was renamed from "master" to "main"
+ - docs: fix links to renamed files in the emodulus docs
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

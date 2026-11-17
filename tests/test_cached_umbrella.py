@@ -62,6 +62,30 @@ def test_umbrella_cache_key_removed_concurrently(monkeypatch, store_keeper):
     assert func_removed(4) == 8
 
 
+def test_umbrella_cache_modify_returned_value(store_keeper):
+    """Modifying a returned value must not modify the cached value"""
+    @cached.umbrella_cache()
+    def func_array(n):
+        time.sleep(.02)
+        return np.zeros(n), [np.ones(2)]
+
+    # modify the computed value
+    a1, b1 = func_array(3)
+    a1 += 10
+    b1[0] += 10
+    b1.append("hans")
+
+    # modify the value retrieved from the memory store
+    a2, b2 = func_array(3)
+    assert np.all(a2 == 0)
+    assert len(b2) == 1
+    assert np.all(b2[0] == 1)
+    a2 += 10
+
+    a3, _ = func_array(3)
+    assert np.all(a3 == 0)
+
+
 def test_umbrella_cache_disabled():
     """Test if caching works"""
     wait = .05
@@ -210,6 +234,29 @@ def test_umbrella_cache_disk_store_unreadable_not_in_index(tmp_path,
     assert key in store_keeper.disk_store
 
     assert func_unreadable(5) == 10
+
+
+def test_umbrella_cache_modify_returned_value_disk_store(tmp_path,
+                                                         store_keeper):
+    """Modifying a value from the disk store must not modify the cache"""
+    store_keeper.set_disk_store_path(tmp_path)
+    store_keeper.event_run.clear()
+    time.sleep(store_keeper.interval)
+
+    @cached.umbrella_cache()
+    def func_array_disk(n):
+        time.sleep(.02)
+        return np.zeros(n)
+
+    func_array_disk(4)
+    store_keeper.perform_tasks()
+    store_keeper.memory_store.clear()
+
+    # value from the disk store (also stored in the memory store)
+    a1 = func_array_disk(4)
+    a1 += 10
+    # value from the memory store
+    assert np.all(func_array_disk(4) == 0)
 
 
 def test_umbrella_cache_size(store_keeper):

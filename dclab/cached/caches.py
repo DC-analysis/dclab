@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import atexit
+import copy
 import functools
 import hashlib
 import logging
@@ -102,7 +103,9 @@ class umbrella_cache:
                     # Do not check with `key in self._memory_store` first,
                     # because the StoreKeeper thread might remove the key
                     # in the meantime.
-                    return self._memory_store[key]
+                    # Return a copy, so callers cannot modify the
+                    # cached value in-place.
+                    return copy.deepcopy(self._memory_store[key])
                 except KeyError:
                     pass
 
@@ -122,14 +125,14 @@ class umbrella_cache:
                     pass
                 else:
                     if self.use_memory_store:
-                        self._memory_store[key] = value
+                        self._memory_store[key] = copy.deepcopy(value)
                     return value
 
             value = func(*args, **kwargs)
             if time.perf_counter() - t0 < self.evaluation_time_threshold:
                 pass  # no caching
             elif self.use_memory_store:
-                self._memory_store[key] = value
+                self._memory_store[key] = copy.deepcopy(value)
             elif self._disk_store:
                 # Only write to DiskStore directly, if the memory store
                 # is disabled. Normally, the StoreKeeper does this in the

@@ -134,6 +134,8 @@
    for ndarray `positions` and `quantiles`
  - fix: `KernelDensityEstimator.get_contour_lines` ignored `ret_levels`
    when no contour could be computed
+ - fix: on a log scale, `find_smooth_contour_spacing` reported success
+   for contours with undefined (nan) opening angles
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

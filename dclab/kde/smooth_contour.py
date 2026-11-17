@@ -138,16 +138,24 @@ def find_smooth_contour_spacing(
                 yrange=yrange,
                 xscale=xscale,
                 yscale=yscale)
+            # The opening angle is undefined (NaN) for duplicate contour
+            # points and, on a log scale, for contour points outside the
+            # plot range. Ignore these points.
+            valid = ~np.isnan(angles)
 
             if (np.allclose(np.abs(angles[0]), np.pi / 2, atol=0.001, rtol=0)
                     and np.all(angles[1:6] == 0)):
                 # We have probably encountered a contour at the boundary
                 # of the plot. This is ok.
                 corners = np.abs((np.abs(angles) - np.pi / 2)) < 0.001
-                dphi = np.max(np.abs(angles[~corners]))
+                valid &= ~corners
                 corners_found = True
+
+            if np.any(valid):
+                dphi = np.max(np.abs(angles[valid]))
             else:
-                dphi = np.max(np.abs(angles))
+                # We cannot tell whether this contour is smooth.
+                dphi = np.inf
 
             max_dphi = max(max_dphi, dphi)
             max_length = min(max_length, len(cc))

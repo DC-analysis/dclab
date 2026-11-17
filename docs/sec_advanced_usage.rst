@@ -18,6 +18,7 @@ functionalities.
    sec_av_feat_temp
    sec_av_scatter
    sec_av_fluorescence
+   sec_av_fl_crosstalk
    sec_av_emodulus/index
    sec_av_lme4
    sec_av_dcor

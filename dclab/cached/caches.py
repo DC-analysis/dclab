@@ -162,22 +162,30 @@ def update_hash(the_hash,
 
     The argument can be a numpy array, a string, or a list/tuple
     of objects that are convertable to strings.
+
+    Every object is hashed with a prefix that contains its type and
+    size, so that different arguments never result in the same input
+    to the hashing object (e.g. `(1, 23)` and `(12, 3)`).
     """
     if isinstance(arg, numbers.Number):
-        the_hash.update(f"{arg}".encode('utf-8'))
+        _update_hash_tagged(the_hash, "number", f"{arg}".encode('utf-8'))
     elif isinstance(arg, str):
-        the_hash.update(arg.encode('utf-8'))
+        _update_hash_tagged(the_hash, "str", arg.encode('utf-8'))
     elif arg is None:
-        the_hash.update(b"none")
+        _update_hash_tagged(the_hash, "none", b"")
     elif isinstance(arg, bytes):
-        the_hash.update(arg)
+        _update_hash_tagged(the_hash, "bytes", arg)
     elif isinstance(arg, np.ndarray):
-        the_hash.update(arg.tobytes())
+        _update_hash_tagged(the_hash,
+                            f"ndarray[{arg.dtype.str}{arg.shape}]",
+                            arg.tobytes())
     elif isinstance(arg, (list, tuple)):
+        _update_hash_tagged(the_hash, "sequence", f"{len(arg)}".encode())
         for a in arg:
             update_hash(the_hash, a,
                         custom_handlers=custom_handlers)
     elif isinstance(arg, dict):
+        _update_hash_tagged(the_hash, "dict", f"{len(arg)}".encode())
         update_hash(the_hash, sorted(arg.items()),
                     custom_handlers=custom_handlers)
     else:
@@ -212,3 +220,9 @@ def update_hash(the_hash,
                 return  # no further checks necessary
 
         raise ValueError(f"No rule to hash object of type {type(arg)}")
+
+
+def _update_hash_tagged(the_hash, tag: str, data: bytes) -> None:
+    """Update a hashing object with `data` prefixed by `tag` and size"""
+    the_hash.update(f"{tag}:{len(data)}:".encode())
+    the_hash.update(data)

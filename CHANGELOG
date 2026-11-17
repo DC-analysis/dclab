@@ -69,6 +69,10 @@
    after which nothing was written to the disk store anymore and the
    memory store grew without limit (`MemoryStore` is now thread-safe
    and errors in `StoreKeeper.perform_tasks` are logged)
+ - fix: cache keys of `umbrella_cache` were ambiguous, e.g. arguments
+   `(1, 23)` and `(12, 3)`, `"1"` and `1`, or arrays with the same data
+   but a different shape or dtype resulted in the same key (existing
+   disk store cache entries are no longer used)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -239,7 +239,31 @@ def test_update_hash(store_keeper):
     ]
     hasher = hashlib.md5()
     caches.update_hash(hasher, data)
-    assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
+    assert hasher.hexdigest() == "8033098fffb1fd19f5828c5e2067b6ee"
+
+
+@pytest.mark.parametrize("args1,args2", [
+    # concatenated string representations are identical
+    ((1, 23), (12, 3)),
+    (("ab", "c"), ("a", "bc")),
+    # type is different
+    (("1",), (1,)),
+    ((None,), ("none",)),
+    ((b"1",), ("1",)),
+    # shape or dtype of arrays is different
+    ((np.arange(6.).reshape(2, 3),), (np.arange(6.).reshape(3, 2),)),
+    ((np.zeros(3),), (np.zeros(3, dtype=np.int64),)),
+    (([np.arange(3.), np.arange(4.)],), ([np.arange(4.), np.arange(3.)],)),
+    # nesting is different
+    ((["a", "b"], "c"), (["a"], "b", "c")),
+])
+def test_update_hash_no_collision(args1, args2):
+    """Different arguments must result in different hashes"""
+    def func(*args):
+        pass
+    hash1 = caches.compute_hash_for_cache(func, args1, {})
+    hash2 = caches.compute_hash_for_cache(func, args2, {})
+    assert hash1 != hash2
 
 
 def test_update_hash_custom_handlers(store_keeper):
@@ -262,7 +286,7 @@ def test_update_hash_custom_handlers(store_keeper):
     hasher = hashlib.md5()
     caches.update_hash(hasher, data,
                        custom_handlers={HandledClass: custom_handler})
-    assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
+    assert hasher.hexdigest() == "8033098fffb1fd19f5828c5e2067b6ee"
 
 
 def test_update_hash_custom_handlers_string(store_keeper):
@@ -285,7 +309,7 @@ def test_update_hash_custom_handlers_string(store_keeper):
     hasher = hashlib.md5()
     caches.update_hash(hasher, data,
                        custom_handlers={"HandledClass": custom_handler})
-    assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
+    assert hasher.hexdigest() == "8033098fffb1fd19f5828c5e2067b6ee"
 
 
 def test_update_hash_custom_handlers_fail(store_keeper):
@@ -333,7 +357,7 @@ def test_update_hash_for_json(store_keeper):
     ]
     hasher = hashlib.md5()
     caches.update_hash(hasher, data)
-    assert hasher.hexdigest() == "995204fa74d9f6e66ea055f9af0379b3"
+    assert hasher.hexdigest() == "8033098fffb1fd19f5828c5e2067b6ee"
 
 
 def test_update_hash_for_json_rtdc_config(store_keeper):
@@ -350,9 +374,9 @@ def test_update_hash_for_json_rtdc_config(store_keeper):
     ]
     hasher = hashlib.md5()
     caches.update_hash(hasher, data)
-    assert hasher.hexdigest() == "ce0633084e43f71c9bfbb689dddf1040"
+    assert hasher.hexdigest() == "8629e85d248cf6bf309a6fdde48e99a8"
 
     ds1.config["experiment"]["sample"] = "test2"  # yields different hash
     hasher = hashlib.md5()
     caches.update_hash(hasher, data)
-    assert hasher.hexdigest() == "816ab314bde68b0e6a355163a3b9dc2d"
+    assert hasher.hexdigest() == "267c2f3cdf20e3fa01503ba31657bdc1"

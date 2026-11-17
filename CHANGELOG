@@ -10,6 +10,9 @@
  - fix: a corrupt file in the dataset directory with the same name as
    a file basin aborted the basin search (exception during relative
    path check)
+ - fix: relative file basin paths with Windows path separators were
+   not found on Unix (and vice versa); the separator check compared
+   against a two-character string
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

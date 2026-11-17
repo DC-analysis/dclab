@@ -58,10 +58,11 @@ def get_bright_perc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
         # cast to integer before subtraction
         imgi = np.array(image[ii], dtype=int) - image_bg[ii]
         mski = mask[ii]
-        # Assign results
-        p10[ii], p90[ii] = np.percentile(imgi[mski], q=[10, 90])
+        if np.any(mski):
+            # Assign results (empty masks remain nan)
+            p10[ii], p90[ii] = np.percentile(imgi[mski], q=[10, 90])
 
-    if bg_off:
+    if bg_off is not None:
         p10 -= bg_off
         p90 -= bg_off
 

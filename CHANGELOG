@@ -49,6 +49,9 @@
  - fix: `get_volume` with `fix_orientation=True` returned wrong (also
    negative) volumes for contours in the opposite orientation, because
    the reordered contour was combined with the original x-coordinates
+ - fix: `get_bright_perc` failed if `bg_off` was a numpy array (e.g.
+   "bright_perc_10" for dictionary-based datasets) and for empty masks
+   (now nan, like "bright_avg")
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

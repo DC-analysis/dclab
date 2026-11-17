@@ -156,6 +156,8 @@ class Basin(abc.ABC):
         else:
             self._basinmap_referrer = None
         self._ds: RTDCBase | BasinProxy | None = None
+        # make sure the dataset is only loaded once (thread-safety)
+        self._ds_lock = threading.RLock()
         # perform availability check in separate thread
         self._av_check_lock = threading.Lock()
         self._av_check = BasinAvailabilityChecker(self)
@@ -231,11 +233,17 @@ class Basin(abc.ABC):
             # basin so we can access it again.
             self.perishable.refresh()
         if self._ds is None:
-            if not self.is_available():
-                raise BasinNotAvailableError(f"Basin {self} is not available!")
-            self._ds = self.load_dataset(self.location, **self.kwargs)
-            assert self._ds is not None
-            self._ds.ignore_basins(self.ignored_basins)
+            with self._ds_lock:
+                # Check again, another thread might have loaded the
+                # dataset in the meantime.
+                if self._ds is None:
+                    if not self.is_available():
+                        raise BasinNotAvailableError(
+                            f"Basin {self} is not available!")
+                    ds = self.load_dataset(self.location, **self.kwargs)
+                    assert ds is not None
+                    ds.ignore_basins(self.ignored_basins)
+                    self._ds = ds
         return self._ds
 
     @property

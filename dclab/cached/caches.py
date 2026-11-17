@@ -113,8 +113,10 @@ class umbrella_cache:
                     # Maybe the data got deleted. Only the `else` clause
                     # returns, so the value is computed and returned as if
                     # it wasn't there.
-                    # Remove key from the disk store index.
-                    self._disk_store.index.remove(key)
+                    # Remove key from the disk store index (the key is not
+                    # in the index if the data were written by another
+                    # process).
+                    self._disk_store.index.discard(key)
                     self.logger.warning(f"Could not fetch {key} from disk "
                                         f"store: {traceback.format_exc()}")
                     pass

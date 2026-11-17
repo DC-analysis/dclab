@@ -103,105 +103,110 @@ def compress(
         bbk = ByteBookKeeper()
     bbk["cli-compress"] = 1
 
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
+    # Prepare monitoring
+    stop_event = threading.Event()
+    monitor_thread = threading.Thread(
+        target=common.monitor,
+        args=("Compression", bbk, stop_event),
+        name="Compression",
+        daemon=True)
+    monitor_thread.start()
 
-        # Prepare monitoring
-        stop_event = threading.Event()
-        monitor_thread = threading.Thread(
-            target=common.monitor,
-            args=("Compression", bbk, stop_event),
-            name="Compression",
-            daemon=True)
-        monitor_thread.start()
+    try:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
 
-        # Make sure all basin files are valid and available
-        # and create `basin_maps` dictionary with mapping for each basin.
-        basin_maps = {}
-        if basin_input:
-            with new_dataset(path_in) as ds0:
-                for bn in ds0.basins:
-                    if (bn.basin_type == "file"
-                        and bn.basin_format == "hdf5"
-                            and bn.is_available()):
-                        pb = pathlib.Path(bn.location).resolve()
-                        if pb in basin_input:
-                            if bn.mapping == "same":
-                                basin_maps[pb] = None
-                            else:
-                                basin_maps[pb] = ds0[bn.mapping][:]
+            # Make sure all basin files are valid and available
+            # and create `basin_maps` dictionary with mapping for each basin.
+            basin_maps = {}
+            if basin_input:
+                with new_dataset(path_in) as ds0:
+                    for bn in ds0.basins:
+                        if (bn.basin_type == "file"
+                            and bn.basin_format == "hdf5"
+                                and bn.is_available()):
+                            pb = pathlib.Path(bn.location).resolve()
+                            if pb in basin_input:
+                                if bn.mapping == "same":
+                                    basin_maps[pb] = None
+                                else:
+                                    basin_maps[pb] = ds0[bn.mapping][:]
 
-        if set(basin_maps.keys()) != set(basin_input):
-            raise ValueError(
-                f"The following files are not basins of the input file "
-                f"'{path_in.name}': {set(basin_input) - set(basin_maps)}"
-            )
+            if set(basin_maps.keys()) != set(basin_input):
+                raise ValueError(
+                    f"The following files are not basins of the input file "
+                    f"'{path_in.name}': {set(basin_input) - set(basin_maps)}"
+                )
 
-        # Which features are taken from which file?
-        features_all = set()
-        pp_features = {}
-        # The input file `path_in` takes metadata precedence in `rtdc_copy`
-        paths = [path_in] + list(basin_maps.keys())
-        for pp in paths:
-            pp_feats = set()
-            with h5py.File(pp, locking=False) as h5:
-                for loc in ["events", "basin_events"]:
-                    for feat in h5.get(loc, {}):
-                        if feat not in features_all:
-                            pp_feats.add(feat)
-                            if bbk is not None:
-                                bbk[feat] = get_size(h5[f"{loc}/{feat}"])
-            # Set of features in `features` but not `features_all`
-            pp_features[pp] = list(pp_feats)
-            # update features_all list
-            features_all = features_all | pp_feats
-
-        # Start with the actual compression
-        with h5py.File(path_temp, "w") as h5_out:
+            # Which features are taken from which file?
+            features_all = set()
+            pp_features = {}
+            # The input file `path_in` takes metadata precedence in `rtdc_copy`
+            paths = [path_in] + list(basin_maps.keys())
             for pp in paths:
-                with h5py.File(pp, locking=False) as h5_in:
-                    compress_input(
-                        h5_in=h5_in,
-                        h5_out=h5_out,
-                        features=pp_features[pp],
-                        crop_event_images=crop_event_images,
-                        basinmap=basin_maps.get(pp),
-                        byte_book_keeper=bbk,
-                        include_other_data=(pp == path_in),
-                    )
+                pp_feats = set()
+                with h5py.File(pp, locking=False) as h5:
+                    for loc in ["events", "basin_events"]:
+                        for feat in h5.get(loc, {}):
+                            if feat not in features_all:
+                                pp_feats.add(feat)
+                                if bbk is not None:
+                                    bbk[feat] = get_size(h5[f"{loc}/{feat}"])
+                # Set of features in `features` but not `features_all`
+                pp_features[pp] = list(pp_feats)
+                # update features_all list
+                features_all = features_all | pp_feats
 
-            h5_out.require_group("logs")
-            # rename old dclab-compress logs
-            for lkey in ["dclab-compress", "dclab-compress-warnings"]:
-                if lkey in h5_out["logs"]:
-                    # This is cached, so no worry calling it multiple times.
-                    md55m = util.hashfile(path_in, count=80)
-                    # rename
-                    h5_out["logs"][f"{lkey}_{md55m}"] = h5_out["logs"][lkey]
-                    del h5_out["logs"][lkey]
+            # Start with the actual compression
+            with h5py.File(path_temp, "w") as h5_out:
+                for pp in paths:
+                    with h5py.File(pp, locking=False) as h5_in:
+                        compress_input(
+                            h5_in=h5_in,
+                            h5_out=h5_out,
+                            features=pp_features[pp],
+                            crop_event_images=crop_event_images,
+                            basinmap=basin_maps.get(pp),
+                            byte_book_keeper=bbk,
+                            include_other_data=(pp == path_in),
+                        )
 
-        # warnings log
-        if w:
-            logs["dclab-compress-warnings"] = common.assemble_warnings(w)
+                h5_out.require_group("logs")
+                # rename old dclab-compress logs
+                for lkey in ["dclab-compress", "dclab-compress-warnings"]:
+                    if lkey in h5_out["logs"]:
+                        # This is cached, so no worry calling it
+                        # multiple times.
+                        md55m = util.hashfile(path_in, count=80)
+                        # rename
+                        logs_out = h5_out["logs"]
+                        logs_out[f"{lkey}_{md55m}"] = logs_out[lkey]
+                        del logs_out[lkey]
 
-    # Write log file
-    with RTDCWriter(path_temp,
-                    compression_kwargs=cmp_kw,
-                    mode="append") as hw:
-        for name, value in logs.items():
-            hw.store_log(name, value)
+            # warnings log
+            if w:
+                logs["dclab-compress-warnings"] = common.assemble_warnings(w)
 
-    # Finally, rename temp to out
-    # Collect garbage, a workaround for Windows'
-    # "PermissionError: [WinError 32] The process cannot access the
-    # file because it is being used by another process"
-    gc.collect()
-    path_temp.rename(path_out)
+        # Write log file
+        with RTDCWriter(path_temp,
+                        compression_kwargs=cmp_kw,
+                        mode="append") as hw:
+            for name, value in logs.items():
+                hw.store_log(name, value)
 
-    if bbk is not None:
-        bbk.complete_item("cli-compress")
-    stop_event.set()
-    monitor_thread.join()
+        # Finally, rename temp to out
+        # Collect garbage, a workaround for Windows'
+        # "PermissionError: [WinError 32] The process cannot access the
+        # file because it is being used by another process"
+        gc.collect()
+        path_temp.rename(path_out)
+
+        if bbk is not None:
+            bbk.complete_item("cli-compress")
+    finally:
+        # also stop the monitor thread if something went wrong
+        stop_event.set()
+        monitor_thread.join()
 
     if ret_path:
         return path_out

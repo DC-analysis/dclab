@@ -85,18 +85,20 @@ def repack(
             daemon=True)
         monitor_thread.start()
 
-        rtdc_copy(src_h5file=h5,
-                  dst_h5file=hc,
-                  features="all",
-                  include_basins=not strip_basins,
-                  include_logs=not strip_logs,
-                  include_tables=True,
-                  meta_prefix="",
-                  byte_book_keeper=bbk,
-                  )
-
-        stop_event.set()
-        monitor_thread.join()
+        try:
+            rtdc_copy(src_h5file=h5,
+                      dst_h5file=hc,
+                      features="all",
+                      include_basins=not strip_basins,
+                      include_logs=not strip_logs,
+                      include_tables=True,
+                      meta_prefix="",
+                      byte_book_keeper=bbk,
+                      )
+        finally:
+            # also stop the monitor thread if something went wrong
+            stop_event.set()
+            monitor_thread.join()
 
     # Finally, rename temp to out
     path_temp.rename(path_out)

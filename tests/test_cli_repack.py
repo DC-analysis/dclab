@@ -1,3 +1,5 @@
+import threading
+
 from dclab import cli, new_dataset, rtdc_dataset, RTDCWriter
 
 import h5py
@@ -86,6 +88,21 @@ def test_repack_basin_internal(use_basins):
     with new_dataset(h5path_out) as ds:
         assert "userdef1" in ds.features_basin
         assert "userdef1" in ds.features_innate
+
+
+def test_repack_error_stops_monitor_thread(monkeypatch):
+    """The progress monitor thread must stop if repacking fails"""
+    path_in = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    path_out = path_in.with_name("repacked.rtdc")
+
+    def rtdc_copy_error(*args, **kwargs):
+        raise ValueError("Test error in rtdc_copy")
+
+    monkeypatch.setattr(cli.task_repack, "rtdc_copy", rtdc_copy_error)
+    threads_before = threading.enumerate()
+    with pytest.raises(ValueError, match="Test error in rtdc_copy"):
+        cli.repack(path_in=path_in, path_out=path_out)
+    assert threading.enumerate() == threads_before
 
 
 @pytest.mark.parametrize("suffix", [".rtdc", ""])

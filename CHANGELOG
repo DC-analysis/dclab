@@ -98,6 +98,9 @@
  - fix: `RTDCWriter.write_text` silently truncated appended log lines
    that were longer than the existing lines (at least 100 bytes); this
    could cut multi-byte UTF-8 characters, so the log could not be read
+ - fix: the check for Shape-In issue #3 (wrong medium "CellCarrierB")
+   did not work for files written by dclab, because dclab appends its
+   version to "setup:software version"
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

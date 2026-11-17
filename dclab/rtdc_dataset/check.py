@@ -805,6 +805,9 @@ class IntegrityChecker(object):
         cues = []
         medium = self.ds.config["setup"].get("medium", "")
         si_ver = self.ds.config["setup"].get("software version", "")
+        # Only use the acquisition software version; other software
+        # appends its version, e.g. "2.2.1.0 | dclab 0.74.0".
+        si_ver = si_ver.split("|")[0].strip()
         si_ver = si_ver.strip("dev")  # for e.g. "2.2.1.0dev"
         if (medium == "CellCarrierB"
                 and si_ver in ["2.2.1.0", "2.2.2.0", "2.2.2.1", "2.2.2.2",

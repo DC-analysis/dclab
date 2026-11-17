@@ -111,6 +111,10 @@
  - fix: hierarchy children inherited the "limit events" filter of the
    parent, i.e. the events were limited twice and changing the parent's
    limit did not take effect in the child
+ - fix: scalar feature data of hierarchy children were writable, so
+   modifying e.g. `child["deform"][:]` in-place modified the cached
+   feature data of the child (the data are now read-only, like the
+   data of other dataset formats)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

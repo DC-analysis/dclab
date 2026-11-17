@@ -77,6 +77,9 @@ class ChildScalar(np.lib.mixins.NDArrayOperatorsMixin):
             hparent = self.child.hparent
             filt_arr = hparent.filter.all
             self._array = hparent[self.feat][filt_arr]
+            # Make the cached array read-only, so that users cannot
+            # modify it via e.g. `child["deform"][:]`
+            self._array.flags.writeable = False
         return np.array(self._array, *args, dtype=dtype, copy=copy, **kwargs)
 
     def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):

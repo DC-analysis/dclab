@@ -158,19 +158,17 @@ def run_command(cmd: Sequence[str | pathlib.Path], **kwargs) -> str:
         # option. Avoid this distraction.
         si = sp.STARTUPINFO()
         si.dwFlags |= sp.STARTF_USESHOWWINDOW
-        # Windows doesn't search the path by default. Pass it an
-        # environment so it will.
-        env = os.environ
     else:
         si = None
-        env = None
 
     kwargs.setdefault("text", True)
     kwargs.setdefault("stderr", sp.STDOUT)
-    if env is not None:
-        if "env" in kwargs:
-            env.update(kwargs.pop("env"))
-        kwargs["env"] = env
+    # Extend a copy of the current environment instead of replacing it,
+    # so that e.g. PATH and HOME are still available to R (Windows
+    # doesn't search the path otherwise). Do not modify `os.environ`.
+    env = dict(os.environ)
+    env.update(kwargs.pop("env", None) or {})
+    kwargs["env"] = env
     kwargs["startupinfo"] = si
 
     # Convert paths to strings

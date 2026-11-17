@@ -240,7 +240,8 @@ class Configuration(object):
 
     def copy(self):
         """Return copy of current configuration"""
-        return Configuration(cfg=copy.deepcopy(self._cfg))
+        return Configuration(cfg=copy.deepcopy(self._cfg),
+                             disable_checks=self.disable_checks)
 
     def for_json(self):
         return self.as_dict()

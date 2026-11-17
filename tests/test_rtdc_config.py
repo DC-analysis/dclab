@@ -47,6 +47,21 @@ def test_config_basic():
     assert ds.config["imaging"]["roi size y"] == 96.
 
 
+def test_config_copy_disable_checks():
+    """Copying a configuration must not remove unknown keys"""
+    cfg = dccfg.Configuration(cfg={"setup": {"channel width": 20,
+                                             "unknown key": "picard"},
+                                   "unknown section": {"riker": 1}},
+                              disable_checks=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        cfg2 = cfg.copy()
+    assert cfg2.disable_checks
+    assert cfg2["setup"]["channel width"] == 20
+    assert cfg2["setup"]["unknown key"] == "picard"
+    assert cfg2["unknown section"]["riker"] == 1
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_config_invalid_key():

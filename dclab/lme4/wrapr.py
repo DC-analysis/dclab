@@ -328,7 +328,7 @@ class Rlme4(object):
 
 def arr2str(a):
     """Convert an array to a string"""
-    if isinstance(a.dtype.type, np.integer):
+    if np.issubdtype(a.dtype, np.integer):
         return ",".join(str(dd) for dd in a.tolist())
     elif a.dtype.type == np.str_:
         return ",".join(f"'{dd}'" for dd in a.tolist())

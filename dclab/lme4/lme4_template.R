@@ -73,8 +73,8 @@ cat("#*#\n")
 # convergence warnings in lme4
 is_warning_generated <- function(m) {
   df <- summary(m)
-  !is.null(df$optinfo$conv$lme4$messages) &&
-           grepl('failed to converge', df$optinfo$conv$lme4$messages)
+  # there may be more than one message (`&&` requires a single value)
+  any(grepl('failed to converge', df$optinfo$conv$lme4$messages))
 }
 lme4_not_converged <- is_warning_generated(Model)
 
@@ -91,4 +91,4 @@ if (length(lme4l) == 0) {
 }
 
 cat("OUTPUT model converged:", (conv_code == 0) && !lme4_not_converged, "#*#\n")
-cat("OUTPUT lme4 messages:", lme4l$optinfo$conv$lme4$messages, "#*#\n")
+cat("OUTPUT lme4 messages:", lme4l$messages, "#*#\n")

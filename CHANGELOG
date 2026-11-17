@@ -147,6 +147,7 @@
  - fix: three crash paths in the .tdms reader (image seek workaround,
    trace data with an incomplete last event, `hash` without the optional
    "_camera.ini" file)
+ - fix: `HTTPFile.read()` without size returned no data
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

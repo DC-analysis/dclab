@@ -171,11 +171,13 @@ class HTTPFile(io.IOBase):
 
     def read(self, size: int = -1, /) -> bytes:
         """Cache-supported read operation (file object)"""
-        data = self.read_range(self._pos, self._pos + size)
-        if size > 0:
-            self._pos += size
+        if size is None or size < 0:
+            # read until the end of the file
+            stop = self.length
         else:
-            self._pos = self.length
+            stop = self._pos + size
+        data = self.read_range(self._pos, stop)
+        self._pos += len(data)
         return data
 
     def read_range(self, start, stop) -> bytes:

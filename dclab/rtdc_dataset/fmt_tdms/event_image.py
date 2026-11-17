@@ -15,6 +15,12 @@ from .exc import (InvalidVideoFileError, CorruptFrameWarning,
 
 ISWIN = sys.platform.startswith("win")
 
+#: Use an exact (bitexact, accurately rounded) conversion from the YUV
+#: video data to RGB in ffmpeg. By default, ffmpeg uses optimized code
+#: that yields slightly different gray values on different platforms
+#: (e.g. x86 vs. ARM processors).
+FFMPEG_OUTPUT_PARAMS = ["-sws_flags", "accurate_rnd+bitexact+full_chroma_int"]
+
 
 class ImageColumn(object):
     def __init__(self, rtdc_dataset):
@@ -213,7 +219,9 @@ class ImageMap(object):
     def video_handle(self):
         if self._cap is None:
             try:
-                self._cap = imageio.get_reader(self.filename)
+                self._cap = imageio.get_reader(
+                    self.filename,
+                    output_params=FFMPEG_OUTPUT_PARAMS)
             except OSError:
                 raise InvalidVideoFileError(
                     "Broken video file '{}'!".format(self.filename))

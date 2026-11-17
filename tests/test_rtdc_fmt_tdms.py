@@ -259,12 +259,12 @@ def test_image_basic():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     # Transition image
     assert np.allclose(ds["image"][0], 0)
-    # Real image
-    # 2025-01-23: paulmueller added the atol value, because CI was failing
-    #             on macOS. Possible reason is underlying ffmpeg build
-    #             for M1 etc. arm processors :zany_face:
-    assert np.allclose(np.average(ds["image"][1]), 45.1490478515625,
-                       atol=0.5)
+    # Real images
+    # 2026-11-17: dclab uses a bitexact conversion from YUV to RGB in
+    #             ffmpeg, so these values must be identical on all
+    #             platforms (previously, they differed on ARM processors).
+    assert np.average(ds["image"][1]) == 46.006144205729164
+    assert np.average(ds["image"][2]) == 45.931193033854164
 
 
 @pytest.mark.filterwarnings(

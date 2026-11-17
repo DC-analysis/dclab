@@ -115,6 +115,8 @@
    modifying e.g. `child["deform"][:]` in-place modified the cached
    feature data of the child (the data are now read-only, like the
    data of other dataset formats)
+ - fix: `export.hdf5` removed "contour" from the `features` list passed
+   by the caller and failed for tuples
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

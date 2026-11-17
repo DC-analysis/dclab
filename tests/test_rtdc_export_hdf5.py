@@ -212,6 +212,31 @@ def test_hdf5_contour_ignored():
         assert "contour" not in h5["events"]
 
 
+def test_hdf5_contour_ignored_features_not_modified():
+    """The list of features passed by the user must not be modified"""
+    keys = ["contour", "deform", "image"]
+    ddict = example_data_dict(size=10, keys=keys)
+    ds1 = dclab.new_dataset(ddict)
+
+    edest = tempfile.mkdtemp()
+    f1 = join(edest, "dclab_test_export_hdf5_features.rtdc")
+    features = ["contour", "deform"]
+    with pytest.warns(ContourNotExportedWarning,
+                      match="not exported to output file"):
+        ds1.export.hdf5(f1, features, filtered=False)
+    assert features == ["contour", "deform"]
+
+    # tuples are supported as well
+    f2 = join(edest, "dclab_test_export_hdf5_features_tuple.rtdc")
+    with pytest.warns(ContourNotExportedWarning,
+                      match="not exported to output file"):
+        ds1.export.hdf5(f2, ("contour", "deform"), filtered=False)
+
+    for ff in [f1, f2]:
+        with h5py.File(ff) as h5:
+            assert sorted(h5["events"].keys()) == ["deform"]
+
+
 def test_hdf5_duplicate_feature_for_export():
     keys = ["area_um", "deform", "time", "frame", "fl3_width"]
     ddict = example_data_dict(size=127, keys=keys)

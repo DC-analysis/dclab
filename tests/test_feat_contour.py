@@ -7,7 +7,9 @@ import pytest
 
 import dclab
 from dclab import new_dataset
-from dclab.features.contour import get_contour, get_contour_lazily
+from dclab.features.contour import (
+    get_contour, get_contour_lazily, NoValidContourFoundError
+)
 from dclab.features.volume import get_volume
 
 from scipy.ndimage import binary_fill_holes
@@ -50,6 +52,22 @@ def test_artefact():
     # Event 1, No contour found!" in dclab version <= 0.22.1
     cont = ds["contour"][1]
     assert len(cont) == 37, "just to be sure there really is something"
+
+
+def test_empty_mask():
+    mask = np.zeros((20, 30), dtype=bool)
+    with pytest.raises(NoValidContourFoundError, match="No contour found"):
+        get_contour(mask)
+
+    masks = np.zeros((3, 20, 30), dtype=bool)
+    masks[0, 5:10, 5:10] = True
+    masks[2, 5:10, 5:10] = True
+    cont = get_contour_lazily(masks)
+    assert len(cont[0])
+    with pytest.raises(NoValidContourFoundError,
+                       match="Event 1, No contour found"):
+        cont[1]
+    assert len(cont[2])
 
 
 @pytest.mark.filterwarnings(

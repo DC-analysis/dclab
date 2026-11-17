@@ -117,6 +117,8 @@
    data of other dataset formats)
  - fix: `export.hdf5` removed "contour" from the `features` list passed
    by the caller and failed for tuples
+ - fix: `get_contour` raised an IndexError for an empty mask instead of
+   `NoValidContourFoundError`
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

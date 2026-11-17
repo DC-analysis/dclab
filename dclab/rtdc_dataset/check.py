@@ -507,7 +507,8 @@ class IntegrityChecker(object):
         neg_feats = []
         for fl in ['fl1_max', 'fl2_max', 'fl3_max']:
             if fl in self.ds:
-                if min(self.ds[fl]) <= 0.1:
+                # ignore NaN values and support empty datasets
+                if np.any(self.ds[fl][:] <= 0.1):
                     neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(
@@ -522,7 +523,8 @@ class IntegrityChecker(object):
         neg_feats = []
         for fl in ['fl1_max_ctc', 'fl2_max_ctc', 'fl3_max_ctc']:
             if fl in self.ds:
-                if min(self.ds[fl]) <= 0.1:
+                # ignore NaN values and support empty datasets
+                if np.any(self.ds[fl][:] <= 0.1):
                     neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(

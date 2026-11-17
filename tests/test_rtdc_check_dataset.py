@@ -598,6 +598,30 @@ def test_ic_fl_max_ctc():
     assert not cues
 
 
+@pytest.mark.parametrize("feat,meth", [
+    ("fl1_max", "check_fl_max_positive"),
+    ("fl2_max_ctc", "check_fl_max_ctc_positive"),
+])
+def test_ic_fl_max_empty_and_nan(feat, meth):
+    """Empty data must not crash, NaN values must be ignored"""
+    ds = new_dataset({"deform": np.zeros(0), feat: np.zeros(0)})
+    with check.IntegrityChecker(ds) as ic:
+        assert not getattr(ic, meth)()
+
+    # The result must not depend on the position of NaN values
+    for data in [[np.nan, -5.0, 3.0], [-5.0, np.nan, 3.0]]:
+        ds = new_dataset({"deform": np.ones(3), feat: np.array(data)})
+        with check.IntegrityChecker(ds) as ic:
+            cues = getattr(ic, meth)()
+        assert len(cues) == 1
+        assert cues[0].msg == f"Negative value for feature(s): {feat}"
+
+    ds = new_dataset({"deform": np.ones(3),
+                      feat: np.array([np.nan, 5.0, 3.0])})
+    with check.IntegrityChecker(ds) as ic:
+        assert not getattr(ic, meth)()
+
+
 def test_ic_invalid_dataset():
     # Testing if IC throws NotImplementedError for hierarchy datasets
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])

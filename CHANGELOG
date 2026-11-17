@@ -101,6 +101,9 @@
  - fix: the check for Shape-In issue #3 (wrong medium "CellCarrierB")
    did not work for files written by dclab, because dclab appends its
    version to "setup:software version"
+ - fix: the integrity checks `check_fl_max_positive` and
+   `check_fl_max_ctc_positive` failed for empty datasets and their
+   result depended on the position of nan-values
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

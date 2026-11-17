@@ -153,8 +153,10 @@ class PolygonFilter(object):
 
         subdata = data[start:end]
 
-        # separate all elements and strip them
-        subdata = [[it.strip() for it in li.split("=")] for li in subdata]
+        # separate all elements and strip them (ignore empty lines and
+        # only split at the first "=", which may be part of the name)
+        subdata = [[it.strip() for it in li.split("=", 1)]
+                   for li in subdata if li.strip()]
 
         points = []
 

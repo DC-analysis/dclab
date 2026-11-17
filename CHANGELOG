@@ -60,6 +60,8 @@
  - fix: `hashfile` with `blocksize=0` returned the hash of an empty
    file instead of the entire file and raised a TypeError when
    arguments were passed positionally (`file_monitoring_lru_cache`)
+ - fix: polygon filter files (.poly) could not be loaded if the filter
+   name contained "=" or if the file contained blank lines
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

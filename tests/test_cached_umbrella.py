@@ -43,6 +43,24 @@ def test_umbrella_cache():
     assert b == a
 
 
+def test_umbrella_cache_key_removed_concurrently(monkeypatch, store_keeper):
+    """The StoreKeeper may remove a key from the memory store any time
+
+    This simulates the case where `key in memory_store` is True, but
+    the key is removed before the value is retrieved.
+    """
+    monkeypatch.setattr(cached.memory_store.MemoryStore, "__contains__",
+                        lambda self, key: True)
+
+    @cached.umbrella_cache()
+    def func_removed(x):
+        time.sleep(.02)
+        return 2 * x
+
+    assert func_removed(4) == 8
+    assert func_removed(4) == 8
+
+
 def test_umbrella_cache_disabled():
     """Test if caching works"""
     wait = .05

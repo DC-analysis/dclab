@@ -97,9 +97,16 @@ class umbrella_cache:
                                          custom_handlers=self.custom_handlers)
             key = f"{self.topic}/{ref[:3]}/{ref[3:6]}/{ref[6:]}"
 
-            if self.use_memory_store and key in self._memory_store:
-                return self._memory_store[key]
-            elif key in self._disk_store:
+            if self.use_memory_store:
+                try:
+                    # Do not check with `key in self._memory_store` first,
+                    # because the StoreKeeper thread might remove the key
+                    # in the meantime.
+                    return self._memory_store[key]
+                except KeyError:
+                    pass
+
+            if key in self._disk_store:
                 try:
                     value = self._disk_store[key]
                 except BaseException:

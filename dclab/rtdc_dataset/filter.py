@@ -131,10 +131,8 @@ class Filter:
         # re-initialize important parameters
         self._init_rtdc_ds(rtdc_ds)
 
-        # These lists may help us become very fast in the future
-        newkeys = []
-        oldvals = []
-        newvals = []
+        # tracks changed keys (new and removed)
+        changed_keys = []
 
         cfg_cur = rtdc_ds.config["filtering"]
         cfg_old = self._old_config
@@ -142,9 +140,7 @@ class Filter:
         # Determine which data was updated (including removed keys)
         for skey in set(cfg_cur.keys()) | set(cfg_old.keys()):
             if cfg_cur.get(skey, None) != cfg_old.get(skey, None):
-                newkeys.append(skey)
-                oldvals.append(cfg_old.get(skey, None))
-                newvals.append(cfg_cur.get(skey, None))
+                changed_keys.append(skey)
 
         # 1. Invalid filters
         arr_invalid = self._get_rw_array("invalid")
@@ -156,24 +152,22 @@ class Filter:
                 arr_invalid &= ~invalid
 
         # 2. Filter all feature min/max values.
-        feat2filter = []
-        for k in newkeys:
+        feat_filter_update = set()
+        for k in changed_keys:
             # k[:-4] because we want to crop " min" and " max"
             if (dfn.scalar_feature_exists(k[:-4])
                     and k.endswith((" min", " max"))):
-                feat2filter.append(k[:-4])
+                feat_filter_update.add(k[:-4])
 
         for f in force:
             # add forced features
             if dfn.scalar_feature_exists(f):
-                feat2filter.append(f)
+                feat_filter_update.add(f)
             else:
                 # Make sure the feature name is valid.
                 raise ValueError(f"Unknown scalar feature name '{f}'!")
 
-        feat2filter = np.unique(feat2filter)
-
-        for feat in feat2filter:
+        for feat in feat_filter_update:
             fstart = feat + " min"
             fend = feat + " max"
             must_be_filtered = (fstart in cfg_cur

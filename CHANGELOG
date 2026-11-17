@@ -82,6 +82,10 @@
  - fix: values returned by functions decorated with `umbrella_cache`
    were the cached objects themselves; modifying them in-place (e.g.
    KDE or downsampling results) modified the cached values
+ - fix: image data of .tdms files differed slightly between platforms
+   (e.g. x86 and ARM), because ffmpeg used optimized, inexact YUV to RGB
+   conversion; dclab now requests a bitexact conversion (gray values of
+   .tdms images change by up to about one gray level)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -47,9 +47,9 @@ class file_monitoring_lru_cache:
             if full_path.exists():
                 path_stat = full_path.stat()
                 return cached_wrapper(
+                    full_path,
+                    (path_stat.st_mtime_ns, path_stat.st_size),
                     *args,
-                    path=full_path,
-                    path_stats=(path_stat.st_mtime_ns, path_stat.st_size),
                     **kwargs)
             else:
                 # `func` will most-likely raise an exception
@@ -105,6 +105,11 @@ def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
         constructor = hasher_class
 
     path = pathlib.Path(fname)
+
+    if blocksize == 0:
+        # Hash the entire file (`fd.read(0)` would not read anything).
+        blocksize = 65536
+        count = 0
 
     hasher = constructor()
     with path.open('rb') as fd:

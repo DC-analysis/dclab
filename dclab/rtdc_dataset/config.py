@@ -419,19 +419,20 @@ def load_from_file(cfg_file):
         code = f.readlines()
 
     cfg = ConfigurationDict()
+    sec = None
     for line in code:
-        # We deal with comments and empty lines
-        # We need to check line length first and then we look for
-        # a hash.
-        line = line.split("#")[0].strip()
-        if len(line) != 0:
+        # We deal with comments and empty lines. Only lines starting
+        # with a hash are comments; a hash within a value (e.g. in
+        # the sample name) is part of that value.
+        line = line.strip()
+        if len(line) != 0 and not line.startswith("#"):
             if line.startswith("[") and line.endswith("]"):
                 sec = line[1:-1].lower()
                 if sec not in cfg:
                     cfg[sec] = ConfigurationDict()
                 continue
-            elif not line.count("="):
-                # ignore invalid lines
+            elif not line.count("=") or sec is None:
+                # ignore invalid lines and lines outside a section
                 continue
             var, val = line.split("=", 1)
             var = var.strip().lower()

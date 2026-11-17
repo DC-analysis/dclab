@@ -105,6 +105,28 @@ def test_config_save_load():
         pass
 
 
+def test_config_save_load_hash_in_value(tmp_path):
+    """A hash in a value must not be treated as a comment"""
+    cfg = dccfg.Configuration()
+    cfg["experiment"]["sample"] = "cells #3"
+    cfg.save(tmp_path / "config.txt")
+    loaded = dccfg.load_from_file(tmp_path / "config.txt")
+    assert loaded["experiment"]["sample"] == "cells #3"
+
+
+def test_config_load_comments_and_key_outside_section(tmp_path):
+    path = tmp_path / "config.txt"
+    path.write_text("# comment\n"
+                    "sample = ignored\n"
+                    "[experiment]\n"
+                    "  # indented comment\n"
+                    "#run index = 5\n"
+                    "sample = cells\n")
+    loaded = dccfg.load_from_file(path)
+    assert list(loaded.keys()) == ["experiment"]
+    assert dict(loaded["experiment"]) == {"sample": "cells"}
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("value", [True, False, 0.5, 2])

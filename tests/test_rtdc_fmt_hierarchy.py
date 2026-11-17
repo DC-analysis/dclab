@@ -202,6 +202,23 @@ def test_event_count():
     assert len(ds) == len(ch) + 1
 
 
+def test_limit_events_not_inherited():
+    """The "limit events" filter of the parent must not be applied twice"""
+    ds = new_dataset(example_data_dict(size=100, keys=["area_um", "deform"]))
+    ds.config["filtering"]["limit events"] = 50
+    ds.apply_filter()
+    ch = new_dataset(ds)
+    assert ch.config["filtering"]["limit events"] == 0
+    assert len(ch) == 50
+
+    # Removing the limit in the parent must propagate to the child
+    ds.config["filtering"]["limit events"] = 0
+    ds.apply_filter()
+    ch.apply_filter()
+    assert len(ch) == 100
+    assert np.sum(ch.filter.all) == 100
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(

@@ -32,6 +32,9 @@
    modified while iterating over it)
  - fix: copying files with internal basins that share a basinmap
    feature failed (affects CLI repack, compress, and condense)
+ - fix: copying files with zero events failed (affects CLI repack,
+   compress, and condense); empty datasets are now copied as empty,
+   compressed datasets instead of being dropped
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

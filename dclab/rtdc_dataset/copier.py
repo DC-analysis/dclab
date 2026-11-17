@@ -233,8 +233,9 @@ def rtdc_copy(src_h5file: h5py.Group,
                     bytes_copied=bbk[feat][1] if bbk is not None else None,
                     )
 
-                if scalar_feature_exists(feat):
+                if scalar_feature_exists(feat) and dst.size:
                     # complement min/max values for all scalar features
+                    # (not possible for empty features)
                     for ufunc, attr in [(np.nanmin, "min"),
                                         (np.nanmax, "max"),
                                         (np.nanmean, "mean"),
@@ -400,10 +401,15 @@ def h5ds_copy(src_loc: h5py.Group,
     if isinstance(src, h5py.Dataset):
         if ensure_compression and not is_properly_compressed(src):
             # Chunk size larger than dataset size is not allowed
-            # in h5py's `make_new_dset`.
+            # in h5py's `make_new_dset` (unless the dataset is resizable).
+            maxshape = None
             if src.shape[0] == 0:
-                # Ignore empty datasets (This sometimes happens with logs).
-                return
+                # Empty dataset (e.g. logs or a measurement without events)
+                chunks = RTDCWriter.get_best_nd_chunks(
+                    item_shape=src.shape[1:],
+                    item_dtype=src.dtype
+                    )
+                maxshape = (None,) + src.shape[1:]
             elif src.chunks is None:
                 # The input dataset does not have chunks defined
                 chunks = RTDCWriter.get_best_nd_chunks(
@@ -447,6 +453,7 @@ def h5ds_copy(src_loc: h5py.Group,
             # Manually create a compressed version of the dataset.
             dst = dst_loc.create_dataset(name=dst_name,
                                          shape=src.shape,
+                                         maxshape=maxshape,
                                          dtype=dtype,
                                          chunks=chunks,
                                          fletcher32=True,

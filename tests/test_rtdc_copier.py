@@ -597,6 +597,30 @@ def test_copy_no_events():
         assert "test_log" in hc["logs"]
 
 
+@pytest.mark.parametrize("compressed", [False, True])
+def test_copy_zero_events(compressed, tmp_path):
+    """Features of a measurement without events are copied (empty)"""
+    path_in = tmp_path / "input.rtdc"
+    path_copy = tmp_path / "test_copy.rtdc"
+    kwargs = hdf5plugin.Zstd(clevel=5) if compressed else {}
+
+    with h5py.File(path_in, "w") as h5:
+        h5.attrs["experiment:event count"] = 0
+        h5.require_group("events").create_dataset(
+            "deform", shape=(0,), dtype=float, maxshape=(None,),
+            chunks=(100,), fletcher32=compressed, **kwargs)
+
+    with h5py.File(path_in) as h5, h5py.File(path_copy, "w") as hc:
+        rtdc_copy(src_h5file=h5,
+                  dst_h5file=hc)
+
+    with h5py.File(path_copy) as hc:
+        assert hc["events/deform"].shape == (0,)
+        assert is_properly_compressed(hc["events/deform"])
+        # min/max/mean cannot be computed for empty features
+        assert "min" not in hc["events/deform"].attrs
+
+
 def test_copy_scalar_features_only():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_copy = path.with_name("test_copy.rtdc")

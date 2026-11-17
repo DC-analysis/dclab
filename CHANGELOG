@@ -64,6 +64,11 @@
    name contained "=" or if the file contained blank lines
  - fix: `downsample_rand` and `downsample_grid` reset the global random
    state of numpy to a fixed seed (downsampling results are unchanged)
+ - fix: the `StoreKeeper` caching thread died with "dictionary changed
+   size during iteration" when cached data were added concurrently,
+   after which nothing was written to the disk store anymore and the
+   memory store grew without limit (`MemoryStore` is now thread-safe
+   and errors in `StoreKeeper.perform_tasks` are logged)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -1,3 +1,7 @@
+import sys
+import threading
+import time
+
 from dclab import cached
 
 
@@ -47,6 +51,76 @@ def test_store_keeper_start_join(tmp_path):
     sk.start()
     assert sk.disk_store.path == tmp_path
     sk.close()
+
+
+def test_store_keeper_concurrent_memory_store_access(tmp_path):
+    """Writing to the memory store must not kill the StoreKeeper thread"""
+    # create a disconnected store keeper instance
+    sk = cached.StoreKeeper()
+    sk.set_disk_store_path(tmp_path)
+    sk.set_interval(0.0005)
+    sk.set_memory_store_size(2000)
+
+    errors = []
+    perform_tasks = sk.perform_tasks
+
+    def perform_tasks_record_errors():
+        try:
+            perform_tasks()
+        except BaseException as e:
+            errors.append(e)
+            raise
+
+    sk.perform_tasks = perform_tasks_record_errors
+
+    switch_interval = sys.getswitchinterval()
+    sys.setswitchinterval(1e-6)
+    try:
+        sk.start()
+        stop = time.monotonic() + 1
+
+        def writer(tid):
+            ii = 0
+            while time.monotonic() < stop and not errors:
+                sk.memory_store[f"writer/{tid}/{ii}"] = ii
+                ii += 1
+
+        threads = [threading.Thread(target=writer, args=(tid,))
+                   for tid in range(4)]
+        for th in threads:
+            th.start()
+        for th in threads:
+            th.join()
+    finally:
+        sys.setswitchinterval(switch_interval)
+        sk.close()
+
+    assert not errors
+
+
+def test_store_keeper_exception_does_not_stop_thread(tmp_path):
+    """An exception in `perform_tasks` must not stop the thread"""
+    # create a disconnected store keeper instance
+    sk = cached.StoreKeeper()
+    sk.set_interval(0.001)
+    calls = []
+
+    def perform_tasks_failing():
+        calls.append(1)
+        if len(calls) == 1:
+            raise RuntimeError("Test error in perform_tasks")
+
+    sk.perform_tasks = perform_tasks_failing
+    sk.start()
+    try:
+        for _ in range(1000):
+            if len(calls) >= 3:
+                break
+            time.sleep(0.01)
+        assert sk.is_alive()
+        assert len(calls) >= 3
+    finally:
+        sk.close()
 
 
 def test_store_keeper_set_disk_store_size_bytes(tmp_path):

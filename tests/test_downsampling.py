@@ -136,6 +136,44 @@ def test_rand_nan():
     assert np.sum(np.isnan(b2)) == 0
 
 
+def test_global_random_state_not_modified():
+    """Downsampling must not modify the global random state of numpy"""
+    rs = np.random.RandomState(42)
+    a = rs.normal(size=1000)
+    b = rs.normal(size=1000)
+    a[::10] = np.nan
+    for func in [
+        lambda: downsampling.downsample_grid(a, b, samples=100),
+        lambda: downsampling.downsample_grid(a, b, samples=950),
+        lambda: downsampling.downsample_grid(a, b, samples=980,
+                                             remove_invalid=False),
+        lambda: downsampling.downsample_rand(a, samples=100),
+    ]:
+        # use unique data, so the cached results are not used
+        a[0] = np.random.random()
+        np.random.seed(1)
+        func()
+        assert np.random.random() == np.random.RandomState(1).random()
+
+
+def test_reproducible():
+    """Downsampling uses a fixed seed and returns the same result"""
+    rs = np.random.RandomState(42)
+    a = rs.normal(size=1000)
+    b = rs.normal(size=1000)
+    _, _, idx1 = downsampling.downsample_grid(a, b, samples=100, ret_idx=True)
+    # different data (no cached result), but identical values
+    _, _, idx2 = downsampling.downsample_grid(a.copy(), b.copy(),
+                                              samples=100, ret_idx=True)
+    np.random.seed(7)
+    _, idx3 = downsampling.downsample_rand(a, samples=100, ret_idx=True)
+    np.random.seed(8)
+    _, idx4 = downsampling.downsample_rand(a.copy(), samples=100,
+                                           ret_idx=True)
+    assert np.array_equal(idx1, idx2)
+    assert np.array_equal(idx3, idx4)
+
+
 if __name__ == "__main__":
     # Run all tests
     loc = locals()

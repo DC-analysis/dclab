@@ -62,6 +62,8 @@
    arguments were passed positionally (`file_monitoring_lru_cache`)
  - fix: polygon filter files (.poly) could not be loaded if the filter
    name contained "=" or if the file contained blank lines
+ - fix: `downsample_rand` and `downsample_grid` reset the global random
+   state of numpy to a fixed seed (downsampling results are unchanged)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

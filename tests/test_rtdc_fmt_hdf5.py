@@ -326,6 +326,10 @@ def test_length_no_event_count_trace(tmp_path):
         assert len(ds) == 5
 
 
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_hash():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert ds.hash == "2c436daba22d2c7397b74d53d80f8931"

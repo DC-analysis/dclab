@@ -1,9 +1,11 @@
 import threading
 
 import numpy as np
+import pytest
 
 import dclab
 from dclab.kde import smooth_contour
+from dclab.kde.base import ContourSpacingTooLarge
 
 
 def test_compute_contour_opening_angles():
@@ -145,8 +147,10 @@ def test_find_smooth_contour_spacing_dataset_all_filtered():
     res = smooth_contour.find_smooth_contour_spacing(
         ds_list=[ds], **kwargs)
     # The dataset without events must be ignored (was an IndexError).
-    res2 = smooth_contour.find_smooth_contour_spacing(
-        ds_list=[ds_filtered, ds], **kwargs)
+    with pytest.warns(ContourSpacingTooLarge,
+                      match="Contour not possible"):
+        res2 = smooth_contour.find_smooth_contour_spacing(
+            ds_list=[ds_filtered, ds], **kwargs)
     assert res == res2
 
 
@@ -159,14 +163,16 @@ def test_find_smooth_contour_spacing_no_contour():
     ds.filter.manual[:] = False
     ds.apply_filter()
 
-    res = smooth_contour.find_smooth_contour_spacing(
-        ds_list=[ds],
-        xax="area_um",
-        yax="deform",
-        xrange=(50, 150),
-        yrange=(0.09, 0.11),
-        quantiles=[0.90],
-    )
+    with pytest.warns(ContourSpacingTooLarge,
+                      match="Contour not possible"):
+        res = smooth_contour.find_smooth_contour_spacing(
+            ds_list=[ds],
+            xax="area_um",
+            yax="deform",
+            xrange=(50, 150),
+            yrange=(0.09, 0.11),
+            quantiles=[0.90],
+        )
     assert res["total iterations"] == 1
     assert not res["success"]
     assert res["reason"] == "no contour found"

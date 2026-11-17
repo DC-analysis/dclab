@@ -230,6 +230,20 @@ def test_invert_saveload():
     assert filt4 == filt3
 
 
+def test_invert_saveload_keyword_overridden(tmp_path):
+    """The "Inverted" value in a .poly file overrides `inverted`"""
+    path = tmp_path / "test.poly"
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[0, 0], [1, 0], [1, 1]],
+                             inverted=False)
+    pf.save(path)
+    assert "Inverted = False" in path.read_text()
+    dclab.PolygonFilter.clear_all_filters()
+
+    pf2 = dclab.PolygonFilter(filename=path, inverted=True)
+    assert not pf2.inverted
+
+
 def test_inverted_wrong():
     ddict = example_data_dict(size=1234, keys=["aspect", "tilt"])
     # points of polygon filter

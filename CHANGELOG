@@ -153,6 +153,8 @@
    such values are now stored in the new "json-typed" format
  - fix: `BasinProxyFeature` did not use its cache for scalar features,
    i.e. each access after the first one copied the data event by event
+ - fix: `Inverted = False` in a .poly file did not override the
+   `inverted` keyword argument of `PolygonFilter` (as documented)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

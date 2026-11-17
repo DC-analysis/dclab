@@ -38,6 +38,14 @@ def compute_ctc(mm: RTDCBase, fl_channel: int) -> npt.NDArray:
         for j in [1, 2, 3]:
             if i == j:
                 continue
+            if f"fl{i}_max" not in mm or f"fl{j}_max" not in mm:
+                # Only use crosstalk elements between existing channels.
+                # The crosstalk to and from a missing channel must be zero
+                # (see `correct_crosstalk`). This also makes sure that
+                # only the configuration keys in `req_config` of the
+                # corresponding ancillary feature (and thus its hash)
+                # are used.
+                continue
             key = f"crosstalk fl{i}{j}"
             par = f"ct{i}{j}"
             if key in mm.config["calculation"]:

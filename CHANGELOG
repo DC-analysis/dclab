@@ -52,6 +52,10 @@
  - fix: `get_bright_perc` failed if `bg_off` was a numpy array (e.g.
    "bright_perc_10" for dictionary-based datasets) and for empty masks
    (now nan, like "bright_avg")
+ - fix: "flX_max_ctc" of datasets with two fluorescence channels used
+   the crosstalk configuration of the missing third channel, which
+   gave wrong results and, since these keys were not part of the
+   cache hash, stale data when they were changed
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

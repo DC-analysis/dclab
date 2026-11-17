@@ -34,6 +34,37 @@ def test_af_fl_crosstalk_2chan():
     assert np.allclose(fl2_max, ds["fl2_max"])
 
 
+@pytest.mark.parametrize("channels", [(1, 2), (1, 3), (2, 3)])
+def test_af_fl_crosstalk_2chan_ignore_other_channel(channels):
+    """Crosstalk elements of the missing channel must not be used"""
+    ci, cj = channels
+    ck = ({1, 2, 3} - {ci, cj}).pop()
+    data = {f"fl{ci}_max": np.linspace(1, 1.1, 10),
+            f"fl{cj}_max": np.linspace(0, 4.1, 10),
+            }
+    ds = dclab.new_dataset(data)
+    ds.config["calculation"][f"crosstalk fl{ci}{cj}"] = .4
+    ds.config["calculation"][f"crosstalk fl{cj}{ci}"] = .05
+    ctc_ref = np.array(ds[f"fl{ci}_max_ctc"])
+    # Setting crosstalk elements of the missing channel has no effect
+    # (also no stale cached data, because they are not used at all).
+    ds.config["calculation"][f"crosstalk fl{ci}{ck}"] = .3
+    ds.config["calculation"][f"crosstalk fl{ck}{ci}"] = .2
+    assert np.allclose(ds[f"fl{ci}_max_ctc"], ctc_ref)
+
+    # The result is identical to a dataset where they were set first
+    ds2 = dclab.new_dataset(data)
+    ds2.config.update({"calculation": ds.config["calculation"]})
+    assert np.allclose(ds2[f"fl{ci}_max_ctc"], ctc_ref)
+
+    # And identical to the correction with only the two channels
+    fl = {ci: data[f"fl{ci}_max"], cj: data[f"fl{cj}_max"], ck: 0}
+    assert np.allclose(
+        ctc_ref,
+        correct_crosstalk(fl1=fl[1], fl2=fl[2], fl3=fl[3], fl_channel=ci,
+                          **{f"ct{ci}{cj}": .4, f"ct{cj}{ci}": .05}))
+
+
 def test_af_fl_crosstalk_3chanvs2chan():
     data = {"fl1_max": np.linspace(1, 1.1, 10),
             "fl2_max": np.linspace(0, 4.1, 10),

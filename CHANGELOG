@@ -73,6 +73,9 @@
    `(1, 23)` and `(12, 3)`, `"1"` and `1`, or arrays with the same data
    but a different shape or dtype resulted in the same key (existing
    disk store cache entries are no longer used)
+ - fix: functions decorated with `umbrella_cache` raised a KeyError if
+   the `StoreKeeper` thread removed the cached value from the memory
+   store between checking for and retrieving the value
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -261,6 +261,25 @@ def test_chopped_basin_feature_proxy_array_indexing_range():
             assert np.all(dsc["image"][idx] == imdat[ii])
 
 
+def test_chopped_basin_feature_proxy_array_indexing_boolean():
+    _, path_chopped = make_chopped_image_dataset()
+
+    with new_dataset(path_chopped) as dsc:
+        image = dsc["image"]
+        assert isinstance(
+            image,
+            internal_chopped_image_basin.InternalImageChoppedFeatureProxy)
+        dsc.filter.manual[:] = False
+        dsc.filter.manual[[1, 5, 10]] = True
+        dsc.apply_filter()
+        # This should never be done in production
+        imdat = image[dsc.filter.all]
+        assert imdat.shape == (3, 80, 320)
+
+        for ii, idx in enumerate([1, 5, 10]):
+            assert np.all(dsc["image"][idx] == imdat[ii])
+
+
 def test_chopped_basin_feature_proxy_array_method():
     path, path_chopped = make_chopped_image_dataset()
 

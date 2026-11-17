@@ -89,6 +89,8 @@
  - fix: accessing `Basin.ds` from multiple threads at the same time
    loaded the basin dataset multiple times and left all but one of the
    files open after `Basin.close`
+ - fix: indexing chopped image data (internal chopped image basins)
+   with a boolean array (e.g. `ds["image"][ds.filter.all]`) failed
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

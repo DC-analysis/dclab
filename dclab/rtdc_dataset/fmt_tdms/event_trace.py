@@ -123,8 +123,11 @@ class TraceColumn(object):
                                 trace_array = trdat.reshape(
                                     trdat.size // spe, -1)
                             else:
-                                # this is bad, but we allow it
-                                trace_array = np.split(trdat, trdat.size//spe)
+                                # this is bad, but we allow it (ignore the
+                                # samples of the incomplete last event)
+                                num_events = trdat.size // spe
+                                trace_array = trdat[:num_events * spe].reshape(
+                                    num_events, spe)
                             trace[trace_key] = trace_array
 
         return trace

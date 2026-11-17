@@ -617,6 +617,25 @@ def test_manual_exclude_reinclude_parent_changed():
     assert c.filter.retrieve_manual_indices(c) == []
 
 
+def test_readonly():
+    """Modifying child feature data must not modify the cached data"""
+    ddict = example_data_dict(size=67, keys=["area_um", "deform"])
+    ds = new_dataset(ddict)
+    ch = new_dataset(ds)
+    reference = np.array(ch["area_um"], copy=True)
+    with pytest.raises(ValueError,
+                       match="assignment destination is read-only"):
+        ch["area_um"][:][:10] = 1
+    with pytest.raises(ValueError,
+                       match="assignment destination is read-only"):
+        np.asarray(ch["area_um"])[:10] = 1
+    assert np.all(ch["area_um"][:] == reference)
+    assert np.all(ch["area_um"][:] == ds["area_um"][:])
+    # explicit copies can still be modified
+    data = np.array(ch["area_um"], copy=True)
+    data[:10] = 1
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_same_hash_different_identifier():

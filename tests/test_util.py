@@ -1,3 +1,4 @@
+import hashlib
 import importlib
 import pathlib
 import tempfile
@@ -59,6 +60,27 @@ def test_hashfile_modified_quickly():
     assert util.hashfile.cache_info().misses == 2
     assert util.hashfile.cache_info().hits == 0
     assert util.hashfile.cache_info().currsize == 2
+
+
+def test_hashfile_blocksize_zero(tmp_path):
+    """`blocksize=0` hashes the entire file"""
+    p1 = tmp_path / "test_1.bin"
+    data = bytes(range(256)) * 1000
+    p1.write_bytes(data)
+    assert util.hashfile(p1, blocksize=0) == hashlib.md5(data).hexdigest()
+    assert util.hashfile(p1, blocksize=0, count=1) \
+        == hashlib.md5(data).hexdigest()
+
+
+def test_hashfile_positional_arguments(tmp_path):
+    """Arguments may be passed positionally to the cached function"""
+    p1 = tmp_path / "test_1.bin"
+    data = bytes(range(256)) * 1000
+    p1.write_bytes(data)
+    assert util.hashfile(p1, 1000, 3) == hashlib.md5(data[:3000]).hexdigest()
+    assert util.hashfile(p1, 1000, 3) == util.hashfile(p1,
+                                                       blocksize=1000,
+                                                       count=3)
 
 
 def test_hash_hdf5_dataset():

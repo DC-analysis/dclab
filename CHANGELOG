@@ -158,6 +158,9 @@
  - docs: inverted polygon filters include events with nan-values
  - fix: unreadable disk store entries were never replaced (the value was
    recomputed on every call and the disk store size management failed)
+ - fix: the identifier of plugin features created from a dictionary
+   did not depend on the constants and names used in the method
+   (e.g. `lambda d: d * 2` and `lambda d: d * 3` were identical)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

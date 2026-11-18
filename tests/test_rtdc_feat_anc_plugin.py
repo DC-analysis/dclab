@@ -244,6 +244,35 @@ def test_pf_exists_in_hierarchy():
         assert pf.feature_name in child
 
 
+def test_pf_identifier_method_constants_and_names():
+    """Methods that differ only in constants or names have different ids"""
+    def get_identifier(method):
+        info = example_plugin_info_single_feature()
+        info["method"] = method
+        pf = PlugInFeature("circ_per_area", info)
+        identifier = pf.plugin_feature_info["identifier"]
+        remove_all_plugin_features()
+        return identifier
+
+    def method_inner(factor):
+        def inner(rtdc_ds):
+            return {"circ_per_area": rtdc_ds["circ"] * factor}
+        return inner
+
+    ids = [
+        get_identifier(lambda ds: {"circ_per_area": ds["circ"] * 2}),
+        get_identifier(lambda ds: {"circ_per_area": ds["circ"] * 3}),
+        get_identifier(lambda ds: {"circ_per_area": np.sin(ds["circ"])}),
+        get_identifier(lambda ds: {"circ_per_area": np.cos(ds["circ"])}),
+    ]
+    assert len(set(ids)) == 4
+    # identical methods yield the same identifier
+    assert ids[0] == get_identifier(
+        lambda ds: {"circ_per_area": ds["circ"] * 2})
+    # nested code objects are hashed as well (not their memory address)
+    assert get_identifier(method_inner) == get_identifier(method_inner)
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 def test_pf_export_and_load():

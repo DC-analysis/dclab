@@ -16,6 +16,27 @@ class PluginImportError(BaseException):
     pass
 
 
+def update_hash_with_code(hasher, code):
+    """Update `hasher` with the byte code, constants, and names of `code`
+
+    The byte code (`co_code`) alone is not sufficient, because e.g.
+    `lambda x: x * 2` and `lambda x: x * 3` only differ in their
+    constants (`co_consts`) and `np.sin` and `np.cos` only differ in
+    their names (`co_names`). Nested code objects (e.g. of inner
+    functions) are hashed recursively.
+    """
+    hasher.update(code.co_code)
+    hasher.update(repr(code.co_names).encode())
+    for const in code.co_consts:
+        if isinstance(const, type(code)):
+            update_hash_with_code(hasher, const)
+        elif isinstance(const, frozenset):
+            # the order of frozensets depends on PYTHONHASHSEED
+            hasher.update(repr(sorted(repr(c) for c in const)).encode())
+        else:
+            hasher.update(repr(const).encode())
+
+
 class PlugInFeature(AncillaryFeature):
     def __init__(self,
                  feature_name: str,
@@ -141,7 +162,8 @@ class PlugInFeature(AncillaryFeature):
         if isinstance(self.plugin_path, pathlib.Path):
             md5hasher.update(self.plugin_path.read_bytes())
         else:
-            md5hasher.update(original_info["method"].__code__.co_code)
+            update_hash_with_code(md5hasher,
+                                  original_info["method"].__code__)
         md5hasher.update(self.feature_name.encode("utf-8"))
         md5hasher.update(original_info.get("version", "").encode("utf-8"))
         for feat in original_info.get("features required", []):

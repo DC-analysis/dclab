@@ -343,8 +343,8 @@ class Export:
 
         # remove contour information from user-specified features
         if "contour" in (features or []) and not allow_contour:
-            assert isinstance(features, list)
-            features.remove("contour")
+            # do not modify the list passed by the user
+            features = [ft for ft in features if ft != "contour"]
             warnings.warn(
                 "Feature 'contour' not exported to output file, because "
                 "`allow_contour` is `False`. If you really need the "

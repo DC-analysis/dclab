@@ -148,6 +148,9 @@
    trace data with an incomplete last event, `hash` without the optional
    "_camera.ini" file)
  - fix: `HTTPFile.read()` without size returned no data
+ - fix: values cached in the disk store changed their type when loaded
+   (tuples became lists, non-string dictionary keys became strings);
+   such values are now stored in the new "json-typed" format
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

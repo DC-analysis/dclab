@@ -117,6 +117,10 @@ class DiskStore:
         if file_meta["format"] == "json":
             return json.loads(
                 ((self.path / key).parent / file_meta["file"]).read_text())
+        elif file_meta["format"] == "json-typed":
+            return json.loads(
+                ((self.path / key).parent / file_meta["file"]).read_text(),
+                object_hook=json_decode_types)
         elif file_meta["format"] == "numpy":
             return np.load((self.path / key).parent / file_meta["file"])
         elif file_meta["format"] == "bytes":
@@ -125,6 +129,8 @@ class DiskStore:
             data = []
             for fmi in file_meta["items"]:
                 data.append(self.value_read(key, fmi))
+            if file_meta.get("type") == "tuple":
+                data = tuple(data)
             return data
         else:
             raise NotImplementedError(
@@ -133,13 +139,20 @@ class DiskStore:
     def value_write(self, key, value):
         (self.path / key).parent.mkdir(parents=True, exist_ok=True)
         # first attempt to just store everything as json
+        # (tuples and non-string dictionary keys require type information)
+        typed = has_json_lossy_types(value)
         try:
-            json_data = json.dumps(value, cls=DiskStoreJSONEncoder, indent=2)
+            json_data = json.dumps(
+                json_encode_types(value) if typed else value,
+                cls=DiskStoreJSONEncoder, indent=2)
         except BaseException:
             json_data = None
 
         if json_data is not None:
-            return self.value_write_json(key, json_data)
+            file_meta = self.value_write_json(key, json_data)
+            if typed:
+                file_meta["format"] = "json-typed"
+            return file_meta
         else:
             return self.value_write_mixed(key, value)
 
@@ -168,6 +181,8 @@ class DiskStore:
                          "items": fmis,
                          "size": sum([f["size"] for f in fmis]),
                          }
+            if isinstance(value, tuple):
+                file_meta["type"] = "tuple"
         elif isinstance(value, np.ndarray):
             path_out = self.path / f"{key}.npy"
             path_out_tmp = path_out.with_name(path_out.name + "~")
@@ -214,6 +229,44 @@ class DiskStoreJSONEncoder(json.JSONEncoder):
             return bool(o)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, o)
+
+
+def has_json_lossy_types(value):
+    """Whether `value` contains objects that JSON cannot represent exactly
+
+    JSON does not distinguish between tuples and lists and only
+    supports strings as dictionary keys.
+    """
+    if isinstance(value, tuple):
+        return True
+    elif isinstance(value, list):
+        return any(has_json_lossy_types(v) for v in value)
+    elif isinstance(value, dict):
+        return (any(not isinstance(k, str) for k in value)
+                or any(has_json_lossy_types(v) for v in value.values()))
+    return False
+
+
+def json_encode_types(value):
+    """Encode tuples and dictionaries for JSON, see `json_decode_types`"""
+    if isinstance(value, tuple):
+        return {"__dclab_tuple__": [json_encode_types(v) for v in value]}
+    elif isinstance(value, list):
+        return [json_encode_types(v) for v in value]
+    elif isinstance(value, dict):
+        return {"__dclab_dict__": [[json_encode_types(k), json_encode_types(v)]
+                                   for k, v in value.items()]}
+    return value
+
+
+def json_decode_types(obj):
+    """Object hook for `json.loads` to decode `json_encode_types` data"""
+    if len(obj) == 1:
+        if "__dclab_tuple__" in obj:
+            return tuple(obj["__dclab_tuple__"])
+        elif "__dclab_dict__" in obj:
+            return {k: v for k, v in obj["__dclab_dict__"]}
+    return obj
 
 
 class LockFile:

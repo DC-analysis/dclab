@@ -142,7 +142,7 @@ background correction, segmentation, and feature extraction.
 
 The script requires a few additional packages::
 
-    pip install dclab[tdms] imageio[pyav] click
+    pip install dclab[tdms] click
 
 To convert a single video file, run::
 
@@ -153,6 +153,9 @@ the output path as a second argument. If you pass a directory, all video
 files in it (.avi, .mp4, .mpg, .wmv, .mkv, including subdirectories)
 are converted (without an output path). Files that were converted before
 are not converted again, unless the input file or its metadata changed.
+The video frames are converted to gray-scale images in the same way as in
+the .tdms file format reader of dclab (exact YUV to RGB conversion of
+ffmpeg, which yields the same images on all platforms).
 If a file cannot be converted, the error is written to a
 ``*_vid2dc_error.log`` file next to it.
 

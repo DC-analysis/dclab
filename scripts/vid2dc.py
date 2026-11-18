@@ -7,7 +7,7 @@ ChipStream package (https://github.com/DC-analysis/ChipStream).
 
 Prerequisites:
 
-    pip install dclab[tdms] imageio[pyav] click
+    pip install dclab[tdms] click
 
 Author: Paul Müller
 License: GPLv3+
@@ -20,10 +20,11 @@ import traceback
 
 import click
 from dclab.rtdc_dataset import fmt_tdms
+from dclab.rtdc_dataset.fmt_tdms.event_image import FFMPEG_OUTPUT_PARAMS
 from dclab.util import hashfile, hashobj
 from dclab import RTDCWriter
 import h5py
-import imageio.v3 as iio
+import imageio
 import numpy as np
 
 
@@ -31,7 +32,7 @@ logger = logging.getLogger("vid2dc")
 logging.basicConfig(level=logging.INFO)
 
 
-__version__ = "2025.07.07"
+__version__ = "2026.11.18"
 
 
 @click.command()
@@ -76,6 +77,15 @@ def vid2dc(path_in: pathlib.Path,
         convert_video_to_dc(video_path=path_in, dc_path=path_out)
 
 
+def open_video(video_path):
+    """Open a video file with imageio for reading its frames
+
+    The same ffmpeg parameters as in the .tdms reader of dclab are used
+    (exact YUV to RGB conversion, same gray values on all platforms).
+    """
+    return imageio.get_reader(video_path, output_params=FFMPEG_OUTPUT_PARAMS)
+
+
 def convert_video_to_dc(video_path: str | pathlib.Path,
                         dc_path: str | pathlib.Path | None = None,
                         ):
@@ -113,9 +123,8 @@ def convert_video_to_dc(video_path: str | pathlib.Path,
     for ppl in log_paths:
         logs[ppl.name] = ppl.read_text().split("\n")
 
-    vmeta = iio.improps(video_path)
-    width = vmeta.shape[2]
-    height = vmeta.shape[1]
+    with open_video(video_path) as vid:
+        width, height = vid.get_meta_data()["size"]
 
     config["imaging"].setdefault("frame rate", 2000)
     config["imaging"].setdefault("pixel size", 0.34)
@@ -184,8 +193,6 @@ def convert_video_to_dc(video_path: str | pathlib.Path,
                 logger.info(f"Rewriting existing {dc_path} (hash mismatch)")
                 dc_path.unlink()
 
-    vid = iio.imiter(video_path)
-
     # This is the actual workload of this function. Populate the .rtdc
     # file with the image data.
     logger.info(f"Writing .rtdc file {dc_path}")
@@ -195,14 +202,15 @@ def convert_video_to_dc(video_path: str | pathlib.Path,
                                            item_dtype=np.uint8)[0]
         image_chunk = np.zeros((chunk_size, height, width), dtype=np.uint8)
         ii = 0
-        for image in vid:
-            if len(image.shape) == 3:
-                image = image[:, :, 0]
-            image_chunk[ii] = image
-            ii += 1
-            if ii == chunk_size:
-                ii = 0
-                hw.store_feature("image", image_chunk)
+        with open_video(video_path) as vid:
+            for image in vid:
+                if len(image.shape) == 3:
+                    image = image[:, :, 0]
+                image_chunk[ii] = image
+                ii += 1
+                if ii == chunk_size:
+                    ii = 0
+                    hw.store_feature("image", image_chunk)
         # store the rest
         if ii:
             hw.store_feature("image", image_chunk[:ii])

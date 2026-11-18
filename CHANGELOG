@@ -218,6 +218,9 @@
  - docs: document tables (`RTDCBase.tables`) (#408)
  - docs: document converting video files to .rtdc with
    `scripts/vid2dc.py` (#409)
+ - scripts: `vid2dc.py` uses the same exact YUV to RGB conversion as
+   the .tdms reader (same images on all platforms) and does not
+   require PyAV anymore (#409)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

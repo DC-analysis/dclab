@@ -1,4 +1,5 @@
 import pathlib
+import typing
 
 import h5py
 import numpy as np
@@ -222,3 +223,10 @@ def test_volume():
     v2 = get_volume(cont=cont2, **kw)
 
     assert np.allclose(v1, v2)
+
+
+@pytest.mark.parametrize("func", [get_contour, get_contour_lazily])
+def test_type_hints(func):
+    """Type hints must be resolvable (`np.int` does not exist anymore)"""
+    hints = typing.get_type_hints(func)
+    assert "mask" in hints

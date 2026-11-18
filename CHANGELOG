@@ -201,6 +201,8 @@
    given without flow rates and viscosities (now a ValueError) (#400)
  - fix: loading a .poly file without "X Axis" or "Y Axis" raised an
    UnboundLocalError (now a `PolygonFilterError`) (#401)
+ - fix: the type hints of `get_contour` and `get_contour_lazily` used
+   `np.int` (removed in NumPy 1.24), so `typing.get_type_hints` failed (#402)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

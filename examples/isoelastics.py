@@ -40,8 +40,8 @@ for aa, nn, cc in zip(analy, numer, colors):
     ax.plot(aa[:, 0], aa[:, 1], color=cc)
     ax.plot(nn[:, 0], nn[:, 1], color=cc, ls=":")
 
-line = mlines.Line2D([], [], color='k', label='analytical')
-dotted = mlines.Line2D([], [], color='k', ls=":", label='numerical')
+line = mlines.Line2D([], [], color="k", label="analytical")
+dotted = mlines.Line2D([], [], color="k", ls=":", label="numerical")
 ax.legend(handles=[line, dotted])
 
 ax.set_xlim(50, 240)

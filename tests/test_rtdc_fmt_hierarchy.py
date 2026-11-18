@@ -32,8 +32,8 @@ def test_access_without_apply_filter():
     assert not ch.filter.parent_changed
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_config_calculation():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -58,8 +58,8 @@ def test_config_calculation():
     assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_config_calculation_does_not_work_in_child_issue_92():
     """As long as #92 is alive, this test should pass."""
     keys = ["area_um", "deform"]
@@ -222,7 +222,7 @@ def test_limit_events_not_inherited():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_feat_contour():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
@@ -236,7 +236,7 @@ def test_feat_contour():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_feat_image():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
@@ -250,7 +250,7 @@ def test_feat_image():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_feat_image_bg():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     # add a fake image_bg column
@@ -268,7 +268,7 @@ def test_feat_image_bg():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_feat_mask():
     path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
     ds = new_dataset(path)
@@ -282,7 +282,7 @@ def test_feat_mask():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_feat_trace():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
@@ -298,7 +298,7 @@ def test_feat_trace():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_features():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
@@ -312,7 +312,7 @@ def test_features():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_feature_contained():
     pytest.importorskip("nptdms")
     path_im = retrieve_data("fmt-tdms_fl-image_2016.zip")
@@ -329,7 +329,7 @@ def test_feature_contained():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_features_loaded():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     ds = new_dataset(path)
@@ -461,7 +461,7 @@ def test_index_slicing_tdms_fails(feat, idxs):
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 @pytest.mark.parametrize("idxs", [slice(0, 3), np.arange(3),
                                   [0, 1, 2], [True, True, True, False]])
 def test_index_slicing_trace(idxs):

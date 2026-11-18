@@ -376,7 +376,7 @@ def test_with_rtdc():
         channel_width=ds.config["setup"]["channel width"],
         flow_rate=ds.config["setup"]["flow rate"],
         temperature=ds.config["setup"]["temperature"],
-        model='buyukurganci-2022')
+        model="buyukurganci-2022")
     data2 = i1.get(col1="area_um",
                    col2="deform",
                    lut_identifier="LE-2D-FEM-19",

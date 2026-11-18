@@ -984,8 +984,8 @@ def test_tables_recarray():
 
     # generate a table
     columns = ["bread", "beer", "chocolate"]
-    ds_dt = np.dtype({'names': columns,
-                      'formats': [np.float64] * len(columns)})
+    ds_dt = np.dtype({"names": columns,
+                      "formats": [np.float64] * len(columns)})
     tab_data = np.zeros((10, len(columns)))
     tab_data[:, 0] = np.arange(10)
     tab_data[:, 1] = 1000
@@ -1015,8 +1015,8 @@ def test_tables_recarray_from_h5array():
 
     # generate a table
     columns = ["bread", "beer", "chocolate"]
-    ds_dt = np.dtype({'names': columns,
-                      'formats': [np.float64] * len(columns)})
+    ds_dt = np.dtype({"names": columns,
+                      "formats": [np.float64] * len(columns)})
     tab_data = np.zeros((10, len(columns)))
     tab_data[:, 0] = np.arange(10)
     tab_data[:, 1] = 1000

@@ -51,7 +51,7 @@ for ds in datasets:
     ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
     ds.config["calculation"]["emodulus medium"] = "CellCarrier"
     ds.config["calculation"]["emodulus temperature"] = 23.0
-    ds.config["calculation"]["emodulus viscosity model"] = 'buyukurganci-2022'
+    ds.config["calculation"]["emodulus viscosity model"] = "buyukurganci-2022"
 
 # setup lme4 analysis
 rlme4 = lme4.Rlme4(model="lmer")
@@ -99,7 +99,7 @@ y3 = 6.2
 ax.plot([-.5, -.5, 1, 1], [y1, y1+h, y1+h, y1], lw=1, c="k")
 ax.plot([2, 2, 4.5, 4.5], [y2, y2+h, y2+h, y2], lw=1, c="k")
 ax.plot([.25, .25, 3.25, 3.25], [y1+h, y1+2*h, y1+2*h, y2+h], lw=1, c="k")
-ax.text(2, y3, "*"*numstars, ha='center', va='bottom', color="k")
+ax.text(2, y3, "*"*numstars, ha="center", va="bottom", color="k")
 ax.set_ylim(0, 7)
 
 plt.tight_layout()

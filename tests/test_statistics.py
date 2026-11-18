@@ -76,7 +76,7 @@ def test_flow_rate():
         assert item in zip(headf, valsf)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.statistics.BadMethodWarning')
+@pytest.mark.filterwarnings("ignore::dclab.statistics.BadMethodWarning")
 def test_false_method():
     def bad_method(x):
         return x + 1

@@ -66,7 +66,7 @@ class ByteBookKeeper:
 
 def rtdc_copy(src_h5file: h5py.Group,
               dst_h5file: h5py.Group,
-              features: list[str] | Literal['all', 'scalar', 'none'] = "all",
+              features: list[str] | Literal["all", "scalar", "none"] = "all",
               include_basins: bool = True,
               include_logs: bool = True,
               include_tables: bool = True,

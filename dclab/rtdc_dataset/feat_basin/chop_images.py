@@ -404,9 +404,9 @@ def write_chopped_images(
             fletcher32=True,
             dapl=dapl,
             **compression_kwargs)
-        dset.attrs.create('CLASS', np.bytes_('IMAGE'))
-        dset.attrs.create('IMAGE_VERSION', np.bytes_('1.2'))
-        dset.attrs.create('IMAGE_SUBCLASS', np.bytes_('IMAGE_GRAYSCALE'))
+        dset.attrs.create("CLASS", np.bytes_("IMAGE"))
+        dset.attrs.create("IMAGE_VERSION", np.bytes_("1.2"))
+        dset.attrs.create("IMAGE_SUBCLASS", np.bytes_("IMAGE_GRAYSCALE"))
 
         # Register cluster in cache dictionary and remember chunk size
         cluster_cache[cid] = []

@@ -508,7 +508,7 @@ class IntegrityChecker:
         """Check if all fl?_max values are >0.1"""
         cues = []
         neg_feats = []
-        for fl in ['fl1_max', 'fl2_max', 'fl3_max']:
+        for fl in ["fl1_max", "fl2_max", "fl3_max"]:
             # ignore NaN values and support empty datasets
             if fl in self.ds and np.any(self.ds[fl][:] <= 0.1):
                 neg_feats.append(fl)
@@ -523,7 +523,7 @@ class IntegrityChecker:
         """Check if all fl?_max_ctc values are > 0.1"""
         cues = []
         neg_feats = []
-        for fl in ['fl1_max_ctc', 'fl2_max_ctc', 'fl3_max_ctc']:
+        for fl in ["fl1_max_ctc", "fl2_max_ctc", "fl3_max_ctc"]:
             # ignore NaN values and support empty datasets
             if fl in self.ds and np.any(self.ds[fl][:] <= 0.1):
                 neg_feats.append(fl)
@@ -564,9 +564,9 @@ class IntegrityChecker:
             for feat in ["image", "image_bg", "mask"]:
                 if feat in self.ds._events:
                     imdat = self.ds[feat]
-                    for key, val in [['CLASS', b'IMAGE'],
-                                     ['IMAGE_VERSION', b'1.2'],
-                                     ['IMAGE_SUBCLASS', b'IMAGE_GRAYSCALE']]:
+                    for key, val in [["CLASS", b"IMAGE"],
+                                     ["IMAGE_VERSION", b"1.2"],
+                                     ["IMAGE_SUBCLASS", b"IMAGE_GRAYSCALE"]]:
                         if key not in imdat.attrs:
                             cues.append(ICue(
                                 msg=f"HDF5: '/{feat}': missing "

@@ -69,10 +69,10 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
                   channel_width: float = 20.0,
                   flow_rate: float = 0.16,
                   temperature: float | npt.NDArray = 23.0,
-                  model: Literal['herold-2017',
-                                 'herold-2017-fallback',
-                                 'buyukurganci-2022',
-                                 'kestin-1978'] = 'herold-2017-fallback'
+                  model: Literal["herold-2017",
+                                 "herold-2017-fallback",
+                                 "buyukurganci-2022",
+                                 "kestin-1978"] = "herold-2017-fallback"
                   ) -> float | npt.NDArray:
     """Returns the viscosity for RT-DC-specific media
 

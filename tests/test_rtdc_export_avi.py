@@ -58,8 +58,8 @@ def test_avi_export_progress(tmp_path):
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.CorruptFrameWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc.CorruptFrameWarning")
 def test_avi_export_tdms(tmp_path):
     pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
@@ -71,8 +71,8 @@ def test_avi_export_tdms(tmp_path):
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.CorruptFrameWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc.CorruptFrameWarning")
 def test_avi_override_tdms(tmp_path):
     pytest.importorskip("nptdms")
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))

@@ -69,8 +69,8 @@ def verify_dataset_parser():
              "``1: alerts encountered``, ``2: violations encountered``, "
              "``3: alerts and violations``, ``4: other error``.")
     parser = argparse.ArgumentParser(description=descr)
-    parser.add_argument('path', metavar='PATH', type=str,
-                        help='Path to experimental dataset')
-    parser.add_argument('--version', action='version',
-                        version=f'dclab-verify-dataset {version}')
+    parser.add_argument("path", metavar="PATH", type=str,
+                        help="Path to experimental dataset")
+    parser.add_argument("--version", action="version",
+                        version=f"dclab-verify-dataset {version}")
     return parser

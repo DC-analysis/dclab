@@ -141,13 +141,13 @@ def test_find_smooth_contour_spacing_max_length():
         quantiles=[0.90],
     )
 
-    assert res['total iterations'] == 3
-    assert res['success']
+    assert res["total iterations"] == 3
+    assert res["success"]
     assert not res["corners found"]
-    assert res['reason'] == 'maximum contour length reached'
-    assert np.allclose(res['spacing x'], 0.28099409345400594,
+    assert res["reason"] == "maximum contour length reached"
+    assert np.allclose(res["spacing x"], 0.28099409345400594,
                        rtol=0, atol=1e-12)
-    assert np.allclose(res['spacing y'], 0.00014034229940989058,
+    assert np.allclose(res["spacing y"], 0.00014034229940989058,
                        rtol=0, atol=1e-12)
 
 
@@ -218,13 +218,13 @@ def test_find_smooth_contour_spacing_max_iter():
         max_iter=1,
     )
 
-    assert res['total iterations'] == 1
-    assert not res['success']
+    assert res["total iterations"] == 1
+    assert not res["success"]
     assert not res["corners found"]
-    assert res['reason'] == 'maximum iterations reached'
-    assert np.allclose(res['spacing x'], 0.46201586550424045,
+    assert res["reason"] == "maximum iterations reached"
+    assert np.allclose(res["spacing x"], 0.46201586550424045,
                        rtol=0, atol=1e-12)
-    assert np.allclose(res['spacing y'], 0.00024627719927894213,
+    assert np.allclose(res["spacing y"], 0.00024627719927894213,
                        rtol=0, atol=1e-12)
 
 
@@ -244,13 +244,13 @@ def test_find_smooth_contour_spacing_opening_angle():
         quantiles=[0.90],
     )
 
-    assert res['total iterations'] == 3
-    assert res['success']
+    assert res["total iterations"] == 3
+    assert res["success"]
     assert not res["corners found"]
-    assert res['reason'] == 'target opening angle reached'
-    assert np.allclose(res['spacing x'], 0.27646847583098244,
+    assert res["reason"] == "target opening angle reached"
+    assert np.allclose(res["spacing x"], 0.27646847583098244,
                        rtol=0, atol=1e-12)
-    assert np.allclose(res['spacing y'], 0.00016320865830594234,
+    assert np.allclose(res["spacing y"], 0.00016320865830594234,
                        rtol=0, atol=1e-12)
 
 
@@ -273,13 +273,13 @@ def test_find_smooth_contour_spacing_corners():
         quantiles=[0.90],
     )
 
-    assert res['total iterations'] == 3
-    assert res['success']
-    assert res['reason'] == 'maximum contour length reached'
+    assert res["total iterations"] == 3
+    assert res["success"]
+    assert res["reason"] == "maximum contour length reached"
     assert res["corners found"]
-    assert np.allclose(res['spacing x'], 0.16515957250959012,
+    assert np.allclose(res["spacing x"], 0.16515957250959012,
                        rtol=0, atol=1e-12)
-    assert np.allclose(res['spacing y'], 0.0001616894788541336,
+    assert np.allclose(res["spacing y"], 0.0001616894788541336,
                        rtol=0, atol=1e-12)
 
 
@@ -303,13 +303,13 @@ def test_find_smooth_contour_abort():
         abort_event=event,
     )
 
-    assert res['total iterations'] == 0
-    assert not res['success']
+    assert res["total iterations"] == 0
+    assert not res["success"]
     assert not res["corners found"]
-    assert res['reason'] == 'abort event'
-    assert np.allclose(res['spacing x'], 1.1239763738160238,
+    assert res["reason"] == "abort event"
+    assert np.allclose(res["spacing x"], 1.1239763738160238,
                        rtol=0, atol=1e-12)
-    assert np.allclose(res['spacing y'], 0.0005613691976395623,
+    assert np.allclose(res["spacing y"], 0.0005613691976395623,
                        rtol=0, atol=1e-12)
 
 

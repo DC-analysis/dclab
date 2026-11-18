@@ -113,9 +113,9 @@ def make_chopped_image_dataset():
 
         # debugging help
         for ii in "0", "1":
-            bim[ii].attrs['CLASS'] = np.bytes_('IMAGE')
-            bim[ii].attrs['IMAGE_VERSION'] = np.bytes_('1.2')
-            bim[ii].attrs['IMAGE_SUBCLASS'] = np.bytes_('IMAGE_GRAYSCALE')
+            bim[ii].attrs["CLASS"] = np.bytes_("IMAGE")
+            bim[ii].attrs["IMAGE_VERSION"] = np.bytes_("1.2")
+            bim[ii].attrs["IMAGE_SUBCLASS"] = np.bytes_("IMAGE_GRAYSCALE")
 
     return h5path, h5path_chopped
 

@@ -110,7 +110,7 @@ class RTDCBase(abc.ABC):
         # Unique, random identifier
         if identifier is None:
             # Generate a unique, random identifier for this dataset
-            rhex = [random.choice('0123456789abcdef') for _n in range(7)]
+            rhex = [random.choice("0123456789abcdef") for _n in range(7)]
             self._identifier = f"mm-{self.format}_{''.join(rhex)}"
         else:
             self._identifier = identifier

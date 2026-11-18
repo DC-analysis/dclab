@@ -239,11 +239,11 @@ def join_parser():
              "file. Please only join datasets that were recorded "
              "in the same measurement run.")
     parser = argparse.ArgumentParser(description=descr)
-    parser.add_argument('input', metavar="INPUT", nargs="*", type=str,
-                        help='Input paths (.tdms or .rtdc files)')
-    required_named = parser.add_argument_group('required named arguments')
-    required_named.add_argument('-o', '--output', metavar="OUTPUT", type=str,
-                                help='Output path (.rtdc file)', required=True)
-    parser.add_argument('--version', action='version',
-                        version=f'dclab-join {version}')
+    parser.add_argument("input", metavar="INPUT", nargs="*", type=str,
+                        help="Input paths (.tdms or .rtdc files)")
+    required_named = parser.add_argument_group("required named arguments")
+    required_named.add_argument("-o", "--output", metavar="OUTPUT", type=str,
+                                help="Output path (.rtdc file)", required=True)
+    parser.add_argument("--version", action="version",
+                        version=f"dclab-join {version}")
     return parser

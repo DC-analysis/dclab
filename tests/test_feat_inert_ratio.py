@@ -9,9 +9,9 @@ from dclab.features import inert_ratio as ir
 from helper_methods import retrieve_data
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_af_inert_ratio_cvx():
     pytest.importorskip("nptdms")
     # Brightness of the image
@@ -28,9 +28,9 @@ def test_af_inert_ratio_cvx():
     assert np.allclose(real_ir[idcompare], comp_ir[idcompare])
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_af_inert_ratio_prnc():
     pytest.importorskip("nptdms")
     # Brightness of the image
@@ -49,7 +49,7 @@ def test_af_inert_ratio_prnc():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 @pytest.mark.parametrize("file", [
     "fmt-hdf5_fl_2017.zip",
     "fmt-hdf5_mask-contour_2018.zip",
@@ -63,9 +63,9 @@ def test_af_inert_ratio_prnc_greater_than_one_issue_212(file):
     assert np.all(prnc >= 1)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_af_inert_ratio_raw():
     pytest.importorskip("nptdms")
     # Brightness of the image

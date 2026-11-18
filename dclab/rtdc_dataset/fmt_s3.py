@@ -56,7 +56,7 @@ def get_s3_session_client(access_key_id: str,
         aws_secret_access_key=secret_access_key,
         botocore_session=botocore_session)
     s3_client = s3_session.client(
-        service_name='s3',
+        service_name="s3",
         use_ssl=use_ssl,
         verify=verify_ssl,
         endpoint_url=endpoint_url,
@@ -110,7 +110,7 @@ class S3File(HTTPFile):
         if not secret_access_key:
             config = botocore.client.Config(
                 signature_version=botocore.UNSIGNED,
-                region_name='us-east-1')
+                region_name="us-east-1")
         else:
             config = None
 
@@ -142,7 +142,7 @@ class S3File(HTTPFile):
 
         `stop` is not inclusive (In the HTTP range request it normally is).
         """
-        stream = self.s3_object.get(Range=f"bytes={start}-{stop-1}")['Body']
+        stream = self.s3_object.get(Range=f"bytes={start}-{stop-1}")["Body"]
         return stream.read()
 
 

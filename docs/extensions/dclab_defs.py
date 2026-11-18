@@ -107,6 +107,6 @@ class Features(Base):
 
 
 def setup(app):
-    app.add_directive('dclab_features', Features)
-    app.add_directive('dclab_config', Config)
-    return {'version': '0.1'}   # identifies the version of our extension
+    app.add_directive("dclab_features", Features)
+    app.add_directive("dclab_config", Config)
+    return {"version": "0.1"}   # identifies the version of our extension

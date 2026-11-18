@@ -94,8 +94,8 @@ class IncludeDirective(Directive):
 
 
 def setup(app):
-    app.add_config_value('fancy_include_path', "../examples", 'html')
+    app.add_config_value("fancy_include_path", "../examples", "html")
 
-    app.add_directive('fancy_include', IncludeDirective)
+    app.add_directive("fancy_include", IncludeDirective)
 
-    return {'version': '0.1'}   # identifies the version of our extension
+    return {"version": "0.1"}   # identifies the version of our extension

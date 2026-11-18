@@ -81,7 +81,8 @@ jobs:
       shell: bash
       run: |
         R --version
-        R -e "install.packages(c('statmod','nloptr','lme4'))"
+        # use CRAN mirror from setup-r if available (not set on Windows)
+        R -e "if (getOption('repos')[['CRAN']] == '@CRAN@') options(repos='https://cloud.r-project.org'); install.packages(c('statmod','nloptr','lme4'))"
         # fail if lme4 could not be installed (otherwise the lme4 tests
         # are silently skipped)
         R -e "library(lme4); library(nloptr); library(statmod)"

@@ -65,6 +65,17 @@ class DiskStore:
             self.index.clear()
             shutil.rmtree(self.path, ignore_errors=True)
 
+    def remove(self, key):
+        """Remove all files of `key` from the disk store"""
+        self.assert_disk_store_path()
+        self.index.discard(key)
+        # Remove the meta file first, so that `key` is not considered
+        # to be in the disk store anymore.
+        (self.path / f"{key}_meta.json").unlink(missing_ok=True)
+        for pi in self.path.glob(f"{key}*"):
+            if pi.suffix != ".lock":
+                pi.unlink(missing_ok=True)
+
     def remove_old_files(self, max_bytes):
         """Remove old files, honoring `max_bytes` total size"""
         self.assert_disk_store_path()

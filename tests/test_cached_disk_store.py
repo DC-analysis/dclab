@@ -214,6 +214,21 @@ def test_disk_store_path(tmp_path):
     assert store["a/path"] == str(pathlib.Path(__file__))
 
 
+def test_disk_store_remove(tmp_path):
+    store = cached.DiskStore(tmp_path)
+    store["topic/abc/def/0123"] = [np.arange(3), b"peter"]
+    store["topic/abc/def/0124"] = [1, 2]
+    lock_path = tmp_path / "topic/abc/def/0123.lock"
+    lock_path.touch()
+    assert "topic/abc/def/0123" in store
+    store.remove("topic/abc/def/0123")
+    assert "topic/abc/def/0123" not in store
+    assert "topic/abc/def/0123" not in store.index
+    assert sorted(p.name for p in (tmp_path / "topic/abc/def").iterdir()) \
+        == ["0123.lock", "0124.json", "0124_meta.json"]
+    assert store["topic/abc/def/0124"] == [1, 2]
+
+
 def test_disk_store_remove_old_files(tmp_path):
     store = cached.DiskStore(tmp_path)
 

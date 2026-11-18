@@ -34,8 +34,8 @@ class Statistics(object):
                 result = self.method(data)
             except BaseException:
                 exc = tb.format_exc().replace("\n", "\n    | ")
-                warnings.warn("Failed to compute {} for {}: {}".format(
-                              self.name, kwargs["ds"].title, exc),
+                warnings.warn(f"Failed to compute {self.name} for "
+                              f"{kwargs['ds'].title}: {exc}",
                               BadMethodWarning)
                 result = np.nan
         return result

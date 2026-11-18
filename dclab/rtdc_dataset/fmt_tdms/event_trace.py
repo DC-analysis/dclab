@@ -26,7 +26,7 @@ class TraceColumn(object):
 
     def __getitem__(self, trace_key):
         if trace_key not in dfn.FLUOR_TRACES:
-            msg = "Unknown fluorescence trace key: {}".format(trace_key)
+            msg = f"Unknown fluorescence trace key: {trace_key}"
             raise ValueError(msg)
         return self.trace.__getitem__(trace_key)
 
@@ -46,8 +46,7 @@ class TraceColumn(object):
         if tname is None:
             rep = "No trace data available!"
         else:
-            rep = "Fluorescence trace data from file {}, <{}>".format(tname,
-                                                                      addstr)
+            rep = f"Fluorescence trace data from file {tname}, <{addstr}>"
         return rep
 
     def keys(self):
@@ -89,7 +88,7 @@ class TraceColumn(object):
                 sampleids = mdata["Cell Track"]["FL1index"].data
             except KeyError:
                 raise InvalidTDMSFileFormatError(
-                    "No 'FL1index' column in '{}'!".format(tname))
+                    f"No 'FL1index' column in '{tname}'!")
 
             # Check that sample IDs are always incremented with same
             # sample size.
@@ -98,9 +97,9 @@ class TraceColumn(object):
                 # This means the length of the fluorescence trace is not
                 # a constant. According to Philipp, this means the trace
                 # cannot be used.
-                warnings.warn("Ignoring trace data of '{}' ".format(tname)
+                warnings.warn(f"Ignoring trace data of '{tname}' "
                               + "due to multiple values for samples per "
-                              + "event: {}".format(samples_per_event),
+                              + f"event: {samples_per_event}",
                               MultipleSamplesPerEventFound)
             else:
                 # Load the trace data. The traces file is usually larger than

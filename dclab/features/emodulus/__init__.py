@@ -217,7 +217,7 @@ def get_emodulus(deform: float | npt.NDArray,
         assert area_um is None, "Don't define area_um and volume at same time!"
         datax = _float_array(volume, copy)
     else:
-        raise KeyError("No recipe for '{}' and '{}'!".format(featx, featy))
+        raise KeyError(f"No recipe for '{featx}' and '{featy}'!")
 
     # copy deform so we can use in-place pixel correction
     deform = _float_array(deform, copy)
@@ -335,9 +335,9 @@ def get_emodulus(deform: float | npt.NDArray,
     nans = np.sum(np.isnan(emod))
     if nans / emod.size > 0.1:
         warnings.warn("The Young's modulus could not be computed for "
-                      + "{:.0f}% of the data. ".format(nans/emod.size*100)
+                      + f"{nans/emod.size*100:.0f}% of the data. "
                       + "This is because they are not covered by the "
-                      + "look-up table '{}'.".format(lut_data),
+                      + f"look-up table '{lut_data}'.",
                       YoungsModulusLookupTableExceededWarning)
 
     return emod

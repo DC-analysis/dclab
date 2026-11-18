@@ -48,7 +48,7 @@ class IncludeDirective(Directive):
 
         # add reference
         name = full_path.stem
-        rst = [".. _example_{}:".format(name),
+        rst = [f".. _example_{name}:",
                "",
                ]
 
@@ -70,12 +70,11 @@ class IncludeDirective(Directive):
         else:
             image_path = ""
         if image_path:
-            rst.append(".. figure:: {}".format(image_path.as_posix()))
+            rst.append(f".. figure:: {image_path.as_posix()}")
             rst.append("")
 
         # download file
-        rst.append(":download:`{} <{}>`".format(
-            full_path.name, full_path.as_posix()))
+        rst.append(f":download:`{full_path.name} <{full_path.as_posix()}>`")
 
         # code
         rst.append("")
@@ -83,7 +82,7 @@ class IncludeDirective(Directive):
         rst.append("   :linenos:")
         rst.append("")
         for line in code:
-            rst.append("   {}".format(line))
+            rst.append(f"   {line}")
         rst.append("")
 
         vl = ViewList(rst, "fakefile.rst")

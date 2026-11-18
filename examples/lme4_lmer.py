@@ -64,7 +64,7 @@ rlme4.add_dataset(ds_mg63_rep3, group="control", repetition=3)
 # perform analysis for deformation
 for feat in ["area_um", "deform", "emodulus"]:
     res = rlme4.fit(feature=feat)
-    print("Results for {}:".format(feat))
+    print(f"Results for {feat}:")
     print("  p-value", res["anova p-value"])
     print("  mean of MG-63", res["fixed effects intercept"])
     print("  fixed effect size", res["fixed effects treatment"])

@@ -93,7 +93,7 @@ class Isoelastics(object):
 
         for col in [col1, col2]:
             if not dfn.scalar_feature_exists(col):
-                raise ValueError("Not a valid feature name: {}".format(col))
+                raise ValueError(f"Not a valid feature name: {col}")
 
         meta = [channel_width, flow_rate, viscosity]
 
@@ -272,11 +272,10 @@ class Isoelastics(object):
 
         for col in [col1, col2]:
             if not dfn.scalar_feature_exists(col):
-                raise ValueError("Not a valid feature name: {}".format(col))
+                raise ValueError(f"Not a valid feature name: {col}")
 
         if "isoelastics" not in self._data[lut_identifier][col2][col1]:
-            msg = "No isoelastics matching {}, {}, {}".format(col1, col2,
-                                                              lut_identifier)
+            msg = f"No isoelastics matching {col1}, {col2}, {lut_identifier}"
             raise KeyError(msg)
 
         isoel = self._data[lut_identifier][col1][col2]["isoelastics"]

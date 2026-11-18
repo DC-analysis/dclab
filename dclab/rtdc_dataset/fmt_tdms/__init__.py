@@ -212,11 +212,11 @@ class RTDC_TDMS(RTDCBase):
                     dclab_config["fluorescence"]["trace median"] = mfs
             # Add generic channel names (independent of lasers)
             for ii in range(1, 4):
-                chn = "channel {} name".format(ii)
-                fln = "fl{}_max".format(ii)
+                chn = f"channel {ii} name"
+                fln = f"fl{ii}_max"
                 if (fln in features_available
                         and chn not in dclab_config["fluorescence"]):
-                    dclab_config["fluorescence"][chn] = "FL{}".format(ii)
+                    dclab_config["fluorescence"][chn] = f"FL{ii}"
             lc = bool(p1) + bool(p2) + bool(p3)
             dclab_config["fluorescence"]["laser count"] = lc
             li = (p1 is not None) + (p2 is not None) + (p3 is not None)
@@ -329,7 +329,7 @@ class RTDC_TDMS(RTDCBase):
                 self._events[naming.tdms2dclab[arg]] = data
         if len(self._events) == 0:
             raise IncompleteTDMSFileFormatError(
-                "No usable feature data found in '{}'!".format(tdms_filename))
+                f"No usable feature data found in '{tdms_filename}'!")
 
         self.config, config_paths = self.extract_tdms_config(
             self.path,

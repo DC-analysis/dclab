@@ -148,6 +148,6 @@ def get_pixelation_delta(feat_corr: str,
         raise ValueError("Input feature names are identical!")
     else:
         raise KeyError(
-            "No rule for feature '{}' with abscissa ".format(feat_corr)
-            + "'{}'!".format(feat_absc))
+            f"No rule for feature '{feat_corr}' with abscissa "
+            + f"'{feat_absc}'!")
     return delt

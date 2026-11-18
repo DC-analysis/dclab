@@ -33,7 +33,7 @@ labels = []  # list of flow rate labels
 # load the data
 for loc in ds_loc:
     ds = dclab.new_dataset(loc)
-    labels.append("{:.2f}".format(ds.config["setup"]["flow rate"]))
+    labels.append(f"{ds.config['setup']['flow rate']:.2f}")
     # emodulus computation
     ds.config["calculation"]["emodulus lut"] = "LE-2D-FEM-19"
     ds.config["calculation"]["emodulus medium"] = ds.config["setup"]["medium"]

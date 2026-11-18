@@ -680,7 +680,7 @@ def test_pf_input_no_feature_labels():
     pf = PlugInFeature(feature_name, info)
     assert dclab.dfn.feature_exists(feature_name)
     label = dclab.dfn.get_feature_label(feature_name)
-    assert label == "Plugin feature {}".format(feature_name)
+    assert label == f"Plugin feature {feature_name}"
     assert label == pf.plugin_feature_info["feature label"]
 
 
@@ -875,7 +875,7 @@ def test_pf_with_empty_feature_label_string():
     assert dclab.dfn.feature_exists("circ_per_area")
     label = dclab.dfn.get_feature_label("circ_per_area")
     assert label != ""
-    assert label == "Plugin feature {}".format(feature_name)
+    assert label == f"Plugin feature {feature_name}"
 
 
 def test_pf_with_feature_label():
@@ -902,7 +902,7 @@ def test_pf_with_no_feature_label():
     assert dclab.dfn.feature_exists("circ_per_area")
     label = dclab.dfn.get_feature_label("circ_per_area")
     assert label is not None
-    assert label == "Plugin feature {}".format(feature_name)
+    assert label == f"Plugin feature {feature_name}"
 
 
 @pytest.mark.filterwarnings(

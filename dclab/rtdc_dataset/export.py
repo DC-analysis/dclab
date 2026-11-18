@@ -97,8 +97,9 @@ class Export:
         ds = self.rtdc_ds
         # Check if file already exist
         if not override and path.exists():
-            raise OSError("File already exists: {}\n".format(
-                str(path).encode("ascii", "ignore")) +
+            raise OSError(
+                "File already exists: "
+                f"{str(path).encode('ascii', 'ignore')}\n"
                 "Please use the `override=True` option.")
         # Start exporting
         if "image" in ds:
@@ -191,8 +192,9 @@ class Export:
             path = path.with_name(path.name + ".fcs")
         # Check if file already exist
         if not override and path.exists():
-            raise OSError("File already exists: {}\n".format(
-                str(path).encode("ascii", "ignore")) +
+            raise OSError(
+                "File already exists: "
+                f"{str(path).encode('ascii', 'ignore')}\n"
                 "Please use the `override=True` option.")
         # Check that features are valid
         features = sorted(set(features))
@@ -666,8 +668,9 @@ class Export:
             path = path.with_name(path.name + ".tsv")
         # Check if file already exist
         if not override and path.exists():
-            raise OSError("File already exists: {}\n".format(
-                str(path).encode("ascii", "ignore")) +
+            raise OSError(
+                "File already exists: "
+                f"{str(path).encode('ascii', 'ignore')}\n"
                 "Please use the `override=True` option.")
         # Check that features exist
         for c in features:

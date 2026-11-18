@@ -443,3 +443,14 @@ def test_wrong_load_key():
 
     with pytest.raises(KeyError, match="Unknown variable: peter = 4"):
         dclab.PolygonFilter(filename=tf)
+
+
+@pytest.mark.parametrize("axis_line", ["X Axis", "Y Axis"])
+def test_load_missing_axis(tmp_path, axis_line):
+    path = tmp_path / "missing_axis.poly"
+    lines = [li for li in filter_data.split("\n")
+             if not li.startswith(axis_line)]
+    path.write_text("\n".join(lines))
+    with pytest.raises(dclab.polygon_filter.PolygonFilterError,
+                       match="'X Axis' or 'Y Axis' not defined"):
+        dclab.PolygonFilter(filename=path)

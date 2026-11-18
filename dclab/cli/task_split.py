@@ -7,6 +7,7 @@ import pathlib
 import warnings
 
 import hdf5plugin
+import numpy as np
 
 from ..rtdc_dataset import fmt_tdms, new_dataset, RTDCWriter
 from .._version import version
@@ -158,8 +159,9 @@ def split(
 def store_internal_basins(ds, path, basin_dicts, compression_kwargs=None):
     """Store the internal basins of `ds` for its filtered events in `path`
 
-    The internal basin data are copied as-is and the mapping (internal
-    basins are always mapped) is reduced to the filtered events.
+    Only the internal basin data that are required by the filtered events
+    are stored, and the mapping (internal basins are always mapped) is
+    updated accordingly.
     """
     filter_arr = ds.filter.all
     with RTDCWriter(path,
@@ -170,8 +172,14 @@ def store_internal_basins(ds, path, basin_dicts, compression_kwargs=None):
                      if ft in ds.h5file.get("basin_events", {})]
             if not feats:
                 continue
-            basin_map = ds.h5file["events"][bn["mapping"]][:][filter_arr]
-            internal_data = {ft: ds.h5file["basin_events"][ft][:]
+            basin_map_orig = ds.h5file["events"][bn["mapping"]][:][filter_arr]
+            # Only store the internal basin data that are needed for the
+            # events in the output file (sorted unique indices) and map
+            # the events to these data.
+            indices = np.unique(basin_map_orig)
+            basin_map = np.searchsorted(indices, basin_map_orig).astype(
+                np.int64)
+            internal_data = {ft: ds.h5file["basin_events"][ft][indices]
                              for ft in feats}
             hw.store_basin(basin_name=bn.get("name"),
                            basin_type="internal",

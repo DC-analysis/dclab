@@ -4,6 +4,7 @@ import pathlib
 import tempfile
 
 import numpy as np
+import pytest
 
 import dclab
 from dclab.lme4 import Rlme4, rsetup
@@ -62,3 +63,29 @@ def test_fit_removes_temporary_script(monkeypatch):
     assert len(script_fds) == 1
     assert len(script_paths) == 1
     assert not script_paths[0].exists()
+
+
+@pytest.mark.parametrize("bs_iter", [None, 1, 100])
+def test_get_differential_dataset_bs_iter(monkeypatch, bs_iter):
+    """The number of bootstrapping iterations can be set"""
+    monkeypatch.setattr(rsetup, "has_lme4", lambda: True)
+    kwargs = {} if bs_iter is None else {"bs_iter": bs_iter}
+    rlme4 = Rlme4(model="glmer+loglink", feature="deform", **kwargs)
+    for group, repetition in [("control", 1), ("treatment", 1)]:
+        for region in ["channel", "reservoir"]:
+            ds = dclab.new_dataset({"deform": [0.1, 0.2, 0.3, 0.4]})
+            ds.config["setup"]["chip region"] = region
+            rlme4.add_dataset(ds, group, repetition)
+    features, groups, repetitions = rlme4.get_differential_dataset()
+    assert groups == ["control", "treatment"]
+    assert repetitions == [1, 1]
+    expected = 1000 if bs_iter is None else bs_iter
+    assert rlme4.bs_iter == expected
+    assert [len(ff) for ff in features] == [expected, expected]
+
+
+@pytest.mark.parametrize("bs_iter", [0, -1, 1.5, "10"])
+def test_bs_iter_invalid(monkeypatch, bs_iter):
+    monkeypatch.setattr(rsetup, "has_lme4", lambda: True)
+    with pytest.raises(ValueError, match="must be a positive integer"):
+        Rlme4(bs_iter=bs_iter)

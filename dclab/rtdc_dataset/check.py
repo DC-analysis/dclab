@@ -927,5 +927,4 @@ def hdf5_has_external(h5):
             has_ext, path_ext = hdf5_has_external(obj)
             if has_ext:
                 return True, path_ext
-    else:
-        return False, None
+    return False, None

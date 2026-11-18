@@ -2,6 +2,7 @@
 
 import numpy as np
 import traceback as tb
+from typing import ClassVar
 import warnings
 
 from . import definitions as dfn
@@ -12,7 +13,7 @@ class BadMethodWarning(UserWarning):
 
 
 class Statistics:
-    available_methods = {}
+    available_methods: ClassVar[dict] = {}
 
     def __init__(self, name, method, req_feature=False):
         """A helper class for computing statistics

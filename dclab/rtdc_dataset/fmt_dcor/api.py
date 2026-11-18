@@ -1,5 +1,6 @@
 import json
 import time
+from typing import ClassVar
 
 from ...http_utils import REQUESTS_AVAILABLE  # noqa: F401
 from ...http_utils import requests, session_cache
@@ -14,9 +15,10 @@ class APIHandler:
     #: These are cached to minimize network usage
     #: Note that we are not caching basins, since they may contain
     #: expiring URLs.
-    cache_queries = ["metadata", "size", "feature_list", "valid"]
+    cache_queries: ClassVar[list] = ["metadata", "size", "feature_list",
+                                     "valid"]
     #: DCOR API Keys/Tokens in the current session
-    api_keys = []
+    api_keys: ClassVar[list] = []
 
     def __init__(self, url, api_key="", cert_path=None, dcserv_api_version=2):
         """

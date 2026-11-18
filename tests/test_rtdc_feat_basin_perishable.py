@@ -65,11 +65,13 @@ def with_perishable_basin():
             basin.set_perishable_record(time.monotonic() + extend_by)
 
         def set_perishable_record(self,
-                                  expiration_time=time.monotonic() + 60,
+                                  expiration_time=None,
                                   with_expiration=True,
                                   with_refresh=True,
                                   ):
             """Used in tests to set perishable"""
+            if expiration_time is None:
+                expiration_time = time.monotonic() + 60
             kwargs = {}
             if with_expiration:
                 kwargs["expiration_func"] = self.check_expired

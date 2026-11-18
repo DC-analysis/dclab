@@ -1,6 +1,7 @@
 import io
 import pathlib
 import threading
+from typing import ClassVar
 import warnings
 
 import numpy as np
@@ -15,7 +16,7 @@ class FilterIdExistsWarning(UserWarning):
 
 class PolygonFilter:
     # Stuff that is done upon creation (not instantiation) of this class
-    instances = []
+    instances: ClassVar[list] = []
     _instance_counter = 0
     _modify_lock = threading.Lock()
 

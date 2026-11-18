@@ -232,6 +232,10 @@ def test_perish_basin_write_without_expiration_func_should_write_true(
         assert bndict["perishable"]
 
 
-def test_z_with_perishable_basin_fixture_does_not_leak(with_perishable_basin):
-    """Make sure we are not globally registering the test basin"""
-    "hdf5perish" not in get_basin_classes()
+def test_z_with_perishable_basin_fixture_does_not_leak():
+    """Make sure we are not globally registering the test basin
+
+    This test must not use the `with_perishable_basin` fixture. It runs
+    after the other tests in this module, which use the fixture.
+    """
+    assert "hdf5perish" not in get_basin_classes()

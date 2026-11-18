@@ -89,7 +89,19 @@ build = "cp*"
 # Only build for 64bit
 archs = "auto64"
 
+[tool.ruff]
+# vendored code from other projects
+extend-exclude = ["dclab/external"]
+
 [tool.ruff.lint]
+# In addition to the default rules of ruff
+extend-select = [
+    # Use double quotes for strings
+    "Q",
+    # Implicit string concatenation (no `+` for string literals)
+    "ISC003",
+    "ISC004",
+]
 ignore = [
     # Do not organize imports (we have our own scheme)
     "I001",
@@ -98,6 +110,11 @@ ignore = [
     # Allow catching blind exceptions
     "S110",
     "S112",
+    # Basins are loaded lazily, so warnings are emitted while datasets
+    # are used and `pytest.warns` blocks contain several statements
+    "PT031",
+    # Changing `ValueError` to `TypeError` would break user code
+    "TRY004",
 ]
 
 [tool.pyright]

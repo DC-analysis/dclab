@@ -34,7 +34,11 @@ class PolygonFilter(object):
             important.
         inverted: bool
             Invert the polygon filter. This parameter is overridden
-            if `filename` is given.
+            if `filename` is given. Note that events with nan-values
+            are never inside the polygon, i.e. they are excluded by
+            regular polygon filters and *included* by inverted polygon
+            filters. To exclude these events, set the filtering option
+            "remove invalid events".
         name: str
             A name for the polygon (optional).
         filename : str
@@ -254,7 +258,13 @@ class PolygonFilter(object):
                              inverted=inverted)
 
     def filter(self, datax, datay):
-        """Filter a set of datax and datay according to `self.points`"""
+        """Filter a set of datax and datay according to `self.points`
+
+        Returns a boolean array that is True for all events inside the
+        polygon (or outside the polygon if `self.inverted` is True).
+        Events with nan-values are never inside the polygon, i.e. they
+        are included by inverted polygon filters.
+        """
         points = np.zeros((datax.shape[0], 2), dtype=np.float64)
         points[:, 0] = datax
         points[:, 1] = datay

@@ -215,6 +215,7 @@
  - enh: the KeyError for ancillary features (incl. plugin features)
    that cannot be computed names the requirements that are not met
    (new `AncillaryFeature.get_missing_requirements`) (#406)
+ - docs: document tables (`RTDCBase.tables`) (#408)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

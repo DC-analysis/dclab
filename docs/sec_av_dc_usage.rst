@@ -159,6 +159,83 @@ These are the available statistics methods:
 
 
 
+.. _sec_av_tables:
+
+Tables
+======
+Besides the event-based feature data, an .rtdc file may contain *tables*.
+Tables are semi-metadata: They contain information that was recorded
+during a measurement, but not for each event, e.g. temperature or
+pressure values recorded every few seconds by the acquisition software
+(e.g. the "cskernel_monitor" table in files recorded with Naiad
+Capture), or other tabular data that are relevant for a dataset (e.g.
+image profiles).
+Tables are stored in the "tables" group of an .rtdc file and are
+available via the
+:attr:`RTDCBase.tables <.RTDCBase.tables>` attribute (also for datasets
+on DCOR).
+
+Tables are usually numpy record arrays with named columns ("graphs").
+To demonstrate this, let's write a table to a copy of the example
+dataset using :func:`RTDCWriter.store_table
+<dclab.rtdc_dataset.writer.RTDCWriter.store_table>`. Additional metadata
+(e.g. units) can be stored as HDF5 attributes via `h5_attrs`.
+
+.. ipython::
+
+    In [1]: import pathlib, tempfile
+
+    In [2]: import numpy as np
+
+    In [3]: path = pathlib.Path(tempfile.mkdtemp()) / "with_table.rtdc"
+
+    In [4]: with dclab.new_dataset("data/example.rtdc") as ds_ex:
+       ...:     ds_ex.export.hdf5(path, features=["deform"])
+       ...:
+
+    In [5]: time = np.linspace(0, 60, 7)
+
+    In [6]: temperature = np.array([23.0, 22.9, 23.1, 23.1, 22.8, 22.9, 23.0])
+
+    In [7]: monitor = np.rec.fromarrays([time, temperature],
+       ...:                             names=["time", "temperature"])
+       ...:
+
+    In [8]: with dclab.RTDCWriter(path, mode="append") as hw:
+       ...:     hw.store_table("monitor", monitor,
+       ...:                    h5_attrs={"temperature unit": "degC"})
+       ...:
+
+Each table has a list of graph names (``keys()``), the data of each graph
+can be accessed via its name, and the metadata are available via the
+``meta`` property.
+
+.. ipython::
+
+    In [9]: ds_tab = dclab.new_dataset(path)
+
+    In [10]: list(ds_tab.tables.keys())
+
+    In [11]: tab = ds_tab.tables["monitor"]
+
+    In [12]: tab.has_graphs(), tab.keys()
+
+    In [13]: tab["temperature"]
+
+    In [14]: tab.meta
+
+    In [15]: np.asarray(tab)[:2]
+
+Tables without named columns (e.g. a 2D image profile) are also
+supported. For these, ``has_graphs()`` returns False, ``keys()`` returns
+None, and the data are accessed via numpy indexing (``tab[0, :]``).
+
+When exporting a dataset with :func:`RTDCBase.export.hdf5
+<dclab.rtdc_dataset.export.Export.hdf5>`, tables are only copied with
+``tables=True``. Like logs, they are then prefixed with "src\_"
+(see the `meta_prefix` argument).
+
+
 Commonly used scripting examples
 ================================
 Here are a few useful functionalities for scripting with dclab.

@@ -56,7 +56,7 @@ class RTDC_TDMS(RTDCBase):
             raise ModuleNotFoundError(
                 "Package `nptdms` required for TDMS format!")
         # Initialize RTDCBase
-        super(RTDC_TDMS, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         tdms_path = pathlib.Path(tdms_path)
         # Events is a simple dictionary
@@ -90,7 +90,7 @@ class RTDC_TDMS(RTDCBase):
             if key in self._events and self._events[key]:
                 ct = True
         else:
-            ct = super(RTDC_TDMS, self).__contains__(key)
+            ct = super().__contains__(key)
         return ct
 
     @staticmethod
@@ -397,7 +397,7 @@ class RTDC_TDMS(RTDCBase):
         return self._hash
 
     def close(self):
-        super(RTDC_TDMS, self).close()
+        super().close()
         del self._events["image"]._image_data
 
 

@@ -42,7 +42,7 @@ class RTDC_HTTP(RTDC_HDF5):
         self._fhttp = HTTPFile(url)
 
         # Initialize the HDF5 dataset
-        super(RTDC_HTTP, self).__init__(
+        super().__init__(
             h5path=self._fhttp,
             *args,
             **kwargs)
@@ -61,7 +61,7 @@ class RTDC_HTTP(RTDC_HDF5):
             return hashlib.md5(self._fhttp.get_chunk(0)).hexdigest()
 
     def close(self):
-        super(RTDC_HTTP, self).close()
+        super().close()
         self._fhttp.close()
 
 
@@ -71,7 +71,7 @@ class HTTPBasin(Basin):
 
     def __init__(self, *args, **kwargs):
         self._available_verified = None
-        super(HTTPBasin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _load_dataset(self, location, **kwargs):
         h5file = RTDC_HTTP(location, **kwargs)

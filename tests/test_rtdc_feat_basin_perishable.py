@@ -54,8 +54,7 @@ def with_perishable_basin():
 
         def __init__(self, *args, **kwargs):
             kwargs["perishable"] = self.set_perishable_record()
-            super(PerishableBasinExample,  # noqa: F821
-                  self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         @staticmethod
         def check_expired(basin, expiration_time):

@@ -126,7 +126,7 @@ class S3File(HTTPFile):
             bucket_name=bucket_name,
             key=object_name)
 
-        super(S3File, self).__init__(f"{endpoint_url}/{object_path}")
+        super().__init__(f"{endpoint_url}/{object_path}")
 
     def _parse_header(self):
         if self._len is None:
@@ -134,7 +134,7 @@ class S3File(HTTPFile):
             self._etag = self.s3_object.e_tag.strip("'").strip('"')
 
     def close(self):
-        super(S3File, self).close()
+        super().close()
         self.s3_client.close()
 
     def download_range(self, start, stop):
@@ -200,7 +200,7 @@ class RTDC_S3(RTDC_HDF5):
             verify_ssl=use_ssl,
             )
         # Initialize the HDF5 dataset
-        super(RTDC_S3, self).__init__(
+        super().__init__(
             h5path=self._s3file,
             *args,
             **kwargs)
@@ -219,7 +219,7 @@ class RTDC_S3(RTDC_HDF5):
             return hashlib.md5(self._s3file.get_chunk(0)).hexdigest()
 
     def close(self):
-        super(RTDC_S3, self).close()
+        super().close()
         self._s3file.close()
 
 
@@ -229,7 +229,7 @@ class S3Basin(Basin):
 
     def __init__(self, *args, **kwargs):
         self._available_verified = None
-        super(S3Basin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _load_dataset(self, location, **kwargs):
         h5file = RTDC_S3(location, **kwargs)

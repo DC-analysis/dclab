@@ -128,7 +128,7 @@ class HTTPFile(io.IOBase):
         the super class.
         """
         self.session.close()
-        super(HTTPFile, self).close()
+        super().close()
 
     def download_range(self, start, stop) -> bytes:
         """Download bytes given by the range (`start`, `stop`)
@@ -274,8 +274,7 @@ class ResoluteRequestsSession(requests.Session):
         kwargs.setdefault("timeout", 0.5)
         for ii in range(100):
             try:
-                resp = super(ResoluteRequestsSession,
-                             self).get(*args, **kwargs)
+                resp = super().get(*args, **kwargs)
             except (requests.exceptions.ConnectionError,
                     requests.exceptions.ReadTimeout,
                     requests.exceptions.ConnectTimeout,

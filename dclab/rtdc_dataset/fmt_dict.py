@@ -59,7 +59,7 @@ class RTDC_Dict(RTDCBase):
         """
         assert ddict
 
-        super(RTDC_Dict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         t = time.localtime()
 

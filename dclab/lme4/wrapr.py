@@ -85,9 +85,9 @@ class Rlme4:
         for ii, dd in enumerate(self.data):
             if dd[1] == group and dd[2] == repetition and dd[3] == region:
                 raise ValueError(f"A dataset with group '{group}', "
-                                 + f"repetition '{repetition}', and "
-                                 + f"'{region}' region has already "
-                                 + f"been added (index {ii})!")
+                                 f"repetition '{repetition}', and "
+                                 f"'{region}' region has already "
+                                 f"been added (index {ii})!")
 
         self.data.append([ds, group, repetition, region])
 
@@ -95,8 +95,8 @@ class Rlme4:
         """Perform sanity checks on ``self.data``"""
         # Check that we have enough data
         if len(self.data) < 3:
-            msg = "Linear mixed effects models require repeated " \
-                  + "measurements. Please add more repetitions."
+            msg = ("Linear mixed effects models require repeated "
+                   "measurements. Please add more repetitions.")
             raise ValueError(msg)
 
     def fit(self, model=None, feature=None):
@@ -283,8 +283,8 @@ class Rlme4:
                 break
         else:
             raise ValueError(f"Dataset for group '{group}', repetition"
-                             + f" '{repetition}', and region"
-                             + f" '{region}' not found!")
+                             f" '{repetition}', and region"
+                             f" '{region}' not found!")
         fdata = ds[self.feature][ds.filter.all]
         fdata_valid = fdata[~np.logical_or(np.isnan(fdata), np.isinf(fdata))]
         return fdata_valid

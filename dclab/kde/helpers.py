@@ -32,8 +32,8 @@ def ignore_nan_inf(kde_method):
 
     doc_add = (
         "\n    Notes\n"
-        + "    -----\n"
-        + "    This is a wrapped version that ignores nan and inf values."
+        "    -----\n"
+        "    This is a wrapped version that ignores nan and inf values."
     )
     kde_wrapper.__doc__ = kde_method.__doc__ + doc_add
 

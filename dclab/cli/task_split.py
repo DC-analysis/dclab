@@ -137,8 +137,8 @@ def split(
 
 
 def split_parser():
-    descr = "Split an RT-DC measurement file (.tdms or .rtdc) into multiple " \
-            + "smaller .rtdc files."
+    descr = ("Split an RT-DC measurement file (.tdms or .rtdc) into multiple "
+             "smaller .rtdc files.")
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('path_in', metavar="PATH_IN", type=str,
                         help='Input path (.tdms or .rtdc file)')
@@ -151,11 +151,11 @@ def split_parser():
                         dest='include_empty_boundary_images',
                         action='store_true',
                         help='In old versions of Shape-In, the first or last '
-                             + 'images were sometimes not stored in the '
-                             + 'resulting .avi file. In dclab, such images '
-                             + 'are represented as zero-valued images. Set '
-                             + 'this option, if you wish to include these '
-                             + 'events with empty image data.')
+                             'images were sometimes not stored in the '
+                             'resulting .avi file. In dclab, such images '
+                             'are represented as zero-valued images. Set '
+                             'this option, if you wish to include these '
+                             'events with empty image data.')
     parser.set_defaults(include_empty_boundary_images=False)
     parser.add_argument('--version', action='version',
                         version=f'dclab-split {version}')

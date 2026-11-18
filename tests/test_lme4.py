@@ -85,7 +85,7 @@ def test_fail_too_few_dataset():
     rlme4.add_dataset(datasets[1], "treatment", 1)
 
     with pytest.raises(ValueError, match="Linear mixed effects models"
-                                         + " require repeated measurements"):
+                                         " require repeated measurements"):
         rlme4.fit()
 
 

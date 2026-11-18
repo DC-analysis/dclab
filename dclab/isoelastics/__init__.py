@@ -355,9 +355,9 @@ class Isoelastics:
                 )
             else:
                 warnings.warn("Computing emodulus data for isoelastics from "
-                              + "RTDCBase is not possible. Isoelastics will "
-                              + "not have correct emodulus values (this is "
-                              + "not relevant for plotting).",
+                              "RTDCBase is not possible. Isoelastics will "
+                              "not have correct emodulus values (this is "
+                              "not relevant for plotting).",
                               IsoelasticsEmodulusMeaninglessWarning)
         return self.get(col1=col1,
                         col2=col2,
@@ -409,7 +409,7 @@ def check_lut_identifier(lut_identifier, method):
     """Transitional function that can be removed once `method` is removed"""
     if lut_identifier is None and method is not None:
         warnings.warn("The `method` argument is deprecated "
-                      + "please use `lut_identifier` instead!",
+                      "please use `lut_identifier` instead!",
                       DeprecationWarning)
         if method == "analytical":
             lut_identifier = "LE-2D-ana-18"

@@ -119,7 +119,7 @@ class ContourColumn:
             frame_c = self._contour_data.get_frame(idnew)
             warnings.warn(
                 f"Couldn't verify contour {idx} in {self.identifier}"
-                + f" (frame index {frame_c})!",
+                f" (frame index {frame_c})!",
                 ContourVerificationWarning
             )
         return cdata

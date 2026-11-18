@@ -33,7 +33,7 @@ def test_access_without_apply_filter():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            + 'YoungsModulusLookupTableExceededWarning')
+                            'YoungsModulusLookupTableExceededWarning')
 def test_config_calculation():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -59,7 +59,7 @@ def test_config_calculation():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            + 'YoungsModulusLookupTableExceededWarning')
+                            'YoungsModulusLookupTableExceededWarning')
 def test_config_calculation_does_not_work_in_child_issue_92():
     """As long as #92 is alive, this test should pass."""
     keys = ["area_um", "deform"]

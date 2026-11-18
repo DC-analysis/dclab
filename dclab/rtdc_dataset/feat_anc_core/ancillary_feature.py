@@ -239,8 +239,8 @@ class AncillaryFeature:
         if self.feature_name not in data_dict:
             raise KeyError(
                 f"I expected the feature '{self.feature_name}' to be a key "
-                + f"in the dictionary returned by {self}. But I found only "
-                + f"the following: {sorted(data_dict.keys())}")
+                f"in the dictionary returned by {self}. But I found only "
+                f"the following: {sorted(data_dict.keys())}")
         for key in data_dict:
             dfn.check_feature_shape(key, data_dict[key])
         return data_dict

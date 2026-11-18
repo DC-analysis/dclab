@@ -84,7 +84,7 @@ def convert(area_um: npt.NDArray,
     is corrected and returned as well.
     """
     warnings.warn("Usage of the `convert` method is deprecated! Please use "
-                  + "the scale_feature method instead.",
+                  "the scale_feature method instead.",
                   DeprecationWarning)
     copy = not inplace
 

@@ -216,7 +216,7 @@ class PlugInFeature(AncillaryFeature):
         if self.feature_name not in original_info["feature names"]:
             raise ValueError(
                 f"The feature name '{self.feature_name}' is not defined in "
-                + "the `info` dict of the plugin feature"
+                "the `info` dict of the plugin feature"
                 + (f" at {self.plugin_path}" if self.plugin_path else "")
                 + f". Defined names are '{original_info['feature names']}'.")
 

@@ -67,9 +67,9 @@ class HierarchyFilter(Filter):
         would not work.
         """
         if self.parent_changed:
-            msg = "Cannot apply filter, because parent changed: " \
-                  + f"dataset {rtdc_ds}. " \
-                  + "Run `RTDC_Hierarchy.apply_filter()` first!"
+            msg = ("Cannot apply filter, because parent changed: "
+                   f"dataset {rtdc_ds}. "
+                   "Run `RTDC_Hierarchy.apply_filter()` first!")
             raise HierarchyFilterError(msg)
         else:
             self._man_root_ids = list(manual_indices)

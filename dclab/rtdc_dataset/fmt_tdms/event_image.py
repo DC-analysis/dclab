@@ -53,7 +53,7 @@ class ImageColumn:
         if idnew < 0:
             # No data - show a dummy image instead
             warnings.warn(f"Frame {idnew} in {self.identifier} "
-                          + "is not defined; replacing with dummy image!",
+                          "is not defined; replacing with dummy image!",
                           InitialFrameMissingWarning)
             cdata = self.dummy
         else:
@@ -68,7 +68,7 @@ class ImageColumn:
             except excs:
                 # The avi is corrupt. Return a dummy image.
                 warnings.warn(f"Frame {idnew} in {self.identifier} "
-                              + "is corrupt; replacing with dummy image!",
+                              "is corrupt; replacing with dummy image!",
                               CorruptFrameWarning)
                 cdata = self.dummy
         return cdata
@@ -208,7 +208,7 @@ class ImageMap:
         if not np.all(final == 0):
             # This means we succeeded
             warnings.warn("Seeking video file does not work, used workaround "
-                          + "which is slow!", SlowVideoWarning)
+                          "which is slow!", SlowVideoWarning)
         return final
 
     @property

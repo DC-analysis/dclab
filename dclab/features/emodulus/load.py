@@ -58,7 +58,7 @@ def get_lut_path(path_or_id: str | pathlib.Path) -> pathlib.Path:
         lut_path = EXTERNAL_LUTS[path_or_id]
     else:
         raise ValueError("File or LUT identifier does not exist: "
-                         + f"'{path_or_id}'")
+                         f"'{path_or_id}'")
     return lut_path
 
 
@@ -240,13 +240,13 @@ def register_lut(path: str | pathlib.Path,
             identifier = md["identifier"]
         except KeyError:
             raise ValueError(f"The given LUT file '{path}' does "
-                             + "not contain the 'identifier' keyword. You may "
-                             + "specify it via the `identifier` keyword to "
-                             + "this function.")
+                             "not contain the 'identifier' keyword. You may "
+                             "specify it via the `identifier` keyword to "
+                             "this function.")
     if identifier in EXTERNAL_LUTS:
         raise ValueError(f"A LUT with an identifier '{identifier}' "
-                         + "has already been registered!")
+                         "has already been registered!")
     elif identifier in get_internal_lut_names_dict():
         raise ValueError(f"The identifier '{identifier}' is already "
-                         + "in use by an internal LUT!")
+                         "in use by an internal LUT!")
     EXTERNAL_LUTS[identifier] = path

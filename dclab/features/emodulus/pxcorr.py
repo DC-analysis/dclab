@@ -149,5 +149,5 @@ def get_pixelation_delta(feat_corr: str,
     else:
         raise KeyError(
             f"No rule for feature '{feat_corr}' with abscissa "
-            + f"'{feat_absc}'!")
+            f"'{feat_absc}'!")
     return delt

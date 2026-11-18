@@ -308,8 +308,8 @@ def test_ic_feature_size_scalar():
         cues = ic.check_feature_size()
     for cue in cues:
         if cue.category == "feature size":
-            assert cue.msg == "Features: wrong event count: 'bright_sd' " \
-                              + "(1000 of 8472)"
+            assert cue.msg == ("Features: wrong event count: 'bright_sd' "
+                               "(1000 of 8472)")
             break
     else:
         assert False
@@ -323,8 +323,8 @@ def test_ic_feature_size_trace():
         cues = ic.check_feature_size()
     for cue in cues:
         if cue.category == "feature size":
-            assert cue.msg == "Features: wrong event count: 'trace/fl1_raw'" \
-                              + " (1000 of 8472)"
+            assert cue.msg == ("Features: wrong event count: 'trace/fl1_raw'"
+                               " (1000 of 8472)")
             break
     else:
         assert False
@@ -397,8 +397,8 @@ def test_ic_fmt_hdf5_image1():
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check_fmt_hdf5()
     assert cues[0].category == "format HDF5"
-    assert cues[0].msg == "HDF5: '/image': attribute 'CLASS' should be " \
-                          + "fixed-length ASCII string"
+    assert cues[0].msg == ("HDF5: '/image': attribute 'CLASS' should be "
+                           "fixed-length ASCII string")
     assert cues[0].level == "alert"
 
 
@@ -411,8 +411,8 @@ def test_ic_fmt_hdf5_image2():
     with check.IntegrityChecker(h5path) as ic:
         cues = ic.check_fmt_hdf5()
     assert cues[0].category == "format HDF5"
-    assert cues[0].msg == "HDF5: '/image': attribute 'CLASS' should have " \
-                          + "value 'b'IMAGE''"
+    assert cues[0].msg == ("HDF5: '/image': attribute 'CLASS' should have "
+                           "value 'b'IMAGE''")
     assert cues[0].level == "alert"
 
 
@@ -697,8 +697,8 @@ def test_ic_temp_allzero_issue_183():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'feat_anc_core.ancillary_feature.'
-                            + 'BadFeatureSizeWarning')
+                            'feat_anc_core.ancillary_feature.'
+                            'BadFeatureSizeWarning')
 def test_invalid_medium():
     pytest.importorskip("nptdms")
     h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
@@ -713,8 +713,8 @@ def test_invalid_medium():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'feat_anc_core.ancillary_feature.'
-                            + 'BadFeatureSizeWarning')
+                            'feat_anc_core.ancillary_feature.'
+                            'BadFeatureSizeWarning')
 def test_load_with():
     pytest.importorskip("nptdms")
     h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
@@ -758,8 +758,8 @@ def test_ml_class():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'feat_anc_core.ancillary_feature.'
-                            + 'BadFeatureSizeWarning')
+                            'feat_anc_core.ancillary_feature.'
+                            'BadFeatureSizeWarning')
 def test_no_fluorescence():
     pytest.importorskip("nptdms")
     h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
@@ -904,8 +904,8 @@ def test_temperature():
     # we are only looking for the temperature thing
     ddict = example_data_dict(size=8472, keys=["area_um", "deform", "temp"])
     ds = new_dataset(ddict)
-    sstr = "Metadata: Missing key [setup] 'temperature', " \
-           + "because the 'temp' feature is given"
+    sstr = ("Metadata: Missing key [setup] 'temperature', "
+            "because the 'temp' feature is given")
     _, aler, _ = check_dataset(ds)
     assert sstr in aler
 
@@ -915,7 +915,7 @@ def test_wrong_samples_per_event():
     h5path = retrieve_data("fmt-tdms_2fl-no-image_2017.zip")
     with h5path.with_name("M1_para.ini").open("a") as fd:
         fd.write("Samples Per Event = 10\n")
-    msg = "Metadata: wrong number of samples per event: fl1_median " \
-          + "(expected 10, got 566)"
+    msg = ("Metadata: wrong number of samples per event: fl1_median "
+           "(expected 10, got 566)")
     viol, _, _ = check_dataset(h5path)
     assert msg in viol

@@ -408,7 +408,7 @@ class Export:
                 filter_arr[l_min:] = False
                 warnings.warn(
                     "Not all features have the same length! Limiting output "
-                    + f"event count to {l_min} (max {l_max}) in '{l_min}'.",
+                    f"event count to {l_min} (max {l_max}) in '{l_min}'.",
                     LimitingExportSizeWarning)
 
         # Perform actual export
@@ -816,7 +816,7 @@ def store_filtered_feature(rtdc_writer, feat, data, filtarr):
     hw = rtdc_writer
     if not hw.mode == "append":
         raise ValueError("The `rtdc_writer` object must be created with"
-                         + f"`mode='append'`, got '{hw.mode}' for '{hw}'!")
+                         f"`mode='append'`, got '{hw.mode}' for '{hw}'!")
     # event-wise, because
     # - tdms-based datasets don't allow indexing with numpy
     # - there might be memory issues

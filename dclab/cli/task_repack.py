@@ -109,10 +109,10 @@ def repack(
 
 
 def repack_parser():
-    descr = "Repack an .rtdc file. The difference to dclab-compress " \
-            + "is that no logs are added. Other logs can optionally be " \
-            + "stripped away. Repacking also gets rid of old clutter " \
-            + "data (e.g. previous metadata stored in the HDF5 file)."
+    descr = ("Repack an .rtdc file. The difference to dclab-compress "
+             "is that no logs are added. Other logs can optionally be "
+             "stripped away. Repacking also gets rid of old clutter "
+             "data (e.g. previous metadata stored in the HDF5 file).")
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('input', metavar="INPUT", type=str,
                         help='Input path (.rtdc file)')

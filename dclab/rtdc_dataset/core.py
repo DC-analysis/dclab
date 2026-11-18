@@ -411,7 +411,7 @@ class RTDCBase(abc.ABC):
     def _filter(self):
         """return the current filter boolean array"""
         warnings.warn("RTDCBase._filter is deprecated. Please use "
-                      + "RTDCBase.filter.all instead.",
+                      "RTDCBase.filter.all instead.",
                       DeprecationWarning)
         return self.filter.all
 
@@ -419,8 +419,8 @@ class RTDCBase(abc.ABC):
     def _plot_filter(self):
         raise NotImplementedError(
             "RTDCBase._plot_filter has been removed in dclab 0.16.0. "
-            + "Please use the output of RTDCBase.downsample_scatter "
-            + "with the argument ret_mask instead.")
+            "Please use the output of RTDCBase.downsample_scatter "
+            "with the argument ret_mask instead.")
 
     @property
     def identifier(self):

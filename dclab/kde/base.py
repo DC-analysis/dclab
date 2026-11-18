@@ -179,7 +179,7 @@ class KernelDensityEstimator:
         y = self.rtdc_ds[yax][self.rtdc_ds.filter.all]
 
         # Apply scale (no change for linear scale)
-        if positions:
+        if positions is not None and len(positions):
             xs = KernelDensityEstimator.apply_scale(positions[0], xscale, xax)
             ys = KernelDensityEstimator.apply_scale(positions[1], yscale, yax)
         else:
@@ -276,7 +276,7 @@ class KernelDensityEstimator:
             The density levels corresponding to each number in `quantiles`.
             Only returned if `ret_levels` is set to True.
         """
-        if not quantiles:
+        if quantiles is None or len(quantiles) == 0:
             quantiles = [0.5, 0.95]
 
         if not KernelDensityEstimator.check_feat_kde_applicability(xax, yax):

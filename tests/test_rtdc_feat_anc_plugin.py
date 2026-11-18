@@ -18,7 +18,7 @@ from dclab.rtdc_dataset.feat_anc_core.ancillary_feature import (
 from dclab.rtdc_dataset.feat_temp import deregister_all
 from dclab.rtdc_dataset.fmt_hierarchy import ChildNDArray
 
-from helper_methods import retrieve_data
+from helper_methods import example_data_dict, retrieve_data
 
 data_dir = pathlib.Path(__file__).parent / "data"
 
@@ -1010,3 +1010,39 @@ if __name__ == "__main__":
         if key.startswith("test_") and callable(loc[key]):
             loc[key]()
             remove_all_plugin_features()
+
+
+def test_pf_missing_required_feature_error_message():
+    """The KeyError should name the missing required features (#150)"""
+    info = example_plugin_info_single_feature()
+    pf = PlugInFeature("circ_per_area", info)
+    ds = dclab.new_dataset({"area_um": np.linspace(10, 20, 5),
+                            "deform": np.linspace(.01, .02, 5)})
+    assert pf.get_missing_requirements(ds) == ["feature 'circ'"]
+    with pytest.raises(KeyError,
+                       match="PlugInFeature \\(priority 0\\) requires "
+                             "feature 'circ'"):
+        ds["circ_per_area"]
+
+
+def test_pf_method_check_required_error_message():
+    """The KeyError should mention the failed custom check (#150)"""
+    info = example_plugin_info_single_feature()
+    info["method check required"] = lambda rtdc_ds: False
+    pf = PlugInFeature("circ_per_area", info)
+    ddict = example_data_dict(size=5, keys=["area_um", "circ", "deform"])
+    ds = dclab.new_dataset(ddict)
+    assert pf.get_missing_requirements(ds) == [
+        ("custom requirement check (e.g. 'method check required' of "
+         "plugin features)")]
+    with pytest.raises(KeyError, match="custom requirement check"):
+        ds["circ_per_area"]
+
+
+def test_pf_no_missing_requirements():
+    info = example_plugin_info_single_feature()
+    pf = PlugInFeature("circ_per_area", info)
+    ddict = example_data_dict(size=5, keys=["area_um", "circ", "deform"])
+    ds = dclab.new_dataset(ddict)
+    assert pf.get_missing_requirements(ds) == []
+    assert "circ_per_area" in ds

@@ -245,6 +245,29 @@ class AncillaryFeature:
             dfn.check_feature_shape(key, data_dict[key])
         return data_dict
 
+    def get_missing_requirements(self, rtdc_ds: RTDCBase) -> list[str]:
+        """Return the requirements for computing the feature that are not met
+
+        This is used for informative error messages. The returned
+        list is empty if all requirements are met (this does not take
+        into account features with the same name and a higher priority).
+        """
+        missing = []
+        for section, keys in self.req_config:
+            keys_missing = [f"'{key}'" for key in keys
+                            if (section not in rtdc_ds.config
+                                or key not in rtdc_ds.config[section])]
+            if keys_missing:
+                missing.append(f"metadata [{section}] "
+                               f"{', '.join(keys_missing)}")
+        for col in self.req_features:
+            if col not in rtdc_ds:
+                missing.append(f"feature '{col}'")
+        if not missing and not self.req_func(rtdc_ds):
+            missing.append("custom requirement check (e.g. "
+                           "'method check required' of plugin features)")
+        return missing
+
     def hash(self, rtdc_ds: RTDCBase) -> str:
         """Used for identifying an ancillary computation
 

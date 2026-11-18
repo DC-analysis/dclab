@@ -175,7 +175,15 @@ class RTDCBase(abc.ABC):
                           f"remote basins.",
                           FeatureShouldExistButNotFoundWarning)
         # Not here ¯\_(ツ)_/¯
-        raise KeyError(f"Feature '{feat}' does not exist in {self}!")
+        msg = f"Feature '{feat}' does not exist in {self}!"
+        # Explain why ancillary features (e.g. plugin features) with
+        # this name cannot be computed.
+        for af in AncillaryFeature.get_instances(feat):
+            missing = af.get_missing_requirements(self)
+            if missing:
+                msg += (f" {af.__class__.__name__} (priority {af.priority})"
+                        f" requires {'; '.join(missing)}.")
+        raise KeyError(msg)
 
     def __iter__(self):
         """An iterator over all valid scalar features"""

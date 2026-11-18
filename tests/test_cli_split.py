@@ -116,3 +116,49 @@ def test_split_traces():
                     assert len(trace1) == len(trace2)
                     assert np.all(trace1 == trace2), flkey
                 ecount += len(di)
+
+
+@pytest.mark.filterwarnings(
+    "error::dclab.rtdc_dataset.feat_basin.CyclicBasinDependencyFoundWarning")
+def test_split_internal_basin(tmp_path):
+    """Internal basin features are stored as internal basins (#258)"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    path_in = tmp_path / "internal.rtdc"
+    with new_dataset(h5path) as ds:
+        size = len(ds)
+    # four background images mapped to all events
+    internal_data = {"image_bg": np.concatenate(
+        [np.full((1, 80, 320), val) for val in [145, 140, 150, 142]])}
+    basin_map = np.arange(size, dtype=np.int64) % 4
+    with h5py.File(h5path) as src, RTDCWriter(path_in) as hw:
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=hw.h5file,
+                               features="scalar")
+        hw.store_basin(basin_name="background",
+                       basin_type="internal",
+                       basin_format="h5dataset",
+                       basin_locs=["basin_events"],
+                       basin_descr="internal background images",
+                       internal_data=internal_data,
+                       basin_map=basin_map,
+                       basin_feats=["image_bg"],
+                       )
+
+    paths = cli.split(path_in=path_in, path_out=tmp_path, split_events=4,
+                      ret_out_paths=True)
+    assert len(paths) == 3
+
+    with new_dataset(path_in) as ds:
+        image_bg = ds["image_bg"][:]
+
+    start = 0
+    for pp in paths:
+        with h5py.File(pp) as h5:
+            # not stored as a regular feature
+            assert "image_bg" not in h5["events"]
+            assert h5["basin_events/image_bg"].shape == (4, 80, 320)
+        with new_dataset(pp) as ds:
+            assert "image_bg" in ds.features_basin
+            assert np.all(ds["image_bg"][:] == image_bg[start:start+len(ds)])
+            start += len(ds)
+    assert start == len(image_bg)

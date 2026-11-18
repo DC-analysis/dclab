@@ -89,6 +89,20 @@ def split(
                     fmt_tdms.event_image.InitialFrameMissingWarning)
 
         with new_dataset(path_in) as ds:
+            # Internal basin features (e.g. "image_bg") and their mapping
+            # features are not exported as regular features, but stored
+            # as internal basins in the output files (see below).
+            bn_internal = [bn for bn in ds.basins_get_dicts()
+                           if bn.get("type") == "internal"]
+            if not hasattr(ds, "h5file"):
+                # not an HDF5 file (e.g. DCOR), export features as-is
+                bn_internal = []
+            feats_internal = set()
+            for bn in bn_internal:
+                feats_internal.update(bn.get("features", []))
+                feats_internal.add(bn["mapping"])
+            features = [ft for ft in ds.features_innate
+                        if ft not in feats_internal]
             num_files = len(ds) // split_events
             if len(ds) % split_events:
                 num_files += 1
@@ -109,13 +123,18 @@ def split(
                     final=skip_final_empty_image)
                 ds.apply_filter()
                 ds.export.hdf5(path=pt,
-                               features=ds.features_innate,
+                               features=features,
                                logs=True,
                                tables=True,
                                basins=True,
                                filtered=True,
                                compression_kwargs=cmp_kw,
                                )
+                if bn_internal:
+                    store_internal_basins(ds=ds,
+                                          path=pt,
+                                          basin_dicts=bn_internal,
+                                          compression_kwargs=cmp_kw)
 
         if w:
             logs["dclab-split-warnings"] = common.assemble_warnings(w)
@@ -134,6 +153,35 @@ def split(
 
     if ret_out_paths:
         return paths_gen
+
+
+def store_internal_basins(ds, path, basin_dicts, compression_kwargs=None):
+    """Store the internal basins of `ds` for its filtered events in `path`
+
+    The internal basin data are copied as-is and the mapping (internal
+    basins are always mapped) is reduced to the filtered events.
+    """
+    filter_arr = ds.filter.all
+    with RTDCWriter(path,
+                    mode="append",
+                    compression_kwargs=compression_kwargs) as hw:
+        for bn in basin_dicts:
+            feats = [ft for ft in bn.get("features", [])
+                     if ft in ds.h5file.get("basin_events", {})]
+            if not feats:
+                continue
+            basin_map = ds.h5file["events"][bn["mapping"]][:][filter_arr]
+            internal_data = {ft: ds.h5file["basin_events"][ft][:]
+                             for ft in feats}
+            hw.store_basin(basin_name=bn.get("name"),
+                           basin_type="internal",
+                           basin_format="h5dataset",
+                           basin_locs=["basin_events"],
+                           basin_descr=bn.get("description"),
+                           basin_feats=feats,
+                           basin_map=basin_map,
+                           internal_data=internal_data,
+                           )
 
 
 def split_parser():

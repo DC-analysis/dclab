@@ -784,7 +784,12 @@ class RTDCBase(abc.ABC):
                 b_dat = json.dumps(bdict, indent=2, sort_keys=True).split("\n")
                 bdict["key"] = hashobj(b_dat)
 
-        bd_keys = [bd["key"] for bd in bdicts_srt]
+        # Internal basins cannot result in cyclic dependencies (their
+        # data are loaded into memory without any basins). Their
+        # definitions may be identical in different files (e.g. after
+        # splitting a file), so they must not be ignored in other files.
+        bd_keys = [bd["key"] for bd in bdicts_srt
+                   if bd.get("type") != "internal"]
         bd_keys += self._basins_ignored
         for bdict in bdicts_srt:
             if bdict["format"] not in bc:

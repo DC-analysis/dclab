@@ -848,7 +848,7 @@ def test_online_polygon_filters_wrong_shape(shape):
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("si_version", ["2.2.1.0", "2.2.1.0dev", "2.2.2.0dev",
                                         "2.2.2.0", "2.2.2.1", "2.2.2.2",
-                                        "2.2.2.4", "2.2.2.4", "2.3.0.0",
+                                        "2.2.2.3", "2.2.2.4", "2.3.0.0",
                                         # version branded by dclab
                                         "2.2.1.0 | dclab 0.74.0",
                                         "2.3.0.0 | dclab 0.62 | dclab 0.74",

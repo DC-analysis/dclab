@@ -130,9 +130,11 @@ def feature_deregister(name):
     This function should only be used internally, i.e., You should not use
     this function. This function can break things.
     """
-    label = get_feature_label(name)
-    feat_const.feature_names.remove(name)
-    feat_const.feature_labels.remove(label)
+    # `feature_labels` is not unique, remove the label at the same
+    # position as the feature name
+    idx = feat_const.feature_names.index(name)
+    feat_const.feature_names.pop(idx)
+    feat_const.feature_labels.pop(idx)
     feat_const.feature_name2label.pop(name)
     if name in feat_const.scalar_feature_names:
         feat_const.scalar_feature_names.remove(name)

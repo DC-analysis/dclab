@@ -126,6 +126,8 @@
    section raised an UnboundLocalError
  - fix: the deprecated objects in `dclab.definitions` (e.g.
    `feature_names`) failed for method calls and `len()`
+ - fix: `feature_deregister` removed the wrong label if several features
+   had the same label
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

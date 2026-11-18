@@ -38,7 +38,8 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         extras: ['all', 'dcor-s3', 'none']
       fail-fast: false
-    timeout-minutes: 30
+    # The lme4 tests take long (test_glmer_differential ~10 min on Linux)
+    timeout-minutes: 60
 
     steps:
     - uses: actions/checkout@main

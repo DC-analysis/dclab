@@ -93,8 +93,8 @@ def load_lut(lut_data: str | pathlib.Path | tuple[npt.NDArray, dict] =
         lut_path = get_lut_path(lut_data)
         lut, meta = load_mtext(lut_path)
     else:
-        raise ValueError("`name_path_arr` must be path, identifier, or tuple "
-                         f"of (array, dict), got '{lut_data}'!")
+        raise TypeError("`name_path_arr` must be path, identifier, or tuple "
+                        f"of (array, dict), got '{lut_data}'!")
     return lut, meta
 
 

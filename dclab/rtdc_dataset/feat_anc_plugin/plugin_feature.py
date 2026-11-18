@@ -197,21 +197,23 @@ class PlugInFeature(AncillaryFeature):
 
         Raises
         ------
-        ValueError
+        TypeError
             If the parameter `original_info` is not a dict.
-            If the `self.feature_name` is not in
-                `original_info["feature names"]`.
+            If `original_info["feature names"]` is not a list.
             If the `method` provided in parameter `original_info`
                 is not callable.
+        ValueError
+            If the `self.feature_name` is not in
+                `original_info["feature names"]`.
         """
         if not isinstance(original_info, dict):
-            raise ValueError(
+            raise TypeError(
                 "PlugInFeature parameter for `info` must be a dict, instead "
                 f"a '{type(original_info)}' was given.")
 
         if not isinstance(original_info["feature names"], list):
-            raise ValueError("'feature names' must be a list, "
-                             f"got '{type(original_info['feature names'])}'")
+            raise TypeError("'feature names' must be a list, "
+                            f"got '{type(original_info['feature names'])}'")
 
         if self.feature_name not in original_info["feature names"]:
             raise ValueError(
@@ -221,7 +223,7 @@ class PlugInFeature(AncillaryFeature):
                 + f". Defined names are '{original_info['feature names']}'.")
 
         if not callable(original_info["method"]):
-            raise ValueError(
+            raise TypeError(
                 "The `method` you have provided in the parameter `info` is "
                 f"not callable ('{original_info['method']}' is not "
                 "a function).")
@@ -304,7 +306,7 @@ def load_plugin_feature(
 
     Raises
     ------
-    ValueError
+    TypeError
         If the script dictionary "feature names" are not a list
 
     Notes
@@ -320,7 +322,7 @@ def load_plugin_feature(
     """
     info = import_plugin_feature_script(plugin_path)
     if not isinstance(info["feature names"], list):
-        raise ValueError(
+        raise TypeError(
             "'feature names' must be a list of strings.")
 
     plugin_list = []

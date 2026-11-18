@@ -113,8 +113,6 @@ ignore = [
     # Basins are loaded lazily, so warnings are emitted while datasets
     # are used and `pytest.warns` blocks contain several statements
     "PT031",
-    # Changing `ValueError` to `TypeError` would break user code
-    "TRY004",
 ]
 
 [tool.pyright]

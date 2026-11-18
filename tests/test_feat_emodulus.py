@@ -585,12 +585,9 @@ def test_load_lut_from_path():
 
 
 def test_load_lut_from_badobject():
-    try:
+    # dict should not be supported
+    with pytest.raises(TypeError, match="must be path, identifier, or tuple"):
         emodulus.load_lut({"test": "nonesense"})
-    except ValueError:
-        pass
-    else:
-        assert False, "dict should not be supported"
 
 
 def test_load_lut_from_badpath():

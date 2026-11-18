@@ -201,7 +201,7 @@ def test_pf_bad_plugin_feature_name_list():
     """Basic test of a bad feature name for PlugInFeature"""
     info = example_plugin_info_single_feature()
     info["feature names"] = "Peter-Pan's Best Friend!"
-    with pytest.raises(ValueError, match="must be a list, got"):
+    with pytest.raises(TypeError, match="must be a list, got"):
         PlugInFeature("Peter-Pan's Best Friend!", info)
 
 
@@ -552,7 +552,7 @@ def test_pf_import_plugin_sys_path_unchanged():
 def test_pf_incorrect_input_info():
     """Raise error when info is not a dictionary"""
     info = ["this", "is", "not", "a", "dict"]
-    with pytest.raises(ValueError, match="must be a dict"):
+    with pytest.raises(TypeError, match="must be a dict"):
         PlugInFeature("feature_1", info)
 
 
@@ -569,7 +569,7 @@ def test_pf_incorrect_input_method():
     info = example_plugin_info_single_feature()
     # set `info["method"]` to something that isn't callable
     info["method"] = "this_is_a_string"
-    with pytest.raises(ValueError, match="is not callable"):
+    with pytest.raises(TypeError, match="is not callable"):
         PlugInFeature("circ_per_area", info)
 
 

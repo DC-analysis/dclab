@@ -10,6 +10,9 @@ from .core import RTDCBase
 from . import (
     fmt_dict, fmt_dcor, fmt_hdf5, fmt_hierarchy, fmt_http, fmt_s3, fmt_tdms)
 
+#: keyword arguments that are specific to :class:`.RTDC_S3`
+S3_KWARGS = {"endpoint_url", "access_key_id", "secret_access_key", "use_ssl"}
+
 
 def load_file(path: str | pathlib.Path,
               identifier: str | None = None,
@@ -59,10 +62,17 @@ def new_dataset(data: dict | io.BytesIO | RTDCBase | str | pathlib.Path,
     elif isinstance(data, str) and fmt_dcor.is_dcor_url(data):
         return fmt_dcor.RTDC_DCOR(data, identifier=identifier, **kwargs)
     elif isinstance(data, str) and fmt_http.is_http_url(data):
-        if fmt_http.is_url_available(data, ret_reason=False):
+        if fmt_s3.is_s3_url(data) and S3_KWARGS.intersection(kwargs):
+            # S3-specific arguments are given (raises a ModuleNotFoundError
+            # if boto3 is not installed)
+            return fmt_s3.RTDC_S3(data, identifier=identifier, **kwargs)
+        elif fmt_http.is_url_available(data, ret_reason=False):
             return fmt_http.RTDC_HTTP(data, identifier=identifier, **kwargs)
         elif fmt_s3.is_s3_url(data):
             return fmt_s3.RTDC_S3(data, identifier=identifier, **kwargs)
+        elif not fmt_http.REQUESTS_AVAILABLE:
+            # raises a ModuleNotFoundError
+            return fmt_http.RTDC_HTTP(data, identifier=identifier, **kwargs)
         else:
             raise NotImplementedError(f"Unknown remote format: {data}")
     elif isinstance(data, (pathlib.Path, str)):

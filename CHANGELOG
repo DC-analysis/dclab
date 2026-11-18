@@ -208,6 +208,10 @@
    `load_plugin_feature` (#403)
  - fix: `find_smooth_contour_spacing` only checked whether the first
    contour of the highest percentile was smooth, not all of them (#404)
+ - fix: misleading error messages in `new_dataset` for remote data:
+   S3-specific keyword arguments were passed to `RTDC_HTTP` for publicly
+   available S3 URLs, and without `requests`, HTTP URLs resulted in
+   "Unknown remote format" (#405)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

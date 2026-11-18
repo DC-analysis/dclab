@@ -48,6 +48,15 @@ class RTDCBase(abc.ABC):
     def __init__(self, identifier=None, enable_basins=True):
         """RT-DC measurement base class
 
+        Parameters
+        ----------
+        identifier: str
+            A unique identifier for this dataset. If set to `None`,
+            a random identifier is generated.
+        enable_basins: bool
+            Whether to enable basins. If set to `False`, only internal
+            basins are loaded (see :func:`basins_retrieve`).
+
         Notes
         -----
         Besides the filter arrays for each data feature, there is a manual
@@ -249,6 +258,11 @@ class RTDCBase(abc.ABC):
 
     @property
     def logger(self):
+        """Logger instance for this dataset
+
+        The logger is a child of the ``dclab.rtdc_dataset.core`` logger
+        and is named after :attr:`hash`. It is created on first access.
+        """
         if self._logger is None:
             self._logger = logging.getLogger(__name__).getChild(self.hash)
         return self._logger
@@ -382,13 +396,22 @@ class RTDCBase(abc.ABC):
         scale: str
             how the data should be scaled ("log" or "linear")
         method: callable
-            KDE method to use (see `kde_methods` submodule)
+            Binning method used for computing the spacing (e.g.
+            ``dclab.kde.binning.bin_width_doane`` or
+            ``dclab.kde.binning.bin_width_percentile``)
         method_kw: dict
             keyword arguments to `method`
         feat: str
             feature name for debugging
         ret_scaled: bool
             whether to return the scaled array of `a`
+
+        Returns
+        -------
+        spacing: float
+            The estimated contour spacing
+        scaled: ndarray
+            The scaled array `a` (only returned if `ret_scaled` is True)
         """
         return KernelDensityEstimator.estimate_spacing(
             a=a,
@@ -517,7 +540,7 @@ class RTDCBase(abc.ABC):
     def features_local(self):
         """All features that are, with certainty, really fast to access
 
-        Local features is a slimmed down version of `features_loaded`.
+        `features_local` is a slimmed-down version of `features_loaded`.
         Nothing needs to be computed, not even rapid features
         (:const:`dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID`).
         And features from remote sources that have not been downloaded
@@ -559,14 +582,28 @@ class RTDCBase(abc.ABC):
         """Reproducible dataset hash (defined by derived classes)"""
 
     def ignore_basins(self, basin_identifiers):
-        """Ignore these basin identifiers when looking for features
+        """Ignore these basins when looking for features
 
         This is used to avoid circular basin dependencies.
+
+        Parameters
+        ----------
+        basin_identifiers: list of str
+            Basin keys (the "key" entries of the basin definition
+            dictionaries, see :func:`basins_get_dicts`) to ignore
         """
         self._basins_ignored += basin_identifiers
 
     def apply_filter(self, force=None):
-        """Compute the filters for the dataset"""
+        """Compute the filters for the dataset
+
+        Parameters
+        ----------
+        force: list of str
+            Names of scalar features whose box filters are recomputed
+            even if their [filtering] min/max values did not change
+            (see ``Filter.update``)
+        """
         with self.lock:
             if force is None:
                 force = []
@@ -604,7 +641,7 @@ class RTDCBase(abc.ABC):
             - 0  : do not perform downsampling
         xscale: str
             If set to "log", take the logarithm of the x-values before
-            performing downsampling. This is useful when data are are
+            performing downsampling. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         yscale: str
             See `xscale`.
@@ -615,16 +652,19 @@ class RTDCBase(abc.ABC):
             (e.g. due to logarithmic scaling).
         ret_mask: bool
             If set to `True`, returns a boolean array of length
-            `len(self)` where `True` values identify the filtered
+            `len(self)` where `True` values identify the downsampled
             data.
 
         Returns
         -------
-        xnew, xnew: 1d ndarray of lenght `N`
-            Filtered data; `N` is either identical to `downsample`
-            or smaller (if `remove_invalid==True`)
+        xnew, ynew: 1d ndarray of length `N`
+            Filtered and downsampled data; `N` is identical to
+            `downsample`, or smaller if there are fewer filtered events or
+            if `remove_invalid==True`. If `downsample` is 0, no
+            downsampling is performed.
         mask: 1d boolean array of length `len(RTDCBase)`
-            Array for identifying the downsampled data points
+            Array for identifying the downsampled data points (only
+            returned if `ret_mask` is True)
         """
         if downsample < 0:
             raise ValueError("`downsample` must be zero or positive!")
@@ -669,9 +709,11 @@ class RTDCBase(abc.ABC):
         yax: str
             Identifier for Y axis
         xacc: float
-            Contour accuracy in x direction
+            Contour accuracy in x direction; if set to None,
+            ``dclab.kde.binning.bin_width_percentile`` is used
         yacc: float
-            Contour accuracy in y direction
+            Contour accuracy in y direction; if set to None,
+            ``dclab.kde.binning.bin_width_percentile`` is used
         kde_type: str
             The KDE method to use
         kde_kwargs: dict
@@ -708,16 +750,19 @@ class RTDCBase(abc.ABC):
         yax: str
             Identifier for Y axis
         positions: list of two 1d ndarrays or ndarray of shape (2, N)
-            The positions where the KDE will be computed. Note that
+            The positions where the KDE will be computed. If set to None,
+            the KDE is computed at the positions of the filtered events.
+            Note that
             the KDE estimate is computed from the points that
             are set in `self.filter.all`.
         kde_type: str
-            The KDE method to use, see :const:`.kde_methods.methods`
+            The KDE method to use; one of "gauss", "histogram",
+            "multivariate", or "none" (see :mod:`dclab.kde.methods`)
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
         xscale: str
             If set to "log", take the logarithm of the x-values before
-            computing the KDE. This is useful when data are are
+            computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         yscale: str
             See `xscale`.
@@ -725,7 +770,8 @@ class RTDCBase(abc.ABC):
         Returns
         -------
         density : 1d ndarray
-            The kernel density evaluated for the filtered data points.
+            The kernel density evaluated at `positions` (or at the
+            filtered events if `positions` is None).
         """
         kde_instance = KernelDensityEstimator(rtdc_ds=self)
         density = kde_instance.get_scatter(
@@ -746,7 +792,7 @@ class RTDCBase(abc.ABC):
         .. versionadded:: 0.54.0
 
         In dclab 0.51.0, we introduced basins, a simple way of combining
-        HDF5-based datasets (including the :class:`.HDF5_S3` format).
+        HDF5-based datasets (including the :class:`.RTDC_S3` format).
         The idea is to be able to store parts of the dataset
         (e.g. images) in a separate file that could then be located
         someplace else (e.g. an S3 object store).
@@ -764,7 +810,7 @@ class RTDCBase(abc.ABC):
             If the instance was created with `enable_basins=False`, then
             only internal basins are returned.
             The `enable_basins` check was previously done in the logic
-            of in the `basins` property.
+            of the `basins` property.
         """
         basins = []
         if self._enable_basins:
@@ -912,8 +958,9 @@ class RTDCBase(abc.ABC):
     def get_measurement_identifier(self):
         """Return a unique measurement identifier
 
-        Return the [experiment]:"run identifier" configuration feat, if it
-        exists. Otherwise, return the MD5 sum computed from the measurement
+        Return the [experiment]:"run identifier" configuration key, if it
+        exists. Otherwise, return a UUID computed from the MD5 hash of the
+        measurement
         time, date, and setup identifier.
 
         Returns `None` if no identifier could be found or computed.

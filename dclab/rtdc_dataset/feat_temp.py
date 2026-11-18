@@ -28,8 +28,14 @@ def deregister_temporary_feature(feature: str) -> None:
 
     This method is mostly used during testing. It does not
     remove the actual feature data from any dataset; the data
-    will stay in memory but is not accessible anymore through
-    the public methods of the :class:`RTDCBase` user interface.
+    will stay in memory and may still be accessed via
+    `ds[feature]`, but the feature is no longer listed in e.g.
+    :attr:`.RTDCBase.features`.
+
+    Parameters
+    ----------
+    feature: str
+        Name of the temporary feature
     """
     if feature in _registered_temporary_features:
         _registered_temporary_features.remove(feature)
@@ -46,15 +52,16 @@ def register_temporary_feature(feature: str,
     features are not enough, e.g. for prototyping, testing, or
     collating with other data. Temporary features allow you to
     leverage the full functionality of :class:`RTDCBase` with
-    your custom features (no need to go for a custom `pandas.Dataframe`).
+    your custom features (no need to go for a custom `pandas.DataFrame`).
 
     Parameters
     ----------
     feature: str
         Feature name; allowed characters are lower-case letters,
         digits, and underscores
-    label: str
-        Feature label used e.g. for plotting
+    label: str, optional
+        Feature label used e.g. for plotting; if not given,
+        "User-defined feature <name>" is used
     is_scalar: bool
         Whether or not the feature is a scalar feature
     """
@@ -73,7 +80,8 @@ def set_temporary_feature(rtdc_ds: RTDCBase,
         Dataset for which to set the feature. Note that the
         length of the feature `data` must match the number of events
         in `rtdc_ds`. If the dataset is a hierarchy child, the data will also
-        be set in the parent dataset, but only for those events that are part
+        be set in the root parent dataset (only supported for scalar
+        features), but only for those events that are part
         of the child. For all events in the parent dataset that are not part
         of the child dataset, the temporary feature is set to np.nan.
     feature: str

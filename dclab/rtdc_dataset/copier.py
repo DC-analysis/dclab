@@ -22,9 +22,9 @@ from .writer import RTDCWriter
 
 class ByteBookKeeper:
     def __init__(self):
-        """A book keeper for sharing copying state between threads
+        """A book keeper for sharing copying state between threads/processes
 
-        This is only process-safe, if all pages are defined before
+        This is only process-safe if all pages are defined before
         spawning the new subprocesses.
         """
         self._book = {}
@@ -43,7 +43,10 @@ class ByteBookKeeper:
         self._book.pop(page)
 
     def update(self, page, total=0, completed=0):
-        """Update an empty book keeping page"""
+        """Set the total and completed byte counts of a page
+
+        The page is created if it does not exist.
+        """
         self[page] = total
         self[page][1].value = completed
 
@@ -94,7 +97,7 @@ def rtdc_copy(src_h5file: h5py.Group,
         Copy the tables from `src_h5file` to `dst_h5file`.
     meta_prefix: str
         Add this prefix to the name of the logs and tables in `dst_h5file`.
-    byte_book_keeper:
+    byte_book_keeper: ByteBookKeeper
         If specified, will be used to track the progress of copying features.
         The basin *definitions* are not included due to their variable size.
         Logs are also not included, because the line length may vary.
@@ -252,8 +255,26 @@ def internal_basin_events_copy(
         ) -> list[str]:
     """Copy internal basin data from the input to the output file
 
-    The basin dictionaries are read and only the `basinmap` features
-    that are required are copied to the output file.
+    For every internal basin in `src_h5file`, the data of the basin
+    features listed in `features` are copied from the "basin_events"
+    group, together with the required `basinmap` feature, and the
+    basin definition is rewritten to contain only these features.
+
+    Parameters
+    ----------
+    src_h5file: h5py.Group
+        Input HDF5 file
+    dst_h5file: h5py.Group
+        Output HDF5 file
+    features: list of str
+        Features that should be copied
+    byte_book_keeper: ByteBookKeeper
+        Optional book keeper for tracking the copying progress
+
+    Returns
+    -------
+    basin_features: list of str
+        Features (including `basinmap` features) written to `dst_h5file`
     """
     bbk = byte_book_keeper
     basin_feat = []
@@ -315,13 +336,11 @@ def internal_basin_events_copy(
 def basin_definition_copy(src_h5file, dst_h5file, features_iter):
     """Copy basin definitions `src_h5file["basins"]` to the new file
 
-    Normally, we would just use :func:`h5ds_copy` to copy basins from
-    one dataset to another. However, if we are e.g. only copying scalar
-    features, and there are non-scalar features in the internal basin,
-    then we must rewrite the basin definition of the internal basin.
+    All non-internal basin definitions are copied as-is using
+    :func:`h5ds_copy`. Internal basin definitions are skipped here,
+    because they are rewritten by :func:`internal_basin_events_copy`.
 
-    The `features_iter` list of features defines which features are
-    relevant for the internal basin.
+    The `features_iter` argument is currently not used.
 
     To copy internal basins, use :func:`internal_basin_events_copy`.
     """
@@ -361,7 +380,7 @@ def h5ds_copy(src_loc: h5py.Group,
               recursive: bool = True,
               bytes_copied: Synchronized[int] | None = None,
               ):
-    """Copy an HDF5 Dataset from one group to another
+    """Copy an HDF5 Dataset (or Group) from one group to another
 
     Parameters
     ----------
@@ -374,7 +393,7 @@ def h5ds_copy(src_loc: h5py.Group,
     dst_name: str
         The name of the destination dataset, defaults to `src_name`
     ensure_compression: bool
-        Whether to make sure that the data are compressed,
+        Whether to make sure that the data are compressed.
         If disabled, then all data from the source will be
         just copied and not compressed.
     recursive: bool
@@ -387,13 +406,14 @@ def h5ds_copy(src_loc: h5py.Group,
 
     Returns
     -------
-    dst: h5py.Dataset
-        The dataset `dst_loc[dst_name]`
+    dst: h5py.Dataset or h5py.Group
+        The dataset (or group) `dst_loc[dst_name]`
 
     Raises
     ------
     ValueError:
-        If the named source is not a h5py.Dataset
+        If the named source is neither an h5py.Dataset nor
+        (with `recursive=True`) an h5py.Group
     """
     compression_kwargs = hdf5plugin.Zstd(clevel=5)
     dst_name = dst_name or src_name
@@ -509,6 +529,11 @@ def get_size(h5_obj: h5py.Group | h5py.Dataset | list | tuple | None
              ) -> int:
     """Recursively return the size of an HDF5 object (group or dataset)
 
+    Parameters
+    ----------
+    h5_obj: h5py.Group, h5py.Dataset, list, tuple, or None
+        Object(s) whose size in bytes is summed up; `None` yields 0
+
     Returns
     -------
     size
@@ -531,9 +556,19 @@ def get_size(h5_obj: h5py.Group | h5py.Dataset | list | tuple | None
 def is_properly_compressed(h5obj):
     """Check whether an HDF5 object is properly compressed
 
-    The compression check only returns True if the input file was
+    The compression check only returns True if `h5obj` was
     compressed with the Zstandard compression using compression
     level 5 or higher.
+
+    Parameters
+    ----------
+    h5obj: h5py.Dataset
+        HDF5 dataset to check
+
+    Returns
+    -------
+    properly_compressed: bool
+        Whether `h5obj` is properly compressed
     """
     # Since version 0.43.0, we use Zstandard compression
     # which does not show up in the `compression`

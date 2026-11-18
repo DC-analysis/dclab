@@ -24,7 +24,7 @@ def test_stat_simple():
         elif h.lower().startswith("median "):
             assert np.allclose(v, 0.494188566376)
         elif h.lower().startswith("mode "):
-            assert np.allclose(v, 0.260923009639)
+            assert np.allclose(v, 0.724786137886)
         elif h.lower().startswith("mean "):
             assert np.allclose(v, 0.497743857424)
 
@@ -97,6 +97,20 @@ def test_false_method():
         if k == "bad":
             mth.pop(k)
             break
+
+
+def test_mode_bin_center():
+    """The mode is the center of the bin that contains the most events"""
+    peak = 0.4321
+    data = np.concatenate([np.linspace(0, 1, 101), np.full(50, peak)])
+    mode = dclab.statistics.mode(data)
+    n = data.size
+    iqr = np.percentile(data, 75) - np.percentile(data, 25)
+    bin_size = 2 * iqr / n**(1/3)
+    # the bin [k*bin_size, (k+1)*bin_size) that contains the peak
+    bin_left = np.floor(peak / bin_size) * bin_size
+    assert np.allclose(mode, bin_left + bin_size / 2, rtol=0, atol=1e-12)
+    assert abs(mode - peak) <= bin_size / 2
 
 
 def test_percentiles():

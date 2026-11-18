@@ -69,14 +69,37 @@ def test_compute_contour_opening_angles_log_scale():
         [0.5, np.sqrt(3)/2]
     ]
     contour = 10**(np.array(contour) + 1)
+    # The contour is normalized to the plot range on a log scale,
+    # i.e. log10 of the range [10, 100] is [1, 2].
     angles = smooth_contour.compute_contour_opening_angles(
         contour=contour,
-        xrange=[0, 1],
-        yrange=[0, 1],
+        xrange=[10, 100],
+        yrange=[10, 100],
         xscale="log",
         yscale="log",
     )
     assert np.allclose(angles, np.pi/3)
+
+
+def test_compute_contour_opening_angles_log_scale_outside_range():
+    """Contour points outside the plot range have valid angles"""
+    contour = [
+        [0, 0],
+        [1, 0],
+        [0.5, np.sqrt(3)/2]
+    ]
+    contour = 10**(np.array(contour) + 1)
+    # The plot range does not include the entire contour. Before, the
+    # contour was normalized linearly and then log10 was applied, which
+    # resulted in NaN values for points left of the plot range.
+    angles = smooth_contour.compute_contour_opening_angles(
+        contour=contour,
+        xrange=[20, 100],
+        yrange=[10, 100],
+        xscale="log",
+        yscale="log",
+    )
+    assert np.all(np.isfinite(angles))
 
 
 def test_compute_contour_opening_angles_zero():
@@ -290,44 +313,31 @@ def test_find_smooth_contour_abort():
                        rtol=0, atol=1e-12)
 
 
-@pytest.mark.filterwarnings(
-    "ignore:invalid value encountered in log10:RuntimeWarning")
-def test_find_smooth_contour_spacing_log_scale_nan_angles():
-    """On a log scale, contour points outside the plot range have
-    undefined (NaN) opening angles which resulted in success"""
-    rng = np.random.default_rng(3)
-    x0 = 10**rng.uniform(1, 3, size=5000)
-    y0 = rng.normal(loc=.05, scale=.01, size=5000)
+@pytest.mark.parametrize("angles", [
+    # NaN values and an opening angle of ~86 degrees
+    [np.nan, np.nan, 1.5],
+    # only NaN values (we cannot tell whether the contour is smooth)
+    [np.nan, np.nan, np.nan],
+])
+def test_find_smooth_contour_spacing_nan_angles(angles, monkeypatch):
+    """NaN opening angles must not result in "target opening angle reached"
 
+    Before, `np.max` returned NaN and `max(0, nan)` returned 0.
+    """
+    monkeypatch.setattr(smooth_contour, "compute_contour_opening_angles",
+                        lambda *args, **kwargs: np.array(angles))
+    np.random.seed(47)
+    x0 = np.random.normal(loc=100, scale=10, size=1000)
+    y0 = np.random.normal(loc=.1, scale=.01, size=1000)
     ds = dclab.new_dataset({"area_um": x0, "deform": y0})
 
-    xrange = (x0.min(), x0.max())
-    yrange = (y0.min(), y0.max())
     res = smooth_contour.find_smooth_contour_spacing(
         ds_list=[ds],
         xax="area_um",
         yax="deform",
-        xrange=xrange,
-        yrange=yrange,
+        xrange=(50, 150),
+        yrange=(0.05, 0.15),
         quantiles=[0.5, 0.95],
-        xscale="log",
     )
-    assert res["success"]
-    assert res["reason"] == "target opening angle reached"
-    assert res["total iterations"] == 4
-
-    # The resulting contour must actually be smooth
-    kde = dclab.kde.KernelDensityEstimator(ds)
-    cc = kde.get_contour_lines(quantiles=[0.95],
-                               xacc=res["spacing x"],
-                               yacc=res["spacing y"],
-                               xscale="log")[0][0]
-    angles = smooth_contour.compute_contour_opening_angles(
-        contour=cc,
-        xrange=xrange,
-        yrange=yrange,
-        xscale="log",
-        yscale="linear",
-    )
-    assert np.any(np.isnan(angles)), "sanity check"
-    assert np.nanmax(np.abs(angles)) < np.deg2rad(23)
+    assert res["reason"] != "target opening angle reached"
+    assert res["total iterations"] > 1

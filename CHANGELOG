@@ -161,6 +161,9 @@
  - fix: the identifier of plugin features created from a dictionary
    did not depend on the constants and names used in the method
    (e.g. `lambda d: d * 2` and `lambda d: d * 3` were identical)
+ - fix: `get_emodulus` with `copy=False` raised a ValueError for
+   lists or integer arrays with NumPy 2 (same for `convert` and
+   `scale_feature` with `inplace=True`)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

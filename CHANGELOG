@@ -178,6 +178,8 @@
  - tests: update pinned glmer values for lme4 2.1
  - ref: remove Python 2 remnants and outdated syntax (ruff pyupgrade)
  - ref: use explicit `X | None` for optional arguments in type hints
+ - fix: passing positional arguments (e.g. `h5kwargs`) to `RTDC_HTTP`
+   or `RTDC_S3` raised a TypeError (ruff B026)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

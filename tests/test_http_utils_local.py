@@ -108,6 +108,23 @@ def test_http_file_read_beyond_end_of_file(http_server):
     assert http_server.ranges == ["bytes=3072-3999"]
 
 
+def test_http_file_read_all(http_server):
+    """Reading with a negative or no size must read until the end"""
+    f1 = HTTPFile(http_server.url, chunk_size=1024)
+    f1.seek(10)
+    assert f1.read() == http_server.data[10:]
+    assert f1.tell() == len(http_server.data)
+    assert f1.read() == b""
+    f1.seek(20)
+    assert f1.read(-1) == http_server.data[20:]
+    f1.seek(30)
+    assert f1.read(None) == http_server.data[30:]
+    # the position must not be moved beyond the end of the file
+    f1.seek(len(http_server.data) - 5)
+    assert f1.read(100) == http_server.data[-5:]
+    assert f1.tell() == len(http_server.data)
+
+
 def test_http_file_read_chunk_boundary(http_server):
     """Reading up to a chunk boundary must not download the next chunk"""
     f1 = HTTPFile(http_server.url, chunk_size=1000)

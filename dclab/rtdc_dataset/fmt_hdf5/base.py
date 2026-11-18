@@ -147,9 +147,9 @@ class RTDC_HDF5(RTDCBase):
                        )
                 raise OldFormatNotSupportedError(msg)
 
-        self.title = "{} - M{}".format(
-            self.config["experiment"].get("sample", "undefined sample"),
-            self.config["experiment"].get("run index", "0"))
+        sample = self.config["experiment"].get("sample", "undefined sample")
+        run_index = self.config["experiment"].get("run index", "0")
+        self.title = f"{sample} - M{run_index}"
 
     def close(self):
         """Close the underlying HDF5 file"""

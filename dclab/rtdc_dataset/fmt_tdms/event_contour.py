@@ -122,8 +122,8 @@ class ContourColumn(object):
             cdata = self._contour_data[idnew]
             frame_c = self._contour_data.get_frame(idnew)
             warnings.warn(
-                "Couldn't verify contour {} in {}".format(idx, self.identifier)
-                + " (frame index {})!".format(frame_c),
+                f"Couldn't verify contour {idx} in {self.identifier}"
+                + f" (frame index {frame_c})!",
                 ContourVerificationWarning
             )
         return cdata
@@ -167,7 +167,7 @@ class ContourColumn(object):
         elif np.allclose(fref, f1, rtol=0):
             self.event_offset = 1
         else:
-            msg = "Contour data has unknown offset (frame {})!".format(fref)
+            msg = f"Contour data has unknown offset (frame {fref})!"
             raise ContourIndexingError(msg)
         self._initialized = True
 

@@ -64,7 +64,7 @@ class ArgparseDirective(Directive):
 
         rst.append(".. code::")
         rst.append("")
-        rst.append("    {}".format(usage))
+        rst.append(f"    {usage}")
         rst.append("")
 
         # parameters
@@ -75,8 +75,8 @@ class ArgparseDirective(Directive):
             rst.append("**required arguments:**")
             rst.append("")
             for item in pos:
-                rst.append("- ``{}``".format(item[0]))
-                rst.append("  {}".format(item[1]))
+                rst.append(f"- ``{item[0]}``")
+                rst.append(f"  {item[1]}")
             rst.append("")
 
         if opt:
@@ -90,11 +90,11 @@ class ArgparseDirective(Directive):
                     else:
                         default = " *(disabled by default)*"
                 elif item[3] != "":
-                    default = " *(default: {})*".format(item[3])
+                    default = f" *(default: {item[3]})*"
                 else:
                     default = ""
-                rst.append("- ``{}`` {} ".format(item[1], default))
-                rst.append("  {}".format(item[2]))
+                rst.append(f"- ``{item[1]}`` {default} ")
+                rst.append(f"  {item[2]}")
             rst.append("")
 
         return rst

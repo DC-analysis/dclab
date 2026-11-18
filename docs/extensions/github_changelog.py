@@ -35,9 +35,8 @@ class IncludeDirective(Directive):
             line = reobj.string
             instr = line[reobj.start():reobj.end()]
             issue = instr.strip("#()")
-            link = "https://github.com/{}/issues/".format(project)
-            rstlink = "(`#{issue} <{link}{issue}>`_)".format(issue=issue,
-                                                             link=link)
+            link = f"https://github.com/{project}/issues/"
+            rstlink = f"(`#{issue} <{link}{issue}>`_)"
             return rstlink
 
         with io.open(full_path, "r") as myfile:

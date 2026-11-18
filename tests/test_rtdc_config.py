@@ -31,11 +31,11 @@ def equals(a, b):
         if np.isnan(a):
             assert np.isnan(b)
         else:
-            assert np.allclose(a, b), "a={} vs b={}".format(a, b)
+            assert np.allclose(a, b), f"a={a} vs b={b}"
     elif isinstance(a, np.ndarray):
         assert np.all(a == b), f"{a=} vs {b=}"
     else:
-        assert a == b, "a={} vs b={}".format(a, b)
+        assert a == b, f"a={a} vs b={b}"
     return True
 
 

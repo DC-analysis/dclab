@@ -64,14 +64,14 @@ class PolygonFilter(object):
             if not isinstance(fileid, int):
                 raise ValueError("`fileid` must be an integer!")
             if not filename.exists():
-                raise ValueError("Error, no such file: {}".format(filename))
+                raise ValueError(f"Error, no such file: {filename}")
             self.fileid = fileid
             # This also sets a unique id
             self._load(filename, unique_id=unique_id)
         else:
             if len(axes) != 2:
                 raise ValueError("`axes` must have length 2, "
-                                 + "got '{}'!".format(axes))
+                                 + f"got '{axes}'!")
             self.axes = axes
             self.points = np.array(points, dtype=np.float64)
             self.name = name
@@ -132,7 +132,7 @@ class PolygonFilter(object):
         if self.points.shape[1] != 2:
             raise PolygonFilterError("data points' shape[1] must be 2.")
         if self.name is None:
-            self.name = "polygon filter {}".format(self.unique_id)
+            self.name = f"polygon filter {self.unique_id}"
         if not isinstance(self.inverted, bool):
             raise PolygonFilterError("`inverted` must be boolean.")
 
@@ -178,8 +178,7 @@ class PolygonFilter(object):
                 val = np.array(val.strip("[]").split(), dtype=np.float64)
                 points.append([int(var[5:]), val])
             else:
-                raise KeyError("Unknown variable: {} = {}".
-                               format(var, val))
+                raise KeyError(f"Unknown variable: {var} = {val}")
         self.axes = (xaxis, yaxis)
         # sort points
         points.sort()
@@ -197,8 +196,8 @@ class PolygonFilter(object):
 
         if PolygonFilter.instace_exists(unique_id):
             newid = max(PolygonFilter._instance_counter, unique_id+1)
-            msg = "PolygonFilter with unique_id '{}' exists.".format(unique_id)
-            msg += " Using new unique id '{}'.".format(newid)
+            msg = f"PolygonFilter with unique_id '{unique_id}' exists."
+            msg += f" Using new unique id '{newid}'."
             warnings.warn(msg, FilterIdExistsWarning)
             unique_id = newid
 
@@ -282,8 +281,7 @@ class PolygonFilter(object):
             if instance.unique_id == unique_id:
                 return instance
         # if this does not work:
-        raise KeyError("PolygonFilter with unique_id {} not found.".
-                       format(unique_id))
+        raise KeyError(f"PolygonFilter with unique_id {unique_id} not found.")
 
     @staticmethod
     def import_all(path):
@@ -375,15 +373,14 @@ class PolygonFilter(object):
         # Who the hell would use more then 10 million polygons or
         # polygon points? -> 08d (easier if other people want to import)
         data2write = []
-        data2write.append("[Polygon {:08d}]".format(self.unique_id))
-        data2write.append("X Axis = {}".format(self.axes[0]))
-        data2write.append("Y Axis = {}".format(self.axes[1]))
-        data2write.append("Name = {}".format(self.name))
-        data2write.append("Inverted = {}".format(self.inverted))
+        data2write.append(f"[Polygon {self.unique_id:08d}]")
+        data2write.append(f"X Axis = {self.axes[0]}")
+        data2write.append(f"Y Axis = {self.axes[1]}")
+        data2write.append(f"Name = {self.name}")
+        data2write.append(f"Inverted = {self.inverted}")
         for i, point in enumerate(self.points):
-            data2write.append("point{:08d} = {:.15e} {:.15e}".format(i,
-                                                                     point[0],
-                                                                     point[1]))
+            data2write.append(
+                f"point{i:08d} = {point[0]:.15e} {point[1]:.15e}")
         # Add new lines
         for i in range(len(data2write)):
             data2write[i] += "\n"

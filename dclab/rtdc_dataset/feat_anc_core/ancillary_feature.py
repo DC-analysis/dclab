@@ -197,16 +197,16 @@ class AncillaryFeature:
         for key, value in data_dict.items():
             dsize = len(rtdc_ds) - len(value)
             if dsize > 0:
-                msg = "Growing feature {} in {} by {} to match event number!"
-                warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
+                warnings.warn(f"Growing feature {key} in {rtdc_ds} by "
+                              f"{abs(dsize)} to match event number!",
                               BadFeatureSizeWarning)
                 value = np.array(value, dtype=float)
                 value.resize(len(rtdc_ds), refcheck=False)
                 value[-dsize:] = np.nan
                 data_dict[key] = value
             elif dsize < 0:
-                msg = "Shrinking feature {} in {} by {} to match event number!"
-                warnings.warn(msg.format(key, rtdc_ds, abs(dsize)),
+                warnings.warn(f"Shrinking feature {key} in {rtdc_ds} by "
+                              f"{abs(dsize)} to match event number!",
                               BadFeatureSizeWarning)
                 value.resize(len(rtdc_ds), refcheck=False)
             if isinstance(value, np.ndarray):

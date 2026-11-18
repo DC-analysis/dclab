@@ -52,7 +52,7 @@ class ImageColumn(object):
         idnew = int(idx-self.event_offset)
         if idnew < 0:
             # No data - show a dummy image instead
-            warnings.warn("Frame {} in {} ".format(idnew, self.identifier)
+            warnings.warn(f"Frame {idnew} in {self.identifier} "
                           + "is not defined; replacing with dummy image!",
                           InitialFrameMissingWarning)
             cdata = self.dummy
@@ -67,7 +67,7 @@ class ImageColumn(object):
                 cdata = self._image_data[idnew]
             except excs:
                 # The avi is corrupt. Return a dummy image.
-                warnings.warn("Frame {} in {} ".format(idnew, self.identifier)
+                warnings.warn(f"Frame {idnew} in {self.identifier} "
                               + "is corrupt; replacing with dummy image!",
                               CorruptFrameWarning)
                 cdata = self.dummy
@@ -125,7 +125,7 @@ class ImageColumn(object):
             vpath = rtdc_dataset._fdir / video
             if vpath.stat().st_size < 64:
                 # the video file is empty
-                raise InvalidVideoFileError("Bad video '{}'!".format(vpath))
+                raise InvalidVideoFileError(f"Bad video '{vpath}'!")
             else:
                 return vpath
 
@@ -142,7 +142,7 @@ class ImageMap(object):
         self._cap = None
         # filename
         if not fname.exists():
-            raise OSError("file does not exist: {}".format(fname))
+            raise OSError(f"file does not exist: {fname}")
         self.filename = fname
 
     def __del__(self):
@@ -191,8 +191,7 @@ class ImageMap(object):
                     # (aborted measurement), so for the sake of simplicity
                     # we stop here)
                     raise InvalidVideoFileError(
-                        "Video file has unknown length '{}'!".format(
-                            self.filename))
+                        f"Video file has unknown length '{self.filename}'!")
             self._length = length
         return self._length
 
@@ -224,5 +223,5 @@ class ImageMap(object):
                     output_params=FFMPEG_OUTPUT_PARAMS)
             except OSError:
                 raise InvalidVideoFileError(
-                    "Broken video file '{}'!".format(self.filename))
+                    f"Broken video file '{self.filename}'!")
         return self._cap

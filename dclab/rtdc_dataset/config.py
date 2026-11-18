@@ -56,7 +56,7 @@ class ConfigurationDict(UserDict):
             # check for empty string values
             if valid and isinstance(value, str) and len(value) == 0:
                 warnings.warn(
-                    "Empty value for [{}]: '{}'!".format(self.section, key),
+                    f"Empty value for [{self.section}]: '{key}'!",
                     EmptyConfigurationKeyWarning,
                 )
                 valid = False
@@ -193,10 +193,10 @@ class Configuration(object):
         rep = ""
         keys = sorted(list(self.keys()))
         for key in keys:
-            rep += "- {}\n".format(key)
+            rep += f"- {key}\n"
             subkeys = sorted(list(self[key].keys()))
             for subkey in subkeys:
-                rep += "   {}: {}\n".format(subkey, self[key][subkey])
+                rep += f"   {subkey}: {self[key][subkey]}\n"
         return rep
 
     def __setitem__(self, *args):
@@ -224,7 +224,7 @@ class Configuration(object):
         for item in dfn.CFG_ANALYSIS["filtering"]:
             if item[0] not in self["filtering"]:
                 raise KeyError(
-                    "No default value set for [filtering]:{}".format(item[0]))
+                    f"No default value set for [filtering]:{item[0]}")
 
     def as_dict(self, pop_filtering=False):
         data = json.loads(self.tojson())
@@ -292,13 +292,13 @@ class Configuration(object):
         else:
             keys = sorted([k for k in sections if k in self.keys()])
         for key in keys:
-            out.append("[{}]".format(key))
+            out.append(f"[{key}]")
             section = self[key]
             ikeys = list(section.keys())
             ikeys.sort()
             for ikey in ikeys:
                 var, val = keyval_typ2str(ikey, section[ikey])
-                out.append("{} = {}".format(var, val))
+                out.append(f"{var} = {val}")
             out.append("")
 
         out_str = ""
@@ -346,8 +346,8 @@ def verify_section_key(section, key):
         pass
     elif section in ["plotting", "analysis"]:
         # hijacked by Shape-Out 1
-        warnings.warn("The '{}' configuration key is deprecated!".format(
-            section), UnknownConfigurationKeyWarning)
+        warnings.warn(f"The '{section}' configuration key is deprecated!",
+                      UnknownConfigurationKeyWarning)
         wcount += 1
     elif section == "filtering":
         if key.endswith(" min") or key.endswith(" max"):
@@ -355,7 +355,7 @@ def verify_section_key(section, key):
             if not dfn.scalar_feature_exists(feat):
                 warnings.warn(
                     "A range has been specified for an unknown feature "
-                    + "'{}' in the 'filtering' section!".format(feat),
+                    + f"'{feat}' in the 'filtering' section!",
                     UnknownConfigurationKeyWarning)
                 wcount += 1
         elif key == "limit events auto":
@@ -367,7 +367,7 @@ def verify_section_key(section, key):
                 wcount += 1
         else:
             warnings.warn(
-                "Unknown key '{}' in the 'filtering' section!".format(key),
+                f"Unknown key '{key}' in the 'filtering' section!",
                 UnknownConfigurationKeyWarning)
             wcount += 1
     elif section == "user":
@@ -383,12 +383,12 @@ def verify_section_key(section, key):
                           BadUserConfigurationKeyWarning)
             wcount += 1
     elif section not in dfn.config_keys:
-        warnings.warn("Unknown section '{}'!".format(section),
+        warnings.warn(f"Unknown section '{section}'!",
                       UnknownConfigurationKeyWarning)
         wcount += 1
     else:
         warnings.warn(
-            "Unknown key '{}' in the '{}' section!".format(key, section),
+            f"Unknown key '{key}' in the '{section}' section!",
             UnknownConfigurationKeyWarning)
         wcount += 1
 
@@ -529,7 +529,7 @@ def keyval_typ2str(var, val):
         data = ", ".join([keyval_typ2str(var, it)[1] for it in val])
         valout = "["+data+"]"
     elif isinstance(val, float):
-        valout = "{:.12f}".format(val)
+        valout = f"{val:.12f}"
     else:
-        valout = "{}".format(val)
+        valout = f"{val}"
     return varout, valout

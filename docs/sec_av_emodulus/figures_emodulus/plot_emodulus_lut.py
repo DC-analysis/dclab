@@ -53,12 +53,12 @@ for lut_name in [
                                               "hspace": .15,
                                               },
                                  figsize=(7.5, 6.3))
-        fig.suptitle("{} µm channel".format(channel_width))
+        fig.suptitle(f"{channel_width} µm channel")
         axes[2][1].set_xlabel("Area [µm²]")
         axes[1][0].set_ylabel("Deformation")
         # column label (flow rate)
         for ii in range(3):
-            axes[0][ii].set_title("{} µL/s".format(flow_rates[ii]),
+            axes[0][ii].set_title(f"{flow_rates[ii]} µL/s",
                                   fontsize=10, fontweight="bold")
         # row label (medium)
         for jj in range(3):
@@ -109,6 +109,6 @@ for lut_name in [
         plt.colorbar(pc, orientation="vertical", cax=cax, extend="both",
                      label=f"apparent Young's modulus ({lut_name}) [kPa]")
 
-        plt.savefig("_emodulus_{}um_{}.png".format(channel_width, lut_name),
+        plt.savefig(f"_emodulus_{channel_width}um_{lut_name}.png",
                     dpi=150)
         plt.close()

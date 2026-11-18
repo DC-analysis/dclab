@@ -69,7 +69,7 @@ class RTDC_Dict(RTDCBase):
         ids = hashobj(ddict)
         self._ids = ids
         self.path = "none"
-        self.title = "{}_{:02d}_{:02d}/{}.dict".format(t[0], t[1], t[2], ids)
+        self.title = f"{t[0]}_{t[1]:02d}_{t[2]:02d}/{ids}.dict"
 
         # Populate events
         for feat in ddict:
@@ -86,7 +86,7 @@ class RTDC_Dict(RTDCBase):
                 else:
                     data = ddict[feat]
             else:
-                raise ValueError("Invalid feature name '{}'".format(feat))
+                raise ValueError(f"Invalid feature name '{feat}'")
             if isinstance(data, np.ndarray):
                 # Convert numpy array to read-only array
                 data = data.view()

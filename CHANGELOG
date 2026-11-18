@@ -171,6 +171,7 @@
    center (the data were rounded instead of floored before adding
    half the bin size)
  - ref: use `super()` without arguments (ruff UP008)
+ - ref: use f-strings instead of `str.format` (ruff UP032)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

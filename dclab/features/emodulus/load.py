@@ -58,7 +58,7 @@ def get_lut_path(path_or_id: str | pathlib.Path) -> pathlib.Path:
         lut_path = EXTERNAL_LUTS[path_or_id]
     else:
         raise ValueError("File or LUT identifier does not exist: "
-                         + "'{}'".format(path_or_id))
+                         + f"'{path_or_id}'")
     return lut_path
 
 
@@ -153,15 +153,14 @@ def load_mtext(path: str | pathlib.Path) -> tuple[npt.NDArray, dict]:
             line = fd.readline()
             if fd.tell() == size:
                 # something went wrong
-                raise ValueError("EOF: Could not parse '{}'!".format(path))
+                raise ValueError(f"EOF: Could not parse '{path}'!")
             elif len(line.strip()) == 0:
                 # ignore empty lines
                 continue
             elif not line.strip().startswith("#"):
                 # we are done here
                 if prev_line == "":
-                    raise ValueError("No column header in '{}'!".format(
-                        path))
+                    raise ValueError(f"No column header in '{path}'!")
                 break
             elif line.startswith("# BEGIN METADATA"):
                 injson = True
@@ -177,7 +176,7 @@ def load_mtext(path: str | pathlib.Path) -> tuple[npt.NDArray, dict]:
     if dump:
         meta = json.loads("\n".join(dump))
     else:
-        raise ValueError("No metadata json dump in '{}'!".format(path))
+        raise ValueError(f"No metadata json dump in '{path}'!")
     # header
     feats = []
     units = []
@@ -189,7 +188,7 @@ def load_mtext(path: str | pathlib.Path) -> tuple[npt.NDArray, dict]:
             ft = hh
             un = ""
         if not dfn.scalar_feature_exists(ft):
-            raise ValueError("Scalar feature not known: '{}'".format(ft))
+            raise ValueError(f"Scalar feature not known: '{ft}'")
         feats.append(ft)
         units.append(un)
     # data
@@ -212,7 +211,7 @@ def load_mtext(path: str | pathlib.Path) -> tuple[npt.NDArray, dict]:
         elif ft == "volume":
             assert un == "um^3"
         else:
-            assert False, "Please add sanity check for {}!".format(ft)
+            assert False, f"Please add sanity check for {ft}!"
 
     return data, meta
 
@@ -239,14 +238,14 @@ def register_lut(path: str | pathlib.Path, identifier: str = None) -> None:
         try:
             identifier = md["identifier"]
         except KeyError:
-            raise ValueError("The given LUT file '{}' does ".format(path)
+            raise ValueError(f"The given LUT file '{path}' does "
                              + "not contain the 'identifier' keyword. You may "
                              + "specify it via the `identifier` keyword to "
                              + "this function.")
     if identifier in EXTERNAL_LUTS:
-        raise ValueError("A LUT with an identifier '{}' ".format(identifier)
+        raise ValueError(f"A LUT with an identifier '{identifier}' "
                          + "has already been registered!")
     elif identifier in get_internal_lut_names_dict():
-        raise ValueError("The identifier '{}' is already ".format(identifier)
+        raise ValueError(f"The identifier '{identifier}' is already "
                          + "in use by an internal LUT!")
     EXTERNAL_LUTS[identifier] = path

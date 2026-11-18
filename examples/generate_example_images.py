@@ -25,9 +25,9 @@ if __name__ == "__main__":
             if exec_str.count("plt.show()"):
                 exec(exec_str.replace("plt.show()", ""))
                 plt.savefig(fname, dpi=DPI)
-                print("Image created: '{}'".format(fname))
+                print(f"Image created: '{fname}'")
             else:
-                print("No image: '{}'".format(fname))
+                print(f"No image: '{fname}'")
         else:
-            print("Image skipped (already exists): '{}'".format(fname))
+            print(f"Image skipped (already exists): '{fname}'")
         plt.close()

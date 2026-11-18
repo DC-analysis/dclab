@@ -246,7 +246,7 @@ def scale_feature(feat: str,
     elif feat == "volume":
         return scale_volume(volume=data, inplace=inplace, **scale_kw)
     else:
-        raise KeyError("No recipe to scale feature '{}'!".format(feat))
+        raise KeyError(f"No recipe to scale feature '{feat}'!")
 
 
 def scale_volume(volume: npt.NDArray,

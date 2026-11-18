@@ -168,8 +168,8 @@ class PolygonFilter(object):
             elif var.lower() == "name":
                 self.name = val
             elif var.lower() == "inverted":
-                if val == "True":
-                    self.inverted = True
+                # the file overrides the `inverted` keyword argument
+                self.inverted = val == "True"
             elif var.lower().startswith("point"):
                 val = np.array(val.strip("[]").split(), dtype=np.float64)
                 points.append([int(var[5:]), val])

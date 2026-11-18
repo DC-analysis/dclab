@@ -60,8 +60,8 @@ class ContourColumn:
         if not isinstance(idx, numbers.Integral):
             raise NotImplementedError(
                 "The RTDC_TDMS data handler does not support indexing with "
-                "anything else than scalar integers. Please convert your data "
-                "to the .rtdc file format!")
+                "anything other than scalar integers. Please convert your "
+                "data to the .rtdc file format!")
 
         if not self._initialized:
             self.determine_offset()
@@ -199,9 +199,9 @@ class ContourColumn:
 
 class ContourData:
     def __init__(self, fname):
-        """Access an MX_contour.txt as a dictionary
+        """Access an MX_contours.txt file as a list
 
-        Initialize this class with a *_contour.txt file.
+        Initialize this class with a *_contours.txt file.
         The individual contours can be accessed like a
         list (enumerated from 0 on).
         """

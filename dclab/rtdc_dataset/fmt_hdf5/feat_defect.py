@@ -16,7 +16,7 @@ def get_software_version_from_h5(h5: h5py.Group) -> str:
 
 
 def is_defective_feature_aspect(h5: h5py.Group) -> bool:
-    """In Shape-In 2.0.6, there was a wrong variable cast"""
+    """In Shape-In 2.0.6 and 2.0.7, there was a wrong variable cast"""
     software_version = get_software_version_from_h5(h5)
     return software_version in ["ShapeIn 2.0.6", "ShapeIn 2.0.7"]
 
@@ -150,11 +150,11 @@ def is_defective_feature_inert_ratio_raw_cvx(h5: h5py.Group) -> bool:
     return False
 
 
-#: dictionary of defective features, defined by HDF5 attributes;
-#: if a value matches the given HDF5 attribute, the feature is
-#: considered defective
+#: dictionary of potentially defective features; the values are
+#: functions that take an HDF5 group and return True if the stored
+#: feature is defective
 DEFECTIVE_FEATURES: dict[str, Callable[[h5py.Group], bool]] = {
-    # feature: [HDF5_attribute, matching_value]
+    # feature: function(h5) -> bool
     "aspect": is_defective_feature_aspect,
     "inert_ratio_cvx": is_defective_feature_inert_ratio_raw_cvx,
     "inert_ratio_prnc": is_defective_feature_inert_ratio,

@@ -117,7 +117,8 @@ def disk(radius):
     Returns
     -------
     footprint : ndarray
-        The footprint where elements of the neighborhood are 1 and 0 otherwise.
+        Boolean footprint where elements of the neighborhood are True and False
+        otherwise.
     """
     L = np.arange(-radius, radius + 1)
     X, Y = np.meshgrid(L, L)
@@ -134,6 +135,9 @@ def obtain_event_geometry(ds: RTDCBase,
     ----------
     ds:
         dataset to compute the shapes for
+    av_feats:
+        dictionary with the features "mask", "size_x", and "size_y"
+        of `ds`
     pad_um:
         padding to add (top, left, right, bottom) to shape in [µm]
 
@@ -257,7 +261,8 @@ def write_chopped_images(
     pad_um:
         padding to add (top, left, right, bottom) to shape in [µm]
     bytes_chopped:
-        multiprocessing value for tracking export process
+        multiprocessing value for tracking the export progress (number of
+        bytes of the original feature data processed)
     crop_method:
         method for cropping out the images; "box" means a rectangular
         bounding box, "dilation" means binary dilation which reduces

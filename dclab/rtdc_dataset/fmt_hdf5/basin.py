@@ -9,6 +9,11 @@ from .base import RTDC_HDF5
 
 
 class HDF5Basin(feat_basin.Basin):
+    """Basin for local HDF5 (.rtdc) files
+
+    The `location` of the basin is a path to an .rtdc file on the
+    local file system.
+    """
     basin_format = "hdf5"
     basin_type = "file"
 

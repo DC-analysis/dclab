@@ -186,7 +186,7 @@ class RTDC_HDF5(RTDCBase):
     def parse_config(h5path):
         """Parse the RT-DC configuration of an HDF5 file
 
-        `h5path` may be a h5py.File object or an actual path
+        `h5path` may be an h5py.File object or an actual path
         """
         if not isinstance(h5path, h5py.File):
             with h5py.File(h5path, mode="r", locking=False) as fh5:
@@ -213,7 +213,11 @@ class RTDC_HDF5(RTDCBase):
 
     @property
     def hash(self):
-        """Hash value based on file name and content"""
+        """Hash value based on file name and content
+
+        For file-like objects, the hash is computed from the metadata
+        and the first events of up to five scalar features.
+        """
         if self._hash is None:
             tohash = []
             if isinstance(self.path, (pathlib.Path, str)):

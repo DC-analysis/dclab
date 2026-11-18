@@ -1,3 +1,4 @@
+"""Hybrid in-memory and on-disk caching of function return values"""
 from __future__ import annotations
 
 import atexit
@@ -45,7 +46,7 @@ class umbrella_cache:
             A general topic (alphanumeric characters and dashes allowed)
             under which the cached values are stored.
         bypass_memory_store: bool
-            Set this to true to disable storing cached values in memory.
+            Set this to True to disable storing cached values in memory.
             If no disk store (see :class:`.StoreKeeper`) is defined,
             then data are never cached.
         custom_handlers:
@@ -57,7 +58,7 @@ class umbrella_cache:
             processed by :func:`update_hash`.
         evaluation_time_threshold:
             If the time the method takes for computation is shorter than
-            the the threshold value, then it will not be cached.
+            this threshold value (in seconds), then it will not be cached.
 
         Notes
         -----
@@ -178,8 +179,9 @@ def update_hash(the_hash,
                 ) -> None:
     """Update a hashing object with a Python object
 
-    The argument can be a numpy array, a string, or a list/tuple
-    of objects that are convertable to strings.
+    The argument can be a number, a string, None, bytes, a numpy
+    array, a list/tuple or dict of such objects, an object handled by
+    `custom_handlers`, or an object with a `for_json` method.
 
     Every object is hashed with a prefix that contains its type and
     size, so that different arguments never result in the same input

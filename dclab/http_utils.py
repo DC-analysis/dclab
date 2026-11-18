@@ -70,7 +70,7 @@ class HTTPFile(io.IOBase):
         Parameters
         ----------
         url: str
-            Path to the URL
+            URL of the file
         chunk_size: int
             Download chunk size. The entire file is split up into
             equally-sized (and thus indexable) chunks.
@@ -107,7 +107,7 @@ class HTTPFile(io.IOBase):
 
     @property
     def chunk_size(self) -> int:
-        """The chunk size of the HTTPfile in bytes"""
+        """The chunk size of the HTTPFile in bytes"""
         return self._chunk_size
 
     @property
@@ -163,7 +163,8 @@ class HTTPFile(io.IOBase):
     def get_chunk(self, index: int) -> bytes:
         """Return the cache chunk defined by `index`
 
-        If the chunk is not in `self.cache`, it is downloaded.
+        If the chunk is not cached (see :class:`.umbrella_cache`), it is
+        downloaded.
         """
         start = index*self._chunk_size
         stop = min((index + 1) * self._chunk_size, self.length)
@@ -304,7 +305,8 @@ def is_url_available(url: str, ret_reason=False):
     available: bool
         whether the URL is available
     reason: str
-        reason for the URL not being available is `available` is False
+        reason for the URL not being available if `available` is False;
+        only returned if `ret_reason` is True
     """
     avail = False
     reason = "none"

@@ -1,3 +1,4 @@
+"""Background thread managing the in-memory and on-disk caches"""
 import logging
 import threading
 import traceback

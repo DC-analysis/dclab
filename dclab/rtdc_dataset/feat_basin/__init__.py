@@ -1,3 +1,8 @@
+"""Basins: access feature data stored in other locations
+
+Basins can be other files, URLs, S3 objects, DCOR resources, or
+internal datasets within the same file.
+"""
 from .basin_base import Basin, get_basin_classes  # noqa: F401
 from .basin_common import (  # noqa: F401
     BasinFeatureMissingWarning,

@@ -88,7 +88,7 @@ class TraceColumn:
                 sampleids = mdata["Cell Track"]["FL1index"].data
             except KeyError:
                 raise InvalidTDMSFileFormatError(
-                    f"No 'FL1index' column in '{tname}'!")
+                    f"No 'FL1index' column in '{mname}'!")
 
             # Check that sample IDs are always incremented with same
             # sample size.

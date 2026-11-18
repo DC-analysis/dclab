@@ -16,7 +16,7 @@ class IgnoringPerishableBasinTTL(UserWarning):
 class PerishableRecord:
     """A class containing information about perishable basins
 
-    Perishable basins are basins that may discontinue to work after
+    Perishable basins are basins that may stop working after
     e.g. a specific amount of time (e.g. presigned S3 URLs). With the
     `PerishableRecord`, these basins may be "refreshed" (made
     available again).
@@ -39,9 +39,10 @@ class PerishableRecord:
             function should be fast, as it is called every time a feature
             is accessed.
             Note that if you are implementing this in the time domain, then
-            you should use `time.time()` (TSE), because you need an absolute
-            time measure. `time.monotonic()` for instance does not count up
-            when the system goes to sleep. However, keep in mind that if
+            you should use `time.time()` (seconds since the epoch), because
+            you need an absolute time measure. `time.monotonic()` for
+            instance does not count up when the system goes to sleep.
+            However, keep in mind that if
             a remote machine dictates the expiration time, then that
             remote machine should also transmit the creation time (in case
             there are time offsets).
@@ -87,11 +88,6 @@ class PerishableRecord:
         extend_by: float
             Custom argument for extending the life of the basin.
             Normally, this would be a lifetime.
-
-        Returns
-        -------
-        basin: dict | None
-            Dictionary for instantiating a new basin
         """
         if self.refresh_func is None:
             # The basin is a perishable basin, but we have no way of

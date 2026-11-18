@@ -1,3 +1,4 @@
+"""Volatile in-memory store for :class:`.umbrella_cache`"""
 import threading
 import time
 
@@ -6,7 +7,8 @@ class MemoryStore:
     def __init__(self):
         """A dictionary-based in-memory store
 
-        The store is thread-safe, because it is accessed by the
+        The store is thread-safe, which is required because it is
+        accessed by the
         threads that compute cached data and by the
         :class:`.StoreKeeper` thread at the same time.
         """
@@ -44,7 +46,7 @@ class MemoryStore:
             return self.data.pop(key)[0]
 
     def remove_least_used_keys(self, n=1):
-        """Remove n least-used keys from the memory store"""
+        """Remove the `n` least-recently-used keys from the memory store"""
         with self.lock:
             # Sort memory cache data by access time
             access = sorted([(ta, key)

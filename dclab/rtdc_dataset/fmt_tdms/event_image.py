@@ -46,8 +46,8 @@ class ImageColumn:
         if not isinstance(idx, numbers.Integral):
             raise NotImplementedError(
                 "The RTDC_TDMS data handler does not support indexing with "
-                "anything else than scalar integers. Please convert your data "
-                "to the .rtdc file format!")
+                "anything other than scalar integers. Please convert your "
+                "data to the .rtdc file format!")
 
         idnew = int(idx-self.event_offset)
         if idnew < 0:

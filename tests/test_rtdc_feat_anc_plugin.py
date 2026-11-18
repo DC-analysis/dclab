@@ -459,7 +459,7 @@ def test_pf_import_error_attribution_issue_160_1():
     should be raised.
     """
     with pytest.raises(PluginImportError,
-                       match="The plugin could be not be found"):
+                       match="The plugin could not be found"):
         import_plugin_feature_script("/does/not/exist/laksdlaisdlaism.py")
 
 
@@ -522,7 +522,7 @@ def test_pf_import_plugin_info():
 def test_pf_import_plugin_info_bad_path():
     """Raise error when a bad pathname is given"""
     bad_plugin_path = "not/a/real/path/plugin.py"
-    with pytest.raises(PluginImportError, match="could be not be found"):
+    with pytest.raises(PluginImportError, match="could not be found"):
         import_plugin_feature_script(bad_plugin_path)
 
 

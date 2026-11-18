@@ -17,10 +17,11 @@ class BasinProxy:
         dataset.
 
         This class achieves two things:
+
         1. Subset indexing: For every event in the downstream dataset, there
            is *only* one corresponding event in the basin dataset. This
            could also be achieved via hierarchy children
-           (:class:`RTDCHierarchy`).
+           (:class:`.RTDC_Hierarchy`).
         2. Blown indexing: Two different events in the downstream dataset
            can refer to one event in the basin dataset. I.e. the basin
            dataset contains fewer events than the downstream dataset,
@@ -114,13 +115,13 @@ class BasinProxyContour:
             return self.feat_obj[self.basinmap[index]]
         else:
             raise NotImplementedError(
-                "Cannot index contours without anything else than integers.")
+                "Cannot index contours with anything other than integers.")
 
     def __len__(self):
         return self.shape[0]
 
     def __repr__(self):
-        return f"<BasinProxyFeature(conour) at {hex(id(self))}>"
+        return f"<BasinProxyContour at {hex(id(self))}>"
 
 
 class BasinProxyFeature(np.lib.mixins.NDArrayOperatorsMixin):

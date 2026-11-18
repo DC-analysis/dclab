@@ -22,8 +22,8 @@ class DCORBasin(Basin):
         """Access to private and public DCOR resources
 
         Since version 2 of the DCOR data API, all feature data are
-        accessed via :class:`.HTTPBasin`s on S3. The DCOR basin is just
-        a wrapper around those `HTTPBasin`s.
+        accessed via :class:`.HTTPBasin` instances on S3. The DCOR basin is
+        just a wrapper around those basins.
 
         For private resources, the DCOR format facilitates authentication
         via access tokens. Behind the scenes, DCOR creates a pre-signed
@@ -32,7 +32,7 @@ class DCORBasin(Basin):
         token via :func:`.APIHandler.add_api_key` for this to work.
 
         The `location` must be a full DCOR URL, including the scheme
-        and netloc, e.g:
+        and netloc, e.g.:
 
             https://dcor.mpl.mpg.de/api/3/action/dcserv?
             id=b1404eb5-f661-4920-be79-5ff4e85915d5

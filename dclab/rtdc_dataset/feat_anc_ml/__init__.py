@@ -24,8 +24,9 @@ def load_modc(*args, **kwargs) -> NoReturn:
 
 
 def remove_all_ml_features() -> None:
-    warnings.warn("The `remove_all_ml_features` does nothing since it was "
-                  "stripped from dclab version 0.61.0.",
+    warnings.warn("The `remove_all_ml_features` function does nothing, "
+                  "because ML features were removed from dclab in version "
+                  "0.61.0.",
                   DeprecationWarning)
 
 

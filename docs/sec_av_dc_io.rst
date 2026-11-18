@@ -116,3 +116,52 @@ from one dataset to a new file without modification. The :mod:`copier
 - Use the :func:`.h5ds_copy` method to copy parts of an HDF5 dataset to
   another HDF5 file, with the option to enforce compression (if the source
   :class:`h5py.Dataset` is not compressed properly already).
+
+
+.. _sec_av_dc_io_vid2dc:
+
+Converting video files to .rtdc
+===============================
+
+If you have a video file of cells flowing through a channel (e.g. from a
+custom setup or a legacy .tdms measurement), you can convert it to a raw
+.rtdc file with the script
+`vid2dc.py <https://github.com/DC-analysis/dclab/blob/main/scripts/vid2dc.py>`_
+that is part of the dclab repository. The resulting .rtdc file only
+contains the "image" feature and basic metadata. You can then use
+`ChipStream <https://github.com/DC-analysis/ChipStream>`_ to perform
+background correction, segmentation, and feature extraction.
+
+.. warning::
+
+    Most video formats use lossy compression, which alters the image data
+    (e.g. compression artifacts at the cell boundaries). This affects the
+    features computed from these images. If possible, record your data
+    directly in a lossless format (e.g. .rtdc) and only use this script
+    for data that are not available otherwise.
+
+The script requires a few additional packages::
+
+    pip install dclab[tdms] imageio[pyav] click
+
+To convert a single video file, run::
+
+    python vid2dc.py path/to/video.avi
+
+This creates a file ``path/to/video_raw.rtdc``. You may also specify
+the output path as a second argument. If you pass a directory, all video
+files in it (.avi, .mp4, .mpg, .wmv, .mkv, including subdirectories)
+are converted (without an output path). Files that were converted before
+are not converted again, unless the input file or its metadata changed.
+If a file cannot be converted, the error is written to a
+``*_vid2dc_error.log`` file next to it.
+
+The metadata are taken from files next to the video file, if available
+(e.g. the "M1_camera.ini" and "M1_para.ini" files of a .tdms measurement,
+or an .ini file with the same name as the video file). Otherwise, the
+script uses default values, e.g. a frame rate of 2000 fps, a pixel size of
+0.34 µm, and a flow rate of 0. Please check the metadata of the
+resulting .rtdc file and correct them if necessary (e.g. with
+:class:`RTDCWriter <dclab.rtdc_dataset.writer.RTDCWriter>` in
+``mode="append"``), because features such as the area in µm² or the
+Young's modulus depend on them.

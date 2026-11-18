@@ -203,6 +203,9 @@
    UnboundLocalError (now a `PolygonFilterError`) (#401)
  - fix: the type hints of `get_contour` and `get_contour_lazily` used
    `np.int` (removed in NumPy 1.24), so `typing.get_type_hints` failed (#402)
+ - enh: raise TypeError instead of ValueError for arguments of the wrong
+   type in `emodulus.load_lut`, `PlugInFeature`, and
+   `load_plugin_feature` (#403)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

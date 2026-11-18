@@ -50,7 +50,7 @@ def test_config_calculation():
     assert np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
     ds.config["calculation"]["emodulus temperature"] = 24.0
     # the user still has to call `apply_filter` to update the config:
-    assert not ch.config["calculation"]["emodulus temperature"] == 24.0
+    assert ch.config["calculation"]["emodulus temperature"] != 24.0
     # ...and the cache
     assert not np.allclose(ch["emodulus"], ds["emodulus"], equal_nan=True)
     ch.rejuvenate()

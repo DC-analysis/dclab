@@ -45,8 +45,8 @@ for _i in range(10):
 
 # inverse of dclab2tdms
 tdms2dclab = {}
-for kk in dclab2tdms:
-    tdms2dclab[dclab2tdms[kk]] = kk
+for kk, vv in dclab2tdms.items():
+    tdms2dclab[vv] = kk
 
 # Add capitalized userdef features as well.
 # see https://github.com/DC-analysis/DCscope/issues/212

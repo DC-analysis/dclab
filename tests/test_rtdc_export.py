@@ -13,9 +13,7 @@ def test_yield_filtered_array_stacks_array():
 
     data = np.random.random((547, 80, 320))
     indices = enum[ebol]
-    stacked = []
-    for chunk in yield_filtered_array_stacks(data, indices):
-        stacked.append(chunk)
+    stacked = list(yield_filtered_array_stacks(data, indices))
     assert len(stacked) == 55
     assert len(stacked[0]) == len(stacked[1])
     assert len(stacked[-1]) == 547 - 2 - 54 * len(stacked[0])

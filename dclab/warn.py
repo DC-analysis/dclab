@@ -12,4 +12,3 @@ class PipelineWarning(UserWarning):
     such as DCscope and to present them correctly to the
     user.
     """
-    pass

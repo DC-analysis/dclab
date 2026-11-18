@@ -98,19 +98,16 @@ def test_contour_unknown_offset():
     tdms_path = retrieve_data("fmt-tdms_fl-image-bright_2017.zip")
     cont_path = tdms_path.with_name("M4_0.040000ul_s_contours.txt")
     # Insert a false contour
-    imaginary_contour = "\n".join([
-        "Contour in frame 141",
-        "(198, 30)",
-        "(197, 29)",
-        "(196, 28)",
-        "(196, 27)",
-        "(195, 27)",
-        "(194, 26)",
-        "(193, 25)",
-        "(192, 24)",
-        "(191, 25)",
-        "",
-    ])
+    imaginary_contour = ("Contour in frame 141\n"
+                         "(198, 30)\n"
+                         "(197, 29)\n"
+                         "(196, 28)\n"
+                         "(196, 27)\n"
+                         "(195, 27)\n"
+                         "(194, 26)\n"
+                         "(193, 25)\n"
+                         "(192, 24)\n"
+                         "(191, 25)\n")
     cont_data = cont_path.read_text()
     cont_path.write_text(imaginary_contour + cont_data)
     ds = dclab.new_dataset(tdms_path)

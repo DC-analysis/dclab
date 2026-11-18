@@ -15,7 +15,7 @@ if __name__ == "__main__":
     plt.show = lambda: None
     files = os.listdir(thisdir)
     files = [f for f in files if f.endswith(".py")]
-    files = [f for f in files if not f == op.basename(__file__)]
+    files = [f for f in files if f != op.basename(__file__)]
     files = sorted([op.join(thisdir, f) for f in files])
 
     for f in files:

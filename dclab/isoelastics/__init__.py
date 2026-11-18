@@ -407,17 +407,16 @@ class AutoRecursiveDict(collections.UserDict):
 
 def check_lut_identifier(lut_identifier, method):
     """Transitional function that can be removed once `method` is removed"""
-    if lut_identifier is None:
-        if method is not None:
-            warnings.warn("The `method` argument is deprecated "
-                          + "please use `lut_identifier` instead!",
-                          DeprecationWarning)
-            if method == "analytical":
-                lut_identifier = "LE-2D-ana-18"
-            elif method == "numerical":
-                lut_identifier = "LE-2D-FEM-19"
-            else:
-                raise ValueError("Please read the docstring")
+    if lut_identifier is None and method is not None:
+        warnings.warn("The `method` argument is deprecated "
+                      + "please use `lut_identifier` instead!",
+                      DeprecationWarning)
+        if method == "analytical":
+            lut_identifier = "LE-2D-ana-18"
+        elif method == "numerical":
+            lut_identifier = "LE-2D-FEM-19"
+        else:
+            raise ValueError("Please read the docstring")
     # Now check again (this can be removed once lut_identifier becomes
     # a non-keyword argument)
     if lut_identifier is None:

@@ -54,7 +54,7 @@ class TraceColumn:
 
     @property
     def shape(self):
-        key0 = sorted(self.keys())[0]
+        key0 = min(self.keys())
         return len(self), len(self[key0]), len(self[key0][0])
 
     @property

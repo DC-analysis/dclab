@@ -80,12 +80,9 @@ class KernelDensityEstimator:
         if xax == yax:
             # Same feature -> just a line
             return False
-        elif (xax in feat_const.FEATURES_MONOTONOUS
-              and yax in feat_const.FEATURES_MONOTONOUS):
-            # Monotonous features -> just a line
-            return False
-        else:
-            return True
+        # Monotonous features -> just a line
+        return not (xax in feat_const.FEATURES_MONOTONOUS
+                    and yax in feat_const.FEATURES_MONOTONOUS)
 
     @staticmethod
     def estimate_spacing(

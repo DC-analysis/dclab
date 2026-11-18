@@ -111,12 +111,9 @@ class ImageColumn:
                 video = videos[0]
                 # g/q video file names. q comes first.
                 for v in videos:
-                    if v.endswith("imag.avi"):
-                        video = v
-                        break
-                    # add this here, because fRT-DC measurements also contain
-                    # videos ..._proc.avi
-                    elif v.endswith("imaq.avi"):
+                    # "imaq.avi" is checked, because fRT-DC measurements
+                    # also contain videos ..._proc.avi
+                    if v.endswith(("imag.avi", "imaq.avi")):
                         video = v
                         break
         if video is None:

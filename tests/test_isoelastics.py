@@ -133,12 +133,12 @@ def test_convert_error():
                    lut_identifier="test-LE-2D-ana-18",
                    channel_width=15)
 
-    kwargs = dict(channel_width_in=15,
-                  channel_width_out=20,
-                  flow_rate_in=.12,
-                  flow_rate_out=.08,
-                  viscosity_in=15,
-                  viscosity_out=15)
+    kwargs = {"channel_width_in": 15,
+              "channel_width_out": 20,
+              "flow_rate_in": .12,
+              "flow_rate_out": .08,
+              "viscosity_in": 15,
+              "viscosity_out": 15}
 
     try:
         i1.convert(isoel=isoel,

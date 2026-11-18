@@ -27,7 +27,6 @@ data_dir = pathlib.Path(__file__).parent / "data"
 def cleanup_plugin_features():
     """Fixture used to cleanup plugin feature tests"""
     # code run before the test
-    pass
     # then the test is run
     yield
     # code run after the test

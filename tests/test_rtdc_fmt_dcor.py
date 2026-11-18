@@ -142,7 +142,7 @@ def test_dcor_export_tables(tmp_path):
         assert "src_cskernel_monitor" in ds.tables
         mon = ds.tables["src_cskernel_monitor"]
         assert mon.has_graphs()
-        assert "disk" in mon.keys()
+        assert "disk" in mon.keys()  # noqa: SIM118 (structured array)
         assert np.allclose(mon["disk"][4], 0.49422805, rtol=0, atol=1e-4)
 
         assert "src_profile-stack_lower" in ds.tables
@@ -335,7 +335,7 @@ def test_dcor_tables():
         assert "cskernel_monitor" in ds.tables
         mon = ds.tables["cskernel_monitor"]
         assert mon.has_graphs()
-        assert "disk" in mon.keys()
+        assert "disk" in mon.keys()  # noqa: SIM118 (structured array)
         assert np.allclose(mon["disk"][4], 0.49422805, rtol=0, atol=1e-4)
 
 

@@ -527,11 +527,10 @@ class RTDCBase(abc.ABC):
 
         # Get into the basins.
         for bn in self.basins:
-            if (bn.basin_format == "hdf5"
-                    and bn.basin_type == "file"
-                    and bn.is_available()):
-                features_local += bn.ds.features_local
-            elif bn._ds is not None:
+            if ((bn.basin_format == "hdf5"
+                 and bn.basin_type == "file"
+                 and bn.is_available())
+                    or bn._ds is not None):
                 features_local += bn.ds.features_local
 
         # If they are here, then we use them:

@@ -249,11 +249,9 @@ class ResoluteRequestsSessionCache:
 
     def __getstate__(self):
         """Returns None, so sessions are not pickled into subprocesses"""
-        pass
 
     def __setstate__(self, state):
         """Does nothing (see `__getstate__`)"""
-        pass
 
     def get_session(self, url: str):
         """Return a requests session for the specified URL
@@ -333,7 +331,6 @@ def is_url_available(url: str, ret_reason=False):
                         reason = req.reason.lower()
                 except OSError:
                     reason = "oserror"
-                    pass
     else:
         reason = "invalid"
     if ret_reason:

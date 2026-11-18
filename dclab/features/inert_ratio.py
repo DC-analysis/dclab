@@ -89,17 +89,17 @@ def cont_moments_cv(cont: npt.NDArray,
             db1_20 *= -1
             db1_60 *= -1
 
-        m = dict(m00=a00 * db1_2,
-                 m10=a10 * db1_6,
-                 m01=a01 * db1_6,
-                 m20=a20 * db1_12,
-                 m11=a11 * db1_24,
-                 m02=a02 * db1_12,
-                 m30=a30 * db1_20,
-                 m21=a21 * db1_60,
-                 m12=a12 * db1_60,
-                 m03=a03 * db1_20,
-                 )
+        m = {"m00": a00 * db1_2,
+             "m10": a10 * db1_6,
+             "m01": a01 * db1_6,
+             "m20": a20 * db1_12,
+             "m11": a11 * db1_24,
+             "m02": a02 * db1_12,
+             "m30": a30 * db1_20,
+             "m21": a21 * db1_60,
+             "m12": a12 * db1_60,
+             "m03": a03 * db1_20,
+             }
 
         if m["m00"] > dbl_epsilon:
             # Center of gravity

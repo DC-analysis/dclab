@@ -232,9 +232,9 @@ class Rlme4:
         groups = []
         repetitions = []
         # compute differential features
-        for grp in sorted(set([dd[1] for dd in self.data])):
+        for grp in sorted({dd[1] for dd in self.data}):
             # repetitions per groups
-            grp_rep = sorted(set([dd[2] for dd in self.data if dd[1] == grp]))
+            grp_rep = sorted({dd[2] for dd in self.data if dd[1] == grp})
             for rep in grp_rep:
                 feat_cha = self.get_feature_data(grp, rep, region="channel")
                 feat_res = self.get_feature_data(grp, rep, region="reservoir")

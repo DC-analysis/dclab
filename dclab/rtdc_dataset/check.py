@@ -131,10 +131,10 @@ class ICue:
         #: allowed choices for the specific [section]: key combination
         #: (only for categories "missing metadata", "bad metadata")
         self.cfg_choices = cfg_choices
-        if self.cfg_choices is None:
-            if (cfg_section in VALID_CHOICES
-                    and cfg_key in VALID_CHOICES[cfg_section]):
-                self.cfg_choices = VALID_CHOICES[cfg_section][cfg_key]
+        if (self.cfg_choices is None
+                and cfg_section in VALID_CHOICES
+                and cfg_key in VALID_CHOICES[cfg_section]):
+            self.cfg_choices = VALID_CHOICES[cfg_section][cfg_key]
 
     def __eq__(self, other):
         leveld = {"info": 0,
@@ -362,12 +362,12 @@ class IntegrityChecker:
         """The index of the dataset should be monotonous"""
         cues = []
         lends = len(self.ds)
-        if "index" in self.ds:
-            if not np.all(self.ds["index"] == np.arange(1, lends + 1)):
-                cues.append(ICue(
-                    msg="The index feature is not enumerated correctly",
-                    level="violation",
-                    category="feature data"))
+        if ("index" in self.ds
+                and not np.all(self.ds["index"] == np.arange(1, lends + 1))):
+            cues.append(ICue(
+                msg="The index feature is not enumerated correctly",
+                level="violation",
+                category="feature data"))
         return cues
 
     def check_feature_size(self, **kwargs):
@@ -492,7 +492,7 @@ class IntegrityChecker:
         if "samples per event" in self.ds.config["fluorescence"]:
             spe = self.ds.config["fluorescence"]["samples per event"]
             if "trace" in self.ds:
-                for key in self.ds["trace"].keys():
+                for key in self.ds["trace"]:
                     spek = self.ds["trace"][key][0].size
                     if spek != spe:
                         cues.append(ICue(
@@ -509,10 +509,9 @@ class IntegrityChecker:
         cues = []
         neg_feats = []
         for fl in ['fl1_max', 'fl2_max', 'fl3_max']:
-            if fl in self.ds:
-                # ignore NaN values and support empty datasets
-                if np.any(self.ds[fl][:] <= 0.1):
-                    neg_feats.append(fl)
+            # ignore NaN values and support empty datasets
+            if fl in self.ds and np.any(self.ds[fl][:] <= 0.1):
+                neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(
                 msg=f"Negative value for feature(s): {', '.join(neg_feats)}",
@@ -525,10 +524,9 @@ class IntegrityChecker:
         cues = []
         neg_feats = []
         for fl in ['fl1_max_ctc', 'fl2_max_ctc', 'fl3_max_ctc']:
-            if fl in self.ds:
-                # ignore NaN values and support empty datasets
-                if np.any(self.ds[fl][:] <= 0.1):
-                    neg_feats.append(fl)
+            # ignore NaN values and support empty datasets
+            if fl in self.ds and np.any(self.ds[fl][:] <= 0.1):
+                neg_feats.append(fl)
         if neg_feats:
             cues.append(ICue(
                 msg=f"Negative value for feature(s): {', '.join(neg_feats)}",
@@ -591,7 +589,7 @@ class IntegrityChecker:
             with h5py.File(self.ds.path, mode="r", locking=False) as h5:
                 if "logs" in h5:
                     logs = h5["logs"]
-                    for logname in logs.keys():
+                    for logname in logs:
                         # ignore tmds meta data log files
                         lign = [logname.endswith(n) for n in IGNORED_LOG_NAMES]
                         if sum(lign):
@@ -613,14 +611,13 @@ class IntegrityChecker:
     def check_fmt_hdf5_swmr_mode(self, **kwargs):
         """If the dataset is opened in SWMR mode, something might be wrong"""
         cues = []
-        if self.ds.format == "hdf5":
-            if self.ds.h5file.swmr_mode:
-                cues.append(ICue(
-                    msg="File is open in SWMR mode. If the file is not being "
-                        "written to by another program, consider clearing the "
-                        "file consistency flags with `h5clear PATH`.",
-                    level="alert",
-                    category="format HDF5"))
+        if self.ds.format == "hdf5" and self.ds.h5file.swmr_mode:
+            cues.append(ICue(
+                msg="File is open in SWMR mode. If the file is not being "
+                    "written to by another program, consider clearing the "
+                    "file consistency flags with `h5clear PATH`.",
+                level="alert",
+                category="format HDF5"))
         return cues
 
     def check_info(self, **kwargs):
@@ -679,11 +676,11 @@ class IntegrityChecker:
 
     def check_metadata_choices(self, **kwargs):
         cues = []
-        for sec in VALID_CHOICES:
-            for key in VALID_CHOICES[sec]:
+        for sec, sec_choices in VALID_CHOICES.items():
+            for key, choices in sec_choices.items():
                 if sec in self.ds.config and key in self.ds.config[sec]:
                     val = self.ds.config[sec][key]
-                    if val not in VALID_CHOICES[sec][key]:
+                    if val not in choices:
                         cues.append(ICue(
                             msg=f"Metadata: Invalid value [{sec}] {key}: "
                                 + f"'{val}'",
@@ -691,7 +688,7 @@ class IntegrityChecker:
                             category="metadata wrong",
                             cfg_section=sec,
                             cfg_key=key,
-                            cfg_choices=VALID_CHOICES[sec][key]))
+                            cfg_choices=choices))
         return cues
 
     def check_metadata_hdf5_type(self, **kwargs):
@@ -708,10 +705,9 @@ class IntegrityChecker:
                     if dfn.config_key_exists(sec, key):
                         func = dfn.get_config_value_func(sec, key)
                         val_exp = func(val_act)  # expected value
-                        if (isinstance(val_exp, (list, tuple, np.ndarray))
-                                and np.allclose(val_exp, val_act)):
-                            continue
-                        elif val_exp == val_act:
+                        if ((isinstance(val_exp, (list, tuple, np.ndarray))
+                             and np.allclose(val_exp, val_act))
+                                or val_exp == val_act):
                             continue
                         else:
                             cues.append(ICue(
@@ -726,7 +722,7 @@ class IntegrityChecker:
     def check_metadata_online_filter_polygon_points_shape(self, **kwargs):
         cues = []
         if "online_filter" in self.ds.config:
-            for key in self.ds.config["online_filter"].keys():
+            for key in self.ds.config["online_filter"]:
                 if key.endswith("polygon points"):
                     points = self.ds.config["online_filter"][key]
                     if points.shape[1] != 2 or points.shape[0] < 3:
@@ -772,15 +768,14 @@ class IntegrityChecker:
                             cfg_section=sec,
                             cfg_key=key))
         # check for temperature
-        if "temp" in self.ds:
-            if "temperature" not in self.ds.config["setup"]:
-                cues.append(ICue(
-                    msg="Metadata: Missing key [setup] 'temperature', "
-                        + "because the 'temp' feature is given",
-                    level="alert",
-                    category="metadata missing",
-                    cfg_section="setup",
-                    cfg_key="temperature"))
+        if "temp" in self.ds and "temperature" not in self.ds.config["setup"]:
+            cues.append(ICue(
+                msg="Metadata: Missing key [setup] 'temperature', "
+                    + "because the 'temp' feature is given",
+                level="alert",
+                category="metadata missing",
+                cfg_section="setup",
+                cfg_key="temperature"))
         return cues
 
     def check_ml_class(self, **kwargs):

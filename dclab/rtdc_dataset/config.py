@@ -121,8 +121,8 @@ class ConfigurationDict(UserDict):
             E = {}
         for key in E:
             self.__setitem__(key, E[key])
-        for key in F:
-            self.__setitem__(key, F[key])
+        for key, value in F.items():
+            self.__setitem__(key, value)
 
 
 class Configuration:
@@ -190,10 +190,10 @@ class Configuration:
 
     def __repr__(self):
         rep = ""
-        keys = sorted(list(self.keys()))
+        keys = sorted(self.keys())
         for key in keys:
             rep += f"- {key}\n"
-            subkeys = sorted(list(self[key].keys()))
+            subkeys = sorted(self[key].keys())
             for subkey in subkeys:
                 rep += f"   {subkey}: {self[key][subkey]}\n"
         return rep
@@ -287,7 +287,7 @@ class Configuration:
         """
         out = []
         if sections is None:
-            keys = sorted(list(self.keys()))
+            keys = sorted(self.keys())
         else:
             keys = sorted([k for k in sections if k in self.keys()])
         for key in keys:
@@ -308,7 +308,7 @@ class Configuration:
 
     def update(self, newcfg):
         """Update current config with a dictionary"""
-        for sec in newcfg.keys():
+        for sec in newcfg:
             if sec not in self._cfg:
                 section = None if self.disable_checks else sec
                 self._cfg[sec] = ConfigurationDict(section=section)
@@ -349,7 +349,7 @@ def verify_section_key(section, key):
                       UnknownConfigurationKeyWarning)
         wcount += 1
     elif section == "filtering":
-        if key.endswith(" min") or key.endswith(" max"):
+        if key.endswith((" min", " max")):
             feat = key[:-4]
             if not dfn.scalar_feature_exists(feat):
                 warnings.warn(

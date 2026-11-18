@@ -32,8 +32,8 @@ SAME_MEDIA = {
 
 #: Many media names are actually shorthand for one medium
 ALIAS_MEDIA = {}
-for key in SAME_MEDIA:
-    for item in SAME_MEDIA[key]:
+for key, items in SAME_MEDIA.items():
+    for item in items:
         ALIAS_MEDIA[item] = key
         ALIAS_MEDIA[item.lower()] = key  # also support all-lower case
 

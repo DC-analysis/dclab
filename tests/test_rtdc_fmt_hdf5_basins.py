@@ -273,5 +273,5 @@ def test_basin_identifier_matches_file_none_invalid():
     with h5py.File(h5path, "a") as h5:
         del h5.attrs["setup:identifier"]
     with dclab.new_dataset(h5path) as ds:
-        assert not ds.get_measurement_identifier() == \
-               "01cd05a0-e084-0451-c470-2a2bf13c9e2d"
+        assert (ds.get_measurement_identifier()
+                != "01cd05a0-e084-0451-c470-2a2bf13c9e2d")

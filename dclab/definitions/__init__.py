@@ -33,7 +33,7 @@ class DeprecatedObject:
 
     def __getattr__(self, item):
         warnings.warn(self.message, DeprecationWarning)
-        return self.anobject.__getattr__(item)
+        return getattr(self.anobject, item)
 
     def __getitem__(self, item):
         warnings.warn(self.message, DeprecationWarning)
@@ -46,6 +46,10 @@ class DeprecatedObject:
     def __contains__(self, item):
         warnings.warn(self.message, DeprecationWarning)
         return self.anobject.__contains__(item)
+
+    def __len__(self):
+        warnings.warn(self.message, DeprecationWarning)
+        return self.anobject.__len__()
 
 
 config_descr = DeprecatedObject(config_descr,

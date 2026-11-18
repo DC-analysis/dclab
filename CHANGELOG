@@ -124,6 +124,8 @@
  - fix: configuration text files: values containing "#" were cut (only
    lines starting with "#" are comments now) and a key before the first
    section raised an UnboundLocalError
+ - fix: the deprecated objects in `dclab.definitions` (e.g.
+   `feature_names`) failed for method calls and `len()`
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -14,7 +14,7 @@ pytest.importorskip("requests")
 
 class MockAPIHandler(dclab.rtdc_dataset.fmt_dcor.api.APIHandler):
     def __init__(self, *args, **kwargs):
-        super(MockAPIHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # We are mocking only API version 2
         self.dcserv_api_version = 2
 

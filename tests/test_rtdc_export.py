@@ -31,7 +31,7 @@ def test_yield_filtered_array_stacks_list():
     # no __array__.
     class ListFeat(collections.UserList):
         def __init__(self, data):
-            super(ListFeat, self).__init__(data)
+            super().__init__(data)
 
         @property
         def shape(self):

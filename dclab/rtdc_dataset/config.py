@@ -42,12 +42,11 @@ class ConfigurationDict(UserDict):
         :func:`verify_section_key`.
         """
         self.section = section
-        super(ConfigurationDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._convert_keys()
 
     def __getitem__(self, key):
-        return super(ConfigurationDict,
-                     self).__getitem__(self.__class__._k(key))
+        return super().__getitem__(self.__class__._k(key))
 
     def __setitem__(self, key, value):
         key = self.__class__._k(key)
@@ -82,15 +81,13 @@ class ConfigurationDict(UserDict):
                 convfunc = dfn.get_config_value_func(self.section, key)
                 value = convfunc(value)
 
-            super(ConfigurationDict, self).__setitem__(key, value)
+            super().__setitem__(key, value)
 
     def __delitem__(self, key):
-        return super(ConfigurationDict,
-                     self).__delitem__(self.__class__._k(key))
+        return super().__delitem__(self.__class__._k(key))
 
     def __contains__(self, key):
-        return super(ConfigurationDict,
-                     self).__contains__(self.__class__._k(key))
+        return super().__contains__(self.__class__._k(key))
 
     @classmethod
     def _k(cls, key):
@@ -99,15 +96,14 @@ class ConfigurationDict(UserDict):
 
     def _convert_keys(self):
         for k in list(self.keys()):
-            v = super(ConfigurationDict, self).pop(k)
+            v = super().pop(k)
             self.__setitem__(k, v)
 
     def for_json(self):
         return dict(self)
 
     def get(self, key, *args, **kwargs):
-        return super(ConfigurationDict,
-                     self).get(self.__class__._k(key), *args, **kwargs)
+        return super().get(self.__class__._k(key), *args, **kwargs)
 
     def items(self):
         keys = list(self.keys())
@@ -116,12 +112,10 @@ class ConfigurationDict(UserDict):
         return out
 
     def pop(self, key, *args, **kwargs):
-        return super(ConfigurationDict,
-                     self).pop(self.__class__._k(key), *args, **kwargs)
+        return super().pop(self.__class__._k(key), *args, **kwargs)
 
     def setdefault(self, key, *args, **kwargs):
-        return super(ConfigurationDict,
-                     self).setdefault(self.__class__._k(key), *args, **kwargs)
+        return super().setdefault(self.__class__._k(key), *args, **kwargs)
 
     def update(self, E=None, **F):
         if E is None:
@@ -327,7 +321,7 @@ class CaseInsensitiveDict(ConfigurationDict):
         warnings.warn("CaseInsensitiveDict is deprecated, use "
                       + "ConfigurationDict instead.",
                       DeprecationWarning)
-        super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class ConfigurationJSONEncode(json.JSONEncoder):

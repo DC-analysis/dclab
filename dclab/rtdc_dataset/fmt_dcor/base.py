@@ -77,7 +77,7 @@ class RTDC_DCOR(RTDCBase):
             raise ModuleNotFoundError(
                 "Package `requests` required for DCOR format!")
 
-        super(RTDC_DCOR, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._hash = None
         self._cache_basin_dict = None
@@ -263,7 +263,7 @@ class RTDC_DCOR(RTDCBase):
     def basins_retrieve(self):
         """Same as superclass, but add perishable information"""
         basin_dicts = self.basins_get_dicts()
-        basins = super(RTDC_DCOR, self).basins_retrieve()
+        basins = super().basins_retrieve()
         for bn in basins:
             for bn_dict in basin_dicts:
                 if bn.name == bn_dict.get("name"):

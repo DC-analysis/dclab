@@ -19,9 +19,9 @@ class StoreKeeper(threading.Thread):
         To access the global instance, use the
         :func:`.StoreKeeper.get_instance` method.
         """
-        super(StoreKeeper, self).__init__(daemon=True,
-                                          name="StoreKeeper",
-                                          *args, **kwargs)
+        super().__init__(daemon=True,
+                         name="StoreKeeper",
+                         *args, **kwargs)
         #: exit event is set when `close` is called
         self.event_exit = threading.Event()
         #: run event can be `clear`ed to temporarily prevent `perform_tasks`

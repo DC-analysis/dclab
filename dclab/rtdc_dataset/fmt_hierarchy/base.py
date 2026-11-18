@@ -51,7 +51,7 @@ class RTDC_Hierarchy(RTDCBase):
         hparent: RTDCBase
             Hierarchy parent of this instance
         """
-        super(RTDC_Hierarchy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # inherit the lock from the parent
         self.lock = hparent.lock
 
@@ -270,7 +270,7 @@ class RTDC_Hierarchy(RTDCBase):
 
             # create a new filter if the parent changed
             self._check_parent_filter()
-            super(RTDC_Hierarchy, self).apply_filter(*args, **kwargs)
+            super().apply_filter(*args, **kwargs)
 
     def get_root_parent(self):
         """Return the root parent of this dataset"""

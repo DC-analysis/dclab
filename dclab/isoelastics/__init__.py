@@ -403,7 +403,7 @@ class AutoRecursiveDict(collections.UserDict):
     def __getitem__(self, key):
         if key not in self:
             self[key] = AutoRecursiveDict()
-        return super(AutoRecursiveDict, self).__getitem__(key)
+        return super().__getitem__(key)
 
 
 def check_lut_identifier(lut_identifier, method):

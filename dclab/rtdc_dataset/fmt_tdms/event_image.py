@@ -22,7 +22,7 @@ ISWIN = sys.platform.startswith("win")
 FFMPEG_OUTPUT_PARAMS = ["-sws_flags", "accurate_rnd+bitexact+full_chroma_int"]
 
 
-class ImageColumn(object):
+class ImageColumn:
     def __init__(self, rtdc_dataset):
         """A wrapper for ImageMap that takes into account event offsets
 
@@ -130,7 +130,7 @@ class ImageColumn(object):
                 return vpath
 
 
-class ImageMap(object):
+class ImageMap:
     def __init__(self, fname):
         """Access a video file of an RT-DC dataset
 

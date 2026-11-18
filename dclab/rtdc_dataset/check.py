@@ -108,7 +108,7 @@ VALID_CHOICES = {}
 
 
 @functools.total_ordering
-class ICue(object):
+class ICue:
     def __init__(self, msg, level, category, data=None, identifier=None,
                  cfg_section=None, cfg_key=None, cfg_choices=None):
         """Integrity cue"""
@@ -169,7 +169,7 @@ class ICue(object):
         return levels
 
 
-class IntegrityChecker(object):
+class IntegrityChecker:
     def __init__(self, path_or_ds):
         """Check the integrity of a dataset
 

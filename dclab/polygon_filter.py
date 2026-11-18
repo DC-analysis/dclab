@@ -13,7 +13,7 @@ class FilterIdExistsWarning(UserWarning):
     pass
 
 
-class PolygonFilter(object):
+class PolygonFilter:
     # Stuff that is done upon creation (not instantiation) of this class
     instances = []
     _instance_counter = 0

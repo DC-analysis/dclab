@@ -5,7 +5,7 @@ import numpy as np
 import scipy.ndimage as ndi
 
 
-class MaskColumn(object):
+class MaskColumn:
     def __init__(self, rtdc_dataset):
         """Computes mask from contour data"""
         self.contour = rtdc_dataset["contour"]

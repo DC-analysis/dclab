@@ -14,7 +14,6 @@ and hash) and a link is inserted
 
 where PROJECT ist the `project` variable defined in conf.py.
 """
-import io
 import re
 
 from docutils.statemachine import ViewList
@@ -39,7 +38,7 @@ class IncludeDirective(Directive):
             rstlink = f"(`#{issue} <{link}{issue}>`_)"
             return rstlink
 
-        with io.open(full_path, "r") as myfile:
+        with open(full_path, "r") as myfile:
             text = myfile.readlines()
 
         rst = []

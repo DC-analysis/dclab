@@ -15,8 +15,8 @@ def test_tsv_export(tmp_path):
     f2 = tmp_path / "test_unicode.tsv"
 
     ds.export.tsv(f1, keys, override=True)
-    ds.export.tsv(f2, [u"area_um", u"deform", u"time",
-                       u"frame", u"fl3_width"], override=True)
+    ds.export.tsv(f2, ["area_um", "deform", "time",
+                       "frame", "fl3_width"], override=True)
 
     with f1.open("r", encoding="utf-8") as fd:
         a1 = fd.read()

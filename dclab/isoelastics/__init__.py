@@ -15,7 +15,7 @@ class IsoelasticsEmodulusMeaninglessWarning(UserWarning):
     pass
 
 
-class Isoelastics(object):
+class Isoelastics:
     def __init__(self, paths=None):
         """Isoelasticity line management
 
@@ -425,7 +425,7 @@ def check_lut_identifier(lut_identifier, method):
     return lut_identifier
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_available_identifiers():
     """Return a list of available LUT identifiers"""
     isofiles = get_available_files()
@@ -439,7 +439,7 @@ def get_available_identifiers():
     return sorted(set(ids))
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_available_files():
     """Return list of available isoelasticity line files in dclab"""
     isofiles = []

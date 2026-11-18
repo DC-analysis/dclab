@@ -4,7 +4,6 @@ from collections import UserDict
 import json
 import numbers
 import pathlib
-import sys
 import warnings
 
 import numpy as np
@@ -126,7 +125,7 @@ class ConfigurationDict(UserDict):
             self.__setitem__(key, F[key])
 
 
-class Configuration(object):
+class Configuration:
     def __init__(self, files=None, cfg=None, disable_checks=False):
         """Configuration class for RT-DC datasets
 
@@ -361,10 +360,9 @@ def verify_section_key(section, key):
         elif key == "limit events auto":
             # Shape-Out 1 used this to limit the number of events to
             # a common minimum.
-            if sys.version_info[0] != 2:
-                warnings.warn("The 'limit events auto' configuration key "
-                              " in the 'filtering' section is deprecated!")
-                wcount += 1
+            warnings.warn("The 'limit events auto' configuration key "
+                          " in the 'filtering' section is deprecated!")
+            wcount += 1
         else:
             warnings.warn(
                 f"Unknown key '{key}' in the 'filtering' section!",

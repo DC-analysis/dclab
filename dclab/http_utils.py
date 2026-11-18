@@ -342,7 +342,7 @@ def is_url_available(url: str, ret_reason=False):
         return avail
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def is_http_url(string):
     """Check whether `string` is a valid URL using regexp"""
     if not isinstance(string, str):

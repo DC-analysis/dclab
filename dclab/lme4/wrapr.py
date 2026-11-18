@@ -17,7 +17,7 @@ from . import rsetup
 logger = logging.getLogger(__name__)
 
 
-class Rlme4(object):
+class Rlme4:
     def __init__(self, model="lmer", feature="deform"):
         """Perform an R-lme4 analysis with RT-DC data
 

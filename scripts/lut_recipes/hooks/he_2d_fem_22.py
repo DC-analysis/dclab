@@ -59,7 +59,7 @@ def lut_preprocess(lup):
     mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
 
     emod[~mask_disk] = np.nan
-    levels, contours, contours_px = lup.extract_isoelastics_from_grid(
+    levels, contours, _contours_px = lup.extract_isoelastics_from_grid(
         emod, lut=lut_iso, num=num_isoel)
 
     # Extend the LUT via extrapolation

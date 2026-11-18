@@ -149,7 +149,7 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
 
     writers_mapped = []
     for ii in range(repetitions):
-        pi = path.with_suffix(".map{}.rtdc".format(ii + 1))
+        pi = path.with_suffix(f".map{ii + 1}.rtdc")
         if pi.exists():
             pi.unlink()
         writers_mapped.append(dclab.RTDCWriter(pi))
@@ -164,7 +164,7 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
     with h5py.File(path, "r") as h5:
         # determine total size
         ntot = 0
-        for dk in h5.keys():
+        for dk in h5:
             for _ in h5[dk]:
                 ntot += 1
 
@@ -177,7 +177,7 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
                 "flow rate": h5.attrs["flow_rate"],
                 "chip region": "channel",
                 "medium": "other",
-                "software version": "dclab {}".format(dclab.__version__)
+                "software version": f"dclab {dclab.__version__}"
             },
             "imaging": {
                 "pixel size": pixel_size,
@@ -207,14 +207,14 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
                     "volume": sim.attrs["volume"],
                     "emodulus": sim.parent.attrs["emodulus"] / 1000,
                 }
-                for feat in feats_orig:
-                    writer_orig.store_feature(feat, feats_orig[feat])
+                for feat, data in feats_orig.items():
+                    writer_orig.store_feature(feat, data)
 
         # Write randomly shifted data
         for ii, wi in enumerate(writers_mapped):
             mi = copy.deepcopy(meta)
             mi["experiment"]["run index"] = ii + 1
-            mi["experiment"]["sample"] = "Contour mapping {}".format(ii + 1)
+            mi["experiment"]["sample"] = f"Contour mapping {ii + 1}"
             wi.store_metadata(mi)
 
         ss = 0
@@ -225,7 +225,7 @@ def generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34):
                     ss += 1
                     print(
                         f"Creating mask-shifted data {jj+1}: "
-                        + f"{ss / ntot / repetitions * 100:.1f}%", end="\r")
+                        f"{ss / ntot / repetitions * 100:.1f}%", end="\r")
                     sim = h5[dk][sk]
                     simsym = sim["coords"][:]
                     feats = features_from_2daxis_simulation(
@@ -245,12 +245,12 @@ def test_features_from_2daxis_simulation():
         pixel_size=0.34,
         shape=(80, 250),
         seed=42)
-    assert np.allclose(feats['area_um'], 33.69740000000001)
-    assert np.allclose(feats['deform'], 0.1168877846976153)
-    assert np.allclose(feats['inert_ratio_cvx'], 1.285950706011422)
-    assert np.allclose(feats['pos_x'], 43.4609033733562)
-    assert np.allclose(feats['pos_y'], 13.717804459691251)
-    assert np.allclose(feats['volume'], 125.581725903289)
+    assert np.allclose(feats["area_um"], 33.69740000000001)
+    assert np.allclose(feats["deform"], 0.1168877846976153)
+    assert np.allclose(feats["inert_ratio_cvx"], 1.285950706011422)
+    assert np.allclose(feats["pos_x"], 43.4609033733562)
+    assert np.allclose(feats["pos_y"], 13.717804459691251)
+    assert np.allclose(feats["volume"], 125.581725903289)
 
 
 def test_generate_rtdc_from_simulation(tmp_path):
@@ -259,26 +259,26 @@ def test_generate_rtdc_from_simulation(tmp_path):
     with h5py.File(path, "w") as h5:
         h5["0/0/coords"] = test_coords
         h5.attrs.update({
-            'authors': 'Someone',
-            'channel_width': 20.0,
-            'channel_width_unit': 'um',
-            'commit_hash': '1233454',
-            'date': '2019-11-13',
-            'dimensionality': '2Daxis',
-            'flow_rate': 0.04,
-            'flow_rate_unit': 'uL/s',
-            'fluid_density': 1000.0,
-            'fluid_density_unit': 'kg m^-3',
-            'fluid_viscosity': 0.015,
-            'fluid_viscosity_unit': 'Pa s',
-            'identifier': 'LE-2D-FEM-19',
-            'method': 'FEM',
-            'model': 'linear elastic',
-            'publication': 'https://doi.org/10.1021/acsbiomaterials.6b00558',
-            'software': 'custom C++ code',
-            'solid_density': 1000.0,
-            'solid_density_unit': 'kg m^-3',
-            'summary': 'Test dataset'})
+            "authors": "Someone",
+            "channel_width": 20.0,
+            "channel_width_unit": "um",
+            "commit_hash": "1233454",
+            "date": "2019-11-13",
+            "dimensionality": "2Daxis",
+            "flow_rate": 0.04,
+            "flow_rate_unit": "uL/s",
+            "fluid_density": 1000.0,
+            "fluid_density_unit": "kg m^-3",
+            "fluid_viscosity": 0.015,
+            "fluid_viscosity_unit": "Pa s",
+            "identifier": "LE-2D-FEM-19",
+            "method": "FEM",
+            "model": "linear elastic",
+            "publication": "https://doi.org/10.1021/acsbiomaterials.6b00558",
+            "software": "custom C++ code",
+            "solid_density": 1000.0,
+            "solid_density_unit": "kg m^-3",
+            "summary": "Test dataset"})
         h5["0"].attrs["emodulus"] = 740.83203
         h5["0"].attrs["emodulus_unit"] = "Pa"
         h5["0/0"].attrs["area"] = 36.42331
@@ -303,13 +303,13 @@ def test_generate_rtdc_from_simulation(tmp_path):
 
     generate_rtdc_from_simulation(path, repetitions=5, pixel_size=0.34)
     with h5py.File(path.with_suffix(".map1.rtdc")) as h51:
-        assert np.allclose(feats1['area_um'], h51["events/area_um"][0])
-        assert np.allclose(feats1['deform'], h51["events/deform"][0])
-        assert np.allclose(feats1['inert_ratio_cvx'],
+        assert np.allclose(feats1["area_um"], h51["events/area_um"][0])
+        assert np.allclose(feats1["deform"], h51["events/deform"][0])
+        assert np.allclose(feats1["inert_ratio_cvx"],
                            h51["events/inert_ratio_cvx"][0])
-        assert np.allclose(feats1['pos_x'], h51["events/pos_x"][0])
-        assert np.allclose(feats1['pos_y'], h51["events/pos_y"][0])
-        assert np.allclose(feats1['volume'], h51["events/volume"][0])
+        assert np.allclose(feats1["pos_x"], h51["events/pos_x"][0])
+        assert np.allclose(feats1["pos_y"], h51["events/pos_y"][0])
+        assert np.allclose(feats1["volume"], h51["events/volume"][0])
 
 
 #: The first contour from https://doi.org/10.6084/m9.figshare.12155064.v4
@@ -359,11 +359,11 @@ test_coords = np.array(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('input', type=str, help='Input path (.hdf5 file)')
-    parser.add_argument('--repetitions', type=int, default=5,
-                        help='Number of repetitions (grid mapping)')
-    parser.add_argument('--pixelsize', type=float, default=0.34,
-                        help='Detector pixel size [um]')
+    parser.add_argument("input", type=str, help="Input path (.hdf5 file)")
+    parser.add_argument("--repetitions", type=int, default=5,
+                        help="Number of repetitions (grid mapping)")
+    parser.add_argument("--pixelsize", type=float, default=0.34,
+                        help="Detector pixel size [um]")
 
     args = parser.parse_args()
 

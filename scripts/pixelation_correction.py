@@ -57,7 +57,7 @@ def create_multiexp_model(n=5, x=None, x0=None, y=None, decaycoeffs=None,
     """Create a multiexponential model with smart initial values for lmfit"""
     modelexpr = ["off"]
     for ii in range(n):
-        modelexpr.append("A{} * exp(-(x-x0)/t{})".format(ii, ii))
+        modelexpr.append(f"A{ii} * exp(-(x-x0)/t{ii})")
 
     mod = lmfit.models.ExpressionModel(" + ".join(modelexpr))
     params = mod.make_params()
@@ -88,14 +88,14 @@ def create_multiexp_model(n=5, x=None, x0=None, y=None, decaycoeffs=None,
             tmax = x.max() - x.min()
         else:
             tmax = 10**n
-        params["t{}".format(ii)].set(min=1e-5, max=tmax,
-                                     value=decaycoeffs[ii], vary=vary_tau)
+        params[f"t{ii}"].set(min=1e-5, max=tmax,
+                             value=decaycoeffs[ii], vary=vary_tau)
         if y is not None:
             amax = 2*(y.max() - y.min())
         else:
             amax = 1
 
-        params["A{}".format(ii)].set(min=1e-5, max=amax, value=amplitudes[ii])
+        params[f"A{ii}"].set(min=1e-5, max=amax, value=amplitudes[ii])
 
     if offset is None and y is not None:
         idoff = x > x.max()*.9
@@ -320,7 +320,7 @@ def plot_numerical_data(path, ax1, ax2, ax3, ax4):
     delta_area_um = true_area_um / area_um
     delta_volume = true_volume / volume
 
-    plotkw = dict(ms=1, color="k", alpha=.05, label="FEM simulation")
+    plotkw = {"ms": 1, "color": "k", "alpha": .05, "label": "FEM simulation"}
 
     ax1.plot(area_um, delta_deform, ".", **plotkw)
     ax2.plot(area_um, delta_area_um, ".", **plotkw)
@@ -366,7 +366,7 @@ def plot_and_fit_disk_data(ax1, ax2, ax3, ax4):
     R = 5
 
     here = pathlib.Path(__file__).parent
-    path = here / ".cache_pixelation_correction_{}.npz".format(PIXEL_SIZE)
+    path = here / f".cache_pixelation_correction_{PIXEL_SIZE}.npz"
     if not os.path.exists(path):
         area_um = np.zeros(N*R, dtype=float)
         deform = np.zeros(N*R, dtype=float)
@@ -520,13 +520,13 @@ def plot_emodulus_deviation_dependency(path, ax5, ax6, ax7, ax8):
     # deform-area_um
     ax5.set_ylabel("relative error (1-E/E0)")
     area_um = np.linspace(5, 290, 200)
-    emodkw = dict(
-        area_um=area_um,
-        medium=15,
-        channel_width=20,
-        flow_rate=0.04,
-        px_um=0,
-        temperature=None)
+    emodkw = {
+        "area_um": area_um,
+        "medium": 15,
+        "channel_width": 20,
+        "flow_rate": 0.04,
+        "px_um": 0,
+        "temperature": None}
     for dv in [0.005, 0.01, 0.02, 0.03, 0.1]:
         deform = np.ones_like(area_um) * dv
         emod0 = dclab.features.emodulus.get_emodulus(
@@ -534,16 +534,16 @@ def plot_emodulus_deviation_dependency(path, ax5, ax6, ax7, ax8):
         pxcorr = corr_deform_with_area_um(area_um)
         emod1 = dclab.features.emodulus.get_emodulus(
             deform=deform+pxcorr, **emodkw)
-        ax5.plot(area_um, 1-emod1/emod0, label="{}".format(dv))
+        ax5.plot(area_um, 1-emod1/emod0, label=f"{dv}")
 
     # area_um-area_um
     ax6.set_ylabel("negative relative error -(1-E/E0)")
-    emodkw = dict(
-        medium=15,
-        channel_width=20,
-        flow_rate=0.04,
-        px_um=0,
-        temperature=None)
+    emodkw = {
+        "medium": 15,
+        "channel_width": 20,
+        "flow_rate": 0.04,
+        "px_um": 0,
+        "temperature": None}
     for dv in [0.005, 0.01, 0.02, 0.03, 0.1]:
         deform = np.ones_like(area_um) * dv
         emod0 = dclab.features.emodulus.get_emodulus(
@@ -551,20 +551,20 @@ def plot_emodulus_deviation_dependency(path, ax5, ax6, ax7, ax8):
         pxcorr = corr_area_um_with_area_um(area_um)
         emod1 = dclab.features.emodulus.get_emodulus(
             deform=deform, area_um=area_um+pxcorr, **emodkw)
-        ax6.plot(area_um, -(1-emod1/emod0), label="{}".format(dv))
+        ax6.plot(area_um, -(1-emod1/emod0), label=f"{dv}")
 
     # deform-volume
     ax7.set_ylabel("relative error (1-E/E0)")
     lut_data_volume = get_lut_volume(path=path)
     volume = np.linspace(50, 3200, 200)
-    emodkwv = dict(
-        volume=volume,
-        medium=15,
-        channel_width=20,
-        flow_rate=0.04,
-        px_um=0,
-        temperature=None,
-        lut_data=lut_data_volume)
+    emodkwv = {
+        "volume": volume,
+        "medium": 15,
+        "channel_width": 20,
+        "flow_rate": 0.04,
+        "px_um": 0,
+        "temperature": None,
+        "lut_data": lut_data_volume}
     for dv in [0.005, 0.01, 0.02, 0.03, 0.1]:
         deform = np.ones_like(volume) * dv
         emod0 = dclab.features.emodulus.get_emodulus(
@@ -572,19 +572,19 @@ def plot_emodulus_deviation_dependency(path, ax5, ax6, ax7, ax8):
         pxcorr = corr_deform_with_volume(volume)
         emod1 = dclab.features.emodulus.get_emodulus(
             deform=deform+pxcorr, **emodkwv)
-        ax7.plot(volume, 1-emod1/emod0, label="{}".format(dv))
+        ax7.plot(volume, 1-emod1/emod0, label=f"{dv}")
 
     # volume-volume
     ax8.set_ylabel("negative relative error -(1-E/E0)")
     lut_data_volume = get_lut_volume(path=path)
     volume = np.linspace(50, 3200, 200)
-    emodkwv = dict(
-        medium=15,
-        channel_width=20,
-        flow_rate=0.04,
-        px_um=0,
-        temperature=None,
-        lut_data=lut_data_volume)
+    emodkwv = {
+        "medium": 15,
+        "channel_width": 20,
+        "flow_rate": 0.04,
+        "px_um": 0,
+        "temperature": None,
+        "lut_data": lut_data_volume}
     for dv in [0.005, 0.01, 0.02, 0.03, 0.1]:
         deform = np.ones_like(volume) * dv
         emod0 = dclab.features.emodulus.get_emodulus(
@@ -592,7 +592,7 @@ def plot_emodulus_deviation_dependency(path, ax5, ax6, ax7, ax8):
         pxcorr = corr_volume_with_volume(volume)
         emod1 = dclab.features.emodulus.get_emodulus(
             deform=deform, volume=volume+pxcorr, **emodkwv)
-        ax8.plot(volume, -(1-emod1/emod0), label="{}".format(dv))
+        ax8.plot(volume, -(1-emod1/emod0), label=f"{dv}")
 
 
 if __name__ == "__main__":

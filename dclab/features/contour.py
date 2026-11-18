@@ -16,7 +16,7 @@ class NoValidContourFoundError(BaseException):
     pass
 
 
-class LazyContourList(object):
+class LazyContourList:
     def __init__(self, masks: npt.ArrayLike, max_events: int = 1000) -> None:
         """A list-like object that computes contours upon indexing
 

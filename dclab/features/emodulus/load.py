@@ -22,7 +22,7 @@ atexit.register(_file_manager.close)
 EXTERNAL_LUTS = {}
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_internal_lut_names_dict() -> dict:
     """Return list of internal lut names"""
     lutfiles = {}

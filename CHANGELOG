@@ -176,6 +176,7 @@
    be installed with R 4.1.2; use the latest R release and fail if
    lme4 is not installed
  - tests: update pinned glmer values for lme4 2.1
+ - ref: remove Python 2 remnants and outdated syntax (ruff pyupgrade)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -1,4 +1,3 @@
-import io
 from os.path import join
 import tempfile
 from unittest import mock
@@ -21,13 +20,13 @@ def test_fcs_export():
     f2 = join(edest, "test_unicode.fcs")
 
     ds.export.fcs(f1, keys, override=True)
-    ds.export.fcs(f2, [u"area_um", u"deform", u"time",
-                       u"frame", u"fl3_width"], override=True)
+    ds.export.fcs(f2, ["area_um", "deform", "time",
+                       "frame", "fl3_width"], override=True)
 
-    with io.open(f1, mode="rb") as fd:
+    with open(f1, mode="rb") as fd:
         a1 = fd.read()
 
-    with io.open(f2, mode="rb") as fd:
+    with open(f2, mode="rb") as fd:
         a2 = fd.read()
 
     assert a1 == a2

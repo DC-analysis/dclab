@@ -1,6 +1,5 @@
 """Class for efficiently handling contour data"""
 import numbers
-import sys
 import warnings
 
 import numpy as np
@@ -14,7 +13,7 @@ class ContourVerificationWarning(UserWarning):
     pass
 
 
-class ContourColumn(object):
+class ContourColumn:
     def __init__(self, rtdc_dataset):
         """A wrapper for ContourData that takes into account event offsets
 
@@ -26,10 +25,7 @@ class ContourColumn(object):
         if fname is None:
             self.identifier = None
         else:
-            if sys.version_info[0] == 2:
-                self.identifier = str(fname).decode("utf-8")
-            else:
-                self.identifier = str(fname)
+            self.identifier = str(fname)
         if fname is not None:
             self._contour_data = ContourData(fname)
             self._initialized = False
@@ -201,7 +197,7 @@ class ContourColumn(object):
         return cfile
 
 
-class ContourData(object):
+class ContourData:
     def __init__(self, fname):
         """Access an MX_contour.txt as a dictionary
 

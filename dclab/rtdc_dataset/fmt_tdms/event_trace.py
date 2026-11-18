@@ -11,7 +11,7 @@ from . import naming
 from .exc import InvalidTDMSFileFormatError, MultipleSamplesPerEventFound
 
 
-class TraceColumn(object):
+class TraceColumn:
     def __init__(self, rtdc_dataset):
         """Prepares everything but does not load the trace data yet
 

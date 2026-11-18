@@ -317,7 +317,7 @@ def is_s3_object_available(url: str,
     return avail
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_endpoint_url(url):
     """Given a URL of an S3 object, return the endpoint URL
 
@@ -333,7 +333,7 @@ def get_endpoint_url(url):
         return None
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_object_path(url):
     """Given a URL of an S3 object, return the `bucket_name/object_path` part
 
@@ -343,7 +343,7 @@ def get_object_path(url):
     return urlp.path.lstrip("/")
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def is_s3_url(string):
     """Check whether `string` is a valid S3 URL using regexp"""
     if not isinstance(string, str):

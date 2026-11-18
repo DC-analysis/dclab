@@ -146,7 +146,7 @@ def find_smooth_contour_spacing(
                     and np.all(angles[1:6] == 0)):
                 # We have probably encountered a contour at the boundary
                 # of the plot. This is ok.
-                corners = np.abs((np.abs(angles) - np.pi / 2)) < 0.001
+                corners = np.abs(np.abs(angles) - np.pi / 2) < 0.001
                 valid &= ~corners
                 corners_found = True
 

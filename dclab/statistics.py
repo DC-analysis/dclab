@@ -11,7 +11,7 @@ class BadMethodWarning(UserWarning):
     pass
 
 
-class Statistics(object):
+class Statistics:
     available_methods = {}
 
     def __init__(self, name, method, req_feature=False):

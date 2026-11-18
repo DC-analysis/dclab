@@ -608,7 +608,7 @@ def test_trace_import_fail():
     # make sure undefined trace data does not raise an error
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     dclab.definitions.FLUOR_TRACES.append("peter")
-    dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = [u'ukwn', u'ha']
+    dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = ['ukwn', 'ha']
     new_dataset(tdms_path)
     # clean up
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map.pop("peter")

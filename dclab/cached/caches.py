@@ -7,7 +7,8 @@ import hashlib
 import logging
 import numbers
 import time
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 import traceback
 
 import numpy as np

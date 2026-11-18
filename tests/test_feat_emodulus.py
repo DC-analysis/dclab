@@ -717,6 +717,34 @@ def test_register_external_lut_without_identifier():
             emodulus.register_lut(path)
 
 
+@pytest.mark.parametrize("feat,factor",
+                         [["area_um", 1.5**2],
+                          ["volume", 1.5**3],
+                          ["emodulus", 1.5**-3],
+                          ])
+def test_scale_feature_integer_input(feat, factor):
+    data = np.array([10, 20])
+    scale_kw = {"channel_width_in": 20,
+                "channel_width_out": 30,
+                "flow_rate_in": 0.04,
+                "flow_rate_out": 0.04,
+                "viscosity_in": 15,
+                "viscosity_out": 15,
+                }
+    scaled = emodulus.scale_feature(feat, data, **scale_kw)
+    assert np.allclose(scaled, data * factor, rtol=1e-12, atol=0)
+    # input data must not be modified
+    assert np.all(data == [10, 20])
+    # scalar and list input
+    assert np.allclose(emodulus.scale_feature(feat, 10, **scale_kw),
+                       10 * factor, rtol=1e-12, atol=0)
+    assert np.allclose(emodulus.scale_feature(feat, [10, 20], **scale_kw),
+                       data * factor, rtol=1e-12, atol=0)
+    # in-place correction of integer data is not possible
+    with pytest.raises(ValueError, match="Cannot correct integer"):
+        emodulus.scale_feature(feat, data, inplace=True, **scale_kw)
+
+
 @pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
                             + 'YoungsModulusLookupTableExceededWarning')
 def test_simple_emod():

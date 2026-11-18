@@ -128,6 +128,8 @@
    `feature_names`) failed for method calls and `len()`
  - fix: `feature_deregister` removed the wrong label if several features
    had the same label
+ - fix: the linear scaling functions for area_um, volume, and emodulus
+   (`scale_feature`) failed for integer, scalar, or list input
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -7,6 +7,24 @@ import numpy as np
 import numpy.typing as npt
 
 
+def _get_output_array(data: float | npt.NDArray,
+                      inplace: bool,
+                      name: str) -> npt.NDArray:
+    """Return an array for storing the scaled `data`
+
+    If `inplace` is False, a copy of `data` is returned and integer
+    data are converted to float.
+    """
+    if inplace:
+        if np.issubdtype(np.asarray(data).dtype, np.integer):
+            raise ValueError(f"Cannot correct integer `{name}` in-place!")
+        return np.array(data, copy=False)
+    data_corr = np.array(data, copy=True)
+    if not np.issubdtype(data_corr.dtype, np.inexact):
+        data_corr = data_corr.astype(float)
+    return data_corr
+
+
 def convert(area_um: npt.NDArray,
             deform: npt.NDArray,
             channel_width_in: float,
@@ -126,10 +144,7 @@ def scale_area_um(area_um: npt.NDArray,
     area_um_corr
         Scaled area [µm²]
     """
-    copy = not inplace
-    if issubclass(area_um.dtype.type, np.integer) and inplace:
-        raise ValueError("Cannot correct integer `area_um` in-place!")
-    area_um_corr = np.array(area_um, copy=copy)
+    area_um_corr = _get_output_array(area_um, inplace, "area_um")
 
     if channel_width_in != channel_width_out:
         area_um_corr *= (channel_width_out / channel_width_in)**2
@@ -174,9 +189,7 @@ def scale_emodulus(emodulus: npt.NDArray,
     emodulus_corr
         Scaled emodulus [kPa]
     """
-    copy = not inplace
-
-    emodulus_corr = np.array(emodulus, copy=copy)
+    emodulus_corr = _get_output_array(emodulus, inplace, "emodulus")
 
     if viscosity_in is not None:
         if isinstance(viscosity_in, np.ndarray):
@@ -266,8 +279,7 @@ def scale_volume(volume: npt.NDArray,
     volume_corr
         Scaled volume [µm³]
     """
-    copy = not inplace
-    volume_corr = np.array(volume, copy=copy)
+    volume_corr = _get_output_array(volume, inplace, "volume")
 
     if channel_width_in != channel_width_out:
         volume_corr *= (channel_width_out / channel_width_in)**3

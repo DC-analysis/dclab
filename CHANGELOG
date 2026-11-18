@@ -1,196 +1,197 @@
 0.75.0
  - feat: allow to set the number of bootstrapping iterations for
-   differential features in `Rlme4` (`bs_iter`, default 1000)
+   differential features in `Rlme4` (`bs_iter`, default 1000) (#389)
  - fix: `import_plugin_feature_script` removed the first entry of
    `sys.path` (instead of the plugin directory) and returned the wrong
-   plugin if a module with the same name was imported before
+   plugin if a module with the same name was imported before (#310)
  - fix: replacing a plugin feature did not invalidate the cached
-   feature data (`AncillaryFeature.hash` now includes `identifier`)
+   feature data (`AncillaryFeature.hash` now includes `identifier`) (#311)
  - fix: the event count was set to the number of trace channels if
    "trace" was the first feature (`RTDCWriter.rectify_metadata`,
-   `RTDC_Dict`, and `RTDCBase` without "experiment:event count")
+   `RTDC_Dict`, and `RTDCBase` without "experiment:event count") (#312)
  - fix: a corrupt file in the dataset directory with the same name as
    a file basin aborted the basin search (exception during relative
-   path check)
+   path check) (#313)
  - fix: relative file basin paths with Windows path separators were
    not found on Unix (and vice versa); the separator check compared
-   against a two-character string
+   against a two-character string (#314)
  - fix: `apply_filter` raised a KeyError if a polygon filter was
-   removed from a dataset and its `PolygonFilter` instance deleted
+   removed from a dataset and its `PolygonFilter` instance deleted (#315)
  - fix: an event manually re-included in a hierarchy child was
    excluded again when the hierarchy parent changed (if all manually
-   excluded events had been re-included)
+   excluded events had been re-included) (#316)
  - fix: removing the min/max keys of a box filter from the
-   configuration did not remove that filter
+   configuration did not remove that filter (#317)
  - ref: cleanup filter.py (incorrect variable names, use of sets)
  - fix: `Configuration.copy` did not preserve `disable_checks`, which
-   removed unknown configuration keys from the copy
+   removed unknown configuration keys from the copy (#318)
  - fix: exports of non-hierarchy datasets did not store the relative
-   path to the original file in the basin definition
- - docs: the default branch was renamed from "master" to "main"
- - docs: fix links to renamed files in the emodulus docs
+   path to the original file in the basin definition (#320)
+ - docs: the default branch was renamed from "master" to "main" (#321)
+ - docs: fix links to renamed files in the emodulus docs (#321)
  - fix: CLI join failed if two features that are adjacent in the sorted
    feature list were missing in one of the files (feature list was
-   modified while iterating over it)
+   modified while iterating over it) (#322)
  - fix: copying files with internal basins that share a basinmap
-   feature failed (affects CLI repack, compress, and condense)
+   feature failed (affects CLI repack, compress, and condense) (#324)
  - fix: copying files with zero events failed (affects CLI repack,
    compress, and condense); empty datasets are now copied as empty,
-   compressed datasets instead of being dropped
+   compressed datasets instead of being dropped (#325)
  - fix: `is_properly_compressed` raised an IndexError for Zstandard
    compressed data without compression level (affects CLI repack,
-   compress, condense, and `check_dataset`)
+   compress, condense, and `check_dataset`) (#326)
  - fix: `RTDCWriter` computed a wrong "mean" attribute for scalar
    features when appending data containing nan values (and the mean
-   remained nan if the first data written were all nan)
+   remained nan if the first data written were all nan) (#327)
  - fix: HDF5 files with user-defined metadata keys containing a colon
    (e.g. "user:time:start") or root attributes without a section
-   could not be opened
+   could not be opened (#328)
  - fix: CLI compress with `--crop-event-images` and `--basin-input`
-   failed if the input file and a basin both contained image data
+   failed if the input file and a basin both contained image data (#329)
  - fix: `get_volume` with `fix_orientation=True` returned wrong (also
    negative) volumes for contours in the opposite orientation, because
-   the reordered contour was combined with the original x-coordinates
+   the reordered contour was combined with the original x-coordinates (#330)
  - fix: `get_bright_perc` failed if `bg_off` was a numpy array (e.g.
    "bright_perc_10" for dictionary-based datasets) and for empty masks
-   (now nan, like "bright_avg")
+   (now nan, like "bright_avg") (#331)
  - fix: "flX_max_ctc" of datasets with two fluorescence channels used
    the crosstalk configuration of the missing third channel, which
    gave wrong results and, since these keys were not part of the
-   cache hash, stale data when they were changed
- - docs: explain fluorescence crosstalk correction
+   cache hash, stale data when they were changed (#332)
+ - docs: explain fluorescence crosstalk correction (#333)
  - fix: `hashfile` with `blocksize=0` returned the hash of an empty
    file instead of the entire file and raised a TypeError when
-   arguments were passed positionally (`file_monitoring_lru_cache`)
+   arguments were passed positionally (`file_monitoring_lru_cache`) (#334)
  - fix: polygon filter files (.poly) could not be loaded if the filter
-   name contained "=" or if the file contained blank lines
+   name contained "=" or if the file contained blank lines (#335)
  - fix: `downsample_rand` and `downsample_grid` reset the global random
-   state of numpy to a fixed seed (downsampling results are unchanged)
+   state of numpy to a fixed seed (downsampling results are unchanged) (#336)
  - fix: the `StoreKeeper` caching thread died with "dictionary changed
    size during iteration" when cached data were added concurrently,
    after which nothing was written to the disk store anymore and the
    memory store grew without limit (`MemoryStore` is now thread-safe
-   and errors in `StoreKeeper.perform_tasks` are logged)
+   and errors in `StoreKeeper.perform_tasks` are logged) (#337)
  - fix: cache keys of `umbrella_cache` were ambiguous, e.g. arguments
    `(1, 23)` and `(12, 3)`, `"1"` and `1`, or arrays with the same data
    but a different shape or dtype resulted in the same key (existing
-   disk store cache entries are no longer used)
+   disk store cache entries are no longer used) (#338)
  - fix: functions decorated with `umbrella_cache` raised a KeyError if
    the `StoreKeeper` thread removed the cached value from the memory
-   store between checking for and retrieving the value
+   store between checking for and retrieving the value (#339)
  - fix: functions decorated with `umbrella_cache` raised a KeyError
    (instead of recomputing the value) if a disk store entry written by
-   another process could not be read
+   another process could not be read (#340)
  - fix: values returned by functions decorated with `umbrella_cache`
    were the cached objects themselves; modifying them in-place (e.g.
-   KDE or downsampling results) modified the cached values
+   KDE or downsampling results) modified the cached values (#341)
  - fix: image data of .tdms files differed slightly between platforms
    (e.g. x86 and ARM), because ffmpeg used optimized, inexact YUV to RGB
    conversion; dclab now requests a bitexact conversion (gray values of
-   .tdms images change by up to about one gray level)
+   .tdms images change by up to about one gray level) (#342)
  - fix: accessing `Basin.ds` from multiple threads at the same time
    loaded the basin dataset multiple times and left all but one of the
-   files open after `Basin.close`
+   files open after `Basin.close` (#343)
  - fix: indexing chopped image data (internal chopped image basins)
-   with a boolean array (e.g. `ds["image"][ds.filter.all]`) failed
+   with a boolean array (e.g. `ds["image"][ds.filter.all]`) failed (#344)
  - fix: `RTDC_HDF5.hash` raised a TypeError for datasets opened from a
-   file-like object (e.g. `io.BytesIO`), which also broke KDE methods
+   file-like object (e.g. `io.BytesIO`), which also broke KDE methods (#345)
  - fix: the progress monitor thread of CLI compress and repack kept
-   running if an error occurred
+   running if an error occurred (#346)
  - fix: `RTDCWriter.write_text` silently truncated appended log lines
    that were longer than the existing lines (at least 100 bytes); this
-   could cut multi-byte UTF-8 characters, so the log could not be read
+   could cut multi-byte UTF-8 characters, so the log could not be read (#347)
  - fix: the check for Shape-In issue #3 (wrong medium "CellCarrierB")
    did not work for files written by dclab, because dclab appends its
-   version to "setup:software version"
+   version to "setup:software version" (#348)
  - fix: the integrity checks `check_fl_max_positive` and
    `check_fl_max_ctc_positive` failed for empty datasets and their
-   result depended on the position of nan-values
+   result depended on the position of nan-values (#349)
  - fix: dangling HDF5 external links crashed `check_dataset` (instead of
-   being reported by the external links check)
+   being reported by the external links check) (#350)
  - fix: `cli.verify_dataset` and `cli.tdms2rtdc` failed if paths were
-   given as `str` instead of `pathlib.Path`
+   given as `str` instead of `pathlib.Path` (#351)
  - fix: hierarchy children inherited the "limit events" filter of the
    parent, i.e. the events were limited twice and changing the parent's
-   limit did not take effect in the child
+   limit did not take effect in the child (#352)
  - fix: scalar feature data of hierarchy children were writable, so
    modifying e.g. `child["deform"][:]` in-place modified the cached
    feature data of the child (the data are now read-only, like the
-   data of other dataset formats)
+   data of other dataset formats) (#354)
  - fix: `export.hdf5` removed "contour" from the `features` list passed
-   by the caller and failed for tuples
+   by the caller and failed for tuples (#355)
  - fix: `get_contour` raised an IndexError for an empty mask instead of
-   `NoValidContourFoundError`
+   `NoValidContourFoundError` (#356)
  - fix: `new_dataset` ignored `identifier` for `io.BytesIO` objects and
-   additional keyword arguments for HTTP URLs
+   additional keyword arguments for HTTP URLs (#357)
  - fix: configuration text files: values containing "#" were cut (only
    lines starting with "#" are comments now) and a key before the first
-   section raised an UnboundLocalError
+   section raised an UnboundLocalError (#358)
  - fix: the deprecated objects in `dclab.definitions` (e.g.
-   `feature_names`) failed for method calls and `len()`
+   `feature_names`) failed for method calls and `len()` (#359)
  - fix: `feature_deregister` removed the wrong label if several features
-   had the same label
+   had the same label (#360)
  - fix: the linear scaling functions for area_um, volume, and emodulus
-   (`scale_feature`) failed for integer, scalar, or list input
+   (`scale_feature`) failed for integer, scalar, or list input (#361)
  - fix: `KernelDensityEstimator.get_at` and `get_contour_lines` failed
-   for ndarray `positions` and `quantiles`
+   for ndarray `positions` and `quantiles` (#362)
  - fix: `KernelDensityEstimator.get_contour_lines` ignored `ret_levels`
-   when no contour could be computed
+   when no contour could be computed (#363)
  - fix: `find_smooth_contour_spacing` reported success for contours with
-   undefined (nan) opening angles
+   undefined (nan) opening angles (#364)
  - fix: on a log scale, contour opening angles were computed from
    linearly normalized coordinates (resulting in nan values for points
-   outside the plot range); the normalization is now done in log space
+   outside the plot range); the normalization is now done in log space (#364)
  - fix: on POSIX systems, the R subprocess calls of the lme4 module
-   replaced the entire environment (e.g. no PATH) instead of extending it
+   replaced the entire environment (e.g. no PATH) instead of extending
+   it (#365)
  - fix: lme4 convergence messages were never reported, multiple lme4
    messages caused an R error, integers were formatted as floats in the
-   R script, and the temporary R script was not removed
+   R script, and the temporary R script was not removed (#366)
  - fix: three crash paths in the .tdms reader (image seek workaround,
    trace data with an incomplete last event, `hash` without the optional
-   "_camera.ini" file)
- - fix: `HTTPFile.read()` without size returned no data
+   "_camera.ini" file) (#367)
+ - fix: `HTTPFile.read()` without size returned no data (#368)
  - fix: values cached in the disk store changed their type when loaded
    (tuples became lists, non-string dictionary keys became strings);
-   such values are now stored in the new "json-typed" format
+   such values are now stored in the new "json-typed" format (#369)
  - fix: `BasinProxyFeature` did not use its cache for scalar features,
-   i.e. each access after the first one copied the data event by event
+   i.e. each access after the first one copied the data event by event (#370)
  - fix: `Inverted = False` in a .poly file did not override the
-   `inverted` keyword argument of `PolygonFilter` (as documented)
- - docs: inverted polygon filters include events with nan-values
+   `inverted` keyword argument of `PolygonFilter` (as documented) (#371)
+ - docs: inverted polygon filters include events with nan-values (#372)
  - fix: unreadable disk store entries were never replaced (the value was
-   recomputed on every call and the disk store size management failed)
+   recomputed on every call and the disk store size management failed) (#373)
  - fix: the identifier of plugin features created from a dictionary
    did not depend on the constants and names used in the method
-   (e.g. `lambda d: d * 2` and `lambda d: d * 3` were identical)
+   (e.g. `lambda d: d * 2` and `lambda d: d * 3` were identical) (#375)
  - fix: `get_emodulus` with `copy=False` raised a ValueError for
    lists or integer arrays with NumPy 2 (same for `convert` and
-   `scale_feature` with `inplace=True`)
+   `scale_feature` with `inplace=True`) (#376)
  - fix: a dangling external link in the "basins" group of an HDF5
    file raised a KeyError when the basins were loaded; such basin
-   definitions are now ignored (`BrokenBasinDefinitionWarning`)
+   definitions are now ignored (`BrokenBasinDefinitionWarning`) (#377)
  - fix: `statistics.mode` returned the edge of the bin instead of its
    center (the data were rounded instead of floored before adding
-   half the bin size)
- - ref: use `super()` without arguments (ruff UP008)
- - ref: use f-strings instead of `str.format` (ruff UP032)
+   half the bin size) (#378)
+ - ref: use `super()` without arguments (ruff UP008) (#379)
+ - ref: use f-strings instead of `str.format` (ruff UP032) (#380)
  - ci: the lme4 tests were silently skipped, because lme4 could not
    be installed with R 4.1.2; use the latest R release and fail if
-   lme4 is not installed
- - tests: update pinned glmer values for lme4 2.1
- - ref: remove Python 2 remnants and outdated syntax (ruff pyupgrade)
- - ref: use explicit `X | None` for optional arguments in type hints
+   lme4 is not installed (#381)
+ - tests: update pinned glmer values for lme4 2.1 (#381)
+ - ref: remove Python 2 remnants and outdated syntax (ruff pyupgrade) (#383)
+ - ref: use explicit `X | None` for optional arguments in type hints (#384)
  - fix: passing positional arguments (e.g. `h5kwargs`) to `RTDC_HTTP`
-   or `RTDC_S3` raised a TypeError (ruff B026)
+   or `RTDC_S3` raised a TypeError (ruff B026) (#385)
  - ref: annotate shared class attributes with `ClassVar` and minor
-   cleanups (ruff B004, B006, B008, PLW0120, RUF012)
- - ref: simplify code (ruff SIM, C4, PIE, PERF, FURB, FLY, PLC0206)
- - ref: add pyright stub for h5py until h5py ships type hints
+   cleanups (ruff B004, B006, B008, PLW0120, RUF012) (#386)
+ - ref: simplify code (ruff SIM, C4, PIE, PERF, FURB, FLY, PLC0206) (#387)
+ - ref: add pyright stub for h5py until h5py ships type hints (#388)
  - tests: use 100 bootstrap iterations in `test_glmer_differential`
-   (took about 10 minutes on Linux and longer on Windows)
- - ref: use implicit string concatenation (ruff ISC003, ISC004)
- - ref: fix remaining minor ruff findings
- - ref: use double quotes for strings (ruff Q000)
+   (took about 10 minutes on Linux and longer on Windows) (#389)
+ - ref: use implicit string concatenation (ruff ISC003, ISC004) (#391)
+ - ref: fix remaining minor ruff findings (#393)
+ - ref: use double quotes for strings (ruff Q000) (#394)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

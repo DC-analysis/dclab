@@ -198,6 +198,22 @@ def test_invert_copy():
     assert np.sum(ds.filter.all) == 0, "inverted+normal filter filters all"
 
 
+def test_invert_nan():
+    """Events with nan-values are included by inverted polygon filters
+
+    This is the documented behavior (see `PolygonFilter`).
+    """
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[0, 0], [1, 0], [1, 1]])
+    datax = np.array([0.8, np.nan, 5, 0.8, np.nan])
+    datay = np.array([0.2, 0.5, 5, np.nan, np.nan])
+    assert np.all(pf.filter(datax, datay)
+                  == [True, False, False, False, False])
+    pf_inv = pf.copy(invert=True)
+    assert np.all(pf_inv.filter(datax, datay)
+                  == [False, True, True, True, True])
+
+
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
                             + 'FilterIdExistsWarning')
 def test_invert_saveload():

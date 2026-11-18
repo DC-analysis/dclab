@@ -92,6 +92,10 @@ Filters
 -------
 A filter can be used to gate events using features. There are
 min/max filters and 2D :ref:`polygon filters <sec_ref_polygon_filter>`.
+Events with nan-values are never inside a polygon filter. Thus, they
+are excluded by regular polygon filters, but *included* by inverted
+polygon filters. To exclude events with nan- or inf-values in any
+feature, set "remove invalid events" (see table below).
 The following table defines the main filtering parameters:
 
 .. dclab_config:: filtering

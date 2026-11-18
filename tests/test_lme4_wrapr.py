@@ -1,6 +1,7 @@
 """Tests for `dclab.lme4.wrapr` that do not require R"""
 import os
 import pathlib
+import tempfile
 
 import numpy as np
 
@@ -19,13 +20,32 @@ def test_arr2str():
 def test_fit_removes_temporary_script(monkeypatch):
     """The temporary R script must be closed and removed after a fit"""
     script_paths = []
+    script_fds = []
+    mkstemp = tempfile.mkstemp
+
+    def mkstemp_wrapper(*args, **kwargs):
+        fd, path = mkstemp(*args, **kwargs)
+        script_fds.append(fd)
+        return fd, path
+
+    def fd_is_open_for(fd, path):
+        """Whether `fd` is an open file descriptor of the file `path`"""
+        try:
+            fd_stat = os.fstat(fd)
+        except OSError:
+            return False  # closed
+        # `fd` might have been reused for another file (other threads)
+        return os.path.samestat(fd_stat, os.stat(path))
 
     def run_command(cmd, **kwargs):
         script_path = pathlib.Path(cmd[1])
         assert script_path.exists()
+        # the file descriptor from `tempfile.mkstemp` must be closed
+        assert not fd_is_open_for(script_fds[0], script_path)
         script_paths.append(script_path)
         return "Loading required package: lme4\nOUTPUT model: lmer #*#\n"
 
+    monkeypatch.setattr(tempfile, "mkstemp", mkstemp_wrapper)
     monkeypatch.setattr(rsetup, "has_lme4", lambda: True)
     monkeypatch.setattr(rsetup, "get_r_script_path", lambda: "Rscript")
     monkeypatch.setattr(rsetup, "run_command", run_command)
@@ -37,13 +57,8 @@ def test_fit_removes_temporary_script(monkeypatch):
         ds.config["setup"]["chip region"] = "channel"
         rlme4.add_dataset(ds, group, repetition)
 
-    has_proc = os.path.isdir("/proc/self/fd")
-    if has_proc:
-        num_fds = len(os.listdir("/proc/self/fd"))
     res = rlme4.fit()
     assert res["model"] == "lmer"
+    assert len(script_fds) == 1
     assert len(script_paths) == 1
     assert not script_paths[0].exists()
-    if has_proc:
-        # the file descriptor from `tempfile.mkstemp` must be closed
-        assert len(os.listdir("/proc/self/fd")) == num_fds

@@ -194,7 +194,7 @@ def test_umbrella_cache_disk_store_hybrid_deleted(tmp_path, store_keeper):
     a = func1(4)
     assert a == 8
 
-    key = list(store_keeper.memory_store.data.keys())[0]
+    key = next(iter(store_keeper.memory_store.data.keys()))
 
     store_keeper.perform_tasks()
 

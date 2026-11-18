@@ -338,7 +338,7 @@ def test_join_frame():
         frame0 = np.array(ds0["frame"], dtype=int)
         assert np.allclose(dsj["frame"],
                            np.concatenate((frame0,
-                                           frame0 + int(round(offset * fr)))),
+                                           frame0 + round(offset * fr))),
                            rtol=0,
                            atol=0)
         assert dsj["frame"][-1] == 360302210

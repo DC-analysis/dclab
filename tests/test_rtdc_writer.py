@@ -331,8 +331,8 @@ def test_bulk_qpi2d(feat, dtype):
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_bulk_qpi_")
     with RTDCWriter(rtdc_file) as hw:
-        for feat, values in data.items():
-            hw.store_feature(feat, values)
+        for key, values in data.items():
+            hw.store_feature(key, values)
     # Read the file:
     with h5py.File(rtdc_file, mode="r") as rtdc_data:
         events = rtdc_data["events"]

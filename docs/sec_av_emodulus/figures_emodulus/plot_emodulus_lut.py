@@ -74,7 +74,7 @@ for lut_name in [
         area_um = np.linspace(lut_base[:, 0].min(), lut_base[:, 0].max(),
                               grid_size, endpoint=True)
         for jj, medium in enumerate(media):  # rows
-            for ii, flow_rate in enumerate(matrix[channel_width]):  # columns
+            for ii, flow_rate in enumerate(flow_rates):  # columns
                 area_um_scaled = emodulus.scale_linear.scale_area_um(
                     area_um=area_um,
                     channel_width_in=lut_meta["channel_width"],

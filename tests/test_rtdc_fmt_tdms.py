@@ -113,7 +113,7 @@ def test_contour_unknown_offset():
     ds = dclab.new_dataset(tdms_path)
     with pytest.raises(dclab.rtdc_dataset.fmt_tdms.exc.ContourIndexingError,
                        match=r"Contour data has unknown offset \(frame 141\)"):
-        ds["contour"].shape  # raises the error
+        _ = ds["contour"].shape  # raises the error
 
     with pytest.raises(dclab.rtdc_dataset.fmt_tdms.exc.ContourIndexingError,
                        match=r"Contour data has unknown offset \(frame 141\)"):

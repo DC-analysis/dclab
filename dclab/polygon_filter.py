@@ -188,7 +188,9 @@ class PolygonFilter:
 
         if unique_id is None:
             # overwrite unique id
-            unique_id = int(data[start-1].strip().strip("Polygon []"))
+            # e.g. "[Polygon 00000001]"
+            unique_id = int(data[start-1].strip().removeprefix(
+                "[Polygon").removesuffix("]"))
         self._set_unique_id(unique_id)
 
     def _set_unique_id(self, unique_id):
@@ -369,7 +371,8 @@ class PolygonFilter:
         if isinstance(polyfile, io.IOBase):
             fobj = polyfile
         else:
-            fobj = pathlib.Path(polyfile).open("a")
+            # not closed here if `ret_fobj` is set
+            fobj = pathlib.Path(polyfile).open("a")  # noqa: SIM115
 
         # Who the hell would use more then 10 million polygons or
         # polygon points? -> 08d (easier if other people want to import)

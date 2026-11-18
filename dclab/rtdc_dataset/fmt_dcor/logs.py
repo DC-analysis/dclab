@@ -10,8 +10,7 @@ class DCORLogs:
         return self._logs[key]
 
     def __iter__(self):
-        for key in self.keys():
-            yield key
+        yield from self.keys()
 
     def __len__(self):
         return len(self._logs)

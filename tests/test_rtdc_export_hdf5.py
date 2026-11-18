@@ -405,24 +405,22 @@ def test_hdf5_filtered_full(dataset):
 
     # 3. via RTDC writer
     path_out3 = tdir / "out3.rtdc"
-    with dclab.new_dataset(path_in) as ds:
-        with RTDCWriter(path_out3) as hw:
-            config = ds.config.as_dict(pop_filtering=True)
-            hw.store_metadata(config)
-            for feat in ds.features_innate:
-                hw.store_feature(feat, ds[feat])
+    with dclab.new_dataset(path_in) as ds, RTDCWriter(path_out3) as hw:
+        config = ds.config.as_dict(pop_filtering=True)
+        hw.store_metadata(config)
+        for feat in ds.features_innate:
+            hw.store_feature(feat, ds[feat])
 
     # 4. via export filtered function
     path_out4 = tdir / "out4.rtdc"
-    with dclab.new_dataset(path_in) as ds:
-        with RTDCWriter(path_out4) as hw:
-            config = ds.config.as_dict(pop_filtering=True)
-            hw.store_metadata(config)
-            for feat in ds.features_innate:
-                store_filtered_feature(rtdc_writer=hw,
-                                       feat=feat,
-                                       data=ds[feat],
-                                       filtarr=np.ones(len(ds), dtype=bool))
+    with dclab.new_dataset(path_in) as ds, RTDCWriter(path_out4) as hw:
+        config = ds.config.as_dict(pop_filtering=True)
+        hw.store_metadata(config)
+        for feat in ds.features_innate:
+            store_filtered_feature(rtdc_writer=hw,
+                                   feat=feat,
+                                   data=ds[feat],
+                                   filtarr=np.ones(len(ds), dtype=bool))
 
     with dclab.new_dataset(path_in) as ds0:
         for path in [path_out1, path_out2, path_out3, path_out4]:

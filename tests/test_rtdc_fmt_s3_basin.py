@@ -29,17 +29,18 @@ def test_basin_as_dict(tmp_path):
     tmp_path = tmp_path.resolve()
     h5path = tmp_path / "test_basin_s3.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_S3(s3_url) as src:
-        # Store non-existent basin information
-        with RTDCWriter(dst, mode="append") as hw:
-            meta = src.config.as_dict(pop_filtering=True)
-            hw.store_metadata(meta)
-            hw.store_basin(basin_name="example basin",
-                           basin_type="remote",
-                           basin_format="s3",
-                           basin_locs=[s3_url],
-                           basin_descr="an example S3 test basin",
-                           )
+    # Store non-existent basin information
+    with (h5py.File(h5path, "a") as dst,
+          RTDC_S3(s3_url) as src,
+          RTDCWriter(dst, mode="append") as hw):
+        meta = src.config.as_dict(pop_filtering=True)
+        hw.store_metadata(meta)
+        hw.store_basin(basin_name="example basin",
+                       basin_type="remote",
+                       basin_format="s3",
+                       basin_locs=[s3_url],
+                       basin_descr="an example S3 test basin",
+                       )
 
     with new_dataset(h5path) as ds:
         assert ds._enable_basins

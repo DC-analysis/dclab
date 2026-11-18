@@ -358,9 +358,9 @@ def test_user_section_set_save_reload_empty_dict():
 def test_user_section_set_save_reload_empty_key(user_config):
     """Empty or only-whitespace 'user' section keys not allowed"""
     h5path = retrieve_data("fmt-hdf5_fl_2018.zip")
-    with new_dataset(h5path) as ds:
-        with pytest.warns(dccfg.BadUserConfigurationKeyWarning):
-            ds.config.update({"user": user_config})
+    with (new_dataset(h5path) as ds,
+          pytest.warns(dccfg.BadUserConfigurationKeyWarning)):
+        ds.config.update({"user": user_config})
 
 
 def test_user_section_set_save_reload_fmt_dict():

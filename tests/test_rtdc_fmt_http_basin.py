@@ -37,17 +37,18 @@ def test_basin_as_dict(tmp_path):
     tmp_path = tmp_path.resolve()
     h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
-        # Store non-existent basin information
-        with RTDCWriter(dst, mode="append") as hw:
-            meta = src.config.as_dict(pop_filtering=True)
-            hw.store_metadata(meta)
-            hw.store_basin(basin_name="example basin",
-                           basin_type="remote",
-                           basin_format="http",
-                           basin_locs=[http_url],
-                           basin_descr="an example http test basin",
-                           )
+    # Store non-existent basin information
+    with (h5py.File(h5path, "a") as dst,
+          RTDC_HTTP(http_url) as src,
+          RTDCWriter(dst, mode="append") as hw):
+        meta = src.config.as_dict(pop_filtering=True)
+        hw.store_metadata(meta)
+        hw.store_basin(basin_name="example basin",
+                       basin_type="remote",
+                       basin_format="http",
+                       basin_locs=[http_url],
+                       basin_descr="an example http test basin",
+                       )
 
     with new_dataset(h5path) as ds:
         assert ds._enable_basins
@@ -85,17 +86,18 @@ def test_basin_as_dict_netloc_vs_hostname(tmp_path):
                        "circle-442e6d53-c48b-46eb-873c-4a0f98f3827d/"
                        "resource/57e/cde/5d-f896-4599-ba35-d1be7defc6fe")
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
-        # Store non-existent basin information
-        with RTDCWriter(dst, mode="append") as hw:
-            meta = src.config.as_dict(pop_filtering=True)
-            hw.store_metadata(meta)
-            hw.store_basin(basin_name="example basin",
-                           basin_type="remote",
-                           basin_format="http",
-                           basin_locs=[http_url_netloc],
-                           basin_descr="an example http test basin",
-                           )
+    # Store non-existent basin information
+    with (h5py.File(h5path, "a") as dst,
+          RTDC_HTTP(http_url) as src,
+          RTDCWriter(dst, mode="append") as hw):
+        meta = src.config.as_dict(pop_filtering=True)
+        hw.store_metadata(meta)
+        hw.store_basin(basin_name="example basin",
+                       basin_type="remote",
+                       basin_format="http",
+                       basin_locs=[http_url_netloc],
+                       basin_descr="an example http test basin",
+                       )
 
     with new_dataset(h5path) as ds:
         assert len(ds) == 28

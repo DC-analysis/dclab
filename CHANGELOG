@@ -193,6 +193,8 @@
  - ref: fix remaining minor ruff findings (#393)
  - ref: use double quotes for strings (ruff Q000) (#394)
  - ci: lint with ruff (rules configured in `pyproject.toml`) (#397)
+ - fix: importing the deprecated `dclab.kde_contours` raised an
+   ImportError (`_find_quantile_level` was moved to the tests) (#398)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

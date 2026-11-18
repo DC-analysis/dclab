@@ -227,9 +227,9 @@ def condense_dataset(
 
 
 def condense_parser():
-    descr = "Reduce an RT-DC measurement to its scalar-only features " \
-            + "(i.e. without `contour`, `image`, `mask`, or `trace`). " \
-            + "All available ancillary features are computed."
+    descr = ("Reduce an RT-DC measurement to its scalar-only features "
+             "(i.e. without `contour`, `image`, `mask`, or `trace`). "
+             "All available ancillary features are computed.")
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('input', metavar="INPUT", type=str,
                         help='Input path (.tdms or .rtdc file)')

@@ -90,7 +90,7 @@ def extrapolate_emodulus(lut: npt.NDArray,
         return emod
 
     warnings.warn("LUT extrapolation is barely tested and may yield "
-                  + "unphysical values!",
+                  "unphysical values!",
                   KnowWhatYouAreDoingWarning)
 
     lut_crop = lut[lut[:, 1] > deform_thresh/deform_norm, :]
@@ -234,7 +234,7 @@ def get_emodulus(deform: float | npt.NDArray,
         visco = medium
         if temperature is not None:
             raise ValueError("If `medium` is given in Pa*s, then "
-                             + "`temperature` must be set to None!")
+                             "`temperature` must be set to None!")
         if visc_model is not None:
             warnings.warn("If `medium` is given in Pa*s, then `visc_model` "
                           "must be set to None. An exception will be raised "
@@ -335,9 +335,9 @@ def get_emodulus(deform: float | npt.NDArray,
     nans = np.sum(np.isnan(emod))
     if nans / emod.size > 0.1:
         warnings.warn("The Young's modulus could not be computed for "
-                      + f"{nans/emod.size*100:.0f}% of the data. "
-                      + "This is because they are not covered by the "
-                      + f"look-up table '{lut_data}'.",
+                      f"{nans/emod.size*100:.0f}% of the data. "
+                      "This is because they are not covered by the "
+                      f"look-up table '{lut_data}'.",
                       YoungsModulusLookupTableExceededWarning)
 
     return emod

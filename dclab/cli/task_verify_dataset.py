@@ -47,7 +47,7 @@ def verify_dataset(path_in=None):
         for vio in viol:
             common.print_violation(vio)
         common.print_info(f"Check Complete: {len(viol)} violations and "
-                          + f"{len(aler)} alerts")
+                          f"{len(aler)} alerts")
         if aler and viol:
             exit_status = 3
         elif aler:
@@ -63,11 +63,11 @@ def verify_dataset(path_in=None):
 
 
 def verify_dataset_parser():
-    descr = "Check experimental datasets for completeness. This command " \
-            + "is used e.g. to enforce data integrity with Shape-In. The " \
-            + "following exit codes are defined: ``0: valid dataset``, " \
-            + "``1: alerts encountered``, ``2: violations encountered``, " \
-            + "``3: alerts and violations``, ``4: other error``."
+    descr = ("Check experimental datasets for completeness. This command "
+             "is used e.g. to enforce data integrity with Shape-In. The "
+             "following exit codes are defined: ``0: valid dataset``, "
+             "``1: alerts encountered``, ``2: violations encountered``, "
+             "``3: alerts and violations``, ``4: other error``.")
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('path', metavar='PATH', type=str,
                         help='Path to experimental dataset')

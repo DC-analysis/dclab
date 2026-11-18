@@ -138,7 +138,7 @@ def join(
                             features.remove(feat)
                             warnings.warn(
                                 f"Excluding feature '{feat}', because "
-                                + f"it is not present in '{pp}'!",
+                                f"it is not present in '{pp}'!",
                                 FeatureSetNotIdenticalJoinWarning)
                     # Warn the user if this dataset has an innate feature that
                     # is being ignored, because it is not an innate feature of
@@ -147,8 +147,8 @@ def join(
                         if feat not in features:
                             warnings.warn(
                                 f"Ignoring feature '{feat}' in '{pp}', "
-                                + "because it is not present in the "
-                                + "other files being joined!",
+                                "because it is not present in the "
+                                "other files being joined!",
                                 FeatureSetNotIdenticalJoinWarning)
         if w:
             logs["dclab-join-feature-warnings"] = common.assemble_warnings(w)
@@ -233,11 +233,11 @@ def join(
 
 
 def join_parser():
-    descr = "Join two or more RT-DC measurements. This will produce " \
-            + "one larger .rtdc file. The meta data of the dataset " \
-            + "that was recorded earliest will be used in the output " \
-            + "file. Please only join datasets that were recorded " \
-            + "in the same measurement run."
+    descr = ("Join two or more RT-DC measurements. This will produce "
+             "one larger .rtdc file. The meta data of the dataset "
+             "that was recorded earliest will be used in the output "
+             "file. Please only join datasets that were recorded "
+             "in the same measurement run.")
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument('input', metavar="INPUT", nargs="*", type=str,
                         help='Input paths (.tdms or .rtdc files)')

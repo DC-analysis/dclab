@@ -318,7 +318,7 @@ class Configuration:
 class CaseInsensitiveDict(ConfigurationDict):
     def __init__(self, *args, **kwargs):
         warnings.warn("CaseInsensitiveDict is deprecated, use "
-                      + "ConfigurationDict instead.",
+                      "ConfigurationDict instead.",
                       DeprecationWarning)
         super().__init__(*args, **kwargs)
 
@@ -354,7 +354,7 @@ def verify_section_key(section, key):
             if not dfn.scalar_feature_exists(feat):
                 warnings.warn(
                     "A range has been specified for an unknown feature "
-                    + f"'{feat}' in the 'filtering' section!",
+                    f"'{feat}' in the 'filtering' section!",
                     UnknownConfigurationKeyWarning)
                 wcount += 1
         elif key == "limit events auto":

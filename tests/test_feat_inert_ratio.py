@@ -10,8 +10,8 @@ from helper_methods import retrieve_data
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'feat_anc_core.ancillary_feature.'
-                            + 'BadFeatureSizeWarning')
+                            'feat_anc_core.ancillary_feature.'
+                            'BadFeatureSizeWarning')
 def test_af_inert_ratio_cvx():
     pytest.importorskip("nptdms")
     # Brightness of the image
@@ -29,8 +29,8 @@ def test_af_inert_ratio_cvx():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'feat_anc_core.ancillary_feature.'
-                            + 'BadFeatureSizeWarning')
+                            'feat_anc_core.ancillary_feature.'
+                            'BadFeatureSizeWarning')
 def test_af_inert_ratio_prnc():
     pytest.importorskip("nptdms")
     # Brightness of the image
@@ -64,8 +64,8 @@ def test_af_inert_ratio_prnc_greater_than_one_issue_212(file):
 
 
 @pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            + 'feat_anc_core.ancillary_feature.'
-                            + 'BadFeatureSizeWarning')
+                            'feat_anc_core.ancillary_feature.'
+                            'BadFeatureSizeWarning')
 def test_af_inert_ratio_raw():
     pytest.importorskip("nptdms")
     # Brightness of the image

@@ -72,7 +72,7 @@ class PolygonFilter:
         else:
             if len(axes) != 2:
                 raise ValueError("`axes` must have length 2, "
-                                 + f"got '{axes}'!")
+                                 f"got '{axes}'!")
             self.axes = axes
             self.points = np.array(points, dtype=np.float64)
             self.name = name

@@ -353,41 +353,41 @@ def test_dcor_tables_image():
 
 @pytest.mark.parametrize("target,kwargs", [
     # HTTPS
-    ("https://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": True,
       "host": "example.com"}
      ),
-    ("https://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "example.com/api/3/action/dcserv?id="
              "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": True,
       "host": "example.com"}
      ),
-    ("https://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "example.com/api/3/action/dcserv?id="
              "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": None,
       "host": "example.com"}
      ),
-    ("https://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": None,
       "host": "example.com"}
      ),
-    ("https://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": None,
       # sneak in a scheme into host
       "host": "https://example.com"}
      ),
-    ("https://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("https://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "https://example.com/api/3/action/dcserv?id="
              "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": None,
@@ -395,42 +395,42 @@ def test_dcor_tables_image():
       "host": "example2.com"}
      ),
     # HTTP
-    ("http://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "example.com/api/3/action/dcserv?id="
              "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": False,
       "host": "example.com"}
      ),
-    ("http://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "https://example.com/api/3/action/dcserv?id="
              "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": False,
       "host": "example.com"}
      ),
-    ("http://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": False,
       "host": "example.com"}
      ),
-    ("http://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "http://example.com/api/3/action/dcserv?id="
              "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": None,
       "host": "example.com"}
      ),
-    ("http://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": False,
       # sneak in a scheme into host
       "host": "https://example.com"}
      ),
-    ("http://example.com/api/3/action/dcserv?"
-     "id=b1404eb5-f661-4920-be79-5ff4e85915d5",
+    (("http://example.com/api/3/action/dcserv?"
+     "id=b1404eb5-f661-4920-be79-5ff4e85915d5"),
      {"url": "http://example.com/api/3/action/dcserv?id="
              "b1404eb5-f661-4920-be79-5ff4e85915d5",
       "use_ssl": False,

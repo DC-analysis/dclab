@@ -73,7 +73,7 @@ def test_equals_shape():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            + 'FilterIdExistsWarning')
+                            'FilterIdExistsWarning')
 def test_import():
     ddict = example_data_dict(size=1000, keys=["aspect", "tilt"])
     ds = dclab.new_dataset(ddict)
@@ -215,7 +215,7 @@ def test_invert_nan():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            + 'FilterIdExistsWarning')
+                            'FilterIdExistsWarning')
 def test_invert_saveload():
     ddict = example_data_dict(size=1234, keys=["aspect", "tilt"])
     # points of polygon filter
@@ -294,7 +294,7 @@ def test_remove():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            + 'FilterIdExistsWarning')
+                            'FilterIdExistsWarning')
 def test_save():
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
     with open(tf, "w") as fd:
@@ -355,7 +355,7 @@ def test_save_load_name_with_equals_sign(tmp_path):
 
 
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            + 'FilterIdExistsWarning')
+                            'FilterIdExistsWarning')
 def test_save_multiple():
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
     with open(tf, "w") as fd:
@@ -403,7 +403,7 @@ def test_state():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            + 'FilterIdExistsWarning')
+                            'FilterIdExistsWarning')
 def test_unique_id():
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
     with open(tf, "w") as fd:
@@ -416,7 +416,7 @@ def test_unique_id():
 
 
 @pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            + 'FilterIdExistsWarning')
+                            'FilterIdExistsWarning')
 def test_with_rtdc_data_set():
     ddict = example_data_dict(size=821, keys=["aspect", "tilt"])
     ds = dclab.new_dataset(ddict)

@@ -98,8 +98,8 @@ class TraceColumn:
                 # a constant. According to Philipp, this means the trace
                 # cannot be used.
                 warnings.warn(f"Ignoring trace data of '{tname}' "
-                              + "due to multiple values for samples per "
-                              + f"event: {samples_per_event}",
+                              "due to multiple values for samples per "
+                              f"event: {samples_per_event}",
                               MultipleSamplesPerEventFound)
             else:
                 # Load the trace data. The traces file is usually larger than

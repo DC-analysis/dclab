@@ -49,13 +49,14 @@ def test_http_file_does_not_exist():
 
 
 @pytest.mark.parametrize("url, avail", [
-    ("https://objectstore.hpccloud.mpcdf.mpg.de/"
-     "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-     "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0", (True, "none")),
+    (("https://objectstore.hpccloud.mpcdf.mpg.de/"
+      "circle-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+      "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0"), (True, "none")),
     # "noexisting"
-    ("https://objectstore.hpccloud.mpcdf.mpg.de/"
-     "noexisting-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
-     "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0", (False, "not found")),
+    (("https://objectstore.hpccloud.mpcdf.mpg.de/"
+      "noexisting-5a7a053d-55fb-4f99-960c-f478d0bd418f/"
+      "resource/fb7/19f/b2-bd9f-817a-7d70-f4002af916f0"),
+     (False, "not found")),
     # invalid URL
     ("https://example.com", (False, "invalid")),
     # nonexistent host

@@ -110,8 +110,8 @@ class RTDC_DCOR(RTDCBase):
             size = int(self.api.get(query="size"))
         self._size = size
 
-        self.title = f"{self.config['experiment']['sample']} - " \
-            + f"M{self.config['experiment']['run index']}"
+        self.title = (f"{self.config['experiment']['sample']} - "
+                      f"M{self.config['experiment']['run index']}")
 
     def __len__(self):
         return self._size

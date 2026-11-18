@@ -560,12 +560,12 @@ class RTDCWriter:
                     # Temporary features will have to live with this warning.
                     warnings.warn(
                         "There is no information about the shape of the "
-                        + f"feature '{feat}'. I am going out on a limb "
-                        + "for you and assume that you are storing "
-                        + "multiple events at a time. If this works, "
-                        + f"you could put the shape `{data[0].shape}` "
-                        + 'in the `info["feature shapes"]` key of '
-                        + "your plugin feature.")
+                        f"feature '{feat}'. I am going out on a limb "
+                        "for you and assume that you are storing "
+                        "multiple events at a time. If this works, "
+                        f"you could put the shape `{data[0].shape}` "
+                        'in the `info["feature shapes"]` key of '
+                        "your plugin feature.")
                     shape = data.shape[1:]
             if shape == data.shape:
                 data = data.reshape(1, *shape)
@@ -573,7 +573,7 @@ class RTDCWriter:
                 pass
             else:
                 raise ValueError(f"Bad shape for {feat}! Expeted {shape}, "
-                                 + f"but got {data.shape[1:]}!")
+                                 f"but got {data.shape[1:]}!")
             self.write_ndarray(group=events, name=feat, data=data, dtype=dtype)
 
     def store_log(self, name, lines):

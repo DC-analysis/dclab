@@ -379,14 +379,14 @@ class IntegrityChecker:
                     if len(self.ds["trace"][tr]) != lends:
                         cues.append(ICue(
                             msg=f"Features: wrong event count: 'trace/{tr}' "
-                                + f"({len(self.ds['trace'][tr])} of {lends})",
+                                f"({len(self.ds['trace'][tr])} of {lends})",
                             level="violation",
                             category="feature size"))
             else:
                 if len(self.ds[feat]) != lends:
                     cues.append(ICue(
                         msg=f"Features: wrong event count: '{feat}' "
-                            + f"({len(self.ds[feat])} of {lends})",
+                            f"({len(self.ds[feat])} of {lends})",
                         level="violation",
                         category="feature size"))
         return cues
@@ -497,7 +497,7 @@ class IntegrityChecker:
                     if spek != spe:
                         cues.append(ICue(
                             msg="Metadata: wrong number of samples per "
-                                + f"event: {key} (expected {spe}, got {spek})",
+                                f"event: {key} (expected {spe}, got {spek})",
                             level="violation",
                             category="metadata wrong",
                             cfg_section="fluorescence",
@@ -548,8 +548,8 @@ class IntegrityChecker:
                 for k in ["flow rate", "flow rate sheath", "flow rate sample"]:
                     cues.append(ICue(
                         msg="Metadata: Flow rates don't add up (sheath "
-                            + f"{frshe:g} + sample {frsam:g} "
-                            + f"!= channel {frsum:g})",
+                            f"{frshe:g} + sample {frsam:g} "
+                            f"!= channel {frsum:g})",
                         level="alert",
                         category="metadata wrong",
                         cfg_section="setup",
@@ -570,19 +570,19 @@ class IntegrityChecker:
                         if key not in imdat.attrs:
                             cues.append(ICue(
                                 msg=f"HDF5: '/{feat}': missing "
-                                    + f"attribute '{key}'",
+                                    f"attribute '{key}'",
                                 level="alert",
                                 category="format HDF5"))
                         elif imdat.attrs.get_id(key).dtype.char != "S":
                             cues.append(ICue(
                                 msg=f"HDF5: '/{feat}': attribute '{key}' "
-                                    + "should be fixed-length ASCII string",
+                                    "should be fixed-length ASCII string",
                                 level="alert",
                                 category="format HDF5"))
                         elif imdat.attrs[key] != val:
                             cues.append(ICue(
                                 msg=f"HDF5: '/{feat}': attribute '{key}' "
-                                    + f"should have value '{val}'",
+                                    f"should have value '{val}'",
                                 level="alert",
                                 category="format HDF5"))
             # check length of logs
@@ -602,8 +602,8 @@ class IntegrityChecker:
                             if len(log[ii]) > LOG_MAX_LINE_LENGTH:
                                 cues.append(ICue(
                                     msg=f"Logs: {logname} line {ii} "
-                                        + "exceeds maximum line length "
-                                        + f"{LOG_MAX_LINE_LENGTH}",
+                                        "exceeds maximum line length "
+                                        f"{LOG_MAX_LINE_LENGTH}",
                                     level="alert",
                                     category="format HDF5"))
         return cues
@@ -646,8 +646,8 @@ class IntegrityChecker:
                         if soll != ist:
                             cues.append(ICue(
                                 msg="Metadata: Mismatch [imaging] "
-                                    + f"'{roi}' and feature {feat} "
-                                    + f"({ist} vs {soll})",
+                                    f"'{roi}' and feature {feat} "
+                                    f"({ist} vs {soll})",
                                 level="violation",
                                 category="metadata wrong",
                                 cfg_section="imaging",
@@ -667,7 +667,7 @@ class IntegrityChecker:
             if value is not None and value <= 0:
                 cues.append(ICue(
                     msg=f"Metadata: Invalid value for [{sec}] '{key}': "
-                        + f"'{value}'!",
+                        f"'{value}'!",
                     level="violation",
                     category="metadata wrong",
                     cfg_section=sec,
@@ -683,7 +683,7 @@ class IntegrityChecker:
                     if val not in choices:
                         cues.append(ICue(
                             msg=f"Metadata: Invalid value [{sec}] {key}: "
-                                + f"'{val}'",
+                                f"'{val}'",
                             level="violation",
                             category="metadata wrong",
                             cfg_section=sec,
@@ -712,7 +712,7 @@ class IntegrityChecker:
                         else:
                             cues.append(ICue(
                                 msg=f"Metadata: [{sec}]: '{key}' should be "
-                                    + f"'{val_exp}', but is '{val_act}'!",
+                                    f"'{val_exp}', but is '{val_act}'!",
                                 level="alert",
                                 category="metadata wrong",
                                 cfg_section=sec,
@@ -728,7 +728,7 @@ class IntegrityChecker:
                     if points.shape[1] != 2 or points.shape[0] < 3:
                         cues.append(ICue(
                             msg="Metadata: Wrong shape [online_filter] "
-                                + f"{key}: '{points.shape}'",
+                                f"{key}: '{points.shape}'",
                             level="violation",
                             category="metadata wrong",
                             cfg_section="online_filter",
@@ -771,7 +771,7 @@ class IntegrityChecker:
         if "temp" in self.ds and "temperature" not in self.ds.config["setup"]:
             cues.append(ICue(
                 msg="Metadata: Missing key [setup] 'temperature', "
-                    + "because the 'temp' feature is given",
+                    "because the 'temp' feature is given",
                 level="alert",
                 category="metadata missing",
                 cfg_section="setup",
@@ -821,7 +821,7 @@ class IntegrityChecker:
                                "2.2.2.4", "2.3.0.0"]):
             cues.append(ICue(
                 msg="Metadata: Please verify that 'medium' is really "
-                    + "'CellCarrierB' (Shape-In issue #3)",
+                    "'CellCarrierB' (Shape-In issue #3)",
                 level="alert",
                 category="metadata wrong",
                 identifier="Shape-In issue #3",

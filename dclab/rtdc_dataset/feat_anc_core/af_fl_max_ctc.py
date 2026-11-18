@@ -60,9 +60,9 @@ def compute_ctc(mm: RTDCBase, fl_channel: int) -> npt.NDArray:
          "ct23" not in ctdict or
          "ct31" not in ctdict or
          "ct32" not in ctdict)):
-        msg = f"{mm}, has fl1_max, fl2_max, and fl3_max," \
-              + " but not all crosstalk matrix elements are" \
-              + " defined in the 'calculation' configuration section."
+        msg = (f"{mm}, has fl1_max, fl2_max, and fl3_max,"
+               " but not all crosstalk matrix elements are"
+               " defined in the 'calculation' configuration section.")
         raise MissingCrosstalkMatrixElementsError(msg)
 
     return features.fl_crosstalk.correct_crosstalk(

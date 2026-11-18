@@ -28,8 +28,8 @@ from .meta_logic import (
 class DeprecatedObject:
     def __init__(self, anobject, name, new):
         self.anobject = anobject
-        self.message = f"dclab.dfn.{name} is deprecated, please use " \
-            + f"dclab.dfn.{new} instead."
+        self.message = (f"dclab.dfn.{name} is deprecated, please use "
+                        f"dclab.dfn.{new} instead.")
 
     def __getattr__(self, item):
         warnings.warn(self.message, DeprecationWarning)

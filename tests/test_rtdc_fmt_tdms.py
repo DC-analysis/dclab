@@ -243,6 +243,25 @@ def test_hdf5_shape_trace():
     assert len(ds["trace"]["fl1_raw"][0]) == 1000
 
 
+def test_hdf5_shape_trace_incomplete_last_event():
+    """Trace data with an incomplete last event (size % spe != 0)"""
+    path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
+    tpath = path.with_name(path.name[:-5] + "_traces.tdms")
+    # append a few samples to the trace data
+    channels = []
+    for group in nptdms.TdmsFile(str(tpath)).groups():
+        for ch in group.channels():
+            if ch.data.size:
+                channels.append(nptdms.ChannelObject(
+                    group.name, ch.name, np.concatenate([ch.data,
+                                                         ch.data[:7]])))
+    with nptdms.TdmsWriter(str(tpath)) as writer:
+        writer.write_segment(channels)
+    ds = new_dataset(path)
+    assert ds["trace"]["fl1_raw"].shape == (44, 1000)
+    assert ds["trace"].shape == (2, 44, 1000)
+
+
 def test_fluorescence_config():
     ds1 = new_dataset(retrieve_data("fmt-tdms_minimal_2016.zip"))
     assert "fluorescence" not in ds1.config
@@ -288,6 +307,30 @@ def test_image_corrupt():
         pass
     else:
         assert False
+
+
+@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
+                            + 'fmt_tdms.exc.SlowVideoWarning')
+def test_image_index_error_workaround():
+    """Seeking workaround when imageio raises an IndexError"""
+    path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
+
+    class MockReader:
+        def __init__(self):
+            self.calls = 0
+
+        def get_data(self, idx):
+            self.calls += 1
+            if self.calls == 1:
+                raise IndexError("frame not found")
+            return np.full((4, 5, 3), idx, dtype=np.uint8)
+
+    im = dclab.rtdc_dataset.fmt_tdms.event_image.ImageMap(
+        path.with_name("M1_imaq.avi"))
+    im._cap = MockReader()
+    image = im[2]
+    assert image.shape == (4, 5)
+    assert np.all(image == 2)
 
 
 @pytest.mark.filterwarnings(
@@ -513,6 +556,17 @@ def test_pixel_size():
         fd.write(newdata)
     ds = new_dataset(path)
     assert ds.config["imaging"]["pixel size"] == 0.12
+
+
+@pytest.mark.filterwarnings(
+    "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
+def test_hash_without_camera_ini():
+    """The _camera.ini file is optional"""
+    path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
+    hash_with = new_dataset(path).hash
+    path.with_name("M1_camera.ini").unlink()
+    hash_without = new_dataset(path).hash
+    assert hash_without != hash_with
 
 
 def test_project_path():

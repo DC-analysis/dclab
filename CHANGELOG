@@ -144,6 +144,9 @@
  - fix: lme4 convergence messages were never reported, multiple lme4
    messages caused an R error, integers were formatted as floats in the
    R script, and the temporary R script was not removed
+ - fix: three crash paths in the .tdms reader (image seek workaround,
+   trace data with an incomplete last event, `hash` without the optional
+   "_camera.ini" file)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

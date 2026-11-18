@@ -164,7 +164,7 @@ class ImageMap(object):
         try:
             cellimg = cap.get_data(idx)
         except IndexError:
-            self._get_image_workaround_seek(idx)
+            cellimg = self._get_image_workaround_seek(idx)
         else:
             if np.all(cellimg == 0):
                 cellimg = self._get_image_workaround_seek(idx)

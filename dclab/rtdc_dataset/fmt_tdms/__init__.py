@@ -386,10 +386,10 @@ class RTDC_TDMS(RTDCBase):
     def hash(self):
         """Hash value based on file name and .ini file content"""
         if self._hash is None:
-            # Only hash _camera.ini and _para.ini
+            # Only hash _camera.ini and _para.ini (_camera.ini is optional)
             fsh = [self.path.with_name(self._mid + "_camera.ini"),
                    self.path.with_name(self._mid + "_para.ini")]
-            tohash = [hashfile(f) for f in fsh]
+            tohash = [hashfile(f) for f in fsh if f.exists()]
             tohash.append(self.path.name)
             # Hash a maximum of ~1MB of the tdms file
             tohash.append(hashfile(self.path, blocksize=65536, count=20))

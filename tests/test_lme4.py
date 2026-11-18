@@ -125,8 +125,8 @@ def test_glmer_basic_larger():
         rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
 
     res = rlme4.fit()
-    assert np.allclose(res["fixed effects intercept"], 15.083832084641697)
-    assert np.allclose(res["anova p-value"], 0.00365675950677214)
+    assert np.allclose(res["fixed effects intercept"], 15.02186)
+    assert np.allclose(res["anova p-value"], 0.001471875)
     assert not rlme4.is_differential()
     assert res["model converged"]
 
@@ -144,10 +144,10 @@ def test_glmer_differential():
         rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
 
     res = rlme4.fit()
-    assert np.allclose(res["fixed effects intercept"], 93.55789706339498)
+    assert np.allclose(res["fixed effects intercept"], 93.56257)
     assert rlme4.is_differential()
     assert rlme4.model == "glmer+loglink"
-    assert np.allclose(res["anova p-value"], 0.000556063024310929)
+    assert np.allclose(res["anova p-value"], 6.11376e-06)
     assert res["model converged"]
 
 

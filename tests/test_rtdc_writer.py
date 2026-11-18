@@ -76,16 +76,16 @@ def test_basin_feature_restriction_verify():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
     path_test = path.parent / "test.h5"
     # We basically create a file that consists only of the metadata.
-    with RTDCWriter(path_test) as hw:
-        with pytest.raises(ValueError, match="blablabla"):
-            hw.store_basin(basin_name="get-out",
-                           basin_type="file",
-                           basin_format="hdf5",
-                           basin_locs=[path],
-                           basin_descr="My very first basin-only dataset",
-                           basin_feats=["blablabla"],
-                           verify=True,
-                           )
+    with (RTDCWriter(path_test) as hw,
+          pytest.raises(ValueError, match="blablabla")):
+        hw.store_basin(basin_name="get-out",
+                       basin_type="file",
+                       basin_format="hdf5",
+                       basin_locs=[path],
+                       basin_descr="My very first basin-only dataset",
+                       basin_feats=["blablabla"],
+                       verify=True,
+                       )
 
 
 @pytest.mark.filterwarnings(
@@ -424,9 +424,9 @@ def test_contour_from_hdf5():
 def test_empty_array():
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_error_")
-    with RTDCWriter(rtdc_file) as hw:
-        with pytest.raises(ValueError, match="Empty data object for 'deform'"):
-            hw.store_feature("deform", [])
+    with (RTDCWriter(rtdc_file) as hw,
+          pytest.raises(ValueError, match="Empty data object for 'deform'")):
+        hw.store_feature("deform", [])
 
 
 def test_index_increment():
@@ -662,9 +662,8 @@ def test_mode():
 def test_nan_array():
     rtdc_file = tempfile.mktemp(suffix=".rtdc",
                                 prefix="dclab_test_error_")
-    with RTDCWriter(rtdc_file) as hw:
-        with pytest.warns(RuntimeWarning) as record:
-            hw.store_feature("deform", np.full(100, np.nan))
+    with RTDCWriter(rtdc_file) as hw, pytest.warns(RuntimeWarning) as record:
+        hw.store_feature("deform", np.full(100, np.nan))
 
     assert len(record) == 3
     assert record[0].message.args[0] == "All-NaN axis encountered"
@@ -1096,9 +1095,9 @@ def test_tables_recarray_invalid():
                 ]
 
     # Write the table to the .rtdc file
-    with RTDCWriter(rtdc_file) as hw:
-        with pytest.raises(NotImplementedError, match="list"):
-            hw.store_table("food", tab_data)
+    with (RTDCWriter(rtdc_file) as hw,
+          pytest.raises(NotImplementedError, match="list")):
+        hw.store_table("food", tab_data)
 
 
 def test_version_branding_1_write_single_version():

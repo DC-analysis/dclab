@@ -71,15 +71,15 @@ def test_basin_features_internal_missing_feature(h5_obj_delete):
         )
         del hw.h5file[h5_obj_delete]
 
-    with pytest.warns(
-        feat_basin.BasinFeatureMissingWarning,
-            match="defined as an internal basin, but it cannot be found"):
-        # see if we can open the file without any error
-        with check.IntegrityChecker(path) as ic:
-            cues = [cc for cc in ic.check() if cc.level != "info"]
-            assert len(cues) == 1
-            assert cues[0].level == "violation"
-            assert cues[0].msg.count("Missing internal basin")
+    # see if we can open the file without any error
+    with (pytest.warns(
+            feat_basin.BasinFeatureMissingWarning,
+            match="defined as an internal basin, but it cannot be found"),
+          check.IntegrityChecker(path) as ic):
+        cues = [cc for cc in ic.check() if cc.level != "info"]
+        assert len(cues) == 1
+        assert cues[0].level == "violation"
+        assert cues[0].msg.count("Missing internal basin")
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
@@ -652,9 +652,9 @@ def test_ic_invalid_dataset():
     ddict = example_data_dict(size=8472, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
     ds_child = new_dataset(ds)
-    with check.IntegrityChecker(ds_child) as ic:
-        with pytest.raises(NotImplementedError):
-            ic.check()
+    with (check.IntegrityChecker(ds_child) as ic,
+          pytest.raises(NotImplementedError)):
+        ic.check()
 
     # Testing if IC throws NotImplementedError for raw-datasets with
     # applied filters
@@ -663,9 +663,8 @@ def test_ic_invalid_dataset():
     ds.config["filtering"]["area_um max"] = 100
     ds.config["filtering"]["area_um min"] = 1
     ds.apply_filter()
-    with check.IntegrityChecker(ds) as ic:
-        with pytest.raises(NotImplementedError):
-            ic.check()
+    with check.IntegrityChecker(ds) as ic, pytest.raises(NotImplementedError):
+        ic.check()
 
 
 def test_ic_sanity():

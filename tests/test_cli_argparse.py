@@ -99,9 +99,8 @@ def test_condense_no_ancillary_features():
 def test_condense_missing_argument():
     path_in = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
 
-    with mock.patch("sys.argv", ["", str(path_in)]):
-        with pytest.raises(SystemExit):
-            cli.condense()
+    with mock.patch("sys.argv", ["", str(path_in)]), pytest.raises(SystemExit):
+        cli.condense()
 
 
 def test_join_tdms():

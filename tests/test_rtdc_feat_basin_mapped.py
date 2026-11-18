@@ -377,10 +377,10 @@ def test_error_when_basinmap_not_given():
         # The area_um feature cannot be retrieved from the original file,
         # because the `basinmap0` feature is missing. Internally, dclab
         # locks up in a deep recursion involving ancillary features.
-        with recursionlimit(100):  # speeds up this test
-            with pytest.raises(BasinmapFeatureMissingError,
-                               match="Could not find the feature 'basinmap0'"):
-                dss["area_um"]
+        with (recursionlimit(100),  # speeds up this test
+              pytest.raises(BasinmapFeatureMissingError,
+                            match="Could not find the feature 'basinmap0'")):
+            dss["area_um"]
 
 
 def test_export_to_hdf5_empty_features_mapped_basin():

@@ -77,17 +77,18 @@ def test_features_local_remote_basin(tmp_path):
     tmp_path = tmp_path.resolve()
     h5path = tmp_path / "test_basin_http.rtdc"
 
-    with h5py.File(h5path, "a") as dst, RTDC_HTTP(http_url) as src:
-        # Store non-existent basin information
-        with RTDCWriter(dst, mode="append") as hw:
-            meta = src.config.as_dict(pop_filtering=True)
-            hw.store_metadata(meta)
-            hw.store_basin(basin_name="example basin",
-                           basin_type="remote",
-                           basin_format="http",
-                           basin_locs=[http_url],
-                           basin_descr="an example http test basin",
-                           )
+    # Store non-existent basin information
+    with (h5py.File(h5path, "a") as dst,
+          RTDC_HTTP(http_url) as src,
+          RTDCWriter(dst, mode="append") as hw):
+        meta = src.config.as_dict(pop_filtering=True)
+        hw.store_metadata(meta)
+        hw.store_basin(basin_name="example basin",
+                       basin_type="remote",
+                       basin_format="http",
+                       basin_locs=[http_url],
+                       basin_descr="an example http test basin",
+                       )
 
     with dclab.new_dataset(h5path) as ds:
         assert not ds.features_local

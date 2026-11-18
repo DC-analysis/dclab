@@ -251,12 +251,13 @@ def test_condense_from_s3(tmp_path):
               "resource/3ef/b60/c0-0212-43a7-bdd5-030487471ce8")
 
     path_cond = tmp_path / "condensed.rtdc"
-    with new_dataset(s3_url) as ds, h5py.File(path_cond, "w") as h5_cond:
-        with pytest.warns(rtdc_dataset.core.LocalBasinForbiddenWarning,
-                          match="not allowed"):
-            cli.condense_dataset(ds=ds,
-                                 h5_cond=h5_cond,
-                                 store_ancillary_features=True)
+    with (new_dataset(s3_url) as ds,
+          h5py.File(path_cond, "w") as h5_cond,
+          pytest.warns(rtdc_dataset.core.LocalBasinForbiddenWarning,
+                       match="not allowed")):
+        cli.condense_dataset(ds=ds,
+                             h5_cond=h5_cond,
+                             store_ancillary_features=True)
 
     with new_dataset(path_cond) as dsc:
         assert "volume" in dsc

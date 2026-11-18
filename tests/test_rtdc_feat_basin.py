@@ -83,10 +83,10 @@ def test_basin_cyclic_dependency_found():
     # Open the dataset
     with dclab.new_dataset(paths_list[0]) as ds:
         assert np.allclose(ds["deform"][0], 0.02494624), "sanity check"
-        with pytest.warns(feat_basin.CyclicBasinDependencyFoundWarning,
-                          match="Encountered cyclic basin dependency"):
-            with pytest.raises(KeyError):
-                _ = ds["userdef1"]
+        with (pytest.warns(feat_basin.CyclicBasinDependencyFoundWarning,
+                           match="Encountered cyclic basin dependency"),
+              pytest.raises(KeyError)):
+            _ = ds["userdef1"]
 
 
 @pytest.mark.filterwarnings(
@@ -716,10 +716,10 @@ def test_basin_run_identifier_verify():
     with dclab.new_dataset(h5path) as ds:
         assert ds.get_measurement_identifier() == "Uiiiid!"
 
-    with dclab.new_dataset(export_same) as ds2:
-        with pytest.warns(UserWarning, match="identifier mismatch"):
-            with pytest.raises(KeyError, match="does not exist"):
-                ds2["area_um"][0]
+    with (dclab.new_dataset(export_same) as ds2,
+          pytest.warns(UserWarning, match="identifier mismatch"),
+          pytest.raises(KeyError, match="does not exist")):
+        ds2["area_um"][0]
 
 
 def test_basin_sorting_basic():
@@ -779,11 +779,11 @@ def test_basin_unsupported_basin_format():
 
     h5path.unlink()
 
-    with pytest.warns(UserWarning,
-                      match="Ignored basin of format 'peter'"):
-        with new_dataset(h5path_small) as ds:
-            assert "image" not in ds
-            assert not ds.features_basin
+    with (pytest.warns(UserWarning,
+                       match="Ignored basin of format 'peter'"),
+          new_dataset(h5path_small) as ds):
+        assert "image" not in ds
+        assert not ds.features_basin
 
 
 def test_basin_unsupported_basin_type():
@@ -811,8 +811,8 @@ def test_basin_unsupported_basin_type():
 
     h5path.unlink()
 
-    with pytest.warns(UserWarning,
-                      match="Encountered unsupported basin type 'peter'"):
-        with new_dataset(h5path_small) as ds:
-            assert "image" not in ds
-            assert not ds.features_basin
+    with (pytest.warns(UserWarning,
+                       match="Encountered unsupported basin type 'peter'"),
+          new_dataset(h5path_small) as ds):
+        assert "image" not in ds
+        assert not ds.features_basin

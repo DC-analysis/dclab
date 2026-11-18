@@ -30,11 +30,11 @@ def test_enable_basins_with_external():
         assert "temp" not in ds.features_innate
         assert "temp" in ds.features_basin
 
-    with pytest.warns(UserWarning, match="Ignored basin of format 'hdf5'"):
-        with new_dataset(h5path_small, enable_basins=False) as ds:
-            assert "deform" in ds.features_innate
-            assert "temp" not in ds.features_innate
-            assert "temp" not in ds.features_basin
+    with (pytest.warns(UserWarning, match="Ignored basin of format 'hdf5'"),
+          new_dataset(h5path_small, enable_basins=False) as ds):
+        assert "deform" in ds.features_innate
+        assert "temp" not in ds.features_innate
+        assert "temp" not in ds.features_basin
 
 
 @pytest.mark.parametrize("enable_basins", [True, False])
@@ -360,11 +360,11 @@ def test_write_read_internal_basin_data_missing_issue_268(h5_obj_delete):
     with h5py.File(h5path_small, "a") as h5:
         del h5[h5_obj_delete]
 
-    with pytest.warns(feat_basin.BasinFeatureMissingWarning,
-                      match="userdef1"):
-        # now try to open the dataset containing the internal basin
-        with new_dataset(h5path_small) as ds:
-            assert "userdef1" not in ds
+    # now try to open the dataset containing the internal basin
+    with (pytest.warns(feat_basin.BasinFeatureMissingWarning,
+                       match="userdef1"),
+          new_dataset(h5path_small) as ds):
+        assert "userdef1" not in ds
 
 
 def test_write_read_internal_basin_data_missing_partial_issue_268():
@@ -410,12 +410,12 @@ def test_write_read_internal_basin_data_missing_partial_issue_268():
         del h5["basin_events/userdef1"]
 
     # now try to open the dataset containing the internal basin
-    with pytest.warns(feat_basin.BasinFeatureMissingWarning,
-                      match="userdef1"):
-        with new_dataset(h5path_small) as ds:
-            assert "userdef1" not in ds
-            assert "userdef2" in ds
-            assert "userdef2" in ds.features_basin
+    with (pytest.warns(feat_basin.BasinFeatureMissingWarning,
+                       match="userdef1"),
+          new_dataset(h5path_small) as ds):
+        assert "userdef1" not in ds
+        assert "userdef2" in ds
+        assert "userdef2" in ds.features_basin
 
 
 def test_writer_warning_uncommon_location():

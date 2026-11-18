@@ -712,9 +712,8 @@ def test_register_external_lut_without_identifier():
     # from external LUT
     ref = importlib_resources.files(
         "dclab.features.emodulus") / "lut_LE-2D-FEM-19.txt"
-    with importlib_resources.as_file(ref) as path:
-        with pytest.raises(ValueError):
-            emodulus.register_lut(path)
+    with importlib_resources.as_file(ref) as path, pytest.raises(ValueError):
+        emodulus.register_lut(path)
 
 
 @pytest.mark.parametrize("feat,factor",

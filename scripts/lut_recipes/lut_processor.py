@@ -264,18 +264,18 @@ class LutProcessor:
             # convert viscosity to mPa*s
             meta["fluid_viscosity_unit"] = "mPa s"
             meta["fluid_viscosity"] = meta["fluid_viscosity"] * 1000
-            for key in meta:
-                if isinstance(meta[key], bytes):
-                    meta[key] = meta[key].decode("utf-8")
-                elif isinstance(meta[key], str):
+            for key, value in meta.items():
+                if isinstance(value, bytes):
+                    meta[key] = value.decode("utf-8")
+                elif isinstance(value, str):
                     pass
-                elif isinstance(meta[key], numbers.Integral):
-                    meta[key] = int(meta[key])
+                elif isinstance(value, numbers.Integral):
+                    meta[key] = int(value)
                 else:
-                    meta[key] = float(meta[key])
-            for Ek in h5.keys():
+                    meta[key] = float(value)
+            for Ek in h5:
                 assert h5[Ek].attrs["emodulus_unit"].decode("utf-8") == "Pa"
-                for simk in h5[Ek].keys():
+                for simk in h5[Ek]:
                     sim = h5[Ek][simk]
                     area_um.append(sim.attrs["area"])
                     assert sim.attrs["area_unit"].decode("utf-8") == "um^2"
@@ -380,7 +380,7 @@ class LutProcessor:
             cur[ids] = False
             emod = spint.griddata((wlut[cur, 0], wlut[cur, 1]), wlut[cur, 2],
                                   (wlut[ids, 0], wlut[ids, 1]),
-                                  method='linear')
+                                  method="linear")
 
             for em, im in zip(emod, ids):
                 checked[im] += 1
@@ -389,8 +389,8 @@ class LutProcessor:
                 elif np.allclose(em, wlut[im, 2], atol=1e-5, rtol=1e-4):
                     keep[im] = False
                     checked[im] = 4
-        print("... -> Removed {} out of {} data points.".format(
-            np.sum(~keep), keep.size))
+        print(f"... -> Removed {np.sum(~keep)} out of {keep.size} "
+              "data points.")
 
         lut_new = 1*lut[keep, :]
 

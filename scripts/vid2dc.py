@@ -77,7 +77,7 @@ def vid2dc(path_in: pathlib.Path,
 
 
 def convert_video_to_dc(video_path: str | pathlib.Path,
-                        dc_path: str | pathlib.Path = None,
+                        dc_path: str | pathlib.Path | None = None,
                         ):
     """Convert an .avi file to an .rtdc file
 
@@ -143,7 +143,7 @@ def convert_video_to_dc(video_path: str | pathlib.Path,
             config["online_filter"]["target duration"] = rt_dur / 60
         # sample name
         if cp.has_section("Optional Text"):
-            descr = list(cp["Optional Text"].keys())[0]
+            descr = next(iter(cp["Optional Text"].keys()))
             config["experiment"]["sample"] = descr
 
     # Set the time of the input file

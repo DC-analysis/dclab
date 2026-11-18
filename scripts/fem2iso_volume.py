@@ -29,11 +29,11 @@ import fem2lutiso_std
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('input', metavar="INPUT", type=str,
-                        help='Input path (.hdf5 file)')
+    parser.add_argument("input", metavar="INPUT", type=str,
+                        help="Input path (.hdf5 file)")
     parser.add_argument("--raw",
-                        dest='raw',
-                        action='store_true',
+                        dest="raw",
+                        action="store_true",
                         help="do not perform data post-processing",
                         )
     parser.set_defaults(raw=False)

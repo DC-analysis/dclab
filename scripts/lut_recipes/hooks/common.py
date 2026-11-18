@@ -7,7 +7,8 @@ def find_upper_intersection(func, points, xrange):
     for ii in range(len(points)):
         x1, y1 = points[ii]
         x2, y2 = points[ii-1]
-        def funcs(x): return y1 + (y2-y1)/(x2-x1)*(x-x1)
+        # `funcs` is only used in this iteration of the loop
+        def funcs(x): return y1 + (y2-y1)/(x2-x1)*(x-x1)  # noqa: B023
         ret = fsolve(lambda x: func(x) - funcs(x), xrange[0])
         for r in ret:
             if xrange[0] < r < xrange[1]:

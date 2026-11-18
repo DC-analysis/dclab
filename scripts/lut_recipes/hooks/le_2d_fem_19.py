@@ -88,8 +88,8 @@ def get_analytical_volume_lut_2daxis():
 
     for emod in data1:
         eloc = np.abs(emod - lut_volume[:, 2]) < .01
-        assert np.sum(eloc), "failed to find emodulus {}".format(emod)
-        assert np.sum(eloc) == volume.size, "bad size emodulus {}".format(emod)
+        assert np.sum(eloc), f"failed to find emodulus {emod}"
+        assert np.sum(eloc) == volume.size, f"bad size emodulus {emod}"
         lut_volume[eloc, 0] = volume
 
     return lut_volume
@@ -151,7 +151,7 @@ def lut_preprocess(lup):
     mask_disk = mask_padded_disk[ds:-ds, ds:-ds]
 
     emod[~mask_disk] = np.nan
-    levels, contours, contours_px = lup.extract_isoelastics_from_grid(
+    levels, contours, _contours_px = lup.extract_isoelastics_from_grid(
         emod, lut=lut_iso, num=num_isoel)
 
     # Extend the LUT via extrapolation

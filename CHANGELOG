@@ -141,6 +141,9 @@
    outside the plot range); the normalization is now done in log space
  - fix: on POSIX systems, the R subprocess calls of the lme4 module
    replaced the entire environment (e.g. no PATH) instead of extending it
+ - fix: lme4 convergence messages were never reported, multiple lme4
+   messages caused an R error, integers were formatted as floats in the
+   R script, and the temporary R script was not removed
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -1,6 +1,7 @@
 """R lme4 wrapper"""
 import logging
 import numbers
+import os
 import pathlib
 import tempfile
 from importlib import resources as importlib_resources
@@ -189,8 +190,9 @@ class Rlme4(object):
         # Run R with the given template script
         rscript = importlib_resources.read_text("dclab.lme4",
                                                 "lme4_template.R")
-        _, script_path = tempfile.mkstemp(prefix="dclab_lme4_", suffix=".R",
-                                          text=True)
+        fd, script_path = tempfile.mkstemp(prefix="dclab_lme4_", suffix=".R",
+                                           text=True)
+        os.close(fd)
         script_path = pathlib.Path(script_path)
         rscript = rscript.replace("<MODEL_NAME>", self.model)
         rscript = rscript.replace("<FEATURES>", arr2str(features_c))
@@ -198,7 +200,11 @@ class Rlme4(object):
         rscript = rscript.replace("<GROUPS>", arr2str(groups_c))
         script_path.write_text(rscript, encoding="utf-8")
 
-        result = rsetup.run_command((rsetup.get_r_script_path(), script_path))
+        try:
+            result = rsetup.run_command((rsetup.get_r_script_path(),
+                                         script_path))
+        finally:
+            script_path.unlink(missing_ok=True)
 
         ret_dict = self.parse_result(result)
         ret_dict["is differential"] = self.is_differential()
@@ -328,7 +334,7 @@ class Rlme4(object):
 
 def arr2str(a):
     """Convert an array to a string"""
-    if isinstance(a.dtype.type, np.integer):
+    if np.issubdtype(a.dtype, np.integer):
         return ",".join(str(dd) for dd in a.tolist())
     elif a.dtype.type == np.str_:
         return ",".join(f"'{dd}'" for dd in a.tolist())

@@ -286,6 +286,27 @@ def test_lmer_basic_nan():
 
 @pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
                    reason="https://github.com/astamm/nloptr/issues/115")
+def test_lmer_messages_singular_fit():
+    """lme4 convergence messages must be passed on to the results"""
+    groups = ['control', 'treatment', 'control', 'treatment']
+    repetitions = [1, 1, 2, 2]
+    # Identical data for both repetitions: The variance of the random
+    # effects is zero, which results in a singular fit.
+    feat_control = [100, 99, 80, 120, 140, 150, 100, 100, 110, 111]
+    feat_treatment = [115, 110, 90, 110, 145, 155, 110, 120, 115, 120]
+    features = [feat_control, feat_treatment, feat_control, feat_treatment]
+    rlme4 = Rlme4(model="lmer", feature="deform")
+    for ii, ff in enumerate(features):
+        ds = dclab.new_dataset({"deform": ff})
+        ds.config["setup"]["chip region"] = "channel"
+        rlme4.add_dataset(ds, groups[ii], repetitions[ii])
+
+    res = rlme4.fit()
+    assert "singular" in res["lme4 messages"]
+
+
+@pytest.mark.xfail(IS_ON_GITHUB_WINDOWS,
+                   reason="https://github.com/astamm/nloptr/issues/115")
 def test_lmer_differential():
     """Differential Deformation in a linear mixed model"""
     groups = ['control', 'control', 'control', 'control', 'treatment',

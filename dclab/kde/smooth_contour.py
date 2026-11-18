@@ -138,16 +138,23 @@ def find_smooth_contour_spacing(
                 yrange=yrange,
                 xscale=xscale,
                 yscale=yscale)
+            # The opening angle is undefined (NaN) e.g. for duplicate
+            # contour points. Ignore these points.
+            valid = ~np.isnan(angles)
 
             if (np.allclose(np.abs(angles[0]), np.pi / 2, atol=0.001, rtol=0)
                     and np.all(angles[1:6] == 0)):
                 # We have probably encountered a contour at the boundary
                 # of the plot. This is ok.
                 corners = np.abs((np.abs(angles) - np.pi / 2)) < 0.001
-                dphi = np.max(np.abs(angles[~corners]))
+                valid &= ~corners
                 corners_found = True
+
+            if np.any(valid):
+                dphi = np.max(np.abs(angles[valid]))
             else:
-                dphi = np.max(np.abs(angles))
+                # We cannot tell whether this contour is smooth.
+                dphi = np.inf
 
             max_dphi = max(max_dphi, dphi)
             max_length = min(max_length, len(cc))
@@ -187,16 +194,19 @@ def compute_contour_opening_angles(contour, xrange, yrange, xscale, yscale):
     cc = np.array(contour, copy=True)
     if not np.all(cc[0] == cc[-1]):
         cc = np.resize(cc, (len(contour)+1, 2))
-    # Normalize contour
-    cc[:, 0] = (cc[:, 0] - xrange[0]) / (xrange[1] - xrange[0])
-    cc[:, 1] = (cc[:, 1] - yrange[0]) / (yrange[1] - yrange[0])
-    # apply scale
+    # Apply scale (before normalization, so that the contour is
+    # normalized to the visible plot area on a log scale)
     assert xscale in ["log", "linear"]
     if xscale == "log":
         cc[:, 0] = np.log10(cc[:, 0])
+        xrange = np.log10(xrange)
     assert yscale in ["log", "linear"]
     if yscale == "log":
         cc[:, 1] = np.log10(cc[:, 1])
+        yrange = np.log10(yrange)
+    # Normalize contour
+    cc[:, 0] = (cc[:, 0] - xrange[0]) / (xrange[1] - xrange[0])
+    cc[:, 1] = (cc[:, 1] - yrange[0]) / (yrange[1] - yrange[0])
     opang = np.zeros(len(cc)-1, dtype=float)
     for jj, c0 in enumerate(cc[:-1]):  # we have a closed contour
         cl = cc[:-1][jj - 1]

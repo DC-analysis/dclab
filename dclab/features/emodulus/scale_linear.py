@@ -96,19 +96,20 @@ def convert(area_um: npt.NDArray,
     else:
         area_um_corr = np.array(area_um) if copy else np.asarray(area_um)
 
-    if (emodulus is not None
-        and flow_rate_in is not None
-        and flow_rate_out is not None
-        and viscosity_in is not None
-            and viscosity_out is not None):
+    if emodulus is None:
+        return area_um_corr, deform_corr
+    else:
+        missing = [name for name, value in [
+            ("flow_rate_in", flow_rate_in),
+            ("flow_rate_out", flow_rate_out),
+            ("viscosity_in", viscosity_in),
+            ("viscosity_out", viscosity_out)] if value is None]
+        if missing:
+            raise ValueError(f"Correcting `emodulus` requires {missing}!")
         emodulus_corr = scale_emodulus(emodulus, channel_width_in,
                                        channel_width_out, flow_rate_in,
                                        flow_rate_out, viscosity_in,
                                        viscosity_out, inplace)
-
-    if emodulus is None:
-        return area_um_corr, deform_corr
-    else:
         return area_um_corr, deform_corr, emodulus_corr
 
 

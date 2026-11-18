@@ -131,33 +131,36 @@ def find_smooth_contour_spacing(
                 # No contour for this dataset (e.g. all events filtered).
                 continue
             num_contours += 1
-            cc = contours[0][0]
-            angles = compute_contour_opening_angles(
-                contour=cc,
-                xrange=xrange,
-                yrange=yrange,
-                xscale=xscale,
-                yscale=yscale)
-            # The opening angle is undefined (NaN) e.g. for duplicate
-            # contour points. Ignore these points.
-            valid = ~np.isnan(angles)
+            # There may be several contours for the highest percentile
+            # (e.g. for multiple populations). All of them must be smooth.
+            for cc in contours[0]:
+                angles = compute_contour_opening_angles(
+                    contour=cc,
+                    xrange=xrange,
+                    yrange=yrange,
+                    xscale=xscale,
+                    yscale=yscale)
+                # The opening angle is undefined (NaN) e.g. for duplicate
+                # contour points. Ignore these points.
+                valid = ~np.isnan(angles)
 
-            if (np.allclose(np.abs(angles[0]), np.pi / 2, atol=0.001, rtol=0)
-                    and np.all(angles[1:6] == 0)):
-                # We have probably encountered a contour at the boundary
-                # of the plot. This is ok.
-                corners = np.abs(np.abs(angles) - np.pi / 2) < 0.001
-                valid &= ~corners
-                corners_found = True
+                if (np.allclose(np.abs(angles[0]), np.pi / 2,
+                                atol=0.001, rtol=0)
+                        and np.all(angles[1:6] == 0)):
+                    # We have probably encountered a contour at the
+                    # boundary of the plot. This is ok.
+                    corners = np.abs(np.abs(angles) - np.pi / 2) < 0.001
+                    valid &= ~corners
+                    corners_found = True
 
-            if np.any(valid):
-                dphi = np.max(np.abs(angles[valid]))
-            else:
-                # We cannot tell whether this contour is smooth.
-                dphi = np.inf
+                if np.any(valid):
+                    dphi = np.max(np.abs(angles[valid]))
+                else:
+                    # We cannot tell whether this contour is smooth.
+                    dphi = np.inf
 
-            max_dphi = max(max_dphi, dphi)
-            max_length = min(max_length, len(cc))
+                max_dphi = max(max_dphi, dphi)
+                max_length = min(max_length, len(cc))
         else:
             results["reason"] = "maximum iterations reached"
             results["success"] = False

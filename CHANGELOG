@@ -172,6 +172,10 @@
    half the bin size)
  - ref: use `super()` without arguments (ruff UP008)
  - ref: use f-strings instead of `str.format` (ruff UP032)
+ - ci: the lme4 tests were silently skipped, because lme4 could not
+   be installed with R 4.1.2; use the latest R release and fail if
+   lme4 is not installed
+ - tests: update pinned glmer values for lme4 2.1
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

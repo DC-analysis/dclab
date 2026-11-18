@@ -16,7 +16,7 @@ from helper_methods import example_data_dict, retrieve_data
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_basic():
     h5path = retrieve_data("fmt-hdf5_fl_2017.zip")
     viol, aler, info = check_dataset(h5path)
@@ -160,9 +160,9 @@ def test_exact():
         "Negative value for feature(s): fl2_max",
     ]
     known_info = [
-        'Compression: None',
-        'Data file format: tdms',
-        'Fluorescence: True',
+        "Compression: None",
+        "Data file format: tdms",
+        "Fluorescence: True",
     ]
     assert set(viol) == set(known_viol)
     assert set(aler) == set(known_aler)
@@ -457,7 +457,7 @@ def test_ic_fmt_hdf5_logs():
         cues = ic.check_fmt_hdf5()
     assert len(cues) == 1
     assert cues[0].category == "format HDF5"
-    assert cues[0].msg == 'Logs: test line 0 exceeds maximum line length 100'
+    assert cues[0].msg == "Logs: test line 0 exceeds maximum line length 100"
     assert cues[0].level == "alert"
 
 
@@ -551,7 +551,7 @@ def test_check_metadata_hdf5_type_issue_139():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.EmptyConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.EmptyConfigurationKeyWarning")
 def test_ic_metadata_empty_string():
     """Empty metadata values are ignored with a warning in dclab>0.33.2"""
     path = retrieve_data("fmt-hdf5_fl_2018.zip")
@@ -696,9 +696,9 @@ def test_ic_temp_allzero_issue_183():
         assert cues[0].level == "violation"
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_invalid_medium():
     pytest.importorskip("nptdms")
     h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
@@ -712,9 +712,9 @@ def test_invalid_medium():
     assert "Metadata: Invalid value [setup] medium: 'unknown_bad!'" not in viol
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_load_with():
     pytest.importorskip("nptdms")
     h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
@@ -757,17 +757,17 @@ def test_ml_class():
         assert "ml_score_001" in cues[0].msg
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_no_fluorescence():
     pytest.importorskip("nptdms")
     h5path = retrieve_data("fmt-tdms_minimal_2016.zip")
     _, _, info = check_dataset(h5path)
     known_info = [
-        'Compression: None',
-        'Data file format: tdms',
-        'Fluorescence: False',
+        "Compression: None",
+        "Data file format: tdms",
+        "Fluorescence: False",
     ]
     assert set(info) == set(known_info)
 

@@ -412,13 +412,13 @@ def test_compress_basin_preserved_compress():
 
     with h5py.File(h5path_out) as h5_out, h5py.File(h5path_small) as h5_in:
         # check if h5path_out is empty
-        if 'events' in h5_out:
-            assert len(h5_out['events']) == 0
+        if "events" in h5_out:
+            assert len(h5_out["events"]) == 0
         # check if h5path_small basin is same as h5path_out basin
-        assert 'basins' in h5_in
-        assert 'basins' in h5_out
+        assert "basins" in h5_in
+        assert "basins" in h5_out
         assert np.all(
-            h5_in['basins'][bn_hash][:] == h5_out['basins'][bn_hash][:]
+            h5_in["basins"][bn_hash][:] == h5_out["basins"][bn_hash][:]
         )
 
     with new_dataset(h5path) as ds, new_dataset(h5path_out) as ds_out:

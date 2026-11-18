@@ -231,24 +231,24 @@ def condense_parser():
              "(i.e. without `contour`, `image`, `mask`, or `trace`). "
              "All available ancillary features are computed.")
     parser = argparse.ArgumentParser(description=descr)
-    parser.add_argument('input', metavar="INPUT", type=str,
-                        help='Input path (.tdms or .rtdc file)')
-    parser.add_argument('output', metavar="OUTPUT", type=str,
-                        help='Output path (.rtdc file)')
-    parser.add_argument('--no-ancillary-features',
-                        dest='no_ancillaries',
-                        action='store_true',
-                        help='Do not compute expensive ancillary features '
-                             'such as volume'
+    parser.add_argument("input", metavar="INPUT", type=str,
+                        help="Input path (.tdms or .rtdc file)")
+    parser.add_argument("output", metavar="OUTPUT", type=str,
+                        help="Output path (.rtdc file)")
+    parser.add_argument("--no-ancillary-features",
+                        dest="no_ancillaries",
+                        action="store_true",
+                        help="Do not compute expensive ancillary features "
+                             "such as volume"
                         )
     parser.set_defaults(no_ancillaries=False)
-    parser.add_argument('--no-basin-features',
-                        dest='no_basins',
-                        action='store_true',
-                        help='Do not store basin-based feature data from the '
-                             'input file in the output file'
+    parser.add_argument("--no-basin-features",
+                        dest="no_basins",
+                        action="store_true",
+                        help="Do not store basin-based feature data from the "
+                             "input file in the output file"
                         )
     parser.set_defaults(no_basins=False)
-    parser.add_argument('--version', action='version',
-                        version=f'dclab-condense {version}')
+    parser.add_argument("--version", action="version",
+                        version=f"dclab-condense {version}")
     return parser

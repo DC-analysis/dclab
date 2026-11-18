@@ -39,7 +39,7 @@ for loc in ds_loc:
     ds.config["calculation"]["emodulus medium"] = ds.config["setup"]["medium"]
     ds.config["calculation"]["emodulus temperature"] = \
         ds.config["setup"]["temperature"]
-    ds.config["calculation"]["emodulus viscosity model"] = 'buyukurganci-2022'
+    ds.config["calculation"]["emodulus viscosity model"] = "buyukurganci-2022"
     # filtering
     ds.config["filtering"]["area_ratio min"] = 1.0
     ds.config["filtering"]["area_ratio max"] = 1.1
@@ -87,7 +87,7 @@ bplot2 = ax2.boxplot(data_emodulus,
 # colors
 colors = ["#0008A5", "#A5008D", "#A50100"]
 for bplot in (bplot1, bplot2):
-    for patch, color in zip(bplot['boxes'], colors):
+    for patch, color in zip(bplot["boxes"], colors):
         patch.set_facecolor(color)
 
 # axes

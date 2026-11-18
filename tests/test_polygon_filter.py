@@ -72,8 +72,8 @@ def test_equals_shape():
     assert pf1.unique_id != pf2.unique_id
 
 
-@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            'FilterIdExistsWarning')
+@pytest.mark.filterwarnings("ignore::dclab.polygon_filter."
+                            "FilterIdExistsWarning")
 def test_import():
     ddict = example_data_dict(size=1000, keys=["aspect", "tilt"])
     ds = dclab.new_dataset(ddict)
@@ -214,8 +214,8 @@ def test_invert_nan():
                   == [False, True, True, True, True])
 
 
-@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            'FilterIdExistsWarning')
+@pytest.mark.filterwarnings("ignore::dclab.polygon_filter."
+                            "FilterIdExistsWarning")
 def test_invert_saveload():
     ddict = example_data_dict(size=1234, keys=["aspect", "tilt"])
     # points of polygon filter
@@ -293,8 +293,8 @@ def test_remove():
     assert len(dclab.PolygonFilter.instances) == 0
 
 
-@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            'FilterIdExistsWarning')
+@pytest.mark.filterwarnings("ignore::dclab.polygon_filter."
+                            "FilterIdExistsWarning")
 def test_save():
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
     with open(tf, "w") as fd:
@@ -354,8 +354,8 @@ def test_save_load_name_with_equals_sign(tmp_path):
     assert np.allclose(pf2.points, pf.points)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            'FilterIdExistsWarning')
+@pytest.mark.filterwarnings("ignore::dclab.polygon_filter."
+                            "FilterIdExistsWarning")
 def test_save_multiple():
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
     with open(tf, "w") as fd:
@@ -402,8 +402,8 @@ def test_state():
     assert pf.inverted
 
 
-@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            'FilterIdExistsWarning')
+@pytest.mark.filterwarnings("ignore::dclab.polygon_filter."
+                            "FilterIdExistsWarning")
 def test_unique_id():
     _fd, tf = tempfile.mkstemp(prefix="dclab_polgyon_test")
     with open(tf, "w") as fd:
@@ -415,8 +415,8 @@ def test_unique_id():
     assert pf.unique_id != pf2.unique_id
 
 
-@pytest.mark.filterwarnings('ignore::dclab.polygon_filter.'
-                            'FilterIdExistsWarning')
+@pytest.mark.filterwarnings("ignore::dclab.polygon_filter."
+                            "FilterIdExistsWarning")
 def test_with_rtdc_data_set():
     ddict = example_data_dict(size=821, keys=["aspect", "tilt"])
     ds = dclab.new_dataset(ddict)

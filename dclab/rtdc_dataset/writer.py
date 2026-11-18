@@ -51,7 +51,7 @@ class StoringPerishableBasinWarning(UserWarning):
 class RTDCWriter:
     def __init__(self,
                  path_or_h5file: str | pathlib.Path | h5py.File,
-                 mode: Literal['append', 'replace', 'reset'] = "append",
+                 mode: Literal["append", "replace", "reset"] = "append",
                  compression_kwargs: dict | Mapping | None = None,
                  compression: str = "deprecated"):
         """RT-DC data writer classe
@@ -215,7 +215,7 @@ class RTDCWriter:
     def store_basin(
         self,
         basin_name: str,
-        basin_type: Literal['file', 'internal', 'remote'],
+        basin_type: Literal["file", "internal", "remote"],
         basin_format: str,
         basin_locs: list[str | pathlib.Path],
         basin_descr: str | None = None,
@@ -706,17 +706,17 @@ class RTDCWriter:
         elif isinstance(cmp_array, np.ndarray):
             # A numpy array was passed. This usually means we have something
             # that we can look at, so we add image tags.
-            h5_attrs['CLASS'] = np.bytes_('IMAGE')
-            h5_attrs['IMAGE_VERSION'] = np.bytes_('1.2')
-            h5_attrs['IMAGE_SUBCLASS'] = np.bytes_('IMAGE_GRAYSCALE')
+            h5_attrs["CLASS"] = np.bytes_("IMAGE")
+            h5_attrs["IMAGE_VERSION"] = np.bytes_("1.2")
+            h5_attrs["IMAGE_SUBCLASS"] = np.bytes_("IMAGE_GRAYSCALE")
         elif isinstance(cmp_array, dict):
             # The user passed a dict which we now have to convert to a
             # compound dataset. We do this because we are user-convenient.
             # The user should not need to wade through these steps:
             columns = list(cmp_array.keys())
             # Everything should be floats in a table.
-            ds_dt = np.dtype({'names': columns,
-                              'formats': [np.float64] * len(columns)})
+            ds_dt = np.dtype({"names": columns,
+                              "formats": [np.float64] * len(columns)})
             # We trust the user to provide a dictionary with one-dimensional
             # lists or arrays of the same length.
             tabsize = len(cmp_array[columns[0]])
@@ -806,9 +806,9 @@ class RTDCWriter:
         # HDFView recognizes this as a series of images.
         # Use np.bytes_ as per
         # https://docs.h5py.org/en/stable/strings.html#compatibility
-        dset.attrs.create('CLASS', np.bytes_('IMAGE'))
-        dset.attrs.create('IMAGE_VERSION', np.bytes_('1.2'))
-        dset.attrs.create('IMAGE_SUBCLASS', np.bytes_('IMAGE_GRAYSCALE'))
+        dset.attrs.create("CLASS", np.bytes_("IMAGE"))
+        dset.attrs.create("IMAGE_VERSION", np.bytes_("1.2"))
+        dset.attrs.create("IMAGE_SUBCLASS", np.bytes_("IMAGE_GRAYSCALE"))
 
     def write_image_grayscale(self, group, name, data, is_boolean):
         """Write grayscale image data to and HDF5 dataset
@@ -855,9 +855,9 @@ class RTDCWriter:
         # HDFView recognizes this as a series of images.
         # Use np.bytes_ as per
         # https://docs.h5py.org/en/stable/strings.html#compatibility
-        dset.attrs.create('CLASS', np.bytes_('IMAGE'))
-        dset.attrs.create('IMAGE_VERSION', np.bytes_('1.2'))
-        dset.attrs.create('IMAGE_SUBCLASS', np.bytes_('IMAGE_GRAYSCALE'))
+        dset.attrs.create("CLASS", np.bytes_("IMAGE"))
+        dset.attrs.create("IMAGE_VERSION", np.bytes_("1.2"))
+        dset.attrs.create("IMAGE_SUBCLASS", np.bytes_("IMAGE_GRAYSCALE"))
 
     def write_ndarray(self, group, name, data, dtype=None):
         """Write n-dimensional array data to an HDF5 dataset

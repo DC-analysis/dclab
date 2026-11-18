@@ -26,7 +26,7 @@ EXTERNAL_LUTS = {}
 def get_internal_lut_names_dict() -> dict:
     """Return list of internal lut names"""
     lutfiles = {}
-    for pp in importlib_resources.files('dclab.features.emodulus').iterdir():
+    for pp in importlib_resources.files("dclab.features.emodulus").iterdir():
         name = pp.name
         if name.startswith("lut_") and name.endswith(".txt"):
             lutfiles[name[4:-4]] = name
@@ -148,7 +148,7 @@ def load_mtext(path: str | pathlib.Path) -> tuple[npt.NDArray, dict]:
     dump = []
     injson = False
     prev_line = ""
-    with path.open("r", errors='replace') as fd:
+    with path.open("r", errors="replace") as fd:
         while True:
             line = fd.readline()
             if fd.tell() == size:

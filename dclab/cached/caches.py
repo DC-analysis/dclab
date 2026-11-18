@@ -188,7 +188,7 @@ def update_hash(the_hash,
     if isinstance(arg, numbers.Number):
         _update_hash_tagged(the_hash, "number", f"{arg}".encode())
     elif isinstance(arg, str):
-        _update_hash_tagged(the_hash, "str", arg.encode('utf-8'))
+        _update_hash_tagged(the_hash, "str", arg.encode("utf-8"))
     elif arg is None:
         _update_hash_tagged(the_hash, "none", b"")
     elif isinstance(arg, bytes):
@@ -229,7 +229,7 @@ def update_hash(the_hash,
                     return  # no further checks necessary
 
         # Final option are classes that define `__getstate__`
-        if hasattr(arg, 'for_json'):
+        if hasattr(arg, "for_json"):
             try:
                 update_hash(the_hash, arg.for_json())
             except BaseException:

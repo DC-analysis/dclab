@@ -243,8 +243,8 @@ def get_inert_ratio_prnc(
 
         if moments is not None:
             # orientation of the contour
-            orient = 0.5 * np.arctan2(2 * moments['mu11'],
-                                      moments['mu02'] - moments['mu20'])
+            orient = 0.5 * np.arctan2(2 * moments["mu11"],
+                                      moments["mu02"] - moments["mu20"])
             # rotate contour
             rho = np.sqrt(cc[:, 0]**2 + cc[:, 1]**2)
             phi = np.arctan2(cc[:, 1], cc[:, 0]) + orient + np.pi / 2
@@ -370,8 +370,8 @@ def get_tilt(
         moments = cont_moments_cv(cont[ii])
         if moments is not None:
             # orientation of the contour
-            tilt[ii] = 0.5 * np.arctan2(-2 * moments['mu11'],
-                                        moments['mu20'] - moments['mu02'])
+            tilt[ii] = 0.5 * np.arctan2(-2 * moments["mu11"],
+                                        moments["mu20"] - moments["mu02"])
 
     tilt = np.abs(tilt)
 

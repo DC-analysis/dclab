@@ -4,8 +4,8 @@ import pytest
 from dclab.features import emodulus
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_simple_emod_he_3d_fem_22():
     x = np.linspace(0, 250, 100)
     y = np.linspace(0, 0.1, 100)

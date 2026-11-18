@@ -190,6 +190,7 @@
    (took about 10 minutes on Linux and longer on Windows)
  - ref: use implicit string concatenation (ruff ISC003, ISC004)
  - ref: fix remaining minor ruff findings
+ - ref: use double quotes for strings (ruff Q000)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -48,8 +48,8 @@ class DCORTable(MetaTable):
 
         if self._columns is not None:
             # We have a rec-array (named columns)
-            ds_dt = np.dtype({'names': self._columns,
-                              'formats': [np.float64] * len(self._columns)})
+            ds_dt = np.dtype({"names": self._columns,
+                              "formats": [np.float64] * len(self._columns)})
             self._tab_data = np.rec.array(self._tab_data, dtype=ds_dt)
 
     def __array__(self, *args, **kwargs):

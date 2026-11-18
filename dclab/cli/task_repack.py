@@ -114,21 +114,21 @@ def repack_parser():
              "stripped away. Repacking also gets rid of old clutter "
              "data (e.g. previous metadata stored in the HDF5 file).")
     parser = argparse.ArgumentParser(description=descr)
-    parser.add_argument('input', metavar="INPUT", type=str,
-                        help='Input path (.rtdc file)')
-    parser.add_argument('output',  metavar="OUTPUT", type=str,
-                        help='Output path (.rtdc file)')
-    parser.add_argument('--strip-basins',
-                        dest='strip_basins',
-                        action='store_true',
-                        help='Do not copy any basin information to the '
-                             'output file.')
+    parser.add_argument("input", metavar="INPUT", type=str,
+                        help="Input path (.rtdc file)")
+    parser.add_argument("output",  metavar="OUTPUT", type=str,
+                        help="Output path (.rtdc file)")
+    parser.add_argument("--strip-basins",
+                        dest="strip_basins",
+                        action="store_true",
+                        help="Do not copy any basin information to the "
+                             "output file.")
     parser.set_defaults(strip_basins=False)
-    parser.add_argument('--strip-logs',
-                        dest='strip_logs',
-                        action='store_true',
-                        help='Do not copy any logs to the output file.')
+    parser.add_argument("--strip-logs",
+                        dest="strip_logs",
+                        action="store_true",
+                        help="Do not copy any logs to the output file.")
     parser.set_defaults(strip_logs=False)
-    parser.add_argument('--version', action='version',
-                        version=f'dclab-repack {version}')
+    parser.add_argument("--version", action="version",
+                        version=f"dclab-repack {version}")
     return parser

@@ -68,6 +68,6 @@ class IncludeDirective(Directive):
 
 
 def setup(app):
-    app.add_config_value('github_project', "user/project", 'html')
-    app.add_directive('include_changelog', IncludeDirective)
-    return {'version': '0.1'}   # identifies the version of our extension
+    app.add_config_value("github_project", "user/project", "html")
+    app.add_directive("include_changelog", IncludeDirective)
+    return {"version": "0.1"}   # identifies the version of our extension

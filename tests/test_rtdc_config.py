@@ -511,11 +511,11 @@ def test_user_section_set_save_reload_fmt_hierarchy():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.export.'
-                            'LimitingExportSizeWarning')
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.'
-                            'InitialFrameMissingWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset.export."
+                            "LimitingExportSizeWarning")
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc."
+                            "InitialFrameMissingWarning")
 def test_user_section_set_save_reload_fmt_tdms():
     """Check that 'user' section metadata works for RTDC_TDMS"""
     pytest.importorskip("nptdms")

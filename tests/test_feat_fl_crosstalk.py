@@ -121,7 +121,7 @@ def test_af_fl_crosstalk_priority():
     assert "fl1_max_ctc" in avkeys
     assert "fl2_max_ctc" in avkeys
     assert "fl3_max_ctc" not in avkeys
-    reqconf = [['calculation', ['crosstalk fl21', 'crosstalk fl12']]]
+    reqconf = [["calculation", ["crosstalk fl21", "crosstalk fl12"]]]
     assert av["fl1_max_ctc"].req_config == reqconf
     analysis = {"calculation": {"crosstalk fl13": .1,
                                 "crosstalk fl23": .7,
@@ -136,7 +136,7 @@ def test_af_fl_crosstalk_priority():
     assert "fl1_max_ctc" in av2keys
     assert "fl2_max_ctc" in av2keys
     assert "fl3_max_ctc" in av2keys
-    reqconf2 = [['calculation', ["crosstalk fl21",
+    reqconf2 = [["calculation", ["crosstalk fl21",
                                  "crosstalk fl31",
                                  "crosstalk fl12",
                                  "crosstalk fl32",

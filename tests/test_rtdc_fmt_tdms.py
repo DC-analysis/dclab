@@ -268,9 +268,9 @@ def test_fluorescence_config():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.'
-                            'InitialFrameMissingWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc."
+                            "InitialFrameMissingWarning")
 def test_image_basic():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     # Transition image
@@ -306,8 +306,8 @@ def test_image_corrupt():
         assert False
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.SlowVideoWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc.SlowVideoWarning")
 def test_image_index_error_workaround():
     """Seeking workaround when imageio raises an IndexError"""
     path = pathlib.Path(retrieve_data("fmt-tdms_fl-image_2016.zip"))
@@ -332,8 +332,8 @@ def test_image_index_error_workaround():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.CorruptFrameWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc.CorruptFrameWarning")
 def test_image_out_of_bounds():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["image"]) == 3
@@ -355,12 +355,12 @@ def test_index_slicing_tdms_fails(feat, idxs):
         ds[feat][idxs]
 
 
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.'
-                            'InitialFrameMissingWarning')
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc."
+                            "InitialFrameMissingWarning")
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_large_fov():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image-large-fov_2017.zip"))
     # initial image is missing
@@ -432,12 +432,12 @@ def test_load_tdms_simple():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.'
-                            'InitialFrameMissingWarning')
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'feat_anc_core.ancillary_feature.'
-                            'BadFeatureSizeWarning')
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc."
+                            "InitialFrameMissingWarning")
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "feat_anc_core.ancillary_feature."
+                            "BadFeatureSizeWarning")
 def test_mask_basic():
     ds = new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
     assert len(ds["mask"]) == 12
@@ -605,7 +605,7 @@ def test_trace_import_fail():
     # make sure undefined trace data does not raise an error
     tdms_path = retrieve_data("fmt-tdms_fl-image_2016.zip")
     dclab.definitions.FLUOR_TRACES.append("peter")
-    dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = ['ukwn', 'ha']
+    dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map["peter"] = ["ukwn", "ha"]
     new_dataset(tdms_path)
     # clean up
     dclab.rtdc_dataset.fmt_tdms.naming.tr_data_map.pop("peter")
@@ -625,9 +625,9 @@ def test_trace_methods():
 
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
-@pytest.mark.filterwarnings('ignore::dclab.rtdc_dataset.'
-                            'fmt_tdms.exc.'
-                            'MultipleSamplesPerEventFound')  # desired
+@pytest.mark.filterwarnings("ignore::dclab.rtdc_dataset."
+                            "fmt_tdms.exc."
+                            "MultipleSamplesPerEventFound")  # desired
 def test_trace_wrong_samples_per_event():
     """The "samples per event" should be a constant for trace data
 

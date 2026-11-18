@@ -50,7 +50,7 @@ def test_buyukurganci_cell_carrier():
                                                channel_width=c,
                                                flow_rate=f,
                                                temperature=t,
-                                               model='buyukurganci-2022')
+                                               model="buyukurganci-2022")
         assert np.allclose(eta, a)
 
     for c, f, t, b in zip(ch_sizes, fl_rates, temps, eta_b):
@@ -58,7 +58,7 @@ def test_buyukurganci_cell_carrier():
                                                channel_width=c,
                                                flow_rate=f,
                                                temperature=t,
-                                               model='buyukurganci-2022')
+                                               model="buyukurganci-2022")
         assert np.allclose(eta, b)
 
 
@@ -67,7 +67,7 @@ def test_buyukurganci_cell_carrier_zero_flow_rate():
                                            channel_width=20,
                                            flow_rate=0,
                                            temperature=21.5,
-                                           model='buyukurganci-2022')
+                                           model="buyukurganci-2022")
     assert np.isnan(eta)
 
 

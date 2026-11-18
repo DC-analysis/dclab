@@ -14,8 +14,8 @@ from dclab.rtdc_dataset import feat_anc_core
 from helper_methods import example_data_dict, retrieve_data
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_ancil():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -37,8 +37,8 @@ def test_af_emodulus_ancil():
     assert not np.allclose(emod1, emod2, equal_nan=True)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_known_media():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -81,8 +81,8 @@ def test_af_emodulus_known_media_error_set_viscosity():
         ds.__getitem__("emodulus")
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_cache():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -181,8 +181,8 @@ def test_af_emodulus_reservoir():
     assert "emodulus" not in ds2
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_temp_feat():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -221,8 +221,8 @@ def test_af_emodulus_temp_feat():
             assert not af.is_available(ds2)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_temp_feat_2():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -265,8 +265,8 @@ def test_af_emodulus_temp_feat_2():
                        atol=1e-7)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_temp_feat_with_basin():
     """
     In dclab 0.60.0 there was a bug: When the temperature feature was
@@ -310,8 +310,8 @@ def test_af_emodulus_temp_feat_with_basin():
         )
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_temp_feat_with_basin_mapped():
     """
     In dclab 0.60.0 there was a bug: When the temperature feature was
@@ -358,8 +358,8 @@ def test_af_emodulus_temp_feat_with_basin_mapped():
         )
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_temp_feat_with_basin_mapped_internal():
     """
     In dclab 0.60.0 there was a bug: When the temperature feature was
@@ -407,8 +407,8 @@ def test_af_emodulus_temp_feat_with_basin_mapped_internal():
         )
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_visc_only():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -450,8 +450,8 @@ def test_af_emodulus_visc_only():
             assert not af.is_available(ds2)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_af_emodulus_visc_only_2():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -484,8 +484,8 @@ def test_af_emodulus_visc_only_2():
                        rtol=0, atol=1e-7)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 @pytest.mark.filterwarnings(
     "ignore:The 'emodulus temperature' configuration key is ignored")
 def test_af_emodulus_visc_only_cache_with_temperature():
@@ -525,7 +525,7 @@ def test_bad_lut_data():
 
 
 @pytest.mark.filterwarnings(
-    'ignore::dclab.features.emodulus.KnowWhatYouAreDoingWarning')
+    "ignore::dclab.features.emodulus.KnowWhatYouAreDoingWarning")
 def test_extrapolate():
     """Test whether spline interpolation gives reasonable results"""
     lut, _ = emodulus.load_lut("LE-2D-FEM-19")
@@ -629,8 +629,8 @@ def test_register_external_lut():
         emodulus.load.EXTERNAL_LUTS.clear()
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_register_external_lut_and_get_emodulus():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -665,8 +665,8 @@ def test_register_external_lut_and_get_emodulus():
                            rtol=0, atol=1e-7)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_register_external_lut_with_internal_identifier():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -693,8 +693,8 @@ def test_register_external_lut_with_internal_identifier():
         emodulus.register_lut(path2)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_register_external_lut_without_identifier():
     keys = ["area_um", "deform"]
     ddict = example_data_dict(size=8472, keys=keys)
@@ -744,8 +744,8 @@ def test_scale_feature_integer_input(feat, factor):
         emodulus.scale_feature(feat, data, inplace=True, **scale_kw)
 
 
-@pytest.mark.filterwarnings('ignore::dclab.features.emodulus.'
-                            'YoungsModulusLookupTableExceededWarning')
+@pytest.mark.filterwarnings("ignore::dclab.features.emodulus."
+                            "YoungsModulusLookupTableExceededWarning")
 def test_simple_emod():
     x = np.linspace(0, 250, 100)
     y = np.linspace(0, 0.1, 100)

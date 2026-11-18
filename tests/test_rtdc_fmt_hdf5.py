@@ -20,7 +20,7 @@ from helper_methods import retrieve_data
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_config():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert ds.config["setup"]["channel width"] == 30
@@ -32,7 +32,7 @@ def test_config():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_contour_basic():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert len(ds) == 5
@@ -226,7 +226,7 @@ def test_defective_feature_time_issue_204_new_dclab():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_defective_feature_time_issue_207_with_offset():
     # see https://github.com/DC-analysis/dclab/issues/207
     h5path = retrieve_data("fmt-hdf5_mask-contour_2018.zip")
@@ -312,7 +312,7 @@ def test_discouraged_array_dunder_childndarray():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_length_no_event_count_trace(tmp_path):
     """Without "event count", the length is computed from the features"""
     path = tmp_path / "test.rtdc"
@@ -516,7 +516,7 @@ def test_ignore_unknown_hdf5_meta_data_attribute():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_image_basic():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert np.allclose(np.average(ds["image"][1]), 125.37133333333334)
@@ -526,7 +526,7 @@ def test_image_basic():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_image_bg():
     path = retrieve_data("fmt-hdf5_fl_2017.zip")
     # add a fake image_bg column
@@ -552,7 +552,7 @@ def test_image_bg_2():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 @pytest.mark.parametrize("idxs",
                          [slice(0, 5, 2),
                           [0, 2, 4],
@@ -781,7 +781,7 @@ def test_open_with_invalid_feature_names():
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.filterwarnings(
-    'ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning')
+    "ignore::dclab.rtdc_dataset.config.UnknownConfigurationKeyWarning")
 def test_trace():
     ds = new_dataset(retrieve_data("fmt-hdf5_fl_2017.zip"))
     assert len(ds["trace"]) == 2

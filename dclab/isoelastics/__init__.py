@@ -351,7 +351,7 @@ class Isoelastics:
                     channel_width=cfg["setup"]["channel width"],
                     flow_rate=cfg["setup"]["flow rate"],
                     temperature=cfg["setup"]["temperature"],
-                    model='buyukurganci-2022',
+                    model="buyukurganci-2022",
                 )
             else:
                 warnings.warn("Computing emodulus data for isoelastics from "
@@ -431,7 +431,7 @@ def get_available_identifiers():
     ids = []
     for name in isofiles:
         # `name` is only the file name, not the path to the file
-        ref = importlib_resources.files('dclab.isoelastics') / name
+        ref = importlib_resources.files("dclab.isoelastics") / name
         with importlib_resources.as_file(ref) as path:
             _, meta = feat_emod.load_mtext(path)
         ids.append(meta["lut identifier"])
@@ -442,7 +442,7 @@ def get_available_identifiers():
 def get_available_files():
     """Return list of available isoelasticity line files in dclab"""
     isofiles = []
-    for pp in importlib_resources.files('dclab.isoelastics').iterdir():
+    for pp in importlib_resources.files("dclab.isoelastics").iterdir():
         name = pp.name
         if name.startswith("iso") and name.endswith(".txt"):
             isofiles.append(name)
@@ -457,7 +457,7 @@ def get_default():
     file_manager = ExitStack()
     paths = []
     for name in isofiles:
-        ref = importlib_resources.files('dclab.isoelastics') / name
+        ref = importlib_resources.files("dclab.isoelastics") / name
         path = file_manager.enter_context(importlib_resources.as_file(ref))
         paths.append(path)
     # this loads the data into memory, so we don't need the files afterward

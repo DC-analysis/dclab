@@ -57,21 +57,21 @@ def setup_fake_af():
 def test_af_0basic():
     pytest.importorskip("nptdms")
     ds = dclab.new_dataset(retrieve_data("fmt-tdms_fl-image_2016.zip"))
-    for cc in ['fl1_pos',
-               'frame',
-               'size_x',
-               'size_y',
-               'contour',
-               'area_cvx',
-               'circ',
-               'image',
-               'trace',
-               'fl1_width',
-               'nevents',
-               'pos_x',
-               'pos_y',
-               'fl1_area',
-               'fl1_max',
+    for cc in ["fl1_pos",
+               "frame",
+               "size_x",
+               "size_y",
+               "contour",
+               "area_cvx",
+               "circ",
+               "image",
+               "trace",
+               "fl1_width",
+               "nevents",
+               "pos_x",
+               "pos_y",
+               "fl1_area",
+               "fl1_max",
                ]:
         assert cc in ds
 

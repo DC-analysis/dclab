@@ -64,7 +64,7 @@ for lut_name in [
             pos = axes[jj][0].get_position()
             x = pos.x0 - .11
             y = pos.y0 + pos.height/2
-            fig.text(x, y, media[jj], ha='left', va='center', rotation=90,
+            fig.text(x, y, media[jj], ha="left", va="center", rotation=90,
                      fontsize=10, fontweight="bold")
 
         # plot the LUTs channel-wise

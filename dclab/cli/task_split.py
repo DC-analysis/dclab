@@ -140,23 +140,23 @@ def split_parser():
     descr = ("Split an RT-DC measurement file (.tdms or .rtdc) into multiple "
              "smaller .rtdc files.")
     parser = argparse.ArgumentParser(description=descr)
-    parser.add_argument('path_in', metavar="PATH_IN", type=str,
-                        help='Input path (.tdms or .rtdc file)')
-    parser.add_argument('--path_out', metavar="PATH_OUT", type=str,
+    parser.add_argument("path_in", metavar="PATH_IN", type=str,
+                        help="Input path (.tdms or .rtdc file)")
+    parser.add_argument("--path_out", metavar="PATH_OUT", type=str,
                         default="SAME",
-                        help='Output directory (defaults to same directory)')
-    parser.add_argument('--split-events', type=int, default=10000,
-                        help='Maximum number of events in each output file')
-    parser.add_argument('--include-empty-boundary-images',
-                        dest='include_empty_boundary_images',
-                        action='store_true',
-                        help='In old versions of Shape-In, the first or last '
-                             'images were sometimes not stored in the '
-                             'resulting .avi file. In dclab, such images '
-                             'are represented as zero-valued images. Set '
-                             'this option, if you wish to include these '
-                             'events with empty image data.')
+                        help="Output directory (defaults to same directory)")
+    parser.add_argument("--split-events", type=int, default=10000,
+                        help="Maximum number of events in each output file")
+    parser.add_argument("--include-empty-boundary-images",
+                        dest="include_empty_boundary_images",
+                        action="store_true",
+                        help="In old versions of Shape-In, the first or last "
+                             "images were sometimes not stored in the "
+                             "resulting .avi file. In dclab, such images "
+                             "are represented as zero-valued images. Set "
+                             "this option, if you wish to include these "
+                             "events with empty image data.")
     parser.set_defaults(include_empty_boundary_images=False)
-    parser.add_argument('--version', action='version',
-                        version=f'dclab-split {version}')
+    parser.add_argument("--version", action="version",
+                        version=f"dclab-split {version}")
     return parser

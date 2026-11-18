@@ -57,11 +57,11 @@ for ii, medium in enumerate(visc_res):
 handles = []
 for jj, fr in enumerate(flow_rate):
     handles.append(
-        mlines.Line2D([], [], color=colors[jj], label=f'{fr:.4g} µL/s'))
+        mlines.Line2D([], [], color=colors[jj], label=f"{fr:.4g} µL/s"))
 handles.append(
-    mlines.Line2D([], [], color='gray', label='Büyükurgancı 2022'))
+    mlines.Line2D([], [], color="gray", label="Büyükurgancı 2022"))
 handles.append(
-    mlines.Line2D([], [], color='gray', ls="--", label='Herold 2017'))
+    mlines.Line2D([], [], color="gray", ls="--", label="Herold 2017"))
 axes[0].legend(handles=handles)
 
 

@@ -45,9 +45,9 @@ class ArgparseDirective(Directive):
     final_argument_whitespace = True
 
     option_spec: ClassVar[dict] = {
-        'module': directives.unchanged,
-        'func': directives.unchanged,
-        'prog': directives.unchanged,
+        "module": directives.unchanged,
+        "func": directives.unchanged,
+        "prog": directives.unchanged,
     }
 
     def generate_rst(self):
@@ -141,5 +141,5 @@ class ArgparseDirective(Directive):
 
 
 def setup(app):
-    app.add_directive('simple_argparse', ArgparseDirective)
-    return {'version': '0.3'}   # identifies the version of our extension
+    app.add_directive("simple_argparse", ArgparseDirective)
+    return {"version": "0.3"}   # identifies the version of our extension

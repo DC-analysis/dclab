@@ -112,7 +112,7 @@ def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
         count = 0
 
     hasher = constructor()
-    with path.open('rb') as fd:
+    with path.open("rb") as fd:
         buf = fd.read(blocksize)
         ii = 0
         while len(buf) > 0:

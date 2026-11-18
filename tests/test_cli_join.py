@@ -66,8 +66,8 @@ def test_join_rtdc():
         assert np.all(dsj["circ"][:len(ds0)] == ds0["circ"])
         assert np.all(dsj["circ"][len(ds0):] == ds0["circ"])
         assert set(dsj.features) == set(ds0.features)
-        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["src-#1_cfg"]
-        assert 'identifier = ZMDD-AcC-8ecba5-cd57e2' in dsj.logs["src-#2_cfg"]
+        assert "identifier = ZMDD-AcC-8ecba5-cd57e2" in dsj.logs["src-#1_cfg"]
+        assert "identifier = ZMDD-AcC-8ecba5-cd57e2" in dsj.logs["src-#2_cfg"]
 
 
 def test_join_rtdc_basin_data_not_written():

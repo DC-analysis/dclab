@@ -189,6 +189,7 @@
  - tests: use 100 bootstrap iterations in `test_glmer_differential`
    (took about 10 minutes on Linux and longer on Windows)
  - ref: use implicit string concatenation (ruff ISC003, ISC004)
+ - ref: fix remaining minor ruff findings
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

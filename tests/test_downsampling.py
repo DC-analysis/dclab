@@ -96,11 +96,11 @@ def test_grid_nan_keep_all():
     a = np.arange(100, dtype=float)
     a[50:] = np.nan
     b = np.arange(50, 150, dtype=float)
-    ads, bds, idx = downsampling.downsample_grid(a=a,
-                                                 b=b,
-                                                 samples=0,
-                                                 ret_idx=True,
-                                                 remove_invalid=False)
+    ads, bds, _ = downsampling.downsample_grid(a=a,
+                                               b=b,
+                                               samples=0,
+                                               ret_idx=True,
+                                               remove_invalid=False)
     assert np.allclose(a, ads, equal_nan=True)
     assert np.allclose(b, bds, equal_nan=True)
 
@@ -109,11 +109,11 @@ def test_grid_nan_keep_all_except_invalid():
     a = np.arange(100, dtype=float)
     a[50:] = np.nan
     b = np.arange(50, 150, dtype=float)
-    ads, bds, idx = downsampling.downsample_grid(a=a,
-                                                 b=b,
-                                                 samples=0,
-                                                 ret_idx=True,
-                                                 remove_invalid=True)
+    ads, bds, _ = downsampling.downsample_grid(a=a,
+                                               b=b,
+                                               samples=0,
+                                               ret_idx=True,
+                                               remove_invalid=True)
     assert np.allclose(a[:50], ads, equal_nan=True)
     assert np.allclose(b[:50], bds, equal_nan=True)
 

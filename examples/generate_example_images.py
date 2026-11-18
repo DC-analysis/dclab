@@ -1,5 +1,6 @@
 import os
 import os.path as op
+import pathlib
 import sys
 
 import matplotlib.pylab as plt
@@ -21,9 +22,10 @@ if __name__ == "__main__":
     for f in files:
         fname = f[:-3] + ".jpg"
         if not op.exists(fname):
-            exec_str = open(f).read()
+            exec_str = pathlib.Path(f).read_text()
             if exec_str.count("plt.show()"):
-                exec(exec_str.replace("plt.show()", ""))
+                # run the example script to create the image
+                exec(exec_str.replace("plt.show()", ""))  # noqa: S102
                 plt.savefig(fname, dpi=DPI)
                 print(f"Image created: '{fname}'")
             else:

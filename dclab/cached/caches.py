@@ -186,7 +186,7 @@ def update_hash(the_hash,
     to the hashing object (e.g. `(1, 23)` and `(12, 3)`).
     """
     if isinstance(arg, numbers.Number):
-        _update_hash_tagged(the_hash, "number", f"{arg}".encode('utf-8'))
+        _update_hash_tagged(the_hash, "number", f"{arg}".encode())
     elif isinstance(arg, str):
         _update_hash_tagged(the_hash, "str", arg.encode('utf-8'))
     elif arg is None:

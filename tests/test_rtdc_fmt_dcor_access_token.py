@@ -37,9 +37,6 @@ def test_store_and_get_certificate(tmp_path):
     fmt_dcor.DCOR_CERTS_SEARCH_PATHS.append(tmp_path)
     try:
         cert_path = fmt_dcor.get_server_cert_path("dcor.example.com")
-    except BaseException:
-        raise
-    else:
         assert str(cert_path) == str(expect_path)
     finally:
         fmt_dcor.DCOR_CERTS_SEARCH_PATHS.clear()

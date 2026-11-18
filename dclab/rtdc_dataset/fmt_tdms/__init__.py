@@ -7,7 +7,7 @@ from ...external.packaging import parse as parse_version
 
 from .exc import ContourIndexingError  # noqa:F401
 from .exc import InvalidTDMSFileFormatError  # noqa:F401
-from .exc import IncompleteTDMSFileFormatError  # noqa:F401
+from .exc import IncompleteTDMSFileFormatError
 from .exc import InvalidVideoFileError  # noqa:F401
 
 try:
@@ -87,7 +87,7 @@ class RTDC_TDMS(RTDCBase):
             # Take into account special cases of the tdms file format:
             # tdms features "image", "trace", "contour", and "mask"
             # evaluate to True (len()!=0) if the data exist on disk
-            if key in self._events and self._events[key]:
+            if self._events.get(key):
                 ct = True
         else:
             ct = super().__contains__(key)

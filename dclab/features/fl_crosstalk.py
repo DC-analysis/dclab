@@ -60,9 +60,9 @@ def get_compensation_matrix(
 
 
 def correct_crosstalk(
-        fl1: int | float | npt.NDArray,
-        fl2: int | float | npt.NDArray,
-        fl3: int | float | npt.NDArray,
+        fl1: float | npt.NDArray,
+        fl2: float | npt.NDArray,
+        fl3: float | npt.NDArray,
         fl_channel: int,
         ct21: float = 0, ct31: float = 0, ct12: float = 0,
         ct32: float = 0, ct13: float = 0, ct23: float = 0) -> npt.NDArray:

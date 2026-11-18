@@ -149,9 +149,9 @@ class S3File(HTTPFile):
 class RTDC_S3(RTDC_HDF5):
     def __init__(self,
                  url: str,
-                 endpoint_url: str = None,
-                 access_key_id: str = None,
-                 secret_access_key: str = None,
+                 endpoint_url: str | None = None,
+                 access_key_id: str | None = None,
+                 secret_access_key: str | None = None,
                  use_ssl: bool = True,
                  *args, **kwargs):
         """Access RT-DC measurements in an S3-compatible object store
@@ -252,8 +252,8 @@ class S3Basin(Basin):
 
 
 def is_s3_object_available(url: str,
-                           access_key_id: str = None,
-                           secret_access_key: str = None,
+                           access_key_id: str | None = None,
+                           secret_access_key: str | None = None,
                            ):
     """Check whether an S3 object is available
 

@@ -56,11 +56,11 @@ class APIHandler:
 
     def _get(self,
              query: str,
-             feat: str = None,
-             trace: str = None,
-             event: str = None,
+             feat: str | None = None,
+             trace: str | None = None,
+             event: str | None = None,
              api_key: str = "",
-             timeout: float = None,
+             timeout: float | None = None,
              retries: int = 5):
         """Fetch information via the DCOR API
 
@@ -124,10 +124,10 @@ class APIHandler:
 
     def get(self,
             query: str,
-            feat: str = None,
-            trace: str = None,
-            event: str = None,
-            timeout: float = None,
+            feat: str | None = None,
+            trace: str | None = None,
+            event: str | None = None,
+            timeout: float | None = None,
             retries: int = 5,
             ):
         """Fetch information from DCOR

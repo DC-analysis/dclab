@@ -18,7 +18,7 @@ def _get_output_array(data: float | npt.NDArray,
     if inplace:
         if np.issubdtype(np.asarray(data).dtype, np.integer):
             raise ValueError(f"Cannot correct integer `{name}` in-place!")
-        return np.array(data, copy=False)
+        return np.asarray(data)
     data_corr = np.array(data, copy=True)
     if not np.issubdtype(data_corr.dtype, np.inexact):
         data_corr = data_corr.astype(float)
@@ -88,13 +88,13 @@ def convert(area_um: npt.NDArray,
                   DeprecationWarning)
     copy = not inplace
 
-    deform_corr = np.array(deform, copy=copy)
+    deform_corr = np.array(deform) if copy else np.asarray(deform)
 
     if channel_width_in != channel_width_out:
         area_um_corr = scale_area_um(area_um, channel_width_in,
                                      channel_width_out, inplace)
     else:
-        area_um_corr = np.array(area_um, copy=copy)
+        area_um_corr = np.array(area_um) if copy else np.asarray(area_um)
 
     if (emodulus is not None
         and flow_rate_in is not None

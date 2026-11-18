@@ -768,3 +768,23 @@ def test_simple_emod():
     assert np.allclose(emod[10, 80], 1.5744560306483262)
     assert np.allclose(emod[50, 80], 0.73534561544655519)
     assert np.allclose(emod[80, 80], 0.60737083178222251)
+
+
+@pytest.mark.parametrize("area_um,deform", [
+    ([50, 100, 150], [0.01, 0.02, 0.03]),  # lists
+    (np.array([50, 100, 150]), np.array([0.01, 0.02, 0.03])),  # int area
+    ])
+def test_simple_emod_no_copy_with_non_float_input(area_um, deform):
+    """copy=False must also work if a copy is required (NumPy 2)"""
+    kwargs = {"medium": "CellCarrier",
+              "channel_width": 20,
+              "flow_rate": 0.04,
+              "px_um": 0.34,
+              "temperature": 23,
+              "visc_model": "herold-2017"}
+    emod_copy = emodulus.get_emodulus(area_um=area_um, deform=deform,
+                                      copy=True, **kwargs)
+    emod = emodulus.get_emodulus(area_um=area_um, deform=deform,
+                                 copy=False, **kwargs)
+    assert np.all(np.isfinite(emod))
+    assert np.allclose(emod, emod_copy, rtol=0, atol=1e-14)

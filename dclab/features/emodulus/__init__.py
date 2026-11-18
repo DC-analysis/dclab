@@ -104,6 +104,16 @@ def extrapolate_emodulus(lut: npt.NDArray,
     return emod
 
 
+def _float_array(data, copy: bool) -> npt.NDArray:
+    """Return `data` as a float array, copy only if necessary or `copy`"""
+    if copy:
+        return np.array(data, dtype=float)
+    else:
+        # Note that `np.array(data, copy=False)` raises a ValueError
+        # in NumPy 2 if a copy is required (e.g. for lists).
+        return np.asarray(data, dtype=float)
+
+
 def get_emodulus(deform: float | npt.NDArray,
                  area_um: float | npt.NDArray | None = None,
                  volume: float | npt.NDArray | None = None,
@@ -164,7 +174,8 @@ def get_emodulus(deform: float | npt.NDArray,
         is discouraged!
     copy
         Copy input arrays. If set to False, input arrays are
-        overridden.
+        overridden (only applies to float arrays, other input
+        data are always copied).
 
     Returns
     -------
@@ -201,15 +212,15 @@ def get_emodulus(deform: float | npt.NDArray,
     featx, featy, _ = lut_meta["column features"]
     if featx == "area_um" and featy == "deform":
         assert volume is None, "Don't define area_um and volume at same time!"
-        datax = np.array(area_um, dtype=float, copy=copy)
+        datax = _float_array(area_um, copy)
     elif featx == "volume" and featy == "deform":
         assert area_um is None, "Don't define area_um and volume at same time!"
-        datax = np.array(volume, dtype=float, copy=copy)
+        datax = _float_array(volume, copy)
     else:
         raise KeyError("No recipe for '{}' and '{}'!".format(featx, featy))
 
     # copy deform so we can use in-place pixel correction
-    deform = np.array(deform, dtype=float, copy=copy)
+    deform = _float_array(deform, copy)
     if px_um:
         # Correct deformation for pixelation effect (subtract ddelt).
         # It is important to do this before scaling datax (area_um/volume).
@@ -241,7 +252,7 @@ def get_emodulus(deform: float | npt.NDArray,
                     "channel_width_out": lut_meta["channel_width"],
                     "inplace": False}
         datax_4lut = scale_feature(feat=featx, data=datax, **scale_kw)
-        deform_4lut = np.array(deform, dtype=float, copy=copy)
+        deform_4lut = _float_array(deform, copy)
 
         # Normalize interpolation data such that the spacing for
         # area and deformation is about the same during interpolation.

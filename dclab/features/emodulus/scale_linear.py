@@ -30,9 +30,9 @@ def convert(area_um: npt.NDArray,
             channel_width_in: float,
             channel_width_out: float,
             emodulus: npt.NDArray = None,
-            flow_rate_in: float = None,
-            flow_rate_out: float = None,
-            viscosity_in: float = None,
+            flow_rate_in: float | None = None,
+            flow_rate_out: float | None = None,
+            viscosity_in: float | None = None,
             viscosity_out: float | npt.NDArray = None,
             inplace: bool = False
             ) -> (

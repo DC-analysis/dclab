@@ -216,7 +216,8 @@ def load_mtext(path: str | pathlib.Path) -> tuple[npt.NDArray, dict]:
     return data, meta
 
 
-def register_lut(path: str | pathlib.Path, identifier: str = None) -> None:
+def register_lut(path: str | pathlib.Path,
+                 identifier: str | None = None) -> None:
     """Register an external LUT file in dclab
 
     This will add it to :const:`EXTERNAL_LUTS`, which is required

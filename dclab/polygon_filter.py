@@ -164,6 +164,7 @@ class PolygonFilter:
                    for li in subdata if li.strip()]
 
         points = []
+        xaxis = yaxis = None
 
         for var, val in subdata:
             if var.lower() == "x axis":
@@ -180,6 +181,10 @@ class PolygonFilter:
                 points.append([int(var[5:]), val])
             else:
                 raise KeyError(f"Unknown variable: {var} = {val}")
+        if xaxis is None or yaxis is None:
+            raise PolygonFilterError(
+                f"'X Axis' or 'Y Axis' not defined for polygon filter "
+                f"{self.fileid} in '{filename}'!")
         self.axes = (xaxis, yaxis)
         # sort points
         points.sort()

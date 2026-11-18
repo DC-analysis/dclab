@@ -199,6 +199,8 @@
    TypeError (`keyval_str2typ` returned None); they are now ignored (#399)
  - fix: `emodulus.convert` raised an UnboundLocalError if `emodulus` was
    given without flow rates and viscosities (now a ValueError) (#400)
+ - fix: loading a .poly file without "X Axis" or "Y Axis" raised an
+   UnboundLocalError (now a `PolygonFilterError`) (#401)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

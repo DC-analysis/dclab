@@ -212,6 +212,9 @@
    S3-specific keyword arguments were passed to `RTDC_HTTP` for publicly
    available S3 URLs, and without `requests`, HTTP URLs resulted in
    "Unknown remote format" (#405)
+ - enh: the KeyError for ancillary features (incl. plugin features)
+   that cannot be computed names the requirements that are not met
+   (new `AncillaryFeature.get_missing_requirements`) (#406)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

@@ -77,7 +77,7 @@ class LazyContourList:
         return len(self.masks)
 
 
-def get_contour(mask: npt.NDArray[np.bool | np.int]
+def get_contour(mask: npt.NDArray[np.bool | np.integer]
                 ) -> npt.NDArray | list[npt.NDArray]:
     """Compute the image contour from a mask
 
@@ -135,7 +135,7 @@ def get_contour(mask: npt.NDArray[np.bool | np.int]
         return contours[0]
 
 
-def get_contour_lazily(mask: npt.NDArray[np.bool | np.int]
+def get_contour_lazily(mask: npt.NDArray[np.bool | np.integer]
                        ) -> npt.NDArray | LazyContourList:
     """Like :func:`get_contour`, but computes contours on demand
 

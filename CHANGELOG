@@ -195,6 +195,8 @@
  - ci: lint with ruff (rules configured in `pyproject.toml`) (#397)
  - fix: importing the deprecated `dclab.kde_contours` raised an
    ImportError (`_find_quantile_level` was moved to the tests) (#398)
+ - fix: lines with an empty key in configuration text files raised a
+   TypeError (`keyval_str2typ` returned None); they are now ignored (#399)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

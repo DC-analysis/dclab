@@ -499,6 +499,8 @@ def keyval_str2typ(var, val):
                 return var, float(val.replace(",", "."))
             except ValueError:
                 return var, val
+    # empty variable name or value
+    return var, val
 
 
 def keyval_typ2str(var, val):

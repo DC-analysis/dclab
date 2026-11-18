@@ -164,6 +164,9 @@
  - fix: `get_emodulus` with `copy=False` raised a ValueError for
    lists or integer arrays with NumPy 2 (same for `convert` and
    `scale_feature` with `inplace=True`)
+ - fix: a dangling external link in the "basins" group of an HDF5
+   file raised a KeyError when the basins were loaded; such basin
+   definitions are now ignored (`BrokenBasinDefinitionWarning`)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

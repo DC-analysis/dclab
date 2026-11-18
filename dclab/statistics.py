@@ -187,7 +187,7 @@ def mode(data):
 
     # Add bin_size/2, because we want the center of the bin and
     # not the left corner of the bin.
-    databin = np.round(data/bin_size)*bin_size + bin_size/2
+    databin = np.floor(data/bin_size)*bin_size + bin_size/2
     u, indices = np.unique(databin, return_inverse=True)
     mode = u[np.argmax(np.bincount(indices))]
 

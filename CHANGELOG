@@ -167,6 +167,9 @@
  - fix: a dangling external link in the "basins" group of an HDF5
    file raised a KeyError when the basins were loaded; such basin
    definitions are now ignored (`BrokenBasinDefinitionWarning`)
+ - fix: `statistics.mode` returned the edge of the bin instead of its
+   center (the data were rounded instead of floored before adding
+   half the bin size)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

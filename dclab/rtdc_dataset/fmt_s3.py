@@ -200,10 +200,7 @@ class RTDC_S3(RTDC_HDF5):
             verify_ssl=use_ssl,
             )
         # Initialize the HDF5 dataset
-        super().__init__(
-            h5path=self._s3file,
-            *args,
-            **kwargs)
+        super().__init__(self._s3file, *args, **kwargs)
         # Override self.path with the actual S3 URL
         #: URL the object on S3
         self.path = self._s3file.url

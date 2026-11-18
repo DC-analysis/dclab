@@ -42,10 +42,7 @@ class RTDC_HTTP(RTDC_HDF5):
         self._fhttp = HTTPFile(url)
 
         # Initialize the HDF5 dataset
-        super().__init__(
-            h5path=self._fhttp,
-            *args,
-            **kwargs)
+        super().__init__(self._fhttp, *args, **kwargs)
         # Override self.path with the actual HTTP URL
         #: URL to the file
         self.path = url

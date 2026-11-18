@@ -139,15 +139,17 @@ def test_glmer_differential():
               'treatment', 'treatment', 'treatment']
     repetitions = [1, 1, 2, 2, 1, 1, 2, 2]
     datasets = standard_datasets()
-    rlme4 = Rlme4(model="glmer+loglink", feature="deform")
+    # Fitting the glmer model to 4 x 1000 bootstrapped medians takes
+    # about 10 minutes on Linux and much longer on Windows (lme4 2.1).
+    rlme4 = Rlme4(model="glmer+loglink", feature="deform", bs_iter=100)
     for ii in range(len(datasets)):
         rlme4.add_dataset(datasets[ii], groups[ii], repetitions[ii])
 
     res = rlme4.fit()
-    assert np.allclose(res["fixed effects intercept"], 93.56257)
+    assert np.allclose(res["fixed effects intercept"], 93.81713)
     assert rlme4.is_differential()
     assert rlme4.model == "glmer+loglink"
-    assert np.allclose(res["anova p-value"], 6.11376e-06)
+    assert np.allclose(res["anova p-value"], 0.0001264353)
     assert res["model converged"]
 
 

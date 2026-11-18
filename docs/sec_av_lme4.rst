@@ -142,5 +142,8 @@ Keep in mind that the analysis is now performed using the differential
 features and not the actual features (``result["is differential"]``).
 For more information, please see :func:`dclab.lme4.wrapr.Rlme4.get_differential_dataset`
 and :func:`dclab.lme4.wrapr.bootstrapped_median_distributions`.
+The number of bootstrapping iterations (default: 1000) can be set with
+the ``bs_iter`` argument of :class:`dclab.lme4.wrapr.Rlme4`. Fewer
+iterations make the analysis faster, especially for "glmer+loglink".
 A full example, including GLMM and differential deformation, is given in the
 :ref:`example section <example_lme4_glmer_diff>`.

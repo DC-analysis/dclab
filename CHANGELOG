@@ -1,4 +1,6 @@
-0.74.1
+0.75.0
+ - feat: allow to set the number of bootstrapping iterations for
+   differential features in `Rlme4` (`bs_iter`, default 1000)
  - fix: `import_plugin_feature_script` removed the first entry of
    `sys.path` (instead of the plugin directory) and returned the wrong
    plugin if a module with the same name was imported before
@@ -184,6 +186,8 @@
    cleanups (ruff B004, B006, B008, PLW0120, RUF012)
  - ref: simplify code (ruff SIM, C4, PIE, PERF, FURB, FLY, PLC0206)
  - ref: add pyright stub for h5py until h5py ships type hints
+ - tests: use 100 bootstrap iterations in `test_glmer_differential`
+   (took about 10 minutes on Linux and longer on Windows)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

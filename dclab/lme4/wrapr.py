@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Rlme4:
-    def __init__(self, model="lmer", feature="deform"):
+    def __init__(self, model="lmer", feature="deform", bs_iter=1000):
         """Perform an R-lme4 analysis with RT-DC data
 
         Parameters
@@ -32,15 +32,23 @@ class Rlme4:
               via the ``family=Gamma(link='log'))`` keyword.
         feature: str
             Dclab feature for which to compute the model
+        bs_iter: int
+            Number of bootstrapping iterations for the differential
+            feature analysis (only used if reservoir data are given,
+            see :func:`Rlme4.get_differential_dataset`). Note that the
+            time required for fitting the model increases with this
+            number, especially for "glmer+loglink".
         """
         #: modeling method to use (e.g. "lmer")
         self.model = None
         #: dclab feature for which to perform the analysis
         self.feature = None
+        #: number of bootstrapping iterations for differential features
+        self.bs_iter = None
         #: list of [RTDCBase, column, repetition, chip_region]
         self.data = []
 
-        self.set_options(model=model, feature=feature)
+        self.set_options(model=model, feature=feature, bs_iter=bs_iter)
 
         # Make sure that lme4 is available
         if not rsetup.has_lme4():
@@ -227,6 +235,9 @@ class Rlme4:
         analysis with the channel deformation data, it is run with
         the differential deformation (subtraction of the bootstrapped
         deformation distributions for channel and reservoir).
+
+        The number of bootstrapping iterations (the number of values
+        per group and repetition) is given by :attr:`Rlme4.bs_iter`.
         """
         features = []
         groups = []
@@ -238,8 +249,8 @@ class Rlme4:
             for rep in grp_rep:
                 feat_cha = self.get_feature_data(grp, rep, region="channel")
                 feat_res = self.get_feature_data(grp, rep, region="reservoir")
-                bs_cha, bs_res = bootstrapped_median_distributions(feat_cha,
-                                                                   feat_res)
+                bs_cha, bs_res = bootstrapped_median_distributions(
+                    feat_cha, feat_res, bs_iter=self.bs_iter)
                 # differential feature
                 features.append(bs_cha - bs_res)
                 groups.append(grp)
@@ -321,7 +332,7 @@ class Rlme4:
             ret_dict[key] = value
         return ret_dict
 
-    def set_options(self, model=None, feature=None):
+    def set_options(self, model=None, feature=None, bs_iter=None):
         """Set analysis options"""
         if model is not None:
             assert model in ["lmer", "glmer+loglink"]
@@ -329,6 +340,11 @@ class Rlme4:
         if feature is not None:
             assert dfn.scalar_feature_exists(feature)
             self.feature = feature
+        if bs_iter is not None:
+            if not isinstance(bs_iter, numbers.Integral) or bs_iter < 1:
+                raise ValueError(
+                    f"`bs_iter` must be a positive integer, got '{bs_iter}'")
+            self.bs_iter = int(bs_iter)
 
 
 def arr2str(a):

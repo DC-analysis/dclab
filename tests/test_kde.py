@@ -6,6 +6,7 @@ import dclab
 from dclab import polygon_filter
 from dclab.external import skimage
 from dclab.kde import KernelDensityEstimator, binning
+from dclab.kde.base import ContourSpacingTooLarge
 from dclab.kde.binning import KernelDensityEstimationForEmtpyArrayWarning
 
 
@@ -196,6 +197,31 @@ def test_contour_lines_auto_spacing_all_filtered():
     # This raised an IndexError in `find_smooth_contour_spacing`
     contours = kde_instance.get_contour_lines(xax="area_um", yax="deform")
     assert contours == []
+
+
+def test_contour_lines_no_contour_ret_levels():
+    """ret_levels must be honored when no contour can be computed"""
+    np.random.seed(47)
+    ds = dclab.new_dataset({
+        "area_um": np.random.normal(loc=100, scale=10, size=100),
+        "deform": np.random.normal(loc=.1, scale=.01, size=100),
+    })
+    kde_instance = KernelDensityEstimator(ds)
+    # spacing too large
+    with pytest.warns(ContourSpacingTooLarge, match="Contour not possible"):
+        contours, levels = kde_instance.get_contour_lines(
+            xax="area_um", yax="deform", xacc=1000, yacc=1000,
+            ret_levels=True)
+    assert contours == []
+    assert levels == []
+
+    # all events filtered (auto spacing)
+    ds.filter.manual[:] = False
+    ds.apply_filter()
+    contours, levels = kde_instance.get_contour_lines(
+        xax="area_um", yax="deform", ret_levels=True)
+    assert contours == []
+    assert levels == []
 
 
 def test_contour_lines_auto_spacing_nan():

@@ -351,8 +351,5 @@ def is_s3_url(string):
     elif pathlib.Path(string).exists():
         # this is actually a file
         return False
-    elif REGEXP_S3_BUCKET_KEY.match(string.strip()):
-        # bucket_name/key
-        return True
-    else:
-        return False
+    # bucket_name/key
+    return bool(REGEXP_S3_BUCKET_KEY.match(string.strip()))

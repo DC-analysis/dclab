@@ -214,9 +214,9 @@ def test_volume():
     cont1 = [ci for ci in ds["contour"]]
     cont2 = get_contour(mask)
 
-    kw = dict(pos_x=ds["pos_x"],
-              pos_y=ds["pos_y"],
-              pix=ds.config["imaging"]["pixel size"])
+    kw = {"pos_x": ds["pos_x"],
+          "pos_y": ds["pos_y"],
+          "pix": ds.config["imaging"]["pixel size"]}
 
     v1 = get_volume(cont=cont1, **kw)
     v2 = get_volume(cont=cont2, **kw)

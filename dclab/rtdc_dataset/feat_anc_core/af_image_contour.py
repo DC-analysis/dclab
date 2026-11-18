@@ -27,22 +27,26 @@ def compute_bright(mm: RTDCBase) -> dict[str, float | npt.NDArray]:
 
 
 def compute_bright_bc(mm: RTDCBase) -> dict[str, float | npt.NDArray]:
+    # RTDCBase has no `get` method
+    bg_off = mm["bg_off"] if "bg_off" in mm else None  # noqa: SIM401
     bavg, bsd = features.bright_bc.get_bright_bc(  # type: ignore
         mask=mm["mask"],
         image=mm["image"],
         image_bg=mm["image_bg"],
-        bg_off=mm["bg_off"] if "bg_off" in mm else None,  # type: ignore
+        bg_off=bg_off,  # type: ignore
         ret_data="avg,sd",
         )
     return {"bright_bc_avg": bavg, "bright_bc_sd": bsd}
 
 
 def compute_bright_perc(mm: RTDCBase) -> dict[str, float | npt.NDArray]:
+    # RTDCBase has no `get` method
+    bg_off = mm["bg_off"] if "bg_off" in mm else None  # noqa: SIM401
     p10, p90 = features.bright_perc.get_bright_perc(
         mask=mm["mask"],
         image=mm["image"],
         image_bg=mm["image_bg"],
-        bg_off=mm["bg_off"] if "bg_off" in mm else None,  # type: ignore
+        bg_off=bg_off,  # type: ignore
         )
     return {"bright_perc_10": p10, "bright_perc_90": p90}
 

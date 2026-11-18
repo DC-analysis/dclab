@@ -110,7 +110,7 @@ def test_split_traces():
         ecount = 0
         for pp in paths:
             with new_dataset(pp) as di:
-                for flkey in ds["trace"].keys():
+                for flkey in ds["trace"]:
                     trace1 = ds["trace"][flkey][ecount:ecount + len(di)]
                     trace2 = di["trace"][flkey][:]
                     assert len(trace1) == len(trace2)

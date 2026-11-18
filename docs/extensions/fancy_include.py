@@ -59,8 +59,7 @@ class IncludeDirective(Directive):
 
         code = source[2].split("\n")
 
-        for line in doc:
-            rst.append(line)
+        rst.extend(doc)
 
         # image
         for ext in [".png", ".jpg"]:

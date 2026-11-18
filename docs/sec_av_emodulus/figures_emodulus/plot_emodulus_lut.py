@@ -43,8 +43,7 @@ for lut_name in [
     "HE-3D-FEM-22"
 ]:
 
-    for channel_width in matrix:
-        flow_rates = matrix[channel_width]
+    for channel_width, flow_rates in matrix.items():
         # setup figure
         fig, axes = plt.subplots(nrows=3, ncols=3, sharex=True, sharey=True,
                                  gridspec_kw={"left": 0.12,

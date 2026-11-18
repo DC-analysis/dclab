@@ -119,8 +119,9 @@ def get_contour(mask: npt.NDArray[np.bool | np.int]
         if not conts:
             # empty mask
             raise NoValidContourFoundError("No contour found!")
-        # get the longest contour
-        c0 = sorted(conts, key=lambda x: len(x))[-1]
+        # get the longest contour (the last one if there are several,
+        # `max` would return the first one)
+        c0 = sorted(conts, key=lambda x: len(x))[-1]  # noqa: FURB192
         # round all coordinates to pixel values
         c1 = np.asarray(np.round(c0), int)
         # remove duplicates

@@ -173,9 +173,8 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
         msg = f"Could not find label for '{name}'"
         msg += " (feature does not exist)" if not exists else ""
         raise ValueError(msg)
-    if not with_unit:
-        if label.endswith("]") and label.count("["):
-            label = label.rsplit("[", 1)[0].strip()
+    if not with_unit and label.endswith("]") and label.count("["):
+        label = label.rsplit("[", 1)[0].strip()
     return label
 
 

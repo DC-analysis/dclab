@@ -191,9 +191,8 @@ def scale_emodulus(emodulus: npt.NDArray,
     """
     emodulus_corr = _get_output_array(emodulus, inplace, "emodulus")
 
-    if viscosity_in is not None:
-        if isinstance(viscosity_in, np.ndarray):
-            raise ValueError("`viscosity_in` must not be an array!")
+    if viscosity_in is not None and isinstance(viscosity_in, np.ndarray):
+        raise ValueError("`viscosity_in` must not be an array!")
 
     has_nones = (flow_rate_in is None
                  or flow_rate_out is None

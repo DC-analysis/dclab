@@ -143,10 +143,8 @@ class RTDC_Hierarchy(RTDCBase):
         # Remove previously applied filters
         pops = []
         for key in cfg["filtering"]:
-            if (key.endswith(" min") or
-                key.endswith(" max") or
-                key == "limit events" or
-                    key == "polygon filters"):
+            if (key.endswith((" min", " max"))
+                    or key in ["limit events", "polygon filters"]):
                 pops.append(key)
         [cfg["filtering"].pop(key) for key in pops]
         # Add parent information in dictionary

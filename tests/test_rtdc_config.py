@@ -480,8 +480,8 @@ def test_user_section_set_save_reload_fmt_hdf5_containers():
         assert all(h5.attrs["user:outlet"] == outlet)
     # now check again with dclab
     with new_dataset(expath) as ds2:
-        for k1 in metadata:
-            assert all(metadata[k1] == ds2.config["user"][k1])
+        for k1, v1 in metadata.items():
+            assert all(v1 == ds2.config["user"][k1])
 
 
 @pytest.mark.filterwarnings(

@@ -150,7 +150,7 @@ def get_statistics(ds, methods=None, features=None, ret_dict=False):
                 else:
                     values.append(np.nan)
                 label = dfn.get_feature_label(ft, rtdc_ds=ds)
-                header.append(" ".join([mt, label]))
+                header.append(f"{mt} {label}")
 
     if ret_dict:
         return dict(zip(header, values))

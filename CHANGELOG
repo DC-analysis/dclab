@@ -183,6 +183,7 @@
  - ref: annotate shared class attributes with `ClassVar` and minor
    cleanups (ruff B004, B006, B008, PLW0120, RUF012)
  - ref: simplify code (ruff SIM, C4, PIE, PERF, FURB, FLY, PLC0206)
+ - ref: add pyright stub for h5py until h5py ships type hints
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

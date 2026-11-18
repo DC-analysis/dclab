@@ -8,6 +8,7 @@ import pytest
 
 import dclab
 from dclab import new_dataset, rtdc_dataset, RTDCWriter
+from dclab.rtdc_dataset.fmt_hdf5.base import BrokenBasinDefinitionWarning
 from dclab.rtdc_dataset.fmt_hdf5.basin import HDF5Basin
 from dclab.rtdc_dataset.feat_basin import BasinNotAvailableError
 
@@ -139,6 +140,45 @@ def test_basin_nothing_available():
         assert "image" not in ds
         assert not ds.features_basin
         _ = ds["index"]
+
+
+def test_basin_definition_dangling_external_link():
+    """A dangling external link in "basins" must not break the dataset"""
+    h5path = retrieve_data("fmt-hdf5_fl_wide-channel_2023.zip")
+    h5path_small = h5path.with_name("smaller.rtdc")
+
+    with h5py.File(h5path) as src, h5py.File(h5path_small, "w") as dst:
+        rtdc_dataset.rtdc_copy(src_h5file=src,
+                               dst_h5file=dst,
+                               features="scalar")
+        bdat = {
+            "type": "file",
+            "format": "hdf5",
+            "paths": [str(h5path)]
+        }
+        blines = json.dumps(bdat, indent=2).split("\n")
+        basins = dst.require_group("basins")
+        with RTDCWriter(dst, mode="append") as hw:
+            hw.write_text(basins, "my_basin", blines)
+        basins["dangling"] = h5py.ExternalLink("does-not-exist.h5", "/x")
+
+    with new_dataset(h5path_small) as ds:
+        # basins are loaded lazily
+        with pytest.warns(BrokenBasinDefinitionWarning, match="dangling"):
+            basins = ds.basins
+        # the other basin is still used
+        assert len(basins) == 1
+        assert "image" in ds
+        assert np.all(ds["image"][0] == ds.basins[0].ds["image"][0])
+
+    # copying the dataset also works and ignores the broken definition
+    h5path_copy = h5path.with_name("copy.rtdc")
+    with h5py.File(h5path_small) as src, \
+            h5py.File(h5path_copy, "w") as dst, \
+            pytest.warns(BrokenBasinDefinitionWarning, match="dangling"):
+        rtdc_dataset.rtdc_copy(src_h5file=src, dst_h5file=dst)
+    with h5py.File(h5path_copy) as h5:
+        assert list(h5["basins"].keys()) == ["my_basin"]
 
 
 def test_basin_features_path_absolute():

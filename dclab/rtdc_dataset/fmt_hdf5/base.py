@@ -25,6 +25,10 @@ from . import tables
 MIN_DCLAB_EXPORT_VERSION = "0.3.3.dev2"
 
 
+class BrokenBasinDefinitionWarning(UserWarning):
+    pass
+
+
 class OldFormatNotSupportedError(BaseException):
     pass
 
@@ -253,8 +257,17 @@ class RTDC_HDF5(RTDCBase):
         """Return list of dicts for all basins defined in `h5file`"""
         basins = []
         # Do not sort anything here, sorting is done in `RTDCBase`.
-        for bk in h5file.get("basins", []):
-            bdat = list(h5file["basins"][bk])
+        h5basins = h5file.get("basins", {})
+        for bk in h5basins:
+            h5bk = h5basins.get(bk)
+            if h5bk is None:
+                # e.g. dangling external link
+                warnings.warn(f"Ignoring basin definition '{bk}' in "
+                              f"{h5file.filename}, because it cannot be "
+                              f"accessed (e.g. dangling external link).",
+                              BrokenBasinDefinitionWarning)
+                continue
+            bdat = list(h5bk)
             if isinstance(bdat[0], bytes):
                 bdat = [bi.decode("utf") for bi in bdat]
             bdict = json.loads(" ".join(bdat))

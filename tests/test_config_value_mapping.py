@@ -20,6 +20,9 @@ def test_map_str2typ():
     assert config.keyval_str2typ("area_um", "is this case even used?")[
         1] == "is this case even used?"
     assert config.keyval_str2typ("a", "1,true")[1] == "1,true"
+    # empty variable names or values are returned as-is
+    assert config.keyval_str2typ(" ", "5") == ("", "5")
+    assert config.keyval_str2typ("a", " ") == ("a", "")
 
 
 if __name__ == "__main__":

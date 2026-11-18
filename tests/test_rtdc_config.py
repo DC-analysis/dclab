@@ -127,6 +127,16 @@ def test_config_load_comments_and_key_outside_section(tmp_path):
     assert dict(loaded["experiment"]) == {"sample": "cells"}
 
 
+def test_config_load_empty_key(tmp_path):
+    """Lines with an empty key are ignored"""
+    path = tmp_path / "config.txt"
+    path.write_text("[experiment]\n"
+                    " = 5\n"
+                    "sample = cells\n")
+    loaded = dccfg.load_from_file(path)
+    assert dict(loaded["experiment"]) == {"sample": "cells"}
+
+
 @pytest.mark.filterwarnings(
     "ignore::dclab.rtdc_dataset.config.WrongConfigurationTypeWarning")
 @pytest.mark.parametrize("value", [True, False, 0.5, 2])

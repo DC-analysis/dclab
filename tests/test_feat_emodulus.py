@@ -716,6 +716,35 @@ def test_register_external_lut_without_identifier():
         emodulus.register_lut(path)
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def test_convert_emodulus():
+    """The deprecated `convert` also corrects the emodulus"""
+    area_um, deform, emod = emodulus.convert(
+        area_um=np.array([50., 100.]),
+        deform=np.array([0.01, 0.02]),
+        channel_width_in=20,
+        channel_width_out=30,
+        emodulus=np.array([1., 2.]),
+        flow_rate_in=0.04,
+        flow_rate_out=0.16,
+        viscosity_in=15,
+        viscosity_out=15)
+    assert np.allclose(area_um, [50 * 1.5**2, 100 * 1.5**2])
+    assert np.allclose(deform, [0.01, 0.02])
+    assert emod.shape == (2,)
+
+
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def test_convert_emodulus_missing_arguments():
+    """Correcting the emodulus requires flow rates and viscosities"""
+    with pytest.raises(ValueError, match="flow_rate_in"):
+        emodulus.convert(area_um=np.array([50.]),
+                         deform=np.array([0.01]),
+                         channel_width_in=20,
+                         channel_width_out=30,
+                         emodulus=np.array([1.]))
+
+
 @pytest.mark.parametrize("feat,factor",
                          [["area_um", 1.5**2],
                           ["volume", 1.5**3],

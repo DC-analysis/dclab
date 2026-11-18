@@ -99,3 +99,9 @@ ignore = [
     "S110",
     "S112",
 ]
+
+[tool.pyright]
+# h5py does not have type hints yet, which results in many false positives.
+# We are waiting for https://github.com/h5py/h5py/issues/1912. In the
+# meantime, the stub in ".typings/h5py" makes everything in h5py `Any`.
+stubPath = ".typings"

@@ -31,6 +31,7 @@ Changelog:
  - good for short docstrings
 """
 import importlib
+from typing import ClassVar
 
 from docutils.statemachine import ViewList
 from docutils.parsers.rst import Directive, directives
@@ -43,7 +44,7 @@ class ArgparseDirective(Directive):
     optional_arguments = 0
     final_argument_whitespace = True
 
-    option_spec = {
+    option_spec: ClassVar[dict] = {
         'module': directives.unchanged,
         'func': directives.unchanged,
         'prog': directives.unchanged,

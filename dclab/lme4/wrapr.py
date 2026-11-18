@@ -291,8 +291,7 @@ class Rlme4:
         for dd in self.data:
             if dd[3] == "reservoir":
                 return True
-        else:
-            return False
+        return False
 
     def parse_result(self, result):
         resd = result.split("OUTPUT")

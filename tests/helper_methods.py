@@ -38,7 +38,7 @@ def calltracker(func):
     return wrapped
 
 
-def example_data_dict(size=100, keys=["area_um", "deform"]):
+def example_data_dict(size=100, keys=("area_um", "deform")):
     """Example dict with which an RTDCBase can be instantiated.
     """
     ddict = {}

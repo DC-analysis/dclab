@@ -341,3 +341,36 @@ def test_find_smooth_contour_spacing_nan_angles(angles, monkeypatch):
     )
     assert res["reason"] != "target opening angle reached"
     assert res["total iterations"] > 1
+
+
+def test_find_smooth_contour_spacing_all_contours(monkeypatch):
+    """All contours of the highest percentile must be smooth (#288)"""
+    phi = np.linspace(0, 2 * np.pi, 200)
+    circle = np.stack([100 + 10 * np.cos(phi), .1 + .01 * np.sin(phi)],
+                      axis=1)
+    square = np.array([[60, .06], [70, .06], [70, .07], [60, .07],
+                       [60, .06]])
+
+    def get_contour_lines(self, *args, **kwargs):
+        # the second contour (not smooth) must be taken into account
+        return [[circle, square]]
+
+    monkeypatch.setattr(dclab.kde.base.KernelDensityEstimator,
+                        "get_contour_lines", get_contour_lines)
+    np.random.seed(47)
+    x0 = np.random.normal(loc=100, scale=10, size=1000)
+    y0 = np.random.normal(loc=.1, scale=.01, size=1000)
+    ds = dclab.new_dataset({"area_um": x0, "deform": y0})
+
+    res = smooth_contour.find_smooth_contour_spacing(
+        ds_list=[ds],
+        xax="area_um",
+        yax="deform",
+        xrange=(50, 150),
+        yrange=(0.05, 0.15),
+        quantiles=[0.5, 0.95],
+        max_iter=3,
+    )
+    assert not res["success"]
+    assert res["reason"] == "maximum iterations reached"
+    assert res["total iterations"] == 3

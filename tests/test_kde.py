@@ -7,7 +7,7 @@ from dclab import polygon_filter
 from dclab.external import skimage
 from dclab.kde import KernelDensityEstimator, binning
 from dclab.kde.base import ContourSpacingTooLarge
-from dclab.kde.binning import KernelDensityEstimationForEmtpyArrayWarning
+from dclab.kde.binning import KernelDensityEstimationForEmptyArrayWarning
 
 
 def test_contour_lines():
@@ -307,14 +307,14 @@ def test_kde_get_at_all_nan_inf():
     ds = dclab.new_dataset(ddict)
 
     kde_instance = KernelDensityEstimator(ds)
-    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+    with pytest.warns(KernelDensityEstimationForEmptyArrayWarning,
                       match="KDE encountered an empty array"):
         sc = kde_instance.get_at(xax="area_um", yax="deform")
     assert np.all(np.isnan(sc))
 
     ds.filter.manual[0] = False
     ds.apply_filter()
-    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+    with pytest.warns(KernelDensityEstimationForEmptyArrayWarning,
                       match="KDE encountered an empty array"):
         sc2 = kde_instance.get_at(xax="area_um", yax="deform",
                                   positions=(ds["area_um"], ds["deform"]))
@@ -445,7 +445,7 @@ def test_kde_get_raster_all_nan_inf():
     ds = dclab.new_dataset(ddict)
 
     kde_instance = KernelDensityEstimator(ds)
-    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+    with pytest.warns(KernelDensityEstimationForEmptyArrayWarning,
                       match="KDE encountered an empty array"):
         x, y, z = kde_instance.get_raster(xax="area_um", yax="deform")
     assert x.shape == y.shape == z.shape
@@ -461,8 +461,17 @@ def test_kde_get_raster_empty():
 
     kde_instance = KernelDensityEstimator(ds)
 
-    with pytest.warns(KernelDensityEstimationForEmtpyArrayWarning,
+    with pytest.warns(KernelDensityEstimationForEmptyArrayWarning,
                       match="KDE encountered an empty array"):
         x, y, z = kde_instance.get_raster(xax="area_um", yax="deform")
     assert x.shape == y.shape == z.shape
     assert np.all(np.isnan(z))
+
+
+def test_kde_empty_array_warning_deprecated_alias():
+    from dclab.kde import binning
+    with pytest.warns(DeprecationWarning, match="EmptyArrayWarning"):
+        old = binning.KernelDensityEstimationForEmtpyArrayWarning
+    assert old is KernelDensityEstimationForEmptyArrayWarning
+    with pytest.raises(AttributeError):
+        binning.does_not_exist  # noqa: B018

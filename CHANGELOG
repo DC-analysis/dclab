@@ -256,6 +256,11 @@
    angle reached") when the abort event was set while iterating over
    the datasets; also pass a flat list of quantiles to
    `get_contour_lines` (nested list only worked by chance) (#419)
+ - fix: rename misspelled `PolygonFilter.instace_exists` to
+   `PolygonFilter.instance_exists` and
+   `KernelDensityEstimationForEmtpyArrayWarning` to
+   `KernelDensityEstimationForEmptyArrayWarning` (the old names are
+   deprecated aliases) (#420)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

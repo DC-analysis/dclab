@@ -2,7 +2,7 @@ import threading
 
 
 class BasinFeatureMissingWarning(UserWarning):
-    """Used when a badin feature is defined but not stored"""
+    """Used when a basin feature is defined but not stored"""
 
 
 class BasinIdentifierMismatchError(BaseException):
@@ -32,13 +32,14 @@ class BasinAvailabilityChecker(threading.Thread):
 
 
 def basin_priority_sorted_key(bdict: dict[str, str]):
-    """Yield a sorting value for a given basin that can be used with `sorted`
+    """Return a sorting key for a given basin that can be used with `sorted`
 
-    Basins are normally stored in random order in a dataset. This method
+    Basins are normally stored in random order in a dataset. This function
     brings them into correct order, prioritizing:
 
-    - type: "file" over "remote"
-    - format: "HTTP" over "S3" over "dcor"
+    - type: "internal" over "file" over "remote"
+    - format: "h5dataset" over "hdf5" over "http" over "s3" over "dcor"
+      (other formats, e.g. "h5datasetchop", come last)
     - mapping: "same" over anything else
     """
     srt_type = {

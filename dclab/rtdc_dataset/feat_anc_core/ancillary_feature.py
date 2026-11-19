@@ -80,7 +80,7 @@ class AncillaryFeature:
             takes an instance of `RTDCBase` as argument.
         req_config: list
             Required configuration parameters to compute the feature,
-            e.g. ["calculation", ["emodulus lut", "emodulus viscosity"]]
+            e.g. [["calculation", ["emodulus lut", "emodulus viscosity"]]]
         req_features: list
             Required existing features in the dataset,
             e.g. ["area_cvx", "deform"]
@@ -90,7 +90,7 @@ class AncillaryFeature:
             are met. By default, this is a lambda function that returns
             True. The function should return False if the necessary
             criteria are not met. This function may also return a
-            hashable object (via :func:`dclab.util.objstr`) instead of
+            hashable object (see ``dclab.util.obj2bytes``) instead of
             True, if the criteria are subject to change. In this case,
             the return value is used for identifying the cached
             ancillary feature.
@@ -104,9 +104,8 @@ class AncillaryFeature:
             then the priority of the features defines which feature
             returns True in `self.is_available`. A higher value
             means a higher priority.
-        data: object or BaseModel
-            Any other data relevant for the feature (e.g. the ML
-            model for computing 'ml_score_xxx' features)
+        data: object
+            Any other data relevant for the feature
         identifier: None or str
             A unique identifier (e.g. MD5 hash) of the ancillary
             feature. For PluginFeatures or ML features, this should
@@ -178,7 +177,10 @@ class AncillaryFeature:
 
     @staticmethod
     def check_data_size(rtdc_ds: RTDCBase, data_dict: dict) -> dict:
-        """Check the feature data is the correct size. If it isn't, resize it.
+        """Check that the feature data have the correct size and resize them
+
+        Missing values are filled with NaN, and the data are made
+        read-only.
 
         Parameters
         ----------
@@ -302,6 +304,9 @@ class AncillaryFeature:
         ----------
         rtdc_ds: instance of RTDCBase
             The dataset to check availability for
+        verbose: bool
+            Print the reason why the feature is not available
+            (only for missing configuration keys)
 
         Returns
         -------

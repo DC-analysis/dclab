@@ -1,3 +1,4 @@
+"""Persistent on-disk store for :class:`.umbrella_cache`"""
 import json
 import numbers
 import os
@@ -9,12 +10,19 @@ import numpy as np
 
 
 class DiskStore:
+    #: version of the disk store file format
     version = "1.0"
 
     def __init__(self, path=None):
         """Disk store for persisting data to disk
 
         The disk store is thread- and process-safe.
+
+        Parameters
+        ----------
+        path: str or pathlib.Path
+            Directory where the data are stored; if None, the disk
+            store is disabled until :func:`set_path` is called
         """
         self.path = None
         self.index = set()
@@ -56,11 +64,13 @@ class DiskStore:
                 meta_path.write_text(json.dumps(file_meta, indent=2))
 
     def assert_disk_store_path(self):
+        """Raise a RuntimeError if no disk store path is set"""
         if not self:
             raise RuntimeError(
                 "Please use `set_disk_store_path` to set a disk cache path")
 
     def clear(self):
+        """Remove all data from the disk store (deletes the store directory)"""
         if self:
             self.index.clear()
             shutil.rmtree(self.path, ignore_errors=True)
@@ -118,6 +128,7 @@ class DiskStore:
                 pp.unlink(missing_ok=True)
 
     def set_path(self, path):
+        """Set the directory in which the disk store keeps its data"""
         path = pathlib.Path(path)
         if path != self.path:
             self.path = pathlib.Path(path)
@@ -125,6 +136,7 @@ class DiskStore:
             self.index.clear()
 
     def value_read(self, key, file_meta):
+        """Read the value of `key` as described by the metadata `file_meta`"""
         if file_meta["format"] == "json":
             return json.loads(
                 ((self.path / key).parent / file_meta["file"]).read_text())
@@ -148,6 +160,11 @@ class DiskStore:
                 f"Unsupported format '{file_meta['format']}'")
 
     def value_write(self, key, value):
+        """Write `value` for `key` to disk and return its metadata
+
+        The value is stored as JSON if possible, otherwise via
+        :func:`value_write_mixed`.
+        """
         (self.path / key).parent.mkdir(parents=True, exist_ok=True)
         # first attempt to just store everything as json
         # (tuples and non-string dictionary keys require type information)
@@ -168,6 +185,7 @@ class DiskStore:
             return self.value_write_mixed(key, value)
 
     def value_write_json(self, key, json_data):
+        """Write the JSON string `json_data` for `key`, return its metadata"""
         path_out = pathlib.Path(self.path / f"{key}.json")
         path_out_tmp = path_out.with_name(path_out.name + "~")
         if path_out_tmp.exists():
@@ -183,6 +201,11 @@ class DiskStore:
         return file_meta
 
     def value_write_mixed(self, key, value):
+        """Write a list, tuple, numpy array, or bytes value for `key`
+
+        Returns the metadata of the stored value. Raises a
+        NotImplementedError for other types.
+        """
         if isinstance(value, (list, tuple)):
             fmis = []
             for ii in range(len(value)):
@@ -232,6 +255,7 @@ class DiskStore:
 class DiskStoreJSONEncoder(json.JSONEncoder):
     """Custom JSONEncoder"""
     def default(self, o):
+        """Convert pathlib.Path, integer, and numpy.bool_ objects for JSON"""
         if isinstance(o, pathlib.Path):
             return str(o)
         elif isinstance(o, numbers.Integral):
@@ -284,7 +308,7 @@ class LockFile:
     def __init__(self, path):
         """Create a lock file at the specified path
 
-        Use the property `acquire`, to check whether the
+        Use the attribute `acquired` to check whether the
         lock has been acquired.
         """
         self.path = pathlib.Path(path)

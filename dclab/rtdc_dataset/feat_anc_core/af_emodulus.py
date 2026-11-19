@@ -48,7 +48,7 @@ def compute_emodulus(mm: RTDCBase) -> npt.NDArray | None:
         # warnings
         if "emodulus viscosity model" not in calccfg:
             warnings.warn("Please specify the 'emodulus viscosity model' "
-                          "key in the 'calculation' config segion, falling "
+                          "key in the 'calculation' config section, falling "
                           "back to 'herold-2017'!",
                           DeprecationWarning)
         # actual function calls
@@ -65,7 +65,10 @@ def compute_emodulus(mm: RTDCBase) -> npt.NDArray | None:
 def compute_emodulus_known_media(mm: RTDCBase,
                                  temperature: float | npt.NDArray
                                  ) -> npt.NDArray:
-    """Only use known media and one temperature for all"""
+    """Compute the Young's modulus for known media (cases A and C)
+
+    `temperature` is either a single value or the "temp" feature.
+    """
     calccfg = mm.config["calculation"]
     # compute elastic modulus
     emod = features.emodulus.get_emodulus(

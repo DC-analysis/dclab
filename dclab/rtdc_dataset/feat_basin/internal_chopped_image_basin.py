@@ -35,10 +35,11 @@ class InternalH5DatasetChoppedImageBasin(Basin):
 
         The basin data are organized in a group with an `index` dataset and
         multiple chunked datasets of different shapes for the image data.
-        The `index` dataset contains the information how to read and position
-        each event image in the event's frame. Multiple events per frame are
-        supported. The other datasets, enumerated with "0", "1", etc. contain
-        the event images sorted to optimize shape and chunking for storage.
+        The `index` dataset contains the information on how to read and
+        position each event image in the event's frame. Multiple events per
+        frame are supported. The other datasets, enumerated with "0", "1",
+        etc. contain the event images sorted to optimize shape and chunking
+        for storage.
         """
         super().__init__(*args, **kwargs)
         if self.mapping != "same":

@@ -118,7 +118,7 @@ class RTDC_DCOR(RTDCBase):
 
     @property
     def hash(self):
-        """Hash value based on file name and content"""
+        """Hash value based on the full URL of the DCOR resource"""
         if self._hash is None:
             tohash = [self.path]
             self._hash = hashobj(tohash)
@@ -134,14 +134,14 @@ class RTDC_DCOR(RTDCBase):
             Full URL or resource identifier; valid values are
 
             - https://dcor.mpl.mpg.de/api/3/action/dcserv?id=caab96f6-
-              df12-4299-aa2e-089e390aafd5'
+              df12-4299-aa2e-089e390aafd5
             - dcor.mpl.mpg.de/api/3/action/dcserv?id=caab96f6-df12-
               4299-aa2e-089e390aafd5
             - caab96f6-df12-4299-aa2e-089e390aafd5
         use_ssl: bool or None
             Set this to False to disable SSL (should only be used for
-            testing). Defaults to None (does not force SSL if the URL
-            starts with "http://").
+            testing). If set to None, SSL is used unless the URL
+            starts with "http://".
         host: str
             Use this host if it is not specified in `url`
         """
@@ -283,7 +283,11 @@ def get_host_from_url(url):
 
 
 def get_server_cert_path(host):
-    """Return server certificate bundle for DCOR `host`"""
+    """Return the path to the server certificate bundle for DCOR `host`
+
+    If no host-specific bundle is found in :data:`DCOR_CERTS_SEARCH_PATHS`,
+    the default certificate bundle of `requests` is returned.
+    """
 
     for path in DCOR_CERTS_SEARCH_PATHS:
         path = pathlib.Path(path)

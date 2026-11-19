@@ -31,8 +31,11 @@ class APIHandler:
             DCOR API token
         cert_path: pathlib.Path
             the path to the server's CA bundle; by default this
-            will use the default certificates (which depends on
-            from where you obtained certifi/requests)
+            will use the default certificates (which depend on
+            where you obtained certifi/requests from)
+        dcserv_api_version: int
+            Version of the ckanext-dc_serve dcserv API to use
+            (see :class:`.RTDC_DCOR`)
         """
         #: DCOR API URL
         self.url = url
@@ -42,7 +45,7 @@ class APIHandler:
         self.api_key = api_key
         #: ckanext-dc_serve dcserv API version
         self.dcserv_api_version = dcserv_api_version
-        #: create a session
+        #: requests session (shared for all handlers with the same host)
         self.session = session_cache.get_session(url)
         self._cache = {}
 
@@ -145,7 +148,7 @@ class APIHandler:
         event: str
             DEPRECATED (use basins instead), adds f"&event={event}" to query
         timeout: float
-            Request timeout
+            Request timeout in seconds (defaults to 1 s)
         retries: int
             Number of retries to fetch the request. For every retry, the
             timeout is increased by two seconds.

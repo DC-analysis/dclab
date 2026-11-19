@@ -1,3 +1,4 @@
+"""Access .rtdc files in S3-compatible object stores"""
 import functools
 import hashlib
 # import multiprocessing BaseManager here, because there is some kind
@@ -29,7 +30,7 @@ from .feat_basin import Basin
 from .fmt_hdf5 import RTDC_HDF5
 
 
-#: Regular expression for matching a DCOR resource URL
+#: Regular expression for matching a full S3 object URL
 REGEXP_S3_URL = re.compile(
     r"^(https?:\/\/)"  # protocol (http or https or omitted)
     r"([a-z0-9-\.]*)(\:[0-9]*)?\/"  # host:port
@@ -50,6 +51,29 @@ def get_s3_session_client(access_key_id: str,
                           verify_ssl: bool,
                           endpoint_url: str
                           ):
+    """Return a botocore session, a boto3 session, and an S3 client
+
+    The return value is cached for each combination of arguments.
+
+    Parameters
+    ----------
+    access_key_id: str
+        S3 access key ID
+    secret_access_key: str
+        S3 secret access key
+    use_ssl: bool
+        Whether to use SSL to connect to the endpoint
+    verify_ssl: bool
+        Whether to verify the SSL certificate of the endpoint
+    endpoint_url: str
+        Endpoint URL of the S3 object store
+
+    Returns
+    -------
+    botocore_session: botocore.session.Session
+    s3_session: boto3.Session
+    s3_client: botocore.client.BaseClient
+    """
     botocore_session = botocore.session.get_session()
     s3_session = boto3.Session(
         aws_access_key_id=access_key_id,
@@ -65,7 +89,7 @@ def get_s3_session_client(access_key_id: str,
 
 
 class S3File(HTTPFile):
-    """Monkeypatched `HTTPFile` to support authenticated access to S3"""
+    """Subclass of :class:`.HTTPFile` with (authenticated) access to S3"""
     def __init__(self,
                  object_path: str,
                  endpoint_url: str,
@@ -84,17 +108,17 @@ class S3File(HTTPFile):
         access_key_id:
             S3 access key
         secret_access_key:
-            secret S3 key mathcing `access_key_id`
+            secret S3 key matching `access_key_id`
         use_ssl: bool
             use SSL to connect to the endpoint, only disabled for testing
         verify_ssl: bool
-            make sure the SSL certificate is sound, only used for testing
+            make sure the SSL certificate is sound, only disabled for testing
         """
         if endpoint_url is None:
             raise ValueError(
                 "The S3 endpoint URL is empty. This could mean that you did "
                 "not specify the full S3 URL or that you forgot to set "
-                "the `S3_ENDPOINT_URL` environment variable.")
+                "the `DCLAB_S3_ENDPOINT_URL` environment variable.")
         endpoint_url = endpoint_url.strip().rstrip("/")
         self.botocore_session, self.s3_session, self.s3_client = \
             get_s3_session_client(
@@ -164,16 +188,21 @@ class RTDC_S3(RTDC_HDF5):
         url: str
             URL to an object in an S3 instance; this can be either a full
             URL (including the endpoint), or just `bucket/key`
+        endpoint_url: str
+            Endpoint URL of the S3 object store; defaults to the endpoint
+            in `url` or the ``DCLAB_S3_ENDPOINT_URL`` environment variable
         access_key_id: str
-            S3 access identifier
+            S3 access identifier; defaults to the
+            ``DCLAB_S3_ACCESS_KEY_ID`` environment variable
         secret_access_key: str
-            Secret S3 access key
+            Secret S3 access key; defaults to the
+            ``DCLAB_S3_SECRET_ACCESS_KEY`` environment variable
         use_ssl: bool
             Whether to enforce SSL (defaults to True)
         *args:
-            Arguments for `RTDCBase`
+            Arguments for :class:`.RTDC_HDF5` (the first one is `h5kwargs`)
         **kwargs:
-            Keyword arguments for `RTDCBase`
+            Keyword arguments for :class:`.RTDC_HDF5`
         """
         if not BOTO3_AVAILABLE:
             raise ModuleNotFoundError(
@@ -202,11 +231,16 @@ class RTDC_S3(RTDC_HDF5):
         # Initialize the HDF5 dataset
         super().__init__(self._s3file, *args, **kwargs)
         # Override self.path with the actual S3 URL
-        #: URL the object on S3
+        #: URL of the object on S3
         self.path = self._s3file.url
 
     @property
     def hash(self):
+        """Hash value based on the ETag of the S3 object
+
+        If no ETag is available, the MD5 hash of the first data chunk
+        is used.
+        """
         if self._s3file.etag is not None:
             # Set the HTTP ETag as the hash, it doesn't get
             # more unique than that!
@@ -221,6 +255,11 @@ class RTDC_S3(RTDC_HDF5):
 
 
 class S3Basin(Basin):
+    """Basin for .rtdc files in an S3-compatible object store
+
+    The `location` of the basin is a full S3 object URL or a
+    `bucket/key` path (see :class:`.RTDC_S3`).
+    """
     basin_format = "s3"
     basin_type = "remote"
 
@@ -272,8 +311,8 @@ def is_s3_object_available(url: str,
         if not endpoint_url:
             warnings.warn(
                 f"Could not determine endpoint from URL '{url}'. Please "
-                f"set the `S3_ENDPOINT_URL` environment variable or pass "
-                f"a full object URL.")
+                f"set the `DCLAB_S3_ENDPOINT_URL` environment variable or "
+                f"pass a full object URL.")
         else:
             # default to https if no scheme or port is specified
             urlp = urlparse(endpoint_url)

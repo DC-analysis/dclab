@@ -54,12 +54,12 @@ class PlugInFeature(AncillaryFeature):
             At least the following keys must be specified:
 
             - "method": callable function computing the plugin feature
-              values (takes an :class`dclab.rtdc_dataset.core.RTDCBase`
+              values (takes an :class:`dclab.rtdc_dataset.core.RTDCBase`
               as argument)
             - "feature names": list of plugin feature names provided
               by the plugin
 
-            The following features are optional:
+            The following keys are optional:
 
             - "description": short (one-line) description of the plugin
             - "long description": long description of the plugin
@@ -80,7 +80,7 @@ class PlugInFeature(AncillaryFeature):
               whether the features can be computed (see the `req_func`
               parameter for :class:`.AncillaryFeature`)
             - "version": version of this plugin (please use
-              semantic verioning)
+              semantic versioning)
 
         plugin_path: str or pathlib.Path, optional
             path which was used to load the `PlugInFeature` with
@@ -88,7 +88,7 @@ class PlugInFeature(AncillaryFeature):
 
         Notes
         -----
-        `PluginFeature` inherits from :class:`AncillaryFeature
+        `PlugInFeature` inherits from :class:`AncillaryFeature
         <dclab.rtdc_dataset.feat_anc_core.ancillary_feature.AncillaryFeature>`.
         Please read the advanced section on `PluginFeatures` in the dclab docs.
         """
@@ -247,7 +247,7 @@ def import_plugin_feature_script(
     Raises
     ------
     PluginImportError
-        If the plugin can not be found
+        If the plugin cannot be found or cannot be loaded
 
     Notes
     -----
@@ -255,7 +255,7 @@ def import_plugin_feature_script(
     """
     path = pathlib.Path(plugin_path)
     if not path.exists():
-        raise PluginImportError("The plugin could be not be found at "
+        raise PluginImportError("The plugin could not be found at "
                                 f"'{plugin_path}'!")
     # Load the plugin directly from its file. The unique module name
     # makes sure that we neither get nor replace a different module

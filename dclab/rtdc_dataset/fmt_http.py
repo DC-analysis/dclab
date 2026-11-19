@@ -1,3 +1,4 @@
+"""Access .rtdc files via HTTP(S)"""
 import hashlib
 
 from ..http_utils import HTTPFile, REQUESTS_AVAILABLE, is_url_available
@@ -25,9 +26,9 @@ class RTDC_HTTP(RTDC_HDF5):
         url: str
             Full URL to an HDF5 file
         *args:
-            Arguments for `RTDCBase`
+            Arguments for :class:`.RTDC_HDF5` (the first one is `h5kwargs`)
         **kwargs:
-            Keyword arguments for `RTDCBase`
+            Keyword arguments for :class:`.RTDC_HDF5`
 
         Notes
         -----
@@ -49,6 +50,11 @@ class RTDC_HTTP(RTDC_HDF5):
 
     @property
     def hash(self):
+        """Hash value based on the HTTP ETag of the file
+
+        If the server does not provide an ETag, the MD5 hash of the first
+        data chunk is used.
+        """
         if self._fhttp.etag is not None:
             # Set the HTTP ETag as the hash, it doesn't get
             # more unique than that!
@@ -63,6 +69,11 @@ class RTDC_HTTP(RTDC_HDF5):
 
 
 class HTTPBasin(Basin):
+    """Basin for .rtdc files accessible via HTTP(S)
+
+    The `location` of the basin is the URL of an .rtdc file on a web
+    server that supports range requests (see :class:`.RTDC_HTTP`).
+    """
     basin_format = "http"
     basin_type = "remote"
 

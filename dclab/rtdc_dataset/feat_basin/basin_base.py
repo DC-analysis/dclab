@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 class Basin(abc.ABC):
     """A basin represents data from an external source
 
-    The external data must be a valid RT-DC dataset, subclasses
+    The external data must be a valid RT-DC dataset; subclasses
     should ensure that the corresponding API is available.
     """
     def __init__(self,
@@ -104,14 +104,15 @@ class Basin(abc.ABC):
             a JSON dump of the basin definition. A random string is used
             if None is specified.
         perishable: bool or PerishableRecord
-            If this is not False, then it must be a :class:`.PerishableRecord`
+            If this is True, an empty :class:`.PerishableRecord` is created.
+            Otherwise, it must be False or a :class:`.PerishableRecord`
             that holds the information about the expiration time, and that
             comes with a method `refresh` to extend the lifetime of the basin.
         kwargs:
             Additional keyword arguments passed to the `load_dataset`
             method of the `Basin` subclass.
 
-        .. versionchanged: 0.58.0
+        .. versionchanged:: 0.58.0
 
             Added the `mapping` keyword argument to support basins
             with a superset of events.
@@ -250,7 +251,7 @@ class Basin(abc.ABC):
     def features(self):
         """Features made available by the basin
 
-        .. versionchanged: 0.56.0
+        .. versionchanged:: 0.56.0
 
            Return nested basin features
         """
@@ -328,6 +329,23 @@ class Basin(abc.ABC):
         return ds_bn
 
     def verify_basin(self, run_identifier=True, availability=True):
+        """Verify the basin availability and measurement identifier
+
+        Parameters
+        ----------
+        run_identifier: bool
+            Whether to check that the measurement identifier of the basin
+            matches the measurement identifier of the referring dataset
+            (and `basin_identifier`, if set)
+        availability: bool
+            Whether to check the availability of the basin; setting this
+            to False is deprecated
+
+        Returns
+        -------
+        verified: bool
+            True if all requested checks passed
+        """
         if not availability:
             warnings.warn("The keyword argument 'availability' is "
                           "deprecated, because it can lead to long waiting "
@@ -385,6 +403,14 @@ class Basin(abc.ABC):
 
 
 def get_basin_classes():
+    """Return all registered basin classes
+
+    Returns
+    -------
+    basin_classes: dict
+        Dictionary with basin formats (e.g. "hdf5", "s3") as keys and
+        the corresponding direct subclasses of :class:`Basin` as values
+    """
     bc = {}
     for b_cls in Basin.__subclasses__():
         if hasattr(b_cls, "basin_format"):

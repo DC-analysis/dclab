@@ -20,8 +20,8 @@ class MaskColumn:
         if not isinstance(idx, numbers.Integral):
             raise NotImplementedError(
                 "The RTDC_TDMS data handler does not support indexing with "
-                "anything else than scalar integers. Please convert your data "
-                "to the .rtdc file format!")
+                "anything other than scalar integers. Please convert your "
+                "data to the .rtdc file format!")
 
         mask = np.zeros(self._img_shape, dtype=bool)
         conti = self.contour[idx]

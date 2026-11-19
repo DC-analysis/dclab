@@ -313,6 +313,40 @@ def test_find_smooth_contour_abort():
                        rtol=0, atol=1e-12)
 
 
+def test_find_smooth_contour_abort_during_iteration():
+    """Aborting while iterating over datasets must not report success"""
+    np.random.seed(47)
+    x0 = np.random.normal(loc=100, scale=10, size=100)
+    y0 = np.random.normal(loc=.1, scale=.01, size=100)
+
+    ds = dclab.new_dataset({"area_um": x0, "deform": y0})
+
+    class LateEvent(threading.Event):
+        """Event that is set at the second call of `is_set`"""
+        def __init__(self):
+            super().__init__()
+            self.calls = 0
+
+        def is_set(self):
+            self.calls += 1
+            return self.calls >= 2
+
+    res = smooth_contour.find_smooth_contour_spacing(
+        ds_list=[ds],
+        xax="area_um",
+        yax="deform",
+        xrange=(50, 150),
+        yrange=(0.09, 0.11),
+        quantiles=[0.90],
+        abort_event=LateEvent(),
+    )
+
+    # The abort event was set before the first contour was computed.
+    assert res["total iterations"] == 1
+    assert not res["success"]
+    assert res["reason"] == "abort event"
+
+
 @pytest.mark.parametrize("angles", [
     # NaN values and an opening angle of ~86 degrees
     [np.nan, np.nan, 1.5],

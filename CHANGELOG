@@ -261,6 +261,9 @@
    `KernelDensityEstimationForEmtpyArrayWarning` to
    `KernelDensityEstimationForEmptyArrayWarning` (the old names are
    deprecated aliases) (#420)
+ - fix: `RTDC_Dict` did not allow "file" basins, because the class
+   attribute `_local_basins_allowed` was shadowed by the instance
+   attribute set in `RTDCBase.__init__` (#421)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

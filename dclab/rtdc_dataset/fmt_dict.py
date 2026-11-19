@@ -36,8 +36,6 @@ class DictTraceEvent(collections.UserDict):
 
 
 class RTDC_Dict(RTDCBase):
-    _local_basins_allowed = True
-
     def __init__(self, ddict, *args, **kwargs):
         """Dictionary-based RT-DC dataset
 
@@ -60,6 +58,11 @@ class RTDC_Dict(RTDCBase):
         assert ddict
 
         super().__init__(*args, **kwargs)
+
+        # The data are in memory on the user's computer, so local basins
+        # are allowed (must be set after `RTDCBase.__init__`, which sets
+        # this instance attribute to False).
+        self._local_basins_allowed = True
 
         t = time.localtime()
 

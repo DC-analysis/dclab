@@ -230,6 +230,7 @@
    HTTP, S3, .tdms), basins, ancillary and plugin features, and caching (#411)
  - fix: wrong environment variable name (`S3_ENDPOINT_URL` instead of
    `DCLAB_S3_ENDPOINT_URL`) in S3 error messages (#411)
+ - enh: include `h5datasetchop` in `basin_priority_sorted_key`
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

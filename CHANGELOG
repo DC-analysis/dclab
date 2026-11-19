@@ -240,6 +240,7 @@
    messages and metadata description (Pa*s instead of mPa*s) (#413)
  - docs: fix and complete docstrings of features, kde, lme4, cli,
    definitions, and utility modules (#413)
+ - ref: remove unused `features_iter` argument from `basin_definition_copy`
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

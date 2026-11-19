@@ -235,6 +235,7 @@
    (`RTDCBase`, `Configuration`, `Export`, `Filter`, `RTDCWriter`,
    copier, temporary features, hierarchy) (#412)
  - enh: include `h5datasetchop` in `basin_priority_sorted_key`
+ - ref: remove unused `features_iter` argument from `basin_definition_copy`
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

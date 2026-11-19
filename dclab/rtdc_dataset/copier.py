@@ -184,8 +184,7 @@ def rtdc_copy(src_h5file: h5py.Group,
     # copy basin definitions (bytes not counted)
     if include_basins and "basins" in src_h5file:
         basin_definition_copy(src_h5file=src_h5file,
-                              dst_h5file=dst_h5file,
-                              features_iter=feature_iter)
+                              dst_h5file=dst_h5file)
 
     # copy tables
     if include_tables and "tables" in src_h5file:
@@ -333,14 +332,12 @@ def internal_basin_events_copy(
     return list(set(basin_feat))
 
 
-def basin_definition_copy(src_h5file, dst_h5file, features_iter):
+def basin_definition_copy(src_h5file, dst_h5file):
     """Copy basin definitions `src_h5file["basins"]` to the new file
 
     All non-internal basin definitions are copied as-is using
     :func:`h5ds_copy`. Internal basin definitions are skipped here,
     because they are rewritten by :func:`internal_basin_events_copy`.
-
-    The `features_iter` argument is currently not used.
 
     To copy internal basins, use :func:`internal_basin_events_copy`.
     """

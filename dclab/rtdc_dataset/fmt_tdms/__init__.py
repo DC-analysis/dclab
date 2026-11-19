@@ -2,6 +2,7 @@
 import copy
 import pathlib
 import time
+from typing import TYPE_CHECKING
 
 from ...external.packaging import parse as parse_version
 
@@ -10,18 +11,27 @@ from .exc import InvalidTDMSFileFormatError  # noqa:F401
 from .exc import IncompleteTDMSFileFormatError
 from .exc import InvalidVideoFileError  # noqa:F401
 
-try:
+if TYPE_CHECKING:
+    # Type checkers assume that the optional dependencies are available.
     import nptdms
-except ModuleNotFoundError:
-    NPTDMS_AVAILABLE = False
-else:
-    if parse_version(nptdms.__version__) < parse_version("0.23.0"):
-        raise ValueError("Please install nptdms>=0.23.0")
     NPTDMS_AVAILABLE = True
     from .event_contour import ContourColumn
     from .event_image import ImageColumn
     from .event_mask import MaskColumn
     from .event_trace import TraceColumn
+else:
+    try:
+        import nptdms
+    except ModuleNotFoundError:
+        NPTDMS_AVAILABLE = False
+    else:
+        if parse_version(nptdms.__version__) < parse_version("0.23.0"):
+            raise ValueError("Please install nptdms>=0.23.0")
+        NPTDMS_AVAILABLE = True
+        from .event_contour import ContourColumn
+        from .event_image import ImageColumn
+        from .event_mask import MaskColumn
+        from .event_trace import TraceColumn
 
 import numpy as np
 

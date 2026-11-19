@@ -87,8 +87,8 @@ def get_pixelation_delta_pair(
         feat2: str,
         data1: float | npt.NDArray,
         data2: float | npt.NDArray,
-        px_um: float = 0.34) -> (tuple[float, float] |
-                                 tuple[npt.NDArray, npt.NDArray]):
+        px_um: float = 0.34
+        ) -> tuple[float | npt.NDArray, float | npt.NDArray]:
     """Convenience function that returns pixelation correction pair
 
     Parameters

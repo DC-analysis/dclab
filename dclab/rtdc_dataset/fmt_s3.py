@@ -8,20 +8,30 @@ import os
 import pathlib
 import re
 import socket
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 import warnings
 
 
-try:
+if TYPE_CHECKING:
+    # Type checkers assume that the optional dependencies are available.
     import boto3
     import botocore
     import botocore.client
     import botocore.exceptions
     import botocore.session
-except ModuleNotFoundError:
-    BOTO3_AVAILABLE = False
-else:
     BOTO3_AVAILABLE = True
+else:
+    try:
+        import boto3
+        import botocore
+        import botocore.client
+        import botocore.exceptions
+        import botocore.session
+    except ModuleNotFoundError:
+        BOTO3_AVAILABLE = False
+    else:
+        BOTO3_AVAILABLE = True
 
 from ..http_utils import HTTPFile
 

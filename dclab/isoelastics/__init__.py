@@ -75,7 +75,7 @@ class Isoelastics:
             The method used to compute the isoelastics
             DEPRECATED since 0.32.0. Please use
             `lut_identifier` instead.
-        lut_identifier: str:
+        lut_identifier: str
             Look-up table identifier used to identify which
             isoelasticity lines to show. The function
             :func:`get_available_identifiers` returns a list
@@ -138,11 +138,17 @@ class Isoelastics:
             line. The first column is defined by `col1`, the second
             by `col2`, and the third column is the emodulus.
         col1, col2: str
-            Define the fist two columns of each isoelasticity line.
+            Define the first two columns of each isoelasticity line.
         px_um: float
             Pixel size [µm]
         inplace: bool
             If True, do not create a copy of the data in `isoel`
+
+        Returns
+        -------
+        isoel: list
+            List of isoelasticity lines (2d ndarrays of shape (N, 3));
+            the columns are `col1`, `col2`, and the emodulus [kPa]
         """
         new_isoel = []
         for iso in isoel:
@@ -170,8 +176,8 @@ class Isoelastics:
             line. The first column is defined by `col1`, the second
             by `col2`, and the third column is the emodulus.
         col1, col2: str
-            Define the fist to columns of each isoelasticity line.
-            One of ["area_um", "circ", "deform"]
+            Define the first two columns of each isoelasticity line.
+            One of ["area_um", "circ", "deform", "volume"]
         channel_width_in: float
             Original channel width [µm]
         channel_width_out: float
@@ -239,7 +245,7 @@ class Isoelastics:
             The method used to compute the isoelastics
             DEPRECATED since 0.32.0. Please use
             `lut_identifier` instead.
-        lut_identifier: str:
+        lut_identifier: str
             Look-up table identifier used to identify which
             isoelasticity lines to show. The function
             :func:`get_available_identifiers` returns a list
@@ -251,7 +257,7 @@ class Isoelastics:
             correct values for elastic moduli).
         viscosity: float or `None`
             Viscosity of the medium in mPa*s. If set to
-            `None`, the flow rate of the imported data will
+            `None`, the viscosity of the imported data will
             be used (only do this if you do not need the
             correct values for elastic moduli).
         add_px_err: bool
@@ -260,6 +266,12 @@ class Isoelastics:
             and scripts/pixelation_correction.py
         px_um: float
             Pixel size [µm], used for pixelation error computation
+
+        Returns
+        -------
+        isoel: list
+            List of isoelasticity lines (2d ndarrays of shape (N, 3));
+            the columns are `col1`, `col2`, and the emodulus [kPa]
 
         See Also
         --------
@@ -322,24 +334,31 @@ class Isoelastics:
             The method used to compute the isoelastics
             DEPRECATED since 0.32.0. Please use
             `lut_identifier` instead.
-        lut_identifier: str:
+        lut_identifier: str
             Look-up table identifier used to identify which
             isoelasticity lines to show. The function
             :func:`get_available_identifiers` returns a list
             of available identifiers.
         dataset: dclab.rtdc_dataset.RTDCBase
             The dataset from which to obtain the metadata.
-        viscosity: float, `None`, or False
+        viscosity: float or `None`
             Viscosity of the medium in mPa*s. If set to
-            `None`, the viscosity is computed from the meta
-            data (medium, flow rate, channel width, temperature)
-            in the [setup] config section. If this is not possible,
-            the flow rate of the imported data is used and a warning
+            `None`, the viscosity is computed with the
+            "buyukurganci-2022" model from the metadata (medium,
+            flow rate, channel width, temperature) in the [setup]
+            config section. If this is not possible, the viscosity
+            of the imported isoelasticity data is used and a warning
             will be issued.
         add_px_err: bool
             If True, add pixelation errors according to
             C. Herold (2017), https://arxiv.org/abs/1704.00572
             and scripts/pixelation_correction.py
+
+        Returns
+        -------
+        isoel: list
+            List of isoelasticity lines (2d ndarrays of shape (N, 3));
+            the columns are `col1`, `col2`, and the emodulus [kPa]
         """
         lut_identifier = check_lut_identifier(lut_identifier, method)
 
@@ -399,6 +418,11 @@ class Isoelastics:
 
 
 class AutoRecursiveDict(collections.UserDict):
+    """Dictionary that creates missing keys as empty AutoRecursiveDicts
+
+    This allows nested assignments such as ``d["a"]["b"] = value``.
+    """
+
     def __getitem__(self, key):
         if key not in self:
             self[key] = AutoRecursiveDict()
@@ -408,7 +432,7 @@ class AutoRecursiveDict(collections.UserDict):
 def check_lut_identifier(lut_identifier, method):
     """Transitional function that can be removed once `method` is removed"""
     if lut_identifier is None and method is not None:
-        warnings.warn("The `method` argument is deprecated "
+        warnings.warn("The `method` argument is deprecated; "
                       "please use `lut_identifier` instead!",
                       DeprecationWarning)
         if method == "analytical":
@@ -416,7 +440,8 @@ def check_lut_identifier(lut_identifier, method):
         elif method == "numerical":
             lut_identifier = "LE-2D-FEM-19"
         else:
-            raise ValueError("Please read the docstring")
+            raise ValueError(f"Unknown method '{method}'; please use "
+                             "`lut_identifier` instead!")
     # Now check again (this can be removed once lut_identifier becomes
     # a non-keyword argument)
     if lut_identifier is None:

@@ -28,8 +28,8 @@ class Rlme4:
 
             - "lmer": linear mixed model using lme4's ``lmer``
             - "glmer+loglink": generalized linear mixed model using
-              lme4's ``glmer`` with an additional a log-link function
-              via the ``family=Gamma(link='log'))`` keyword.
+              lme4's ``glmer`` with an additional log-link function
+              via the ``family=Gamma(link='log')`` keyword.
         feature: str
             Dclab feature for which to compute the model
         bs_iter: int
@@ -45,7 +45,7 @@ class Rlme4:
         self.feature = None
         #: number of bootstrapping iterations for differential features
         self.bs_iter = None
-        #: list of [RTDCBase, column, repetition, chip_region]
+        #: list of [RTDCBase, group, repetition, chip_region]
         self.data = []
 
         self.set_options(model=model, feature=feature, bs_iter=bs_iter)
@@ -70,8 +70,8 @@ class Rlme4:
 
         Notes
         -----
-        - For each repetition, there must be a "treatment" (``1``) and a
-          "control" (``0``) group.
+        - For each repetition, there must be a "treatment" and a
+          "control" group.
         - If you would like to perform a differential feature analysis,
           then you need to pass at least a reservoir and a channel
           dataset (with same parameters for `group` and `repetition`).
@@ -127,9 +127,13 @@ class Rlme4:
             - "lmer": linear mixed model using lme4's ``lmer``
             - "glmer+loglink": generalized linear mixed model using
               lme4's ``glmer`` with an additional log-link function
-              via ``family=Gamma(link='log'))`` :cite:`lme4`
+              via ``family=Gamma(link='log')`` :cite:`lme4`
+
+            If None, the value set previously (e.g. in ``__init__``)
+            is used.
         feature: str (optional)
-            dclab feature for which to compute the model
+            dclab feature for which to compute the model. If None,
+            the value set previously (e.g. in ``__init__``) is used.
 
         Returns
         -------
@@ -140,11 +144,11 @@ class Rlme4:
             - "feature": name of the feature used for the analysis
               ``self.feature``
             - "fixed effects intercept": Mean of ``self.feature`` for all
-              controls; In the case of the "glmer+loglink" model, the intercept
+              controls; in the case of the "glmer+loglink" model, the intercept
               is already back transformed from log space.
             - "fixed effects treatment": The fixed effect size between the mean
               of the controls and the mean of the treatments relative to
-              "fixed effects intercept"; In the case of the "glmer+loglink"
+              "fixed effects intercept"; in the case of the "glmer+loglink"
               model, the fixed effect is already back transformed from log
               space.
             - "fixed effects repetitions": The effects (intercept and
@@ -228,7 +232,7 @@ class Rlme4:
 
         The most famous use case is differential deformation. The idea
         is that you cannot tell what the difference in deformation
-        from channel to reservoir, because you never measure the
+        from channel to reservoir is, because you never measure the
         same object in the reservoir and the channel. You usually just
         have two distributions. Comparing distributions is possible
         via bootstrapping. And then, instead of running the lme4
@@ -238,6 +242,16 @@ class Rlme4:
 
         The number of bootstrapping iterations (the number of values
         per group and repetition) is given by :attr:`Rlme4.bs_iter`.
+
+        Returns
+        -------
+        features: list of 1d ndarrays
+            Differential feature data (bootstrapped channel medians
+            minus bootstrapped reservoir medians, `bs_iter` values each)
+        groups: list of str
+            Group of each item in `features`
+        repetitions: list of int
+            Repetition of each item in `features`
         """
         features = []
         groups = []
@@ -297,7 +311,7 @@ class Rlme4:
 
         See Also
         --------
-        get_differential_features: for an explanation
+        get_differential_dataset: for an explanation
         """
         for dd in self.data:
             if dd[3] == "reservoir":
@@ -305,6 +319,22 @@ class Rlme4:
         return False
 
     def parse_result(self, result):
+        """Parse the output of the lme4 R script into a dictionary
+
+        Parameters
+        ----------
+        result: str
+            Output of the R script; items are separated by "OUTPUT"
+            and have the form "key: value".
+
+        Returns
+        -------
+        ret_dict: dict
+            Parsed results (see :meth:`Rlme4.fit`); numbers are
+            converted to float, "NA" to nan, "model converged" to
+            bool, and "fixed effects repetitions" to an array of
+            shape (2, number of repetitions).
+        """
         resd = result.split("OUTPUT")
         ret_dict = {}
         for item in resd:
@@ -333,7 +363,18 @@ class Rlme4:
         return ret_dict
 
     def set_options(self, model=None, feature=None, bs_iter=None):
-        """Set analysis options"""
+        """Set analysis options
+
+        Parameters
+        ----------
+        model: str or None
+            "lmer" or "glmer+loglink"; None keeps the current value
+        feature: str or None
+            Scalar dclab feature; None keeps the current value
+        bs_iter: int or None
+            Number of bootstrapping iterations (positive integer);
+            None keeps the current value
+        """
         if model is not None:
             assert model in ["lmer", "glmer+loglink"]
             self.model = model
@@ -362,8 +403,8 @@ def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
 
     Parameters
     ----------
-    a, b: 1d ndarray of length N
-        Input data
+    a, b: 1d ndarrays
+        Input data (may have different lengths)
     bs_iter: int
         Number of bootstrapping iterations to perform
         (output size).
@@ -373,7 +414,7 @@ def bootstrapped_median_distributions(a, b, bs_iter=1000, rs=117):
     Returns
     -------
     median_dist_a, median_dist_b: 1d arrays of length bs_iter
-        Boostrap distribution of medians for ``a`` and ``b``.
+        Bootstrap distribution of medians for ``a`` and ``b``.
 
     See Also
     --------

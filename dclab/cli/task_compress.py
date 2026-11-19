@@ -33,7 +33,7 @@ def compress(
         ret_path: bool = False,
         byte_book_keeper: ByteBookKeeper | None = None,
         ):
-    """Create a new dataset with all features compressed lossless
+    """Create a new dataset with all features compressed losslessly
 
     Parameters
     ----------
@@ -43,7 +43,8 @@ def compress(
         output file path
     basin_input:
         list of additional paths from which to put features in the
-        output file
+        output file; each path must be a file-based HDF5 basin of
+        `path_in`
     crop_event_images: bool
         Crop event images using an internal "h5datasetchop" basin.
         This reduces storage size by removing pixels that are not
@@ -51,7 +52,8 @@ def compress(
         "frame", "size_y", and "size_x", as well as "image_bg" for the
         "image" feature must be available.
     check_suffix: bool
-        check suffixes for input and output files
+        check the suffix of the input file (".rtdc" is always
+        appended to the output file name if missing)
     ret_path: bool
         whether to return the output path
     byte_book_keeper:
@@ -330,8 +332,14 @@ def compress_input(h5_in: h5py.File,
 
 
 def compress_parser():
+    """Return the argument parser of the ``dclab-compress`` command
+
+    Returns
+    -------
+    parser: argparse.ArgumentParser
+    """
     descr = ("Create a compressed version of an .rtdc file. This can be "
-             "used for saving disk space (loss-less compression). The "
+             "used for saving disk space (lossless compression). The "
              "data generated during an experiment is usually not compressed.")
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument("input", metavar="INPUT", type=str,
@@ -343,7 +351,7 @@ def compress_parser():
                         action="store_true",
                         help="Reduce the amount of storage required by "
                              "cropping event images. This removes pixels "
-                             "not related to events which reduced file size.")
+                             "not related to events, which reduces file size.")
     parser.add_argument("-b",
                         "--basin-input",
                         action="append",

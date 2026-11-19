@@ -11,5 +11,5 @@ from .kde.helpers import get_bad_vals, ignore_nan_inf  # noqa: F401
 
 
 warnings.warn("`dclab.kde_methods` is deprecated; please use "
-              "the `dclab.kde.methods` instead",
+              "`dclab.kde.methods` instead",
               DeprecationWarning)

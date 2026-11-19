@@ -10,7 +10,18 @@ from . import common
 
 
 def verify_dataset(path_in=None):
-    """Perform checks on experimental datasets"""
+    """Perform checks on experimental datasets
+
+    The results of ``dclab.rtdc_dataset.check_dataset`` are printed
+    to stdout and the function exits via :func:`sys.exit` with the
+    status 0 (valid), 1 (alerts), 2 (violations), 3 (alerts and
+    violations), or 4 (other error).
+
+    Parameters
+    ----------
+    path_in: str or pathlib.Path
+        Path to the dataset; if None, it is read from the command line
+    """
     if path_in is None:
         parser = verify_dataset_parser()
         args = parser.parse_args()
@@ -63,6 +74,12 @@ def verify_dataset(path_in=None):
 
 
 def verify_dataset_parser():
+    """Return the argument parser of the ``dclab-verify-dataset`` command
+
+    Returns
+    -------
+    parser: argparse.ArgumentParser
+    """
     descr = ("Check experimental datasets for completeness. This command "
              "is used e.g. to enforce data integrity with Shape-In. The "
              "following exit codes are defined: ``0: valid dataset``, "

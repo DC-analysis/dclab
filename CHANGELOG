@@ -235,6 +235,11 @@
    (`RTDCBase`, `Configuration`, `Export`, `Filter`, `RTDCWriter`,
    copier, temporary features, hierarchy) (#412)
  - enh: include `h5datasetchop` in `basin_priority_sorted_key`
+ - fix: wrong environment variable name in `RNotFoundError` message
+   (`RHOME` instead of `R_HOME`) and wrong viscosity unit in emodulus
+   messages and metadata description (Pa*s instead of mPa*s) (#413)
+ - docs: fix and complete docstrings of features, kde, lme4, cli,
+   definitions, and utility modules (#413)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

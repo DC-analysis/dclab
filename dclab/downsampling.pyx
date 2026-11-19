@@ -29,7 +29,8 @@ def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
     a: 1d ndarray
         The input array to downsample
     samples: int
-        The desired number of samples
+        The desired number of samples; if set to 0 or if `a` does not
+        have more (valid) values, no downsampling is performed
     remove_invalid: bool
         Remove nan and inf values before downsampling
     ret_idx: bool
@@ -38,7 +39,7 @@ def downsample_rand(a, samples, remove_invalid=False, ret_idx=False):
 
     Returns
     -------
-    dsa: 1d ndarray of size `samples`
+    dsa: 1d ndarray of size `samples` (or smaller, see `samples`)
         The pseudo-randomly downsampled array `a`
     idx: 1d boolean array with same shape as `a`
         Only returned if `ret_idx` is True.
@@ -105,6 +106,8 @@ def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
     Returns
     -------
     dsa, dsb: 1d ndarrays of shape (samples,)
+        Fewer values are returned if `remove_invalid` is True or not
+        enough data are available; no downsampling if `samples` is 0.
         The arrays `a` and `b` downsampled by evenly selecting
         points and pseudo-randomly adding or removing points
         to match `samples`.
@@ -208,6 +211,19 @@ def downsample_grid(a, b, samples, remove_invalid=False, ret_idx=False):
 
 
 def populate_grid(x_discrete, y_discrete, keepd, toproc):
+    """Keep only the first event in each grid cell (in-place)
+
+    Parameters
+    ----------
+    x_discrete, y_discrete: 1d ndarrays
+        Grid cell indices of each event (dtype uint32)
+    keepd: 1d ndarray
+        Output (dtype uint8); set to 1 for the first event in each
+        grid cell
+    toproc: 2d ndarray
+        Grid cells not yet populated (1) (dtype uint8); modified
+        in-place
+    """
     # Py_ssize_t is the proper C type for Python array indices.
     cdef int iter_size = x_discrete.size
     cdef Py_ssize_t ii

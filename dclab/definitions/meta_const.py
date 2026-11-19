@@ -19,7 +19,7 @@ CFG_ANALYSIS = {
         ["emodulus lut", str, "Look-up table identifier"],
         ["emodulus medium", str, "Medium used (e.g. '0.49% MC-PBS')"],
         ["emodulus temperature", float, "Chip temperature [°C]"],
-        ["emodulus viscosity", float, "Viscosity [Pa*s] if 'medium' unknown"],
+        ["emodulus viscosity", float, "Viscosity [mPa*s] if 'medium' unknown"],
         ["emodulus viscosity model", str, "Viscosity model for known media"],
         ["crosstalk fl21", float, "Fluorescence crosstalk, channel 2 to 1"],
         ["crosstalk fl31", float, "Fluorescence crosstalk, channel 3 to 1"],
@@ -108,7 +108,7 @@ CFG_METADATA = {
         # frames with event images (non-empty frames) that had to be
         # used for background correction.
         ["bg empty", fbool, "Background correction from empty frames only"],
-        ["bin area min", fint, "Minium pixel area of binary image event"],
+        ["bin area min", fint, "Minimum pixel area of binary image event"],
         ["bin kernel", fint, "Disk size for binary closing of mask image"],
         ["bin threshold", fint, "Threshold for mask from bg-corrected image"],
         ["image blur", fint, "Odd sigma for Gaussian blur (21x21 kernel)"],
@@ -148,7 +148,7 @@ CFG_METADATA = {
         # experiment-related qpi metadata, see qpretrieve for details
         ["wavelength", float, "Imaging wavelength [nm]"],
         ["medium index", float, "Refractive index of medium"],
-        ["pixel size raw", float, "Hologram pixel size [µm]."],
+        ["pixel size raw", float, "Hologram pixel size [µm]"],
         # post-analysis-related qpi metadata
         ["software version", str, "Software version(s)"],
         # How background image was created 'experimental' or
@@ -182,7 +182,7 @@ CFG_METADATA = {
         # If `scale_to_filter` is True or a float, this value will differ from
         # "pixel size raw".
         # RTDC "imaging:pixel size" equals "pixel size proc"
-        ["pixel size proc", float, "QPI pixel size [µm]."],
+        ["pixel size proc", float, "QPI pixel size [µm]"],
         # postprocessing of phase and amplitude
         ["amp fit offset", str, "Amplitude offset correction"],
         ["amp fit profile", str, "Amplitude profile correction"],

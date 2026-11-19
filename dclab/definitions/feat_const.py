@@ -1,7 +1,7 @@
 #: List of scalar (one scalar value per event) features. This
 #: list does not include the `ml_score_???` features. If you
-#: need find out whether a feature name is valid, please use
-#: :func:`is_valid_feature`.
+#: need to find out whether a feature name is valid, please use
+#: :func:`dclab.definitions.feature_exists`.
 FEATURES_SCALAR = [
     ["area_cvx", "Convex area [px]"],
     # area_msd is the contour moment M00
@@ -203,7 +203,7 @@ FEATURES_MONOTONOUS = [
 #: list of feature names
 feature_names = [_cc[0] for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR]
 
-#: list of feature labels (same order as :const:`feature_names`
+#: list of feature labels (same order as :const:`feature_names`)
 feature_labels = [_cc[1] for _cc in FEATURES_SCALAR + FEATURES_NON_SCALAR]
 
 #: dict for converting feature names to labels

@@ -1,3 +1,4 @@
+"""Type converters (parsers) for metadata (configuration) values"""
 from __future__ import annotations
 
 import numbers

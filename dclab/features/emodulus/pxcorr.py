@@ -89,7 +89,24 @@ def get_pixelation_delta_pair(
         data2: float | npt.NDArray,
         px_um: float = 0.34) -> (tuple[float, float] |
                                  tuple[npt.NDArray, npt.NDArray]):
-    """Convenience function that returns pixelation correction pair"""
+    """Convenience function that returns pixelation correction pair
+
+    Parameters
+    ----------
+    feat1, feat2: str
+        Feature names (e.g. "area_um" and "deform"); the abscissa
+        is `feat1` if it is "area_um" or "volume", otherwise `feat2`
+    data1, data2: float or ndarray
+        Data corresponding to `feat1` and `feat2`
+    px_um: float
+        Detector pixel size [µm]
+
+    Returns
+    -------
+    delt1, delt2: float or ndarray
+        Pixelation corrections for `feat1` and `feat2`
+        (see :func:`get_pixelation_delta`)
+    """
     # determine feature that defines abscissa
     feat_absc = feat1 if feat1 in ["area_um", "volume"] else feat2
     data_absc = data1 if feat_absc == feat1 else data2
@@ -119,7 +136,7 @@ def get_pixelation_delta(feat_corr: str,
         Feature for which to compute the pixelation correction
         (e.g. "deform")
     feat_absc
-        Feature with which to compute the correction (e.g. "area_um");
+        Feature with which to compute the correction (e.g. "area_um")
     data_absc
         Corresponding data for `feat_absc`
     px_um
@@ -127,8 +144,11 @@ def get_pixelation_delta(feat_corr: str,
 
     Returns
     -------
-    For details see :func:`corr_deform_with_area_um` and
-    :func:`corr_deform_with_volume`.
+    delta: float or ndarray
+        Pixelation correction that must be subtracted from the
+        `feat_corr` data (negative for "circ", zero for "area_um" and
+        "volume"). For details see :func:`corr_deform_with_area_um` and
+        :func:`corr_deform_with_volume`.
     """
     if feat_corr == "deform" and feat_absc == "area_um":
         delt = corr_deform_with_area_um(data_absc, px_um=px_um)

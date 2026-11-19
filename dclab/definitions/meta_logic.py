@@ -69,7 +69,11 @@ def get_config_value_descr(section: str, key: str) -> str:
 
 
 def get_config_value_func(section: str, key: str) -> Callable:
-    """Return configuration type converter function"""
+    """Return configuration type converter function
+
+    If no converter is defined for `section` and `key`, the identity
+    function (``lambda x: x``) is returned.
+    """
     func = None
     if section == "user":
         pass

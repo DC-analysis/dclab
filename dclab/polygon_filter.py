@@ -1,3 +1,4 @@
+"""Polygon filters for RT-DC data"""
 import io
 import pathlib
 import threading
@@ -23,7 +24,7 @@ class PolygonFilter:
     def __init__(self, axes=None, points=None, inverted=False,
                  name=None, filename=None, fileid=0,
                  unique_id=None):
-        """An object for filtering RTDC data based on a polygonial area
+        """An object for filtering RTDC data based on a polygonal area
 
         Parameters
         ----------
@@ -43,13 +44,16 @@ class PolygonFilter:
         name: str
             A name for the polygon (optional).
         filename : str
-            A path to a .poly file as created by this classes' `save`
-            method. If `filename` is given, all other parameters are
-            ignored.
+            A path to a .poly file as created by this class's `save`
+            method. If `filename` is given, `axes`, `points`, and
+            `name` are ignored and taken from the file (`inverted` is
+            taken from the file if defined there).
         fileid: int
             Which filter to import from the file (starting at 0).
         unique_id: int
-            An integer defining the unique id of the new instance.
+            An integer defining the unique id of the new instance. If an
+            instance with this id already exists, a new id is used and a
+            FilterIdExistsWarning is issued.
 
         Notes
         -----
@@ -126,9 +130,9 @@ class PolygonFilter:
     def _check_data(self):
         """Check if the data given is valid"""
         if self.axes is None:
-            raise PolygonFilterError("`axes` parm not set.")
+            raise PolygonFilterError("`axes` parameter not set.")
         if self.points is None:
-            raise PolygonFilterError("`points` parm not set.")
+            raise PolygonFilterError("`points` parameter not set.")
         self.points = np.array(self.points)
         if self.points.shape[1] != 2:
             raise PolygonFilterError("data points' shape[1] must be 2.")
@@ -220,6 +224,10 @@ class PolygonFilter:
 
     @property
     def points(self):
+        """Polygon vertices as an array of shape (N, 2)
+
+        The columns correspond to ``axes[0]`` (x) and ``axes[1]`` (y).
+        """
         # make sure points always is an array (so we can use .tobytes())
         return np.array(self._points)
 
@@ -370,8 +378,8 @@ class PolygonFilter:
         was opened with the write "w" parameter. By using the file
         object, multiple instances of this class can write their data.
 
-        If `ret_fobj` is `True`, then the file object will not be
-        closed and returned.
+        If `ret_fobj` is `True`, then the file object is not closed
+        but returned.
         """
         if isinstance(polyfile, io.IOBase):
             fobj = polyfile

@@ -20,6 +20,19 @@ class Statistics:
 
         All statistical methods are registered in the dictionary
         `Statistics.available_methods`.
+
+        Parameters
+        ----------
+        name: str
+            Name of the method (e.g. "Mean"); key in
+            `Statistics.available_methods` and in the header returned
+            by :func:`get_statistics`
+        method: callable
+            Computes the statistic; called with a 1D array of filtered,
+            finite feature data if `req_feature` is True, otherwise
+            with the dataset itself
+        req_feature: bool
+            Whether the method requires a feature
         """
         self.method = method
         self.name = name
@@ -58,7 +71,8 @@ class Statistics:
     def get_feature(self, ds, feat):
         """Return filtered feature data
 
-        The features are filtered according to the user-defined filters,
+        If filtering is enabled (``[filtering]: enable filters``), the
+        features are filtered according to the user-defined filters,
         using the information in `ds.filter.all`. In addition, all
         `nan` and `inf` values are purged.
 
@@ -68,6 +82,11 @@ class Statistics:
             The dataset containing the feature
         feat: str
             The name of the feature; must be a scalar feature
+
+        Returns
+        -------
+        data: 1d ndarray
+            Filtered, finite feature data
         """
         if ds.config["filtering"]["enable filters"]:
             x = ds[feat][ds.filter.all]
@@ -95,9 +114,9 @@ def get_statistics(ds, methods=None, features=None, ret_dict=False):
     ds: dclab.rtdc_dataset.RTDCBase
         The dataset for which to compute the statistics.
     methods: list of str or None
-        The methods wih which to compute the statistics.
+        The methods with which to compute the statistics.
         The list of available methods is given with
-        :func:`.available_methods.keys`
+        ``Statistics.available_methods.keys()``.
         If set to `None`, statistics for all methods are computed.
     features: list of str
         Feature name identifiers are defined by
@@ -111,9 +130,12 @@ def get_statistics(ds, methods=None, features=None, ret_dict=False):
     Returns
     -------
     header: list of str
-        The header (feature + method names) of the computed statistics.
+        The header (feature + method names) of the computed statistics;
+        only returned if `ret_dict` is False.
     values: list of float
-        The computed statistics.
+        The computed statistics; only returned if `ret_dict` is False.
+    statistics: dict
+        `header` mapped to `values`; only returned if `ret_dict` is True.
     """
     if methods is None:
         cls = list(Statistics.available_methods.keys())
@@ -161,10 +183,10 @@ def get_statistics(ds, methods=None, features=None, ret_dict=False):
 def mode(data):
     """Compute an intelligent value for the mode
 
-    The most common value in experimental is not very useful if there
-    are a lot of digits after the comma. This method approaches this
-    issue by rounding to bin size that is determined by the
-    Freedman–Diaconis rule.
+    The most common value in experimental data is not very useful if
+    there are a lot of digits after the decimal point. This method
+    approaches this issue by rounding to a bin size that is determined
+    by the Freedman–Diaconis rule.
 
     Parameters
     ----------
@@ -174,7 +196,8 @@ def mode(data):
     Returns
     -------
     mode: float
-        The mode computed with the Freedman-Diaconis rule.
+        The mode computed with the Freedman-Diaconis rule; nan if the bin
+        size is zero (e.g. if the interquartile range is zero).
     """
     # size
     n = data.shape[0]

@@ -18,17 +18,18 @@ def get_compensation_matrix(
 
     The diagonal elements are set to 1, i.e.
 
-    ct11 = c22 = c33 = 1
+    c11 = c22 = c33 = 1
 
     Parameters
     ----------
-    cij
-        Spill from channel i to channel j
+    ct21, ct31, ct12, ct32, ct13, ct23: float
+        Spill from channel i to channel j (``ctij``); must not be
+        negative
 
     Returns
     -------
-    inv
-        Compensation matrix (inverted spillover matrix)
+    inv: 2d ndarray
+        Compensation matrix (inverted spillover matrix) of shape (3, 3)
     """
     ct11 = 1
     ct22 = 1
@@ -65,22 +66,28 @@ def correct_crosstalk(
         fl3: float | npt.NDArray,
         fl_channel: int,
         ct21: float = 0, ct31: float = 0, ct12: float = 0,
-        ct32: float = 0, ct13: float = 0, ct23: float = 0) -> npt.NDArray:
+        ct32: float = 0, ct13: float = 0, ct23: float = 0
+        ) -> float | npt.NDArray:
     """Perform crosstalk correction
 
     Parameters
     ----------
-    fli
+    fl1, fl2, fl3: float or ndarray
         Measured fluorescence signals
-    fl_channel
+    fl_channel: int
         The channel number (1, 2, or 3) for which the crosstalk-corrected
         signal should be computed
-    cij
+    ct21, ct31, ct12, ct32, ct13, ct23: float
         Spill (crosstalk or bleed-through) from channel i to channel j
-        This spill is computed from the fluorescence signal of e.g.
-        single-stained positive control cells; It is defined by the
-        ratio of the fluorescence signals of the two channels, i.e
-        cij = flj / fli.
+        (``ctij``). This spill is computed from the fluorescence signal
+        of e.g. single-stained positive control cells; it is defined by
+        the ratio of the fluorescence signals of the two channels, i.e.
+        ctij = flj / fli.
+
+    Returns
+    -------
+    fl_corr: float or ndarray
+        Crosstalk-corrected fluorescence signal of channel `fl_channel`
 
     See Also
     --------

@@ -1,3 +1,4 @@
+"""Contour line computation for kernel density estimates"""
 import numpy as np
 import scipy.interpolate as spint
 
@@ -14,7 +15,7 @@ def find_contours_level(density, x, y, level, closed=False):
         Kernel density estimate (KDE) for which to compute the contours
     x: 2d ndarray of shape (M, N) or 1d ndarray of size M
         X-values corresponding to `density`
-    y: 2d ndarray of shape (M, N) or 1d ndarray of size M
+    y: 2d ndarray of shape (M, N) or 1d ndarray of size N
         Y-values corresponding to `density`
     level: float between 0 and 1
         Value along which to find contours in `density` relative
@@ -83,15 +84,15 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
         Kernel density estimate for which to compute the contours
     x: 2d ndarray of shape (M, N) or 1d ndarray of size M
         X-values corresponding to `density`
-    y: 2d ndarray of shape (M, N) or 1d ndarray of size M
+    y: 2d ndarray of shape (M, N) or 1d ndarray of size N
         Y-values corresponding to `density`
     xp: 1d ndarray of size D
         Event x-data from which to compute the quantile
     yp: 1d ndarray of size D
         Event y-data from which to compute the quantile
     q: array_like or float between 0 and 1
-        Quantile along which to find contours in `density` relative
-        to its maximum
+        Quantile(s) of the density values at the event positions
+        (`xp`, `yp`) for which to compute the contour levels
     normalize: bool
         Whether output levels should be normalized to the maximum
         of `density`
@@ -99,11 +100,11 @@ def get_quantile_levels(density, x, y, xp, yp, q, normalize=True):
     Returns
     -------
     level: np.ndarray or float
-        Contours level(s) corresponding to the given quantile
+        Contour level(s) corresponding to the given quantile(s)
 
     Notes
     -----
-    NaN-values events in `xp` and `yp` are ignored.
+    Events with nan or inf values in `xp` or `yp` are ignored.
     """
     # xy coordinates
     if len(x.shape) == 2:

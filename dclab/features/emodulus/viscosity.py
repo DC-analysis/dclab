@@ -49,13 +49,21 @@ def check_temperature(model: str,
                       temperature: float | npt.NDArray,
                       tmin: float,
                       tmax: float) -> None:
-    """Raise a TemperatureOutOfRangeWarning if applicable
+    """Issue a TemperatureOutOfRangeWarning if applicable
 
-    Raises
-    ------
+    Parameters
+    ----------
+    model: str
+        Name of the viscosity model (used in the warning message)
+    temperature: float or ndarray
+        Temperature(s) [°C] to check
+    tmin, tmax: float
+        Valid temperature range [°C] of the model
+
+    Warns
+    -----
     TemperatureOutOfRangeWarning
         If the given temperature is out of the given range.
-
     """
     if np.min(temperature) < tmin or np.max(temperature) > tmax:
         warnings.warn(
@@ -93,7 +101,7 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
     Parameters
     ----------
     medium
-        The medium to compute the viscosity for; Valid values
+        The medium to compute the viscosity for; valid values
         are defined in :const:`KNOWN_MEDIA`.
     channel_width
         The channel width in µm
@@ -105,8 +113,10 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
         The model name to use for computing the medium viscosity.
         For water, this value is ignored, as there is only the
         'kestin-1978' model :cite:`Kestin_1978`. For MC-PBS media,
-        there are the 'herold-2017' model :cite:`Herold2017` and the
-        'buyukurganci-2022' model :cite:`Buyukurganci2022`.
+        there are the 'herold-2017' model :cite:`Herold2017` (only for
+        0.49% and 0.59% MC-PBS) and the 'buyukurganci-2022' model
+        :cite:`Buyukurganci2022`. The default 'herold-2017-fallback'
+        uses 'herold-2017' and issues a DeprecationWarning.
 
     Returns
     -------
@@ -120,6 +130,7 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
     - A :class:`TemperatureOutOfRangeWarning` is issued if the
       input temperature range exceeds the temperature ranges of
       the models.
+    - For MC-PBS media, nan is returned if `flow_rate` is zero.
     """
     # also support lower-case media and a space before the "B"
     if medium not in KNOWN_MEDIA:
@@ -164,7 +175,7 @@ def get_viscosity(medium: str = "0.49% MC-PBS",
 def shear_rate_square_channel(flow_rate: float,
                               channel_width: float,
                               flow_index: float) -> float:
-    """Returns The wall shear rate of a power law liquid in a squared channel.
+    """Return the wall shear rate of a power-law liquid in a square channel
 
     Parameters
     ----------
@@ -191,11 +202,27 @@ def get_viscosity_mc_pbs_buyukurganci_2022(
                         "0.83% MC-PBS"] = "0.49% MC-PBS",
         channel_width: float = 20.0,
         flow_rate: float = 0.16,
-        temperature: float = 23.0) -> float | npt.NDArray:
+        temperature: float | npt.NDArray = 23.0) -> float | npt.NDArray:
     """Compute viscosity of MC-PBS according to :cite:`Buyukurganci2022`
 
     This viscosity model was derived in :cite:`Buyukurganci2022`
     and adapted for RT-DC in :cite:`Reichel2023`.
+
+    Parameters
+    ----------
+    medium: str
+        "0.49% MC-PBS", "0.59% MC-PBS", or "0.83% MC-PBS"
+    channel_width: float
+        The channel width in µm
+    flow_rate: float
+        Flow rate in µL/s
+    temperature: float or ndarray
+        Temperature in °C
+
+    Returns
+    -------
+    viscosity: float or ndarray
+        Viscosity in mPa*s
     """
     check_temperature("'buyukurganci-2022' MC-PBS", temperature, 22, 37)
     # material constants for temperature behavior of MC dissolved in PBS:
@@ -226,7 +253,7 @@ def get_viscosity_mc_pbs_herold_2017(
         medium: Literal["0.49% MC-PBS", "0.59% MC-PBS"] = "0.49% MC-PBS",
         channel_width: float = 20.0,
         flow_rate: float = 0.16,
-        temperature: float = 23.0) -> float | npt.NDArray:
+        temperature: float | npt.NDArray = 23.0) -> float | npt.NDArray:
     r"""Compute viscosity of MC-PBS according to :cite:`Herold2017`
 
     Note that all the factors in equation 5.2 in :cite:`Herold2017`
@@ -236,6 +263,22 @@ def get_viscosity_mc_pbs_herold_2017(
     .. math::
 
         1.1856 \cdot 6 \cdot \frac{2}{3} \cdot \frac{1}{0.5928} = 8
+
+    Parameters
+    ----------
+    medium: str
+        "0.49% MC-PBS" or "0.59% MC-PBS"
+    channel_width: float
+        The channel width in µm
+    flow_rate: float
+        Flow rate in µL/s
+    temperature: float or ndarray
+        Temperature in °C
+
+    Returns
+    -------
+    viscosity: float or ndarray
+        Viscosity in mPa*s
     """
     # see figure (9) in Herold arXiv:1704.00572 (2017)
     check_temperature("'herold-2017' MC-PBS", temperature, 18, 26)
@@ -259,7 +302,18 @@ def get_viscosity_mc_pbs_herold_2017(
 
 def get_viscosity_water_kestin_1978(
         temperature: float | npt.NDArray = 23.0) -> float | npt.NDArray:
-    """Compute the viscosity of water according to :cite:`Kestin_1978`"""
+    """Compute the viscosity of water according to :cite:`Kestin_1978`
+
+    Parameters
+    ----------
+    temperature: float or ndarray
+        Temperature in °C
+
+    Returns
+    -------
+    viscosity: float or ndarray
+        Viscosity in mPa*s
+    """
     # see equation (15) in Kestin et al, J. Phys. Chem. 7(3) 1978
     check_temperature("'kestin-1978' water", temperature, 0, 40)
     eta0 = 1.002  # [mPa s]

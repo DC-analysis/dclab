@@ -44,7 +44,7 @@ you may work on the main branch. If you want to change
 more, please (fork dclab and) create a separate branch,
 e.g. ``my_new_feature_dev``, and create a pull-request
 once you are done making your changes.
-Please make sure to edit the 
+Please make sure to edit the
 `Changelog <https://github.com/DC-analysis/dclab/blob/main/CHANGELOG>`__.
 
 **Very important:** Please always try to use ::
@@ -90,17 +90,17 @@ We use flake8 to enforce coding style::
 
 Type Hinting
 ~~~~~~~~~~~~
-For type hinting and docstring styling, try to keep the 
+For type hinting and docstring styling, try to keep the
 Code Reference readable in the documentation website.
 If in doubt just ask, or look at the examples in the codebase.
 
 * Simple type combinations such as ``float`` or ``str | pathlib.Path``
   should be included as type hints, but do not need to be included
   in the docstring parameter description.
-* More involved type hints can have extra information in the 
+* More involved type hints can have extra information in the
   docstring. For example for numpy arrays, ``npt.NDArray[np.bool]`` doesn't
   render in a readable way in the Code Reference, and doesn't include shape.
-  Therefore, you can also keep the docstring parameter description with 
+  Therefore, you can also keep the docstring parameter description with
   the shape and dtype information e.g., ``binary ndarray of shape (M, N)``.
 
 
@@ -133,5 +133,5 @@ and publish them on PyPI.
    :target: https://github.com/DC-analysis/dclab/actions?query=workflow%3AChecks
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/dclab/main.svg
    :target: https://codecov.io/gh/DC-analysis/dclab
-.. |Docs Status| image:: https://readthedocs.org/projects/dclab/badge/?version=latest
+.. |Docs Status| image:: https://img.shields.io/readthedocs/dclab
    :target: https://readthedocs.org/projects/dclab/builds/

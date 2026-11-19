@@ -206,7 +206,7 @@ class PolygonFilter:
         """Define a unique id"""
         assert isinstance(unique_id, int), "unique_id must be an integer"
 
-        if PolygonFilter.instace_exists(unique_id):
+        if PolygonFilter.instance_exists(unique_id):
             newid = max(PolygonFilter._instance_counter, unique_id+1)
             msg = f"PolygonFilter with unique_id '{unique_id}' exists."
             msg += f" Using new unique id '{newid}'."
@@ -318,6 +318,19 @@ class PolygonFilter:
 
     @staticmethod
     def instace_exists(unique_id):
+        """Deprecated alias of :meth:`.PolygonFilter.instance_exists`
+
+        .. deprecated:: 0.75.0
+            Use :meth:`.PolygonFilter.instance_exists` instead.
+        """
+        warnings.warn("`PolygonFilter.instace_exists` is deprecated; please "
+                      "use `PolygonFilter.instance_exists`",
+                      DeprecationWarning,
+                      stacklevel=2)
+        return PolygonFilter.instance_exists(unique_id)
+
+    @staticmethod
+    def instance_exists(unique_id):
         """Determine whether an instance with this unique id exists"""
         try:
             PolygonFilter.get_instance_from_id(unique_id)

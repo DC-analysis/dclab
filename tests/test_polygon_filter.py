@@ -454,3 +454,15 @@ def test_load_missing_axis(tmp_path, axis_line):
     with pytest.raises(dclab.polygon_filter.PolygonFilterError,
                        match="'X Axis' or 'Y Axis' not defined"):
         dclab.PolygonFilter(filename=path)
+
+
+def test_instance_exists():
+    dclab.PolygonFilter.clear_all_filters()
+    pf = dclab.PolygonFilter(axes=["area_um", "deform"],
+                             points=[[0, 0], [1, 1], [0, 1]])
+    assert dclab.PolygonFilter.instance_exists(pf.unique_id)
+    assert not dclab.PolygonFilter.instance_exists(pf.unique_id + 1)
+    # deprecated misspelled alias
+    with pytest.warns(DeprecationWarning, match="instance_exists"):
+        assert dclab.PolygonFilter.instace_exists(pf.unique_id)
+    dclab.PolygonFilter.clear_all_filters()

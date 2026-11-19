@@ -5,8 +5,20 @@ import numpy as np
 from scipy.stats import skew
 
 
-class KernelDensityEstimationForEmtpyArrayWarning(UserWarning):
+class KernelDensityEstimationForEmptyArrayWarning(UserWarning):
     """Used when user attempts to compute KDE for an empty array"""
+
+
+def __getattr__(name):
+    """Provide deprecated aliases for renamed objects"""
+    if name == "KernelDensityEstimationForEmtpyArrayWarning":
+        warnings.warn("`KernelDensityEstimationForEmtpyArrayWarning` is "
+                      "deprecated; please use "
+                      "`KernelDensityEstimationForEmptyArrayWarning`",
+                      DeprecationWarning,
+                      stacklevel=2)
+        return KernelDensityEstimationForEmptyArrayWarning
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def bin_num_doane(a):
@@ -78,7 +90,7 @@ def bin_width_doane(a):
     else:
         warnings.warn(
             "KDE encountered an empty array",
-            KernelDensityEstimationForEmtpyArrayWarning,
+            KernelDensityEstimationForEmptyArrayWarning,
         )
         acc = 1
     return acc
@@ -134,7 +146,7 @@ def bin_width_percentile(a):
     if not data.size:
         warnings.warn(
             "KDE encountered an empty array",
-            KernelDensityEstimationForEmtpyArrayWarning,
+            KernelDensityEstimationForEmptyArrayWarning,
         )
         acc = 1
     else:

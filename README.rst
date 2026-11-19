@@ -94,7 +94,7 @@ For type hinting and docstring styling, try to keep the
 Code Reference readable in the documentation website.
 If in doubt just ask, or look at the examples in the codebase.
 
-* Simple type combintions such as ``float`` or ``str | pathlib.Path``
+* Simple type combinations such as ``float`` or ``str | pathlib.Path``
   should be included as type hints, but do not need to be included
   in the docstring parameter description.
 * More involved type hints can have extra information in the 
@@ -114,7 +114,7 @@ permissions to do so)::
     git tag -a "0.1.3"
     git push --tags origin
 
-Appveyor and GitHub Actions will then automatically build source package and wheels
+GitHub Actions will then automatically build the source package and wheels
 and publish them on PyPI.
 
 

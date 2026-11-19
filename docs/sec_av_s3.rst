@@ -8,12 +8,12 @@ Since DC datasets can become quite large, it often makes sense to put them
 somewhere centrally, such as a shared network drive or :ref:`DCOR <sec_av_dcor>`.
 You may also choose to upload your files directly to an
 `S3-compatible object store <https://en.wikipedia.org/wiki/Amazon_S3>`_, which
-dclab supports as well (It is actually in integral part of the DCOR format).
+dclab supports as well (it is actually an integral part of the DCOR format).
 
 Public data
 ===========
 
-Opening public datasets on S3 is straight forward. To get started, you only
+Opening public datasets on S3 is straightforward. To get started, you only
 need to know the URL of the object:
 
 .. code:: python

@@ -3,7 +3,7 @@
 This example demonstrates basic data visualization with dclab and
 matplotlib. To run this script, download the reference dataset
 `calibration_beads.rtdc` :cite:`FigshareRef` and place it in the
-same directory.
+current working directory.
 
 You will find more examples in the
 :ref:`advanced usage <sec_advanced_scripting>` section of this
@@ -70,7 +70,7 @@ ax5 = plt.subplot(224, title="Fluorescence traces")
 flsamples = ds.config["fluorescence"]["samples per event"]
 flrate = ds.config["fluorescence"]["sample rate"]
 fltime = np.arange(flsamples) / flrate * 1e6
-# here we plot "fl?_raw"; you may also plot "fl?_med"
+# here we plot "fl?_raw"; you may also plot "fl?_median"
 ax5.plot(fltime, ds["trace"]["fl1_raw"][EVENT_INDEX],
          c="#15BF00", label="fl1_raw")
 ax5.plot(fltime, ds["trace"]["fl2_raw"][EVENT_INDEX],

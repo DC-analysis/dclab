@@ -62,7 +62,7 @@ compute the corresponding medium viscosity. These models are the original
 `buyukurganci-2022` :cite:`Buyukurganci2022,Reichel2023` model.
 
 The MC-PBS solutions show a shear thinning behavior, which can be described
-by the viscosity :math:`\eta` following a power law at sufficienty high
+by the viscosity :math:`\eta` following a power law at sufficiently high
 shear rates :math:`\dot{\gamma}`:
 
 .. math::
@@ -114,7 +114,6 @@ range of 22-37 °C. As mentioned above, the viscosity follows a power law
 behavior for large shear rates.
 
 .. figure:: figures_viscosity/buyukurganci_22_fig3a.jpg
-    :target: images/buyukurganci_22_fig3a.jpg
 
     The viscosity of MC-PBS changes from a viscosity plateau at lower
     shear rates into a power law behavior at higher shear rates, which
@@ -169,7 +168,6 @@ used to generate the LUT are available on figshare :cite:`FigshareWittwer2020`.
 
 
 .. figure:: figures_emodulus/emodulus_20um_LE-2D-FEM-19.png
-    :target: images/emodulus_20um_LE-2D-FEM-19.png
 
     Visualizations of the support and the values of the look-up table (LUT)
     'LE-2D-FEM-19' used for determining the Young's modulus from deformation and
@@ -192,7 +190,6 @@ in :cite:`Wittwer2022`. The original data used to generate these LUTs are
 available on figshare :cite:`FigshareWittwer2022`.
 
 .. figure:: figures_emodulus/emodulus_20um_HE-2D-FEM-22.png
-    :target: images/emodulus_20um_HE-2D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
     'HE-2D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C
@@ -202,7 +199,6 @@ available on figshare :cite:`FigshareWittwer2022`.
 
 
 .. figure:: figures_emodulus/emodulus_20um_HE-3D-FEM-22.png
-    :target: images/emodulus_20um_HE-3D-FEM-22.png
 
     Visualizations of the support and the values of the look-up table (LUT)
     'HE-3D-FEM-22' :cite:`Wittwer2022` for a 20 µm wide channel at 23°C

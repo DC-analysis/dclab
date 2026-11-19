@@ -5,9 +5,9 @@ DC data I/O
 ===========
 
 When working with DC data, you will inevitably run into the situation where
-you would like to write some part of dataset (be it an .rtdc file or data
+you would like to write some part of a dataset (be it an .rtdc file or data
 on DCOR) to a new file. Depending on the situation, one or more of the
-following subsection will probably cover what you need.
+following subsections will probably cover what you need.
 
 
 .. _sec_av_dc_io_export:
@@ -15,7 +15,7 @@ following subsection will probably cover what you need.
 Exporting data
 ==============
 The :class:`RTDCBase <.RTDCBase>` class has the attribute
-:attr:`RTDCBase.export <.RTDCBase.export>` which allows to export event
+:attr:`RTDCBase.export <.RTDCBase.export>` which allows you to export event
 data to several data file formats. See :ref:`sec_ref_rtdc_export` for more
 information.
 
@@ -50,8 +50,9 @@ information.
        ...:                override=True)
        ...:
 
-Note that data exported as HDF5 files can be loaded with dclab
-(reproducing the previously computed statistics - without filters).
+Note that data exported as HDF5 files can be loaded with dclab.
+Since only the filtered events were exported, the unfiltered statistics
+of the exported file reproduce the filtered statistics computed above.
 
 .. ipython::
 
@@ -84,7 +85,7 @@ make use of the :class:`RTDCWriter <dclab.rtdc_dataset.writer.RTDCWriter>` class
 
 
 The `mode` argument defines how data should be written to the file. In the
-above example, any existing data in *my-data-rtdc* is deleted. If you
+above example, any existing data in *my-data.rtdc* is deleted. If you
 are writing to an existing file, you may use `mode="append"` to append
 events to existing features or `mode="replace"` to replace entire features
 with new data. Use `"append"` if you are continuously writing new events
@@ -99,7 +100,7 @@ a script that computes features for all events).
     outdated `userdef1` feature. You would like to replace this data with
     the data from the updated algorithm. If you open that file with
     `mode="append"` and write `userdef1` to it, then the `userdef1` feature
-    will have twice the length. You should used `mode="replace"` instead.
+    will have twice the length. You should use `mode="replace"` instead.
 
 
 .. _sec_av_dc_io_copy:
@@ -128,7 +129,8 @@ custom setup or a legacy .tdms measurement), you can convert it to a raw
 .rtdc file with the script
 `vid2dc.py <https://github.com/DC-analysis/dclab/blob/main/scripts/vid2dc.py>`_
 that is part of the dclab repository. The resulting .rtdc file only
-contains the "image" feature and basic metadata. You can then use
+contains the "image", "frame", "index", and "time" features and basic
+metadata. You can then use
 `ChipStream <https://github.com/DC-analysis/ChipStream>`_ to perform
 background correction, segmentation, and feature extraction.
 

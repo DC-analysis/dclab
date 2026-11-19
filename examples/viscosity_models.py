@@ -5,9 +5,9 @@ MC-PBS media implemented in dclab. We reproduce the lower left part of
 figure 3 in :cite:`Reichel2023` (channel width is 20 µm).
 
 """
+import matplotlib
 import matplotlib.pylab as plt
 import matplotlib.lines as mlines
-from matplotlib import cm
 import numpy as np
 
 from dclab.features.emodulus import viscosity
@@ -37,8 +37,8 @@ for medium in ["0.49% MC-PBS", "0.59% MC-PBS"]:
 
 
 fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey="all", sharex="all")
-colors = [cm.get_cmap("viridis")(x) for x in np.linspace(.8, 0,
-                                                         len(flow_rate))]
+cmap = matplotlib.colormaps["viridis"]
+colors = [cmap(x) for x in np.linspace(.8, 0, len(flow_rate))]
 
 for ii, medium in enumerate(visc_res):
     visc_her, visc_buy = visc_res[medium]

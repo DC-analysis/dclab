@@ -19,9 +19,13 @@ a subset of these:
 - ``pip install dclab``: for the basic dclab functionalities
 - ``pip install dclab[dcor]``: to :ref:`access online data <sec_av_dcor>` from `DCOR <https://dcor.mpl.mpg.de/>`_
 - ``pip install dclab[export]``: for .avi and .fcs export
-- ``pip install dclab[lme4]``: for :ref:`linear mixed effects model analysis <sec_av_lme4>` using `R/lme4 <https://cran.r-project.org/web/packages/lme4/index.html>`_
+- ``pip install dclab[http]``: for accessing .rtdc files via HTTP(S) URLs
 - ``pip install dclab[s3]``: for accessing .rtdc (HDF5) data on S3-compatible storage
 - ``pip install dclab[tdms]``: for the (outdated) .tdms file format
+
+:ref:`Linear mixed effects model analysis <sec_av_lme4>` requires no extra
+Python packages, but an installation of R with
+`lme4 <https://cran.r-project.org/web/packages/lme4/index.html>`_.
 
 You may also combine these dependencies, i.e. ``pip install dclab[dcor,s3]``
 for DCOR and S3 support.
@@ -49,14 +53,14 @@ Here is a list of use cases that would motivate an installation of dclab.
 - You would like to convert old .tdms-based datasets to the new .rtdc
   file format, because of enhanced speed in DCscope and reduced
   disk usage. What you are looking for is the command line program
-  :ref:`sec_tdms2rtdc` that comes with dclab. It allows to batch-convert
+  :ref:`sec_tdms2rtdc` that comes with dclab. It allows you to batch-convert
   multiple measurements at a time. Note that you should keep the original
   .tdms files backed-up somewhere, because there might be future
   improvements or bug fixes from which you would like to benefit.
   Please note that `DCKit <https://github.com/DC-analysis/DCKit/>`_
   offers a graphical user interface for batch conversion from .tdms to .rtdc.
 - You have built your own deformability cytometry device and would like to
-  use the powers of dclab to analyze your data. There is user-convenient
+  use the powers of dclab to analyze your data. There is a user-convenient
   :class:`.RTDCWriter` class that allows you to convert your tabular data
   to *.rtdc* files.
 - You would like to apply a simple set of filters (e.g. polygon filters that you
@@ -143,7 +147,7 @@ does not call it automatically. It is your own responsibility to call it
 after updating the parent dataset.
 
 Non-scalar features may not (depending on the file format) support fancy indexing (i.e.
-``ds["image"][ds.filter.all]`` might not work. Use a for-loop to extract them.
+``ds["image"][ds.filter.all]`` might not work). Use a for-loop to extract them.
 
 .. code-block:: python
 

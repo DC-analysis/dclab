@@ -62,9 +62,9 @@ Filters are used to mask e.g. debris or doublets from a dataset.
 
     # Manually excluding events using array indices is also possible:
     # The writeable `ds.filter.manual` is a 1D boolean array of size `len(ds)`
-    # where `False` can manually set, implying that these events are excluded.
+    # where `False` can be set manually, implying that these events are excluded.
     # The following line sets the four events located at indices
-    # 0, 345, 400, and 1000 to False, so that they are added to ds.filter.all
+    # 0, 345, 400, and 1000 to False, so that they are excluded from ds.filter.all
     # when `ds.apply_filter()` is called.
     In [8]: ds.filter.manual[[0, 400, 345, 1000]] = False
 
@@ -106,7 +106,7 @@ Note that calling ``grandchild.rejuvenate()`` automatically calls
 as expected, the size of each hierarchy child is identical to the sum of the
 boolean filtering array from its hierarchy parent.
 
-Always make sure to call `rejuvenate` to the youngest members of your
+Always make sure to call `rejuvenate` on the youngest member of your
 hierarchy (here `grandchild`), when you changed a filter in the hierarchy
 or when you modified an ancillary feature or the dataset metadata/configuration.
 Otherwise you cannot be sure that all information properly propagated through

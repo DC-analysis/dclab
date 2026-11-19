@@ -120,7 +120,7 @@ Isoelasticity lines are available via the
     kde = kde_instance.get_scatter(xax="area_um", yax="deform")
 
     isodef = dclab.isoelastics.get_default()
-    iso = isodef.get_with_rtdcbase(method="numerical",
+    iso = isodef.get_with_rtdcbase(lut_identifier="LE-2D-FEM-19",
                                    col1="area_um",
                                    col2="deform",
                                    dataset=ds)

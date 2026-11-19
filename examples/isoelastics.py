@@ -5,17 +5,18 @@ figure 3 (lower left) of :cite:`Mokbel2017`.
 
 .. warning::
 
-  This example does not work anymore since dclab 0.46.0, because
-  the isoelasticity lines of the analytical model have different
-  Young's moduli than the ones of the revised LE-2D-FEM-19 model.
+  This example no longer reproduces the reference figure since dclab
+  0.46.0, because the isoelasticity lines of the analytical model
+  have different Young's moduli than the ones of the revised
+  LE-2D-FEM-19 model.
   For the sake of completeness, we keep this example here. If you
   would like to extract lines at specific Young's moduli, please
   take a look at the next example.
 
 """
+import matplotlib
 import matplotlib.pylab as plt
 import matplotlib.lines as mlines
-from matplotlib import cm
 import numpy as np
 
 import dclab
@@ -35,7 +36,8 @@ numer = isos.get(lut_identifier="LE-2D-FEM-19", **kwargs)
 
 plt.figure(figsize=(8, 4))
 ax = plt.subplot(111, title="elastic sphere isoelasticity lines")
-colors = [cm.get_cmap("jet")(x) for x in np.linspace(0, 1, len(analy))]
+cmap = matplotlib.colormaps["jet"]
+colors = [cmap(x) for x in np.linspace(0, 1, len(analy))]
 for aa, nn, cc in zip(analy, numer, colors):
     ax.plot(aa[:, 0], aa[:, 1], color=cc)
     ax.plot(nn[:, 0], nn[:, 1], color=cc, ls=":")

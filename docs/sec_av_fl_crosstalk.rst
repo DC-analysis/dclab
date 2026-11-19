@@ -106,7 +106,7 @@ The coefficients in this example are arbitrary.
 - If a dataset has all three fluorescence channels (``fl1_max``,
   ``fl2_max``, and ``fl3_max``), all six coefficients must be set.
   Otherwise, a
-  :class:`~dclab.rtdc_dataset.feat_anc_core.af_fl_max_ctc.MissingCrosstalkMatrixElementsError`
+  ``MissingCrosstalkMatrixElementsError``
   is raised when accessing the corrected features.
 - If a dataset has only two fluorescence channels, only the two
   coefficients between these channels are required and used

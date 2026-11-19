@@ -7,17 +7,16 @@ Code reference
 
 
 
-.. _sec_ref_definitions:
-
-
 Module-level methods
 ====================
 .. autofunction:: dclab.new_dataset
 
 
+.. _sec_ref_definitions:
+
 Global definitions
 ==================
-These definitionas are used throughout the dclab/Shape-In/DCscope ecosystem.
+These definitions are used throughout the dclab/Shape-In/DCscope ecosystem.
 
 Metadata
 --------
@@ -162,18 +161,13 @@ TDMS format
 
 .. autofunction:: dclab.rtdc_dataset.fmt_tdms.get_tdms_files
 
-.. _sec_ref_rtdc_config:
-
-
-.. _cr_ancillaries:
-
-
 Basin features
 --------------
 .. automodule:: dclab.rtdc_dataset.feat_basin
     :members:
 
 
+.. _cr_ancillaries:
 
 Ancillaries
 -----------
@@ -199,6 +193,7 @@ Temporary features
     :members:
     :undoc-members:
 
+.. _sec_ref_rtdc_config:
 
 Config
 ------
@@ -340,9 +335,6 @@ statistics
    :undoc-members:
 
 
-.. _sec_ref_writer:
-
-
 HDF5 manipulation
 =================
 
@@ -351,6 +343,7 @@ HDF5 manipulation
    :undoc-members:
 
 
+.. _sec_ref_writer:
 
 Writing RT-DC files
 ===================
@@ -370,10 +363,10 @@ Command-line interface methods
    :imported-members:
 
 
+.. _sec_ref_lme4:
+
 R and lme4
 ==========
-
-.. _sec_ref_lme4:
 
 .. automodule:: dclab.lme4.rsetup
    :members:
@@ -384,10 +377,10 @@ R and lme4
    :undoc-members:
 
 
+.. _sec_ref_cached:
+
 Caching
 =======
-
-.. _sec_ref_cached:
 
 .. automodule:: dclab.cached.caches
    :members:

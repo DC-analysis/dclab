@@ -153,6 +153,12 @@ def tdms2rtdc(path_tdms=None, path_rtdc=None, compute_features=False,
 
 
 def tdms2rtdc_parser():
+    """Return the argument parser of the ``dclab-tdms2rtdc`` command
+
+    Returns
+    -------
+    parser: argparse.ArgumentParser
+    """
     descr = ("Convert RT-DC .tdms files to the hdf5-based .rtdc file format. "
              "Note: Do not delete original .tdms files after conversion. "
              "The conversion might be incomplete.")
@@ -168,7 +174,7 @@ def tdms2rtdc_parser():
                              "(e.g. if an error is found in the recipe). "
                              "Disabling this option maximizes "
                              "compatibility with future versions and "
-                             "allows to isolate the original data.")
+                             "allows isolating the original data.")
     parser.set_defaults(compute_features=False)
     parser.add_argument("--include-empty-boundary-images",
                         dest="include_empty_boundary_images",
@@ -185,7 +191,7 @@ def tdms2rtdc_parser():
                              "tdms files)")
     parser.add_argument("rtdc_path", metavar="RTDC_PATH", type=str,
                         help="Output path (file or folder), existing data "
-                             "will be overridden")
+                             "will be overwritten")
     parser.add_argument("--version", action="version",
                         version=f"dclab-tdms2rtdc {version}")
     return parser

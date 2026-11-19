@@ -30,7 +30,8 @@ def split(
     path_in: str or pathlib.Path
         path of input measurement file
     path_out: str or pathlib.Path
-        path to output directory (optional)
+        path to output directory (optional, defaults to the directory
+        of `path_in`)
     split_events: int
         maximum number of events in each output file
     skip_initial_empty_image: bool
@@ -45,7 +46,7 @@ def split(
     Returns
     -------
     [out_paths]: list of pathlib.Path
-        List of generated files (only if `ret_out_paths` is specified)
+        List of generated files (only if `ret_out_paths` is True)
     """
     cmp_kw = hdf5plugin.Zstd(clevel=5)
     if path_in is None:
@@ -193,6 +194,12 @@ def store_internal_basins(ds, path, basin_dicts, compression_kwargs=None):
 
 
 def split_parser():
+    """Return the argument parser of the ``dclab-split`` command
+
+    Returns
+    -------
+    parser: argparse.ArgumentParser
+    """
     descr = ("Split an RT-DC measurement file (.tdms or .rtdc) into multiple "
              "smaller .rtdc files.")
     parser = argparse.ArgumentParser(description=descr)

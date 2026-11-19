@@ -127,7 +127,7 @@ def get_inert_ratio_cvx(
         cont: npt.NDArray | list[npt.NDArray]) -> float | npt.NDArray:
     """Compute the inertia ratio of the convex hull of a contour
 
-    The inertia ratio is computed from the central second order of moments
+    The inertia ratio is computed from the central second-order moments
     along x (mu20) and y (mu02) via `sqrt(mu20/mu02)`.
 
     Parameters
@@ -146,7 +146,7 @@ def get_inert_ratio_cvx(
     .. versionchanged:: 0.48.2
 
         For long channels, an integer overflow could occur in previous
-        versions, leading invalid or nan values.
+        versions, leading to invalid or nan values.
         See https://github.com/DC-analysis/dclab/issues/212
 
     Notes
@@ -265,7 +265,7 @@ def get_inert_ratio_raw(
         cont: npt.NDArray | list[npt.NDArray]) -> float | npt.NDArray:
     """Compute the inertia ratio of a contour
 
-    The inertia ratio is computed from the central second order of moments
+    The inertia ratio is computed from the central second-order moments
     along x (mu20) and y (mu02) via `sqrt(mu20/mu02)`.
 
     Parameters
@@ -284,7 +284,7 @@ def get_inert_ratio_raw(
     .. versionchanged:: 0.48.2
 
         For long channels, an integer overflow could occur in previous
-        versions, leading invalid or nan values.
+        versions, leading to invalid or nan values.
         See https://github.com/DC-analysis/dclab/issues/212
 
     Notes

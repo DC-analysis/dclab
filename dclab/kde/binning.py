@@ -85,7 +85,7 @@ def bin_width_percentile(a):
     The Freedman–Diaconis rule uses the interquartile range and
     normalizes to the third root of len(a). Such things do not
     work very well for RT-DC data, because len(a) is huge. Here
-    we use just the top and bottom 10th percentiles with a fixed
+    we use just the 10th and the 90th percentiles with a fixed
     normalization.
     """
     bad = np.isnan(a) | np.isinf(a)

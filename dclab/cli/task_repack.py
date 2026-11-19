@@ -22,26 +22,27 @@ def repack(
         check_suffix: bool = True,
         ret_path: bool = False,
         ):
-    """Repack/recreate an .rtdc file, optionally stripping the logs
+    """Repack/recreate an .rtdc file, optionally stripping the logs and basins
 
     Parameters
     ----------
     path_in: str or pathlib.Path
-        file to compress
-    path_out: str or pathlib
+        file to repack
+    path_out: str or pathlib.Path
         output file path
     strip_basins: bool
         do not write basin information to the output file
     strip_logs: bool
         do not write logs to the output file
     check_suffix: bool
-        check suffixes for input and output files
+        check the suffix of the input file (".rtdc" is always
+        appended to the output file name if missing)
     ret_path: bool
         whether to return the output path
 
     Returns
     -------
-    path_out: pathlib.Path
+    path_out: pathlib.Path (optional)
         output path (with possibly corrected suffix)
     """
     if path_in is None and path_out is None:
@@ -109,6 +110,12 @@ def repack(
 
 
 def repack_parser():
+    """Return the argument parser of the ``dclab-repack`` command
+
+    Returns
+    -------
+    parser: argparse.ArgumentParser
+    """
     descr = ("Repack an .rtdc file. The difference to dclab-compress "
              "is that no logs are added. Other logs can optionally be "
              "stripped away. Repacking also gets rid of old clutter "

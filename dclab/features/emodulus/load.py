@@ -1,3 +1,5 @@
+"""Loading and registration of look-up tables (LUTs) for Young's modulus
+computation"""
 from __future__ import annotations
 
 import atexit
@@ -24,7 +26,7 @@ EXTERNAL_LUTS = {}
 
 @functools.lru_cache
 def get_internal_lut_names_dict() -> dict:
-    """Return list of internal lut names"""
+    """Return dictionary mapping internal LUT identifiers to LUT file names"""
     lutfiles = {}
     for pp in importlib_resources.files("dclab.features.emodulus").iterdir():
         name = pp.name
@@ -36,10 +38,18 @@ def get_internal_lut_names_dict() -> dict:
 def get_lut_path(path_or_id: str | pathlib.Path) -> pathlib.Path:
     """Find the path to a LUT
 
-    path_or_id
+    Parameters
+    ----------
+    path_or_id: str or pathlib.Path
         Identifier of a LUT. This can be either an existing path
-        (checked first), or an internal identifier (see
-        :func:`get_internal_lut_names_dict`).
+        (checked first), an internal identifier (see
+        :func:`get_internal_lut_names_dict`), or the identifier of an
+        external LUT registered with :func:`register_lut`.
+
+    Returns
+    -------
+    lut_path: pathlib.Path or str
+        Path to the LUT file
     """
     internal_dict = get_internal_lut_names_dict()
     if path_or_id == "FEM-2Daxis":
@@ -69,9 +79,11 @@ def load_lut(lut_data: str | pathlib.Path | tuple[npt.NDArray, dict] =
     Parameters
     ----------
     lut_data: pathlib.Path, str, or tuple of (np.ndarray of shape (N, 3), dict)
-        The LUT data to use. If it is in :func:`get_internal_lut_names_dict()`,
-        then the respective LUT will be used. Otherwise, a path to a
-        file on disk or a tuple (LUT array, metadata) is possible.
+        The LUT data to use. This can be a path to a LUT file on disk,
+        an internal LUT identifier (see
+        :func:`get_internal_lut_names_dict`), the identifier of a LUT
+        registered with :func:`register_lut`, or a tuple
+        (LUT array, metadata).
 
     Returns
     -------
@@ -82,8 +94,8 @@ def load_lut(lut_data: str | pathlib.Path | tuple[npt.NDArray, dict] =
 
     Notes
     -----
-    If lut_data is a tuple of (lut, meta), then nothing is actually
-    done (this is implemented for user convenience).
+    If lut_data is a tuple of (lut, meta), then only copies of `lut`
+    and `meta` are returned (this is implemented for user convenience).
     """
     if isinstance(lut_data, tuple):
         lut, meta = lut_data
@@ -93,7 +105,7 @@ def load_lut(lut_data: str | pathlib.Path | tuple[npt.NDArray, dict] =
         lut_path = get_lut_path(lut_data)
         lut, meta = load_mtext(lut_path)
     else:
-        raise TypeError("`name_path_arr` must be path, identifier, or tuple "
+        raise TypeError("`lut_data` must be path, identifier, or tuple "
                         f"of (array, dict), got '{lut_data}'!")
     return lut, meta
 
@@ -108,7 +120,7 @@ def load_mtext(path: str | pathlib.Path) -> tuple[npt.NDArray, dict]:
     are stored as a json string between the "BEGIN METADATA" and
     the "END METADATA" tags. The last comment (#) line before the
     actual data defines the features with units in square
-    brackets and tab-separated. For instance:
+    brackets and tab-separated. For instance::
 
         # [...]
         #
@@ -231,7 +243,7 @@ def register_lut(path: str | pathlib.Path,
         The identifier is used for ancillary emodulus computation
         via the [calculation]: "emodulus lut" key. It is also used as
         the key in :const:`EXTERNAL_LUTS` during registration. If not
-        specified, (default) then the identifier given as JSON metadata
+        specified (default), then the identifier given as JSON metadata
         in `path` is used.
     """
     if identifier is None:

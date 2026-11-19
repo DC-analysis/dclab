@@ -28,6 +28,14 @@ class ContourSpacingTooLarge(UserWarning):
 
 class KernelDensityEstimator:
     def __init__(self, rtdc_ds):
+        """Kernel density estimation for an RT-DC dataset
+
+        Parameters
+        ----------
+        rtdc_ds: dclab.rtdc_dataset.RTDCBase
+            Dataset from which the feature data are taken; only the
+            events in ``rtdc_ds.filter.all`` are used for the estimates.
+        """
         self.rtdc_ds = rtdc_ds
 
     @staticmethod
@@ -52,8 +60,9 @@ class KernelDensityEstimator:
         Notes
         -----
         If the scale is not "linear", then a new array is returned.
-        All warnings are suppressed when computing `np.log(a)`, as
-        `a` may have negative or nan values.
+        Warnings issued by `np.log(a)` (e.g. for negative or nan values
+        in `a`) are caught and replaced by a single warning that names
+        `feat`.
         """
         if scale == "linear":
             b = a
@@ -65,7 +74,7 @@ class KernelDensityEstimator:
                     # Tell the user that the log-transformation issued
                     # a warning.
                     warnings.warn(
-                        f"Invalid values encounterd in np.log "
+                        f"Invalid values encountered in np.log "
                         f"while scaling feature '{feat}'!"
                     )
         else:
@@ -105,6 +114,13 @@ class KernelDensityEstimator:
             feature name for debugging
         ret_scaled: bool
             whether to return the scaled array of `a`
+
+        Returns
+        -------
+        spacing: float
+            Spacing computed by `method` (in units of the scaled data)
+        scaled: ndarray
+            The scaled array `a`; only returned if `ret_scaled` is True
         """
         if method_kw is None:
             method_kw = {}
@@ -143,11 +159,12 @@ class KernelDensityEstimator:
         xax, yax: str
             Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
         positions: list of two 1d ndarrays or ndarray of shape (2, N)
-            The positions where the KDE will be computed. Note that
+            The positions where the KDE will be computed; if set to None,
+            the positions of the filtered events are used. Note that
             the KDE estimate is computed from the points that
             are set in `self.rtdc_ds.filter.all`.
         kde_type: str
-            The KDE method to use, see :const:`.kde_methods.methods`
+            The KDE method to use, see :const:`dclab.kde.methods.methods`
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
         xscale, yscale: str
@@ -155,13 +172,15 @@ class KernelDensityEstimator:
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         xacc, yacc: float
-            KDE grid spacing in x and y direction
-            if set to None, will use :func:`.bin_width_percentile`
+            KDE grid spacing in x and y direction;
+            if set to None, ``dclab.kde.binning.bin_width_percentile``
+            is used
 
         Returns
         -------
         density : 1d ndarray
-            The kernel density evaluated for the filtered events.
+            The kernel density evaluated at `positions` (or at the
+            filtered events if `positions` is None).
         """
         if kde_kwargs is None:
             kde_kwargs = {}
@@ -256,7 +275,7 @@ class KernelDensityEstimator:
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         xacc, yacc: float
-            KDE grid spacing in x and y direction; Affects contour shape.
+            KDE grid spacing in x and y direction; affects contour shape.
             If set to None, will use :func:`.find_smooth_contour_spacing`
         ret_levels: bool
             If set to True, return the levels of the contours
@@ -387,8 +406,9 @@ class KernelDensityEstimator:
             computing the KDE. This is useful when data are
             displayed on a log-scale. Defaults to "linear".
         xacc, yacc: float
-            Grid spacing size for the axes;
-            If set to None, will use :func:`bin_width_percentile`
+            Grid spacing for the axes in units of the scaled data (i.e.
+            of log(data) if `xscale`/`yscale` is "log"); if set to None
+            or 0, ``dclab.kde.binning.bin_width_percentile`` is used
 
         Returns
         -------
@@ -472,11 +492,12 @@ class KernelDensityEstimator:
         xax, yax: str
             Identifier for X- and Y-axis (e.g. "area_um", "aspect", "deform")
         positions: list of two 1d ndarrays or ndarray of shape (2, N)
-            The positions where the KDE will be computed. Note that
+            The positions where the KDE will be computed; if set to None,
+            the positions of the filtered events are used. Note that
             the KDE estimate is computed from the points that
             are set in `self.rtdc_ds.filter.all`.
         kde_type: str
-            The KDE method to use, see :const:`.kde_methods.methods`
+            The KDE method to use, see :const:`dclab.kde.methods.methods`
         kde_kwargs: dict
             Additional keyword arguments to the KDE method
         xscale, yscale: str
@@ -487,7 +508,8 @@ class KernelDensityEstimator:
         Returns
         -------
         density : 1d ndarray
-            The kernel density evaluated for the filtered data points.
+            The kernel density evaluated at `positions` (or at the
+            filtered data points if `positions` is None).
         """
         if kde_kwargs is None:
             kde_kwargs = {}

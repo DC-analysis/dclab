@@ -62,9 +62,9 @@ def convert(area_um: npt.NDArray,
     viscosity_in
         Original viscosity [mPa*s]
     viscosity_out
-        Target viscosity [mPa*s]; This can be an array
+        Target viscosity [mPa*s]; this can be an array
     inplace
-        If True, override input arrays with corrected data
+        If True, overwrite input arrays with corrected data
 
     Returns
     -------
@@ -80,8 +80,10 @@ def convert(area_um: npt.NDArray,
     If only `area_um`, `deform`, `channel_width_in` and
     `channel_width_out` are given, then only the area is
     corrected and returned together with the original deform.
-    If all other arguments are not set to None, the emodulus
-    is corrected and returned as well.
+    If `emodulus` is given, then `flow_rate_in`, `flow_rate_out`,
+    `viscosity_in`, and `viscosity_out` must be given as well
+    (otherwise a ValueError is raised) and the corrected emodulus
+    is returned as well.
     """
     warnings.warn("Usage of the `convert` method is deprecated! Please use "
                   "the scale_feature method instead.",
@@ -125,7 +127,7 @@ def scale_area_um(area_um: npt.NDArray,
 
     The conversion formula is described in :cite:`Mietke2015`.
 
-    .. versionadded: 0.25.0
+    .. versionadded:: 0.25.0
 
     Parameters
     ----------
@@ -136,7 +138,7 @@ def scale_area_um(area_um: npt.NDArray,
     channel_width_out
         Target channel width [µm]
     inplace
-        If True, override input arrays with corrected data
+        If True, overwrite input arrays with corrected data
     kwargs
         not used
 
@@ -160,11 +162,11 @@ def scale_emodulus(emodulus: npt.NDArray,
                    viscosity_in: float,
                    viscosity_out: float | npt.NDArray,
                    inplace: bool = False) -> npt.NDArray:
-    """Perform scale conversion for area_um (linear elastic model)
+    """Perform scale conversion for emodulus (linear elastic model)
 
     The conversion formula is described in :cite:`Mietke2015`.
 
-    .. versionadded: 0.25.0
+    .. versionadded:: 0.25.0
 
     Parameters
     ----------
@@ -181,14 +183,19 @@ def scale_emodulus(emodulus: npt.NDArray,
     viscosity_in
         Original viscosity [mPa*s]
     viscosity_out
-        Target viscosity [mPa*s]; This can be an array
+        Target viscosity [mPa*s]; this can be an array
     inplace
-        If True, override input arrays with corrected data
+        If True, overwrite input arrays with corrected data
 
     Returns
     -------
     emodulus_corr
         Scaled emodulus [kPa]
+
+    Notes
+    -----
+    If any of the channel widths, flow rates, or viscosities is None,
+    `emodulus` is returned unscaled.
     """
     emodulus_corr = _get_output_array(emodulus, inplace, "emodulus")
 
@@ -232,9 +239,14 @@ def scale_feature(feat: str,
     data
         Feature data
     inplace
-        If True, override input arrays with corrected data
+        If True, overwrite input arrays with corrected data
     **scale_kw
         Scale keyword arguments for the wrapped methods
+
+    Returns
+    -------
+    data_scaled: ndarray
+        Scaled feature data (unchanged for "circ" and "deform")
     """
     if feat == "area_um":
         return scale_area_um(area_um=data, inplace=inplace, **scale_kw)
@@ -259,7 +271,7 @@ def scale_volume(volume: npt.NDArray,
     The volume scales with the characteristic length
     "channel radius" L according to (L'/L)³.
 
-    .. versionadded: 0.25.0
+    .. versionadded:: 0.25.0
 
     Parameters
     ----------
@@ -270,7 +282,7 @@ def scale_volume(volume: npt.NDArray,
     channel_width_out
         Target channel width [µm]
     inplace
-        If True, override input arrays with corrected data
+        If True, overwrite input arrays with corrected data
     kwargs
         not used
 

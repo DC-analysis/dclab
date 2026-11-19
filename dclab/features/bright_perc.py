@@ -35,10 +35,10 @@ def get_bright_perc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
 
     Returns
     -------
-    bright_perc_10: float or ndarray of size N
-        10th percentile of brightness
-    bright_perc_90: float or ndarray of size N
-        90th percentile of brightness
+    bright_perc_10: float or ndarray of size K
+        10th percentile of brightness for each of the K events
+    bright_perc_90: float or ndarray of size K
+        90th percentile of brightness for each of the K events
     """
     if isinstance(mask, np.ndarray) and len(mask.shape) == 2:
         # We have a single image

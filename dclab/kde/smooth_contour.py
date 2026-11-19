@@ -1,3 +1,4 @@
+"""Determination of KDE grid spacings that yield smooth contour lines"""
 from __future__ import annotations
 
 import threading
@@ -52,7 +53,7 @@ def find_smooth_contour_spacing(
     Returns
     -------
     result:
-        Distionary containing the iteration result:
+        Dictionary containing the iteration result:
 
             - *total iterations*: iterations performed
             - *success*: whether the smoothing succeeded
@@ -193,6 +194,22 @@ def compute_contour_opening_angles(contour, xrange, yrange, xscale, yscale):
     """For each point of the contour, compute the opening angle
 
     This takes the visible plot area into account.
+
+    Parameters
+    ----------
+    contour: ndarray
+        Contour coordinates of shape (N, 2) (closed automatically)
+    xrange, yrange: tuple of float
+        Visible plot range used for normalizing the contour
+    xscale, yscale: str
+        "linear" or "log" scale of the plot axes
+
+    Returns
+    -------
+    opang: 1d ndarray
+        For each contour point, the angle [rad] between the line
+        segments to its neighbors, folded into [-π/2, π/2] such that
+        a straight line yields 0 (nan for duplicate points)
     """
     cc = np.array(contour, copy=True)
     if not np.all(cc[0] == cc[-1]):

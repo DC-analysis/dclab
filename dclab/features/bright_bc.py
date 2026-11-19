@@ -15,8 +15,8 @@ def get_bright_bc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
                   ret_data: str = "avg,sd"
                   ) -> (float |
                         npt.NDArray |
-                        tuple[float, float] |
-                        tuple[npt.NDArray, npt.NDArray]):
+                        list[float] |
+                        list[npt.NDArray]):
     """Compute avg and/or std of the background-corrected event brightness
 
     The background-corrected event brightness is defined by the
@@ -35,25 +35,27 @@ def get_bright_bc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
     bg_off: float or 1D ndarray
         Additional offset value that is added to `image_bg` before
         background correction
-    ret_data
-        A comma-separated list of metrices to compute
+    ret_data: str
+        A comma-separated list of metrics to compute
         - "avg": compute the average
         - "sd": compute the standard deviation
         Selected metrics are returned in alphabetical order.
 
     Returns
     -------
-    bright_avg: float or ndarray of size N
-        Average image data within the contour
-    bright_std: float or ndarray of size N
-        Standard deviation of image data within the contour
+    bright_avg: float or ndarray of size K
+        Average image data within the contour for each of the
+        K events
+    bright_std: float or ndarray of size K
+        Standard deviation of image data within the contour for
+        each of the K events
     """
     # This method is based on a pull request by Maik Herbig.
     ret_avg = "avg" in ret_data
     ret_std = "sd" in ret_data
 
     if ret_avg + ret_std == 0:
-        raise ValueError("No valid metrices selected!")
+        raise ValueError("No valid metrics selected!")
 
     if isinstance(mask, np.ndarray) and len(mask.shape) == 2:
         # We have a single image

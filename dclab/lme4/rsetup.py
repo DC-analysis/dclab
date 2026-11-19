@@ -1,3 +1,4 @@
+"""Locate R, configure its library path, and install lme4"""
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -23,7 +24,13 @@ class RNotFoundError(BaseException):
 
 
 def get_r_path() -> pathlib.Path:
-    """Return the path of the R executable"""
+    """Return the path of the R executable
+
+    The executable is searched for in the ``R_EXEC`` environment
+    variable (set by :func:`set_r_path`), in ``PATH``, and in the
+    ``bin`` directory of ``R_HOME``. Raises RNotFoundError if R is
+    not found.
+    """
     # Maybe the user set the executable already?
     r_exec = os.environ.get("R_EXEC")
     if r_exec is not None:
@@ -40,7 +47,7 @@ def get_r_path() -> pathlib.Path:
     # Try to determine the path to the executable from R_HOME
     r_home = os.environ.get("R_HOME")
     if r_home and not pathlib.Path(r_home).is_dir():
-        logger.warning(f"R_HOME Directory does not exist: {r_home}")
+        logger.warning(f"R_HOME directory does not exist: {r_home}")
         r_home = None
 
     if r_home is None:
@@ -91,7 +98,7 @@ def get_r_version() -> str:
 
 
 def has_lme4() -> bool:
-    """Return True if the lme4 package is installed"""
+    """Return True if the R packages lme4, statmod, and nloptr are installed"""
     global _has_lme4
     if _has_lme4:
         return True
@@ -127,8 +134,9 @@ def require_lme4() -> None:
     """Install the lme4 package (if not already installed)
 
     Besides ``lme4``, this also installs ``nloptr`` and ``statmod``.
-    The packages are installed to the user data directory
-    given in :const:`lib_path` from the http://cran.rstudio.org mirror.
+    The packages are installed from the http://cran.rstudio.org mirror
+    into the first R library path (``R_LIBS_USER`` if set, see
+    :func:`set_r_lib_path`).
     """
     install_command = ("install.packages("
                        "c('statmod','nloptr','lme4'),"
@@ -143,10 +151,10 @@ def require_lme4() -> None:
 
 
 def require_r() -> None:
-    """Make sure R is installed an R HOME is set"""
+    """Make sure R is available (raise RNotFoundError otherwise)"""
     if not has_r():
         raise RNotFoundError("Cannot find R, please set its path with the "
-                             "`set_r_path` function or set the `RHOME` "
+                             "`set_r_path` function or set the `R_HOME` "
                              "environment variable.")
 
 

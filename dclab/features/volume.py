@@ -22,11 +22,11 @@ def get_volume(
         e.g. obtained using `mm.contour` where  `mm` is an instance
         of `RTDCBase`. The first and second columns of `cont`
         correspond to the x- and y-coordinates of the contour.
-    pos_x: float or ndarray of length N
-        The x coordinate(s) of the centroid of the event(s) [µm]
+    pos_x: float or ndarray of length K
+        The x coordinate(s) of the centroid of the K event(s) [µm]
         e.g. obtained using `mm.pos_x`
-    pos_y: float or ndarray of length N
-        The y coordinate(s) of the centroid of the event(s) [µm]
+    pos_y: float or ndarray of length K
+        The y coordinate(s) of the centroid of the K event(s) [µm]
         e.g. obtained using `mm.pos_y`
     pix
         The detector pixel size in µm.
@@ -62,7 +62,7 @@ def get_volume(
     ----------
     - https://de.wikipedia.org/wiki/Kegelstumpf#Formeln
     - Yields identical results to the Matlab script by Geoff Olynyk
-      <https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve>`_
+      `<https://de.mathworks.com/matlabcentral/fileexchange/36525-volrevolve>`_
     """
     if np.isscalar(pos_x):
         cont = [cont]
@@ -133,7 +133,8 @@ def get_volume(
     return v_avg
 
 
-def counter_clockwise(cx: npt.NDArray, cy: npt.NDArray) -> tuple[float, float]:
+def counter_clockwise(cx: npt.NDArray,
+                      cy: npt.NDArray) -> tuple[npt.NDArray, npt.NDArray]:
     """Put contour coordinates into counter-clockwise order
 
     Parameters
@@ -178,7 +179,7 @@ def vol_revolve(r: npt.NDArray,
       V = \frac{h \cdot \pi}{3} \cdot (R^2 + R \cdot r + r^2)
 
     Where :math:`h` is the height of the cone and :math:`r` and
-    `R` are the smaller and larger radii of the truncated cone.
+    :math:`R` are the smaller and larger radii of the truncated cone.
 
     Each line segment of the contour resembles one truncated cone. If
     the z-step is positive (counter-clockwise contour), then the
@@ -197,9 +198,14 @@ def vol_revolve(r: npt.NDArray,
         radial coordinates (perpendicular to the z axis)
     z: 1d ndarray
         coordinate along the axis of rotation
-    point_scale
-        point size in your preferred units; The volume is multiplied
+    point_scale: float
+        point size in your preferred units; the volume is multiplied
         by a factor of `point_scale**3`.
+
+    Returns
+    -------
+    volume: float
+        Volume of the revolved polygon (scaled by `point_scale**3`)
 
     Notes
     -----

@@ -13,7 +13,7 @@ def check_feature_shape(name, data):
     ----------
     name: str
         name of the feature
-    data: array-like
+    data: ndarray
         data whose dimensionality will be checked
 
     Raises
@@ -91,13 +91,14 @@ def feature_register(name, label=None, is_scalar=True):
     Raises
     ------
     ValueError
-        If the feature already exists.
+        If the feature already exists or if `name` contains characters
+        other than lower-case letters, digits, and underscores.
     """
     allowed_chars = "abcdefghijklmnopqrstuvwxyz_1234567890"
     feat = "".join([f for f in name if f in allowed_chars])
     if feat != name:
         raise ValueError(
-            "`feature` must only contain lower-case characters, "
+            "`name` must only contain lower-case characters, "
             f"digits, and underscores; got '{name}'!"
         )
     if label is None:
@@ -127,7 +128,7 @@ def feature_deregister(name):
 
     Warnings
     --------
-    This function should only be used internally, i.e., You should not use
+    This function should only be used internally, i.e., you should not use
     this function. This function can break things.
     """
     # `feature_labels` is not unique, remove the label at the same
@@ -144,12 +145,16 @@ def get_feature_label(name, rtdc_ds=None, with_unit=True):
     """Return the label corresponding to a feature name
 
     This function not only checks :const:`feature_name2label`,
-    but also supports registered `ml_score_???` features.
+    but also supports `ml_score_???` features (generic label
+    "ML score ???").
 
     Parameters
     ----------
     name: str
         name of a feature
+    rtdc_ds: dclab.rtdc_dataset.RTDCBase or None
+        Currently unused (reserved for extracting labels from ancillary
+        feature information)
     with_unit: bool
         set to False to remove units in square brackets
 

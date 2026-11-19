@@ -61,7 +61,7 @@ def assemble_warnings(w):
 
 
 def get_command_log(paths, custom_dict=None):
-    """Return a json dump of system parameters
+    """Return a json dump of system parameters as a list of lines
 
     Parameters
     ----------
@@ -71,6 +71,11 @@ def get_command_log(paths, custom_dict=None):
     custom_dict: dict
         additional user-defined entries; must contain simple
         Python objects (json.dumps must still work)
+
+    Returns
+    -------
+    dump: list of str
+        Lines of the indented JSON dump
     """
     if custom_dict is None:
         custom_dict = {}
@@ -171,7 +176,7 @@ def print_violation(string):
 
 
 def skip_empty_image_events(ds, initial=True, final=True):
-    """Set a manual filter to skip inital or final empty image events"""
+    """Set a manual filter to skip initial or final empty image events"""
     if initial and (
             ("image" in ds and ds.format == "tdms"
              and ds.config["fmt_tdms"]["video frame offset"])

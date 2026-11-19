@@ -24,7 +24,7 @@ class file_monitoring_lru_cache:
     must accept `path` as its first argument. Caching is
     done with an `lru_cache`. In addition to the full path
     and the other arguments to the decorated function, the
-    size and the modification time of `path` is used as a
+    size and the modification time of `path` are used as a
     key for the decorator.
     If the path does not exist, no caching is done.
 
@@ -83,7 +83,7 @@ class LazyLoader:
 @file_monitoring_lru_cache(maxsize=100)
 def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
              hasher_class=None):
-    """Compute md5 hex-hash of a file
+    """Compute the hex-hash of a file (MD5 by default)
 
     Parameters
     ----------
@@ -91,13 +91,18 @@ def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
         path to the file
     blocksize: int
         block size in bytes read from the file
-        (set to `0` to hash the entire file)
+        (`0` is equivalent to `count=0`)
     count: int
-        number of blocks read from the file
+        number of blocks read from the file (set to `0`, the default,
+        to hash the entire file)
     hasher_class: callable
-        deprecated, see use `constructor` instead
+        deprecated, use `constructor` instead
     constructor: callable
         hash algorithm constructor
+
+    Returns
+    -------
+    hexdigest: str
     """
     if hasher_class is not None:
         warnings.warn("The `hasher_class` argument is deprecated, please use "
@@ -135,7 +140,7 @@ def obj2bytes(obj):
     Note that there is no guarantee that the bytes representation
     returned is reproducible across sessions. This is currently the
     case when an :class:`.RTDCBase` instance is passed. There is no
-    opinion on wether/how this should be changed.
+    opinion on whether/how this should be changed.
     """
     if isinstance(obj, str):
         return obj.encode("utf-8")

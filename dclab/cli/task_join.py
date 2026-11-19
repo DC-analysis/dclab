@@ -37,7 +37,8 @@ def join(
         output path
     metadata: dict
         optional metadata dictionary (configuration dict) to store
-        in the output file
+        in the output file (defaults to
+        ``{"experiment": {"run index": 1}}``)
     ret_path: bool
         whether to return the output path
 
@@ -48,9 +49,11 @@ def join(
 
     Notes
     -----
-    The first input file defines the metadata written to the output
-    file. Only features that are present in all input files are written
-    to the output file.
+    The input files are sorted by measurement date, time, and run
+    index; the earliest measurement defines the metadata written to
+    the output file. Only innate features of the earliest measurement
+    that are available in all other input files are written to the
+    output file.
     """
     cmp_kw = hdf5plugin.Zstd(clevel=5)
     if metadata is None:
@@ -233,6 +236,12 @@ def join(
 
 
 def join_parser():
+    """Return the argument parser of the ``dclab-join`` command
+
+    Returns
+    -------
+    parser: argparse.ArgumentParser
+    """
     descr = ("Join two or more RT-DC measurements. This will produce "
              "one larger .rtdc file. The meta data of the dataset "
              "that was recorded earliest will be used in the output "

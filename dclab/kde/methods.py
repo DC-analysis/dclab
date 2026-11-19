@@ -20,7 +20,7 @@ def kde_gauss(events_x, events_y, xout=None, yout=None):
         is flattened automatically.
     xout, yout: ndarray
         The coordinates at which the KDE should be computed.
-        If set to none, input coordinates are used.
+        If set to None, input coordinates are used.
 
     Returns
     -------
@@ -61,9 +61,10 @@ def kde_histogram(events_x, events_y, xout=None, yout=None, bins=None):
         is flattened automatically.
     xout, yout: ndarray
         The coordinates at which the KDE should be computed.
-        If set to none, input coordinates are used.
+        If set to None, input coordinates are used.
     bins: tuple (binsx, binsy)
-        The number of bins to use for the histogram.
+        The number of bins to use for the histogram; if set to None,
+        Doane's formula is used (at least 5 bins per axis).
 
     Returns
     -------
@@ -113,7 +114,7 @@ def kde_none(events_x, events_y, xout=None, yout=None):
         is flattened automatically.
     xout, yout: ndarray
         The coordinates at which the KDE should be computed.
-        If set to none, input coordinates are used.
+        If set to None, input coordinates are used.
 
     Returns
     -------
@@ -148,10 +149,11 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
         The input points for kernel density estimation. Input
         is flattened automatically.
     bw: tuple (bwx, bwy) or None
-        The bandwith for kernel density estimation.
+        The bandwidth for kernel density estimation; if set to None,
+        half of the Doane bin width is used for each axis.
     xout, yout: ndarray
         The coordinates at which the KDE should be computed.
-        If set to none, input coordinates are used.
+        If set to None, input coordinates are used.
 
     Returns
     -------
@@ -187,6 +189,7 @@ def kde_multivariate(events_x, events_y, xout=None, yout=None, bw=None):
     return density.reshape(xout.shape)
 
 
+#: Available KDE methods; the keys are valid values for `kde_type`
 methods = {
     "gauss": kde_gauss,
     "histogram": kde_histogram,

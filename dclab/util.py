@@ -106,7 +106,8 @@ def hashfile(fname, blocksize=65536, count=0, constructor=hashlib.md5,
     """
     if hasher_class is not None:
         warnings.warn("The `hasher_class` argument is deprecated, please use "
-                      "`constructor` instead.")
+                      "`constructor` instead.",
+                      DeprecationWarning)
         constructor = hasher_class
 
     path = pathlib.Path(fname)

@@ -83,6 +83,16 @@ def test_hashfile_positional_arguments(tmp_path):
                                                        count=3)
 
 
+def test_hashfile_hasher_class_deprecated(tmp_path):
+    """`hasher_class` issues a DeprecationWarning (not a UserWarning)"""
+    p1 = tmp_path / "test_1.bin"
+    data = bytes(range(256)) * 10
+    p1.write_bytes(data)
+    with pytest.warns(DeprecationWarning, match="hasher_class"):
+        hexdigest = util.hashfile(p1, hasher_class=hashlib.sha256)
+    assert hexdigest == hashlib.sha256(data).hexdigest()
+
+
 def test_hash_hdf5_dataset():
     path = retrieve_data("fmt-hdf5_image-bg_2020.zip")
 

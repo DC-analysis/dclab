@@ -247,6 +247,8 @@
    integrity checks, tables, hierarchy mapping, binning, and others) (#416)
  - docs: fix all broken cross-references and build the docs in nitpicky
    mode in CI (#416)
+ - fix: the deprecated `hasher_class` argument of `util.hashfile` issued
+   a UserWarning instead of a DeprecationWarning (#417)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

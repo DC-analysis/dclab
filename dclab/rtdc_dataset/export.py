@@ -9,7 +9,6 @@ import time
 import uuid
 import warnings
 
-import h5py
 import hdf5plugin
 
 try:
@@ -932,13 +931,8 @@ def hdf5_autocomplete_config(path_or_h5obj):
                   "the dclab.RTDCWriter context manager or the "
                   "dclab.RTDCWriter.rectify_metadata function.",
                   DeprecationWarning)
-    if not isinstance(path_or_h5obj, h5py.File):
-        close = True
-    else:
-        close = False
-
     hw = RTDCWriter(path_or_h5obj, mode="append")
     hw.rectify_metadata()
-
-    if close:
-        path_or_h5obj.close()
+    # Only closes the file if `path_or_h5obj` is a path (an h5py.File
+    # passed by the caller is left open).
+    hw.close()

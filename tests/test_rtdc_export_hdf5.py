@@ -12,7 +12,7 @@ import pytest
 
 import dclab
 from dclab import dfn, new_dataset, RTDCWriter
-from dclab.rtdc_dataset import rtdc_copy, writer
+from dclab.rtdc_dataset import export, rtdc_copy, writer
 from dclab.rtdc_dataset.export import (
     ContourNotExportedWarning,
     store_filtered_feature,
@@ -1418,3 +1418,28 @@ def test_hdf5_traces_filter2():
     assert np.all(ds["trace"]["fl1_raw"][3] == ds2["trace"]["fl1_raw"][0])
     assert np.all(ds["trace"]["fl1_raw"][5] == ds2["trace"]["fl1_raw"][1])
     assert np.all(ds["trace"]["fl1_raw"][6] == ds2["trace"]["fl1_raw"][2])
+
+
+@pytest.mark.parametrize("path_type", [str, pathlib.Path, "h5py"])
+def test_hdf5_autocomplete_config_deprecated(tmp_path, path_type):
+    """The deprecated `hdf5_autocomplete_config` works with paths"""
+    path = tmp_path / "test.rtdc"
+    with dclab.RTDCWriter(path) as hw:
+        hw.store_metadata({"experiment": {"sample": "test",
+                                          "run index": 1}})
+        hw.store_feature("deform", np.linspace(0.01, 0.1, 10))
+    with h5py.File(path, "a") as h5:
+        del h5.attrs["experiment:event count"]
+
+    if path_type == "h5py":
+        with h5py.File(path, "a") as h5:
+            with pytest.warns(DeprecationWarning, match="deprecated"):
+                export.hdf5_autocomplete_config(h5)
+            # the file object passed by the user is not closed
+            assert h5.id.valid
+    else:
+        with pytest.warns(DeprecationWarning, match="deprecated"):
+            export.hdf5_autocomplete_config(path_type(path))
+
+    with h5py.File(path, "r") as h5:
+        assert h5.attrs["experiment:event count"] == 10

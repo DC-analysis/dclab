@@ -22,13 +22,10 @@
    excluded events had been re-included) (#316)
  - fix: removing the min/max keys of a box filter from the
    configuration did not remove that filter (#317)
- - ref: cleanup filter.py (incorrect variable names, use of sets)
  - fix: `Configuration.copy` did not preserve `disable_checks`, which
    removed unknown configuration keys from the copy (#318)
  - fix: exports of non-hierarchy datasets did not store the relative
    path to the original file in the basin definition (#320)
- - docs: the default branch was renamed from "master" to "main" (#321)
- - docs: fix links to renamed files in the emodulus docs (#321)
  - fix: CLI join failed if two features that are adjacent in the sorted
    feature list were missing in one of the files (feature list was
    modified while iterating over it) (#322)
@@ -58,7 +55,6 @@
    the crosstalk configuration of the missing third channel, which
    gave wrong results and, since these keys were not part of the
    cache hash, stale data when they were changed (#332)
- - docs: explain fluorescence crosstalk correction (#333)
  - fix: `hashfile` with `blocksize=0` returned the hash of an empty
    file instead of the entire file and raised a TypeError when
    arguments were passed positionally (`file_monitoring_lru_cache`) (#334)
@@ -158,7 +154,6 @@
    i.e. each access after the first one copied the data event by event (#370)
  - fix: `Inverted = False` in a .poly file did not override the
    `inverted` keyword argument of `PolygonFilter` (as documented) (#371)
- - docs: inverted polygon filters include events with nan-values (#372)
  - fix: unreadable disk store entries were never replaced (the value was
    recomputed on every call and the disk store size management failed) (#373)
  - fix: the identifier of plugin features created from a dictionary
@@ -173,26 +168,8 @@
  - fix: `statistics.mode` returned the edge of the bin instead of its
    center (the data were rounded instead of floored before adding
    half the bin size) (#378)
- - ref: use `super()` without arguments (ruff UP008) (#379)
- - ref: use f-strings instead of `str.format` (ruff UP032) (#380)
- - ci: the lme4 tests were silently skipped, because lme4 could not
-   be installed with R 4.1.2; use the latest R release and fail if
-   lme4 is not installed (#381)
- - tests: update pinned glmer values for lme4 2.1 (#381)
- - ref: remove Python 2 remnants and outdated syntax (ruff pyupgrade) (#383)
- - ref: use explicit `X | None` for optional arguments in type hints (#384)
  - fix: passing positional arguments (e.g. `h5kwargs`) to `RTDC_HTTP`
    or `RTDC_S3` raised a TypeError (ruff B026) (#385)
- - ref: annotate shared class attributes with `ClassVar` and minor
-   cleanups (ruff B004, B006, B008, PLW0120, RUF012) (#386)
- - ref: simplify code (ruff SIM, C4, PIE, PERF, FURB, FLY, PLC0206) (#387)
- - ref: add pyright stub for h5py until h5py ships type hints (#388)
- - tests: use 100 bootstrap iterations in `test_glmer_differential`
-   (took about 10 minutes on Linux and longer on Windows) (#389)
- - ref: use implicit string concatenation (ruff ISC003, ISC004) (#391)
- - ref: fix remaining minor ruff findings (#393)
- - ref: use double quotes for strings (ruff Q000) (#394)
- - ci: lint with ruff (rules configured in `pyproject.toml`) (#397)
  - fix: importing the deprecated `dclab.kde_contours` raised an
    ImportError (`_find_quantile_level` was moved to the tests) (#398)
  - fix: lines with an empty key in configuration text files raised a
@@ -203,50 +180,24 @@
    UnboundLocalError (now a `PolygonFilterError`) (#401)
  - fix: the type hints of `get_contour` and `get_contour_lazily` used
    `np.int` (removed in NumPy 1.24), so `typing.get_type_hints` failed (#402)
- - enh: raise TypeError instead of ValueError for arguments of the wrong
-   type in `emodulus.load_lut`, `PlugInFeature`, and
-   `load_plugin_feature` (#403)
  - fix: `find_smooth_contour_spacing` only checked whether the first
    contour of the highest percentile was smooth, not all of them (#404)
  - fix: misleading error messages in `new_dataset` for remote data:
    S3-specific keyword arguments were passed to `RTDC_HTTP` for publicly
    available S3 URLs, and without `requests`, HTTP URLs resulted in
    "Unknown remote format" (#405)
- - enh: the KeyError for ancillary features (incl. plugin features)
-   that cannot be computed names the requirements that are not met
-   (new `AncillaryFeature.get_missing_requirements`) (#406)
- - docs: document tables (`RTDCBase.tables`) (#408)
- - docs: document converting video files to .rtdc with
-   `scripts/vid2dc.py` (#409)
- - scripts: `vid2dc.py` uses the same exact YUV to RGB conversion as
-   the .tdms reader (same images on all platforms) and does not
-   require PyAV anymore (#409)
  - fix: CLI `dclab-split` stored internal basin features (e.g.
    "image_bg") as regular features in the output files instead of
    internal basins (#410)
  - fix: identical internal basin definitions in a file and in one of
    its file basins were reported as a cyclic basin dependency (#410)
- - docs: fix and complete docstrings of the file formats (HDF5, DCOR,
-   HTTP, S3, .tdms), basins, ancillary and plugin features, and caching (#411)
  - fix: wrong environment variable name (`S3_ENDPOINT_URL` instead of
    `DCLAB_S3_ENDPOINT_URL`) in S3 error messages (#411)
  - fix: wrong output file name in `LimitingExportSizeWarning` message (#412)
- - docs: fix and complete docstrings of the RT-DC dataset core modules
-   (`RTDCBase`, `Configuration`, `Export`, `Filter`, `RTDCWriter`,
-   copier, temporary features, hierarchy) (#412)
  - enh: include `h5datasetchop` in `basin_priority_sorted_key`
  - fix: wrong environment variable name in `RNotFoundError` message
    (`RHOME` instead of `R_HOME`) and wrong viscosity unit in emodulus
    messages and metadata description (Pa*s instead of mPa*s) (#413)
- - docs: fix and complete docstrings of features, kde, lme4, cli,
-   definitions, and utility modules (#413)
- - ref: remove unused `features_iter` argument from `basin_definition_copy`
- - docs: fix typos, wrong statements, broken references, and failing
-   code snippets in the user guide and examples (#414)
- - docs: add missing classes and functions to the code reference (basins,
-   integrity checks, tables, hierarchy mapping, binning, and others) (#416)
- - docs: fix all broken cross-references and build the docs in nitpicky
-   mode in CI (#416)
  - fix: the deprecated `hasher_class` argument of `util.hashfile` issued
    a UserWarning instead of a DeprecationWarning (#417)
  - fix: `Isoelastics.get` and `Isoelastics.get_with_rtdcbase` returned
@@ -272,8 +223,57 @@
  - fix: `find_smooth_contour_spacing` returned half of the last
    evaluated contour spacing when the maximum number of iterations
    was reached (#424)
+ - enh: raise TypeError instead of ValueError for arguments of the wrong
+   type in `emodulus.load_lut`, `PlugInFeature`, and
+   `load_plugin_feature` (#403)
+ - enh: the KeyError for ancillary features (incl. plugin features)
+   that cannot be computed names the requirements that are not met
+   (new `AncillaryFeature.get_missing_requirements`) (#406)
+ - docs: inverted polygon filters include events with nan-values (#372)
+ - docs: explain fluorescence crosstalk correction (#333)
+ - docs: fix and complete docstrings of the file formats (HDF5, DCOR,
+   HTTP, S3, .tdms), basins, ancillary and plugin features, and caching (#411)
+ - docs: document tables (`RTDCBase.tables`) (#408)
+ - docs: document converting video files to .rtdc with
+   `scripts/vid2dc.py` (#409)
+ - docs: fix and complete docstrings of the RT-DC dataset core modules
+   (`RTDCBase`, `Configuration`, `Export`, `Filter`, `RTDCWriter`,
+   copier, temporary features, hierarchy) (#412)
+ - docs: fix and complete docstrings of features, kde, lme4, cli,
+   definitions, and utility modules (#413)
+ - docs: fix typos, wrong statements, broken references, and failing
+   code snippets in the user guide and examples (#414)
+ - docs: add missing classes and functions to the code reference (basins,
+   integrity checks, tables, hierarchy mapping, binning, and others) (#416)
+ - docs: fix all broken cross-references and build the docs in nitpicky
+   mode in CI (#416)
+ - docs: the default branch was renamed from "master" to "main" (#321)
+ - docs: fix links to renamed files in the emodulus docs (#321)
+ - ref: cleanup filter.py (incorrect variable names, use of sets)
+ - ref: use `super()` without arguments (ruff UP008) (#379)
+ - ref: use f-strings instead of `str.format` (ruff UP032) (#380)
+ - ref: remove Python 2 remnants and outdated syntax (ruff pyupgrade) (#383)
+ - ref: use explicit `X | None` for optional arguments in type hints (#384)
+ - ref: remove unused `features_iter` argument from `basin_definition_copy`
  - ref: fix type annotations reported by pyright (`RTDCWriter.h5file`,
    `DiskStore.path`, optional imports, wrong annotations) (#426)
+ - ref: annotate shared class attributes with `ClassVar` and minor
+   cleanups (ruff B004, B006, B008, PLW0120, RUF012) (#386)
+ - ref: simplify code (ruff SIM, C4, PIE, PERF, FURB, FLY, PLC0206) (#387)
+ - ref: add pyright stub for h5py until h5py ships type hints (#388)
+ - ref: use implicit string concatenation (ruff ISC003, ISC004) (#391)
+ - ref: fix remaining minor ruff findings (#393)
+ - ref: use double quotes for strings (ruff Q000) (#394)
+ - tests: update pinned glmer values for lme4 2.1 (#381)
+ - tests: use 100 bootstrap iterations in `test_glmer_differential`
+   (took about 10 minutes on Linux and longer on Windows) (#389)
+ - scripts: `vid2dc.py` uses the same exact YUV to RGB conversion as
+   the .tdms reader (same images on all platforms) and does not
+   require PyAV anymore (#409)
+ - ci: the lme4 tests were silently skipped, because lme4 could not
+   be installed with R 4.1.2; use the latest R release and fail if
+   lme4 is not installed (#381)
+ - ci: lint with ruff (rules configured in `pyproject.toml`) (#397)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

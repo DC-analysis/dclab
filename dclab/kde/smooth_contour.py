@@ -119,7 +119,7 @@ def find_smooth_contour_spacing(
                 break
             # Compute the contour for the highest percentile of the plot.
             contours = kdi.get_contour_lines(
-                quantiles=[[np.max(quantiles)]],
+                quantiles=[np.max(quantiles)],
                 xax=xax,
                 yax=yax,
                 xacc=xacc,
@@ -162,13 +162,18 @@ def find_smooth_contour_spacing(
 
                 max_dphi = max(max_dphi, dphi)
                 max_length = min(max_length, len(cc))
-        else:
-            results["reason"] = "maximum iterations reached"
-            results["success"] = False
-            if not num_contours:
-                # There is no contour we could smooth.
-                results["reason"] = "no contour found"
-                break
+
+        if abort_event is not None and abort_event.is_set():
+            # Aborted while iterating over the datasets; the contours
+            # of the remaining datasets were not checked.
+            results["reason"] = "abort event"
+            break
+        elif not num_contours:
+            # There is no contour we could smooth.
+            results["reason"] = "no contour found"
+            break
+
+        results["reason"] = "maximum iterations reached"
 
         if max_dphi < np.deg2rad(23):
             # A contour is considered smooth when the maximum angle between

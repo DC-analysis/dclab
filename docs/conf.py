@@ -36,6 +36,30 @@ autoclass_content = "both"
 # type hints should be displayed next to the parameters
 autodoc_typehints = "description"
 
+# The docs are built with `-n` (nitpicky) in CI, so broken cross-references
+# fail the build. Informal type descriptions in numpydoc docstrings
+# (e.g. "1d ndarray of length N", "callable", "optional") cannot be
+# resolved and are ignored here, as are private module paths of
+# third-party classes that do not appear in their intersphinx inventories.
+nitpick_ignore_regex = [
+    # informal types and shape descriptions (lower-case words, single
+    # upper-case letters, numbers, and phrases containing spaces)
+    ("py:class", r"[a-z0-9_-]+s?"),
+    ("py:class", r"[A-Z]"),
+    ("py:class", r".* .*"),
+    # literal choices (e.g. "all", 'scalar')
+    ("py:class", r"[\"'].*[\"']"),
+    # ellipsis in type hints such as `tuple[int, ...]`
+    ("py:class", r"\.\.\.?"),
+    # third-party classes documented under a different (public) path
+    ("py:class", r"numpy\._typing\..*"),
+    ("py:class", r"h5py\._hl\..*"),
+    # abbreviated module names of numpy and multiprocessing
+    ("py:class", r"np\..*"),
+    ("py:class", r"npt\..*"),
+    ("py:class", r"mp\..*"),
+]
+
 # include source of matplotlib plots
 plot_include_source = True
 
@@ -209,6 +233,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "boto3": ("https://boto3.amazonaws.com/v1/documentation/api/latest", None),
     "h5py": ("https://h5py.readthedocs.io/en/stable/", None),
+    "requests": ("https://requests.readthedocs.io/en/latest/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "skimage": ("https://scikit-image.org/docs/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),

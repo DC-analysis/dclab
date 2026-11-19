@@ -1,3 +1,4 @@
+"""Estimation of bin widths and contour spacings for KDE computations"""
 import warnings
 
 import numpy as np
@@ -10,6 +11,16 @@ class KernelDensityEstimationForEmtpyArrayWarning(UserWarning):
 
 def bin_num_doane(a):
     """Compute number of bins based on Doane's formula
+
+    Parameters
+    ----------
+    a: 1d ndarray
+        Input data; nan and inf values are ignored
+
+    Returns
+    -------
+    num: int
+        Number of bins
 
     Notes
     -----
@@ -32,6 +43,16 @@ def bin_num_doane(a):
 
 def bin_width_doane(a):
     """Compute contour spacing based on Doane's formula
+
+    Parameters
+    ----------
+    a: 1d ndarray
+        Input data; nan and inf values are ignored
+
+    Returns
+    -------
+    width: float
+        Bin width (1 for empty input)
 
     References
     ----------
@@ -66,6 +87,16 @@ def bin_width_doane(a):
 def bin_width_doane_div5(a):
     """Compute contour spacing based on Doane's formula divided by five
 
+    Parameters
+    ----------
+    a: 1d ndarray
+        Input data; nan and inf values are ignored
+
+    Returns
+    -------
+    width: float
+        Bin width
+
     See Also
     --------
     bin_width_doane: method used to compute the bin width
@@ -79,6 +110,16 @@ def bin_width_percentile(a):
     The 10th and the 90th percentile of the input data are taken.
     The spacing then computes to the difference between those
     two percentiles divided by 23.
+
+    Parameters
+    ----------
+    a: 1d ndarray
+        Input data; nan and inf values are ignored
+
+    Returns
+    -------
+    width: float
+        Bin width (1 for empty input)
 
     Notes
     -----

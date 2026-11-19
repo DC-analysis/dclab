@@ -268,14 +268,14 @@ class Basin(abc.ABC):
         return self._features
 
     def as_dict(self):
-        """Return basin kwargs for :func:`RTDCWriter.store_basin`
+        """Return basin kwargs for :meth:`.RTDCWriter.store_basin`
 
         Note that each subclass of :class:`.RTDCBase` has its own
-        implementation of :func:`.RTDCBase.basins_get_dicts` which
+        implementation of :meth:`.RTDCBase.basins_get_dicts` which
         returns a list of basin dictionaries that are used to
-        instantiate the basins in :func:`RTDCBase.basins_enable`.
+        instantiate the basins in :meth:`.RTDCBase.basins_retrieve`.
         This method here is only intended for usage with
-        :func:`RTDCWriter.store_basin`.
+        :meth:`.RTDCWriter.store_basin`.
         """
         return {
             "basin_name": self.name,

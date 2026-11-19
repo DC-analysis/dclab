@@ -296,7 +296,7 @@ class Export:
             If set to `False`, raises `OSError` if ``path`` exists.
         compression_kwargs: dict
             Dictionary with the keys "compression" and "compression_opts"
-            which are passed to :func:`h5py.Group.create_dataset`. The
+            which are passed to :meth:`h5py.Group.create_dataset`. The
             default is Zstandard compression with the compression
             level 5 `hdf5plugin.Zstd(clevel=5)`.
         compression: str or None

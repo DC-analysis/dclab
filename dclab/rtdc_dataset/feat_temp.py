@@ -51,7 +51,7 @@ def register_temporary_feature(feature: str,
     by the user. Temporary features are helpful when the integral
     features are not enough, e.g. for prototyping, testing, or
     collating with other data. Temporary features allow you to
-    leverage the full functionality of :class:`RTDCBase` with
+    leverage the full functionality of :class:`.RTDCBase` with
     your custom features (no need to go for a custom `pandas.DataFrame`).
 
     Parameters
@@ -76,7 +76,7 @@ def set_temporary_feature(rtdc_ds: RTDCBase,
 
     Parameters
     ----------
-    rtdc_ds: dclab.RTDCBase
+    rtdc_ds: dclab.rtdc_dataset.RTDCBase
         Dataset for which to set the feature. Note that the
         length of the feature `data` must match the number of events
         in `rtdc_ds`. If the dataset is a hierarchy child, the data will also

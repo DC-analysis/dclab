@@ -71,7 +71,7 @@ class RTDCWriter:
                 if an h5py.Group is passed)
         compression_kwargs: dict-like
             Dictionary with the keys "compression" and "compression_opts"
-            which are passed to :func:`h5py.Group.create_dataset`. The
+            which are passed to :meth:`h5py.Group.create_dataset`. The
             default is Zstandard compression with the compression
             level 5 `hdf5plugin.Zstd(clevel=5)`. To disable compression, use
             `{"compression": None}`.
@@ -631,11 +631,11 @@ class RTDCWriter:
             Only section key names and key values therein registered
             in dclab are allowed and are converted to the pre-defined
             dtype. Only sections from the
-            :const:`dclab.definitions.CFG_METADATA` dictionary and the
-            "user" section are allowed; other sections raise a ValueError
-            (except "fmt_tdms", which is ignored). If you have custom
-            metadata, you can use the "user" section, whose values are
-            stored as-is.
+            :const:`dclab.definitions.meta_const.CFG_METADATA` dictionary
+            and the "user" section are allowed; other sections raise a
+            ValueError (except "fmt_tdms", which is ignored). If you have
+            custom metadata, you can use the "user" section, whose values
+            are stored as-is.
         """
         meta = copy.deepcopy(meta)
         # Ignore/remove tdms section
@@ -704,7 +704,7 @@ class RTDCWriter:
             then the dictionary is converted into a numpy recarray.
             If a numpy array is provided, then the array is written
             as a raw table (no column names) to the file. If a
-            ``MetaTable`` is provided, its array representation
+            :class:`.MetaTable` is provided, its array representation
             is stored and its `meta` dictionary is added to the
             attributes.
         h5_attrs: dict, optional

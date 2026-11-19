@@ -1,3 +1,4 @@
+"""Mapping event indices between hierarchy children and their parents"""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -173,7 +173,7 @@ class KernelDensityEstimator:
             displayed on a log-scale. Defaults to "linear".
         xacc, yacc: float
             KDE grid spacing in x and y direction;
-            if set to None, ``dclab.kde.binning.bin_width_percentile``
+            if set to None, :func:`dclab.kde.binning.bin_width_percentile`
             is used
 
         Returns
@@ -408,7 +408,7 @@ class KernelDensityEstimator:
         xacc, yacc: float
             Grid spacing for the axes in units of the scaled data (i.e.
             of log(data) if `xscale`/`yscale` is "log"); if set to None
-            or 0, ``dclab.kde.binning.bin_width_percentile`` is used
+            or 0, :func:`dclab.kde.binning.bin_width_percentile` is used
 
         Returns
         -------

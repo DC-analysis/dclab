@@ -129,6 +129,9 @@ HTTP (online) file format
 .. automodule:: dclab.rtdc_dataset.fmt_http
     :members:
 
+.. autoclass:: dclab.http_utils.HTTPFile
+    :members:
+
 
 .. _sec_ref_rtdc_dataset_s3:
 
@@ -151,6 +154,9 @@ Hierarchy format
 .. autoclass:: dclab.rtdc_dataset.RTDC_Hierarchy
     :members:
 
+.. automodule:: dclab.rtdc_dataset.fmt_hierarchy.mapper
+    :members:
+
 
 TDMS format
 -----------
@@ -164,7 +170,35 @@ TDMS format
 Basin features
 --------------
 .. automodule:: dclab.rtdc_dataset.feat_basin
+
+.. autoclass:: dclab.rtdc_dataset.feat_basin.Basin
     :members:
+
+.. autoclass:: dclab.rtdc_dataset.feat_basin.InternalH5DatasetBasin
+
+.. autoclass:: dclab.rtdc_dataset.feat_basin.InternalH5DatasetChoppedImageBasin
+
+.. autoclass:: dclab.rtdc_dataset.feat_basin.BasinProxy
+    :members:
+
+.. autoclass:: dclab.rtdc_dataset.feat_basin.PerishableRecord
+    :members:
+
+.. autofunction:: dclab.rtdc_dataset.feat_basin.get_basin_classes
+
+.. autofunction:: dclab.rtdc_dataset.feat_basin.basin_priority_sorted_key
+
+.. autoexception:: dclab.rtdc_dataset.feat_basin.BasinFeatureMissingWarning
+
+.. autoexception:: dclab.rtdc_dataset.feat_basin.BasinIdentifierMismatchError
+
+.. autoexception:: dclab.rtdc_dataset.feat_basin.BasinmapFeatureMissingError
+
+.. autoexception:: dclab.rtdc_dataset.feat_basin.BasinNotAvailableError
+
+.. autoexception:: dclab.rtdc_dataset.feat_basin.CyclicBasinDependencyFoundWarning
+
+.. autoexception:: dclab.rtdc_dataset.feat_basin.IgnoringPerishableBasinTTL
 
 
 .. _cr_ancillaries:
@@ -200,7 +234,12 @@ Config
 .. autoclass:: dclab.rtdc_dataset.config.Configuration
     :members:
 
+.. autoclass:: dclab.rtdc_dataset.config.ConfigurationDict
+    :members:
+
 .. autofunction:: dclab.rtdc_dataset.config.load_from_file
+
+.. autofunction:: dclab.rtdc_dataset.config.verify_section_key
 
 .. _sec_ref_rtdc_export:
 
@@ -217,6 +256,25 @@ Export
 Filter
 ------
 .. autoclass:: dclab.rtdc_dataset.filter.Filter
+    :members:
+
+
+.. _sec_ref_check:
+
+Integrity checks
+----------------
+.. autofunction:: dclab.rtdc_dataset.check.check_dataset
+
+.. autoclass:: dclab.rtdc_dataset.check.IntegrityChecker
+    :members: check
+
+.. autoclass:: dclab.rtdc_dataset.check.ICue
+    :members:
+
+
+Tables
+------
+.. autoclass:: dclab.rtdc_dataset.meta_table.MetaTable
     :members:
 
 
@@ -245,9 +303,21 @@ image-based
 
 .. autofunction:: dclab.features.bright.get_bright
 
+.. autofunction:: dclab.features.bright_bc.get_bright_bc
+
+.. autofunction:: dclab.features.bright_perc.get_bright_perc
+
+.. autofunction:: dclab.features.contour.get_contour_lazily
+
+.. autoclass:: dclab.features.contour.LazyContourList
+
 .. autofunction:: dclab.features.inert_ratio.get_inert_ratio_cvx
 
 .. autofunction:: dclab.features.inert_ratio.get_inert_ratio_raw
+
+.. autofunction:: dclab.features.inert_ratio.get_inert_ratio_prnc
+
+.. autofunction:: dclab.features.inert_ratio.get_tilt
 
 .. autofunction:: dclab.features.volume.get_volume
 
@@ -302,6 +372,9 @@ Kernel Density Estimators (KDEs)
 .. autoclass:: dclab.kde.KernelDensityEstimator
    :members:
 
+.. automodule:: dclab.kde.binning
+   :members:
+
 .. automodule:: dclab.kde.methods
    :members:
    :undoc-members:
@@ -333,6 +406,16 @@ statistics
 .. automodule:: dclab.statistics
    :members:
    :undoc-members:
+
+
+.. _sec_ref_util:
+
+util
+----
+
+.. autofunction:: dclab.util.hashfile
+
+.. autofunction:: dclab.util.hashobj
 
 
 HDF5 manipulation

@@ -222,9 +222,11 @@ def test_find_smooth_contour_spacing_max_iter():
     assert not res["success"]
     assert not res["corners found"]
     assert res["reason"] == "maximum iterations reached"
-    assert np.allclose(res["spacing x"], 0.46201586550424045,
+    # The returned spacing is the one that was evaluated in the last
+    # iteration (here: the initial estimate, not half of it).
+    assert np.allclose(res["spacing x"], 2 * 0.46201586550424045,
                        rtol=0, atol=1e-12)
-    assert np.allclose(res["spacing y"], 0.00024627719927894213,
+    assert np.allclose(res["spacing y"], 2 * 0.00024627719927894213,
                        rtol=0, atol=1e-12)
 
 

@@ -39,7 +39,7 @@ def basin_priority_sorted_key(bdict: dict[str, str]):
 
     - type: "internal" over "file" over "remote"
     - format: "h5dataset" over "hdf5" over "http" over "s3" over "dcor"
-      (other formats, e.g. "h5datasetchop", come last)
+      (other formats come last)
     - mapping: "same" over anything else
     """
     srt_type = {
@@ -50,10 +50,11 @@ def basin_priority_sorted_key(bdict: dict[str, str]):
 
     srt_format = {
         "h5dataset": "a",
-        "hdf5": "b",
-        "http": "c",
-        "s3": "d",
-        "dcor": "e",
+        "h5datasetchop": "b",
+        "hdf5": "c",
+        "http": "d",
+        "s3": "e",
+        "dcor": "f",
     }.get(bdict.get("format", "_"), "z")
 
     mapping = bdict.get("mapping", "same")  # old dicts don't have "mapping"

@@ -23,7 +23,7 @@ class RTDC_Hierarchy(RTDCBase):
         The idea is that a subclass of RTDCBase can use the filtered
         data of another subclass of RTDCBase and interpret these data
         as unfiltered events. This comes in handy e.g. when the
-        percentage of different subpopulations need to be distinguished
+        percentage of different subpopulations needs to be distinguished
         without the noise in the original data.
 
         Children in hierarchies always update their data according to
@@ -196,7 +196,11 @@ class RTDC_Hierarchy(RTDCBase):
 
     @property
     def hash(self):
-        """Hashes of a hierarchy child changes if the parent changes"""
+        """Dataset hash
+
+        The hash of a hierarchy child changes if the parent (or its
+        filter) changes.
+        """
         # Do not apply filters here (speed)
         hph = self.hparent.hash
         hpfilt = hashobj(self.hparent.filter.all)
@@ -205,6 +209,10 @@ class RTDC_Hierarchy(RTDCBase):
 
     @property
     def logs(self):
+        """Logs of the hierarchy parent
+
+        Setting logs is not supported for hierarchy children.
+        """
         if self._logs is None:
             self._logs = self.hparent.logs
         return self._logs
@@ -218,6 +226,10 @@ class RTDC_Hierarchy(RTDCBase):
 
     @property
     def tables(self):
+        """Tables of the hierarchy parent
+
+        Setting tables is not supported for hierarchy children.
+        """
         if self._tables is None:
             self._tables = self.hparent.tables
         return self._tables
@@ -284,9 +296,10 @@ class RTDC_Hierarchy(RTDCBase):
         in the hierarchy parent(s), be it filters or metadata for computing
         ancillary features.
 
-        .. versionadded: 0.47.0
+        .. versionadded:: 0.47.0
+
             This is just an alias of `apply_filter`, but with a more
-            accurate name (not only the filters are applied, but alot
+            accurate name (not only the filters are applied, but a lot
             of other things might change).
         """
         self.apply_filter()

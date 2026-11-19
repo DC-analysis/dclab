@@ -1,4 +1,4 @@
-"""RT-DC dataset core classes and methods"""
+"""Filtering of RT-DC datasets"""
 import warnings
 
 import numpy as np
@@ -54,17 +54,21 @@ class Filter:
 
     @property
     def box(self):
-        """All box filters"""
+        """All box filters combined (read-only boolean array)"""
         return self._get_ro_array("box")
 
     @property
     def polygon(self):
-        """Polygon filters"""
+        """All polygon filters combined (read-only boolean array)"""
         return self._get_ro_array("polygon")
 
     @property
     def invalid(self):
-        """Invalid (nan/inf) events"""
+        """Invalid-event filter (read-only boolean array)
+
+        Events with nan or inf values in any scalar feature are `False`
+        (only if [filtering]: "remove invalid events" is True).
+        """
         return self._get_ro_array("invalid")
 
     def _get_ro_array(self, key):

@@ -21,7 +21,7 @@ def map_indices_child2parent(child: RTDC_Hierarchy,
     has every second event of its parent (`parent.filter.all[::2]=False`
     i.e. the filtering array is `[False, True, False, ...]`). When passing
     `child_indices=[2,3,4]`, the return value of this method would be
-    `parent_indices=[5,7,9]` (indexing starts at 0)`. Index 5 in the
+    `parent_indices=[5,7,9]` (indexing starts at 0). Index 5 in the
     parent dataset corresponds to index 2 in the child dataset.
 
     Parameters
@@ -96,8 +96,9 @@ def map_indices_parent2child(child: RTDC_Hierarchy,
     Returns
     -------
     child_indices: 1d ndarray
-        integer indices in `child`, corresponding to `parent_indices`
-        in `child.hparent`
+        sorted integer indices in `child`, corresponding to those
+        `parent_indices` in `child.hparent` that are part of `child`
+        (other indices are dropped)
     """
     parent = child.hparent
     # this boolean array defines `child` in the parent
@@ -116,12 +117,12 @@ def map_indices_root2child(child: RTDC_Hierarchy,
     """Map root RTDCBase event indices to RTDC_Hierarchy child
 
     Like :func:`map_indices_parent2child`, but accepts the
-    `root_indices` and map them to `child`.
+    `root_indices` and maps them to `child`.
 
     Parameters
     ----------
-    child: RTDCBase
-        RTDCBase hierarchy child to map to
+    child: RTDC_Hierarchy
+        Hierarchy child to map to
     root_indices: 1d ndarray
         integer indices in the root parent of `child`
 
@@ -129,7 +130,7 @@ def map_indices_root2child(child: RTDC_Hierarchy,
     -------
     child_indices: 1d ndarray
         integer indices in `child`, corresponding to `root_indices`
-        in `child`s root parent
+        in the root parent of `child`
     """
     # construct hierarchy tree containing only RTDC_Hierarchy instances
     hierarchy = [child]

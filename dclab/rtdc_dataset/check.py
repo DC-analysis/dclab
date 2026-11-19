@@ -175,7 +175,7 @@ class IntegrityChecker:
 
         The argument must be either a path to an .rtdc or .tdms file
         or an instance of `RTDCBase`. If a path is given, then all
-        warnings (e.g. UnknownConfigurationKeyWarning) are catched
+        warnings (e.g. UnknownConfigurationKeyWarning) are caught
         and added to the cue list.
 
         Usage:
@@ -359,7 +359,7 @@ class IntegrityChecker:
         return cues
 
     def check_feat_index(self, **kwargs):
-        """The index of the dataset should be monotonous"""
+        """The index feature should enumerate the events from 1 to N"""
         cues = []
         lends = len(self.ds)
         if ("index" in self.ds
@@ -779,7 +779,7 @@ class IntegrityChecker:
         return cues
 
     def check_ml_class(self, **kwargs):
-        """Try to comput ml_class feature and display error message"""
+        """Try to compute ml_class feature and display error message"""
         cues = []
         if "ml_class" in self.ds:
             try:

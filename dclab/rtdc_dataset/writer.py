@@ -1,3 +1,4 @@
+"""Writing RT-DC (.rtdc) files with :class:`RTDCWriter`"""
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -22,7 +23,7 @@ from .meta_table import MetaTable
 #: DEPRECATED (use `CHUNK_SIZE_BYTES` instead)
 CHUNK_SIZE = 100
 
-#: Chunks size in bytes for storing HDF5 datasets
+#: Chunk size in bytes for storing HDF5 datasets
 CHUNK_SIZE_BYTES = 1024**2  # 1MiB
 
 #: features that should be written to the output file as uint32 values
@@ -54,7 +55,7 @@ class RTDCWriter:
                  mode: Literal["append", "replace", "reset"] = "append",
                  compression_kwargs: dict | Mapping | None = None,
                  compression: str = "deprecated"):
-        """RT-DC data writer classe
+        """RT-DC data writer class
 
         Parameters
         ----------
@@ -66,10 +67,11 @@ class RTDCWriter:
               - "append": append new feature data to existing h5py Datasets
               - "replace": replace existing h5py Datasets with new features
                 (used for ancillary feature storage)
-              - "reset": do not keep any previous data
+              - "reset": do not keep any previous data (not possible
+                if an h5py.Group is passed)
         compression_kwargs: dict-like
             Dictionary with the keys "compression" and "compression_opts"
-            which are passed to :func:`h5py.H5File.create_dataset`. The
+            which are passed to :func:`h5py.Group.create_dataset`. The
             default is Zstandard compression with the compression
             level 5 `hdf5plugin.Zstd(clevel=5)`. To disable compression, use
             `{"compression": None}`.
@@ -134,9 +136,21 @@ class RTDCWriter:
         """Return best chunks for HDF5 datasets
 
         Chunking has performance implications. It’s recommended to keep the
-        total size of dataset chunks between 10 KiB and 1 MiB. This number
-        defines the maximum chunk size as well as half the maximum cache
-        size for each dataset.
+        total size of dataset chunks between 10 KiB and 1 MiB. The number
+        of events per chunk is chosen such that a chunk does not exceed
+        :const:`CHUNK_SIZE_BYTES`, with a minimum of 10 events per chunk.
+
+        Parameters
+        ----------
+        item_shape: tuple of int
+            Shape of the data of one event (e.g. `()` for scalar features)
+        item_dtype: numpy dtype
+            Data type of the dataset
+
+        Returns
+        -------
+        chunks: tuple of int
+            Chunk shape `(events_per_chunk, *item_shape)`
         """
         # Note that `np.prod(()) == 1`
         event_size = np.prod(item_shape) * np.dtype(item_dtype).itemsize
@@ -153,7 +167,7 @@ class RTDCWriter:
             self.h5file.close()
 
     def rectify_metadata(self):
-        """Autocomplete the metadta of the RTDC-measurement
+        """Autocomplete the metadata of the RTDC-measurement
 
         The following configuration keys are updated:
 
@@ -233,9 +247,11 @@ class RTDCWriter:
         basin_name: str
             basin name; Names do not have to be unique.
         basin_type: str
-            basin type (file or remote); Files are paths accessible by the
-            operating system (including e.g. network shares) whereas
-            remote locations normally require an active internet connection.
+            basin type ("file", "internal", or "remote"); Files are paths
+            accessible by the operating system (including e.g. network
+            shares) whereas remote locations normally require an active
+            internet connection. Internal basins are stored in the
+            "basin_events" group of the same file.
         basin_format: str
             The basin format must match the ``format`` property of an
             :class:`.RTDCBase` subclass (e.g. "hdf5" or "dcor")
@@ -246,7 +262,8 @@ class RTDCWriter:
             optional string describing the basin
         basin_feats: list of str
             list of features this basin provides; You may use this to
-            restrict access to features for a specific basin.
+            restrict access to features for a specific basin. This is
+            required for internal basins.
         basin_map: np.ndarray or tuple of (str, np.ndarray)
             If this is an integer numpy array, it defines the mapping
             of event indices from the basin dataset to the referring dataset
@@ -271,13 +288,13 @@ class RTDCWriter:
             This must be specified when storing internal basins, and it
             must not be specified for any other basin type.
         verify: bool
-            Whether to verify the basin before storing it; You might have
+            Whether to verify the basin before storing it; You might want to
             set this to False if you would like to write a basin that is
             e.g. temporarily not available
         perishable: bool
             Whether the basin is perishable. If this is True, then a
-            warning will be issued, because perishable basins may not be
-            accessed (e.g. time-based URL for private S3 data).
+            warning will be issued, because perishable basins may become
+            inaccessible (e.g. time-based URL for private S3 data).
 
         Returns
         -------
@@ -299,7 +316,7 @@ class RTDCWriter:
                     "datasets")
             if basin_feats is None:
                 raise ValueError(
-                    "When writing an internal basin, you must specifiy "
+                    "When writing an internal basin, you must specify "
                     "the list of features `basin_feats`"
                 )
             if (isinstance(internal_data, dict)
@@ -348,7 +365,7 @@ class RTDCWriter:
                         if basin_id != bn_id:
                             raise ValueError(
                                 f"Measurement identifier mismatch for "
-                                f"{loc}: got {bn_id}, expected {basin_id=})!")
+                                f"{loc}: got {bn_id}, expected {basin_id}!")
                     else:
                         # If `basin_id` was not specified, set it here for
                         # user convenience.
@@ -413,8 +430,8 @@ class RTDCWriter:
                         f"The basin mapping feature {basin_map_name} you "
                         f"specified explicitly already exists in "
                         f"{self.h5file} and they do not match. I assume "
-                        f"you are trying explicitly write to a basinmap that "
-                        f"is already used elsewhere.")
+                        f"you are trying to explicitly write to a basinmap "
+                        f"that is already used elsewhere.")
         else:
             # Classic, simple case
             basin_map_name = "same"
@@ -471,10 +488,12 @@ class RTDCWriter:
         feat: str
             feature name
         data: np.ndarray or list or dict
-            feature data
+            feature data; for the "index" feature, only the length of
+            `data` is used, and a consecutive enumeration (starting at 1,
+            continuing existing data) is written instead
         shape: tuple of int
             For non-scalar features, this is the shape of the
-            feature for one event (e.g. `(90, 250)` for an "image".
+            feature for one event (e.g. `(90, 250)` for an "image").
             Usually, you do not have to specify this value, but you
             do need it in case of plugin features that don't have
             the "feature shape" set or in case of temporary features.
@@ -572,7 +591,7 @@ class RTDCWriter:
             elif shape == data.shape[1:]:
                 pass
             else:
-                raise ValueError(f"Bad shape for {feat}! Expeted {shape}, "
+                raise ValueError(f"Bad shape for {feat}! Expected {shape}, "
                                  f"but got {data.shape[1:]}!")
             self.write_ndarray(group=events, name=feat, data=data, dtype=dtype)
 
@@ -612,9 +631,11 @@ class RTDCWriter:
             Only section key names and key values therein registered
             in dclab are allowed and are converted to the pre-defined
             dtype. Only sections from the
-            :const:`dclab.definitions.CFG_METADATA` dictionary are
-            stored. If you have custom metadata, you can use the "user"
-            section.
+            :const:`dclab.definitions.CFG_METADATA` dictionary and the
+            "user" section are allowed; other sections raise a ValueError
+            (except "fmt_tdms", which is ignored). If you have custom
+            metadata, you can use the "user" section, whose values are
+            stored as-is.
         """
         meta = copy.deepcopy(meta)
         # Ignore/remove tdms section
@@ -670,19 +691,22 @@ class RTDCWriter:
         Tables are semi-metadata. They may contain information collected
         during a measurement (but with a lower temporal resolution) or
         other tabular data relevant for a dataset. Tables have named
-        columns. Therefore, they can be represented as a numy recarray,
-        and they should be stored as such in an HDF5 file (compund dataset).
+        columns. Therefore, they can be represented as a numpy recarray,
+        and they should be stored as such in an HDF5 file (compound dataset).
 
         Parameters
         ----------
         name: str
             Name of the table
-        cmp_array: np.recarray, h5py.Dataset, np.ndarray, or dict
+        cmp_array: np.recarray, h5py.Dataset, np.ndarray, dict, or MetaTable
             If a np.recarray or h5py.Dataset are provided, then they
             are written as-is to the file. If a dictionary is provided,
             then the dictionary is converted into a numpy recarray.
             If a numpy array is provided, then the array is written
-            as a raw table (no column names) to the file.
+            as a raw table (no column names) to the file. If a
+            ``MetaTable`` is provided, its array representation
+            is stored and its `meta` dictionary is added to the
+            attributes.
         h5_attrs: dict, optional
             Attributes to store alongside the corresponding HDF5 dataset
         """
@@ -754,7 +778,12 @@ class RTDCWriter:
             If set to a string, then this version is used instead.
         write_attribute: bool
             If True (default), write the version string to the
-            "setup:software version" attribute
+            "setup:software version" attribute; otherwise return it
+
+        Returns
+        -------
+        new_version: str or None
+            The new version string (only if `write_attribute` is False)
         """
         if old_version is None:
             old_version = self.h5file.attrs.get("setup:software version", "")
@@ -787,7 +816,7 @@ class RTDCWriter:
         group: h5py.Group
             parent group
         name: str
-            name of the dataset containing the text
+            name of the dataset containing the image data
         data: np.ndarray or list of np.ndarray
             image data
         """
@@ -811,7 +840,7 @@ class RTDCWriter:
         dset.attrs.create("IMAGE_SUBCLASS", np.bytes_("IMAGE_GRAYSCALE"))
 
     def write_image_grayscale(self, group, name, data, is_boolean):
-        """Write grayscale image data to and HDF5 dataset
+        """Write grayscale image data to an HDF5 dataset
 
         This function wraps :func:`RTDCWriter.write_ndarray`
         and adds image attributes to the HDF5 file so HDFView
@@ -822,7 +851,7 @@ class RTDCWriter:
         group: h5py.Group
             parent group
         name: str
-            name of the dataset containing the text
+            name of the dataset containing the image data
         data: np.ndarray or list of np.ndarray
             image data
         is_boolean: bool
@@ -871,12 +900,17 @@ class RTDCWriter:
         group: h5py.Group
             parent group
         name: str
-            name of the dataset containing the text
+            name of the dataset
         data: np.ndarray
             data
         dtype: dtype
             the dtype to use for storing the data
             (defaults to `data.dtype`)
+
+        Returns
+        -------
+        dset: h5py.Dataset
+            The dataset that was written to
         """
         if len(data) == 0:
             raise ValueError(f"Empty data object for '{name}'")
@@ -951,7 +985,7 @@ class RTDCWriter:
         return dset
 
     def write_ragged(self, group, name, data):
-        """Write ragged data (i.e. list of arrays of different lenghts)
+        """Write ragged data (i.e. list of arrays of different lengths)
 
         Ragged array data (e.g. contour data) are stored in
         a separate group and each entry becomes an HDF5 dataset.
@@ -961,7 +995,7 @@ class RTDCWriter:
         group: h5py.Group
             parent group
         name: str
-            name of the dataset containing the text
+            name of the group containing the ragged data
         data: list of np.ndarray or np.ndarray
             the data in a list
         """

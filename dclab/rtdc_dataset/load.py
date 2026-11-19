@@ -35,11 +35,13 @@ def new_dataset(data: dict | io.BytesIO | RTDCBase | str | pathlib.Path,
         can be one of the following:
 
         - dict
-        - .tdms file
-        - .rtdc file
+        - .tdms file (str or pathlib.Path)
+        - .rtdc file (str or pathlib.Path)
+        - io.BytesIO object containing an .rtdc (HDF5) file
         - subclass of `RTDCBase`
           (will create a hierarchy child)
         - DCOR resource URL
+        - URL to an .rtdc file accessible via HTTP(S)
         - URL to file in S3-compatible object store
     identifier: str
         A unique identifier for this dataset. If set to `None`

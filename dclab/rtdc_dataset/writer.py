@@ -51,7 +51,7 @@ class StoringPerishableBasinWarning(UserWarning):
 
 class RTDCWriter:
     def __init__(self,
-                 path_or_h5file: str | pathlib.Path | h5py.File,
+                 path_or_h5file: str | pathlib.Path | h5py.Group,
                  mode: Literal["append", "replace", "reset"] = "append",
                  compression_kwargs: dict | Mapping | None = None,
                  compression: str = "deprecated"):
@@ -98,10 +98,12 @@ class RTDCWriter:
 
         self.mode = mode
         self.compression_kwargs = compression_kwargs
+        #: HDF5 file or group to which data are written
+        self.h5file: h5py.Group
         if isinstance(path_or_h5file, h5py.Group):
             self.owns_path = False
-            self.path = pathlib.Path(path_or_h5file.file.filename)
             self.h5file = path_or_h5file
+            self.path = pathlib.Path(self.h5file.file.filename)
             if mode == "reset":
                 raise ValueError("'reset' mode incompatible with h5py.Group!")
         else:

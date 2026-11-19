@@ -272,6 +272,8 @@
  - fix: `find_smooth_contour_spacing` returned half of the last
    evaluated contour spacing when the maximum number of iterations
    was reached (#424)
+ - ref: fix type annotations reported by pyright (`RTDCWriter.h5file`,
+   `DiskStore.path`, optional imports, wrong annotations) (#426)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

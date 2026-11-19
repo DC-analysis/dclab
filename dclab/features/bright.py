@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 
 
-def get_bright(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
+def get_bright(mask: npt.NDArray[np.bool_] | list[npt.NDArray[np.bool_]],
                image: npt.NDArray | list[npt.NDArray],
                ret_data: str = "avg,sd"
                ) -> (float |

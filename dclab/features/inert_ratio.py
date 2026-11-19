@@ -8,7 +8,8 @@ import scipy.spatial as ssp
 
 def cont_moments_cv(cont: npt.NDArray,
                     flt_epsilon: float = 1.19209e-07,
-                    dbl_epsilon: float = 2.2204460492503131e-16) -> dict:
+                    dbl_epsilon: float = 2.2204460492503131e-16
+                    ) -> dict | None:
     """Compute the moments of a contour
 
     The moments are computed in the same way as they are computed

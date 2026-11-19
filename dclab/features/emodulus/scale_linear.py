@@ -29,11 +29,11 @@ def convert(area_um: npt.NDArray,
             deform: npt.NDArray,
             channel_width_in: float,
             channel_width_out: float,
-            emodulus: npt.NDArray = None,
+            emodulus: npt.NDArray | None = None,
             flow_rate_in: float | None = None,
             flow_rate_out: float | None = None,
             viscosity_in: float | None = None,
-            viscosity_out: float | npt.NDArray = None,
+            viscosity_out: float | npt.NDArray | None = None,
             inplace: bool = False
             ) -> (
         tuple[npt.NDArray, npt.NDArray] |

@@ -24,7 +24,8 @@ class DiskStore:
             Directory where the data are stored; if None, the disk
             store is disabled until :func:`set_path` is called
         """
-        self.path = None
+        #: directory of the disk store (None if the disk store is disabled)
+        self.path: pathlib.Path | None = None
         self.index = set()
         self.size_bytes = 0
         if path is not None:
@@ -36,19 +37,19 @@ class DiskStore:
     def __contains__(self, key):
         if self:
             return (key in self.index
-                    or (self.path / f"{key}_meta.json").is_file())
+                    or (self._store_path / f"{key}_meta.json").is_file())
         else:
             return False
 
     def __getitem__(self, key):
         self.assert_disk_store_path()
-        meta_path = self.path / f"{key}_meta.json"
+        meta_path = self._store_path / f"{key}_meta.json"
         file_meta = json.loads(meta_path.read_text())
         meta_path.touch()
         return self.value_read(key, file_meta)
 
     def __setitem__(self, key, value):
-        lock_path = self.path / f"{key}.lock"
+        lock_path = self._store_path / f"{key}.lock"
         # Use a lock file to avoid race conditions with other
         # processes when writing data to disk.
         # If the lock cannot be acquired, then nothing is written
@@ -57,23 +58,29 @@ class DiskStore:
         with LockFile(lock_path) as lf:
             if lf.acquired:
                 file_meta = self.value_write(key, value)
-                meta_path = self.path / f"{key}_meta.json"
+                meta_path = self._store_path / f"{key}_meta.json"
                 file_meta["version"] = self.version
                 file_meta["timestamp"] = time.time()
                 self.index.add(key)
                 meta_path.write_text(json.dumps(file_meta, indent=2))
 
-    def assert_disk_store_path(self):
-        """Raise a RuntimeError if no disk store path is set"""
-        if not self:
+    @property
+    def _store_path(self) -> pathlib.Path:
+        """Directory of the disk store (RuntimeError if not set)"""
+        if self.path is None:
             raise RuntimeError(
                 "Please use `set_disk_store_path` to set a disk cache path")
+        return self.path
+
+    def assert_disk_store_path(self):
+        """Raise a RuntimeError if no disk store path is set"""
+        self._store_path  # noqa: B018
 
     def clear(self):
         """Remove all data from the disk store (deletes the store directory)"""
         if self:
             self.index.clear()
-            shutil.rmtree(self.path, ignore_errors=True)
+            shutil.rmtree(self._store_path, ignore_errors=True)
 
     def remove(self, key):
         """Remove all files of `key` from the disk store"""
@@ -81,8 +88,8 @@ class DiskStore:
         self.index.discard(key)
         # Remove the meta file first, so that `key` is not considered
         # to be in the disk store anymore.
-        (self.path / f"{key}_meta.json").unlink(missing_ok=True)
-        for pi in self.path.glob(f"{key}*"):
+        (self._store_path / f"{key}_meta.json").unlink(missing_ok=True)
+        for pi in self._store_path.glob(f"{key}*"):
             if pi.suffix != ".lock":
                 pi.unlink(missing_ok=True)
 
@@ -93,10 +100,10 @@ class DiskStore:
         items = []
         keys = []
         total_bytes = 0
-        for pp in self.path.rglob("*_meta.json"):
+        for pp in self._store_path.rglob("*_meta.json"):
             meta = json.loads(pp.read_text())
             stem = pp.with_name(pp.name.split("_")[0])
-            key_path = str(stem.relative_to(self.path))
+            key_path = str(stem.relative_to(self._store_path))
             # On Windows, paths are separated with "\", but our keys
             # are labeled with "/".
             key = "/".join(key_path.split(os.path.sep))
@@ -115,7 +122,7 @@ class DiskStore:
                     self.index.remove(key)
                 except KeyError:
                     pass
-                for pi in self.path.glob(f"{key}*"):
+                for pi in self._store_path.glob(f"{key}*"):
                     if pi.exists():
                         pi.unlink()
                 if total_bytes < max_bytes:
@@ -123,7 +130,7 @@ class DiskStore:
 
     def remove_stale_locks(self, max_age_seconds=3600):
         """Remove stale locks"""
-        for pp in self.path.rglob("*.lock"):
+        for pp in self._store_path.rglob("*.lock"):
             if pp.stat().st_mtime < time.time() - max_age_seconds:
                 pp.unlink(missing_ok=True)
 
@@ -137,24 +144,24 @@ class DiskStore:
 
     def value_read(self, key, file_meta):
         """Read the value of `key` as described by the metadata `file_meta`"""
-        if file_meta["format"] == "json":
-            return json.loads(
-                ((self.path / key).parent / file_meta["file"]).read_text())
-        elif file_meta["format"] == "json-typed":
-            return json.loads(
-                ((self.path / key).parent / file_meta["file"]).read_text(),
-                object_hook=json_decode_types)
-        elif file_meta["format"] == "numpy":
-            return np.load((self.path / key).parent / file_meta["file"])
-        elif file_meta["format"] == "bytes":
-            return ((self.path / key).parent / file_meta["file"]).read_bytes()
-        elif file_meta["format"] == "list":
+        if file_meta["format"] == "list":
             data = []
             for fmi in file_meta["items"]:
                 data.append(self.value_read(key, fmi))
             if file_meta.get("type") == "tuple":
                 data = tuple(data)
             return data
+
+        path_data = (self._store_path / key).parent / file_meta.get("file", "")
+        if file_meta["format"] == "json":
+            return json.loads(path_data.read_text())
+        elif file_meta["format"] == "json-typed":
+            return json.loads(path_data.read_text(),
+                              object_hook=json_decode_types)
+        elif file_meta["format"] == "numpy":
+            return np.load(path_data)
+        elif file_meta["format"] == "bytes":
+            return path_data.read_bytes()
         else:
             raise NotImplementedError(
                 f"Unsupported format '{file_meta['format']}'")
@@ -165,7 +172,7 @@ class DiskStore:
         The value is stored as JSON if possible, otherwise via
         :func:`value_write_mixed`.
         """
-        (self.path / key).parent.mkdir(parents=True, exist_ok=True)
+        (self._store_path / key).parent.mkdir(parents=True, exist_ok=True)
         # first attempt to just store everything as json
         # (tuples and non-string dictionary keys require type information)
         typed = has_json_lossy_types(value)
@@ -186,7 +193,7 @@ class DiskStore:
 
     def value_write_json(self, key, json_data):
         """Write the JSON string `json_data` for `key`, return its metadata"""
-        path_out = pathlib.Path(self.path / f"{key}.json")
+        path_out = pathlib.Path(self._store_path / f"{key}.json")
         path_out_tmp = path_out.with_name(path_out.name + "~")
         if path_out_tmp.exists():
             path_out_tmp.unlink()
@@ -218,7 +225,7 @@ class DiskStore:
             if isinstance(value, tuple):
                 file_meta["type"] = "tuple"
         elif isinstance(value, np.ndarray):
-            path_out = self.path / f"{key}.npy"
+            path_out = self._store_path / f"{key}.npy"
             path_out_tmp = path_out.with_name(path_out.name + "~")
             if path_out_tmp.exists():
                 path_out_tmp.unlink()
@@ -233,7 +240,7 @@ class DiskStore:
                          "size": path_out.stat().st_size
                          }
         elif isinstance(value, bytes):
-            path_out = self.path / f"{key}.bin"
+            path_out = self._store_path / f"{key}.bin"
             path_out_tmp = path_out.with_name(path_out.name + "~")
             if path_out_tmp.exists():
                 path_out_tmp.unlink()

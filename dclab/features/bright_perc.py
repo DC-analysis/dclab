@@ -8,10 +8,10 @@ import numpy as np
 import numpy.typing as npt
 
 
-def get_bright_perc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
+def get_bright_perc(mask: npt.NDArray[np.bool_] | list[npt.NDArray[np.bool_]],
                     image: npt.NDArray | list[npt.NDArray],
                     image_bg: npt.NDArray | list[npt.NDArray],
-                    bg_off: float | npt.NDArray = None
+                    bg_off: float | npt.NDArray | None = None
                     ) -> (tuple[float, float] |
                           tuple[npt.NDArray, npt.NDArray]):
     """Compute 10th and 90th percentile of the bg-corrected event brightness

@@ -43,7 +43,7 @@ class LazyContourList:
         self.identifier = str(masks[0][:].tobytes())
         self.shape = len(masks), np.nan, 2
 
-    def __getitem__(self, idx) -> npt.NDArray:
+    def __getitem__(self, idx) -> npt.NDArray | list[npt.NDArray]:
         """Compute contour(s) if not already in self.contours"""
         if not isinstance(idx, numbers.Integral):
             # slicing!

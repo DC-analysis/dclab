@@ -8,10 +8,10 @@ import numpy as np
 import numpy.typing as npt
 
 
-def get_bright_bc(mask: npt.NDArray[bool] | list[npt.NDArray[bool]],
+def get_bright_bc(mask: npt.NDArray[np.bool_] | list[npt.NDArray[np.bool_]],
                   image: npt.NDArray | list[npt.NDArray],
                   image_bg: npt.NDArray | list[npt.NDArray],
-                  bg_off: float | npt.NDArray = None,
+                  bg_off: float | npt.NDArray | None = None,
                   ret_data: str = "avg,sd"
                   ) -> (float |
                         npt.NDArray |

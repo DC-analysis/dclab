@@ -235,7 +235,7 @@ def import_plugin_feature_script(
 
     Parameters
     ----------
-    plugin_path: str or Path
+    plugin_path: str or pathlib.Path
         pathname to a valid dclab plugin script
 
     Returns
@@ -296,7 +296,7 @@ def load_plugin_feature(
 
     Parameters
     ----------
-    plugin_path: str or Path
+    plugin_path: str or pathlib.Path
         pathname to a valid dclab plugin Python script
 
     Returns

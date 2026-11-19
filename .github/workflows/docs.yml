@@ -1,0 +1,27 @@
+name: Docs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@main
+      with:
+        fetch-depth: 0
+    - name: Set up Python
+      uses: actions/setup-python@main
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r docs/requirements.txt
+        python -m pip install .
+    - name: Build docs (nitpicky, warnings are errors)
+      working-directory: docs
+      run: |
+        sphinx-build -n -W --keep-going -b html . _build/html

@@ -77,7 +77,7 @@ class HTTPFile(io.IOBase):
 
         Notes
         -----
-        Caching is done with dclab's :func:`.umbrella_cache`.
+        Caching is done with dclab's :class:`.umbrella_cache`.
         """
         self.url = url
         self._chunk_size = chunk_size

@@ -397,8 +397,8 @@ class RTDCBase(abc.ABC):
             how the data should be scaled ("log" or "linear")
         method: callable
             Binning method used for computing the spacing (e.g.
-            ``dclab.kde.binning.bin_width_doane`` or
-            ``dclab.kde.binning.bin_width_percentile``)
+            :func:`dclab.kde.binning.bin_width_doane` or
+            :func:`dclab.kde.binning.bin_width_percentile`)
         method_kw: dict
             keyword arguments to `method`
         feat: str
@@ -530,7 +530,7 @@ class RTDCBase(abc.ABC):
         -----
         Ancillary features that are computationally cheap to compute are
         always included. They are defined in
-        :const:`dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID`.
+        ``dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID``.
         """
         features_loaded = self.features_local + self.features_innate
         features_loaded += [f for f in self.features if f in FEATURES_RAPID]
@@ -542,7 +542,7 @@ class RTDCBase(abc.ABC):
 
         `features_local` is a slimmed-down version of `features_loaded`.
         Nothing needs to be computed, not even rapid features
-        (:const:`dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID`).
+        (``dclab.rtdc_dataset.feat_anc_core.FEATURES_RAPID``).
         And features from remote sources that have not been downloaded
         already are excluded. Ancillary and temporary features that are
         available are included.
@@ -710,10 +710,10 @@ class RTDCBase(abc.ABC):
             Identifier for Y axis
         xacc: float
             Contour accuracy in x direction; if set to None,
-            ``dclab.kde.binning.bin_width_percentile`` is used
+            :func:`dclab.kde.binning.bin_width_percentile` is used
         yacc: float
             Contour accuracy in y direction; if set to None,
-            ``dclab.kde.binning.bin_width_percentile`` is used
+            :func:`dclab.kde.binning.bin_width_percentile` is used
         kde_type: str
             The KDE method to use
         kde_kwargs: dict

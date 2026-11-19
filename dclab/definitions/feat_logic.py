@@ -37,7 +37,7 @@ def feature_exists(name, scalar_only=False):
     """Return True if `name` is a valid feature name
 
     This function not only checks whether `name` is in
-    :const:`feature_names`, but also validates against
+    :data:`.feature_names`, but also validates against
     the machine learning scores `ml_score_???` (where
     `?` can be a digit or a lower-case letter in the
     English alphabet).
@@ -144,7 +144,7 @@ def feature_deregister(name):
 def get_feature_label(name, rtdc_ds=None, with_unit=True):
     """Return the label corresponding to a feature name
 
-    This function not only checks :const:`feature_name2label`,
+    This function not only checks :data:`.feature_name2label`,
     but also supports `ml_score_???` features (generic label
     "ML score ???").
 

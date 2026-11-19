@@ -243,6 +243,10 @@
  - ref: remove unused `features_iter` argument from `basin_definition_copy`
  - docs: fix typos, wrong statements, broken references, and failing
    code snippets in the user guide and examples (#414)
+ - docs: add missing classes and functions to the code reference (basins,
+   integrity checks, tables, hierarchy mapping, binning, and others) (#416)
+ - docs: fix all broken cross-references and build the docs in nitpicky
+   mode in CI (#416)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

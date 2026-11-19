@@ -104,6 +104,14 @@ If in doubt just ask, or look at the examples in the codebase.
   the shape and dtype information e.g., ``binary ndarray of shape (M, N)``.
 
 
+Documentation
+~~~~~~~~~~~~~
+New user-facing functions and classes should be listed in
+``docs/sec_code_reference.rst``. The documentation is built in
+nitpicky mode in CI (see ``docs/README.md``), so broken
+cross-references in docstrings fail the build.
+
+
 Incrementing version
 ~~~~~~~~~~~~~~~~~~~~
 Dclab gets its version from the latest git tag.

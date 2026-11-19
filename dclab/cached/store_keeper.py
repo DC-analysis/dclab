@@ -18,7 +18,7 @@ class StoreKeeper(threading.Thread):
         behavior of all methods decorated with :class:`.umbrella_cache`.
 
         To access the global instance, use the
-        :func:`.StoreKeeper.get_instance` method.
+        ``StoreKeeper.get_instance()`` class method.
         """
         super().__init__(*args,
                          daemon=True,

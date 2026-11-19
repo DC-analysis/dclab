@@ -255,7 +255,7 @@ class DiskStore:
 class DiskStoreJSONEncoder(json.JSONEncoder):
     """Custom JSONEncoder"""
     def default(self, o):
-        """Convert pathlib.Path, integer, and numpy.bool_ objects for JSON"""
+        """Convert paths, integers, and ``numpy.bool_`` objects for JSON"""
         if isinstance(o, pathlib.Path):
             return str(o)
         elif isinstance(o, numbers.Integral):

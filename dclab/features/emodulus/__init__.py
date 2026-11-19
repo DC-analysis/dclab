@@ -168,7 +168,7 @@ def get_emodulus(deform: float | npt.NDArray,
         Set to zero to disable.
     temperature
         Temperature [°C] of the event(s)
-    lut_data: str, path, or tuple of (np.ndarray of shape (N, 3), dict)
+    lut_data: str, pathlib.Path, or tuple of (np.ndarray of shape (N, 3), dict)
         The LUT data to use. If it is a built-in identifier,
         then the respective LUT will be used. Otherwise, a path to a
         file on disk or a tuple (LUT array, metadata) is possible.

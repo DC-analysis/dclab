@@ -12,7 +12,7 @@ from . import common
 def verify_dataset(path_in=None):
     """Perform checks on experimental datasets
 
-    The results of ``dclab.rtdc_dataset.check_dataset`` are printed
+    The results of :func:`dclab.rtdc_dataset.check.check_dataset` are printed
     to stdout and the function exits via :func:`sys.exit` with the
     status 0 (valid), 1 (alerts), 2 (violations), 3 (alerts and
     violations), or 4 (other error).

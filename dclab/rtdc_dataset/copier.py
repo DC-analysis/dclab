@@ -397,7 +397,7 @@ def h5ds_copy(src_loc: h5py.Group,
         Whether to recurse into HDF5 Groups (this is required e.g.
         for copying the "trace" feature)
     bytes_copied: mp.Value
-        A shared :class:`multiprocessing.Value` instance to which
+        A shared :func:`multiprocessing.Value` instance to which
         the number of bytes written is added during the copying process;
         Use this if you would like to track the progress.
 
@@ -408,7 +408,7 @@ def h5ds_copy(src_loc: h5py.Group,
 
     Raises
     ------
-    ValueError:
+    ValueError
         If the named source is neither an h5py.Dataset nor
         (with `recursive=True`) an h5py.Group
     """

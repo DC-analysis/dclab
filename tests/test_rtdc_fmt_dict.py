@@ -1,7 +1,10 @@
 """Test dictionary format"""
+import warnings
+
 import numpy as np
 
-from dclab import new_dataset
+from dclab import new_dataset, RTDCWriter
+from dclab.rtdc_dataset.core import LocalBasinForbiddenWarning
 
 import pytest
 
@@ -31,6 +34,29 @@ def test_image_not_available():
     ddict = example_data_dict(size=67, keys=["area_um", "deform"])
     ds = new_dataset(ddict)
     assert "image" not in ds
+
+
+def test_local_basins_allowed(tmp_path):
+    """RTDC_Dict allows "file" basins (data are on the user's computer)"""
+    path_basin = tmp_path / "basin.rtdc"
+    with RTDCWriter(path_basin) as hw:
+        hw.store_metadata({"experiment": {"sample": "basin",
+                                          "run index": 1}})
+        hw.store_feature("deform", np.linspace(0.01, 0.1, 10))
+    ddict = {"area_um": np.linspace(10, 100, 10)}
+    ds = new_dataset(ddict)
+    bdict = {"name": "local file",
+             "type": "file",
+             "format": "hdf5",
+             "paths": [str(path_basin)],
+             "features": ["deform"],
+             }
+    # RTDC_Dict does not define basins itself
+    ds.basins_get_dicts = lambda: [bdict]
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", LocalBasinForbiddenWarning)
+        assert "deform" in ds
+    assert np.allclose(ds["deform"], np.linspace(0.01, 0.1, 10))
 
 
 def test_min_max_update():

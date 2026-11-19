@@ -7,7 +7,7 @@ are taken from DCOR (:cite:`FigshareLMM`, `DCOR:figshare-11662773-v2
 As in the :ref:`previous example <example_lme4_lmer>`, we treat SSC
 as our "treatment" and MG-63 as our "control" group.
 
-The p-value for the differential deformation is magnitudes lower than
+The p-value for the differential deformation is orders of magnitude lower than
 the p-value for the (non-differential) deformation in the previous example.
 This indicates that there is a non-negligible initial deformation of the
 cells in the reservoir.

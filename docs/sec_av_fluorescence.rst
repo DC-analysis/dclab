@@ -31,6 +31,7 @@ with a total of three fluorescence channels used.
 .. plot::
 
     import matplotlib.pylab as plt
+    import numpy as np
     import dclab
 
     ds = dclab.new_dataset("data/example_traces.rtdc")
@@ -70,7 +71,7 @@ with a total of three fluorescence channels used.
 
     plt.show()
 
-Please note that the fluorescence traces are stored as integer values
-and have to be converted to µs using the meta data stored in
+Please note that the time axis of the fluorescence traces is given in samples
+(integer indices) and has to be converted to µs using the meta data stored in
 ``ds.config["fluorescence"]``. Also, notice how the scalar features
 are used for plotting the peak width.

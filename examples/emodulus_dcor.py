@@ -54,7 +54,7 @@ for loc in ds_loc:
     ds.apply_filter()
     # Create a hierarchy child for convenience reasons
     # (Otherwise we would have to do e.g. ds["deform"][ds.filter.all]
-    # everytime we need to access a feature)
+    # every time we need to access a feature)
     ds_list.append(dclab.new_dataset(ds))
 
 # plot
@@ -67,9 +67,8 @@ data_deform = [di["deform"] for di in ds_list]
 # Uncomment this line if you are not filtering invalid events (above)
 # data_deform = [d[~np.isnan(d)] for d in data_deform]
 bplot1 = ax1.boxplot(data_deform,
-                     vert=True,
                      patch_artist=True,
-                     labels=labels,
+                     tick_labels=labels,
                      )
 
 # box plot for Young's modulus
@@ -79,9 +78,8 @@ data_emodulus = [di["emodulus"] for di in ds_list]
 # Uncomment this line if you are not filtering invalid events (above)
 # data_emodulus = [d[~np.isnan(d)] for d in data_emodulus]
 bplot2 = ax2.boxplot(data_emodulus,
-                     vert=True,
                      patch_artist=True,
-                     labels=labels,
+                     tick_labels=labels,
                      )
 
 # colors

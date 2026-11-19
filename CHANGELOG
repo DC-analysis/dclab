@@ -241,6 +241,8 @@
  - docs: fix and complete docstrings of features, kde, lme4, cli,
    definitions, and utility modules (#413)
  - ref: remove unused `features_iter` argument from `basin_definition_copy`
+ - docs: fix typos, wrong statements, broken references, and failing
+   code snippets in the user guide and examples (#414)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

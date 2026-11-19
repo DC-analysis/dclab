@@ -65,7 +65,6 @@ C. Let's say your pipeline is designed to compute a new feature ``userdef1``
 .. _fig_basins_example_workflow:
 
 .. figure:: basin_example_workflows.svg
-    :target: images/basin_example_workflows.svg
 
     Three exemplary workflows where basins are used.
     **(A)** There is one basin consisting of an .rtdc file uploaded to figshare.
@@ -97,7 +96,7 @@ To summarize the advantages of using basins:
 
 Definitions
 ===========
-To clarify the notation, please read these definition of the terms used in
+To clarify the notation, please read these definitions of the terms used in
 dclab in the context of basins. They also serve as a complete introduction
 to the capabilities of basins.
 
@@ -109,15 +108,15 @@ referrer:
 basin:
     File or remote location containing feature data that are made accessible
     to the referrer. Both the referrer and the basin must originate from the same
-    DC measurement. E.g. You can work with a local .rtdc file containing only
-    :ref:´scalar features <sec_features_scalar>` with the image data stored
+    DC measurement. E.g., you can work with a local .rtdc file containing only
+    :ref:`scalar features <sec_features_scalar>` with the image data stored
     in a basin on :ref:`DCOR <sec_av_dcor>` to keep your local disk usage low.
 mapped basin:
     A mapped basin is a basin that does not share the same event indices
     with its referrer. This means that either
 
     - the basin is a superset of the referrer: This happens most often when you export
-      a subset of events to a file, resulting in a referrer that has less events
+      a subset of events to a file, resulting in a referrer that has fewer events
       than the (mapped) basin file. This case is useful when you only need a subset
       of features in the referrer, but don't want to (spend the time to) store all
       feature data (e.g. image data) in the referrer to save disk space.
@@ -162,12 +161,13 @@ basin type:
     OpenStack Swift).
 basin format:
     This is the subclass of :class:`.RTDCBase` that
-    defines how the basin is accessed. For *file*-type basins, this is "hdf5"
+    defines how the basin is accessed. For *file*-type basins, this is "hdf5",
+    for *internal* basins, this is "h5dataset",
     and for *remote*-type basins, this is "dcor", "http", or "s3".
 basin mapping:
   If the events enumerated in the referrer are identical to the events in
   the basin, then we call the mapping "same". Otherwise, we call it a
-  **mapped basin** followin the definition above.
+  **mapped basin** following the definition above.
 basin features:
     Feature information in a dataset as defined in the
     :ref:`general feature section <sec_features>`. Basins are only ever defined
@@ -175,9 +175,9 @@ basin features:
     You may define basins and explicitly state the features this basin provides.
     In combination with mapping, you could e.g. realize your own event
     segmentation pipeline, storing only the ``mask`` feature and extracted
-    scalar features in you output file, while you define the ``image`` feature
+    scalar features in your output file, while you define the ``image`` feature
     via the input file basin. If you combine this approach with the
-    `dcor <https://dc.readthedocs.io>`_ basin format, you can distribute all of
+    :ref:`dcor <sec_av_dcor>` basin format, you can distribute all of
     your data (raw and processed) in a very efficient and transparent manner.
 
 .. note::
@@ -196,7 +196,7 @@ basin features:
 These definitions should already give you a good feeling about how you can
 employ basins in your workflow. As a final note, be aware that you can also
 define basins recursively. Basins can have basins. And dclab has a check for
-circular basin definitions so you don't have to worry about that as well.
+circular basin definitions so you don't have to worry about that either.
 
 Defining Basins
 ===============
@@ -206,6 +206,7 @@ dive into an example:
 .. code-block:: python
 
    import dclab
+   import numpy as np
 
    with (dclab.new_dataset("input.rtdc") as ds,
          dclab.RTDCWriter("output.rtdc") as hw):
@@ -237,11 +238,11 @@ dive into an example:
        assert "image" in ds_out.features_basin
 
 What happened? First, we created an ``output.rtdc`` file that contains the metadata
-from the ``ìnput.rtdc`` file. This is important so that dclab can verify the basin
+from the ``input.rtdc`` file. This is important so that dclab can verify the basin
 when we open the referrer. Then, we wrote the feature ``userdef1``, filled with
 random data, to the referrer. Finally we stored the basin information referencing
 **all** features from the ``input.rtdc`` file.
-To make sure everything worked, we opened the output referrer file and saw that dclanb
+To make sure everything worked, we opened the output referrer file and saw that dclab
 transparently gives us access to the features stored in the referrer and the basin.
 
 
@@ -266,7 +267,7 @@ method (see also the example after this one).
        hw.store_metadata(ds.config.as_dict(pop_filtering=True))
 
        # take every second event from the input file
-       event_mapping = np.arange(len(ds), None, 2, dtype=np.uint64)
+       event_mapping = np.arange(0, len(ds), 2, dtype=np.int64)
 
        # write the basin
        hw.store_basin(
@@ -340,7 +341,7 @@ This will return something like this:
 
 As you can see, the basin containing the image data is located on a posix
 path ``/ptmp`` which is not accessible on Windows. Assuming you had the
-same network location mounted on drive ``P:\\``, you could add an additional
+same network location mounted on drive ``P:\``, you could add an additional
 basin to the file like so:
 
 .. code-block:: python
@@ -355,7 +356,7 @@ basin to the file like so:
        bn_dict = ds.basins_get_dicts()[0]
 
    # replace the path to the basin with the new path
-   bn_dict["paths"] = [r"P:\\data\RC\Reference\2025-02-09_09.46_M003_Reference_5000.rtdc"]
+   bn_dict["paths"] = [r"P:\data\RC\Reference\2025-02-09_09.46_M003_Reference_5000.rtdc"]
    # remove the "key" from the dictionary (it is part of the old basin)
    bn_dict.pop("key")
    # convert the basin information to a JSON string
@@ -369,7 +370,7 @@ basin to the file like so:
            hw.write_text(hw.h5file["basins"], key, b_lines)
 
 After that, you can open the dataset on Windows and access the information
-in the basin via the mounted network share on drive ``P:\\``.
+in the basin via the mounted network share on drive ``P:\``.
 
 
 Accessing private basin data
@@ -378,7 +379,7 @@ Accessing private basin data
 DCOR
 ----
 If you have basins defined that point to private data on DCOR, you have to
-register your DCOR access token in dclab via the static method
+register your DCOR access token in dclab via the class method
 :func:`dclab.rtdc_dataset.fmt_dcor.api.APIHandler.add_api_key`.
 
 S3
@@ -442,7 +443,7 @@ are a few things to notice:
   of the output file against that of the input file to avoid loading basin
   features from the wrong file.
 
-For the sake of completeness, let's see how the basin information looks
+For the sake of completeness, let's see what the basin information looks
 like when you derive the output file from a DCOR resource:
 
 .. code-block:: python
@@ -483,12 +484,12 @@ the :ref:`DCOR section <sec_av_dcor_private_access>`.
 
 Basin loading procedure
 -----------------------
-When dclab opens a dataset the defines a basin, the basin features are
+When dclab opens a dataset that defines a basin, the basin features are
 retrieved only when they are needed (i.e. when the user tries to access
 them and they are not defined as innate features). Internally, dclab
 instantiates an :class:`.RTDCBase` subclass as defined by the *format*
-key. For mapped basins, dclab additionally creates a hierarchy child from the
-original dataset by filling the manual filtering array with the mapping information.
+key. For mapped basins, dclab additionally wraps the basin dataset in a
+proxy object that maps the basin events to the referrer events via the basin map.
 To see which features are defined in basins, you can check the
 :func:`RTDCBase.features_basin <dclab.rtdc_dataset.RTDCBase.features_basin>`
 property. The basins are directly accessible via :func:`RTDCBase.basins

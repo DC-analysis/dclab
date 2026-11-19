@@ -32,7 +32,7 @@ like so:
 To determine the DCOR resource id, go to https://dcor.mpl.mpg.de,
 find the resource you are interested in, scroll down to the bottom,
 and copy the value from the **id** (**not** *package id* or *revision id*)
-field in (*Additional Information*). The DCOR format is documented in
+field in the *Additional Information* section. The DCOR format is documented in
 :ref:`sec_ref_rtdc_dataset_dcor`.
 
 .. _sec_av_dcor_private_access:
@@ -67,7 +67,6 @@ You can manage your API Tokens on your profile page when
 logged in at https://dcor.mpl.mpg.de.
 
 .. figure:: figures/DCOR_API_Token_website.png
-    :target: images/DCOR_API_Token_website.png
 
     Managing API Tokens on DCOR.
 
@@ -106,7 +105,7 @@ Bypassing DCOR and using S3 directly
 
 The :ref:`DCOR format <sec_ref_rtdc_dataset_dcor>` connects to the
 `dcserv API <https://github.com/DCOR-dev/ckanext-dc_serve/blob/master/ckanext/dc_serve/serve.py>`_
-on on the DCOR server side.
+on the DCOR server side.
 Internally, DCOR uses an `S3-compatible <https://en.wikipedia.org/wiki/Amazon_S3>`_
 object store to manage all resources.
 In some scenarios you might want to bypass this API and access individual DCOR resources directly.

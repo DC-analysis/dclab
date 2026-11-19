@@ -15,7 +15,7 @@ We are interested in the p-value, which is 0.01256 for
 deformation. We repeat the analysis with area (0.0002183) and Young's
 modulus (0.0002771). The p-values indicate that MG-63 (mean elastic
 modulus 1.26 kPa) cells are softer than SSCs (mean elastic modulus 1.54 kPa).
-The figure reproduces the last subplot of figure 6b im :cite:`Herbig2018`.
+The figure reproduces the last subplot of figure 6b in :cite:`Herbig2018`.
 """
 import dclab
 from dclab import lme4
@@ -61,7 +61,7 @@ rlme4.add_dataset(ds_mg63_rep1, group="control", repetition=1)
 rlme4.add_dataset(ds_mg63_rep2, group="control", repetition=2)
 rlme4.add_dataset(ds_mg63_rep3, group="control", repetition=3)
 
-# perform analysis for deformation
+# perform analysis for area, deformation, and Young's modulus
 for feat in ["area_um", "deform", "emodulus"]:
     res = rlme4.fit(feature=feat)
     print(f"Results for {feat}:")
@@ -70,18 +70,19 @@ for feat in ["area_um", "deform", "emodulus"]:
     print("  fixed effect size", res["fixed effects treatment"])
 
 # prepare for plotting
-df = pd.DataFrame()
+dfs = []
 for ds in datasets:
     group = ds.config["experiment"]["sample"].split()[0]
     rep = ds.config["experiment"]["sample"].split()[-1]
     dfi = pd.DataFrame.from_dict(
-        {"area_m": ds["area_um"][ds.filter.all],
+        {"area_um": ds["area_um"][ds.filter.all],
          "deform": ds["deform"][ds.filter.all],
          "emodulus": ds["emodulus"][ds.filter.all],
          "group and repetition": [group + " " + rep] * ds.filter.all.sum(),
          "group": [group] * ds.filter.all.sum(),
          })
-    df = df.append(dfi)
+    dfs.append(dfi)
+df = pd.concat(dfs, ignore_index=True)
 
 # plot
 fig = plt.figure(figsize=(8, 5))

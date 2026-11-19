@@ -7,11 +7,11 @@ It is not straightforward to define a p-Value for RT-DC data
 (e.g. change in deformation for a treatment vs. its control).
 This is somewhat counter-intuitive, because one could assume
 that the large number of events in a single dataset should be
-enough to compare two datasets. However, Focus changes, chip-to-chip
+enough to compare two datasets. However, focus changes, chip-to-chip
 variations, etc. may generate systematic offsets which make a
 direct comparison (e.g. t-Test) impossible. Linear mixed effect
-models (LMM) allow to assign a significance to a treatment measurement
-compared to a control measuerement (fixed effect) while considering the
+models (LMM) allow you to assign a significance to a treatment measurement
+compared to a control measurement (fixed effect) while considering the
 systematic bias in-between the measurement repetitions (random effect).
 
 dclab offers LMM analysis as described in :cite:`Herbig2018`.
@@ -29,13 +29,13 @@ dclab exposes two models from lme4:
 - **linear mixed-effects models** ("lmer"): This is basically the simplest
   way of determining whether or not a treatment has an effect.
 - **generalized linear mixed-effects models with a log-link function** ("glmer+loglink"):
-  This model makes use of lme4's generalized linear effects model (GLMM)
+  This model makes use of lme4's generalized linear mixed-effects model (GLMM)
   ``glmer`` function with a log-link function (``family=Gamma(link='log')``).
   This is used for data that is log-normally distributed. Log-normal behaviour
   is quite common, especially in biology. When a physical parameter has a
   lower limit, and the measured values are close to that limit, the
   resulting distribution will be skewed, resembling a log-normal distribution.
-  In case of RT-DC this is specially (but not only) true for deformation.
+  In case of RT-DC this is especially (but not only) true for deformation.
   Another example is area, which also has a lower limit of zero and may
   therefore have a skewed distribution. While GLMMs are designed to handle
   skewed data, it was shown that LMMs already deliver robust results, even
@@ -68,7 +68,7 @@ An LMM analysis is straight-forward in dclab:
     rlme4.add_dataset(ds=ds_rep1_ctl, group="control", repetition=1)
     rlme4.add_dataset(ds=ds_rep1_trt, group="treatment", repetition=1)
     rlme4.add_dataset(ds=ds_rep2_ctl, group="control", repetition=2)
-    rlme4.add_dataset(ds=ds_rep2_ctl, group="treatment", repetition=2)
+    rlme4.add_dataset(ds=ds_rep2_trt, group="treatment", repetition=2)
 
     # Perform the analysis
     result = rlme4.fit()
@@ -136,7 +136,7 @@ recognized as reservoir measurements via their meta data).
 
     # Perform the analysis
     result = rlme4.fit()
-    assert results["is differential"]  # adding "reservoir" data forces differential analysis
+    assert result["is differential"]  # adding "reservoir" data forces differential analysis
 
 Keep in mind that the analysis is now performed using the differential
 features and not the actual features (``result["is differential"]``).

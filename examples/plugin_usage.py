@@ -15,7 +15,7 @@ import dclab
 
 plugin_path = pathlib.Path(__file__).parent
 
-# load a single plugin feature
+# load a single plugin feature recipe (defines two features)
 dclab.load_plugin_feature(plugin_path / "plugin_example.py")
 
 # load some data from DCOR

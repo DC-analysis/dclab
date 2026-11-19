@@ -37,8 +37,9 @@ a large number of features dedicated to machine-learning, the
 0 and 1. The "?" can be a digit or a lower-case
 letter of the alphabet, e.g. "ml\_score\_rbc" or "ml\_score_3a3".
 If "ml_score\_???" features are defined, then the ancillary
-"ml_class" feature, which identifies the most-probable feature
-for each event, becomes available.
+"ml_class" feature, which identifies the most-probable class for each
+event, becomes available. Its value is the index of the "ml_score\_???"
+feature with the highest value, with the features sorted alphabetically.
 
 .. _sec_features_non_scalar:
 
@@ -100,7 +101,7 @@ The following table defines the main filtering parameters:
 
 .. dclab_config:: filtering
 
-Min/max filters are also defined in the *filters* section:
+Min/max filters are also defined in the *filtering* section:
 
 .. csv-table::
     :header: filtering, explanation
@@ -243,7 +244,7 @@ in a post-measurement step like so.
    .. code::
 
        import h5py
-       with h5py.File("/path/to/your/dataset.rtdc") as h5:
+       with h5py.File("/path/to/your/dataset.rtdc", "a") as h5:
            h5.attrs["user:inlet"] = True
            h5.attrs["user:n_channels"] = 4
            h5.attrs["user:outlet"] = False
@@ -280,7 +281,7 @@ the new file ``test.rtdc``.
            ...:    hw.store_metadata(meta)
            ...:    # store a feature from the original dataset
            ...:    hw.store_feature("deform", dso["deform"])
-           ...:    # store a user-defined featurr
+           ...:    # store a user-defined feature
            ...:    hw.store_feature("userdef1", 2.5*dso["deform"])
            ...:    # store the basin information
            ...:    hw.store_basin(basin_name="mytest",

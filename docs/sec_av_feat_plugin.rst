@@ -35,7 +35,7 @@ have to load it in dclab to use it.
     In [4]: ds = dclab.new_dataset("data/example.rtdc")
 
     # access the new feature
-    In [5]: circ_per_area = ds["circ_times_area"]
+    In [5]: circ_times_area = ds["circ_times_area"]
 
     # do some filtering
     In [7]: ds.config["filtering"]["circ_times_area min"] = 23
@@ -81,7 +81,7 @@ dictionary. Below are three examples of creating and using plugin features.
 Simple plugin feature recipe
 ----------------------------
 In this :download:`basic example <data/example_plugin.py>`, the function
-:func:`compute_my_feature` defines the basic feature `"circ_times_area"`.
+``compute_my_feature()`` defines the basic feature `"circ_times_area"`.
 
 .. literalinclude:: data/example_plugin.py
    :language: python
@@ -90,14 +90,16 @@ In this :download:`basic example <data/example_plugin.py>`, the function
 Advanced plugin feature recipe
 ------------------------------
 In :download:`this example <../examples/plugin_example.py>`, the function
-:func:`compute_some_new_features` defines two basic features:
+``compute_some_new_features()`` defines two basic features:
 `"circ_per_area"` and `"circ_times_area"`. Notice that both features are
 computed in one function and that there is only one ``info`` dictionary:
 
 .. literalinclude:: ../examples/plugin_example.py
    :language: python
 
-Here, all possible keys in the `info` dictionary are shown (but not all are used).
+Here, almost all possible keys in the `info` dictionary are shown (but not all are used).
+For non-scalar features, you may additionally specify the list
+``"feature shapes"`` (the shape of a single event for each feature).
 The keys are additional keyword arguments to the
 :class:`AncillaryFeature <dclab.rtdc_dataset.feat_anc_core.ancillary_feature.AncillaryFeature>`
 class:
@@ -115,7 +117,7 @@ a feature is scalar or not (defaults to True).
 Plugin feature recipe with user-defined metadata
 ------------------------------------------------
 In this :download:`example <data/example_plugin_metadata.py>`, the function
-:func:`compute_area_exponent` defines the basic feature `area_exp`,
+``compute_area_exponent()`` defines the basic feature `area_exp`,
 which is calculated using
 :ref:`user-defined metadata<sec_user_meta>`.
 
@@ -124,7 +126,7 @@ which is calculated using
 
 The above plugin uses the "exp" key in the "user" configuration section
 to set the exponent value (notice the ``"config required"`` key in the ``info`` dict).
-Therefore, the feature `area_exp` is only available, when
+Therefore, the feature `area_exp` is only available when
 ``rtdc_ds.config["user"]["exp"]`` is set.
 
     .. ipython::

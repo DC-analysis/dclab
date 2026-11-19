@@ -100,13 +100,20 @@ def find_smooth_contour_spacing(
     }
 
     corners_found = False
-    for _ in range(max_iter):  # hard-limit is 15 iterations
-        corners_found = False
-
+    for ii in range(max_iter):  # hard-limit is 15 iterations
         if abort_event is not None and abort_event.is_set():
             results["reason"] = "abort event"
             break
 
+        if ii > 0:
+            # The contours computed with the previous spacing were not
+            # smooth enough. Halve the spacing here (and not at the end
+            # of the previous iteration), so that the spacing returned
+            # is always the last one that was evaluated.
+            xacc /= 2
+            yacc /= 2
+
+        corners_found = False
         results["total iterations"] += 1
 
         # maximum difference of opening angle from 180° [rad]
@@ -185,9 +192,6 @@ def find_smooth_contour_spacing(
             results["reason"] = "maximum contour length reached"
             results["success"] = True
             break
-        else:
-            xacc /= 2
-            yacc /= 2
 
     results["corners found"] = corners_found
     results["spacing x"] = xacc

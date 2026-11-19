@@ -75,3 +75,14 @@ def test_fcs_not_filtered():
     edest = tempfile.mkdtemp()
     f1 = join(edest, "test.tsv")
     ds.export.fcs(f1, keys, filtered=False)
+
+
+def test_fcs_export_meta_data_not_modified(tmp_path):
+    """The `meta_data` dictionary of the caller must not be modified"""
+    pytest.importorskip("fcswrite")
+    keys = ["area_um", "deform"]
+    ddict = example_data_dict(size=222, keys=keys)
+    ds = dclab.new_dataset(ddict)
+    meta_data = {"sample": "test"}
+    ds.export.fcs(tmp_path / "test.fcs", keys, meta_data=meta_data)
+    assert meta_data == {"sample": "test"}

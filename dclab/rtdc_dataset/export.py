@@ -187,8 +187,8 @@ class Export:
         Due to incompatibility with the .fcs file format, events that have
         a NaN value in any of the exported features are not exported.
         """
-        if meta_data is None:
-            meta_data = {}
+        # copy to not modify the dictionary passed by the caller
+        meta_data = dict(meta_data) if meta_data is not None else {}
         if not FCSWRITE_AVAILABLE:
             raise ModuleNotFoundError(
                 "Package `fcswrite` required for fcs export!")
@@ -669,8 +669,8 @@ class Export:
             1 for monitoring progress and a string describing what is being
             done.
         """
-        if meta_data is None:
-            meta_data = {}
+        # copy to not modify the dictionary passed by the caller
+        meta_data = dict(meta_data) if meta_data is not None else {}
         features = [c.lower() for c in features]
         features = sorted(set(features))
         path = pathlib.Path(path)

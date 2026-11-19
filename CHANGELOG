@@ -266,6 +266,9 @@
    attribute set in `RTDCBase.__init__` (#421)
  - fix: `Export.fcs` and `Export.tsv` added the "dclab version" key to
    the `meta_data` dictionary passed by the caller (#422)
+ - fix: deprecated `export.hdf5_autocomplete_config` raised an
+   AttributeError when given a path (`.close()` was called on the path
+   instead of on the file opened by `RTDCWriter`) (#423)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path

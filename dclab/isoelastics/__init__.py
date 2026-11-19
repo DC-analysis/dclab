@@ -259,7 +259,8 @@ class Isoelastics:
             Viscosity of the medium in mPa*s. If set to
             `None`, the viscosity of the imported data will
             be used (only do this if you do not need the
-            correct values for elastic moduli).
+            correct values for elastic moduli). Values that are
+            not positive (e.g. 0 or `False`) raise a ValueError.
         add_px_err: bool
             If True, add pixelation errors according to
             C. Herold (2017), https://arxiv.org/abs/1704.00572
@@ -298,6 +299,10 @@ class Isoelastics:
 
         if viscosity is None:
             viscosity = meta[2]
+        elif not viscosity > 0:
+            # e.g. `viscosity=False` would result in zero-valued emodulus
+            raise ValueError("`viscosity` must be a positive number or "
+                             f"None, got '{viscosity}'!")
 
         isoel_ret = self.convert(isoel, col1, col2,
                                  channel_width_in=meta[0],
@@ -348,7 +353,8 @@ class Isoelastics:
             flow rate, channel width, temperature) in the [setup]
             config section. If this is not possible, the viscosity
             of the imported isoelasticity data is used and a warning
-            will be issued.
+            will be issued. Values that are not positive (e.g. 0 or
+            `False`) raise a ValueError.
         add_px_err: bool
             If True, add pixelation errors according to
             C. Herold (2017), https://arxiv.org/abs/1704.00572

@@ -249,6 +249,9 @@
    mode in CI (#416)
  - fix: the deprecated `hasher_class` argument of `util.hashfile` issued
    a UserWarning instead of a DeprecationWarning (#417)
+ - fix: `Isoelastics.get` and `Isoelastics.get_with_rtdcbase` returned
+   zero-valued emodulus for `viscosity=0` or `viscosity=False`; a
+   ValueError is now raised for viscosities that are not positive (#418)
 0.74.0
  - fix: CLI commands compress, condense, join, and repack deleted the
    input file if it was also given as the output path
